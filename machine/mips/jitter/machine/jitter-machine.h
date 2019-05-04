@@ -104,23 +104,23 @@
 /* MIPS CPU-specific features.
  * ************************************************************************** */
 
-/* At least some revisions of the Loongon2F processor have nop bugs which can
+/* At least some revisions of the Loongson2F processor have nop bugs which can
    be circumvented by generating
       or $1, $1, $0
    intead of the canonical MIPS nop
       sll $0, $0, 0
    , which is encoded as a word of all zeroes.  Since GCC defines processor
-   names it is pretty easy to do automatically.  Like elsewhere in Jitter,
-   macros whose name starts with JITTER_ASM expand to a literal C string
-   suitable for inline asm; the other macro defined here is meant to be
-   expanded directly in assembly files. */
+   names as macros it is pretty easy to do this automatically.
+   Like elsewhere in Jitter, macros whose name starts with JITTER_ASM expand to
+   a literal C string suitable for inline asm; the other macro defined here is
+   meant to be expanded directly in assembly files. */
 #if (defined (_MIPS_ARCH_LOONGSON2F)      \
      || defined (_MIPS_TUNE_LOONGSON2F))
 # define JITTER_ASM_MIPS_NOP  \
     "or $1, $1, $0"
 # define JITTER_MIPS_NOP  \
     or $1, $1, $0
-#else /* Not Loongson2f. */
+#else /* Not Loongson2F. */
 # define JITTER_ASM_MIPS_NOP  \
     "sll $0, $0, 0"
 # define JITTER_MIPS_NOP  \
@@ -262,6 +262,18 @@
 #define _JITTER_LOW_LEVEL_BRANCH_FAST_IF_NOTGREATER_SIGNED_(opd0, opd1, tgt)  \
   _JITTER_LOW_LEVEL_BRANCH_FAST_IF_ZERO_                                      \
      (((jitter_int) (opd1) < (jitter_int) (opd0)), (tgt))
+#define _JITTER_LOW_LEVEL_BRANCH_FAST_IF_LESS_UNSIGNED_(opd0, opd1, tgt)  \
+  _JITTER_LOW_LEVEL_BRANCH_FAST_IF_NONZERO_                               \
+     (((jitter_uint) (opd0) < (jitter_uint) (opd1)), (tgt))
+#define _JITTER_LOW_LEVEL_BRANCH_FAST_IF_GREATER_UNSIGNED_(opd0, opd1, tgt)  \
+  _JITTER_LOW_LEVEL_BRANCH_FAST_IF_NONZERO_                                  \
+     (((jitter_uint) (opd1) < (jitter_uint) (opd0)), (tgt))
+#define _JITTER_LOW_LEVEL_BRANCH_FAST_IF_NOTLESS_UNSIGNED_(opd0, opd1, tgt)  \
+  _JITTER_LOW_LEVEL_BRANCH_FAST_IF_ZERO_                                     \
+     (((jitter_uint) (opd0) < (jitter_uint) (opd1)), (tgt))
+#define _JITTER_LOW_LEVEL_BRANCH_FAST_IF_NOTGREATER_UNSIGNED_(opd0, opd1, tgt)  \
+  _JITTER_LOW_LEVEL_BRANCH_FAST_IF_ZERO_                                        \
+     (((jitter_uint) (opd1) < (jitter_uint) (opd0)), (tgt))
 
 /* Jitter's default solution for overflow-checking on sum and subtraction
    appears to be optimal on MIPS.  For best efficiency it relies on a
