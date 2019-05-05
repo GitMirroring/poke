@@ -408,12 +408,7 @@
                                                jitter_int,               \
                                                (a),                      \
                                                (b),                      \
-                                               JITTER_BITS_PER_WORD)))   \
-   || (/* We may know whether a + b overflows, from the GCC builtin. */  \
-       __builtin_constant_p                                              \
-          (JITTER_WOULD_PLUS_OVERFLOW_GCC (jitter_int,                   \
-                                           (a),                          \
-                                           (b)))))
+                                               JITTER_BITS_PER_WORD))))
 
 /* Like JITTER_PLUS_OVERFLOWS_KNOWN_CONSTANT_GCC, for the minus operation. */
 #define JITTER_MINUS_OVERFLOWS_KNOWN_CONSTANT_GCC(a, b)                  \
@@ -433,12 +428,7 @@
                                                 jitter_int,              \
                                                 (a),                     \
                                                 (b),                     \
-                                                JITTER_BITS_PER_WORD)))  \
-   || (/* We may know whether a - b overflows, from the GCC builtin. */  \
-       __builtin_constant_p                                              \
-          (JITTER_WOULD_MINUS_OVERFLOW_GCC (jitter_int,                  \
-                                            (a),                         \
-                                            (b)))))
+                                                JITTER_BITS_PER_WORD))))
 
 /* Like JITTER_PLUS_OVERFLOWS_KNOWN_CONSTANT_GCC, for the times operation. */
 #define JITTER_TIMES_OVERFLOWS_KNOWN_CONSTANT_GCC(a, b)                  \
@@ -468,12 +458,7 @@
                                                 jitter_int,              \
                                                 (a),                     \
                                                 (b),                     \
-                                                JITTER_BITS_PER_WORD)))  \
-   || (/* We may know whether a * b overflows, from the GCC builtin. */  \
-       __builtin_constant_p                                              \
-          (JITTER_WOULD_TIMES_OVERFLOW_GCC (jitter_int,                  \
-                                            (a),                         \
-                                            (b)))))
+                                                JITTER_BITS_PER_WORD))))
 
 /* Like JITTER_PLUS_OVERFLOWS_KNOWN_CONSTANT_GCC, for the divided operation. */
 #define JITTER_DIVIDED_OVERFLOWS_KNOWN_CONSTANT_GCC(a, b)                       \
