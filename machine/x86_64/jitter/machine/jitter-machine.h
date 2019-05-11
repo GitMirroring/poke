@@ -301,9 +301,13 @@
      (insn, "jo", "r", (_jitter_tmp), "er", (_jitter_opd1_value), (tgt));       \
   /* This is the critical point: see the comment above.  I want to make sure    \
      that _jitter_tmp remains in the same register, which is to say, that       \
-     (res) gets assigned the updated value. */                                  \
-  asm ("": "+r" (_jitter_tmp));                                                 \
-  (res) = _jitter_tmp;
+     (res) gets assigned the updated value.  GCC cannot move this statement     \
+     above the asm goto statement, because it is volatile -- asm goto           \
+     statements being also implicitly volatile; so the most recent updated      \
+     value of _jitter_tmp right before the assignment to (res) will be in the   \
+     register I am expecting, and nowhere else. */                              \
+  asm volatile ("": "+r" (_jitter_tmp));                                        \
+  (res) = _jitter_tmp
 
 /* The operate-and-branch-on-overflow primitives.  Division and remainder use
    the default definition. */
