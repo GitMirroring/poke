@@ -1882,16 +1882,26 @@ The specific macro generates faster code. @fixme{show the two disassemblies}}
 @node Preventing VM instruction defects
 @subsection Preventing VM instruction defects
 
+@fixme{make extremely clear that all of this affects
+performance but not correctness: having defective instructions
+will not make programs crash (after I fix ``the bug'', of
+course); but it will be fixed when people actually read this}
+
 @cindex defective, VM instruction
 @cindex VM instruction, defect
 @cindex instruction, VM, defect
 @fixme{@xref{Defective VM instructions}.
-write this: introduction to the problem, examples}
+@fixme{write this: introduction to the problem, examples}}
 
 @cindex state update, decoupling from control
 @cindex control, decoupling from state updates
 @cindex decoupling, control from state updates
 @fixme{decouple control from state updates, examples}
+@fixme{unconditionally updating the VM state and then
+having a conditional branch within the same VM instruction
+depending on the new, updated state, is less dangerous and
+will usually not trigger defects.  But I will have to make
+experiments to confirm this.}
 
 @c @@@@@@@
 @node Performance tips for VM routines
