@@ -377,9 +377,10 @@ Lisp system was never my primary goal.
 Even without the ambitious scope of Jitter I consider JitterLisp
 useful to show the level of performance within the reach of small,
 clean systems.  JitterLisp gets many design decisions correct but is
-not perfect or exceptionally clever.  Still it appears more efficient
-than every mature ``dynamic language'', in some cases to a spectacular
-degree---due more to the faults of others than to any merit of mine.
+not perfect or exceptionally clever; still it appears more efficient
+than every mature ``dynamic language'' implementation, in some cases
+to a spectacular degree---due more to the faults of others than to any
+merit of mine.
 
 @cindex Schadenfreude
 I will not even try to hide my own personal goal for JitterLisp: being
@@ -591,13 +592,14 @@ run time.
 @cindex Common Lisp
 @cindex GNU epsilon
 @cindex epsilon
-While these distinctly epsilonian features make the internal
-implementation simpler and more elegant they are meant to be invisible
-to the casual user.  In particular user macros operate on ordinary
+These distinctly epsilonian features, while important in making the
+internal implementation simpler and more elegant, are meant to be
+invisible to the casual user.
+In particular user macros operate on ordinary
 non-AST Lisp data structures, usually through Lisp quasiquoting, and
 will feel instantly familiar to any Common Lisp or Emacs Lisp programmer;
 the fact that the core Lisp forms are themselves predefined macros
-expanding to ASTs may be safely ignored in ordinary programs as an
+expanding to ASTs may be safely ignored in almost all programs as an
 implementation detail.
 
 @xref{Interaction example} for a quick demo session introducing most
@@ -814,8 +816,9 @@ style and in particular the common practices and suggestions from the GNU
 Coding Standards
 (@pxref{Top,,, standards, The GNU Coding Standards}), which sets a few
 additional requirements such as GNU Autoconf and GNU Automake for
-``developers''---at the present time before I release official stable
-tarballs every user has to follow the developer instructions.
+``developers''---with the caveat that, at the present time before I
+release official stable tarballs, every user has to follow the
+developer instructions.
 
 @cindex Boehm-Demers garbage collector
 @cindex garbage collector, Boehm-Demers
@@ -855,7 +858,7 @@ According to the system characteristics as detected by Jitter's
 user the build system will compile different versions of JitterLisp,
 with the intent of testing and benchmarking Jitter.
 
-These different compiled programs will have different performance
+These different compiled programs will exhibit different performance
 profiles, but still be equivalent in terms of Lisp functionality.
 
 @cindex configuration item, JitterLisp
@@ -866,7 +869,7 @@ following configuration items:
 @cindex unsafe, JitterLisp configuration item
 @item safety
 a JitterLisp program may be @dfn{safe} and check for operand types
-before executing every operation, or @dfn{unsafe} and omitting some
+before executing every operation, or @dfn{unsafe} and omit some
 checks.  An unsafe Lisp will be more efficient, but subject to crashes
 in case of user error;
 
@@ -1015,7 +1018,7 @@ the user are allowed to span multiple lines.
 @cindex input, closing
 @cindex @key{C-d}, terminal input closing
 The user can exit by closing the input, typically by pressing
-@key{C-d} on an empty line, on GNU and other Unix systems.
+@key{C-d} on an empty line on GNU and other Unix systems.
 
 @cindex non-option argument
 @cindex file name, non-option argument
@@ -1069,10 +1072,10 @@ the command line prevails.
 @cindex alias, shell
 @cindex shell alias
 I call @dfn{negative options} the options whose only purpose is to
-negate the effect of other options, therefore restoring the default
-behavior.  Negative options are useful for counteracting the effect of
+negate the effect of other options, restoring the default
+behavior.  Negative options are useful for canceling the effect of
 some option which is convenient to always pass and then occasionally
-override, for example as part of a shell alias or with quick
+override, for example as part of a shell alias or by quick
 interactive line editing of a complex shell command line.
 @*
 The output of @option{--help}, described below, shows negative options
@@ -1257,15 +1260,16 @@ native disassembler.
 @cindex non-executable, Jittery routine
 @item --free-routines
 Normally, when compiling a closure (@pxref{Compilation}) the
-JitterLisp system keeps two versions of the resulting routine in
+JitterLisp system keeps two versions of the resulting VM routine in
 memory: one @dfn{non-executable routine}, and one @dfn{executable
 routine}.  The executable routine is necessary for executing the
 closure code, and therefore will always remain in memory until
-garbage-collected---forever, for littering JitterLisp programs.  The
-non-executable routine, on the other hand, can be destroyed immediately
-at compilation time to save memory; its only purpose after compilation
-is debugging, using @code{disassemble} and @code{disassemble-vm}
-(@pxref{Compilation} and @pxref{Disassembly,,, jitter, The Jitter Manual}).
+garbage-collected---or for ever, in the case of littering JitterLisp
+programs.  The non-executable routine, on the other hand, can be
+destroyed immediately at compilation time to save memory; its only
+purpose after compilation is debugging, using @code{disassemble} and
+@code{disassemble-vm} (@pxref{Compilation} and @pxref{Disassembly,,,
+jitter, The Jitter Manual}).
 
 By default JitterLisp keeps non-executable routines in memory, and
 garbage-collects them along with executable routines.  By specifying
@@ -1357,7 +1361,7 @@ caused an error.
 Disable VM instruction rewriting (@pxref{Instruction rewriting,,,
 jitter, The Jitter Manual}).  This is only useful for debugging
 rewrite rules or benchmarking their effect, or theoretically for
-making compilation more efficient at the price of a slower execution
+making compilation more efficient at the price of slower execution
 of compiled code.
 
 Instruction rewriting is enabled by default.
@@ -1622,12 +1626,13 @@ structures, where two pointers simply converge to the same address,
 and pointer cycles making circular or ``infinite'' structures.  Shared
 structures have no read syntax but can be built programmatically.}
 
-It is worth to repeat how the language defined in the rest of
+It is worth to stress how the language defined in the rest of
 this section describes @emph{Lisp data}, and not necessarily valid
 Lisp expressions.  For example @code{foo} denotes a symbol object, but
 simply typing @code{foo} at the first REPL prompt will cause an
 unbound-variable error---in such a case the symbol object @code{foo}
-will be macroexpanded into a @emph{variable} named @samp{foo}.
+will be macroexpanded into a @emph{variable} named @samp{foo}, even
+when no such variable exists.
 In the same way the read (and write) syntax @code{(1 2 3)} denotes a
 well-formed Lisp datum, but would macroexpand to a @emph{procedure call} with
 @code{1} as the operator, immediately causing a failure on evaluation.
@@ -1644,7 +1649,7 @@ Since JitterLisp has, at least currently, no subtyping relation, each
 object belongs to exactly one of the following types.  However some
 predefined procedures are provided to check whether an object belongs
 to one of several related data types; for example @code{closure?} will
-accept either an interpreted closure or a compiled closure as a
+recognize either an interpreted closure or a compiled closure as a
 ``closure''.
 
 @fixme{any two object are comparable by identity: see @code{eq?}.}
@@ -1799,8 +1804,10 @@ and @code{((1 . 2) . ())} are lists;
 @cindex element, list
 A @dfn{sublist} of a nonempty list is either its cdr or a sublist of
 its cdr.
-The @dfn{elements} of a nonempty list are the car the list and the
+The @dfn{elements} of a nonempty list are the car of the list and the
 elements of its sublists.
+The empty list has no sublists and no elements.
+@*
 For example the list
 @code{(foo . (10 . (bar . ())))} has the three sublists
 @code{(10 . (bar . ()))},
@@ -1808,14 +1815,14 @@ For example the list
 and
 @code{()},
 and the three elements
-@code{foo}, @code{10} and @code{bar}; the empty list
-@code{()} has no sublists and no elements.
+@code{foo}, @code{10} and @code{bar}.
+@c The empty list @code{()} has no sublists and no elements.
 Given a nonempty list its first element and its first sublist can always
 be found by taking, respectively, the car and the cdr of the list.  Taking
 the car and cdr of the first sublist yields the second element and the
 second sublist of the original list, and so on.
 @*
-It is easy to see how composed cons selectors applied to a list
+It is easy to see how some composed cons selectors applied to a list
 identify specific sublists and elements: the list sublists will be its
 cdr, cddr, cdddr, cddddr, and so on; then taking the car of the list
 itself and its sublists yields the list elements: therefore the first,
@@ -1959,7 +1966,7 @@ the structure of Abstract Syntax Trees and their behavior.
 @node Abstract Syntax Trees and their semantics
 @section Abstract Syntax Trees and their semantics
 @cindex Abstract Syntax Tree (AST)
-JitterLisp is executing by first translating user syntax into
+JitterLisp code is executed by first translating user syntax into
 @dfn{Abstract Syntax Trees}, which are easy to interpret or compile.
 Far from being only an implementation device, JitterLisp ASTs are also
 exposed to the user who may execute them
@@ -2018,7 +2025,8 @@ The literal @var{value} may be any Lisp datum.
 @c -------
 
 @cindex variable, AST syntax
-@item @code{[variable @var{name}]}, a @dfn{variable}.
+@cindex reference, variable, AST syntax
+@item @code{[variable @var{name}]}, a @dfn{variable} or @dfn{variable reference}.
 
 @cindex name, variable, AST syntax
 The variable @var{name} must be a symbol.
@@ -2042,8 +2050,7 @@ as many elements as the arguments expected by the named primitive.
 
 @cindex bound variable, block, AST syntax
 @cindex name, block, AST syntax
-The @var{name} or @dfn{bound variable name} in a let or @dfn{block} must
-be a symbol.
+The @var{name} or @dfn{bound variable name} in a block must be a symbol.
 @cindex bound expression, block, AST syntax
 A block @var{bound-expression} must be an AST.
 @cindex body, block, AST syntax
@@ -2090,8 +2097,8 @@ an AST.
 @cindex then branch, conditional, AST syntax
 @cindex else branch, conditional, AST syntax
 @cindex branch, conditional, AST syntax
-Each of the if (or @dfn{conditional}) @var{condition} and @dfn{branches} must
-be an AST.
+The conditional @var{condition} and its two @dfn{branches} must
+all be ASTs.
 @c -------
 
 @cindex while, AST syntax
@@ -2100,7 +2107,7 @@ be an AST.
 
 @cindex guard, while, AST syntax
 @cindex body, while, AST syntax
-Each of the while or @dfn{loop} @var{guard} and @var{body} must be an AST.
+Each of the loop @var{guard} and @var{body} must be an AST.
 @c -------
 
 @cindex lambda, AST syntax
@@ -2110,7 +2117,7 @@ Each of the while or @dfn{loop} @var{guard} and @var{body} must be an AST.
 @cindex formal, lambda, AST syntax
 @cindex argument (formal), lambda, AST syntax
 The lambda or @dfn{abstraction} @var{formals} or @dfn{formal arguments}
-must be a list of symbols.
+must be a list of symbols, all different from one another.
 @cindex body, lambda, AST syntax
 The lambda @var{body} must be an AST.
 @c -------
@@ -2130,11 +2137,11 @@ The call @var{operands} must be a list of ASTs.
 @cindex minimalism
 @cindex complexity, syntax
 @cindex syntactic complexity
-These forms specify @emph{the entirety} of the AST syntax: every
+The forms above specify @emph{the entirety} of the AST syntax: every
 JitterLisp form, before being executed, is translated into an AST having
 one of the shapes described above, which in many cases will contain other
 ASTs; still, all the language power and complexity arise solely from
-the @emph{combination} of the AST cases given above.
+the @emph{combination} of those AST forms.
 @*
 @cindex syntactic abstraction
 @cindex abstraction, syntactic
@@ -2174,7 +2181,7 @@ notation.
 The mathematically inclined reader will see immediately how the AST
 semantics would be easy to model in an operational style, with logic
 rules having multiple premises and one conclusion.
-Here I will content myself with rendering those rules into more
+Here I will content myself with rendering such rules into more
 accessible English.
 
 @menu
@@ -2194,8 +2201,8 @@ accessible English.
 JitterLisp, like most modern Lisp dialects with the (now partial)
 exception of Emacs Lisp, is @dfn{lexically scoped}.  This means that a
 variable use refers to the innermost variable binding with the same
-name which was visible at the time of the definition of the variable
-AST.  This reference may be different from the @emph{most recent}
+name which syntactically contains the variable AST as a sub-AST.  This
+reference may be different from the @emph{most recent}
 binding in time still in force for the same variable---which is used
 in ``dynamically scoped'' languages, but not in JitterLisp.
 
@@ -2249,7 +2256,8 @@ level or as part of higher layers.
 The @code{error} primitive (@pxref{Erroring out}) provides a way to
 explicitly fail under program control, but it is not possible to
 recover from such a failure with any form similar to ``@code{catch}''
-or ``@code{try}'', as in other Lisp dialects or in other languages.
+or ``@code{try}'' as they exist in other Lisp dialects or in other
+languages.
 
 @c @@@@@@@@
 @node AST semantics in detail
@@ -2261,6 +2269,7 @@ the top level.
 Evaluating an AST will either fail or yield exactly one value, allowed
 to have any JitterLisp data type (@pxref{Lisp data}), as the
 @dfn{result}.
+@fixme{non-termination}
 
 In the following, particularly within examples, I will use the
 following notation:
@@ -2294,7 +2303,7 @@ of all, ASTs are immutable from JitterLisp, with the currently
 existing primitives; second, @code{letrec} (@pxref{Blocks}) relies on
 assignment to a variable when building circular closures, and the
 strict constraint-checking policy of ASTs along with call-by-value
-evaluation prevent a ``temporary'' value from being used inside an AST
+evaluation prevents a ``temporary'' value from being used inside an AST
 to be built and then replaced later.}; however different parts of the
 same AST are allowed to share structure, as long as AST objects in
 memory form a DAG and not a cyclic graph.
@@ -2333,7 +2342,7 @@ If the named variable is bound in the current environment, then the
 result is its value in the environment; otherwise, if the variable is
 not bound in the environment but is bound globally, then the result is
 its global value.  If the variable is unbound both in the environment
-and globally, then evaluation fails.
+and globally then evaluation fails.
 
 @smallquotation Examples
 @itemize @bullet
@@ -2359,7 +2368,7 @@ left-to-right order, to obtain the @dfn{operand values} as results.
 Then, unless evaluation has failed already on the operands, the result
 is the result of applying the primitive to the operand values,
 according to the primitive behavior.  This primitive application may
-fail, for example if the operand values do not have the expected type,
+fail, for example if the operand values do not have the expected types,
 in which case the evaluation of the entire AST fails.
 
 @smallquotation Examples
@@ -2373,7 +2382,7 @@ in which case the evaluation of the entire AST fails.
 @item
 @verb{|[primitive 1+ [literal a]]|}, @{@} @error{}
 @item
-@verb{|[primitive display [literal 42]]|}, @{@} @result{} @verb{|#<nothing>|} @print{} 42
+@verb{|[primitive display [literal 42]]|}, @{@} @result{} @verb{|#<nothing>|} @print{} @verb{|42|}
 @end itemize
 @end smallquotation
 
@@ -2426,7 +2435,7 @@ expression in the current environment, obtaining the @dfn{defined
 value}.  Then we alter the global binding for the named variable,
 setting it to the defined value.  Only the @emph{global} binding
 is ever altered by @code{define}, even if the variable happens to
-be bound locally.
+be bound locally at the time of the definition.
 
 A global definition fails if either the expression fails or the
 named variable has already been made constant (@pxref{constants}).
@@ -2547,7 +2556,7 @@ enough specification.
 @cindex C, macro defined in
 @cindex macro, core
 @cindex core macro
-Not more than a handful of macros, called @dfn{core macros} are
+Not more than a handful of macros called @dfn{core macros} are
 defined in C, and even those
 should present no particular difficulty.  For example @code{begin}
 (@pxref{Sequencing}) is a core macro, defined in
@@ -2625,7 +2634,8 @@ generated by @code{macroexpand} from @code{begin} forms at the REPL:
 @cindex macroexpansion
 The description above should be sufficient for a motivated reader,
 along with @code{macroexpand} and the informal description in the
-following, to follow every macro definition in the implementation.
+following, to follow the details of every macro definition in the
+implementation.
 
 
 @c @@@@@@@@@@@@@@@@@@@
