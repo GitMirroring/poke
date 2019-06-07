@@ -126,9 +126,11 @@ structured_emit_operand (struct structuredvm_routine *vmp,
 {
   switch (l->case_)
     {
+    // FIXME: shall I support this case, and just decide the location late?
     case structured_location_case_anywhere:
       jitter_fatal ("invalid instruction operand: anywhere");
 
+    // FIXME: shall I support this case, and just decide the location late?
     case structured_location_case_nonconstant:
       jitter_fatal ("invalid instruction operand: nonconstant");
 
@@ -358,6 +360,22 @@ structured_translate_expression_conditional_primitive
      $FALSE_COMPARISON:
        mov 0, rl
      $AFTER: */
+
+  /* In case the result location is still generic, we have to restrict it: here
+     it is not possible (in general) to compile either of the two branch to a
+     constant, without restricting the other branch to the same constant. */
+  if (rl->case_ == structured_location_case_constant)
+    jitter_fatal ("invalid conditional primitive location: constant (bug)");
+  else if (rl->case_ == structured_location_case_anywhere
+           || rl->case_ == structured_location_case_nonconstant)
+    {
+      rl->case_ = structured_location_case_temporary;
+      rl->temporary = structured_static_environment_fresh_temporary (env);
+      rl->register_index
+        = structured_static_environment_bind_temporary (env, rl->temporary);
+    }
+  /* There is no need to update the result location in the variable case. */
+
   structuredvm_label false_comparison = structuredvm_fresh_label (vmp);
   structuredvm_label after = structuredvm_fresh_label (vmp);
   structured_translate_conditional (vmp, e, false_comparison, false, env);
