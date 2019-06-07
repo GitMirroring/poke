@@ -6127,6 +6127,73 @@
 
 
 
+;;;; Tentative: variadic map.
+;;;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;; This macro factors the common code for the variadic versions of map-reversed
+;;; and map! .  List reversal is not performed here, so the variadic version of
+;;; map will use the variadic version of map-reversed , and then tail-call
+;;; reverse! to destructively update the temporary list and turn it into the
+;;; result.  map! needs no reversal.
+;;;
+;;; operator is "applied" in the sense of being copied into a list car in the
+;;; expansion, independently from its type.  The exansion of this macro does not
+;;; evaluate it.  Rationale: user macros relying on this one will evaluate the
+;;; user operator and check its type: if the given operator is a macro they will
+;;; call this macro with the operator name; otherwise, assuming the operator is
+;;; a closure, they will pass the closure value.
+(define-macro (vmap-internal destructive operator . lists)
+  (unless (list? lists)
+    (error `(vmap-internal: non-list lists argument: ,lists)))
+  (unless (non-null? lists)
+    (error `(vmap-internal: zero lists given)))
+  (let* ((list-no (length lists))
+         (list-names (map (lambda (whatever) (gensym))
+                          lists))
+         (first-list-name (car list-names))
+         (result-name (gensym)))
+    `(let* (,@(map (lambda (name-list) (list (car name-list) (cdr name-list)))
+                   (zip list-names lists))
+            (,result-name ,(if destructive
+                               first-list-name
+                               ())))
+       (while (non-null? ,first-list-name)
+         ,(if destructive
+              `(set-car! ,first-list-name
+                         (,operator ,@(map (lambda (list-name) `(car ,list-name))
+                                           list-names)))
+              `(set! ,result-name
+                     (cons (,operator ,@(map (lambda (list-name) `(car ,list-name))
+                                             list-names))
+                           ,result-name)))
+         ,@(map (lambda (list-name) `(set! ,list-name (cdr ,list-name)))
+                list-names))
+       ,@(map (lambda (list-name)
+                `(unless (null? ,list-name)
+                   (error '(vmap-internal: first list shorter than at least other one))))
+              (cdr list-names))
+       ,result-name)))
+
+;;; FIXME: describe these in comments and document them in the manual.  They are easy.
+
+(define-macro (vmap-reversed operator . lists)
+  (let ((operator-value operator))
+    (if (macro? operator-value)
+        `(vmap-internal #f ,operator ,@lists)
+        `(vmap-internal #f ,operator-value ,@lists))))
+
+(define-macro (vmap operator . lists)
+  `(reverse! (vmap-reversed ,operator ,@lists)))
+
+(define-macro (vmap! operator . lists)
+  (let ((operator-value operator))
+    (if (macro? operator-value)
+        `(vmap-internal #t ,operator ,@lists)
+        `(vmap-internal #t ,operator-value ,@lists))))
+
+
+
+
 ;;;; Scratch.
 ;;;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

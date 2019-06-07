@@ -169,11 +169,55 @@
                              (jitter_int) (_jitterlisp_tagged_fixnum_b))
 #else // fixnum tag non-zero
 # define JITTERLISP_EXP_FF_F_DIVIDED(_jitterlisp_tagged_fixnum_a,  \
-                                   _jitterlisp_tagged_fixnum_b)    \
+                                     _jitterlisp_tagged_fixnum_b)  \
     JITTERLISP_EXP_FF_F_BINARY(/,                                  \
                                _jitterlisp_tagged_fixnum_a,        \
                                _jitterlisp_tagged_fixnum_b)
 #endif // #if fixnum tag is zero
+
+// FIXME: conditionalize, move
+#define JITTER_HAVE_FAST_MASK_OFF 1
+
+/* Division by two can be defined in a more efficient way when the fixnum tag is
+   zero, by relying on two's complement arithmetic.  GCC is not able to
+   automatically generate the same better code without this for all
+   architectures.  Notice that the conditional expression compiles to
+   straight-line code, as GCC is able to translate it into either a logical
+   right-shift transferring the sign bit to the least significant bit, or into a
+   use of the carry bit. */
+#if (JITTERLISP_FIXNUM_TAG) == 0
+# ifdef JITTER_HAVE_FAST_MASK_OFF
+#   define JITTERLISP_EXP_F_F_2DIVIDED(_jitterlisp_tagged_fixnum_a)  \
+      ((JITTER_ARITHMETIC_SHIFT_RIGHT                                \
+           (jitter_uint, jitter_int,                                 \
+            ((_jitterlisp_tagged_fixnum_a)                           \
+             + (((jitter_int) (_jitterlisp_tagged_fixnum_a) < 0)     \
+                ? JITTERLISP_FIXNUM_ENCODE (1)                       \
+                : 0)),                                               \
+            1))                                                      \
+      & ~ (((jitter_uint) 1 << JITTERLISP_FIXNUM_TAG_BIT_NO) - 1))
+# else /* ! JITTER_HAVE_FAST_MASK_OFF */
+#   define JITTERLISP_EXP_F_F_2DIVIDED(_jitterlisp_tagged_fixnum_a)  \
+      ((JITTER_ARITHMETIC_SHIFT_RIGHT                                \
+           (jitter_uint, jitter_int,                                 \
+            ((_jitterlisp_tagged_fixnum_a)                           \
+             + (((jitter_int) (_jitterlisp_tagged_fixnum_a) < 0)     \
+                ? JITTERLISP_FIXNUM_ENCODE (1)                       \
+                : 0)),                                               \
+            JITTERLISP_FIXNUM_TAG_BIT_NO + 1))                       \
+       << JITTERLISP_FIXNUM_TAG_BIT_NO)
+# endif // #ifdef JITTER_HAVE_FAST_MASK_OFF
+#else
+# define JITTERLISP_EXP_F_F_2DIVIDED(_jitterlisp_tagged_fixnum_a)  \
+    JITTERLISP_FIXNUM_ENCODE \
+       (JITTERLISP_FIXNUM_DECODE (_jitterlisp_tagged_fixnum_a) / 2)
+#endif // #if fixnum tag is zero
+
+/* The remainder-by-two operation can be defined in an efficient way with
+   any tag value. */
+#define JITTERLISP_EXP_F_F_2REMAINDER(_jitterlisp_tagged_fixnum_a)  \
+  (((jitter_uint) (_jitterlisp_tagged_fixnum_a))                    \
+   & JITTERLISP_FIXNUM_ENCODE (1))
 
 /* Expression oprations on fixnums. */
 #define JITTERLISP_EXP_FF_F_PLUS(_jitterlisp_tagged_fixnum_a,     \
@@ -441,23 +485,17 @@
       = JITTERLISP_EXP_FF_F_TIMES(_jitterlisp_in0,               \
                                   JITTERLISP_FIXNUM_ENCODE(2));  \
   JITTER_END_
-#define JITTERLISP_2DIVIDED_(_jitterlisp_out, _jitterlisp_in0)     \
-  JITTER_BEGIN_                                                    \
-    (_jitterlisp_out)                                              \
-      = JITTERLISP_EXP_FF_F_DIVIDED(_jitterlisp_in0,               \
-                                    JITTERLISP_FIXNUM_ENCODE(2));  \
+#define JITTERLISP_2DIVIDED_(_jitterlisp_out, _jitterlisp_in0)  \
+  JITTER_BEGIN_                                                 \
+    (_jitterlisp_out)                                           \
+      = JITTERLISP_EXP_F_F_2DIVIDED(_jitterlisp_in0);           \
   JITTER_END_
-#define JITTERLISP_2QUOTIENT_(_jitterlisp_out, _jitterlisp_in0)    \
-  JITTER_BEGIN_                                                    \
-    (_jitterlisp_out)                                              \
-      = JITTERLISP_EXP_FF_F_DIVIDED(_jitterlisp_in0,               \
-                                    JITTERLISP_FIXNUM_ENCODE(2));  \
-  JITTER_END_
-#define JITTERLISP_2REMAINDER_(_jitterlisp_out, _jitterlisp_in0)     \
-  JITTER_BEGIN_                                                      \
-    (_jitterlisp_out)                                                \
-      = JITTERLISP_EXP_FF_F_REMAINDER(_jitterlisp_in0,               \
-                                      JITTERLISP_FIXNUM_ENCODE(2));  \
+#define JITTERLISP_2QUOTIENT_(_jitterlisp_out, _jitterlisp_in0)  \
+  JITTERLISP_2DIVIDED_((_jitterlisp_out), (_jitterlisp_in0))
+#define JITTERLISP_2REMAINDER_(_jitterlisp_out, _jitterlisp_in0)  \
+  JITTER_BEGIN_                                                   \
+    (_jitterlisp_out)                                             \
+      = JITTERLISP_EXP_F_F_2REMAINDER(_jitterlisp_in0);           \
   JITTER_END_
 
 #define JITTERLISP_NEGATE_(_jitterlisp_out, _jitterlisp_in0)  \
@@ -839,18 +877,26 @@
 #define JITTERLISP_NON_ZEROP_(_jitterlisp_out, _jitterlisp_in0)       \
   JITTERLISP_COMPARE_FIXNUM_UNARY_(_jitterlisp_out, _jitterlisp_in0,  \
                                    JITTERLISP_EXP_FF_B_NOTEQUAL, 0)
-#define JITTERLISP_POSITIVEP_(_jitterlisp_out, _jitterlisp_in0)       \
-  JITTERLISP_COMPARE_FIXNUM_UNARY_(_jitterlisp_out, _jitterlisp_in0,  \
-                                   JITTERLISP_EXP_FF_B_GREATER, 0)
-#define JITTERLISP_NON_POSITIVEP_(_jitterlisp_out, _jitterlisp_in0)    \
-  JITTERLISP_COMPARE_FIXNUM_UNARY_(_jitterlisp_out, _jitterlisp_in0,   \
-                                   JITTERLISP_EXP_FF_B_NOTGREATER, 0)
-#define JITTERLISP_NEGATIVEP_(_jitterlisp_out, _jitterlisp_in0)       \
-  JITTERLISP_COMPARE_FIXNUM_UNARY_(_jitterlisp_out, _jitterlisp_in0,  \
-                                   JITTERLISP_EXP_FF_B_LESS, 0)
-#define JITTERLISP_NON_NEGATIVEP_(_jitterlisp_out, _jitterlisp_in0)   \
-  JITTERLISP_COMPARE_FIXNUM_UNARY_(_jitterlisp_out, _jitterlisp_in0,  \
-                                   JITTERLISP_EXP_FF_B_NOTLESS, 0)
+#define JITTERLISP_POSITIVEP_(_jitterlisp_out, _jitterlisp_in0)           \
+  (_jitterlisp_out)                                                       \
+    = JITTER_CONDITIONAL_IF_POSITIVE (jitterlisp_object, jitter_int,      \
+                                      _jitterlisp_in0,                    \
+                                      JITTERLISP_TRUE, JITTERLISP_FALSE)
+#define JITTERLISP_NON_POSITIVEP_(_jitterlisp_out, _jitterlisp_in0)          \
+  (_jitterlisp_out)                                                          \
+    = JITTER_CONDITIONAL_IF_NONPOSITIVE (jitterlisp_object, jitter_int,      \
+                                         _jitterlisp_in0,                    \
+                                         JITTERLISP_TRUE, JITTERLISP_FALSE)
+#define JITTERLISP_NEGATIVEP_(_jitterlisp_out, _jitterlisp_in0)           \
+  (_jitterlisp_out)                                                       \
+    = JITTER_CONDITIONAL_IF_NEGATIVE (jitterlisp_object, jitter_int,      \
+                                      _jitterlisp_in0,                    \
+                                      JITTERLISP_TRUE, JITTERLISP_FALSE)
+#define JITTERLISP_NON_NEGATIVEP_(_jitterlisp_out, _jitterlisp_in0)          \
+  (_jitterlisp_out)                                                          \
+    = JITTER_CONDITIONAL_IF_NONNEGATIVE (jitterlisp_object, jitter_int,      \
+                                         _jitterlisp_in0,                    \
+                                         JITTERLISP_TRUE, JITTERLISP_FALSE)
 
 
 

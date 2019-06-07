@@ -1,7 +1,6 @@
 /* Jitter: data tagging header.
 
-   Copyright (C) 2017 Luca Saiu
-   Updated in 2019 by Luca Saiu
+   Copyright (C) 2017, 2019 Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -260,11 +259,11 @@ jitter_tagged_object;
    to be shifted according to its type, but that operation is not performed by
    the expansion of this macro.  No side effects.
    Rationale: see JITTER_WITH_BITS_MASKED_OFF . */
-#define JITTER_WITH_TAG_MASKED_OFF(_jitter_untagged_object,  \
-                                   _jitter_tag,              \
-                                   _jitter_tag_bit_no)       \
-  JITTER_WITH_BITS_MASKED_OFF(                               \
-     _jitter_tagged_object,                                  \
+#define JITTER_WITH_TAG_MASKED_OFF(_jitter_tagged_object,  \
+                                   _jitter_tag,            \
+                                   _jitter_tag_bit_no)     \
+  JITTER_WITH_BITS_MASKED_OFF(                             \
+     _jitter_tagged_object,                                \
      _jitter_tag_bit_no)
 
 /* Expand to an r-value evaluating to the dynamically-typed representation of

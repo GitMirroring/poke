@@ -191,4 +191,170 @@
          << (JITTER_SIZEOF_IN_BITS (_jitter_unsigned_type) - 1        \
              - (_jitter_bit_no)))))
 
+
+
+
+/* Straight-line sign tests.
+ * ************************************************************************** */
+
+/* Expand to an expression which evalues the given word, which must have the given
+   signed type; the expansion result, of the given unsigned type, will evaluate to
+   either:
+   - the unsigned conversion of -1 (all bits set to 1), meaning true, when
+     _jitter_word is positive;
+   - the value 0, meaning false, when _jitter_word is negative.
+
+   Rationale: this is conceived to materialize a Boolean result, usually to be
+   further normalized with bitwise operations like in the macros below.
+   Of course using this macro as the conditional or guard in a test or loop in C
+   is not useful, as its entire point is to avoid branches. */
+#define JITTER_IS_NEGATIVE_ALL_ONES(_jitter_unsigned_type,  \
+                                    _jitter_signed_type,    \
+                                    _jitter_word)           \
+  ((_jitter_unsigned_type)                                  \
+   JITTER_ARITHMETIC_SHIFT_RIGHT                            \
+     (_jitter_unsigned_type,                                \
+      _jitter_signed_type,                                  \
+      (_jitter_word),                                       \
+      JITTER_SIZEOF_IN_BITS (_jitter_unsigned_type) - 1))
+
+// FIXME: conditionalize, move to configure.
+#define JITTER_HAVE_GOOD_SHIFT 1
+
+/* Given an integer type in unsigned and singed version and three expressions
+   named discriminand, then and else, expand to an expression evaluating to
+   then if the discriminand is negative, and to else otherwise.
+   The the three expressions, which may be evaluated multiple times in the
+   expansion, must have the given type.  The then and else expressions should
+   be constant expressions for good performance.
+   An important case use for this macro is a VM primitive returning a tagged
+   Boolean result, which needs to be materialized.
+   Define JITTER_CONDITIONAL_IF_NEGATIVE to use one of the two implementations
+   below.  The API is identical and either implementation will work on every
+   platform, but performance may differ.  On some machines (for example,
+   PowerPC) straight-line code is often a huge win; on others it is just a
+   modest improvement, and in a few cases (SH, and possibly x86_64) is
+   actually counterproductive. */
+#if defined (JITTER_HAVE_GOOD_SHIFT)
+# define JITTER_CONDITIONAL_IF_NEGATIVE(_jitter_unsigned_type,             \
+                                        _jitter_signed_type,               \
+                                        _jitter_discriminand,              \
+                                        _jitter_then,                      \
+                                        _jitter_else)                      \
+    JITTER_CONDITIONAL_IF_NEGATIVE_STRAIGHT_LINE (_jitter_unsigned_type,   \
+                                                  _jitter_signed_type,     \
+                                                  (_jitter_discriminand),  \
+                                                  (_jitter_then),          \
+                                                  (_jitter_else))
+#else /* ! defined (JITTER_HAVE_GOOD_SHIFT) */
+# define JITTER_CONDITIONAL_IF_NEGATIVE(_jitter_unsigned_type,       \
+                                        _jitter_signed_type,         \
+                                        _jitter_discriminand,        \
+                                        _jitter_then,                \
+                                        _jitter_else)                \
+    JITTER_CONDITIONAL_IF_NEGATIVE_TRIVIAL (_jitter_unsigned_type,   \
+                                            _jitter_signed_type,     \
+                                            (_jitter_discriminand),  \
+                                            (_jitter_then),          \
+                                            (_jitter_else))
+#endif // #if defined (JITTER_HAVE_GOOD_SHIFT)
+
+/* One of the two implementations of JITTER_CONDITIONAL_IF_NEGATIVE, in this
+   case expanding to straight-line code.
+   Implementation note:
+   The idea is rewriting
+     (discriminand < 0) ? then : else
+   to an expression of the following shape
+     (discriminand < 0) & X ^ Y
+   Now, (discriminand < 0) is either -1 or 0, as per
+   JITTER_IS_NEGATIVE_ALL_ONES; it follows that (discriminand < 0) & X will be 0
+   when discriminand >= 0.  Since the result must be else when discriminand >= 0
+   we have that Y can only be else in order to have (0 ^ Y) = else.  At this
+   point we can determine the right value for X: the xor operation with Y is
+   applied unconditionally, and has the effect of flipping every 1 bit from
+   else; but the only place where we can make the result be then is in X.  X
+   must be such that xor-ing -1 & X with else gives then .  So, X must set the 1
+   bits from then to the *opposite* configuration compared to what we aim for in
+   the result, except for the ones which will are 1 in else; the bits from then
+   will be flipped once, the ones from else will be flipped twice.
+   It is not difficult to see that the solution is:
+   * X = ~ (then ^ ~ else)
+   * Y = else . */
+#define JITTER_CONDITIONAL_IF_NEGATIVE_STRAIGHT_LINE(_jitter_unsigned_type,  \
+                                                     _jitter_signed_type,    \
+                                                     _jitter_discriminand,   \
+                                                     _jitter_then,           \
+                                                     _jitter_else)           \
+  ((/* This subexpression is discriminand < 0 ? -1 : 0 . */                  \
+    (_jitter_unsigned_type)                                                  \
+    (JITTER_IS_NEGATIVE_ALL_ONES (_jitter_unsigned_type,                     \
+                                  _jitter_signed_type,                       \
+                                  (_jitter_discriminand)))                   \
+    & (/* X = ~ (then ^ ~ else) . */                                         \
+       ~ ((_jitter_unsigned_type) (_jitter_then)                             \
+          ^ ~ (_jitter_unsigned_type) (_jitter_else))))                      \
+   ^ (/* Y = else . */                                                       \
+      (_jitter_unsigned_type) (_jitter_else)))
+
+/* An alternative trivial implementation of JITTER_CONDITIONAL_IF_NEGATIVE , to
+   be used instead of JITTER_CONDITIONAL_IF_NEGATIVE_STRAIGHT_LINE on machines
+   where arbitrary shifts are expensive or take many instructions. */
+#define JITTER_CONDITIONAL_IF_NEGATIVE_TRIVIAL(_jitter_unsigned_type,  \
+                                               _jitter_signed_type,    \
+                                               _jitter_discriminand,   \
+                                               _jitter_then,           \
+                                               _jitter_else)           \
+  (((_jitter_signed_type) (_jitter_discriminand) < 0)                  \
+   ? (_jitter_unsigned_type) (_jitter_then)                            \
+   : (_jitter_unsigned_type) (_jitter_else))
+
+/* Like JITTER_CONDITIONAL_IF_NEGATIVE , but expanding to then if the
+   discriminand is non-negative. */
+#define JITTER_CONDITIONAL_IF_NONNEGATIVE(_jitter_unsigned_type,  \
+                                          _jitter_signed_type,    \
+                                          _jitter_discriminand,   \
+                                          _jitter_then,           \
+                                          _jitter_else)           \
+  JITTER_CONDITIONAL_IF_NEGATIVE (_jitter_unsigned_type,          \
+                                  _jitter_signed_type,            \
+                                  (_jitter_discriminand),         \
+                                  (_jitter_else),                 \
+                                  (_jitter_then))
+
+/* Like JITTER_CONDITIONAL_IF_NEGATIVE , but expanding to then if the
+   discriminand is positive. */
+#define JITTER_CONDITIONAL_IF_POSITIVE(_jitter_unsigned_type,                  \
+                                       _jitter_signed_type,                    \
+                                       _jitter_discriminand,                   \
+                                       _jitter_then,                           \
+                                       _jitter_else)                           \
+  JITTER_CONDITIONAL_IF_NEGATIVE (_jitter_unsigned_type,                       \
+                                  _jitter_signed_type,                         \
+                                  /* Using unary - would affect the range and  \
+                                     I have seen it not optimized by GCC in a  \
+                                     few cases (with JITTER_HAVE_GOOD_SHIFT    \
+                                     disabled).  Since in practice on two's    \
+                                     complement machines, and actually  even   \
+                                     on others) this makes no difference with  \
+                                     respect to the sign bit it is better to   \
+                                     just see the number as a bit mask to      \
+                                     complement. */                            \
+                                  ~ ((_jitter_unsigned_type)                   \
+                                     (_jitter_discriminand)),                  \
+                                  (_jitter_then),                              \
+                                  (_jitter_else))
+
+/* Like JITTER_CONDITIONAL_IF_NEGATIVE , but expanding to then if the
+   discriminand is non-positive. */
+#define JITTER_CONDITIONAL_IF_NONPOSITIVE(_jitter_unsigned_type,  \
+                                          _jitter_signed_type,    \
+                                          _jitter_discriminand,   \
+                                          _jitter_then,           \
+                                          _jitter_else)           \
+  JITTER_CONDITIONAL_IF_POSITIVE (_jitter_unsigned_type,          \
+                                  _jitter_signed_type,            \
+                                  (_jitter_discriminand),         \
+                                  (_jitter_else),                 \
+                                  (_jitter_then))
+
 #endif // #ifndef JITTER_BITWISE_H_
