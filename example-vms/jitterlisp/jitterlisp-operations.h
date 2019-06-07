@@ -208,8 +208,8 @@
        << JITTERLISP_FIXNUM_TAG_BIT_NO)
 # endif // #ifdef JITTER_HAVE_FAST_MASK_OFF
 #else
-# define JITTERLISP_EXP_F_F_2DIVIDED(_jitterlisp_tagged_fixnum_a)  \
-    JITTERLISP_FIXNUM_ENCODE \
+# define JITTERLISP_EXP_F_F_2DIVIDED(_jitterlisp_tagged_fixnum_a)    \
+    JITTERLISP_FIXNUM_ENCODE                                         \
        (JITTERLISP_FIXNUM_DECODE (_jitterlisp_tagged_fixnum_a) / 2)
 #endif // #if fixnum tag is zero
 
