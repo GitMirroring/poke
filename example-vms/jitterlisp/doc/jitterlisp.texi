@@ -502,7 +502,7 @@ Turing-complete @emph{macros}.
 @cindex top-level form (absent in JitterLisp)
 @cindex form, top-level (absent in JitterLisp)
 Every syntactic form in JitterLisp is an @emph{expression}, and nontrivial
-expressions will contain sub-expressions; JitterLisp has no statements as
+expressions will contain sub-expressions; JitterLisp has no ``statements'' as
 a distinct syntactic category, nor special forms which are only valid
 at the top level.
 @cindex feature
@@ -995,7 +995,7 @@ the native compiled file image (@pxref{constant-strings}).
 
 @cindex Read-Eval-Print Loop
 A user can either run JitterLisp @dfn{interactively} via a
-@dfn{Read-Eval-Print Loop}, or use it to execute a Lisp programs from
+@dfn{Read-Eval-Print Loop}, or use it to execute Lisp programs from
 any number of text files.
 
 An interactive run is the default: simply invoking a JitterLisp
@@ -1755,7 +1755,7 @@ course generalized Booleans are not necessarily unique objects.
 @subsection Conses
 @cindex cons
 A @dfn{cons} is a pair object containing exactly two other Lisp
-objects, allowed to be conses in their turn or any other objects.
+objects, allowed to be conses in their turn or objects of any other type.
 Conses are mutable, in the sense that the two components of a cons can
 be changed at run time while keeping the identity of the cons object.
 
@@ -1788,9 +1788,8 @@ c@var{S}r.
 For example the caddr of an object is the car of the cdr
 of its cdr.  Such @dfn{composed cons selector} names are convenient to
 use when referring to nested components of a cons, and the JitterLisp
-library provides convenient functionality to access them with any
-@var{S} of length 1, 2 and 3---therefore, for a level of nesting up
-to 4.
+library provides functionality to access them with any @var{S} of
+length 1, 2 and 3---therefore, for a level of nesting up to 4.
 
 @anchor{lists}
 @cindex list
@@ -1939,7 +1938,7 @@ compiled, or even analyzed and transformed by other Lisp code.
 @cindex optimizer, self-
 JitterLisp in fact contains no executor for Lisp: there are only an
 @dfn{AST interpreter}, written in C, and an @dfn{AST compiler}
-translating ASTs into code for the Jittery VM, written in Lisp.
+written in Lisp and translating ASTs into code for the Jittery VM.
 It is thanks to the reflection capabilities provided by the AST data
 type that it is possible to write a self-compiler, and also a
 self-optimizer, in the language itself.
@@ -2009,7 +2008,7 @@ valid primitive following the syntax
 @samp{[primitive @var{operator} . @var{operands}]}
 will be @code{[primitive + [literal 2] [variable x]]},
 where @code{[literal 2]} and @code{[variable x]} are ASTs encoded as
-the elements of a two-element list within the AST for the primitive.
+the two elements of a list within the AST for the primitive.
 
 @cindex expression, AST
 Every AST represents an @dfn{expression}.  Each expression has exactly
@@ -2140,8 +2139,8 @@ The call @var{operands} must be a list of ASTs.
 The forms above specify @emph{the entirety} of the AST syntax: every
 JitterLisp form, before being executed, is translated into an AST having
 one of the shapes described above, which in many cases will contain other
-ASTs; still, all the language power and complexity arise solely from
-the @emph{combination} of those AST forms.
+ASTs; all the language power and complexity arise solely from the
+@emph{combination} of those AST forms.
 @*
 @cindex syntactic abstraction
 @cindex abstraction, syntactic
@@ -2240,11 +2239,11 @@ failure.
 @cindex failure, at the REPL
 @cindex error, at the REPL
 If evaluation fails when evaluating a form entered at the REPL, then
-the error is equally unrecoverable, and the AST evaluation terminates,
+the error is equally unrecoverable, and the AST evaluation terminates
 reporting failure; however the REPL is @emph{not} exited, and the user
 has the opportunity to try and execute other forms in a state altered
 by the changes which were executed with success @emph{before} the
-error, and in an empty local environment.
+error, starting again in an empty local environment.
 
 @cindex exceptions (@emph{non-existing} feature)
 JitterLisp currently provides no exception system, either at the AST
@@ -2396,7 +2395,7 @@ in which case the evaluation of the entire AST fails.
 @cindex bound expression, block, AST semantics
 @cindex body, block, AST semantics
 @cindex local variable
-A block serves to introduce a @dfn{local variable}, whose value is visible
+A block serves to introduce a @dfn{local variable}, whose binding is visible
 within the body.
 
 @cindex bound value, block
@@ -2487,8 +2486,8 @@ since by nesting sequences one inside the other, it is possible to
 evaluate any number of ASTs.
 
 Evaluation starts by evaluating the first expression in the given
-environment.  Its result is ignored.  Then, in the same environment,
-we evaluate the second expression; its result will be the result of
+environment, ignoring its result.  Then, in the same environment,
+the second expression is evaluated; its result will be the result of
 the sequence AST evaluation.
 
 Evaluating a sequence fails if evaluating either the first or the
@@ -2543,7 +2542,7 @@ second expression fails.
 At this point, in principle, it would be possible to describe how each
 individual JitterLisp form expands into ASTs.
 
-I will not.
+Except in interesting or particularly subtle cases, I will avoid such pedantry.
 
 In fact one of the justifications for having a core-based language
 like JitterLisp (and epsilon) is that once the core and the expansion
@@ -2698,7 +2697,7 @@ linguistic features which are ``fundamental'' in a conceptual way,
 independently from the way they are implemented.
 
 Users interested in distinguishing which individual feature is
-implemented in C rather than as a macro may check the tag (``macro''
+implemented in C rather than as a Lisp macro may check the tag (``macro''
 or ``core macro'', and only occasionally in this chapter ``primitive wrapper'')
 in the documentation of each item and then follow the
 sources, with the caveat that a few (important) forms are implemented
