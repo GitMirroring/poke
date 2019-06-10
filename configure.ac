@@ -676,6 +676,33 @@ AM_CONDITIONAL([JITTER_HAVE_ASSEMBLY],
                [test "x$jitter_has_host_assembly" = "xyes"])
 
 
+# Check architecture-dependent features not relying on assembly.
+################################################################
+
+# According to the architecture some operations (defined in C, and still
+# portable to any archtiecture) may be faster or slower.  Jitter contains
+# conditional code to support different solutions.
+#
+# This is independent from architecture-specific assembly support.
+
+# Some architectures support a good way of computing a conditional expression
+# based on the negative sign of a disciminand without using branches; other
+# architectures do not.
+AC_MSG_CHECKING([if straight-line negativity tests are fast])
+# By default, let us say that the straight-line version is better.
+jitter_have_fast_straight_line_negativity=yes
+AS_CASE([$default_host_cpu],
+        # Only on these few archtiectures my hand-optimized straight-line
+        # version is slower than the naïve alternative.
+        [x86_64|i?86|sh4*],
+        [jitter_have_fast_straight_line_negativity=no])
+AC_MSG_RESULT([$jitter_have_fast_straight_line_negativity])
+if test "x$jitter_have_fast_straight_line_negativity" = "xyes"; then
+  AC_DEFINE_UNQUOTED([JITTER_HAVE_FAST_STRAIGHT_LINE_NEGATIVITY], [1],
+                     [Define to 1 iff negativity tests are faster straight-line])
+fi
+
+
 # Binary format.
 ################################################################
 

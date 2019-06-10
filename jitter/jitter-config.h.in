@@ -77,4 +77,8 @@
 #undef JITTER_PACKAGE_VERSION
 #undef JITTER_PACKAGE_BUGREPORT
 
+/* Define if a conditional expression based on the negative sign can be compiled
+   more efficiently without branches. */
+#undef JITTER_HAVE_FAST_STRAIGHT_LINE_NEGATIVITY
+
 #endif // #ifndef JITTER_CONFIG_H_

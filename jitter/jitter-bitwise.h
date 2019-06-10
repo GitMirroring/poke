@@ -218,9 +218,6 @@
       (_jitter_word),                                       \
       JITTER_SIZEOF_IN_BITS (_jitter_unsigned_type) - 1))
 
-// FIXME: conditionalize, move to configure.
-#define JITTER_HAVE_GOOD_SHIFT 1
-
 /* Given an integer type in unsigned and singed version and three expressions
    named discriminand, then and else, expand to an expression evaluating to
    then if the discriminand is negative, and to else otherwise.
@@ -235,7 +232,7 @@
    PowerPC) straight-line code is often a huge win; on others it is just a
    modest improvement, and in a few cases (SH, and possibly x86_64) is
    actually counterproductive. */
-#if defined (JITTER_HAVE_GOOD_SHIFT)
+#if defined (JITTER_HAVE_FAST_STRAIGHT_LINE_NEGATIVITY)
 # define JITTER_CONDITIONAL_IF_NEGATIVE(_jitter_unsigned_type,             \
                                         _jitter_signed_type,               \
                                         _jitter_discriminand,              \
@@ -246,7 +243,7 @@
                                                   (_jitter_discriminand),  \
                                                   (_jitter_then),          \
                                                   (_jitter_else))
-#else /* ! defined (JITTER_HAVE_GOOD_SHIFT) */
+#else /* ! defined (JITTER_HAVE_FAST_STRAIGHT_LINE_NEGATIVITY) */
 # define JITTER_CONDITIONAL_IF_NEGATIVE(_jitter_unsigned_type,       \
                                         _jitter_signed_type,         \
                                         _jitter_discriminand,        \
@@ -257,7 +254,7 @@
                                             (_jitter_discriminand),  \
                                             (_jitter_then),          \
                                             (_jitter_else))
-#endif // #if defined (JITTER_HAVE_GOOD_SHIFT)
+#endif // #if defined (JITTER_HAVE_FAST_STRAIGHT_LINE_NEGATIVITY)
 
 /* One of the two implementations of JITTER_CONDITIONAL_IF_NEGATIVE, in this
    case expanding to straight-line code.
@@ -332,7 +329,8 @@
                                   _jitter_signed_type,                         \
                                   /* Using unary - would affect the range and  \
                                      I have seen it not optimized by GCC in a  \
-                                     few cases (with JITTER_HAVE_GOOD_SHIFT    \
+                                     few cases (with                           \
+                                     JITTER_HAVE_FAST_STRAIGHT_LINE_NEGATIVITY \
                                      disabled).  Since in practice on two's    \
                                      complement machines, and actually  even   \
                                      on others) this makes no difference with  \
