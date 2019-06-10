@@ -676,8 +676,8 @@ AM_CONDITIONAL([JITTER_HAVE_ASSEMBLY],
                [test "x$jitter_has_host_assembly" = "xyes"])
 
 
-# Check architecture-dependent features not relying on assembly.
-################################################################
+# Configuration-dependent features not directly relying on assembly support.
+############################################################################
 
 # According to the architecture some operations (defined in C, and still
 # portable to any archtiecture) may be faster or slower.  Jitter contains
@@ -700,6 +700,34 @@ AC_MSG_RESULT([$jitter_have_fast_straight_line_negativity])
 if test "x$jitter_have_fast_straight_line_negativity" = "xyes"; then
   AC_DEFINE_UNQUOTED([JITTER_HAVE_FAST_STRAIGHT_LINE_NEGATIVITY], [1],
                      [Define to 1 iff negativity tests are faster straight-line])
+fi
+
+# On some architectures it is efficient to "mask off" a tag in the low-order
+# bits, in the sense of bitwise and-ing with a literal constant having zeroes
+# only in the significant bits.  This in practice require an and instruction
+# with a sign-extended immediate, large immediate operands, an and instruction
+# with a negated zero-extended immedate, or something equivalent.
+AC_MSG_CHECKING([if and-ing with a sign-extended negative immediate is fast])
+# By default, let us say that the operation is efficient.
+jitter_have_fast_mask_off=yes
+AS_CASE([$default_host_cpu],
+        # On these archtiectures the "masking off" operation has a faster
+        # alternative, because the bitwise and instruction with an immediate
+        # zero-extends its argument instead of sign-extending it, or there is
+        # no immediate version at all working on an arbitrary register, or
+        # because of some other restriction.
+        #
+        # Notes on specific architectures:
+        # SH, while not ideal in this sense, has particularly limited shifting
+        # instructions, making the mask alternative better even if it requires
+        # a separate instruction to load an immediate into a temporary before
+        # and-ing; the immediate, at least, is sign-extended.
+        [mips*],
+        [jitter_have_fast_mask_off=no])
+AC_MSG_RESULT([$jitter_have_fast_mask_off])
+if test "x$jitter_have_fast_mask_off" = "xyes"; then
+  AC_DEFINE_UNQUOTED([JITTER_HAVE_FAST_MASK_OFF], [1],
+                     [Define to 1 iff masking off low-order bits is efficient])
 fi
 
 

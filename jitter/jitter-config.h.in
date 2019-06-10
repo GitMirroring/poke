@@ -81,4 +81,9 @@
    more efficiently without branches. */
 #undef JITTER_HAVE_FAST_STRAIGHT_LINE_NEGATIVITY
 
+/* Define if there is an efficient way of masking off low-order bits by and-ing
+   with a sign-extended immediate, or another one-instruction equivalent
+   operation. */
+#undef JITTER_HAVE_FAST_MASK_OFF
+
 #endif // #ifndef JITTER_CONFIG_H_

@@ -175,9 +175,6 @@
                                _jitterlisp_tagged_fixnum_b)
 #endif // #if fixnum tag is zero
 
-// FIXME: conditionalize, move
-#define JITTER_HAVE_FAST_MASK_OFF 1
-
 /* Division by two can be defined in a more efficient way when the fixnum tag is
    zero, by relying on two's complement arithmetic.  GCC is not able to
    automatically generate the same better code without this for all
@@ -195,8 +192,8 @@
                 ? JITTERLISP_FIXNUM_ENCODE (1)                       \
                 : 0)),                                               \
             1))                                                      \
-      & ~ (((jitter_uint) 1 << JITTERLISP_FIXNUM_TAG_BIT_NO) - 1))
-# else /* ! JITTER_HAVE_FAST_MASK_OFF */
+       & ~ (((jitter_uint) 1 << JITTERLISP_FIXNUM_TAG_BIT_NO) - 1))
+# else /* ! defined (JITTER_HAVE_FAST_MASK_OFF) */
 #   define JITTERLISP_EXP_F_F_2DIVIDED(_jitterlisp_tagged_fixnum_a)  \
       ((JITTER_ARITHMETIC_SHIFT_RIGHT                                \
            (jitter_uint, jitter_int,                                 \
