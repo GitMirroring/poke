@@ -210,11 +210,24 @@
        (JITTERLISP_FIXNUM_DECODE (_jitterlisp_tagged_fixnum_a) / 2)
 #endif // #if fixnum tag is zero
 
-/* The remainder-by-two operation can be defined in an efficient way with
-   any tag value. */
-#define JITTERLISP_EXP_F_F_2REMAINDER(_jitterlisp_tagged_fixnum_a)  \
-  (((jitter_uint) (_jitterlisp_tagged_fixnum_a))                    \
-   & JITTERLISP_FIXNUM_ENCODE (1))
+/* Remainder by two, with a signed dividend. */
+#if (JITTERLISP_FIXNUM_TAG) == 0
+# define JITTERLISP_EXP_F_F_2REMAINDER(_jitterlisp_tagged_fixnum_a)   \
+  (/* This addend evaluates to zero for a non-negative argument, or   \
+      to the result times -2 for a negative argument, with no         \
+      branches. */                                                    \
+   (JITTER_IS_NEGATIVE_ALL_ONES (jitter_uint, jitter_int,             \
+                                 (_jitterlisp_tagged_fixnum_a))       \
+    & (- ((_jitterlisp_tagged_fixnum_a)                               \
+          & JITTERLISP_FIXNUM_ENCODE (1)) << 1))                      \
+   /* The second addend evaluates to the absolute value of the        \
+      result. */                                                      \
+   + ((_jitterlisp_tagged_fixnum_a) & JITTERLISP_FIXNUM_ENCODE (1)))
+#else
+# define JITTERLISP_EXP_F_F_2REMAINDER(_jitterlisp_tagged_fixnum_a)  \
+    JITTERLISP_FIXNUM_ENCODE                                         \
+      (JITTERLISP_FIXNUM_DECODE (_jitterlisp_tagged_fixnum_a) % 2)
+#endif // #if fixnum tag is zero
 
 /* Expression oprations on fixnums. */
 #define JITTERLISP_EXP_FF_F_PLUS(_jitterlisp_tagged_fixnum_a,     \
