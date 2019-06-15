@@ -1,6 +1,7 @@
 /* Jitter: random numbers for hashing.
 
    Copyright (C) 2017 Luca Saiu
+   Updated in 2019 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -34,7 +35,7 @@
        if test $x = 255; then
          comma=""
        fi
-       echo "      (jitter_uint) 0x$(openssl rand $wordsize -hex)L$comma"
+       echo "      (jitter_uint) 0x$(openssl rand -hex $wordsize)L$comma"
      done
 
    Notice that the result of casting to a narrower *unsigned* integer type in C
