@@ -18,8 +18,7 @@
 
 // You should have received a copy of the GNU General Public License
 // along with Jitter.  If not, see <http://www.gnu.org/licenses/>.
-
-var a = 3333333333, b = 1;
+var a = 1333333333, b = 1;
 while a <> b do
   if a < b then
     b := b - a;
