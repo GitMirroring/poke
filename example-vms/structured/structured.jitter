@@ -1,4 +1,4 @@
-## Jitter specification for a stack VM, used in the structured language example.
+## A simple Jittery VM, used in the structured language example.
 
 ## Copyright (C) 2017, 2019 Luca Saiu
 ## Written by Luca Saiu
@@ -31,7 +31,7 @@ end
 ## Register classes.
 #################################################################
 
-register-class r 4 # 4 # 5
+register-class r 4
   code
     union jitter_word
   end
@@ -305,8 +305,8 @@ rule greater-not--lessorequal rewrite greater-stack; logicalnot-stack into lesso
 rule greaterorequal-not--less rewrite greaterorequal-stack; logicalnot-stack into less-stack end
 rule pop-push--copytor rewrite pop-stack R $a; push-stack R $a into copy-to-r-stack $a end
 rule push-pop-- rewrite push-stack R $a; pop-stack R $a into end
-rule push-pop--rtor rewrite push-stack R $a; pop-stack R $b into r-to-r $a, $b end
-rule push-pop--setr rewrite push-stack n $a; pop-stack R $b into set-r $a, $b end
+rule push-pop--movr rewrite push-stack R $a; pop-stack R $b into mov $a, $b end
+rule push-pop--movn rewrite push-stack n $a; pop-stack R $b into mov $a, $b end
 rule push-plus--plusi rewrite push-stack n $a; plus-stack into plusi-stack $a end
 rule push-minus--minusi rewrite push-stack n $a; minus-stack into minusi-stack $a end
 # rule push-plusi--push rewrite push-stack n $a; plusi-stack n $b into push-stack plus-stack($a, $b) end
@@ -339,21 +339,9 @@ instruction dup-stack ()
   end
 end
 
-instruction set-r (?n 0 1 2 -1 structured_literal_printer, !R)
-  code
-    JITTER_ARGN1 = JITTER_ARGN0;
-  end
-end
-
 instruction copy-to-r-stack (!R)
   code
     JITTER_ARGN0 = JITTER_TOP_MAINSTACK();
-  end
-end
-
-instruction r-to-r (?R, !R)
-  code
-    JITTER_ARGN1 = JITTER_ARGN0;
   end
 end
 
