@@ -371,7 +371,7 @@ structured_work (struct structured_command_line *cl)
   struct structuredvm_executable_routine *vmer
     = structuredvm_make_executable_routine (vmr);
 
-  /* Print and/or disassemble the program as requested. */
+  /* Print and/or disassemble the routine as requested. */
   if (cl->print)
     structuredvm_print_routine (stdout, vmr);
   if (cl->cross_disassemble)
