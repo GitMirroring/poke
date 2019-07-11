@@ -345,7 +345,7 @@ structured_work (struct structured_command_line *cl)
   /* Initialize the structured-VM subsystem. */
   structuredvm_initialize ();
 
-  /* Make an empty Jittery program and set options for it as needed. */
+  /* Make an empty Jittery routine and set options for it as needed. */
   struct structuredvm_routine *vmr = structuredvm_make_routine ();
   structuredvm_set_routine_option_slow_literals_only (vmr,
                                                       cl->slow_literals_only);
@@ -354,7 +354,7 @@ structured_work (struct structured_command_line *cl)
   structuredvm_set_routine_option_optimization_rewriting
      (vmr, cl->optimization_rewriting);
 
-  /* Translate the AST program into a jittery program. */
+  /* Translate the AST program into a Jittery routine. */
   switch (cl->code_generator)
     {
     case structured_code_generator_stack:
