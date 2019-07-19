@@ -479,6 +479,60 @@ fi # if test "x$jitter_check_readline" = "xyes"
 ################################################################
 
 
+# Check for GCC attributes.
+################################################################
+
+# Check if the GNU C attribute syntax is recognized at all.
+AC_CACHE_CHECK([for GNU C attributes], [ac_cv_have_gnu_c_attribute],
+  [AC_COMPILE_IFELSE(
+     [AC_LANG_PROGRAM(
+        [[__attribute__ (())
+          int
+          f (int x)
+          {
+            return x;
+          }]],
+        [[return f (0);]])],
+     [ac_cv_have_gnu_c_attribute=yes],
+     [ac_cv_have_gnu_c_attribute=no])])
+if test "x$ac_cv_have_gnu_c_attribute" = "xyes"; then
+  AC_DEFINE([JITTER_HAVE_GNU_C_ATTRIBUTE], [1],
+            [Define if the compiler supports __attribute__.])
+fi
+
+# Check for specific attributes not supported by older versions of GCC;
+# and possibly by other compilers.  Notice that we have to temporarily
+# change CFLAGS (in a subshell, so as not to affect the rest of this
+# script) to force -Werror.  If -Werror is not supported than the tests
+# will all fail, which is the correct conservative behavior.
+
+# Check for attribute returns_nonnull .
+(CFLAGS="$CFLAGS -Werror"; export CFLAGS
+AC_CACHE_CHECK([for the returns_nonnull attribute],
+  [ac_cv_have_returns_nonnull],
+  [AC_COMPILE_IFELSE(
+     [AC_LANG_PROGRAM(
+        [[long n = 7;
+          __attribute__ ((returns_nonnull))
+          long *
+          f (void)
+          {
+            return & n;
+          }]],
+        [[return * f () != 0;]])],
+     [ac_cv_have_returns_nonnull=yes],
+     [ac_cv_have_returns_nonnull=no])])
+if test "x$ac_cv_have_returns_nonnull" = "xyes"; then
+  AC_DEFINE([JITTER_HAVE_ATTRIBUTE_RETURNS_NONNULL], [1],
+            [Define if the returns_nonnull attribute works])
+fi)
+
+
+# Many people like to compile with -Werror.  This is a way of redefining
+# attributes not supported by the compiler so that they expand to nothing.
+
+
+
 # Check for GCC builtins.
 ################################################################
 
@@ -488,7 +542,7 @@ fi # if test "x$jitter_check_readline" = "xyes"
 # Overflow-checking builtins are fairly recent, and it is better to check their
 # presence rather than assuming that they are always available with GCC.
 AC_CACHE_CHECK([for GCC overflow-checking builtins], [ac_cv_have_gcc_overflow],
-  [AC_COMPILE_IFELSE(
+  [AC_LINK_IFELSE(
      [AC_LANG_PROGRAM(
         [[#include <stdio.h>]],
         [[int foo = __builtin_add_overflow_p (1, 2, 42);
