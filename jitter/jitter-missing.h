@@ -1,6 +1,5 @@
-/* Jitter: header declaring standard functions that some stupid systems lack.
-
-   Copyright (C) 2017 Luca Saiu
+/* Jitter: header supplying functions and macros which some systems lack.
+   Copyright (C) 2017, 2019 Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -22,7 +21,35 @@
 #ifndef JITTER_MISSING_H_
 #define JITTER_MISSING_H_
 
+#include <jitter/jitter-config.h>
 #include <stdio.h>
+
+
+/* GNU C attributes.
+ * ************************************************************************** */
+
+/* C compilers not supporting the GNU exensions will not recognize attributes.
+   A simple fix is redefining the attribute keyword as a macro. */
+#if ! defined (JITTER_HAVE_GNU_C_ATTRIBUTE)
+# define attribute(ignored_attributes)      /* Nothing. */
+# define __attribute__(ignored_attributes)  /* Nothing. */
+#endif /* ! defined (JITTER_HAVE_GNU_C_ATTRIBUTE) */
+
+/* After the previous definition, non-GNU C compilers will not have any problem,
+   since every attribute use will be macroexpanded away; therefore it would be
+   useless, in the following, to conditionalize over the attribute syntax
+   availability.  What remains to be solved is older GNU C compilers not knowing
+   about more recently introduced attributes. */
+#if ! defined (JITTER_HAVE_ATTRIBUTE_RETURNS_NONNULL)
+# define returns_nonnull      /* Nothing. */
+# define __returns_nonnull__  /* Nothing. */
+#endif /* #if ! defined (JITTER_HAVE_ATTRIBUTE_RETURNS_NONNULL) */
+
+
+
+
+/* I/O functions.
+ * ************************************************************************** */
 
 /* The functions declared here are no-ops if we can live with them doing
    nothing; otherwise they fail fatally when called.  Each function

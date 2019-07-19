@@ -35,6 +35,9 @@
 #  error "jitter/jitter-config.h is probably incorrect"
 #endif // #ifndef SIZEOF_VOID_P
 
+/* Include macros emulating missing GNU C features. */
+#include <jitter/jitter-missing.h>
+
 /* We need some CPP machinery here, for conveninient stringification and token
    concatenation. */
 #include <jitter/jitter-cpp.h>

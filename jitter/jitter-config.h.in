@@ -86,4 +86,10 @@
    operation. */
 #undef JITTER_HAVE_FAST_MASK_OFF
 
+/* Define if the C compilers supports GNU C attributes. */
+#undef JITTER_HAVE_GNU_C_ATTRIBUTE
+
+/* Define for specific GNU C attributes. */
+#undef JITTER_HAVE_ATTRIBUTE_RETURNS_NONNULL
+
 #endif // #ifndef JITTER_CONFIG_H_
