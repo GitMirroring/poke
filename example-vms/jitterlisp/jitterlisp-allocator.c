@@ -330,9 +330,13 @@ jitterlisp_memory_initialize (void)
     fprintf (stderr, "Made the first litter block\n");
 
 #elif defined(JITTERLISP_BOEHM_GC)
+  /* Initialize Boehm's GC.  Technically I would be supposed to call GC_INIT
+     from main, but this will work well enough in practice.  Actual allocation
+     will start in functions nested more deeply than this one, and therefore
+     recognizing the C stack bottom as being at the current height will
+     suffice. */
   if (jitterlisp_settings.verbose)
     fprintf (stderr, "Initializing Boehm GC...\n");
-  /* Initialize Boehm's GC. */
   GC_INIT ();
   GC_allow_register_threads ();
 
