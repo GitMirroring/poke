@@ -347,7 +347,7 @@ static struct argp_option vmprefix_main_option_specification[] =
    {"no-cross-disassemble", vmprefix_vm_negative_option_no_cross_disassemble,
     NULL, 0,
     "Don't cross-disassemble the parsed routine (default)"},
-   {"print-locations", vmprefix_vm_negative_option_no_print_locations, NULL, 0,
+   {"no-print-locations", vmprefix_vm_negative_option_no_print_locations, NULL, 0,
     "Don't print data location information (default)"},
 
    /* Debugging, testing and benchmarking options. */
