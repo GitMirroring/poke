@@ -129,17 +129,57 @@ m4_define([jitter_flags],
 # This is only used internally.  If Automake is being used, then define
 # the shell variable ac_jitter_using_automake to "yes".
 AC_DEFUN([AC_JITTER_USING_AUTOMAKE], [
-# Define ac_jitter_using_automake to a non-empty iff the configuration system is
-# used Automake and well, and not just Autoconf.  I have found no documented way
-# of doing this, so I am relying on am__api_version being defined, which
-# happens, indirectly, when AM_INIT_AUTOMAKE is called.
+# Define ac_jitter_using_automake to a non-empty value iff the configuration
+# system is used Automake and well, and not just Autoconf.  I have found no
+# documented way of doing this, so I am relying on am__api_version being
+# defined, which happens, indirectly, when AM_INIT_AUTOMAKE is called.
 # This is not particularly related to Jitter but I found no predefined way
-# of doing it, and I'm adding the variable to the Jitter namespace just so as
-# not to pollute the generic ones.
+# of doing it, and I'm adding the variable to the AC_JITTER namespace just
+# to prevent conflicts.
 if test "x$am__api_version" != "x"; then
   ac_jitter_using_automake="yes"
 fi
 ]) # AC_JITTER_USING_AUTOMAKE
+
+
+# Sub-packages to be configured immediately, not on AC_OUTPUT.
+################################################################
+
+# AC_JITTER_CONFIG_SUBDIRS_NOW([dir ...])
+# ---------------------------------------
+# Behave like AC_CONFIG_SUBDIRS , but call the recursive configure immediately
+# rather that at the time of AC_OUTPUT.  A final explicit AC_OUTPUT call by
+# the user will still be required, as usual.
+#
+# Rationale: If the sub-package is configured immediately, the rest of
+# the outer package configure script can make its configuration depend
+# on the inner package.
+AC_DEFUN([AC_JITTER_CONFIG_SUBDIRS_NOW], [
+# Keep a backup of some shell variables used by configure at AC_OUTPUT time to
+# handle generated files and subdirectories.  Then clean up the current values
+# of these variables so that AC_OUTPUT *only* deals with the subpackage.
+jitter_ac_config_files_backup="${ac_config_files}"
+jitter_subdirs_backup="${subdirs}"
+ac_config_files=''
+subdirs=''
+# Add the sub-package the ordinary way, and output.  This has the effect of
+# configuring the sub-package.
+AC_CONFIG_SUBDIRS([$1])
+AC_MSG_NOTICE([recursively invoking configure in sub-package] [$1] [right now])
+# Here we could use AC_OUTPUT and then remove config.status , which should
+# not be generated here as that would introduce subtle bugs in case the user
+# forgot to call AC_OUTPUT at the end.
+# But instead of using AC_OUTPUT we can use its supposedly internal subroutine
+# _AC_OUTPUT_SUBDIRS, which *only* deals with sub-packages.  This is exactly
+# what we need.
+_AC_OUTPUT_SUBDIRS
+AC_MSG_NOTICE([back from the recursive configuration in] [$1])
+# Restore the shell variables we saved later, so that a user call to
+# AC_OUTPUT later will do its work.  The sub-package we have configured
+# already will not be configured again.
+ac_config_files="${jitter_ac_config_files_backup}"
+subdirs="${jitter_subdirs_backup}"
+]) # AC_JITTER_CONFIG_SUBDIRS_NOW
 
 
 # Jitter exported Autoconf macros.
@@ -147,8 +187,13 @@ fi
 
 # AC_JITTER_CONFIG
 # ----------------
-# Look for the jitter-config script, by default in $PATH or, if the option
-# --with-jitter="PREFIX" is given, in PREFIX/bin (only).
+# Look for the jitter-config script:
+# * if the option --with-jitter="PREFIX" is given, in PREFIX/bin (only);
+# * if the shell variable JITTER_SUBPACKAGE is defined as a non-empty
+#   value, in ${JITTER_SUBPACKAGE}/bin relative to the super-package
+#   build directory;
+# * otherwise, in $PATH;
+#
 # Choose the default dispatch, using --with-jitter-dispatch="DISPATCH" or
 # the best available dispatch if the option is not given.
 #
@@ -204,9 +249,35 @@ fi
 # path with "/bin" appended, or $PATH.
 AC_ARG_WITH([jitter],
             [AS_HELP_STRING([--with-jitter="PREFIX"],
-               [use the jitter program from the bin directory of the given
-                prefix instead of searching for it in $PATH])],
+               [use the jitter and jitter-config programs from the bin
+                directory of the given prefix instead of searching for
+                it in $PATH.
+                This is intended for using an installed Jitter as a
+                dependency; for a sub-package Jitter do not use this, and
+                instead just export and set the shell variable
+                JITTER_SUBPACKAGE to a non-empty value different
+                from "no" (this is normally done in the super-package via
+                the Autoconf macro provided with Jitter)])],
             [ac_jitter_path="$withval/bin"])
+
+# Define ac_jitter_path from JITTER_SUBPACKAGE, if Jitter is being
+# used in sub-package mode.  From the point of view of prefixes, this is
+# functionally equivalent to --with-jitter .
+if test "x$JITTER_SUBPACKAGE" != 'x' \
+   && test "x$JITTER_SUBPACKAGE" != 'xno'; then
+  if test "x$ac_jitter_path" != 'x'; then
+    # Using --with-jitter together with JITTER_SUBPACKAGE is a
+    # contradiction.
+    AC_MSG_ERROR([Enabling sub-package mode with JITTER_SUBPACKAGE is
+                  incompatible with the --with-jitter option])
+  else
+    # Using sub-package mode, when --with-jitter was not given.  Set the
+    # path variable.
+    # REMARK: ac_pwd is undocumented.  Is there a cleaner alternative to
+    #         find the build directory at configure time?
+    ac_jitter_path="${ac_pwd}/${JITTER_SUBPACKAGE}/bin"
+  fi
+fi
 
 # Search for the "jitter-config" script and perform the JITTER_CONFIG
 # substitution.
@@ -415,3 +486,50 @@ $JITTER_CONFIG_VERSION) and $JITTER (version $JITTER_VERSION)])
   fi
 fi
 ]) # AC_JITTER
+
+
+# AC_JITTER_SUBPACKAGE([subdirectory])
+# ------------------------------------
+# Configure Jitter in sub-package mode, using the Jitter source directory
+# from the given subdirectory relative to the super-package source directory.
+AC_DEFUN([AC_JITTER_SUBPACKAGE], [
+
+# Print one explicit message about what is about to happen.  Even Autoconf
+# experts might be surprised by the unusual configuration order, and it is good
+# to be explicit in case something happens.
+AC_MSG_NOTICE([configuring Jitter as a sub-package in ./$1])
+
+# Make sure that Jitter will be configured in sub-package mode.  Jitter's
+# configure script checks for this environment variable, as it is inconvenient
+# to call it with an additional command-line option when invoked recursively
+# from a super-package configure script.
+# The variable must be set to the Jitter source subdirectory, relative to the
+# super-package source directory.
+JITTER_SUBPACKAGE="$1"
+export JITTER_SUBPACKAGE
+
+# Call Jitter's configure script recursively, right now.
+AC_JITTER_CONFIG_SUBDIRS_NOW([$1])
+
+# Check for jitter-config .  Do not check for the jitter C generator: it will
+# not normally be available at configuration time, but it will be built.
+AC_JITTER_CONFIG
+
+# Fail if we failed to find jitter-config; this should not happen in sub-package
+# mode, after Jitter's subdirectory has been configured with success.
+if test "x$JITTER_CONFIG" = 'x'; then
+  AC_MSG_ERROR([could not find jitter-config in Jitter sub-package within
+                $JITTER_CONFIG])
+fi
+
+# The "jitter" C generator may not exist yet, but it can be built and its future
+# full path is known.
+JITTER="$(echo $JITTER_CONFIG | sed 's/-config$//')$EXEEXT"
+AC_SUBST([JITTER], [$JITTER])
+AC_MSG_NOTICE([jitter may not exist yet, but it can be built at $JITTER])
+
+# The C generator will have the same version as the jitter-config script.
+JITTER_VERSION="$JITTER_CONFIG_VERSION"
+AC_SUBST([JITTER_VERSION], [$JITTER_VERSION])
+
+]) # AC_JITTER_SUBPACKAGE

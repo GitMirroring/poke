@@ -48,6 +48,20 @@ lib_LTLIBRARIES =
 noinst_LTLIBRARIES =
 noinst_PROGRAMS =
 
+if JITTER_SUBPACKAGE
+# Non-Libtool static libraries are only used in sub-package mode, and built
+# in an unusual way using Libtool to extract them from Libtool libraries
+# (which is why this uses DATA rather than LIBRARIES).
+
+# These libraries have clean dependencies specified here, with each .a files
+# depending on its .la equivalent.  See "Non-Libtool static libraries for
+# sub-package mode" below.
+
+# It is better to define this conditionally, so as not to use non-Libtool
+# libraries by mistake in ordinary non-sub-package builds.
+noinst_DATA =
+endif # JITTER_SUBPACKAGE
+
 
 # Installation directories.
 # ################################################################
@@ -57,8 +71,16 @@ noinst_PROGRAMS =
 # will make it easy to have multiple versions installed at the same time.
 # Notice that templates are architecture-independent but flags are
 # architecture-specific.
+#
+# In sub-package mode simply read templates from the source directory and
+# flags from the build directory.
+if JITTER_SUBPACKAGE
+flagdir = $(abs_top_builddir)/flags
+templatedir = $(abs_top_srcdir)/templates
+else
 flagdir = $(exec_prefix)/$(JITTER_FLAG_SUBDIRECTORY)
 templatedir = $(datarootdir)/$(JITTER_TEMPLATE_SUBDIRECTORY)
+endif # JITTER_SUBPACKAGE
 
 # An installed jitterc will need its installation prefix (even if that can be
 # overridden with a command-line option) to access template files but the prefix
@@ -339,7 +361,7 @@ bin_jitter_CPPFLAGS = \
 # ################################################################
 
 # The jitter-config shell script (preprocessed by config.status ).
-bin_SCRIPTS += scripts/jitter-config
+bin_SCRIPTS += bin/jitter-config
 
 
 # M4sh machinery.
@@ -374,7 +396,7 @@ endif # if JITTER_HAVE_AUTOM4TE
 # configure.ac's AC_CONFIG_FILES , but their source files ( .in.m4sh ) must be
 # explicitly listed here.
 EXTRA_DIST += \
-  scripts/jitter-config.in.m4sh \
+  bin/jitter-config.in.m4sh \
   scripts/generate-fast-branches.in.m4sh
 
 # Also include the common M4sh library, included by the scripts above with
@@ -577,6 +599,44 @@ lib_libjitter_la_SOURCES =
 lib_libjitter_la_LIBADD = \
   lib/libjitter--$(JITTER_BEST_DISPATCHING_MODEL)--convenience.la \
   lib/libjitterutility--convenience.la
+
+
+# Non-Libtool static libraries for sub-package mode.
+# ################################################################
+
+# In sub-package mode it is convenient to build ordinary non-Libtool static
+# libraries as well, in case the super-package does not use Libtool.
+
+# This is easy: each library to be built as an ordinary static library will
+# depend on its Libtool counterpart, and use Libtool to be extracted
+# into $(top_builddir)/lib , beside its Libtool version.
+if JITTER_SUBPACKAGE
+# A generic way of extracting a non-Libtool static library file from its Libtool
+# counterpart.
+.la.a:
+	$(LIBTOOL) --mode=install cp $< $(abs_top_builddir)/$@
+	$(LIBTOOL) --finish $(abs_top_builddir)/lib
+
+# For every enabled dispatch add one library.
+if JITTER_ENABLE_DISPATCH_SWITCH
+noinst_DATA += lib/libjitter--switch.a
+endif # JITTER_ENABLE_DISPATCH_SWITCH
+if JITTER_ENABLE_DISPATCH_DIRECT_THREADING
+noinst_DATA += lib/libjitter--direct-threading.a
+endif # JITTER_ENABLE_DISPATCH_DIRECT_THREADING
+if JITTER_ENABLE_DISPATCH_MINIMAL_THREADING
+noinst_DATA += lib/libjitter--minimal-threading.a
+endif # JITTER_ENABLE_DISPATCH_MINIMAL_THREADING
+if JITTER_ENABLE_DISPATCH_NO_THREADING
+noinst_DATA += lib/libjitter--no-threading.a
+endif # JITTER_ENABLE_DISPATCH_NO_THREADING
+
+# Add one more library for the default dispatch, unconditionally.
+noinst_DATA += lib/libjitter.a
+
+# Every other Libtool libraries in Jitter is a convenience library, only used
+# internally for building the libraries above or some program.
+endif # JITTER_SUBPACKAGE
 
 
 # Native-code libjitter sources for supported architectures.
@@ -1632,7 +1692,7 @@ EXTRA_DIST += doc/missing-man-page.1
 
 # The actual man pages.
 dist_man1_MANS += \
-  scripts/jitter-config.1 \
+  bin/jitter-config.1 \
   jitterc/jitter.1
 
 # Rules for always-installed programs.
@@ -1644,8 +1704,8 @@ if JITTER_CAN_REBUILD_MAN_PAGES
   # precise control and, importantly, parallel building.
   jitterc/jitter.1: bin/jitter$(EXEEXT)
 	  $(HELP2MAN_WITH_OPTIONS) --output=$@ "$(JITTER_EMULATOR) bin/jitter$(EXEEXT)"
-  scripts/jitter-config.1: scripts/jitter-config
-	  $(HELP2MAN_WITH_OPTIONS) --output=$@ scripts/jitter-config
+  bin/jitter-config.1: bin/jitter-config
+	  $(HELP2MAN_WITH_OPTIONS) --output=$@ bin/jitter-config
 else # ! JITTER_CAN_REBUILD_MAN_PAGES
   # We can't build real man pages on this system, so we just distribute copies
   # of a single stub page.
@@ -1656,7 +1716,7 @@ else # ! JITTER_CAN_REBUILD_MAN_PAGES
   # touches the stub.
   jitterc/jitter.1: doc/missing-man-page.1
 	cp "$(srcdir)/doc/missing-man-page.1" "$@"
-  scripts/jitter-config.1: doc/missing-man-page.1
+  bin/jitter-config.1: doc/missing-man-page.1
 	cp "$(srcdir)/doc/missing-man-page.1" "$@"
 endif # JITTER_CAN_REBUILD_MAN_PAGES
 
@@ -1716,6 +1776,39 @@ endif # if JITTER_BUILDING_FROM_GIT
 # build dependencies.
 ChangeLog: dist-hook-changelog
 changelog: ChangeLog
+
+
+# Installation.
+# ################################################################
+
+# Prevent installation and uninstallation if Jitter was configured in
+# sub-package mode.
+if JITTER_SUBPACKAGE
+do-nothing-on-sub-package-mode-install:
+	@echo "Cannot install or uninstall after configuring in sub-package"
+	@echo "mode."
+	@echo "This is by design, and not an error: succeeding, so as not to"
+	@echo "break make distcheck."
+	@exit 0
+install: do-nothing-on-sub-package-mode-install
+install-data: do-nothing-on-sub-package-mode-install
+install-exec: do-nothing-on-sub-package-mode-install
+install-info: do-nothing-on-sub-package-mode-install
+install-ps: do-nothing-on-sub-package-mode-install
+install-dvi: do-nothing-on-sub-package-mode-install
+install-pdf: do-nothing-on-sub-package-mode-install
+install-html: do-nothing-on-sub-package-mode-install
+install-man: do-nothing-on-sub-package-mode-install
+uninstall: do-nothing-on-sub-package-mode-install
+uninstall-data: do-nothing-on-sub-package-mode-install
+uninstall-exec: do-nothing-on-sub-package-mode-install
+uninstall-info: do-nothing-on-sub-package-mode-install
+uninstall-ps: do-nothing-on-sub-package-mode-install
+uninstall-dvi: do-nothing-on-sub-package-mode-install
+uninstall-pdf: do-nothing-on-sub-package-mode-install
+uninstall-html: do-nothing-on-sub-package-mode-install
+uninstall-man: do-nothing-on-sub-package-mode-install
+endif # JITTER_SUBPACKAGE
 
 
 # Distribution.
@@ -1837,7 +1930,7 @@ check_SCRIPTS += \
 
 clean-local:
 	rm -r -f "$(builddir)/example-vms/*/*.$(OBJEXT)"
-	rm -r -f $(EXTRA_PROGRAMS) $(EXTRA_LTLIBRARIES)
+	rm -r -f $(EXTRA_PROGRAMS) $(EXTRA_LTLIBRARIES) $(noinst_DATA)
 	rm -r -f $(GENERATED_C_FILES_FOR_UNINSPIRED)
 	rm -r -f $(GENERATED_C_FILES_FOR_STRUCTURED)
 	rm -r -f $(GENERATED_C_FILES_FOR_JITTERLISP)

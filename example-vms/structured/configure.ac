@@ -2,6 +2,7 @@
 ## to obtain a configure script.
 
 ## Copyright (C) 2016, 2017 Luca Saiu
+## Updated in 2019 by Luca Saiu
 ## Written by Luca Saiu
 
 ## This file is part of the Jitter structured-language example,
@@ -56,16 +57,13 @@ AM_INIT_AUTOMAKE
 AC_PROG_CC
 
 
-# Check for Jitter.
+# Configure Jitter as a sub-package.
 ################################################################
 
-AC_JITTER
-if test "x$JITTER" = "x"; then
-   AC_MSG_WARN([you need Jitter to regenerate C files])
-fi
-if test "x$JITTER_CONFIG" = "x"; then
-   AC_MSG_ERROR([you need jitter-config to compile])
-fi
+# Configure Jitter as a sub-package, without depending on it being installed
+# anywere.  This assumes that the Jitter top source directory has been copied
+# or symbolically linked as "jitter" within this directory.
+AC_JITTER_SUBPACKAGE([jitter])
 
 
 # Check for frontend C-code-generation tools.

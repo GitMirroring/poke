@@ -19,6 +19,16 @@
 # along with Jitter.  If not, see <http://www.gnu.org/licenses/>.
 
 
+# Jitter as a sub-package.
+################################################################
+
+# Build Jitter as a sub-package.
+#
+# This assumes that the Jitter source directory has been copied or symbolically
+# linked to as "jitter" within the current directory.
+SUBDIRS = jitter
+
+
 # General settings.
 ################################################################
 
@@ -29,7 +39,7 @@ AUTOMAKE_OPTIONS = subdir-objects
 # What we have to build.
 ################################################################
 
-# Apart from the examples we only have one program, the "structured-language"
+# Apart from the examples we only have one program, the "structured language"
 # executable.
 bin_PROGRAMS = bin/structured
 bin_structured_SOURCES = \
@@ -76,7 +86,12 @@ BUILT_SOURCES = $(GENERATED_C_FILES_FOR_STRUCTUREDVM)
 # Jitter-generated files for the structured-language VM.  Here by convention all
 # the generated files but the first depend on the first, even if they are all
 # generated at the same time.
+# These generated files are distributed by default, and the (problematic)
+# dependency from $(JITTER) to them is not tracked explicitly: it would
+# interfere with BUILT_SOURCES, which serves to build machine-generated sources
+# very early in the build process.
 $(srcdir)/structuredvm-vm.h: structured.jitter
+	$(MAKE) -C jitter
 	$(JITTER) "$(srcdir)/structured.jitter" --output "$(srcdir)"
 $(srcdir)/structuredvm-vm1.c: structuredvm-vm.h
 $(srcdir)/structuredvm-vm2.c: structuredvm-vm.h
@@ -88,7 +103,7 @@ $(srcdir)/structuredvm-vm2.c: structuredvm-vm.h
 # There is nothing special related to Jitter here; I am just using Flex and
 # Bison to generate a scanner and a parser, in a canonical way.
 # Flex and Bison generate two files each (one ".c" and one ".h" file); here
-# by convention the ".h" file depends on its companion ".c" file, actually
+# by convention each ".h" file depends on its companion ".c" file, actually
 # generated at the same time.
 $(srcdir)/structured-parser.c: structured.y
 	$(YACC) -o "$@" "$(srcdir)/structured.y"
@@ -139,8 +154,10 @@ benchmarks: $(EXTRA_PROGRAMS)
 # in a slightly anonymous way.  A user learning how to build Jitter into her own
 # program from this Makefile.am can ignore all of this.
 
-# This is a special package, distributed within another package as an example.
-# In this case I don't want to be bothered by generated files, so I let
+# This is a special package, meant to include the Jitter sources as a
+# subdirectory but in fact distributed as part of Jitter as an example,
+# itself contained within the Jitter sources.
+# In this case I do not want to be bothered by generated files, so I let
 # maintainer-clean be particularly aggressive, more than the GNU coding
 # standards recommend.
 maintainer-clean-aggressive:

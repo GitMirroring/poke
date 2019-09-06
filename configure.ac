@@ -65,6 +65,81 @@ AC_DEFINE_UNQUOTED([JITTER_PACKAGE_BUGREPORT], ["$PACKAGE_BUGREPORT"],
                    [An email address where to report Jitter bugs])
 
 
+# Make the source and build directory names visible here.
+################################################################
+
+# Define jitter_abs_top_builddir and jitter_abs_top_srcdir as ordinary
+# shell variables, for internal use here in configure.
+#
+# The equivalent variables ac_abs_top_srcddir and ac_abs_top_builddir
+# are defined very late in the generated configure script, and not
+# documented anyway.
+jitter_abs_top_builddir="$(pwd)"
+cd "${srcdir}"
+jitter_abs_top_srcdir="$(pwd)"
+cd "${jitter_abs_top_builddir}"
+
+
+# Sub-package mode support.
+################################################################
+
+# Check whether we should configure Jitter in "sub-package mode".  In
+# sub-package mode a copy of the Jitter source is distributed in the style of
+# Gnulib, as a subdirectory along with another software package using it, so
+# that the two are built together.
+# Sub-package mode is meant for users of Jitter, and not for developing Jitter
+# itself: in order to speed up Jitter's compilation and its test suite, only the
+# best available dispatch is enabled.
+
+# In sub-package mode installation does nothing, and dynamic libraries are
+# always disabled.  Libraries meant for the user are built as both Libtool
+# libraries and ordinary static libraries; the user may choose whether to use
+# Libtool in her own super-package.
+
+# Sub-package mode is enabled if the environment variable JITTER_SUBPACKAGE is
+# defined to any non-empty value.  This is meant to be defined, and exported, by
+# the configure script of the super-package using Jitter as a subpackage; the
+# value is meant to be the Jitter subdirectory name relative to the
+# super-package source directory, but the actual value is only useful for the
+# super-package configuration: here any non-empty value will do, and the source
+# and build directories are known in any case.
+
+# Define the feature macro and change the kind of libraries to build by default
+# if sub-package mode is enabled.
+# In case the command line contradicts the default, I will still force static
+# libraries to be enabled and shared libraries to be disabled, just giving a
+# warning: see "Libtool support" below.
+
+# Define JITTER_SUBPACKAGE as a precious variable, so that it is described by
+# --help and, more importantly, its value at the time of the first configuration
+# is kept around in case of an automatic re-configuration.  This is very useful
+# in case some Autoconf or Automake source in a sub-package Jitter source
+# directory is modified.
+AC_ARG_VAR([JITTER_SUBPACKAGE],
+           [define to a non-empty value for configuring Jitter as a
+            sub-package])
+
+# Change library defaults.
+if test "x$JITTER_SUBPACKAGE" != 'x'; then
+    AC_DEFINE_UNQUOTED([JITTER_SUBPACKAGE], [1],
+                       [Jitter is configured in sub-package mode])
+    AC_ENABLE_STATIC
+    AC_DISABLE_SHARED
+fi
+
+# Define an Automake conditional.
+AM_CONDITIONAL([JITTER_SUBPACKAGE],
+               [test "x$JITTER_SUBPACKAGE" != 'x'])
+
+# Provide feedback.
+AC_MSG_CHECKING([if we are configuring in sub-package mode])
+if test "x$JITTER_SUBPACKAGE" != 'x'; then
+  AC_MSG_RESULT([yes: "$JITTER_SUBPACKAGE"])
+else
+  AC_MSG_RESULT([no])
+fi
+
+
 # Check for the C compiler and its features.
 ################################################################
 
@@ -418,6 +493,23 @@ jitter_check_cc_options ()
 
 # Libtool support.
 ################################################################
+
+# In case this is a sub-package build force static libraries to be enabled and
+# shared libraries to be disabled, even if this is different from what the user
+# asked.
+# This is reasonable in a sub-package: of course the super-package remains free
+# to choose differently.
+# REMARK: enable_static and enable_shared are not explicitly documented.
+if test "x$JITTER_SUBPACKAGE" != 'x'; then
+  if test "x${enable_static}" = 'xno'; then
+    AC_MSG_WARN([forcing static libraries to be enabled in sub-package mode])
+    enable_static=yes
+  fi
+  if test "x${enable_shared}" = 'xyes'; then
+    AC_MSG_WARN([forcing shared libraries to be disabled in sub-package mode])
+    enable_shared=no
+  fi
+fi
 
 # Initialize Libtool.
 LT_INIT
@@ -996,8 +1088,16 @@ fi
 jitter_enabled_dispatch_models=""
 jitter_best_dispatch_model=""
 
-# Is switch dispatching enabled?  If so define a CPP feature macro.  Also define
-# a substitution and an Automake conditional.
+# Define a disclaimer to be printed to the user when checking which dispatches
+# are enabled, showing that the decision is not final in sub-package mode.
+if test "x$JITTER_SUBPACKAGE" != 'x'; then
+  jitter_subpackage_disclaimer=', provisionally (sub-package mode)'
+else
+  jitter_subpackage_disclaimer=''
+fi
+
+# Is the switch dispatch enabled?  Check the default and the configure
+# command-line option.
 AC_MSG_CHECKING([if switch dispatching is enabled])
 default=yes
 AC_ARG_ENABLE([dispatch-switch],
@@ -1008,20 +1108,11 @@ AC_ARG_ENABLE([dispatch-switch],
 if test "x$jitter_enable_dispatch_switch" = "xyes"; then
   jitter_best_dispatch_model="switch"
   jitter_enabled_dispatch_models="$jitter_enabled_dispatch_models switch"
-  AC_DEFINE_UNQUOTED([JITTER_ENABLE_DISPATCH_SWITCH], 1,
-                     [enable switch dispatching])
-  AC_SUBST([JITTER_ENABLE_DISPATCH_SWITCH], [1])
-else
-  AC_SUBST([JITTER_ENABLE_DISPATCH_SWITCH], [])
-  true
 fi
-AC_MSG_RESULT([$jitter_enable_dispatch_switch])
-AM_CONDITIONAL([JITTER_ENABLE_DISPATCH_SWITCH],
-               [test "x$jitter_enable_dispatch_switch" = "xyes"])
+AC_MSG_RESULT([$jitter_enable_dispatch_switch$jitter_subpackage_disclaimer])
 
-
-# Is direct-threading enabled?  If so define a CPP feature macro.  Also define
-# a substitution and an Automake conditional.
+# Is the direct-threading dispatch enabled?  Check the default and the configure
+# command-line option.
 AC_MSG_CHECKING([if direct-threading dispatch is enabled])
 default=$(test "x$GCC" = "xyes" && echo yes || echo no)
 AC_ARG_ENABLE([dispatch-direct-threading],
@@ -1033,19 +1124,11 @@ only if GCC or a compiler claiming to be GCC is used]),
 if test "x$jitter_enable_dispatch_direct_threading" = "xyes"; then
   jitter_best_dispatch_model="direct-threading"
   jitter_enabled_dispatch_models="$jitter_enabled_dispatch_models direct-threading"
-  AC_DEFINE_UNQUOTED([JITTER_ENABLE_DISPATCH_DIRECT_THREADING], 1,
-                     [enabled direct-threading dispatch])
-  AC_SUBST([JITTER_ENABLE_DISPATCH_DIRECT_THREADING], [1])
-else
-  AC_SUBST([JITTER_ENABLE_DISPATCH_DIRECT_THREADING], [])
-  true
 fi
-AC_MSG_RESULT([$jitter_enable_dispatch_direct_threading])
-AM_CONDITIONAL([JITTER_ENABLE_DISPATCH_DIRECT_THREADING],
-               [test "x$jitter_enable_dispatch_direct_threading" = "xyes"])
+AC_MSG_RESULT([$jitter_enable_dispatch_direct_threading$jitter_subpackage_disclaimer])
 
-# Is minimal-threading enabled?  If so define a CPP macro.  Also define
-# a substitution and an Automake conditional.
+# Is the minimal-threading dispatch enabled?  Check the default and the
+# configure command-line option.
 AC_MSG_CHECKING([if minimal-threading dispatch is enabled])
 # FIXME: reenable this when I make defect handling reliable.
 #default=$(test "x$GCC" = "xyes" && echo yes || echo no)
@@ -1059,16 +1142,8 @@ only if GCC or a compiler claiming to be GCC is used]),
 if test "x$jitter_enable_dispatch_minimal_threading" = "xyes"; then
   jitter_best_dispatch_model="minimal-threading"
   jitter_enabled_dispatch_models="$jitter_enabled_dispatch_models minimal-threading"
-  AC_DEFINE_UNQUOTED([JITTER_ENABLE_DISPATCH_MINIMAL_THREADING], 1,
-                     [enabled minimal-threading dispatch])
-  AC_SUBST([JITTER_ENABLE_DISPATCH_MINIMAL_THREADING], [1])
-else
-  AC_SUBST([JITTER_ENABLE_DISPATCH_MINIMAL_THREADING], [])
-  true
 fi
-AC_MSG_RESULT([$jitter_enable_dispatch_minimal_threading])
-AM_CONDITIONAL([JITTER_ENABLE_DISPATCH_MINIMAL_THREADING],
-               [test "x$jitter_enable_dispatch_minimal_threading" = "xyes"])
+AC_MSG_RESULT([$jitter_enable_dispatch_minimal_threading$jitter_subpackage_disclaimer])
 # FIXME: remove this warning message when I make defect handling reliable.
 if test "x$jitter_enable_dispatch_minimal_threading" = "xyes"; then
   AC_MSG_WARN([minimal-threading dispatch is currently unreliable, and should
@@ -1076,8 +1151,8 @@ if test "x$jitter_enable_dispatch_minimal_threading" = "xyes"; then
   implemented])
 fi
 
-# Is no-threading enabled?  If so define a CPP macro.  Also define a
-# substitution and an Automake conditional.
+# Is the no-threading dispatch enabled?  Check the default and the configure
+# command-line option.
 AC_MSG_CHECKING([if no-threading dispatch is enabled])
 if    test "x$GCC" = "xyes" \
    && test "x$jitter_has_host_assembly" = "xyes" \
@@ -1098,21 +1173,13 @@ architecture has assembly support, and the binary format is ELF]),
 if test "x$jitter_enable_dispatch_no_threading" = "xyes"; then
   jitter_best_dispatch_model="no-threading"
   jitter_enabled_dispatch_models="$jitter_enabled_dispatch_models no-threading"
-  AC_DEFINE_UNQUOTED([JITTER_ENABLE_DISPATCH_NO_THREADING], 1,
-                     [enabled no-threading dispatch])
-  AC_SUBST([JITTER_ENABLE_DISPATCH_NO_THREADING], [1])
-else
-  AC_SUBST([JITTER_ENABLE_DISPATCH_NO_THREADING], [])
-  true
 fi
-AC_MSG_RESULT([$jitter_enable_dispatch_no_threading])
+AC_MSG_RESULT([$jitter_enable_dispatch_no_threading$jitter_subpackage_disclaimer])
 # Fail if no-threading dispatch was enabled without assembly support.
 if test "x$jitter_has_host_assembly" = "xno" \
    && test "x$jitter_enable_dispatch_no_threading" = "xyes"; then
    AC_MSG_ERROR([no-threading dispatch requires assembly support])
 fi
-AM_CONDITIONAL([JITTER_ENABLE_DISPATCH_NO_THREADING],
-               [test "x$jitter_enable_dispatch_no_threading" = "xyes"])
 # FIXME: remove this warning message when I make defect handling reliable.
 if test "x$jitter_enable_dispatch_no_threading" = "xyes"; then
   AC_MSG_WARN([no-threading dispatch is currently unreliable, and should not be
@@ -1120,9 +1187,70 @@ if test "x$jitter_enable_dispatch_no_threading" = "xyes"; then
   implemented])
 fi
 
+# In sub-package mode disable every dispatch except for the best one, in order
+# to speed up compilation and testing.
+if test "x$JITTER_SUBPACKAGE" != 'x'; then
+  AC_MSG_NOTICE([sub-package mode: disabling every dispatch except]
+[$jitter_best_dispatch_model])
+  AC_MSG_NOTICE([  (the following dispatches could have been enabled:]
+[ $jitter_enabled_dispatch_models)])
+  jitter_enabled_dispatch_models=" $jitter_best_dispatch_model"
+  jitter_enable_dispatch_switch=no
+  jitter_enable_dispatch_direct_threading=no
+  jitter_enable_dispatch_minimal_threading=no
+  jitter_enable_dispatch_no_threading=no
+  case "$jitter_best_dispatch_model" in
+    switch)
+       jitter_enable_dispatch_switch=yes;;
+    direct-threading)
+       jitter_enable_dispatch_direct_threading=yes;;
+    minimal-threading)
+       jitter_enable_dispatch_minimal_threading=yes;;
+    no-threading)
+       jitter_enable_dispatch_no_threading=yes;;
+    *) AC_MSG_ERROR([this should never happen]);;
+  esac
+fi
+
+# Now that we have finally decided which dispatches will be enabled, define a
+# substitution, a CPP feature macro and an Automake conditional for each of them.
+AC_SUBST([JITTER_ENABLE_DISPATCH_SWITCH],
+         [$(test "x$jitter_enable_dispatch_switch" = 'xyes' && echo '1')])
+AC_SUBST([JITTER_ENABLE_DISPATCH_DIRECT_THREADING],
+         [$(test "x$jitter_enable_dispatch_direct_threading" = 'xyes' && echo '1')])
+AC_SUBST([JITTER_ENABLE_DISPATCH_MINIMAL_THREADING],
+         [$(test "x$jitter_enable_dispatch_minimal_threading" = 'xyes' && echo '1')])
+AC_SUBST([JITTER_ENABLE_DISPATCH_NO_THREADING],
+         [$(test "x$jitter_enable_dispatch_no_threading" = 'xyes' && echo '1')])
+if test "x$jitter_enable_dispatch_switch" = 'xyes'; then
+  AC_DEFINE_UNQUOTED([JITTER_ENABLE_DISPATCH_SWITCH], [1],
+                     [enable switch dispatch])
+fi
+if test "x$jitter_enable_dispatch_direct_threading" = 'xyes'; then
+  AC_DEFINE_UNQUOTED([JITTER_ENABLE_DISPATCH_DIRECT_THREADING], [1],
+                     [enable direct-threading dispatch])
+fi
+if test "x$jitter_enable_dispatch_minimal_threading" = 'xyes'; then
+  AC_DEFINE_UNQUOTED([JITTER_ENABLE_DISPATCH_MINIMAL_THREADING], [1],
+                     [enable minimal-threading dispatch])
+fi
+if test "x$jitter_enable_dispatch_no_threading" = 'xyes'; then
+  AC_DEFINE_UNQUOTED([JITTER_ENABLE_DISPATCH_NO_THREADING], [1],
+                     [enable no-threading dispatch])
+fi
+AM_CONDITIONAL([JITTER_ENABLE_DISPATCH_SWITCH],
+               [test "x$jitter_enable_dispatch_switch" = 'xyes'])
+AM_CONDITIONAL([JITTER_ENABLE_DISPATCH_DIRECT_THREADING],
+               [test "x$jitter_enable_dispatch_direct_threading" = 'xyes'])
+AM_CONDITIONAL([JITTER_ENABLE_DISPATCH_MINIMAL_THREADING],
+               [test "x$jitter_enable_dispatch_minimal_threading" = 'xyes'])
+AM_CONDITIONAL([JITTER_ENABLE_DISPATCH_NO_THREADING],
+               [test "x$jitter_enable_dispatch_no_threading" = 'xyes'])
+
+
 # AC_SUBST the list of all the enabled dispatching models, and the best one;
-# these don't use quotes are are meant for jitter-config and shell scripts, not
-# for C code.
+# these don't use quotes as they are meant for jitter-config and shell scripts,
+# not for C code.
 AC_SUBST([JITTER_ENABLED_DISPATCHES],
          [$jitter_enabled_dispatch_models])
 AC_SUBST([JITTER_BEST_DISPATCH],
@@ -1144,8 +1272,10 @@ AH_TEMPLATE([JITTER_BEST_DISPATCHING_MODEL_IS_NO_THREADING],
 if test "x$jitter_best_dispatch_model" = "x"; then
   AC_MSG_ERROR([no dispatchnig model is enabled])
 else
-  AC_MSG_NOTICE([enabled dispatching models are $jitter_enabled_dispatch_models .])
-  AC_MSG_NOTICE([the best enabled dispatching model is \"$jitter_best_dispatch_model\" .])
+  AC_MSG_NOTICE([enabled dispatching models are:]
+[ $jitter_enabled_dispatch_models])
+  AC_MSG_NOTICE([the best enabled dispatching model is:]
+[  $jitter_best_dispatch_model])
   AC_SUBST([JITTER_BEST_DISPATCHING_MODEL], [$jitter_best_dispatch_model])
   JITTER_BEST_DISPATCH_MODEL=$(echo $jitter_best_dispatch_model | jitter_to_upper)
   AC_DEFINE_UNQUOTED([JITTER_BEST_DISPATCHING_MODEL_NAME_LOWER],
@@ -1177,9 +1307,6 @@ AC_SUBST([JITTER_TEMPLATE_SUBDIRECTORY],
 
 # Flags.
 ################################################################
-
-# FIXME: why can't I access $ac_abs_top_builddir ?
-jitter_abs_top_builddir="$(pwd)"
 
 # Generate flag files in $builddir/flags/$dispatch_model , for every enabled
 # dispatch_model .  Cleanup at the beginning, cd back to $builddir at the end.
@@ -1278,10 +1405,38 @@ for dispatch_model in $jitter_enabled_dispatch_models; do
 
   JITTER_FLAGS_CPPFLAGS="-DJITTER_DISPATCH_$DISPATCH_MODEL=1"
 
+  # In sub-package mode Jitter's C headers are not installed in any particular
+  # include path, so I need to let the compiler find them via -I options in the
+  # source directory and, for files generated by config.status , in the build
+  # directory as well.
+  # This holds for two kinds of headers:
+  # * headers following the pattern
+  #     jitter/FILE.h
+  #   , included in C as <jitter/FILE.h>;
+  # * (where assembly support exists) headers following the more complex pattern
+  #     machine/${JITTER_ASSEMBLY_SUBDIRECTORY}/jitter/machine/FILE.h
+  #   , included in C as <jitter/machine/FILE.h> .
+  # Makefile.am (see section "Native-code libjitter sources for supported
+  # architectures") uses this same trick to compile examples when Jitter may not
+  # be installed.
+  if test "x$JITTER_SUBPACKAGE" != 'x'; then
+    JITTER_FLAGS_CPPFLAGS="$JITTER_FLAGS_CPPFLAGS -I ${jitter_abs_top_srcdir}"
+    JITTER_FLAGS_CPPFLAGS="$JITTER_FLAGS_CPPFLAGS -I ${jitter_abs_top_builddir}"
+    if test "x$JITTER_ASSEMBLY_SUBDIRECTORY" != 'x'; then
+      JITTER_FLAGS_CPPFLAGS="$JITTER_FLAGS_CPPFLAGS -I ${jitter_abs_top_srcdir}/machine/${JITTER_ASSEMBLY_SUBDIRECTORY}"
+    fi
+  fi
+
   JITTER_FLAGS_LDADD="-ljitter--$dispatch_model"
 
   # Search for Jitter runtime libraries in the right place.
-  JITTER_FLAGS_LDFLAGS="-L${libdir}"
+  if test "x$JITTER_SUBPACKAGE" != 'x'; then
+    # See the comment above for sub-package mode and include paths.  This case
+    # is simpler.
+    JITTER_FLAGS_LDFLAGS="-L${jitter_abs_top_builddir}/lib"
+  else
+    JITTER_FLAGS_LDFLAGS="-L${libdir}"
+  fi
   export JITTER_FLAGS_LDFLAGS
 
   echo "$CC"                    > flags/$dispatch_model/CC
@@ -1421,9 +1576,9 @@ AC_CONFIG_FILES([scripts/emulator],
 AC_CONFIG_FILES([scripts/highlight-disassembly],
                 [chmod +x scripts/highlight-disassembly])
 
-# Generate jitter-config script.
-AC_CONFIG_FILES([scripts/jitter-config],
-                [chmod +x scripts/jitter-config])
+# Generate the jitter-config script.
+AC_CONFIG_FILES([bin/jitter-config],
+                [chmod +x bin/jitter-config])
 
 # Generate the shell script generating high-level fast-branch macros.
 AC_CONFIG_FILES([scripts/generate-fast-branches],
