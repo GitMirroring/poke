@@ -1,5 +1,5 @@
 # Autoconf macros for Jitter.
-# Copyright (C) 2017, 2018 Luca Saiu
+# Copyright (C) 2017, 2018, 2019 Luca Saiu
 # Written by Luca Saiu
 
 # This file is part of Jitter.
@@ -210,13 +210,20 @@ AC_ARG_WITH([jitter],
 
 # Search for the "jitter-config" script and perform the JITTER_CONFIG
 # substitution.
-AC_PATH_PROG([JITTER_CONFIG],
-             [jitter-config],
-             ,
-             [$ac_jitter_path])
+if test "x$ac_jitter_path" = 'x'; then
+  # Search in $PATH (only).
+  AC_PATH_PROG([JITTER_CONFIG],
+               [jitter-config])
+else
+  # Search in $ac_jitter_path (only).
+  AC_PATH_PROG([JITTER_CONFIG],
+               [jitter-config],
+               ,
+               [$ac_jitter_path])
+fi
 
 # However jitter-config was found, verify that it can be used; if not, unset the
-# JITTER_CONFIG variable (and substitution).
+# JITTER_CONFIG variable (and its substitution).
 AS_IF([test "x$JITTER_CONFIG" = "x"],
         [AC_MSG_NOTICE([can't find jitter-config])],
       [! test -r "$JITTER_CONFIG"],
@@ -347,7 +354,7 @@ AC_PATH_PROG([JITTER],
              [$ac_jitter_path:$PATH])
 
 # However jitter was found, verify that it can be used; if not, unset the JITTER
-# variable (and substitution).
+# variable (and its substitution).
 AS_IF([test "x$JITTER" = "x"],
         [AC_MSG_NOTICE([can't find jitter])],
       [! test -r "$JITTER"],
