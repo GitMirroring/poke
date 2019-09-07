@@ -348,10 +348,17 @@ AC_REQUIRE([AC_PROG_CC])
 AC_REQUIRE([AC_JITTER_USING_AUTOMAKE])
 
 # Search for the "jitter" program and perform the JITTER substitution.
-AC_PATH_PROG([JITTER],
-             [jitter],
-             ,
-             [$ac_jitter_path:$PATH])
+if test "x$ac_jitter_path" = 'x'; then
+  # Search in $PATH (only).
+  AC_PATH_PROG([JITTER],
+               [jitter])
+else
+  # Search in $ac_jitter_path (only).
+  AC_PATH_PROG([JITTER],
+               [jitter],
+               ,
+               [$ac_jitter_path])
+fi
 
 # However jitter was found, verify that it can be used; if not, unset the JITTER
 # variable (and its substitution).
