@@ -159,7 +159,7 @@ static struct argp_option jitterc_option_specification[] =
 
    /* Rarely used options. */
    {NULL, '\0', NULL, OPTION_DOC,
-    "Specialized, rarely used options (for an uninstalled jitterc):", 60},
+    "Specialized, rarely used options (for an non-installed jitter):", 60},
    {"template-directory", 'T', "PATH", 0,
     "Directory holding template files (default "
     JITTERC_DEFAULT_TEMPLATE_DIRECTORY
