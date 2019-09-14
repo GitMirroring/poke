@@ -24,7 +24,18 @@
 #define JITTER_CONFIG_H_
 
 /* This host-dependent file is installed and used in the definition of some
-   fundamental types.  It is not for the user to see directly. */
+   fundamental types or features.  It is not for the user to see directly.
+
+   All of this is particularly useful for generated C code and templates, which
+   must rely on information from an installed header.
+
+   This file is included from both C and assembly, so it must contain only
+   preprocessor directives.  In particular, differenly from C sources, it does
+   not use "" for sectioning. */
+
+
+/* C types and data representation: type availability, size, endianness.
+ * ************************************************************************** */
 
 #undef HAVE_LONG_LONG_INT
 #undef HAVE_UNSIGNED_LONG_LONG_INT
@@ -41,17 +52,57 @@
 
 #undef WORDS_BIGENDIAN
 
+
+/* Machine features.
+ * ************************************************************************** */
+
 #undef JITTER_HAVE_ASSEMBLY
-
-/* Optional system functionality. */
-#undef HAVE_MAP_ANONYMOUS
-#undef JITTER_HAVE_GCC_OVERFLOW_CHECKING
-
-/* Optional libraries. */
-#undef JITTER_HAVE_GNU_READLINE
 
 /* It is convenient to let C code access the architecture name. */
 #undef JITTER_ASSEMBLY_SUBDIRECTORY
+
+
+/* Operating system features.
+ * ************************************************************************** */
+
+/* System triplets. */
+#undef JITTER_HOST_TRIPLET
+#undef JITTER_BUILD_TRIPLET
+
+#undef JITTER_HOST_OS_IS_GNU
+
+/* Binary format. */
+#undef JITTER_HOST_OS_IS_ELF
+#undef JITTER_HOST_OS_IS_COFF
+
+/* Assembler flavor. */
+#undef JITTER_HOST_ASSEMBLER_IS_GNU
+
+
+/* Libc features.
+ * ************************************************************************** */
+
+#undef HAVE_MAP_ANONYMOUS
+#undef HAVE_SETRLIMIT
+#undef HAVE_ALARM
+
+
+/* External library availability.
+ * ************************************************************************** */
+
+#undef JITTER_HAVE_GNU_READLINE
+
+
+/* External utility availability.
+ * ************************************************************************** */
+
+#undef JITTER_OBJDUMP
+#undef JITTER_CROSS_OBJDUMP
+#undef JITTER_OBJDUMP_OPTIONS
+
+
+/* Jitter feature selection.
+ * ************************************************************************** */
 
 /* These are needed by jitter.h when no dispatching-model CPP macros
    are defined from the command line. */
@@ -60,22 +111,30 @@
 #undef JITTER_BEST_DISPATCHING_MODEL_IS_MINIMAL_THREADING
 #undef JITTER_BEST_DISPATCHING_MODEL_IS_NO_THREADING
 
-/* These are needed for the driver, which doesn't have access to config.h when
-   compiled as a template. */
-#undef HAVE_SETRLIMIT
-#undef HAVE_ALARM
-#undef JITTER_HOST_ASSEMBLER_IS_GNU
-#undef JITTER_HOST_OS_IS_GNU
-#undef JITTER_HOST_OS_IS_ELF
-#undef JITTER_HOST_OS_IS_COFF
-#undef JITTER_OBJDUMP
-#undef JITTER_CROSS_OBJDUMP
-#undef JITTER_OBJDUMP_OPTIONS
-#undef JITTER_HOST_TRIPLET
-#undef JITTER_BUILD_TRIPLET
+
+/* Versioning.
+ * ************************************************************************** */
+
 #undef JITTER_PACKAGE_NAME
 #undef JITTER_PACKAGE_VERSION
 #undef JITTER_PACKAGE_BUGREPORT
+
+
+/* Availability of GNU C features.
+ * ************************************************************************** */
+
+/* Define if the builtins for handling overflow are available. */
+#undef JITTER_HAVE_GCC_OVERFLOW_CHECKING
+
+/* Define if the C compilers supports GNU C attributes. */
+#undef JITTER_HAVE_GNU_C_ATTRIBUTE
+
+/* Define for specific GNU C attributes. */
+#undef JITTER_HAVE_ATTRIBUTE_RETURNS_NONNULL
+
+
+/* Optimization: machine-specific alternatives.
+ * ************************************************************************** */
 
 /* Define if a conditional expression based on the negative sign can be compiled
    more efficiently without branches. */
@@ -85,11 +144,5 @@
    with a sign-extended immediate, or another one-instruction equivalent
    operation. */
 #undef JITTER_HAVE_FAST_MASK_OFF
-
-/* Define if the C compilers supports GNU C attributes. */
-#undef JITTER_HAVE_GNU_C_ATTRIBUTE
-
-/* Define for specific GNU C attributes. */
-#undef JITTER_HAVE_ATTRIBUTE_RETURNS_NONNULL
 
 #endif // #ifndef JITTER_CONFIG_H_
