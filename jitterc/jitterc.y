@@ -1,7 +1,7 @@
 /* Jitter: Bison parser.
 
-   Copyright (C) 2016, 2017, 2018, 2020 Luca Saiu
-   Updated in 2019 and 2021 by Luca Saiu
+   Copyright (C) 2016, 2017, 2018, 2020, 2021 Luca Saiu
+   Updated in 2019 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -260,7 +260,7 @@ jitterc_parse_file (const char *input_file_name, bool generate_line);
 %token EARLY_C LATE_C INITIALIZATION_C FINALIZATION_C
 %token STATE_EARLY_C
 %token STATE_BACKING_STRUCT_C STATE_RUNTIME_STRUCT_C
-%token STATE_INITIALIZATION_C STATE_FINALIZATION_C
+%token STATE_INITIALIZATION_C STATE_RESET_C STATE_FINALIZATION_C
 %token INSTRUCTION_BEGINNING_C INSTRUCTION_END_C
 %token BARE_ARGUMENT IDENTIFIER WRAPPED_FUNCTIONS WRAPPED_GLOBALS
 %token INSTRUCTION OPEN_PAREN CLOSE_PAREN COMMA SEMICOLON IN OUT
@@ -269,7 +269,7 @@ jitterc_parse_file (const char *input_file_name, bool generate_line);
    macros, which is questionable but probably required for Yacc
    compatibility. */
 %token RULE WHEN REWRITE INTO TRUE_ FALSE_ RULE_PLACEHOLDER
-%token HOT COLD RELOCATABLE NON_RELOCATABLE CALLER CALLEE
+%token HOT COLD RELOCATABLE NON_RELOCATABLE CALLER CALLEE RETURNING
 %token COMMUTATIVE NON_COMMUTATIVE TWO_OPERANDS
 %token REGISTER_CLASS FAST_REGISTER_NO REGISTER_OR_STACK_LETTER
 %token SLOW_REGISTERS NO_SLOW_REGISTERS
@@ -376,6 +376,11 @@ c_section:
     { JITTERC_APPEND_CODE(vm->state_runtime_struct_c_code, & $2); }
 | STATE_INITIALIZATION_C code END /*STATE_INITIALIZATION_C*/
     { JITTERC_APPEND_CODE(vm->state_initialization_c_code, & $2); }
+| STATE_RESET_C code END /*STATE_RESET_C*/
+    { /* This field is NULL at initialisation. */
+      if (vm->state_reset_c_code == NULL)
+        vm->state_reset_c_code = jitter_clone_string ("");
+      JITTERC_APPEND_CODE(vm->state_reset_c_code, & $2); }
 | STATE_FINALIZATION_C code END /*STATE_FINALIZATION_C*/
     { JITTERC_APPEND_CODE(vm->state_finalization_c_code, & $2); }
 | INSTRUCTION_BEGINNING_C code END
@@ -662,6 +667,8 @@ instruction_section:
       ins->callerness = jitterc_callerness_non_caller;
     if (ins->calleeness == jitterc_calleeness_unspecified)
       ins->calleeness = jitterc_calleeness_non_callee;
+    if (ins->returningness == jitterc_returningness_unspecified)
+      ins->returningness = jitterc_returningness_non_returning;
     if (   ins->has_fast_labels
         && ins->relocatability == jitterc_relocatability_non_relocatable)
       JITTERC_PARSE_ERROR("a non-relocatable instruction has fast labels");
@@ -793,7 +800,7 @@ properties:
   /* nothing */
 | hotness properties
 | relocatability properties
-| callingness properties
+| callrelatedness properties
 ;
 
 hotness:
@@ -806,12 +813,13 @@ relocatability:
 | NON_RELOCATABLE { JITTERC_SET_PROPERTY(relocatability, non_relocatable); }
 ;
 
-callingness:
+callrelatedness:
   CALLER   { JITTERC_SET_PROPERTY(callerness, caller); }
 | CALLEE   { JITTERC_SET_PROPERTY(calleeness, callee);
              const struct jitterc_instruction *ins = jitterc_vm_last_instruction (vm);
              if (gl_list_size (ins->arguments) > 0)
                JITTERC_PARSE_ERROR("a callee instruction has arguments"); }
+| RETURNING { JITTERC_SET_PROPERTY(returningness, returning); }
 ;
 
 /* Sometimes we expect text in a very strict form, so there are special cases in

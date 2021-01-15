@@ -30,6 +30,8 @@
    dispatching model. */
 #include <jitter/jitter.h>
 
+#include <jitter/jitter-print.h>
+
 /* Include sectioning macros, if they are supported. */
 #if defined (JITTER_HAVE_KNOWN_BINARY_FORMAT)
 # include <jitter/jitter-sections.h>
@@ -49,12 +51,29 @@
 
 
 
+/* Feature macro.
+ * ************************************************************************** */
+
+/* The defect-replacement subsystem is enabled if all of the following are
+   true:
+   - the binary format is supported;
+   - the dispatch is minimal-threading or no-threading. */
+#if defined (JITTER_HAVE_KNOWN_BINARY_FORMAT)        \
+    && (defined (JITTER_DISPATCH_MINIMAL_THREADING)  \
+        || defined (JITTER_DISPATCH_NO_THREADING))
+# define JITTER_HAVE_DEFECT_REPLACEMENT  1
+#endif
+
+
+
+
 /* Defect descriptor data structures: C API.
  * ************************************************************************** */
 
-/* A descriptor associated to each program point possibly causing a specialized
-   VM instruction to be defective.  A specialized VM instruction is defective if
-   it has even one such descritpor with non-zero displacement. */
+/* A descriptor associated to each static program point possibly causing a
+   specialized VM instruction to be defective.  A specialized VM instruction is
+   defective if it has at least one such descritpor with a non-zero
+   displacement. */
 struct jitter_defect_descriptor
 {
   /* The opcode of the specialized instruction in question. */
@@ -169,27 +188,45 @@ struct jitter_vm;
    defect table, initialize the pointed defect table.  The defect table is a
    global, already existing for any given VM, which only needs to be initialized
    once even if a VM subsystem is finalized and re-initialized multiple
-   times. */
+   times.
+   Also set the defect fields in the pointed VM struct. */
 void
-jitter_fill_defect_table (jitter_uint *defect_table,
-                          const struct jitter_vm *vm,
-                          const jitter_uint *worst_case_defect_table,
-                          const struct jitter_defect_descriptor *descs,
-                          size_t desc_no)
-  __attribute__ ((nonnull (1, 2, 3, 4)));
+jitter_fill_replacement_table
+   (jitter_uint *replacement_table,
+    struct jitter_vm *vm,
+    const jitter_uint *worst_case_replacement_table,
+    const jitter_uint *call_related_specialized_instruction_ids,
+    jitter_uint call_related_specialized_instruction_id_no,
+    const bool *specialized_instruction_call_relateds,
+    const struct jitter_defect_descriptor *descs,
+    size_t desc_no)
+  __attribute__ ((nonnull (1, 2, 3, 4, 6, 7)));
 
 
 
 
-/* Defect debugging.
+/* Defect debugging and printing.
  * ************************************************************************** */
 
-/* Dump the pointed defect table to the given stream. */
+/* Dump the pointed replacement table to the given stream. */
 void
-jitter_dump_defect_table (FILE *f,
-                          const jitter_uint *defect_table,
-                          const struct jitter_vm *vm)
+jitter_dump_replacement_table (FILE *f,
+                               const jitter_uint *replacement_table,
+                               const struct jitter_vm *vm)
   __attribute__ ((nonnull (1, 2, 3)));
 
+
+/* Print compact information about defects for the pointed VM to the given print
+   context.  This uses the following classes, where "vmprefix" is replaced by
+   the VM lower-case name:
+   - "vmprefix-comment";
+   - "vmprefix-warning".
+   This function is defined unconditionally, and in order to be less cumbersome
+   for the user to call is usable even when defect replacement is not supported
+   or needed. */
+void
+jitter_defect_print_summary (jitter_print_context cx,
+                             const struct jitter_vm *vm)
+  __attribute__ ((nonnull (1, 2)));
 
 #endif // JITTER_DEFECT_H_

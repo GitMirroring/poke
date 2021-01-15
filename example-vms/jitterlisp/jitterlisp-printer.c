@@ -369,7 +369,7 @@ jitterlisp_print_recursive (jitter_print_context cx,
         {
           jitterlisp_begin_class (cx, "unique");
           jitter_print_char_star (cx,
-                                   jitterlisp_unique_object_names [index]);
+                                  jitterlisp_unique_object_names [index]);
         }
       else
         {

@@ -1,6 +1,6 @@
 /* JitterLisp: s-expression implementation.
 
-   Copyright (C) 2017, 2018 Luca Saiu
+   Copyright (C) 2017, 2018, 2021 Luca Saiu
    Updated in 2019 by Luca Saiu
    Written by Luca Saiu
 
@@ -115,12 +115,16 @@ jitterlisp_sexpression_finalize (void)
 const char * const
 jitterlisp_unique_object_names []
   = {
-      "#f",                      /* The unique object with index 0. */
-      "#t",                      /* The unique object with index 1. */
-      "()",                      /* The unique object with index 2. */
-      "#<eof>",                  /* The unique object with index 3. */
-      "#<nothing>",              /* The unique object with index 4. */
-      "#<undefined>",            /* The unique object with index 5. */
+      "#f",                             /* The unique object with index 0. */
+      "#t",                             /* The unique object with index 1. */
+      "()",                             /* The unique object with index 2. */
+      "#<eof>",                         /* The unique object with index 3. */
+      "#<nothing>",                     /* The unique object with index 4. */
+      "#<undefined>",                   /* The unique object with index 5. */
+      "#<uninitialized-register>",      /* The unique object with index 6. */
+      "#<uninitialized-main-stack>",    /* The unique object with index 7. */
+      "#<uninitialized-return-stack>",  /* The unique object with index 8. */
+      "#<uninitialized-heap>"           /* The unique object with index 9. */
     };
 
 

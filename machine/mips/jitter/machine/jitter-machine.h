@@ -722,7 +722,7 @@
     }                                                                           \
   while (false)
 
-/* The assembly template returning to the address in $31, used in JITTER_RETURN
+/* The assembly template returning to the address in $31, used in _JITTER_RETURN
    .  This can assume that the operand jitter_return_addr is always in $31. */
 #if defined (JITTER_HOST_CPU_IS_MIPS_R6_OR_LATER)
 # define JITTER_ASM_RETURN          \
@@ -740,7 +740,7 @@
    the CPU branch target predictor, differently from other registers; GCC
    generates code consistent with this hypothesis.  So it's simple: place the
    target address into $31 , and jump to it. */
-#define JITTER_RETURN(link_rvalue)                                             \
+#define _JITTER_RETURN(link_rvalue)                                            \
   do                                                                           \
     {                                                                          \
       /* By using a local register variable we can avoid a register copy */    \
@@ -777,7 +777,7 @@
 
 /* Easy: perform a jump-and-link via ragister, and the return address will be
    in $31 . */
-#define JITTER_BRANCH_AND_LINK_INTERNAL(callee_rvalue)                        \
+#define _JITTER_BRANCH_AND_LINK_NATIVE(callee_rvalue)                         \
   do                                                                          \
     {                                                                         \
       const void * const jitter_destination =                                 \
@@ -793,26 +793,22 @@
                 : [_jitter_the_target] "r" (jitter_destination) /* inputs. */ \
                 : "$31" /* clobbers. */                                       \
                 : jitter_dispatch_label /* gotolabels. */);                   \
-      /* Skip the rest of the specialized instruction, for compatibility */   \
-      /* with more limited dispatches. */                                     \
-      JITTER_JUMP_TO_SPECIALIZED_INSTRUCTION_END;                             \
+      /* It would be incorrect to have __builtin_unreachable or               \
+         JITTER_JUMP_TO_SPECIALIZED_INSTRUCTION_END here: see the comment in  \
+         the x86_64 version. */                                               \
     }                                                                         \
   while (false)
 
 /* The assembly template branching-and-linking-with via register, used in
-   JITTER_BRANCH_AND_LINK_WITH . */
+   _JITTER_BRANCH_AND_LINK_WITH_NATIVE . */
 #if defined (JITTER_HOST_CPU_IS_MIPS_R6_OR_LATER)
 # define JITTER_ASM_BRANCH_AND_LINK_WITH_TEMPLATE                   \
     /* The pre-r6 solution would work here as well, and the delay   \
        slot would not be wasted.  However I am assuming that in     \
        some new out-of-order implementations compact branches may   \
        be more efficient. */                                        \
-    "\n.set noreorder\n\t"                                          \
-    "\n.set nomacro\n\t"                                            \
     "or $31, %[jitter_new_link], $0\n\t"                            \
-    "jic %[jitter_callee_rvalue], 0\n\t"                            \
-    "\n.set macro\n\t"                                              \
-    "\n.set reorder\n\t"
+    "jic %[jitter_callee_rvalue], 0\n\t"
 #else
 # define JITTER_ASM_BRANCH_AND_LINK_WITH_TEMPLATE  \
     "\n.set noreorder\n\t"                         \
@@ -825,7 +821,8 @@
 
 /* Perform an ordinary jump thru register, and load the given return address
    in $31, exploiting the delay slot. */
-#define JITTER_BRANCH_AND_LINK_WITH(_jitter_callee_rvalue, _jitter_new_link)  \
+#define _JITTER_BRANCH_AND_LINK_WITH_NATIVE(_jitter_callee_rvalue,            \
+                                            _jitter_new_link)                 \
   do                                                                          \
     {                                                                         \
       const void * const jitter_callee_rvalue =                               \
@@ -842,17 +839,18 @@
                   [jitter_new_link] "r" (jitter_new_link) /* inputs. */       \
                 : "$31" /* clobbers. */                                       \
                 : jitter_dispatch_label /* gotolabels. */);                   \
-      /* The rest of the VM instruction is unreachable: this is an            \
+      /* The rest of the VM instruction is unreachable: this tail call is an  \
          unconditional jump. */                                               \
       __builtin_unreachable ();                                               \
     }                                                                         \
   while (false)
 
 #ifdef JITTER_MACHINE_SUPPORTS_PATCH_IN
-/* Perform a pseudo-direct jump-and-link, and the return address will be in $31
-   .  Of course we need a patch-in for the pseudo-direct jump-and-link, since
+/* Perform (pre-r6) a pseudo-direct jump-and-link or (>= r6) a branch-and-link
+   compact, with the return address in $31 .
+   Of course we need a patch-in for the jump or branch instruction, since
    the destination address is encoded in the jumping instruction. */
-#define _JITTER_BRANCH_FAST_AND_LINK_INTERNAL(target_index)                    \
+#define _JITTER_BRANCH_FAST_AND_LINK_NATIVE(target_index)                      \
   do                                                                           \
     {                                                                          \
       asm goto (JITTER_ASM_DEFECT_DESCRIPTOR                                   \
@@ -866,10 +864,9 @@
                   JITTER_INPUT_VM_INSTRUCTION_BEGINNING /* inputs */           \
                 : /* clobbers. */                                              \
                 : jitter_dispatch_label /* gotolabels. */);                    \
-      /* The rest of this specialized instruction is unreachable.  This        \
-         implementation is not based on hardware call and return, so there     \
-         is no need to generate a hardware jump either. */                     \
-      __builtin_unreachable ();                                                \
+      /* It would be incorrect to have __builtin_unreachable or                \
+         JITTER_JUMP_TO_SPECIALIZED_INSTRUCTION_END here: see the comment in   \
+         the x86_64 version. */                                                \
     }                                                                          \
   while (false)
 #endif // #ifdef JITTER_MACHINE_SUPPORTS_PATCH_IN

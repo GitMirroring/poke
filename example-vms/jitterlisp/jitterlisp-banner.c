@@ -1,6 +1,6 @@
 /* JitterLisp: banners for interactive use.
 
-   Copyright (C) 2017, 2018, 2019, 2020 Luca Saiu
+   Copyright (C) 2017, 2018, 2019, 2020, 2021 Luca Saiu
    Written by Luca Saiu
 
    This file is part of the JitterLisp language implementation, distributed as
@@ -34,7 +34,7 @@ static const char *
 jitterlisp_interactive_banner_text =
 "================================================================\n"
 "JitterLisp (from Jitter version " JITTER_PACKAGE_VERSION ")\n"
-"Copyright (C) 2017-2020 Luca Saiu\n"
+"Copyright (C) 2017-2021 Luca Saiu\n"
 "\n"
 "JitterLisp comes with ABSOLUTELY NO WARRANTY; type (no-warranty)\n"
 "for details.  This program is free software, and you are welcome\n"
@@ -48,13 +48,17 @@ jitterlisp_interactive_banner_text =
 /* Banner printing.
  * ************************************************************************** */
 
+/* Print a line describing a feature in the banner.  If warn is true then use
+   the warning style for the value; also use the warning style, unconditionally,
+   if the value contains an exclamation point. */
 static void
 jitterlisp_interactive_banner_feature (const char *feature_name,
-                                       const char *feature_value)
+                                       const char *feature_value,
+                                       bool warning)
 {
   const int name_width = 29;
   jitter_print_char_star (jitterlisp_print_context, "* ");
-  jitterlisp_begin_class (jitterlisp_print_context, "banner_feature_name");
+  jitterlisp_begin_class (jitterlisp_print_context, "banner-feature-name");
   jitter_print_char_star (jitterlisp_print_context, feature_name);
   jitterlisp_end_class (jitterlisp_print_context);
   jitter_print_char_star (jitterlisp_print_context, ":");
@@ -67,9 +71,9 @@ jitterlisp_interactive_banner_feature (const char *feature_name,
   /* By convention if the feature value contains a '!' character then the
      setting is dangerous and the text describing it should be decorated as a
      warning. */
-  char *class_suffix = "banner_feature_value";
-  if (strchr (feature_value, '!') != NULL)
-    class_suffix = "warning";
+  char *class_suffix = "banner-feature-value";
+  if (warning || strchr (feature_value, '!') != NULL)
+    class_suffix = "banner-feature-warning";
   jitterlisp_begin_class (jitterlisp_print_context, class_suffix);
   jitter_print_char_star (jitterlisp_print_context, feature_value);
   jitterlisp_end_class (jitterlisp_print_context);
@@ -86,9 +90,27 @@ jitterlisp_interactive_banner (void)
   jitterlisp_end_class (jitterlisp_print_context);
 
   /* Show information about configured or enabled features. */
-  const struct jitter_vm_configuration *c = jitterlispvm_vm_configuration;
+  const struct jitter_vm * const vm = jitterlispvm_vm;
+  const struct jitter_vm_configuration * const c
+    = jitterlispvm_vm_configuration;
   jitterlisp_interactive_banner_feature ("VM dispatch",
-                                         c->dispatch_human_readable);
+                                         c->dispatch_human_readable, false);
+  char defect_string [200];
+  sprintf (defect_string, "%i (%i call-related), %i replacements%s",
+           vm->defective_specialized_instruction_no,
+           vm->defective_call_related_specialized_instruction_no,
+           vm->replacement_specialized_instruction_no,
+           ((vm->defective_specialized_instruction_no
+             > vm->replacement_specialized_instruction_no)
+            ? " (INCORRECT CODE!)"
+            : ""));
+  bool interesting
+    = (vm->defect_no > 0) || (vm->replacement_specialized_instruction_no > 0);
+  jitterlisp_interactive_banner_feature ("Defective instructions",
+                                         (interesting
+                                          ? defect_string
+                                          : "none"),
+                                         interesting);
   switch (c->instrumentation)
     {
     case jitter_vm_instrumentation_none:
@@ -98,18 +120,15 @@ jitterlisp_interactive_banner (void)
       break;
     case jitter_vm_instrumentation_count:
       jitterlisp_interactive_banner_feature
-        ("VM profiling",
-         "count instrumentation (slow!)");
+        ("VM profiling", "count instrumentation", true);
       break;
     case jitter_vm_instrumentation_sample:
       jitterlisp_interactive_banner_feature
-        ("VM profiling",
-         "sample instrumentation (slow!)");
+        ("VM profiling", "sample instrumentation", true);
       break;
     case jitter_vm_instrumentation_count_and_sample:
       jitterlisp_interactive_banner_feature
-        ("VM profiling",
-         "count+sample instrumentation(slow!)");
+        ("VM profiling", "count+sample instrumentation", true);
       break;
     default:
       jitter_fatal ("unknown instrumentation (this should not happen)");
@@ -120,7 +139,7 @@ jitterlisp_interactive_banner (void)
 #else
                                          "run-time type and overflow checking"
 #endif // safety
-                                         );
+                                         , false);
   jitterlisp_interactive_banner_feature ("Heap memory handling",
 #if defined (JITTERLISP_LITTER)
                                          "litter (heap memory leaked!)"
@@ -129,14 +148,14 @@ jitterlisp_interactive_banner (void)
 #else
 # error "unknown GC method"
 #endif // GC
-                                         );
+                                         , false);
   jitterlisp_interactive_banner_feature ("Line editing",
 #if defined (JITTER_HAVE_READLINE)
                                          "GNU Readline"
 #else
                                          "not available"
 #endif // readline
-                                         );
+                                         , false);
   const char *styling;
 #if defined (JITTER_WITH_LIBTEXTSTYLE)
   if (jitterlisp_settings.colorize)
@@ -146,7 +165,7 @@ jitterlisp_interactive_banner (void)
 #else
   styling = "not available";
 #endif
-  jitterlisp_interactive_banner_feature ("Output styling", styling);
+  jitterlisp_interactive_banner_feature ("Output styling", styling, false);
 
   jitter_print_char_star (jitterlisp_print_context, "\n");
 }

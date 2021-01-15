@@ -499,7 +499,7 @@
 
 /* Return using native machine language facilities, when the return address in
    in the given rvalue. */
-#define JITTER_RETURN(link_rvalue)                                             \
+#define _JITTER_RETURN(link_rvalue)                                            \
   do                                                                           \
     {                                                                          \
       const void * jitter_the_return_address = (const void*) (link_rvalue);    \
@@ -517,7 +517,7 @@
 
 /* Perform a branch-and-link to the pointed callee instruction using specific
    machine language features rather than generic indirect branches. */
-#define JITTER_BRANCH_AND_LINK_INTERNAL(callee_rvalue)                        \
+#define _JITTER_BRANCH_AND_LINK_NATIVE(callee_rvalue)                         \
   do                                                                          \
     {                                                                         \
       const void * const jitter_destination =                                 \
@@ -529,15 +529,16 @@
                 : [destination] "r" (jitter_destination) /* inputs. */        \
                 : "ctr", "lr" /* clobbers. */                                 \
                 : jitter_dispatch_label /* gotolabels. */);                   \
-      /* Skip the rest of the specialised instruction, for compatibility */   \
-      /* with more limited dispatches. */                                     \
-      JITTER_JUMP_TO_SPECIALIZED_INSTRUCTION_END;                             \
+      /* It would be incorrect to have __builtin_unreachable or               \
+         JITTER_JUMP_TO_SPECIALIZED_INSTRUCTION_END here: see the comment in  \
+         the x86_64 version. */                                               \
     }                                                                         \
   while (false)
 
 /* Branch to the pointed caleee destination, but set the link register to a
    return address different from the natural one. */
-#define JITTER_BRANCH_AND_LINK_WITH(_jitter_callee_rvalue, _jitter_new_link)  \
+#define _JITTER_BRANCH_AND_LINK_WITH_NATIVE(_jitter_callee_rvalue,            \
+                                            _jitter_new_link)                 \
   do                                                                          \
     {                                                                         \
       const void * const jitter_callee_rvalue =                               \
@@ -548,6 +549,9 @@
                 JITTER_ASM_COMMENT_UNIQUE("Branch-and-link-with, pretending"  \
                                           "to go to "                         \
                                           "%l[jitter_dispatch_label]")        \
+                /* This PowerPC version is particularly pretty and natural,   \
+                   and does not negatively affect branch target prediction    \
+                   for once. */                                               \
                 "mtctr %[jitter_callee_rvalue]\n\t"                           \
                 "mtlr %[jitter_new_link]\n\t"                                 \
                 "bctr\n\t"                                                    \
@@ -556,7 +560,7 @@
                   [jitter_new_link] "r" (jitter_new_link) /* inputs. */       \
                 : "ctr", "lr" /* clobbers. */                                 \
                 : jitter_dispatch_label /* gotolabels. */);                   \
-      /* The rest of the VM instruction is unreachable: this is an            \
+      /* The rest of the VM instruction is unreachable: this tail call is an  \
          unconditional jump. */                                               \
       __builtin_unreachable ();                                               \
     }                                                                         \
@@ -565,7 +569,7 @@
 /* Perform an ordinary bl, writing the return address into the link register.
    Of course we need a patch-in, since the destination address is encoded in
    the jumping instruction. */
-#define _JITTER_BRANCH_FAST_AND_LINK_INTERNAL(target_index)                    \
+#define _JITTER_BRANCH_FAST_AND_LINK_NATIVE(target_index)                      \
   do                                                                           \
     {                                                                          \
       asm goto (JITTER_ASM_DEFECT_DESCRIPTOR                                   \
@@ -579,10 +583,9 @@
                   JITTER_INPUT_VM_INSTRUCTION_BEGINNING /* inputs */           \
                 : /* clobbers. */                                              \
                 : jitter_dispatch_label /* gotolabels. */);                    \
-      /* The rest of this specialised instruction is unreachable.  This        \
-         implementation is not based on hardware call and return, so there     \
-         is no need to generate a hardware jump either. */                     \
-      __builtin_unreachable ();                                                \
+      /* It would be incorrect to have __builtin_unreachable or                \
+         JITTER_JUMP_TO_SPECIALIZED_INSTRUCTION_END here: see the comment in   \
+         the x86_64 version. */                                                \
     }                                                                          \
   while (false)
 

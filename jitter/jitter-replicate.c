@@ -240,8 +240,10 @@ jitter_replicate_program (struct jitter_mutable_routine *p)
          just add a known small constant to the current thread pointer, and this
          is what JITTER_BRANCH_AND_LINK does for minimal-threading dispatch.
          Just to be clean and make the thing visible, set the unused parameter
-         to minus one. */
-      if (caller)
+         to minus one.
+         Notice that non-relocatable callers behave like ordinary
+         non-relocatables, and not like callers. */
+      else if (caller)
         next_thread [residual_arity - 1].fixnum = -1;
 #endif // #ifdef JITTER_DISPATCH_MINIMAL_THREADING
 
@@ -358,14 +360,20 @@ jitter_replicate_program (struct jitter_mutable_routine *p)
 
           /* The implicit residual return address argument for callers is
              useless when the implementation supports machine-specific
-             procedures: in this case just skip the snippet. */
-          bool supports_native_procedures
+             procedures: in this case just skip the snippet... */
+          bool can_use_native_procedures
 #ifdef JITTER_MACHINE_SUPPORTS_PROCEDURE
             = true;
 #else
             = false;
 #endif // #ifdef JITTER_MACHINE_SUPPORTS_PROCEDURE
-          if (caller && j == residual_arity - 1 && supports_native_procedures)
+
+          /* ...Unless this specialised instructions is non-relocatable: in that
+             case the return address must be materialised. */
+          if (! relocatable)
+            can_use_native_procedures = false;
+
+          if (caller && j == residual_arity - 1 && can_use_native_procedures)
           {
             /* Replace the unused specialized argument with minus one, to make
                it more evident when disassembling. */

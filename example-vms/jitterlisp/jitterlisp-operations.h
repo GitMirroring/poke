@@ -1,6 +1,6 @@
 /* JitterLisp: operations on JitterLisp objects: header.
 
-   Copyright (C) 2017, 2018, 2019, 2020 Luca Saiu
+   Copyright (C) 2017, 2018, 2019, 2020, 2021 Luca Saiu
    Written by Luca Saiu
 
    This file is part of the JitterLisp language implementation, distributed as
@@ -1100,6 +1100,7 @@
     jitter_int _jitterlisp_character                                      \
       = JITTERLISP_CHARACTER_DECODE(_jitterlisp_in0);                     \
     jitter_print_char (jitterlisp_print_context, _jitterlisp_character);  \
+    jitter_print_flush (jitterlisp_print_context);                        \
     (_jitterlisp_out) = JITTERLISP_NOTHING;                               \
   JITTER_END_
 
@@ -1444,15 +1445,18 @@
 # define JITTERLISP_TIMES_OR_OVERFLOW_(jitterlisp_out, jitterlisp_in0,      \
                                        jitterlisp_in1, label)               \
   JITTERLISP_TIMES_ ((jitterlisp_out), (jitterlisp_in0), (jitterlisp_in1))
-# define JITTERLISP_DIVIDED_OR_OVERFLOW_(jitterlisp_out, jitterlisp_in0,      \
-                                         jitterlisp_in1, label)               \
-  JITTERLISP_DIVIDED_ ((jitterlisp_out), (jitterlisp_in0), (jitterlisp_in1))
-# define JITTERLISP_QUOTIENT_OR_OVERFLOW_(jitterlisp_out, jitterlisp_in0,     \
-                                          jitterlisp_in1, label)              \
-  JITTERLISP_DIVIDED_ ((jitterlisp_out), (jitterlisp_in0), (jitterlisp_in1))
-# define JITTERLISP_REMAINDER_OR_OVERFLOW_(jitterlisp_out, jitterlisp_in0,      \
-                                           jitterlisp_in1, label)               \
-  JITTERLISP_REMAINDER_ ((jitterlisp_out), (jitterlisp_in0), (jitterlisp_in1))
+# define JITTERLISP_DIVIDED_OR_OVERFLOW_(jitterlisp_out, jitterlisp_in0,  \
+                                         jitterlisp_in1, label)           \
+  JITTERLISP_DIVIDED_UNSAFE_ ((jitterlisp_out),                           \
+                              (jitterlisp_in0), (jitterlisp_in1))
+# define JITTERLISP_QUOTIENT_OR_OVERFLOW_(jitterlisp_out, jitterlisp_in0,  \
+                                          jitterlisp_in1, label)           \
+  JITTERLISP_DIVIDED_UNSAFE_ ((jitterlisp_out),                            \
+                              (jitterlisp_in0), (jitterlisp_in1))
+# define JITTERLISP_REMAINDER_OR_OVERFLOW_(jitterlisp_out, jitterlisp_in0,  \
+                                           jitterlisp_in1, label)           \
+  JITTERLISP_REMAINDER_UNSAFE_ ((jitterlisp_out),                           \
+                                (jitterlisp_in0), (jitterlisp_in1))
 # define JITTERLISP_1PLUS_OR_OVERFLOW_(jitterlisp_out, jitterlisp_in0, label)  \
   JITTERLISP_1PLUS_ ((jitterlisp_out), (jitterlisp_in0))
 # define JITTERLISP_1MINUS_OR_OVERFLOW_(jitterlisp_out, jitterlisp_in0, label)  \
@@ -1491,16 +1495,23 @@
                                             (jitterlisp_in1),                  \
                                             (label));                          \
     JITTER_END_
-# define JITTERLISP_DIVIDED_OR_OVERFLOW_(jitterlisp_out,                     \
-                                         jitterlisp_in0, jitterlisp_in1,     \
-                                         label)                              \
-    JITTER_BEGIN_                                                            \
-      jitter_int jitterlisp_out_decoded;                                     \
-      JITTER_DIVIDED_BRANCH_FAST_IF_OVERFLOW (jitterlisp_out_decoded,        \
-                                              (jitterlisp_in0),              \
-                                              (jitterlisp_in1),              \
-                                              (label));                      \
-      (jitterlisp_out) = JITTERLISP_FIXNUM_ENCODE (jitterlisp_out_decoded);  \
+# define JITTERLISP_DIVIDED_OR_OVERFLOW_(jitterlisp_out,                       \
+                                         jitterlisp_in0, jitterlisp_in1,       \
+                                         label)                                \
+    JITTER_BEGIN_                                                              \
+      jitter_int jitterlisp_out_decoded;                                       \
+      jitter_int jitterlisp_in0_result = (jitterlisp_in0);                     \
+      jitter_int jitterlisp_in1_result = (jitterlisp_in1);                     \
+      if ((jitterlisp_in0_result                                               \
+           == (JITTER_MOST_NEGATIVE_SIGNED_IN_BITS (sizeof (jitter_int)        \
+                                                    * CHAR_BIT)                \
+               & ~ (jitter_int) ((1LU << JITTERLISP_FIXNUM_TAG_BIT_NO) - 1)))  \
+          && jitterlisp_in1_result == JITTERLISP_FIXNUM_ENCODE (-1))           \
+        JITTER_BRANCH_FAST (label);                                            \
+      JITTER_BRANCH_FAST_IF_ZERO (jitterlisp_in1_result, (label));             \
+      jitterlisp_out_decoded = (jitterlisp_in0_result                          \
+                                / jitterlisp_in1_result);                      \
+      (jitterlisp_out) = JITTERLISP_FIXNUM_ENCODE (jitterlisp_out_decoded);    \
     JITTER_END_
 # define JITTERLISP_QUOTIENT_OR_OVERFLOW_(jitterlisp_out, jitterlisp_in0,  \
                                           jitterlisp_in1, label)           \

@@ -286,7 +286,7 @@ jitterlisp_unique_object_names [];
 
 /* How many unique objects there are.  This of course must agree with the
    definitions below. */
-#define JITTERLISP_UNIQUE_OBJECT_NO  6
+#define JITTERLISP_UNIQUE_OBJECT_NO  10
 
 /* Define every unique object.  The names in the definition of
    jitterlisp_unique_object_names must follow this order. */
@@ -314,6 +314,13 @@ jitterlisp_unique_object_names [];
    This is used in the internal representation but should never be the result of
    a correct evaluation.  No reader syntax. */
 #define JITTERLISP_UNDEFINED   JITTERLISP_UNIQUE_ENCODE(5)
+
+/* Other unique objects which should never be visible to the user as the result
+   of any evaluation, but are useful internally for debugging purposes. */
+#define JITTERLISP_UNINITIALIZED_REGISTER_VALUE     JITTERLISP_UNIQUE_ENCODE(6)
+#define JITTERLISP_UNINITIALIZED_MAINSTACK_VALUE    JITTERLISP_UNIQUE_ENCODE(7)
+#define JITTERLISP_UNINITIALIZED_RETURNSTACK_VALUE  JITTERLISP_UNIQUE_ENCODE(8)
+#define JITTERLISP_UNINITIALIZED_HEAP_VALUE         JITTERLISP_UNIQUE_ENCODE(9)
 
 /* Unique object predicates.  Since unique objects are unboxed (and unique)
    these are simple comparisons by identity.  The expansion evaluates to a

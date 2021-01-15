@@ -153,7 +153,7 @@
 /* Skip the rest of this page if JITTER_MACHINE_SUPPORTS_PATCH_IN has been
    disabled (presumably for testing), or if patch-ins are not used with the
    current dispatching mode. */
-#if    defined(JITTER_MACHINE_SUPPORTS_PATCH_IN) \
+#if defined(JITTER_MACHINE_SUPPORTS_PATCH_IN)  \
     && defined(JITTER_DISPATCH_NO_THREADING)
 
 /* It's nice to have a byte always making up invalid instructions when repeated
@@ -344,8 +344,7 @@
 # define JITTER_MACHINE_SUPPORTS_PROCEDURE    1
 #endif // #ifdef JITTER_MACHINE_SUPPORTS_PATCH_IN
 
-#if    defined(JITTER_MACHINE_SUPPORTS_PATCH_IN)  \
-    && defined(JITTER_DISPATCH_NO_THREADING)      \
+#if    defined(JITTER_MACHINE_SUPPORTS_PATCH_IN)   \
     && defined(JITTER_MACHINE_SUPPORTS_PROCEDURE)
 
 #ifdef JITTER_BRANCH_AND_LINK_NO_CALL
@@ -368,7 +367,7 @@
   while (false)
 
 /* Procedure return, the version not relying on callq / retq . */
-#define JITTER_RETURN(link_rvalue)                                    \
+#define _JITTER_RETURN(link_rvalue)                                   \
   do                                                                  \
     {                                                                 \
       asm goto (JITTER_ASM_DEFECT_DESCRIPTOR                          \
@@ -383,7 +382,7 @@
   while (false)
 
 /* Branch-and-link, the version not relying on callq / retq . */
-#define JITTER_BRANCH_AND_LINK_INTERNAL(callee_rvalue)                       \
+#define _JITTER_BRANCH_AND_LINK_NATIVE(callee_rvalue)                        \
   do                                                                         \
     {                                                                        \
       asm goto (JITTER_ASM_DEFECT_DESCRIPTOR                                 \
@@ -395,16 +394,14 @@
                 : [the_callee_rvalue] "rm" (callee_rvalue) /* inputs. */     \
                 : /* clobbers. */                                            \
                 : jitter_dispatch_label /* gotolabels. */);                  \
-      /* The rest of this specialized instruction is unreachable.  This      \
-         implementation is not based on hardware call and return, so there   \
-         is no need to generate a hardware jump either. */                   \
-      __builtin_unreachable ();                                              \
+      /* See the comment in _JITTER_BRANCH_AND_LINK_NATIVE below. */         \
     }                                                                        \
   while (false)
 
 #ifdef JITTER_MACHINE_SUPPORTS_PATCH_IN
+
 /* Branch-and-link to a fast label, the version not relying on callq / retq . */
-#define _JITTER_BRANCH_FAST_AND_LINK_INTERNAL(target_index)                              \
+#define _JITTER_BRANCH_FAST_AND_LINK_NATIVE(target_index)                       \
   do                                                                            \
     {                                                                           \
       asm goto (JITTER_ASM_DEFECT_DESCRIPTOR                                    \
@@ -421,14 +418,14 @@
                   JITTER_INPUT_VM_INSTRUCTION_BEGINNING /* inputs */            \
                 : /* clobbers. */                                               \
                 : jitter_dispatch_label /* gotolabels. */);                     \
-      /* See the comment for JITTER_BRANCH_AND_LINK_INTERNAL . */               \
-      __builtin_unreachable ();                                                 \
+      /* See the comment in _JITTER_BRANCH_AND_LINK_NATIVE below. */            \
     }                                                                           \
   while (false)
 
 /* Branch-and-link-with, the version not relying on callq / retq -- or in this
    case, not relying on the hardware stack to hold the return address. */
-#define JITTER_BRANCH_AND_LINK_WITH(_jitter_callee_rvalue, _jitter_new_link)    \
+#define _JITTER_BRANCH_AND_LINK_WITH_NATIVE(_jitter_callee_rvalue,              \
+                                            _jitter_new_link)                   \
   do                                                                            \
     {                                                                           \
       const void *jitter_callee_rvalue = (_jitter_callee_rvalue);               \
@@ -478,7 +475,7 @@
   while (false)
 
 /* Procedure return, the version relying on callq / retq . */         \
-#define JITTER_RETURN(link_rvalue)                                    \
+#define _JITTER_RETURN(link_rvalue)                                   \
   do                                                                  \
     {                                                                 \
       asm goto (JITTER_ASM_DEFECT_DESCRIPTOR                          \
@@ -494,7 +491,7 @@
   while (false)
 
 /* Branch-and-link, the version relying on callq / retq . */
-#define JITTER_BRANCH_AND_LINK_INTERNAL(callee_rvalue)                      \
+#define _JITTER_BRANCH_AND_LINK_NATIVE(callee_rvalue)                       \
   do                                                                        \
     {                                                                       \
       const void * restrict jitter_call_indirect_target = (callee_rvalue);  \
@@ -507,15 +504,20 @@
                   , "X"(jitter_ip)                                          \
                 : /* clobbers */                                            \
                 : jitter_dispatch_label /* goto labels */);                 \
-      /* Skip the rest of the specialized instruction, for compatibility    \
-         with more limited dispatches. */                                   \
-      JITTER_JUMP_TO_SPECIALIZED_INSTRUCTION_END;                           \
+      /* It is possible for control to return here.  This is why Jitter     \
+         does not specify whether code in the same VM instruction after a   \
+         branch-and-link is executed or not.  Adding __builtin_unreachable  \
+         here would be wrong: GCC might move code here incorrectly assuming \
+         that control cannot fall through.                                  \
+         Adding JITTER_JUMP_TO_SPECIALIZED_INSTRUCTION_END here, as an      \
+         intra-instruction jump, can introduce undetectable defects.  This  \
+         is the rationale for Jitter's ugly branch-and-link semantics. */   \
     }                                                                       \
   while (false)
 
 #ifdef JITTER_MACHINE_SUPPORTS_PATCH_IN
 /* Branch-and-link to a fast label, the version relying on callq / retq . */
-#define _JITTER_BRANCH_FAST_AND_LINK_INTERNAL(target_index)                     \
+#define _JITTER_BRANCH_FAST_AND_LINK_NATIVE(target_index)                       \
   do                                                                            \
     {                                                                           \
       asm goto (JITTER_ASM_DEFECT_DESCRIPTOR                                    \
@@ -529,16 +531,15 @@
                   JITTER_INPUT_VM_INSTRUCTION_BEGINNING /* inputs */            \
                 : /* clobbers */                                                \
                 : jitter_dispatch_label /* goto labels */);                     \
-      /* Skip the rest of the specialized instruction, for compatibility */     \
-      /* with more limited dispatches. */                                       \
-      JITTER_JUMP_TO_SPECIALIZED_INSTRUCTION_END;                               \
+      /* See the comment in _JITTER_BRANCH_AND_LINK_NATIVE above. */            \
     }                                                                           \
   while (false)
 #endif // #ifdef JITTER_MACHINE_SUPPORTS_PATCH_IN
 
 /* Branch-and-link-with, the version relying on callq / retq -- in this case,
    relying on the hardware stack to hold the return address. */
-#define JITTER_BRANCH_AND_LINK_WITH(_jitter_callee_rvalue, _jitter_new_link)    \
+#define _JITTER_BRANCH_AND_LINK_WITH_NATIVE(_jitter_callee_rvalue,              \
+                                            _jitter_new_link)                   \
   do                                                                            \
     {                                                                           \
       const void *jitter_callee_rvalue = (_jitter_callee_rvalue);               \

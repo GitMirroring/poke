@@ -5925,7 +5925,9 @@
           c
           (length formals)
           (reverse! reversed-nonlocal-values)
-          (reverse! (compiler-reversed-instructions s))))))
+          (reverse! (compiler-reversed-instructions s)))
+;;(newline) (disassemble-procedure c) (newline)
+      )))
 
 ;;; A convenient procedure to call when one closure is being compiled in
 ;;; isolation.

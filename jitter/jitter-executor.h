@@ -1,6 +1,6 @@
 /* Jitter: runtime VM-independent header for generated executors.
 
-   Copyright (C) 2016, 2017, 2019, 2020 Luca Saiu
+   Copyright (C) 2016, 2017, 2019, 2020, 2021 Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -55,6 +55,7 @@
 #if defined (JITTER_HAVE_KNOWN_BINARY_FORMAT)
 # include <jitter/jitter-sections.h>
 #endif // #if defined (JITTER_HAVE_KNOWN_BINARY_FORMAT)
+# include <jitter/jitter-defect.h>
 #if defined (JITTER_ENABLE_ASSEMBLY)
 # include <jitter/machine/jitter-machine.h>
 #endif //#if defined (JITTER_ENABLE_ASSEMBLY)
@@ -375,31 +376,31 @@
     }                                                                  \
   while (false)
 
-/* Expand to zero assembly instructions, but with inline asm constraints and
-   intrinsics affecting GCC's program representation as if the generated code
-   unconditionally jumped to the content of jitter_anywhere_variable .
+//* * Expand to zero assembly instructions, but with inline asm constraints and */
+/*    intrinsics affecting GCC's program representation as if the generated code */
+/*    unconditionally jumped to the content of jitter_anywhere_variable . */
 
-   Rationale: this code is actually unreachable, but for this program point I
-   want GCC to use a register assignment which is coherent with the beginning of
-   any other VM instruction, which may actually follow this point during
-   replicated code execution.  I would like to simply insert a "goto
-   jump_anywhere;" here, but GCC might move the jump before the instruction end
-   label [FIXME: can it really happen?  I'm pretty sure I saw that more than
-   once, but I should ask some GCC expert for confirmation], which must not
-   happen.  So, in order to generate something GCC optimizations can't meddle
-   with, I will insert a pretend-jump in inline assembly, with the constraint
-   that the control may only flow to the jump_anywhere label; from there control
-   could actually jump to any label in this function.  This way I ensure
-   compatibility among VM instructions without generating too much junk code, if
-   any.  The input operand is required to be in memory and *not* in a register,
-   so that GCC doesn't waste a register on this useless thing. */
-#define JITTER_PRETEND_TO_JUMP_ANYWHERE          \
-  do                                             \
-    {                                            \
-      JITTER_PRETEND_TO_POSSIBLY_JUMP_ANYWHERE();  \
-      __builtin_unreachable ();                  \
-    }                                            \
-  while (false)
+/*    Rationale: this code is actually unreachable, but for this program point I */
+/*    want GCC to use a register assignment which is coherent with the beginning of */
+/*    any other VM instruction, which may actually follow this point during */
+/*    replicated code execution.  I would like to simply insert a "goto */
+/*    jump_anywhere;" here, but GCC might move the jump before the instruction end */
+/*    label [FIXME: can it really happen?  I'm pretty sure I saw that more than */
+/*    once, but I should ask some GCC expert for confirmation], which must not */
+/*    happen.  So, in order to generate something GCC optimizations can't meddle */
+/*    with, I will insert a pretend-jump in inline assembly, with the constraint */
+/*    that the control may only flow to the jump_anywhere label; from there control */
+/*    could actually jump to any label in this function.  This way I ensure */
+/*    compatibility among VM instructions without generating too much junk code, if */
+/*    any.  The input operand is required to be in memory and *not* in a register, */
+/*    so that GCC doesn't waste a register on this useless thing. *\/ */
+/* #define JITTER_PRETEND_TO_JUMP_ANYWHERE          \ */
+/*   do                                             \ */
+/*     {                                            \ */
+/*       JITTER_PRETEND_TO_POSSIBLY_JUMP_ANYWHERE();  \ */
+/*       __builtin_unreachable ();                  \ */
+/*     }                                            \ */
+/*   while (false) */
 
 
 
@@ -444,12 +445,12 @@
 /* The macro JITTER_STATE_BACKING expands to the current VM state backing, as a
    struct.  It is defined in machine-generated code. */
 
-/* Expand to an l-value referrign the named field in the current VM state
+/* Expand to an l-value referring the named field in the current VM state
    runtime. */
 #define JITTER_STATE_RUNTIME_FIELD(field_name)  \
   (JITTER_STATE_RUNTIME.field_name)
 
-/* Expand to an l-value referrign the named field in the current VM state
+/* Expand to an l-value referring the named field in the current VM state
    backing. */
 #define JITTER_STATE_BACKING_FIELD(field_name)  \
   (JITTER_STATE_BACKING.field_name)
@@ -510,7 +511,13 @@
 # define JITTER_EXIT()                                                         \
     do                                                                         \
       {                                                                        \
-        JITTER_COMPUTED_GOTO (jitter_saved_exit_non_replicated_code_pointer);  \
+        /* FIXME: this idea may be useful to abstract into a macro. */         \
+        /* void *_jitter_desination_label                                         \ */ \
+        /*   = (jitter_saved_exit_non_replicated_code_pointer);                   \ */ \
+        /* asm (JITTER_ASM_COMMENT_UNIQUE ("pretend to alter jump destination")   \ */ \
+        /*      : "+X" (_jitter_desination_label));                               \ */ \
+        JITTER_COMPUTED_GOTO_IN_ASM \
+           (jitter_saved_exit_non_replicated_code_pointer); \
       }                                                                        \
     while (false)
 #else
@@ -578,13 +585,14 @@
 #if   defined(JITTER_DISPATCH_SWITCH)            \
    || defined(JITTER_DISPATCH_DIRECT_THREADING)
 # define JITTER_SKIP_RESIDUALS_                                       \
-  JITTER_SET_IP(jitter_ip + JITTER_SPECIALIZED_INSTRUCTION_WORD_NO);
+    JITTER_SET_IP(jitter_ip + JITTER_SPECIALIZED_INSTRUCTION_WORD_NO);
 #elif defined(JITTER_DISPATCH_MINIMAL_THREADING)
 # define JITTER_SKIP_RESIDUALS_                                       \
-  JITTER_SET_IP(jitter_ip + JITTER_SPECIALIZED_INSTRUCTION_WORD_NO);
+    /* FIXME: factor, if the definition is the same for three dispatches. ****************************** */ \
+    JITTER_SET_IP(jitter_ip + JITTER_SPECIALIZED_INSTRUCTION_WORD_NO);
 #elif defined(JITTER_DISPATCH_NO_THREADING)
 # define JITTER_SKIP_RESIDUALS_  \
-  /* do nothing. */
+    /* do nothing. */
 #else
 # error "unknown dispatching model"
 #endif // #if   defined([dispatching model]...
@@ -684,12 +692,14 @@ if (jitter_ip != NULL) goto * jitter_ip; \
    block. */
 
 /* Define a trivial wrapper around GNU C's computed goto.  This will be used for
-   direct threading, where tail-merging is not a problem. */
-#define JITTER_COMPUTED_GOTO_TRIVIAL(target)  \
-  do                                          \
-    {                                         \
-      goto * (target);                        \
-    }                                         \
+   direct threading, where tail-merging is not a problem, and for defect
+   replacement in non-relocatable instructions, so that even tail-merging or
+   PC-relative memory access cannot be a problem.. */
+#define JITTER_COMPUTED_GOTO_FALLBACK(target)  \
+  do                                           \
+    {                                          \
+      goto * (target);                         \
+    }                                          \
   while (false)
 
 /* Perform the equivalent of a goto * in assembly, using unique inline asm code,
@@ -763,24 +773,11 @@ if (jitter_ip != NULL) goto * jitter_ip; \
     while (false)
 #endif // #if (! defined(JITTER_ASM_COMPUTED_GOTO_TEMPLATE)) || (! defined ...
 
-/* Define JITTER_COMPUTED_GOTO using one of the macros above. */
-#ifdef JITTER_REPLICATE
-  /* Replication is enabled: use the assembly version of goto * , or the trivial
-     version if there is no assembly version available. */
-# ifdef JITTER_COMPUTED_GOTO_IN_ASM
-#   define JITTER_COMPUTED_GOTO(target)    \
-      JITTER_COMPUTED_GOTO_IN_ASM(target)
-#   else
-#   define JITTER_COMPUTED_GOTO(target)     \
-      JITTER_COMPUTED_GOTO_TRIVIAL(target)
-# endif // ifdef JITTER_COMPUTED_GOTO_IN_ASM
-#else /* replication is disabled */
-  /* Replication is disabled: we don't need the hacks above, so in this case we
-     can always use the fallback definition, using a native GCC computed goto;
-     this might be more efficient with conditionals. */
-# define JITTER_COMPUTED_GOTO(target)      \
-    JITTER_COMPUTED_GOTO_TRIVIAL(target)
-#endif // #ifdef JITTER_REPLICATE
+/* With direct-threading there is no need to worry about branches in
+   assembly. */
+#if defined (JITTER_DISPATCH_DIRECT_THREADING)
+# undef JITTER_COMPUTED_GOTO_IN_ASM
+#endif
 
 
 
@@ -788,21 +785,21 @@ if (jitter_ip != NULL) goto * jitter_ip; \
 /* VM branching.
  * ************************************************************************** */
 
-/* Set the VM instruction pointer.  This is only defined for dispatching
-   models where an instruction pointer exists. */
+/* Set the VM instruction pointer.  This is only defined for dispatches where an
+ instruction pointer exists. */
 #if      defined(JITTER_DISPATCH_SWITCH)             \
       || defined(JITTER_DISPATCH_DIRECT_THREADING)   \
       || defined(JITTER_DISPATCH_MINIMAL_THREADING)
-# define JITTER_SET_IP(target_pointer)                           \
-    do                                                           \
-      {                                                          \
-        jitter_ip = (const union jitter_word*)(target_pointer);  \
-      }                                                          \
+# define JITTER_SET_IP(target_pointer)                            \
+    do                                                            \
+      {                                                           \
+        jitter_ip = (const union jitter_word*) (target_pointer);  \
+      }                                                           \
     while (false)
 #endif // #if      defined(JITTER_DISPATCH_SWITCH) || ...
 
 /* Jump to the current VM instruction pointer.  This is only defined for
-   dispatching models where an instruction pointer is actually used.*/
+   dispatches where an instruction pointer is actually used.*/
 #if      defined(JITTER_DISPATCH_SWITCH)
 # define JITTER_BRANCH_TO_IP()                 \
     do                                         \
@@ -812,11 +809,11 @@ if (jitter_ip != NULL) goto * jitter_ip; \
     while (false)
 #elif    defined(JITTER_DISPATCH_DIRECT_THREADING)   \
       || defined(JITTER_DISPATCH_MINIMAL_THREADING)
-# define JITTER_BRANCH_TO_IP()                    \
-    do                                            \
-      {                                           \
-        JITTER_COMPUTED_GOTO(jitter_ip->thread);  \
-      }                                           \
+# define JITTER_BRANCH_TO_IP()                     \
+    do                                             \
+      {                                            \
+        JITTER_COMPUTED_GOTO (jitter_ip->thread);  \
+      }                                            \
     while (false)
 #endif // #if   defined(...
 
@@ -835,7 +832,6 @@ if (jitter_ip != NULL) goto * jitter_ip; \
     {                                  \
       JITTER_SET_IP(target_pointer);   \
       JITTER_BRANCH_TO_IP();           \
-      __builtin_unreachable (); /* FIXME: this seems beneficial here, differently from the no-threading case; anyway, the problem could be catched with a defect handler, and this is not a guarantee of correctness. */ \
     }                                  \
   while (false)
 #endif // #ifdef JITTER_DISPATCH_NO_THREADING
@@ -844,25 +840,21 @@ if (jitter_ip != NULL) goto * jitter_ip; \
    instructions, and is not intended for the user.  The user is only supposed to
    read JITTER_LINK , which holds the value set by _JITTER_PROCEDURE_PROLOG --
    either as defined here or in a machine-specific definition. */
-# define __JITTER_PROCEDURE_PROLOG_COMMON(link_union)      \
-    do                                                     \
-      {                                                    \
-        (link_union).pointer                               \
-          = (void *) (jitter_state_runtime._jitter_link);  \
-      }                                                    \
+# define __JITTER_PROCEDURE_PROLOG_COMMON(link_union)            \
+    do                                                           \
+      {                                                          \
+        (link_union).pointer                                     \
+          = (void *) (jitter_state_runtime._jitter_link.label);  \
+      }                                                          \
     while (false)
 #if    defined(JITTER_DISPATCH_SWITCH)             \
     || defined(JITTER_DISPATCH_DIRECT_THREADING)   \
-    || defined(JITTER_DISPATCH_MINIMAL_THREADING)
+    || defined(JITTER_DISPATCH_MINIMAL_THREADING)  \
+    || (defined(JITTER_DISPATCH_NO_THREADING)      \
+        && ! JITTER_MACHINE_SUPPORTS_PROCEDURE)
+# undef _JITTER_PROCEDURE_PROLOG
 # define _JITTER_PROCEDURE_PROLOG(link_union)  \
     __JITTER_PROCEDURE_PROLOG_COMMON(link_union)
-#elif    defined(JITTER_DISPATCH_NO_THREADING)
-# ifndef JITTER_MACHINE_SUPPORTS_PROCEDURE
-#   define _JITTER_PROCEDURE_PROLOG(link_union)  \
-      __JITTER_PROCEDURE_PROLOG_COMMON(link_union)
-# endif // ifndef JITTER_MACHINE_SUPPORTS_PROCEDURE
-#else
-# error "unknown dispatching model"
 #endif
 
 /* Branch-and-link to a given VM label, represented in a way appropriate for the
@@ -887,84 +879,107 @@ if (jitter_ip != NULL) goto * jitter_ip; \
 #if    defined(JITTER_DISPATCH_SWITCH)             \
     || defined(JITTER_DISPATCH_DIRECT_THREADING)   \
     || defined(JITTER_DISPATCH_MINIMAL_THREADING)
-# define JITTER_BRANCH_AND_LINK_INTERNAL(target_rvalue)                      \
+# define _JITTER_BRANCH_AND_LINK_FALLBACK(target_rvalue)                      \
     do                                                               \
       {                                                              \
-        jitter_state_runtime._jitter_link                            \
+        jitter_state_runtime._jitter_link.label                      \
           = ((const union jitter_word *)                             \
              (jitter_ip + JITTER_SPECIALIZED_INSTRUCTION_WORD_NO));  \
         JITTER_BRANCH(target_rvalue);                                \
       }                                                              \
     while (false)
 #elif    defined(JITTER_DISPATCH_NO_THREADING)
-# ifndef JITTER_MACHINE_SUPPORTS_PROCEDURE
-#   define JITTER_BRANCH_AND_LINK_INTERNAL(target_rvalue)                              \
+    /* This is the solution for no-threading on architectures where procedures
+       are not supported or for procedure-related defect replacement, still
+       only no-threading. */
+#   define _JITTER_BRANCH_AND_LINK_FALLBACK(target_rvalue)                     \
       do                                                                       \
         {                                                                      \
           /* Use the return address from the implicit specialized argument */  \
-          jitter_state_runtime._jitter_link = JITTER_RETURN_ADDRESS;           \
+          jitter_state_runtime._jitter_link.label = _JITTER_RETURN_ADDRESS;    \
           JITTER_BRANCH(target_rvalue);                                        \
         }                                                                      \
       while (false)
-# endif // ifndef JITTER_MACHINE_SUPPORTS_PROCEDURE
 #else
 # error "unknown dispatching model"
 #endif
 
-/* Define the branch-and-link-with operation, in a way similar to
-   JITTER_BRANCH_AND_LINK_INTERNAL just above.  In this case, however, the
-   macro is not conditionally defined: a branch-and-link-with doesn't count as a
-   call (since it can't return), and therefore the operation is available in any
-   VM instruction, even non-callers.  This is why the macro name doesn't begin
-   with an underscore. */
+/* Define the branch-and-link operation, using either the fallback version above
+   or a native version.  Again this macro, whose name starts with an underscore,
+   is not meant for the user. */
+#if (defined(JITTER_DISPATCH_NO_THREADING)           \
+     && defined(JITTER_MACHINE_SUPPORTS_PROCEDURE))
+# define _JITTER_BRANCH_AND_LINK(target_rvalue)                      \
+  /* Fast case: a native implementation is available and usable. */  \
+  _JITTER_BRANCH_AND_LINK_NATIVE (target_rvalue)
+#else
+# define _JITTER_BRANCH_AND_LINK(target_rvalue)     \
+  /* Slow case. */                                  \
+  _JITTER_BRANCH_AND_LINK_FALLBACK (target_rvalue)
+#endif
+
+/* Sanity checks, useful for writing new ports. */
+#if (defined(JITTER_DISPATCH_NO_THREADING)               \
+     && defined(JITTER_MACHINE_SUPPORTS_PROCEDURE)       \
+     && ! defined(_JITTER_BRANCH_AND_LINK_WITH_NATIVE))
+# error "The machine claims to support procedures but lacks a definition"
+# error "for _JITTER_BRANCH_AND_LINK_WITH_NATIVE .  Cannot use no-threading."
+#endif // #if ... sanity check.
+
+/* Define the branch-and-link-with fallback operation, in a way similar to
+   _JITTER_BRANCH_AND_LINK_FALLBACK just above. */
+# define _JITTER_BRANCH_AND_LINK_WITH_FALLBACK(_jitter_target_rvalue,  \
+                                               _jitter_new_link)       \
+    do                                                                 \
+      {                                                                \
+        jitter_state_runtime._jitter_link.label                        \
+          = (void *) (_jitter_new_link);                               \
+        JITTER_BRANCH (_jitter_target_rvalue);                         \
+      }                                                                \
+    while (false)
+
 #if    defined(JITTER_DISPATCH_SWITCH)                    \
     || defined(JITTER_DISPATCH_DIRECT_THREADING)          \
     || defined(JITTER_DISPATCH_MINIMAL_THREADING)         \
     || (defined(JITTER_DISPATCH_NO_THREADING)             \
         && ! defined(JITTER_MACHINE_SUPPORTS_PROCEDURE))
-# define JITTER_BRANCH_AND_LINK_WITH(_jitter_target_rvalue,      \
-                                     _jitter_new_link)           \
-    do                                                           \
-      {                                                          \
-        jitter_state_runtime._jitter_link = (_jitter_new_link);  \
-        JITTER_BRANCH(_jitter_target_rvalue);                    \
-      }                                                          \
-    while (false)
+# undef _JITTER_BRANCH_AND_LINK_WITH
+# define _JITTER_BRANCH_AND_LINK_WITH  \
+    _JITTER_BRANCH_AND_LINK_WITH_FALLBACK
+#elif defined(JITTER_DISPATCH_NO_THREADING)          \
+      && defined(JITTER_MACHINE_SUPPORTS_PROCEDURE)
+# undef _JITTER_BRANCH_AND_LINK_WITH
+# define _JITTER_BRANCH_AND_LINK_WITH \
+    _JITTER_BRANCH_AND_LINK_WITH_NATIVE
+#else
+# error "This should never happen."
 #endif
 
-/* Sanity check, useful for writing new ports. */
-#if (defined(JITTER_DISPATCH_NO_THREADING)          \
-     && defined(JITTER_MACHINE_SUPPORTS_PROCEDURE)  \
-     && ! defined(JITTER_BRANCH_AND_LINK_WITH))
-# error "The machine claims to support procedures but lacks a definition"
-# error "for JITTER_BRANCH_AND_LINK_WITH .  Can't use no-threading."
-#endif // #if ... sanity check.
-
-/* An internal definition used for JITTER_RETURN . */
-# define _JITTER_RETURN_COMMON(link_rvalue)  \
-    do                                       \
-      {                                      \
-        JITTER_BRANCH(link_rvalue);          \
-      }                                      \
+/* An internal definition used for JITTER_RETURN .  This relies on no
+   machine-specific features, works with all dispatches, and even works
+   when call-related VM instructions are defective. */
+# define _JITTER_RETURN_FALLBACK(link_rvalue)  \
+    do                                         \
+      {                                        \
+        JITTER_BRANCH(link_rvalue);            \
+      }                                        \
     while (false)
 
 /* Return to the caller, using the label provided as the rvalue parameter as the
    destination.  In its generic implementation this is a simple unconditional
    branch, but of course machine-specific implementation will use native return
    or branch-to-link-register instruction, with better branch target prediction
-   performance. */
-#if    defined(JITTER_DISPATCH_SWITCH)            \
-    || defined(JITTER_DISPATCH_DIRECT_THREADING)  \
-    || defined(JITTER_DISPATCH_MINIMAL_THREADING)
-# define JITTER_RETURN(link_rvalue)  \
-    _JITTER_RETURN_COMMON(link_rvalue)
-#elif    defined(JITTER_DISPATCH_NO_THREADING)
-# ifndef JITTER_MACHINE_SUPPORTS_PROCEDURE
-#   define JITTER_RETURN(link_rvalue)  \
-      _JITTER_RETURN_COMMON(link_rvalue)
-# endif // ifndef JITTER_MACHINE_SUPPORTS_PROCEDURE
-#else
-# error "unknown dispatching model"
+   performance.
+   _JITTER_RETURN will be used (though the user-accessible macro JITTER_RETURN)
+   when call-related instructions are not defective. */
+#if    defined(JITTER_DISPATCH_SWITCH)                     \
+    || defined(JITTER_DISPATCH_DIRECT_THREADING)           \
+    || defined(JITTER_DISPATCH_MINIMAL_THREADING)          \
+    || (defined(JITTER_DISPATCH_NO_THREADING)              \
+        && ! defined (JITTER_MACHINE_SUPPORTS_PROCEDURE))
+# undef _JITTER_RETURN
+# define _JITTER_RETURN(link_rvalue)  \
+    _JITTER_RETURN_FALLBACK(link_rvalue)
 #endif
 
 

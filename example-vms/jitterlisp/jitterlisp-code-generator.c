@@ -1,6 +1,7 @@
 /* JitterLisp: Jittery VM code generator.
 
    Copyright (C) 2018, 2019, 2020 Luca Saiu
+   Updated in 2021 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of the JitterLisp language implementation, distributed as
@@ -693,12 +694,10 @@ jitterlisp_compile (struct jitterlisp_closure *c,
   jitterlisp_generate_jittery (code_as_sexpression, & r, & er);
 
   /* Make sure there are enough slow registers in the VM state to run this code
-     as well.  Since we only have one state struct, this is easy: just update it
-     now, after we have generated a new executable routine and we know how many
-     registers this will take.  Of course if we already have more, none will be
-     removed. */
-  jitterlispvm_ensure_enough_slow_registers_for_executable_routine
-     (er, & jitterlispvm_state);
+     as well. */
+  jitter_uint slow_register_per_class_no = er->slow_register_per_class_no;
+  if (jitterlisp_slow_register_per_class_no < slow_register_per_class_no)
+    jitterlisp_slow_register_per_class_no = slow_register_per_class_no;
 
   /* Set closure fields. */
   if (jitterlisp_settings.free_routines)

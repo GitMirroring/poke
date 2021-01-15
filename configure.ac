@@ -1188,7 +1188,8 @@ AC_MSG_RESULT([$jitter_enable_host_assembly])
 #
 # An architecture name given by the user will be used in place of the
 # detected $host_cpu .
-# At the end of the case statement jitter_has_host_assembly will be defined.
+# At the end of the case statement jitter_has_host_assembly and
+# jitter_supports_no_threading will be defined.
 if test "x$jitter_enable_host_assembly" = 'xno' \
    || test "x$JITTER_HAVE_ACTUAL_GCC" = 'xno'; then \
   default_host_cpu="no-assembly"
@@ -1197,6 +1198,7 @@ elif test "x$jitter_enable_host_assembly" = "xauto"; then
 else
   default_host_cpu="$jitter_enable_host_assembly"
 fi
+jitter_supports_no_threading='no'
 AC_MSG_CHECKING([if we have assembly support for \"$default_host_cpu\"])
 AS_CASE([$default_host_cpu],
         [aarch64*],    [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_AARCH64], [1], []
@@ -1226,11 +1228,13 @@ AS_CASE([$default_host_cpu],
                                            ) # No ";": see the Autoconf manual.
                         JITTER_ASSEMBLY_SUBDIRECTORY=m68k;
                         jitter_has_host_assembly=yes;
+                        jitter_supports_no_threading=yes;
                         jitter_objdump_options="--architecture= --disassembler-options=no-aliases"],
         [mips|mipsel], [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_MIPS], [1], []
                                            ) # No ";": see the Autoconf manual.
                         JITTER_ASSEMBLY_SUBDIRECTORY=mips;
                         jitter_has_host_assembly=yes;
+                        jitter_supports_no_threading=yes;
                         # Check for the nice but incompatible MIPS release 6 (or
                         # later); in particular objdump needs an option to be
                         # able to recognize some instructions whose encoding
@@ -1275,12 +1279,15 @@ AS_CASE([$default_host_cpu],
         [ppc|powerpc|powerpcle],
                        [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_POWERPC], [1], []
                                            ) # No ";": see the Autoconf manual.
+                        JITTER_ASSEMBLY_SUBDIRECTORY=powerpc;
                         jitter_has_host_assembly=yes;
-                        JITTER_ASSEMBLY_SUBDIRECTORY=powerpc],
+                        jitter_supports_no_threading=yes;
+                        jitter_objdump_options="--architecture=powerpc:common"],
         [riscv*],      [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_RISCV], [1], []
                                            ) # No ";": see the Autoconf manual.
                         JITTER_ASSEMBLY_SUBDIRECTORY=riscv;
                         jitter_has_host_assembly=yes;
+                        jitter_supports_no_threading=yes;
                         jitter_objdump_options="--architecture=riscv:rv64 --disassembler-options=no-aliases,numeric"],
         [s390*],       [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_S390], [1], []
                                            ) # No ";": see the Autoconf manual.
@@ -1289,17 +1296,23 @@ AS_CASE([$default_host_cpu],
         [sh4*],        [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_SH], [1], []
                                            ) # No ";": see the Autoconf manual.
                         JITTER_ASSEMBLY_SUBDIRECTORY=sh
-                        jitter_has_host_assembly=yes;
+                        # Assembly support is not ready for SH, and sadly it
+                        # might never be.  It is very difficult to support.
+                        # See the manual.
+                        jitter_has_host_assembly=no;
+                        jitter_supports_no_threading=no;
                         jitter_objdump_options="--architecture=sh4a --disassembler-options=no-aliases"],
         [sparc*],      [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_SPARC], [1], []
                                            ) # No ";": see the Autoconf manual.
                         JITTER_ASSEMBLY_SUBDIRECTORY=sparc
                         jitter_has_host_assembly=yes;
+                        jitter_supports_no_threading=yes;
                         jitter_objdump_options="--architecture=sparc:v9b --disassembler-options=no-aliases"],
         [x86_64],      [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_X86_64], [1], []
                                            ) # No ";": see the Autoconf manual.
                         JITTER_ASSEMBLY_SUBDIRECTORY=x86_64;
                         jitter_has_host_assembly=yes;
+                        jitter_supports_no_threading=yes;
                         jitter_objdump_options="--architecture=i386:x86-64 --disassembler-options=x86-64,att,suffix"],
                        # Default case.  Notice that, as a fallback case, we call
                        # objdump with "--architecture=" , without actually
@@ -1330,6 +1343,8 @@ if test "x$jitter_has_host_assembly" = "xno"; then
 else
   AC_MSG_RESULT([yes: $JITTER_ASSEMBLY_SUBDIRECTORY])
 fi
+AC_MSG_CHECKING([if the architecture supports no-threading])
+AC_MSG_RESULT([$jitter_supports_no_threading])
 
 # If the user explicitly requested support for an architecture but that
 # was not found, fail.
@@ -1826,13 +1841,18 @@ AC_MSG_RESULT([$jitter_enable_dispatch_direct_threading$jitter_subpackage_discla
 # Is the minimal-threading dispatch enabled?  Check the default and the
 # configure command-line option.
 AC_MSG_CHECKING([if minimal-threading dispatch is enabled])
-# FIXME: reenable this when I make defect handling reliable.
-#default=$(test "x$JITTER_HAVE_ACTUAL_GCC" = "xyes" && echo yes || echo no)
-default=no
+if    test "x$JITTER_HAVE_ACTUAL_GCC" = 'xyes' \
+   && test "x$jitter_have_known_binary_format" = 'xyes' \
+   && test "x$jitter_has_host_assembly" = 'xyes'; then
+  default=yes
+else
+  default=no
+fi
 AC_ARG_ENABLE([dispatch-minimal-threading],
               AS_HELP_STRING([--enable-dispatch-minimal-threading],
-              [enable minimal threading dispatch: default yes if and
-only if GCC (not an imitation) is used]),
+              [enable minimal-threading dispatch: default yes if and
+only if GCC (not an imitation) is used, the host architecture has
+assembly support, and the binary format is supported]),
               jitter_enable_dispatch_minimal_threading="$enableval",
               jitter_enable_dispatch_minimal_threading="$default")
 if test "x$jitter_enable_dispatch_minimal_threading" = "xyes"; then
@@ -1840,18 +1860,18 @@ if test "x$jitter_enable_dispatch_minimal_threading" = "xyes"; then
   jitter_enabled_dispatch_models="$jitter_enabled_dispatch_models minimal-threading"
 fi
 AC_MSG_RESULT([$jitter_enable_dispatch_minimal_threading$jitter_subpackage_disclaimer])
-# FIXME: remove this warning message when I make defect handling reliable.
-if test "x$jitter_enable_dispatch_minimal_threading" = "xyes"; then
-  AC_MSG_WARN([minimal-threading dispatch is currently unreliable, and should
-  not be used in production without careful testing])
-fi
 
 # Is the no-threading dispatch enabled?  Check the default and the configure
 # command-line option.
+# I see a problem with GCC 4 and no-threading that I still have to
+# investigate.  It might not be worth the trouble, as GCC 4 is now
+# very old.
 AC_MSG_CHECKING([if no-threading dispatch is enabled])
-if    test "x$JITTER_HAVE_ACTUAL_GCC" = "xyes" \
-   && test "x$jitter_has_host_assembly" = "xyes" \
-   && test "x$jitter_host_os_is_elf" = "xyes"; then
+if    test "x$JITTER_HAVE_ACTUAL_GCC" = 'xyes' \
+   && test "$JITTER_GCC_MAJOR_VERSION" -ge 5 \
+   && test "x$jitter_have_known_binary_format" = 'xyes' \
+   && test "x$jitter_has_host_assembly" = 'xyes' \
+   && test "x$jitter_supports_no_threading" = 'xyes'; then
   default=yes
 else
   default=no
@@ -1859,8 +1879,9 @@ fi
 AC_ARG_ENABLE([dispatch-no-threading],
               AS_HELP_STRING([--enable-dispatch-no-threading],
               [enable no-threading dispatch: default yes if and
-only if GCC (not an imitation) is used, the host
-architecture has assembly support, and the binary format is supported]),
+only if GCC (not an imitation) version 5 or later is used, the host
+architecture has assembly and no-threading support, and the binary
+format is supported]),
               jitter_enable_dispatch_no_threading="$enableval",
               jitter_enable_dispatch_no_threading="$default")
 if test "x$jitter_enable_dispatch_no_threading" = "xyes"; then

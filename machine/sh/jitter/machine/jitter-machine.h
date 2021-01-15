@@ -182,7 +182,7 @@
 /* Restore the return address from a general register to the system register PR
    (this is called "load to system register" on SH); then use the return
    instruction, with its delay slot. */
-#define JITTER_RETURN(link_rvalue)                                             \
+#define _JITTER_RETURN(link_rvalue)                                            \
   do                                                                           \
     {                                                                          \
       const void * jitter_the_return_address = (const void*) (link_rvalue);    \
@@ -195,7 +195,7 @@
                 : "pr" /* clobbers. */                                         \
                 : jitter_dispatch_label /* gotolabels. */);                    \
       /* The rest of the VM instruction is unreachable. */                     \
-      /*__builtin_unreachable ();*/                                                \
+      __builtin_unreachable ();                                                \
     }                                                                          \
   while (false)
 
@@ -204,7 +204,7 @@
    return address will be in the system register PR , accessible from the
    procedure prolog.  The branch to subsnippet far instruction has a delay
    slot. */
-#define JITTER_BRANCH_AND_LINK_INTERNAL(callee_rvalue)                       \
+#define _JITTER_BRANCH_AND_LINK_NATIVE(callee_rvalue)                        \
   do                                                                         \
     {                                                                        \
       const void * const jitter_destination =                                \
@@ -215,15 +215,16 @@
                 : /* outputs. */                                             \
                 : [destination] "r" (jitter_destination) /* inputs. */       \
                 : "pr" /* clobbers. */                                       \
-                : jitter_dispatch_label /* gotolabels. */);             \
-      /* Skip the rest of the specialized instruction, for compatibility */  \
-      /* with more limited dispatches. */                                    \
-      JITTER_JUMP_TO_SPECIALIZED_INSTRUCTION_END;                            \
+                : jitter_dispatch_label /* gotolabels. */);                  \
+      /* It would be incorrect to have __builtin_unreachable or              \
+         JITTER_JUMP_TO_SPECIALIZED_INSTRUCTION_END here: see the comment in \
+         the x86_64 version. */                                              \
     }                                                                        \
   while (false)
 
 /* Perform an ordinary jump thru register, and load PR in the delay slot. */
-#define JITTER_BRANCH_AND_LINK_WITH(_jitter_callee_rvalue, _jitter_new_link)  \
+#define _JITTER_BRANCH_AND_LINK_WITH_NATIVE(_jitter_callee_rvalue,            \
+                                            _jitter_new_link)                 \
   do                                                                          \
     {                                                                         \
       const void * const jitter_callee_rvalue =                               \
@@ -241,15 +242,15 @@
                   [jitter_new_link] "r" (jitter_new_link) /* inputs. */       \
                 : "pr" /* clobbers. */                                        \
                 : jitter_dispatch_label /* gotolabels. */);                   \
-      /* The rest of the VM instruction is unreachable: this is an            \
+      /* The rest of the VM instruction is unreachable: this tail call is an  \
          unconditional jump. */                                               \
-      /*__builtin_unreachable (); */                                              \
+      __builtin_unreachable ();                                               \
     }                                                                         \
   while (false)
 
 /* The patch-in has a simple two-instruction snippet ( bsr and nop ), of which
    the first instruction will be patched.  No other code is necessary. */
-#define _JITTER_BRANCH_FAST_AND_LINK_INTERNAL(target_index)                    \
+#define _JITTER_BRANCH_FAST_AND_LINK_NATIVE(target_index)                      \
   do                                                                           \
     {                                                                          \
       asm goto (JITTER_ASM_DEFECT_DESCRIPTOR                                   \
@@ -263,9 +264,9 @@
                   JITTER_INPUT_VM_INSTRUCTION_BEGINNING /* inputs. */          \
                 : /* clobbers. */                                              \
                 : jitter_dispatch_label /* gotolabels. */);                    \
-      /* Skip the rest of the specialized instruction, for compatibility */    \
-      /* with more limited dispatches. */                                      \
-      JITTER_JUMP_TO_SPECIALIZED_INSTRUCTION_END;                              \
+      /* It would be incorrect to have __builtin_unreachable or                \
+         JITTER_JUMP_TO_SPECIALIZED_INSTRUCTION_END here: see the comment in   \
+         the x86_64 version. */                                                \
     }                                                                          \
   while (false)
 #endif // #if    defined(JITTER_MACHINE_SUPPORTS_PATCH_IN) ...
