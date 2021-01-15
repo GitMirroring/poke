@@ -478,15 +478,17 @@ jitterc_emit_meta_instructions (const struct jitterc_vm *vm)
         = (const struct jitterc_instruction*)
           (gl_list_get_at (vm->instructions, i));
       int in_arity = gl_list_size (in->arguments);
-      EMIT("      { %i, \"%s\", %i, %s, %s, %s, ",
+      EMIT("      { %i, \"%s\", %i, %s, %s, %s, %s, ",
            i, in->name, in_arity,
+           ((in->branchingness == jitterc_branchingness_branching)
+            ? "true" : "false"),
            ((in->callerness == jitterc_callerness_caller)
             ? "true" : "false"),
            ((in->calleeness == jitterc_calleeness_callee)
             ? "true" : "false"),
            ((in->relocatability == jitterc_relocatability_relocatable)
-            ? "true /* FIXME: this may be wrong with replacements. */"
-            : "false  /* FIXME: this may be wrong with replacements. */"));
+            ? "true /* this ignores replacements */"
+            : "false /* this ignores replacements */"));
       if (in_arity == 0)
         EMIT("NULL }%s\n", comma);
       else
@@ -2263,6 +2265,37 @@ jitterc_emit_register_access_macros_h (const struct jitterc_vm *vm)
 
 
 
+/* Executor generation: poisoning.
+ * ************************************************************************** */
+
+/* Begin the part where local poisoning definitions will be generated; see
+   the local poisoning section in jitter/jitter-cpp.h . */
+static void
+jitterc_open_local_poisoning (FILE *f)
+{
+  EMIT("/* Local poisoning will be in effect.  Avoid warnings. */\n");
+  EMIT("# pragma GCC diagnostic push\n");
+  EMIT("# pragma GCC diagnostic ignored \"-Wpragmas\"\n");
+  EMIT("# pragma GCC diagnostic ignored \"-Wunknown-warning-option\"\n");
+  EMIT("# pragma GCC diagnostic ignored \"-Wbuiltin-macro-redefined\"\n");
+  EMIT("# pragma GCC diagnostic ignored \"-Wbuiltin-declaration-mismatch\"\n");
+  EMIT("\n");
+}
+
+/* Close the part where local poisoning definitions are handled.  This is to
+   be called after unpoisoning. */
+static void
+jitterc_close_local_poisoning (FILE *f)
+{
+  EMIT("/* Local poisoning is no longer in effect.  Revert to the previous\n");
+  EMIT("   state of warnings. */\n");
+  EMIT("# pragma GCC diagnostic pop\n");
+  EMIT("\n");
+}
+
+
+
+
 /* Executor generation.
  * ************************************************************************** */
 
@@ -2767,9 +2800,9 @@ jitter_fast_branch_macros []
       "_IF_NEVER_UNARY",
       "_IF_ALWAYS_UNARY",
       */
-      /* Here the underscore is intentional: even the name with (one) initial
-         underscore is defined conditionally, only in caller instructions. */
-      "_AND_LINK_INTERNAL"
+      /* /\* Here the underscore is intentional: even the name with (one) initial */
+      /*    underscore is defined conditionally, only in caller instructions. *\/ */
+      /* "_AND_LINK_INTERNAL" */
     };
 
 /* How many strings jitter_fast_branch_macros has. */
@@ -2819,44 +2852,71 @@ jitterc_emit_computed_goto_definition (FILE *f,
     }
 }
 
-/* Emit macro definitions for use in the pointed specialised instruction. */
+/* Emit macro definitions for use in the pointed specialised instruction.
+   Poison the identifiers which are not supposed to be used, so that the user
+   receives a clear error message in case she uses them by mistake. */
 static void
 jitterc_emit_executor_definitions (FILE *f,
                                    const struct jitterc_vm *vm,
                                    const struct jitterc_specialized_instruction
                                    * sins)
 {
+  /* From this point we can use local poisoning. */
+  jitterc_open_local_poisoning (f);
+
   bool is_replacement = (sins->is_replacement_of != NULL);
 
   struct jitterc_instruction* uins = sins->instruction;
   bool is_relocatable
     = (sins->relocatability == jitterc_relocatability_relocatable);
+  bool is_fast_branching = uins->has_fast_labels;
+  bool is_branching = (uins->branchingness == jitterc_branchingness_branching);
   bool is_caller = (uins->callerness == jitterc_callerness_caller);
   bool is_callee = (uins->calleeness == jitterc_calleeness_callee);
   bool is_returning = (uins->returningness == jitterc_returningness_returning);
+
+  if (! is_relocatable)
+    {
+      EMIT("    /* This specialized instruction is non-relocatable.\n");
+      EMIT("       Its %i-th argument, a literal, is the return address where to jump\n",
+           (int) (gl_list_size (sins->specialized_arguments) - 1));
+      EMIT("       at the end, back to relocated code. */\n\n");
+    }
 
   if (is_replacement)
     EMIT("    /* This specialized instruction is a replacement. */\n");
   else
     EMIT("    /* This specialized instruction is not a replacement. */\n");
+  if (is_branching)
+    EMIT("    /* This specialized instruction is branching. */\n");
+  else
+    EMIT("    /* This specialized instruction is not branching. */\n");
   int i;
   for (i = 0; i < jitter_fast_branch_macro_no; i ++)
     {
       const char *macro_name = jitter_fast_branch_macros [i];
       EMIT("#   undef JITTER_BRANCH_FAST%s\n", macro_name);
-      if (is_replacement)
-        EMIT("#   define JITTER_BRANCH_FAST%s JITTER_BRANCH%s\n", macro_name, macro_name);
-      else
-        EMIT("#   define JITTER_BRANCH_FAST%s _JITTER_BRANCH_FAST%s\n", macro_name, macro_name);
+      if (is_fast_branching)
+        {
+          if (is_replacement)
+            EMIT("#   define JITTER_BRANCH_FAST%s JITTER_BRANCH%s\n",
+                 macro_name, macro_name);
+          else
+            EMIT("#   define JITTER_BRANCH_FAST%s _JITTER_BRANCH_FAST%s\n",
+                 macro_name, macro_name);
+        }
     }
   for (i = 0; i < jitter_fast_branching_operation_macro_no; i ++)
     {
       const char *macro_name = jitter_fast_branching_operation_macros [i];
       EMIT("#   undef JITTER_%s_BRANCH_FAST_IF_OVERFLOW\n", macro_name);
-      if (is_replacement)
-        EMIT("#   define JITTER_%s_BRANCH_FAST_IF_OVERFLOW JITTER_%s_BRANCH_IF_OVERFLOW\n", macro_name, macro_name);
-      else
-        EMIT("#   define JITTER_%s_BRANCH_FAST_IF_OVERFLOW _JITTER_%s_BRANCH_FAST_IF_OVERFLOW\n", macro_name, macro_name);
+      if (is_fast_branching)
+        {
+          if (is_replacement)
+            EMIT("#   define JITTER_%s_BRANCH_FAST_IF_OVERFLOW JITTER_%s_BRANCH_IF_OVERFLOW\n", macro_name, macro_name);
+          else
+            EMIT("#   define JITTER_%s_BRANCH_FAST_IF_OVERFLOW _JITTER_%s_BRANCH_FAST_IF_OVERFLOW\n", macro_name, macro_name);
+        }
     }
 
   if (! is_relocatable)
@@ -2868,18 +2928,18 @@ jitterc_emit_executor_definitions (FILE *f,
       assert (gl_list_size (sins->specialized_arguments) > 0);
     }
 
-  if (is_relocatable)
-    {
-      EMIT("/* This instruction is relocatable: use more efficient branches\n");
-      EMIT("   which may generate defects. */\n");
-      jitterc_emit_computed_goto_definition (f, vm, true);
-    }
-  else
-    {
-      EMIT("/* This instruction is non-relocatable: use branches which\n");
-      EMIT("   cannot ever generate defects. */\n");
-      jitterc_emit_computed_goto_definition (f, vm, false);
-    }
+  /* if (is_relocatable) */
+  /*   { */
+  /*     EMIT("/\* This instruction is relocatable: use more efficient branches\n"); */
+  /*     EMIT("   which may generate defects. *\/\n"); */
+  /*     jitterc_emit_computed_goto_definition (f, vm, true); */
+  /*   } */
+  /* else */
+  /*   { */
+  /*     EMIT("/\* This instruction is non-relocatable: use branches which\n"); */
+  /*     EMIT("   cannot ever generate defects. *\/\n"); */
+  /*     jitterc_emit_computed_goto_definition (f, vm, false); */
+  /*   } */
 
   if (is_caller)
     {
@@ -2954,10 +3014,15 @@ jitterc_emit_executor_definitions (FILE *f,
        "       it will be used in assembly as well. */\n"
        "#   define JITTER_SPECIALIZED_INSTRUCTION_OPCODE       %i\n",
        sins->opcode);
-  EMIT("#   define JITTER_SPECIALIZED_INSTRUCTION_NAME         %s\n\n",
+  EMIT("#   define JITTER_SPECIALIZED_INSTRUCTION_NAME         %s\n",
        sins->name);
-  EMIT("#   define JITTER_SPECIALIZED_INSTRUCTION_MANGLED_NAME %s\n\n",
+  EMIT("#   define JITTER_INSTRUCTION_NAME_AS_STRING \"%s\"\n",
+       jitter_escape_string (uins->name));
+  EMIT("#   define JITTER_SPECIALIZED_INSTRUCTION_NAME_AS_STRING \"%s\"\n",
+       jitter_escape_string (sins->name));
+  EMIT("#   define JITTER_SPECIALIZED_INSTRUCTION_MANGLED_NAME %s\n",
        sins->mangled_name);
+  EMIT("\n");
 
   /* Emit a macro definition for the specialized instruction residual arity. */
   jitterc_emit_specialized_instruction_residual_arity_definition (f, sins);
@@ -3033,6 +3098,100 @@ jitterc_emit_executor_definitions (FILE *f,
       EMIT("# define _JITTER_RETURN_ADDRESS _jitter_return_pointer\n");
       EMIT("#endif\n\n");
     }
+
+  /* Emit computed goto definition. */
+  EMIT("#ifdef JITTER_REPLICATE\n");
+  EMIT("/* Define JITTER_COMPUTED_GOTO for the user code of %s ;\n", sins->name);
+  EMIT("   This will be more efficient but potentially defective\n");
+  EMIT("   for relocatable instructions, or less efficient but safe for\n");
+  EMIT("   non-relocatable instruction.  Is this relocatable?  %s. */\n",
+       is_relocatable ? "yes" : "no");
+  jitterc_emit_computed_goto_definition (f, vm, is_relocatable);
+  EMIT("#endif // #ifdef JITTER_REPLICATE\n");
+}
+
+/* Emit #undef directives for macros which were valid for the given instruction,
+   and unpoison identifiers. */
+static void
+jitterc_emit_executor_undefinitions (FILE *f,
+                                     const struct jitterc_vm *vm,
+                                     const struct jitterc_specialized_instruction
+                                     * sins)
+{
+  const struct jitterc_instruction* uins = sins->instruction;
+  bool is_relocatable
+    = (sins->relocatability == jitterc_relocatability_relocatable);
+  bool is_caller = (uins->callerness == jitterc_callerness_caller);
+  bool is_callee = (uins->calleeness == jitterc_calleeness_callee);
+  //bool is_replacement = (sins->is_replacement_of != NULL);
+
+  if (! is_relocatable)
+    {
+      EMIT("#ifdef JITTER_REPLICATE\n");
+      EMIT("    /* Advance the instruction pointer, if any, to skip residuals;\n");
+      EMIT("       then jump back to replicated code. */\n");
+      EMIT("    const void *_jitter_back_to_replicated_code_pointer = JITTER_ARGP%i;\n",
+           (int) (gl_list_size (sins->specialized_arguments) - 1));
+      EMIT("    JITTER_SKIP_RESIDUALS_;\n");
+      EMIT("    goto * _jitter_back_to_replicated_code_pointer;\n");
+      EMIT("#endif // #ifdef JITTER_REPLICATE\n\n");
+    }
+
+  /* Undefine argument macros.  Those will be redefined before the next
+     instruction as needed; it would be dangerous to leave previous
+     definitions active, because some instruction body coming after this
+     might reuse some old definition by mistake in case the new instruction
+     doesn't override it. */
+  EMIT("    /* Undefine the %s argument macros so they can't be used\n",
+       sins->name);
+  EMIT("       by mistake in the instruction body coming next. */\n");
+  int j; char *comma __attribute__ ((unused));
+  FOR_LIST(j, comma, sins->specialized_arguments)
+    {
+      EMIT("#   undef JITTER_SLOW_REGISTER_OFFSET%i\n", j);
+      EMIT("#   undef JITTER_ARG%i\n", j);
+      EMIT("#   undef JITTER_ARGN%i\n", j);
+      EMIT("#   undef JITTER_ARGU%i\n", j);
+      EMIT("#   undef JITTER_ARGP%i\n", j);
+      EMIT("#   undef JITTER_ARGF%i\n", j);
+    }
+
+  /* Undefine the specialized instruction opcode and name. */
+  EMIT("\n");
+  EMIT("#   undef JITTER_SPECIALIZED_INSTRUCTION_OPCODE\n");
+  EMIT("#   undef JITTER_SPECIALIZED_INSTRUCTION_NAME\n");
+  EMIT("#   undef JITTER_INSTRUCTION_NAME_AS_STRING\n");
+  EMIT("#   undef JITTER_SPECIALIZED_INSTRUCTION_NAME_AS_STRING\n");
+  EMIT("#   undef JITTER_SPECIALIZED_INSTRUCTION_MANGLED_NAME\n\n");
+
+  /* If we have defined a link, undefine it: it is only visible in its
+     instruction. */
+  if (is_callee)
+    {
+      EMIT("  /* Undefine the link macro. */\n");
+      EMIT("#   undef JITTER_LINK\n\n");
+    }
+  if (is_caller)
+    {
+      EMIT("#if    defined(JITTER_DISPATCH_NO_THREADING)         \\\n");
+      EMIT("    && ! defined(JITTER_MACHINE_SUPPORTS_PROCEDURE)\n");
+      EMIT("# undef _JITTER_RETURN_ADDRESS\n");
+      EMIT("#endif\n\n");
+    }
+
+  /* This is the instruction epilog only for relocatable instructions, and
+     when replication is disabled. */
+  if (! is_relocatable)
+    EMIT("#ifndef JITTER_REPLICATE\n");
+  EMIT(" JITTER_INSTRUCTION_EPILOG_(%s, %s, JITTER_SPECIALIZED_INSTRUCTION_RESIDUAL_ARITY)\n",
+       sins->name, sins->mangled_name);
+  if (! is_relocatable)
+    EMIT("#endif // #ifndef JITTER_REPLICATE\n");
+  EMIT("#   undef JITTER_SPECIALIZED_INSTRUCTION_RESIDUAL_ARITY\n");
+  EMIT("\n");
+
+  /* Local poisoning is no longer in effect. */
+  jitterc_close_local_poisoning (f);
 }
 
 static void
@@ -3057,7 +3216,7 @@ jitterc_emit_executor_ordinary_specialized_instructions
       bool is_relocatable
         = (sins->relocatability == jitterc_relocatability_relocatable);
       bool is_caller = (uins->callerness == jitterc_callerness_caller);
-      bool is_callee = (uins->calleeness == jitterc_calleeness_callee);
+      //bool is_callee = (uins->calleeness == jitterc_calleeness_callee);
       bool is_replacement = (sins->is_replacement_of != NULL);
 
       EMIT("  JITTER_INSTRUCTION_PROLOG_(%s, %s, %s)\n",
@@ -3066,14 +3225,6 @@ jitterc_emit_executor_ordinary_specialized_instructions
            ? "hot"
            : "cold");
       EMIT("  {\n");
-
-      if (! is_relocatable)
-        {
-          EMIT("    /* This specialized instruction is non-relocatable.\n");
-          EMIT("       Its %i-th argument, a literal, is the return address where to jump\n",
-               (int) (gl_list_size (sins->specialized_arguments) - 1));
-          EMIT("       at the end, back to relocated code. */\n\n");
-        }
 
       /* Emit definitions for branch macros, argument access and the like.  Some
          definitions will be different for replacement and non-replacement
@@ -3136,13 +3287,8 @@ jitterc_emit_executor_ordinary_specialized_instructions
           EMIT ("#define JITTER_THIS_IS_NOT_A_REPLACEMENT 1\n");
         }
 
-      EMIT("#ifdef JITTER_REPLICATE\n");
-      EMIT("/* Define JITTER_COMPUTED_GOTO for the user code of %s */\n", sins->name);
-      jitterc_emit_computed_goto_definition (f, vm, is_relocatable);
-      EMIT("#endif // #ifdef JITTER_REPLICATE\n");
-
-      /* Emit user-specified code for the instruction.  We have already opened a brace, so
-         another pair is not needed. */
+      /* Emit user-specified code for the instruction.  We have already opened a
+         brace, so another pair is not needed. */
       EMIT("\n    /* User code for %s . */\n", sins->name);
       EMIT("%s\n", uins->code);
       EMIT("    /* End of the user code for %s . */\n\n", sins->name);
@@ -3160,70 +3306,10 @@ jitterc_emit_executor_ordinary_specialized_instructions
       jitterc_emit_user_c_code_to_stream (vm, f, vm->instruction_end_c_code,
                                           "instruction-end-c");
 
-      if (! is_relocatable)
-        {
-          EMIT("#ifdef JITTER_REPLICATE\n");
-          EMIT("    /* Advance the instruction pointer, if any, to skip residuals;\n");
-          EMIT("       then jump back to replicated code. */\n");
-          EMIT("    const void *_jitter_back_to_replicated_code_pointer = JITTER_ARGP%i;\n",
-               (int) (gl_list_size (sins->specialized_arguments) - 1));
-          EMIT("    JITTER_SKIP_RESIDUALS_;\n");
-          EMIT("    goto * _jitter_back_to_replicated_code_pointer;\n");
-          EMIT("#endif // #ifdef JITTER_REPLICATE\n\n");
-        }
-
-      /* Undefine argument macros.  Those will be redefined before the next
-         instruction as needed; it would be dangerous to leave previous
-         definitions active, because some instruction body coming after this
-         might reuse some old definition by mistake in case the new instruction
-         doesn't override it. */
-      EMIT("    /* Undefine the %s argument macros so they can't be used\n",
-           sins->name);
-      EMIT("       by mistake in the instruction body coming next. */\n");
-      int j; char *comma __attribute__ ((unused));
-      FOR_LIST(j, comma, sins->specialized_arguments)
-        {
-          EMIT("#   undef JITTER_SLOW_REGISTER_OFFSET%i\n", j);
-          EMIT("#   undef JITTER_ARG%i\n", j);
-          EMIT("#   undef JITTER_ARGN%i\n", j);
-          EMIT("#   undef JITTER_ARGU%i\n", j);
-          EMIT("#   undef JITTER_ARGP%i\n", j);
-          EMIT("#   undef JITTER_ARGF%i\n", j);
-        }
-
-      /* Undefine the specialized instruction opcode and name. */
-      EMIT("\n");
-      EMIT("#   undef JITTER_SPECIALIZED_INSTRUCTION_OPCODE\n");
-      EMIT("#   undef JITTER_SPECIALIZED_INSTRUCTION_NAME\n");
-      EMIT("#   undef JITTER_SPECIALIZED_INSTRUCTION_MANGLED_NAME\n\n");
-
+      /* Undefine every macro that was defined for use in the instruction user
+         block. */
+      jitterc_emit_executor_undefinitions (f, vm, sins);
       EMIT("  }\n");
-
-      /* If we have defined a link, undefine it: it is only visible in its
-         instruction. */
-      if (is_callee)
-        {
-          EMIT("  /* Undefine the link macro. */\n");
-          EMIT("#   undef JITTER_LINK\n\n");
-        }
-      if (is_caller)
-        {
-          EMIT("#if    defined(JITTER_DISPATCH_NO_THREADING)         \\\n");
-          EMIT("    && ! defined(JITTER_MACHINE_SUPPORTS_PROCEDURE)\n");
-          EMIT("# undef _JITTER_RETURN_ADDRESS\n");
-          EMIT("#endif\n\n");
-        }
-
-      /* This is the instruction epilog only for relocatable instructions, and
-         when replication is disabled. */
-      if (! is_relocatable)
-        EMIT("#ifndef JITTER_REPLICATE\n");
-      EMIT(" JITTER_INSTRUCTION_EPILOG_(%s, %s, JITTER_SPECIALIZED_INSTRUCTION_RESIDUAL_ARITY)\n",
-           sins->name, sins->mangled_name);
-      if (! is_relocatable)
-        EMIT("#endif // #ifndef JITTER_REPLICATE\n");
-      EMIT("#   undef JITTER_SPECIALIZED_INSTRUCTION_RESIDUAL_ARITY\n");
-      EMIT("\n");
    }
   EMIT("  /* End of the ordinary specialized instructions. */\n\n");
 }

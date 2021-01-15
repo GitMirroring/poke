@@ -1,6 +1,7 @@
 /* Jitter: string utility functions: header.
 
    Copyright (C) 2017 Luca Saiu
+   Updated in 2021 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -25,6 +26,12 @@
 /* Return a fresh malloc-allocated copy of the given C string. */
 char *
 jitter_clone_string (const char *s)
+  __attribute__ ((returns_nonnull, nonnull (1)));
+
+/* Return a fresh malloc-allocated copy of the given C string, escaped as per
+   the rules of C. */
+char *
+jitter_escape_string (const char *s)
   __attribute__ ((returns_nonnull, nonnull (1)));
 
 

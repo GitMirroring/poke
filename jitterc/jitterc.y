@@ -269,7 +269,8 @@ jitterc_parse_file (const char *input_file_name, bool generate_line);
    macros, which is questionable but probably required for Yacc
    compatibility. */
 %token RULE WHEN REWRITE INTO TRUE_ FALSE_ RULE_PLACEHOLDER
-%token HOT COLD RELOCATABLE NON_RELOCATABLE CALLER CALLEE RETURNING
+%token HOT COLD RELOCATABLE NON_RELOCATABLE
+%token NON_BRANCHING BRANCHING CALLER CALLEE RETURNING
 %token COMMUTATIVE NON_COMMUTATIVE TWO_OPERANDS
 %token REGISTER_CLASS FAST_REGISTER_NO REGISTER_OR_STACK_LETTER
 %token SLOW_REGISTERS NO_SLOW_REGISTERS
@@ -663,17 +664,27 @@ instruction_section:
       ins->hotness = jitterc_hotness_hot;
     if (ins->relocatability == jitterc_relocatability_unspecified)
       ins->relocatability = jitterc_relocatability_relocatable;
+    if (ins->branchingness == jitterc_branchingness_unspecified)
+      ins->branchingness = jitterc_branchingness_non_branching;
     if (ins->callerness == jitterc_callerness_unspecified)
       ins->callerness = jitterc_callerness_non_caller;
     if (ins->calleeness == jitterc_calleeness_unspecified)
       ins->calleeness = jitterc_calleeness_non_callee;
     if (ins->returningness == jitterc_returningness_unspecified)
       ins->returningness = jitterc_returningness_non_returning;
+    if (ins->has_fast_labels)
+      /* An instruction with fast labels can also use non-fast branches, without
+         explicitly specifying attributes (Rationale: the branching attribute
+         serves to recognise the instruction as potentially defective, and an
+         instruction with fast label is potentially defective already). */
+      ins->branchingness = jitterc_branchingness_branching;
     if (   ins->has_fast_labels
         && ins->relocatability == jitterc_relocatability_non_relocatable)
+      /* FIXME: I might want to allow this. */
       JITTERC_PARSE_ERROR("a non-relocatable instruction has fast labels");
     if (   ins->callerness == jitterc_callerness_caller
         && ins->relocatability == jitterc_relocatability_non_relocatable)
+      /* FIXME: I might want to allow this as well. */
       JITTERC_PARSE_ERROR("non-relocatable instructions cannot (currently) be callers");
     ins->code = $8.code; }
 ;
@@ -799,6 +810,7 @@ bare_argument:
 properties:
   /* nothing */
 | hotness properties
+| branchingness properties
 | relocatability properties
 | callrelatedness properties
 ;
@@ -813,12 +825,18 @@ relocatability:
 | NON_RELOCATABLE { JITTERC_SET_PROPERTY(relocatability, non_relocatable); }
 ;
 
+branchingness:
+  NON_BRANCHING { JITTERC_SET_PROPERTY(branchingness, non_branching); }
+| BRANCHING     { JITTERC_SET_PROPERTY(branchingness, branching); }
+;
+
 callrelatedness:
   CALLER   { JITTERC_SET_PROPERTY(callerness, caller); }
 | CALLEE   { JITTERC_SET_PROPERTY(calleeness, callee);
              const struct jitterc_instruction *ins = jitterc_vm_last_instruction (vm);
              if (gl_list_size (ins->arguments) > 0)
-               JITTERC_PARSE_ERROR("a callee instruction has arguments"); }
+               JITTERC_PARSE_ERROR
+                  ("a callee instruction cannot have arguments"); }
 | RETURNING { JITTERC_SET_PROPERTY(returningness, returning); }
 ;
 

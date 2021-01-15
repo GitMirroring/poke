@@ -1913,6 +1913,8 @@ The recommended way of using Jitter right now is @emph{sub-package mode}:
 @table @code
 @item non-relocatable
 @item cold
+@c @item non-branching
+@item branching
 @item caller
 @item callee
 @item returning

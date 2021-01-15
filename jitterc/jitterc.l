@@ -246,6 +246,8 @@ CODECONTENTLINEMIDDLE3 end{LINEWHITESPACE}?[^\ \t\n\r\f#][^\n\r\f]*
 "LGBYTESPERWORD"          { return LGBYTESPERWORD; }
 "hot"                     { return HOT; }
 "cold"                    { return COLD; }
+"non-branching"           { return NON_BRANCHING; }
+"branching"               { return BRANCHING; }
 "caller"                  { return CALLER; }
 "callee"                  { return CALLEE; }
 "returning"               { return RETURNING; }

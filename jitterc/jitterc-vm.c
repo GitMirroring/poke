@@ -109,6 +109,7 @@ jitterc_add_implicit_instruction (struct jitterc_vm *vm,
   res->mangled_name = jitterc_mangle (res->name);
   res->hotness = jitterc_hotness_cold;
   res->relocatability = jitterc_relocatability_relocatable;
+  res->branchingness = jitterc_branchingness_branching;
   res->callerness = jitterc_callerness_non_caller;
   res->calleeness = jitterc_calleeness_non_callee;
   res->returningness = jitterc_returningness_non_returning;
@@ -872,6 +873,7 @@ jitterc_make_instruction (void)
   res->hotness = jitterc_hotness_unspecified;
   res->relocatability = jitterc_relocatability_unspecified;
   res->has_fast_labels = false;
+  res->branchingness = jitterc_branchingness_unspecified;
   res->callerness = jitterc_callerness_unspecified;
   res->calleeness = jitterc_calleeness_unspecified;
   res->returningness = jitterc_returningness_unspecified;
@@ -1070,6 +1072,13 @@ jitterc_make_specialized_instruction_internal (struct jitterc_vm *vm,
                       "unspecified relocatability");
     }
   res->relocatability = r;
+
+  /* The specialised branchingness is the same as the unspecialised
+     branchingness, if an unspecialised version exists.  Otherwise, let us make
+     it branching [FIXME: remove special specialised instructions, so that every
+     specialised instruction has an unspecialised counterpart] */
+  res->branchingness
+    = ui == NULL ? jitterc_branchingness_branching : ui->branchingness;
 
   /* Compute the instruction name, adding a /retR suffix if needed.  Do not
      add a second /retR suffix if one is already present. */
@@ -1420,6 +1429,12 @@ jitterc_generate_replacements (struct jitterc_vm *vm)
         = ((struct jitterc_specialized_instruction *)
            gl_list_get_at (vm->specialized_instructions, i));
 
+      /* Special specialised instructions are never replaced.  If sins is
+         special, which is to say has no unspecialised counterpart, ignore
+         it. */
+      if (sins->instruction == NULL)
+        continue;
+
       /* Check the specialized instruction arguments.  A specialized instruction
          is potentially defective if it has at least one fast-label residual
          argument. */
@@ -1436,6 +1451,11 @@ jitterc_generate_replacements (struct jitterc_vm *vm)
               break;
             }
         }
+
+      /* A specialized instruction is also potentially defective if it is
+         branching. */
+      if (sins->branchingness == jitterc_branchingness_branching)
+        potentially_defective = true;
 
       /* A specialized instruction is also potentially defective if it is
          call-related. */
@@ -1710,9 +1730,10 @@ jitterc_specialize (struct jitterc_vm *vm,
   vm->max_nonresidual_literal_no = max_nonresidual_literal_no;
 
   /* First generate the special specialized instructions.  Those have to be the
-     first ones, an in particular the !INVALID specialized instruction must have
-     opcode zero: this is exploited in the specializer, where recognizers return
-     zero in case of failure, and use the opcode as a boolean condition. */
+     first ones, and in particular the !INVALID specialized instruction must
+     have opcode zero: this is exploited in the specializer, where recognizers
+     return zero in case of failure, and use the opcode as a boolean
+     condition. */
   jitterc_make_special_specialized_instructions (vm);
 
   /* Make a list to contain the specialized arguments.  The same list will be
@@ -1747,10 +1768,10 @@ jitterc_specialize (struct jitterc_vm *vm,
      instructions. */
   jitterc_generate_replacements (vm);
 
-  /* Now we have generated every specialized instructions we will need,
-     including special specialized instructions and replacement specialied
-     instructions.  Number them by assigning opcodes.  Specialized instruction
-     opcodes have been undefined up to this point. */
+  /* Now we have generated every specialised instruction we will need, including
+     special specialised instructions and replacement specialised instructions.
+     Number them by assigning opcodes.  Specialised instruction opcodes have
+     been undefined up to this point. */
   for (i = 0; i < gl_list_size (vm->specialized_instructions); i ++)
     {
       /* Get a pointer to the specialized instruction. */

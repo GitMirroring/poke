@@ -382,7 +382,7 @@ enum jitterc_calleeness
   };
 
 /* An instruction with a "returning" returningness is allowed (even if not
-   required to) use the JITTER_RETURN branch. */
+   required) to use the JITTER_RETURN branch. */
 enum jitterc_returningness
   {
     /* The default returningness, for the VM instructions where an explicit value
@@ -397,6 +397,24 @@ enum jitterc_returningness
 
     /* The instruction never executes return operations. */
     jitterc_returningness_non_returning
+  };
+
+/* An instruction with "branching" branchingness is allowed (even if not
+   required to) to use non-fast branches. */
+enum jitterc_branchingness
+  {
+    /* The default branchingness, for the VM instructions where an explicit value
+       is not specified; this is used within the parser, to ensure that no more
+       than one value is specified.  If no value is explicitly given after
+       parsing the branchingness is automatically set to non-branching, and this
+       value is never seen by the rest of the code. */
+    jitterc_branchingness_unspecified,
+
+    /* The instruction may execute non-fast branch operations. */
+    jitterc_branchingness_branching,
+
+    /* The instruction never executes non-fast branch operations. */
+    jitterc_branchingness_non_branching
   };
 
 /* A VM instruction specification as extracted from the text file. */
@@ -423,6 +441,9 @@ struct jitterc_instruction
 
   /* True iff the instruction has one or more fast label arguments. */
   bool has_fast_labels;
+
+  /* The instruction branchingness. */
+  enum jitterc_branchingness branchingness;
 
   /* The instruction callerness. */
   enum jitterc_callerness callerness;
@@ -636,6 +657,9 @@ struct jitterc_specialized_instruction
 
   /* The specialized instruction relocatability. */
   enum jitterc_relocatability relocatability;
+
+  /* The specialized instruction branchingness. */
+  enum jitterc_branchingness branchingness;
 
   /* A pointer to the unspecialized instruction of which the present structure
      is one specialization.  This is NULL for special specialized instructions,

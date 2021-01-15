@@ -1,6 +1,7 @@
 /* Jitter: VM-independent instruction header.
 
    Copyright (C) 2016, 2017, 2019, 2020 Luca Saiu
+   Updated in 2021 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -295,6 +296,9 @@ struct jitter_meta_instruction
 
   /* How many parameter this instruction has. */
   size_t parameter_no;
+
+  /* True if and only if the instruction is branching. */
+  bool branching;
 
   /* True if and only if the instruction is a caller. */
   bool caller;
