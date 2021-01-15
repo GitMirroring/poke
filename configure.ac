@@ -28,7 +28,7 @@ AC_INIT([Jitter],
         m4_esyscmd([build-aux/git-version-gen .tarball-version]),
         [bug-epsilon@gnu.org],
         [jitter],
-        [http://ageinghacker.net/jitter])
+        [http://ageinghacker.net/projects/jitter])
 AC_CONFIG_SRCDIR([NO-WARRANTY])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIRS([build-aux])
@@ -930,9 +930,35 @@ fi
 # change CFLAGS (in a subshell, so as not to affect the rest of this
 # script) to force -Werror.  If -Werror is not supported than the tests
 # will all fail, which is the correct conservative behavior.
+# Out of the subshell, define the shell variable ac_cv_have_ATTRIBUTE ,
+# in order for the test result to be visible in the following.
+
+# FIXME: I should factor the following with M4.
+
+# Check for attribute no_reorder .
+ac_cv_have_no_reorder=$(CFLAGS="$CFLAGS -Werror"; export CFLAGS
+AC_CACHE_CHECK([for the no_reorder attribute],
+  [ac_cv_have_no_reorder],
+  [AC_COMPILE_IFELSE(
+     [AC_LANG_PROGRAM(
+        [[long n = 7;
+          __attribute__ ((no_reorder))
+          long *
+          f (void)
+          {
+            return & n;
+          }]],
+        [[return * f () != 0;]])],
+     [ac_cv_have_no_reorder=yes],
+     [ac_cv_have_no_reorder=no])])
+if test "x$ac_cv_have_no_reorder" = "xyes"; then
+  AC_DEFINE([JITTER_HAVE_ATTRIBUTE_NO_REORDER], [1],
+            [Define if the no_reorder attribute works])
+fi;
+echo "$ac_cv_have_no_reorder")
 
 # Check for attribute returns_nonnull .
-(CFLAGS="$CFLAGS -Werror"; export CFLAGS
+ac_cv_have_returns_nonnull=$(CFLAGS="$CFLAGS -Werror"; export CFLAGS
 AC_CACHE_CHECK([for the returns_nonnull attribute],
   [ac_cv_have_returns_nonnull],
   [AC_COMPILE_IFELSE(
@@ -950,8 +976,8 @@ AC_CACHE_CHECK([for the returns_nonnull attribute],
 if test "x$ac_cv_have_returns_nonnull" = "xyes"; then
   AC_DEFINE([JITTER_HAVE_ATTRIBUTE_RETURNS_NONNULL], [1],
             [Define if the returns_nonnull attribute works])
-fi)
-
+fi
+echo "$ac_cv_have_returns_nonnull")
 
 # Many people like to compile with -Werror.  This is a way of redefining
 # attributes not supported by the compiler so that they expand to nothing.
@@ -1817,8 +1843,7 @@ AC_MSG_RESULT([$jitter_enable_dispatch_minimal_threading$jitter_subpackage_discl
 # FIXME: remove this warning message when I make defect handling reliable.
 if test "x$jitter_enable_dispatch_minimal_threading" = "xyes"; then
   AC_MSG_WARN([minimal-threading dispatch is currently unreliable, and should
-  not be used in production until defective instruction replacement is fully
-  implemented])
+  not be used in production without careful testing])
 fi
 
 # Is the no-threading dispatch enabled?  Check the default and the configure
@@ -1827,9 +1852,7 @@ AC_MSG_CHECKING([if no-threading dispatch is enabled])
 if    test "x$JITTER_HAVE_ACTUAL_GCC" = "xyes" \
    && test "x$jitter_has_host_assembly" = "xyes" \
    && test "x$jitter_host_os_is_elf" = "xyes"; then
-  # FIXME: reenable this when I make defect handling reliable.
-  #default=yes
-  default=no
+  default=yes
 else
   default=no
 fi
@@ -1837,7 +1860,7 @@ AC_ARG_ENABLE([dispatch-no-threading],
               AS_HELP_STRING([--enable-dispatch-no-threading],
               [enable no-threading dispatch: default yes if and
 only if GCC (not an imitation) is used, the host
-architecture has assembly support, and the binary format is ELF]),
+architecture has assembly support, and the binary format is supported]),
               jitter_enable_dispatch_no_threading="$enableval",
               jitter_enable_dispatch_no_threading="$default")
 if test "x$jitter_enable_dispatch_no_threading" = "xyes"; then
@@ -1849,12 +1872,6 @@ AC_MSG_RESULT([$jitter_enable_dispatch_no_threading$jitter_subpackage_disclaimer
 if test "x$jitter_has_host_assembly" = "xno" \
    && test "x$jitter_enable_dispatch_no_threading" = "xyes"; then
    AC_MSG_ERROR([no-threading dispatch requires assembly support])
-fi
-# FIXME: remove this warning message when I make defect handling reliable.
-if test "x$jitter_enable_dispatch_no_threading" = "xyes"; then
-  AC_MSG_WARN([no-threading dispatch is currently unreliable, and should not be
-  used in production until defective instruction replacement is fully
-  implemented])
 fi
 
 # Fail if there is no best dispatch: this means that none was enabled.
@@ -1989,6 +2006,52 @@ AM_CONDITIONAL([JITTER_ENABLE_ASSEMBLY],
 AC_MSG_RESULT([$jitter_enable_assembly])
 
 
+# Defect and replacement debugging.
+################################################################
+
+AC_MSG_CHECKING([for defect replacement])
+default=yes
+AC_ARG_ENABLE([defect-replacement],
+              AS_HELP_STRING([--enable-defect-replacement@<:@=yes|all|no@:>@],
+                             [enable defect-replacement: yes (default), to be
+                             used in production, replaces defective instructions
+                             plus every call-related instructions if any
+                             call-relative instruction is defective; all (for
+                             Jitter debugging) replaces every instruction which
+                             has the potential of ever being compiled as
+                             defective; no (for Jitter debugging, *DANGEROUS*)
+                             performs no replacement at all and allows the user
+                             to run subtly incorrect code.  This option only has
+                             effect with minimal-threading and no-threading
+                             dispatches.]),
+              jitter_enable_defect_replacement="$enableval",
+              jitter_enable_defect_replacement="$default")
+case "$jitter_enable_defect_replacement" in
+  yes)
+    comment='replace defective instructions and every call-related instruction where any call-related instruction is defective'
+    ;;
+  all)
+    AC_DEFINE_UNQUOTED([JITTER_DEFECT_REPLACEMENT_ALL_POSSIBLE], [1],
+                       [Replace every possibly defective instruction]) # No ";": see the Autoconf manual.
+    comment='replace every potentially defective instructions (for debugging Jitter)'
+    ;;
+  no)
+    AC_DEFINE_UNQUOTED([JITTER_DEFECT_REPLACEMENT_NEVER], [1],
+                       [Never perform any replacement (DANGEROUS!)]) # No ";": see the Autoconf manual.
+    comment='do not perform any defect replacement (DANGEROUS!)'
+    ;;
+  *)
+    AC_MSG_ERROR([invalid argument "$jitter_enable_defect_replacement" for --enable-defect-replacement])
+    ;;
+esac
+AC_MSG_RESULT([$comment])
+if test "x$jitter_enable_defect_replacement" = 'xno'; then
+  AC_MSG_WARN([Disabled defect replacement.  This is DANGEROUS and the
+               configuration should never be used in production, as it
+               may generate INCORRECT code])
+fi
+
+
 # Installation paths, relative to installation prefixes.
 ################################################################
 
@@ -2037,6 +2100,17 @@ for dispatch_model in $jitter_enabled_dispatch_models; do
   # -fno-reorder-functions is not desirable.
   jitter_check_cc_options JITTER_FLAGS_CFLAGS -O2 -fomit-frame-pointer
   jitter_check_cc_options JITTER_FLAGS_CFLAGS -fno-reorder-functions
+
+  # In order to force "asm headers" and "asm footers" (see
+  # jitterc/jitterc-generate.c ) to be generated in the correct order with
+  # respect to the executor function, the generated code in vm2.c uses the
+  # no_reorder function attribute.
+  # But GCCs older then version 5 do not suport the attribute.  In that case
+  # can fall back to a more brutal solution, preventing the reordering of
+  # any function:
+  if test "x$ac_cv_have_no_reorder" = 'xno'; then
+    jitter_check_cc_options JITTER_FLAGS_CFLAGS -fno-toplevel-reorder
+  fi
 
   # We want ELF visibility flags when enabled, independently from the dispatch.
   if test "x$jitter_enable_visibility_hidden" = 'xyes'; then
@@ -2110,6 +2184,18 @@ for dispatch_model in $jitter_enabled_dispatch_models; do
 #  jitter_check_cc_options JITTER_FLAGS_CFLAGS -frename-registers
 #  jitter_check_cc_options JITTER_FLAGS_CFLAGS -fno-plt
 
+  case "$dispatch_model" in
+    minimal-threading)
+      # As or early 2021 when using GCC 10 with minimal-threading (at least on
+      # x86_64 and SPARC) -fno-tree-vrp seems to prevent tail merging, for
+      # reasons I do not fully understand.  I could obtain the same effect in
+      # my test cases by using -O1 or -Os instead of -O2, but this solution
+      # should lead to better code.  Notice that -fno-tree-vrp is enabled by
+      # default at -O2.
+      jitter_check_cc_options JITTER_FLAGS_CFLAGS -fno-tree-vrp
+      ;;
+  esac
+
   # The GCC manual recommends -fno-gcse for code relying heavily on computed
   # goto.  Jittery VMs would qualify at least with direct-threading and
   # minimal-threading dispatches (the situation with no-threading is less
@@ -2170,6 +2256,25 @@ for dispatch_model in $jitter_enabled_dispatch_models; do
       esac
       ;;
   esac
+
+  # I see some crashes with GCC 4, quite difficult to explain and debug and
+  # unrelated to my low-level code; in fact some C code (for example
+  # JitterLisp's library initialisation) crashes before doing anything with the
+  # VM.  This problem is reliably worked around by disabling sibling call
+  # optimisation.  I suspect the problem comes in fact from some other option I
+  # am using for minimal-threading and no-threading.
+  # Since GCC 4 is now very old it is probably not worth to investigate too
+  # hard.  Notice that with GCC 4 there are other problems as well.
+  #   FIXME: either forbid advanced dispatches at configure time with GCC 4,
+  #          or debug.
+  if test "x$JITTER_HAVE_ACTUAL_GCC" = 'xyes' \
+     && test "$JITTER_GCC_MAJOR_VERSION" -le 4; then
+    case "$dispatch_model" in
+      minimal-threading|no-threading)
+        jitter_check_cc_options JITTER_FLAGS_CFLAGS -fno-optimize-sibling-calls
+        ;;
+    esac
+  fi
 
   JITTER_FLAGS_CPPFLAGS="-DJITTER_DISPATCH_$DISPATCH_MODEL=1"
 
@@ -2618,6 +2723,7 @@ m4_define([jitter_define_prefixed_macro_string],
 jitter_define_prefixed_macro_string([PACKAGE_NAME],      [PACKAGE_NAME])
 jitter_define_prefixed_macro_string([PACKAGE_VERSION],   [PACKAGE_VERSION])
 jitter_define_prefixed_macro_string([PACKAGE_BUGREPORT], [PACKAGE_BUGREPORT])
+jitter_define_prefixed_macro_string([PACKAGE_URL],       [PACKAGE_URL])
 
 # Define prefixed versions of conditionally-defined feature macros.
 # Arguments:

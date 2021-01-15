@@ -1,6 +1,6 @@
 /* Jitter: host configuration header to install.
 
-   Copyright (C) 2017, 2019, 2020 Luca Saiu
+   Copyright (C) 2017, 2019, 2020, 2021 Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -257,6 +257,20 @@
 #undef JITTER_BEST_DISPATCHING_MODEL_IS_MINIMAL_THREADING
 #undef JITTER_BEST_DISPATCHING_MODEL_IS_NO_THREADING
 
+/* Defect replacement debugging.  No more than one of these features can be
+   defined -- Jitter's configure script enforces this restriction.  With
+   JITTER_DEFECT_REPLACEMENT_ALL_POSSIBLE a Jittery VM replaces every
+   potentially defective option, even if not needed: this is useful for
+   debugging Jitter.  With JITTER_DEFECT_REPLACEMENT_NEVER a Jittery VM still
+   checks for defects but actually performs no replacement; this is dangerous
+   and must not be used in production, as it allows the generation of subtly
+   incorrect code.
+   These macros have an effect only with minimal-threading and no-threading
+   dispatches: simple dispatches need no replacements becasue they cannot
+   generate defects. */
+#undef JITTER_DEFECT_REPLACEMENT_ALL_POSSIBLE
+#undef JITTER_DEFECT_REPLACEMENT_NEVER
+
 
 /* Versioning.
  * ************************************************************************** */
@@ -265,6 +279,7 @@
 #undef JITTER_PACKAGE_NAME
 #undef JITTER_PACKAGE_VERSION
 #undef JITTER_PACKAGE_BUGREPORT
+#undef JITTER_PACKAGE_URL
 
 /* Notice that JITTER_DISPATCH_NAME_STRING , not defined here but available from
    jitter/jitter.h , will also be appropriate to print, particularly for user
@@ -345,6 +360,7 @@
 #undef JITTER_HAVE_GNU_C_ATTRIBUTE
 
 /* Define for specific GNU C attributes. */
+#undef JITTER_HAVE_ATTRIBUTE_NO_REORDER
 #undef JITTER_HAVE_ATTRIBUTE_RETURNS_NONNULL
 
 /* Define if the compiler supports #pragma GCC diagnostic inside functions.
