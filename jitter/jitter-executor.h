@@ -599,7 +599,8 @@
     }                                                                    \
    JITTER_SPECIALIZED_INSTRUCTION_END_LABEL_OF(mangled_name):            \
      __builtin_unreachable ();
-#elif defined(JITTER_DISPATCH_MINIMAL_THREADING) || defined(JITTER_DISPATCH_NO_THREADING)
+#elif defined(JITTER_DISPATCH_MINIMAL_THREADING)                         \
+      || defined(JITTER_DISPATCH_NO_THREADING)
 # define JITTER_INSTRUCTION_EPILOG_(name, mangled_name, residual_arity)  \
        JITTER_SKIP_RESIDUALS_;                                           \
      }                                                                   \
@@ -612,7 +613,7 @@
 JITTER_PRETEND_TO_UPDATE_IP_;\
      /* Mark the end of the specialized instruction with a label. */     \
     JITTER_SPECIALIZED_INSTRUCTION_END_LABEL_OF(mangled_name):           \
-if (jitter_ip != NULL) goto * jitter_ip; \
+/*if (jitter_ip != NULL) goto * jitter_ip;*/ \
 /*JITTER_PRETEND_TO_POSSIBLY_JUMP_ANYWHERE();*/ \
 /*__builtin_unreachable ();*/ \
 /*JITTER_PRETEND_TO_UPDATE_IP_;*/ \
@@ -624,10 +625,10 @@ if (jitter_ip != NULL) goto * jitter_ip; \
         register assignment compatible between this program point,       \
         at the end of VM instructions, with the register assignment      \
         at the beginning of every VM instruction, or even at their end.  \
-        From GCC's point of view, this goto * statement may reach any    \
+        From GCC's point of view this goto * statement may reach any     \
         label in the function whose address I have taken. */             \
      JITTER_CRASH_;                                                      \
-     JITTER_PRETEND_TO_UPDATE_IP_;                                       \
+     /*JITTER_PRETEND_TO_UPDATE_IP_;*/                                   \
      goto * jitter_ip;
 #else
 # error "unknown dispatching model"
@@ -799,23 +800,15 @@ if (jitter_ip != NULL) goto * jitter_ip; \
     while (false)
 #elif    defined(JITTER_DISPATCH_DIRECT_THREADING)   \
       || defined(JITTER_DISPATCH_MINIMAL_THREADING)
-# define JITTER_BRANCH_TO_IP()                     \
-    do                                             \
-      {                                            \
-        JITTER_COMPUTED_GOTO (jitter_ip->thread);  \
-      }                                            \
-    while (false)
+# define JITTER_BRANCH_TO_IP()                \
+    JITTER_COMPUTED_GOTO (jitter_ip->thread)
 #endif // #if   defined(...
 
 /* Branch to a given VM label, represented as appropriate for the dispatching
    model. */
 #ifdef JITTER_DISPATCH_NO_THREADING
-#define JITTER_BRANCH(target)        \
-  do                                 \
-    {                                \
-      JITTER_COMPUTED_GOTO(target);  \
-    }                                \
-  while (false)
+# define JITTER_BRANCH(target)    \
+    JITTER_COMPUTED_GOTO(target)
 #else
 #define JITTER_BRANCH(target_pointer)  \
   do                                   \

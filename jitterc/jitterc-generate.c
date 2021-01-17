@@ -3124,19 +3124,7 @@ jitterc_emit_executor_undefinitions (FILE *f,
   bool is_caller = (uins->callerness == jitterc_callerness_caller);
   bool is_callee = (uins->calleeness == jitterc_calleeness_callee);
   //bool is_replacement = (sins->is_replacement_of != NULL);
-
-  if (! is_relocatable)
-    {
-      EMIT("#ifdef JITTER_REPLICATE\n");
-      EMIT("    /* Advance the instruction pointer, if any, to skip residuals;\n");
-      EMIT("       then jump back to replicated code. */\n");
-      EMIT("    const void *_jitter_back_to_replicated_code_pointer = JITTER_ARGP%i;\n",
-           (int) (gl_list_size (sins->specialized_arguments) - 1));
-      EMIT("    JITTER_SKIP_RESIDUALS_;\n");
-      EMIT("    goto * _jitter_back_to_replicated_code_pointer;\n");
-      EMIT("#endif // #ifdef JITTER_REPLICATE\n\n");
-    }
-
+ 
   /* Undefine argument macros.  Those will be redefined before the next
      instruction as needed; it would be dangerous to leave previous
      definitions active, because some instruction body coming after this
@@ -3224,11 +3212,12 @@ jitterc_emit_executor_ordinary_specialized_instructions
            (sins->hotness == jitterc_hotness_hot)
            ? "hot"
            : "cold");
-      EMIT("  {\n");
 
       /* Emit definitions for branch macros, argument access and the like.  Some
          definitions will be different for replacement and non-replacement
          instructions. */
+      EMIT("  { /* This block begins with definitions for %s . */\n",
+           sins->name);
       jitterc_emit_executor_definitions (f, vm, sins);
 
       /* Emit profiling instrumentation code for the instruction. */
@@ -3257,8 +3246,10 @@ jitterc_emit_executor_ordinary_specialized_instructions
       EMIT("\n");
       
       /* Emit the user C code for the beginning of every instruction, if any. */
+      EMIT("  {\n");
       jitterc_emit_user_c_code_to_stream
          (vm, f, vm->instruction_beginning_c_code, "instruction-beginning-c");
+      EMIT("  }\n");
 
       if (is_replacement)
         EMIT ("//#if 0\n"); // FIXME: a test! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -3289,8 +3280,12 @@ jitterc_emit_executor_ordinary_specialized_instructions
 
       /* Emit user-specified code for the instruction.  We have already opened a
          brace, so another pair is not needed. */
-      EMIT("\n    /* User code for %s . */\n", sins->name);
-      EMIT("%s\n", uins->code);
+      EMIT("\n");
+      EMIT("    /* User code for %s . */\n", sins->name);
+      EMIT("  {\n");
+      //EMIT("%s\n", uins->code);
+      jitterc_emit_user_c_code_to_stream (vm, f, uins->code, "user code block");
+      EMIT("  }\n");
       EMIT("    /* End of the user code for %s . */\n\n", sins->name);
 
       if (is_replacement)
@@ -3303,14 +3298,34 @@ jitterc_emit_executor_ordinary_specialized_instructions
 
       /* Emit the user C code for the end of every instruction, if any.  Notice
          that the code is not always reachable. */
+      EMIT("  {\n");
       jitterc_emit_user_c_code_to_stream (vm, f, vm->instruction_end_c_code,
                                           "instruction-end-c");
+      EMIT("  }\n");
+
+      if (! is_relocatable)
+        {
+          EMIT("#ifdef JITTER_REPLICATE\n"
+               "  {\n"
+               "    /* Advance the instruction pointer, if any, to skip every\n"
+               "       residual but the last; branch back to replicated\n"
+               "       code. */\n");
+          EMIT("    const void *_jitter_back_to_replicated_code_pointer =\n"
+               "      JITTER_ARGP%i;\n",
+               (int) (gl_list_size (sins->specialized_arguments) - 1));
+          EMIT("    JITTER_SKIP_RESIDUALS_;\n"
+               "    goto * _jitter_back_to_replicated_code_pointer;\n"
+               "  }\n"
+               "#endif // #ifdef JITTER_REPLICATE\n\n");
+        }
 
       /* Undefine every macro that was defined for use in the instruction user
          block. */
       jitterc_emit_executor_undefinitions (f, vm, sins);
+      EMIT("    /* Here ends the block for %s, which started with its\n"
+           "       definitions. */\n", sins->name);
       EMIT("  }\n");
-   }
+    }
   EMIT("  /* End of the ordinary specialized instructions. */\n\n");
 }
 
@@ -3864,9 +3879,11 @@ jitterc_emit_executor_main_function
   EMIT("  goto * jitter_ip;\n");
   EMIT("#elif defined (JITTER_DISPATCH_MINIMAL_THREADING)  \\\n");
   EMIT("    || defined (JITTER_DISPATCH_NO_THREADING)\n");
-  EMIT("  asm volatile (\"\\njitter_dispatch_label_asm:\\n\"\n");
-  EMIT("                JITTER_ASM_COMMENT_UNIQUE(\"\")\n");
+  EMIT("  asm volatile (JITTER_ASM_COMMENT_UNIQUE(\"\")\n");
+  EMIT("                \"\\njitter_dispatch_label_asm:\\n\"\n");
   EMIT("                : \"+r\" (jitter_ip));\n");
+  EMIT("  goto * jitter_ip;\n");
+  /*
   EMIT("JITTER_PRETEND_TO_POSSIBLY_JUMP_TO_(jitter_dispatch_label);\n");
   EMIT("  if (jitter_ip != 0) goto * jitter_ip;\n");
   EMIT("  jitter_dispatch_label_2:\n");
@@ -3876,6 +3893,7 @@ jitterc_emit_executor_main_function
   EMIT("  if (jitter_ip != 0) goto jitter_dispatch_label;\n");
   EMIT("  JITTER_PRETEND_TO_POSSIBLY_JUMP_TO_(jitter_dispatch_label);\n");
   EMIT("  goto jitter_dispatch_label_2;\n");
+  */
   EMIT("#endif\n");
 
   EMIT("#ifdef JITTER_REPLICATE\n");
