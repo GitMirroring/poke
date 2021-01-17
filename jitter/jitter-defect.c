@@ -254,11 +254,18 @@ jitter_fill_replacement_table
          "replacement" is itself. */
       replacement_table [i] = i;
 
-#if 1
-  /* ...If an instruction which is not supposed to be defective (for example
-     a replacement) is in fact defective, fail fatally and refuse to run.
-     We have already printed the names of the involved instructions.  Fail. */
-  if (false && missing_replacement_no > 0) //////////////////////////////////////////////////
+  /* ...If an instruction which is not supposed to be defective (for example a
+     replacement) is in fact defective, fail fatally and refuse to run -- unless
+     JITTER_DEFECT_REPLACEMENT_NEVER is defined, in which case this is expected
+     behaviour; anyway, at least print a warning in that case as well. */
+#if defined (JITTER_DEFECT_REPLACEMENT_NEVER)
+  fprintf (stderr,
+           "ERROR: at least one defective instruction has no replacement: this "
+           "code is subtly incorrect and MUST NOT BE USED IN PRODUCTION.\n"
+           "Proceeding anyway, since Jitter has been configured with "
+           "--disable-defect-replacement .");
+#else
+  if (missing_replacement_no > 0) //////////////////////////////////////////////////
     jitter_fatal ("at least one defective instruction has no replacement: "
                   "failing now instead of running with subtle bugs");
 #endif

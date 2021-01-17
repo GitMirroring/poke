@@ -506,20 +506,10 @@
 
 /* Exit the executor function and return to C. */
 #ifdef JITTER_REPLICATE
-  /* With replication enabled it's important to avoid tail-merging, which is why
-     this is a wrapped computed goto rather than a simple goto... */
-# define JITTER_EXIT()                                                         \
-    do                                                                         \
-      {                                                                        \
-        /* FIXME: this idea may be useful to abstract into a macro. */         \
-        /* void *_jitter_desination_label                                         \ */ \
-        /*   = (jitter_saved_exit_non_replicated_code_pointer);                   \ */ \
-        /* asm (JITTER_ASM_COMMENT_UNIQUE ("pretend to alter jump destination")   \ */ \
-        /*      : "+X" (_jitter_desination_label));                               \ */ \
-        JITTER_COMPUTED_GOTO_IN_ASM \
-           (jitter_saved_exit_non_replicated_code_pointer); \
-      }                                                                        \
-    while (false)
+  /* With replication enabled this works like an inter-VM-instruction branch,
+     leading out of replicated code... */
+# define JITTER_EXIT()                                                    \
+    JITTER_COMPUTED_GOTO (jitter_saved_exit_non_replicated_code_pointer)
 #else
   /* ...But in the case of switch dispatching computed gotos may not be usable
      at all, and with direct-threading there is no correctness problem. */
