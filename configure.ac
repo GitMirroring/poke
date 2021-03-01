@@ -870,6 +870,23 @@ if test "x$ac_cv_have_gnu_c_asm_goto" = "xyes"; then
             [Define if the compiler supports GNU C's asm goto .])
 fi
 
+# Check whether #pragma GCC diagnostic is usable inside functions.
+AC_CACHE_CHECK([for @%:@pragma GCC diagnostic insude functions],
+  [ac_cv_have_pragma_gcc_diagnostic_in_functions],
+  [AC_COMPILE_IFELSE(
+     [AC_LANG_PROGRAM(
+        [],
+        [[# pragma GCC diagnostic push
+# pragma GCC diagnostic pop
+        ]])],
+     [ac_cv_have_pragma_gcc_diagnostic_in_functions=yes],
+     [ac_cv_have_pragma_gcc_diagnostic_in_functions=no])])
+if test "x$ac_cv_have_pragma_gcc_diagnostic_in_functions" = "xyes"; then
+  AC_DEFINE([JITTER_HAVE_PRAGMA_GCC_DIAGNOSTIC_IN_FUNCTIONS], [1],
+            [Define if the compiler supports #pragma GCC diagnostic inside
+             functions.])
+fi
+
 
 # Check for GCC attributes.
 ################################################################

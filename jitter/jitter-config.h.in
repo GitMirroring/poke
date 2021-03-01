@@ -347,6 +347,11 @@
 /* Define for specific GNU C attributes. */
 #undef JITTER_HAVE_ATTRIBUTE_RETURNS_NONNULL
 
+/* Define if the compiler supports #pragma GCC diagnostic inside functions.
+   Some old versions of GCC 4 do not but, annoyingly, others versions do which
+   are less recent than others which do not. */
+#undef JITTER_HAVE_PRAGMA_GCC_DIAGNOSTIC_IN_FUNCTIONS
+
 
 /* Optimization: machine-specific alternatives.
  * ************************************************************************** */
