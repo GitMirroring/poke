@@ -2225,8 +2225,8 @@ jitterc_emit_executor_global_wrappers
   EMIT("   by skipping over their initialization.  This however is not possible,\n");
   EMIT("   and I want to selectively silence the warning for the variables in\n");
   EMIT("   question. */\n");
-  EMIT("#pragma GCC diagnostic push\n");
-  EMIT("#pragma GCC diagnostic ignored \"-Wmaybe-uninitialized\"\n");
+  EMIT("//#pragma GCC diagnostic push\n");
+  EMIT("//#pragma GCC diagnostic ignored \"-Wmaybe-uninitialized\"\n");
   EMIT("\n");
   EMIT("  /* Wrap functions and globals used within VM instructions, if needed.\n");
   EMIT("     This is a trick to keep instructions readable while avoiding PC-relative\n");
@@ -2273,7 +2273,7 @@ jitterc_emit_executor_global_wrappers
       EMIT("# define %s _my_%s\n\n", name, name);
     }
   EMIT("/* See the comment above about spurious -Wmaybe-uninitialized warnings. */\n");
-  EMIT("#pragma GCC diagnostic pop\n");
+  EMIT("//#pragma GCC diagnostic pop\n");
   EMIT("#endif // #ifdef JITTER_REPLICATE\n\n");
   EMIT("\n");
 }
@@ -3206,14 +3206,14 @@ jitterc_emit_executor_main_function
   EMIT("     other dispatches in an automatic variable, still hopefully kept\n");
   EMIT("     in a register. */\n");
   EMIT("/* About the pragma, look for \"-Wmaybe-uninitialized\" in the comments above. FIXME: this is to avoid a GCC warning with profiling.  Check with profiling on. */\n");
-  EMIT("#pragma GCC diagnostic push\n");
-  EMIT("#pragma GCC diagnostic ignored \"-Wmaybe-uninitialized\"\n");
+  EMIT("//#pragma GCC diagnostic push\n");
+  EMIT("//#pragma GCC diagnostic ignored \"-Wmaybe-uninitialized\"\n");
   EMIT("#ifdef JITTER_DISPATCH_NO_THREADING\n");
   EMIT("# define jitter_array_base vmprefix_array_base_register_variable\n");
   EMIT("#else\n");
   EMIT("  char * restrict jitter_array_base __attribute__ ((unused));\n");
   EMIT("#endif // #ifdef JITTER_DISPATCH_NO_THREADING\n");
-  EMIT("#pragma GCC diagnostic pop\n");
+  EMIT("//#pragma GCC diagnostic pop\n");
   EMIT("  jitter_array_base\n");
   EMIT("    = (((char *) jitter_original_state->vmprefix_state_backing.jitter_array)\n");
   EMIT("       + JITTER_ARRAY_BIAS);\n");
