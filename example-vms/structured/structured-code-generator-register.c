@@ -68,36 +68,41 @@ struct structured_location
   enum structured_location_case case_;
 
   /* Other data complementing the location, as needed for some cases. */
-  union
+  /*
+  union // Conceptually, this should be a union...
   {
-    struct
+    struct // ...Containing an anonymous struct.  However old compilers will
+           // not support initialisers setting anonymous union and struct fields.
     {
+    */
       /* A temporary identifier, used when the case is temporary. */
       structured_temporary temporary;
 
       /* A register index, used when the case is register or temporary. */
       structured_register_index register_index;
-    };
+    /*};*/
 
     /* The value of the literal, only used when the case is literal. */
     jitter_int constant_value;
+  /*
   };
+  */
 };
 
 /* A C constant expression suitable for initializing a struct
    structured_location object to be a location with an anywhere case. */
 #define STRUCTURED_LOCATION_ANYWHERE     \
-  { structured_location_case_anywhere }
+  { .case_ = structured_location_case_anywhere }
 
 /* A C constant expression suitable for initializing a struct
    structured_location object to be a location with a non-constant case. */
 #define STRUCTURED_LOCATION_NONCONSTANT     \
-  { structured_location_case_nonconstant }
+  { .case_ = structured_location_case_nonconstant }
 
 /* A C constant expression suitable for initializing a struct
    structured_location object to be a register, with the given index. */
 #define STRUCTURED_LOCATION_REGISTER(register_idx)                         \
-  { structured_location_case_register, .register_index = (register_idx) }
+  { .case_ = structured_location_case_register, .register_index = (register_idx) }
 
 /* Mark the fact that the pointed location has been used.  This does nothing if
    the location is anything but a temporary.  If the location is a temporary,
