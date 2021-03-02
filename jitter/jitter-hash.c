@@ -1,6 +1,7 @@
 /* Jitter: hash table data structure.
 
    Copyright (C) 2017, 2018 Luca Saiu
+   Updated in 2021 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -249,7 +250,7 @@ jitter_hash_bucket_has (const struct jitter_hash_bucket *b,
   return false;
 }
 
-static const union jitter_word
+static union jitter_word
 jitter_hash_bucket_get (const struct jitter_hash_bucket *b,
                         const union jitter_word key,
                         jitter_hash_key_equal eq)
@@ -303,7 +304,7 @@ jitter_hash_table_has (const struct jitter_hash_table *t,
     return jitter_hash_bucket_has (b, key, eq);
 }
 
-const union jitter_word
+union jitter_word
 jitter_hash_table_get (const struct jitter_hash_table *t,
                        const union jitter_word key,
                        jitter_hash_function f,
@@ -561,7 +562,7 @@ jitter_string_hash_table_has (const struct jitter_hash_table *t,
                                 jitter_string_hash_key_equal);
 }
 
-const union jitter_word
+union jitter_word
 jitter_string_hash_table_get (const struct jitter_hash_table *t,
                               const char *s)
 {
@@ -631,7 +632,7 @@ jitter_word_hash_table_has (const struct jitter_hash_table *t, jitter_int k)
                                 jitter_word_hash_key_equal);
 }
 
-const union jitter_word
+union jitter_word
 jitter_word_hash_table_get (const struct jitter_hash_table *t, jitter_int k)
 {
   return jitter_hash_table_get (t,

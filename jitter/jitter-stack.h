@@ -421,7 +421,7 @@ f678c044 39 ef 00 04    addi r15,r15,4
       const type _jitter_stack_new_element_temp = (new_element);         \
       JITTER_STACK_TOS_PUSH_UNSPECIFIED(type, stack_container, name);    \
       JITTER_STACK_TOS_TOP_NAME(type, stack_container, name)             \
-        = (type) _jitter_stack_new_element_temp;                         \
+        = _jitter_stack_new_element_temp;                                \
     }                                                                    \
   while (false)
 #define JITTER_STACK_NTOS_PUSH(type, stack_container, name, new_element)  \
@@ -429,7 +429,7 @@ f678c044 39 ef 00 04    addi r15,r15,4
     {                                                                     \
       const type _jitter_stack_new_element_temp = (new_element);          \
       (JITTER_STACK_NTOS_TOP_POINTER_NAME(type, stack_container, name))   \
-         [1] = (type) (_jitter_stack_new_element_temp);                   \
+         [1] = _jitter_stack_new_element_temp;                            \
       JITTER_STACK_NTOS_PUSH_UNSPECIFIED(type, stack_container, name);    \
     }                                                                     \
   while (false)

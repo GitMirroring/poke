@@ -1,6 +1,7 @@
 /* Jitter: hash table data structure header.
 
    Copyright (C) 2017, 2018 Luca Saiu
+   Updated in 2021 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -154,7 +155,7 @@ jitter_hash_table_has (const struct jitter_hash_table *t,
 /* Return the value most recently associated to the given key in the pointed
    tabel with the given function.  Fail fatally if no binding for the key
    exists. */
-const union jitter_word
+union jitter_word
 jitter_hash_table_get (const struct jitter_hash_table *t,
                        const union jitter_word key,
                        jitter_hash_function f,
@@ -233,7 +234,7 @@ bool
 jitter_string_hash_table_has (const struct jitter_hash_table *t,
                               const char *key)
   __attribute__ ((pure, nonnull (1, 2)));
-const union jitter_word
+union jitter_word
 jitter_string_hash_table_get (const struct jitter_hash_table *t,
                               const char *key)
   __attribute__ ((pure, nonnull (1, 2)));
@@ -266,7 +267,7 @@ bool
 jitter_word_hash_table_has (const struct jitter_hash_table *t,
                             const jitter_int key)
   __attribute__ ((pure, nonnull (1)));
-const union jitter_word
+union jitter_word
 jitter_word_hash_table_get (const struct jitter_hash_table *t,
                             const jitter_int key)
   __attribute__ ((pure, nonnull (1)));
