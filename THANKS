@@ -28,13 +28,13 @@ important.
   architecture as I was writing the first code in machine/sparc with him at my
   side.
 
-* Bruno Haible intervened in an IRC conversation and discussed with me for a
-  long time about hashing and garbage collection.  I appreciate how he made a
-  strong effort to prevent me from making a wrong choice and proactively
-  criticised my design to warn me of possible problems, adopting my own
-  obsession with optimisation as a point of view for the scope of the exchange.
-  Bruno, always the portability expert, also sent many bug reports, fixes and
-  patches, in his usual precise and helpful style.
+* Bruno Haible, always the portability expert, sent countless bug reports, fixes
+  and patches in his usual friendly, helpful and precise style.  Bruno
+  intervened in an IRC conversation and discussed with me for a long time about
+  hashing and garbage collection.  I appreciate how he made a strong effort to
+  prevent me from making a wrong choice and proactively criticised my design to
+  warn me of possible problems, adopting my own obsession with optimisation as a
+  point of view for the scope of the exchange.
 
 * Mohammad-Reza Nabipoor reported bugs, asked many questions about Jitter and
   appreciated its complexity.  Interacting with him was particularly pleasant
