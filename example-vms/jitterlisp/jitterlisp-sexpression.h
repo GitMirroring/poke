@@ -1,6 +1,7 @@
 /* JitterLisp: s-expression header.
 
    Copyright (C) 2017, 2018, 2019, 2020 Luca Saiu
+   Updated in 2021 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of the JitterLisp language implementation, distributed as
@@ -651,8 +652,11 @@ struct jitterlisp_primitive
 {
   /* Make the first field, and therefore the whole struct, double-word aligned:
      this ensures that enough low-order zero bits in the address can be
-     overwritten by my tag. */
-  alignas (sizeof (jitter_int) * 2)
+     overwritten by my tag.
+     This header is included from files using Gnulib macros, which appear to
+     redefine alignas in a way different from just _Alignas ; in order to avoid
+     these problems directly use _Alignas. */
+  _Alignas (sizeof (jitter_int) * 2)
 
   /* The primitive Lisp name as a C string. */
   char *name;
