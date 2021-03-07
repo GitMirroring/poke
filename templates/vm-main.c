@@ -545,11 +545,16 @@ main (int argc, char **argv)
       if (cl.debug)
         fprintf (progress, "Setting resource limits...\n");
       struct rlimit limit;
+      bool getrlimit_failed = false;
       if (getrlimit (RLIMIT_CPU, & limit) != 0)
-        jitter_fatal ("getrlimit failed");
+        {
+          fprintf (stderr, "warning: getrlimit failed\n");
+          getrlimit_failed = true;
+        }
       limit.rlim_cur = cl.cpu_time_limit;
-      if (setrlimit (RLIMIT_CPU, & limit) != 0)
-        jitter_fatal ("setrlimit failed");
+      if (! getrlimit_failed)
+        if (setrlimit (RLIMIT_CPU, & limit) != 0)
+          jitter_fatal ("setrlimit failed");
     }
 #endif // #ifdef JITTER_HAVE_SETRLIMIT
 
