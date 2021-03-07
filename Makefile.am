@@ -1911,7 +1911,7 @@ EXTRA_DIST += \
 if ! JITTER_HAVE_TEXI2DVI
 missinghardcopytools:
 	@echo 'You are missing the tools to generate hardcopy documentation.'
-	@exit 1
+	@exit 0
 dvi: missinghardcopytools
 ps: missinghardcopytools
 pdf: missinghardcopytools

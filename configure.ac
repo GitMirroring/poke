@@ -589,6 +589,15 @@ if ! (echo "x$YACC" | grep bison > /dev/null); then
   fi
 fi
 
+AC_MSG_CHECKING([if hardcopy documentation should be generated])
+AC_ARG_ENABLE([hardcopy],
+              AS_HELP_STRING([--enable-hardcopy],
+                 [Enable generation of the manual in hardcopy formats (default:
+                 auto)]),
+              jitter_enable_hardcopy="$enableval",
+              jitter_enable_hardcopy="auto")
+AC_MSG_RESULT([$jitter_enable_hardcopy])
+
 # Check for Texinfo commands.  In practice makeinfo is more important than
 # texi2dvi, as Info is the default format.
 AC_PATH_PROG([JITTER_MAKEINFO], [makeinfo])
@@ -602,6 +611,11 @@ you compile from git; release tarballs contain the documentation \
 pre-generated])
   fi
 fi
+AC_PATH_PROG([JITTER_TEX], [tex])
+if test "x$JITTER_TEX" = "x"; then
+  AC_MSG_WARN([you will need a TeX executable (tex) for building the manual
+in hardcopy formats such as DVI, PostScript and PDF])
+fi
 AC_PATH_PROG([JITTER_TEXI2DVI], [texi2dvi])
 if test "x$JITTER_TEXI2DVI" = "x"; then
   AC_MSG_WARN([you will need texi2dvi, from GNU Texinfo, if you want to \
@@ -610,7 +624,9 @@ fi
 # Define an Automake conditional saying whether it is possible to generate
 # hardcopy documentation.  This way failures will be cleaner.
 AM_CONDITIONAL([JITTER_HAVE_TEXI2DVI],
-               [test "x$JITTER_TEXI2DVI" != "x"])
+               [test "x$jitter_enable_hardcopy" != 'x' \
+                && test "x$JITTER_TEX" != 'x' \
+                && test "x$JITTER_TEXI2DVI" != 'x'])
 
 # Check for GNU help2man.  That is not required for the user: pre-generated man
 # pages are included in the distribution.
