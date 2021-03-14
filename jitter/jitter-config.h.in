@@ -368,6 +368,10 @@
    are less recent than others which do not. */
 #undef JITTER_HAVE_PRAGMA_GCC_DIAGNOSTIC_IN_FUNCTIONS
 
+/* Define if the compiler supports assembly names for functions in the style of
+   GNU C. */
+#undef JITTER_HAVE_ASSEMBLY_NAMES_FOR_FUNCTIONS
+
 
 /* Optimization: machine-specific alternatives.
  * ************************************************************************** */

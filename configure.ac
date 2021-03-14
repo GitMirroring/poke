@@ -903,6 +903,27 @@ if test "x$ac_cv_have_pragma_gcc_diagnostic_in_functions" = "xyes"; then
              functions.])
 fi
 
+# Check whether the compiler supports assembler names for functions.
+AC_CACHE_CHECK([assembly names for functions],
+  [ac_cv_have_assembly_names_for_functions],
+  [AC_COMPILE_IFELSE(
+     [AC_LANG_PROGRAM(
+        [[int
+          foo (int x) asm ("foobar");]
+         [int
+          foo (int x)
+          {
+            return x + 1;
+          }]],
+        [[return foo (42);]])],
+     [ac_cv_have_assembly_names_for_functions=yes],
+     [ac_cv_have_assembly_names_for_functions=no])])
+if test "x$ac_cv_have_assembly_names_for_functions" = "xyes"; then
+  AC_DEFINE([JITTER_HAVE_ASSEMBLY_NAMES_FOR_FUNCTIONS], [1],
+            [Define if the compiler supports assembly names for functions in
+             the style of GNU C])
+fi
+
 
 # Check for GCC attributes.
 ################################################################
