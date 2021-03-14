@@ -3868,7 +3868,6 @@ jitterc_emit_executor_main_function
   EMIT(" /* The label is unused (from the compiler's point of view) for simple\n");
   EMIT("    dispatches when not profiling.  (In reality it is always unused.)\n");
   EMIT("    FIXME: comment. */\n");
-  EMIT(" jitter_dispatch_label: __attribute__ ((hot, unused))\n");
   // FIXME: same.
   //EMIT("  asm volatile (\"\\njitter_dispatch_label_asm:\\n\" : : : \"memory\");\n");
   EMIT("#if   defined(JITTER_DISPATCH_SWITCH)\n");
@@ -3879,6 +3878,7 @@ jitterc_emit_executor_main_function
   EMIT("  goto * jitter_ip;\n");
   EMIT("#elif defined (JITTER_DISPATCH_MINIMAL_THREADING)  \\\n");
   EMIT("    || defined (JITTER_DISPATCH_NO_THREADING)\n");
+  EMIT(" jitter_dispatch_label: __attribute__ ((hot, unused))\n");
   EMIT("  asm volatile (JITTER_ASM_COMMENT_UNIQUE(\"\")\n");
   EMIT("                \"\\njitter_dispatch_label_asm:\\n\"\n");
   EMIT("                : \"+r\" (jitter_ip));\n");
@@ -3916,7 +3916,8 @@ jitterc_emit_executor_main_function
   /* EMIT("  JITTER_PRETEND_TO_UPDATE_IP_;\n"); */
   /* EMIT("  JITTER_PRETEND_TO_POSSIBLY_JUMP_TO_(jitter_exit_vm_label);\n"); */
   EMIT("  JITTER_PRETEND_TO_UPDATE_IP_;\n");
-  EMIT("  JITTER_PRETEND_TO_POSSIBLY_JUMP_TO_(jitter_possibly_restore_registers_and_return_label);\n");
+  //EMIT("  JITTER_PRETEND_TO_POSSIBLY_JUMP_TO_(jitter_possibly_restore_registers_and_return_label);\n");
+  EMIT("  JITTER_PRETEND_TO_POSSIBLY_JUMP_ANYWHERE();\n");
   EMIT("  goto jitter_dispatch_label;\n");
   EMIT("#endif // #ifdef JITTER_REPLICATE\n\n");
 
