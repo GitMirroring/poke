@@ -196,7 +196,7 @@
               [jitter_operand1] opd1_constraint (opd1),                        \
               JITTER_INPUT_VM_INSTRUCTION_BEGINNING /* inputs */               \
             : /* clobbers */                                                   \
-            : jitter_dispatch_label /* goto labels */)
+            : jitter_fake_target /* goto labels */)
 
 /* Low-level fast branches on sign. */
 #define _JITTER_LOW_LEVEL_BRANCH_FAST_IF_ZERO_(opd0, tgt)                \
@@ -518,7 +518,7 @@
                 : /* outputs. */                                               \
                 : [return_addr] "dam" (jitter_the_return_address) /* inputs. */ \
                 : /* clobbers. */                                              \
-                : jitter_dispatch_label /* gotolabels. */);                    \
+                : jitter_fake_target /* gotolabels. */);                    \
       /* The rest of the VM instruction is unreachable. */                     \
       __builtin_unreachable ();                                                \
     }                                                                          \
@@ -538,7 +538,7 @@
                 : /* outputs. */                                              \
                 : [destination] "a" (jitter_destination) /* inputs. */        \
                 : /* clobbers. */                                             \
-                : jitter_dispatch_label /* gotolabels. */);                   \
+                : jitter_fake_target /* gotolabels. */);                   \
       /* It would be incorrect to have __builtin_unreachable or               \
          JITTER_JUMP_TO_SPECIALIZED_INSTRUCTION_END here: see the comment in  \
          the x86_64 version. */                                               \
@@ -566,7 +566,7 @@
                 : [jitter_callee_rvalue] "a" (jitter_callee_rvalue),          \
                   [jitter_new_link] "dam" (jitter_new_link) /* inputs. */     \
                 : /* clobbers. */                                             \
-                : jitter_dispatch_label /* gotolabels. */);                   \
+                : jitter_fake_target /* gotolabels. */);                   \
       /* The rest of the VM instruction is unreachable: this tail call is an  \
          unconditional jump. */                                               \
       __builtin_unreachable ();                                               \
@@ -587,7 +587,7 @@
                 : JITTER_PATCH_IN_INPUTS_FOR_EVERY_CASE,                       \
                   JITTER_INPUT_VM_INSTRUCTION_BEGINNING /* inputs */           \
                 : /* clobbers. */                                              \
-                : jitter_dispatch_label /* gotolabels. */);                    \
+                : jitter_fake_target /* gotolabels. */);                    \
       /* It would be incorrect to have __builtin_unreachable or                \
          JITTER_JUMP_TO_SPECIALIZED_INSTRUCTION_END here: see the comment in   \
          the x86_64 version. */                                                \

@@ -2302,13 +2302,11 @@ for dispatch_model in $jitter_enabled_dispatch_models; do
   # I see some crashes with GCC 4, quite difficult to explain and debug and
   # unrelated to my low-level code; in fact some C code (for example
   # JitterLisp's library initialisation) crashes before doing anything with the
-  # VM.  This problem is reliably worked around by disabling sibling call
-  # optimisation.  I suspect the problem comes in fact from some other option I
-  # am using for minimal-threading and no-threading.
+  # VM.  This problem is reliably worked around, for minimal-threading, by
+  # disabling sibling call optimisation.  I suspect the problem comes in fact
+  # from some other option I am using for minimal-threading and no-threading.
   # Since GCC 4 is now very old it is probably not worth to investigate too
-  # hard.  Notice that with GCC 4 there are other problems as well.
-  #   FIXME: either forbid advanced dispatches at configure time with GCC 4,
-  #          or debug.
+  # hard.
   if test "x$JITTER_HAVE_ACTUAL_GCC" = 'xyes' \
      && test "$JITTER_GCC_MAJOR_VERSION" -le 4; then
     case "$dispatch_model" in

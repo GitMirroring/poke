@@ -145,7 +145,7 @@ struct jitter_defect_descriptor
 
 /* Expand to a literal template string adding a defect descriptor for the
    current specialized instruction.  This should be used within an inline asm
-   goto statement having jitter_dispatch_label as gotolabel. */
+   goto statement having jitter_fake_target as gotolabel. */
 #define JITTER_ASM_DEFECT_DESCRIPTOR                                \
   JITTER_ASM_COMMENT_UNIQUE(                                        \
      "Defect descriptor for "                                       \
@@ -154,7 +154,7 @@ struct jitter_defect_descriptor
   JITTER_ASM_WORD " "                                               \
      JITTER_STRINGIFY(JITTER_SPECIALIZED_INSTRUCTION_OPCODE) "\n\t" \
   JITTER_ASM_WORD " "                                               \
-     "(%l[jitter_dispatch_label] - jitter_dispatch_label_asm)\n"    \
+     "(%l[jitter_fake_target] - jitter_fake_target_asm)\n"    \
   JITTER_ASM_EXIT_SUBSECTION "\n\t"
 
 

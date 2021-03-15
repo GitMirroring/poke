@@ -210,7 +210,7 @@
               [jitter_operand0] "r" (opd0),                                 \
               JITTER_INPUT_VM_INSTRUCTION_BEGINNING /* inputs */            \
             : "cr7" /* clobbers */                                          \
-            : jitter_dispatch_label /* goto labels */)
+            : jitter_fake_target /* goto labels */)
 #define _JITTER_LOW_LEVEL_BRANCH_FAST_CONDITIONAL_BINARY_(                  \
            cmp_insn, b_insn, opd0, opd1, tgt)                               \
   asm goto (JITTER_ASM_DEFECT_DESCRIPTOR                                    \
@@ -229,7 +229,7 @@
               [jitter_operand1] "r" (opd1),                                 \
               JITTER_INPUT_VM_INSTRUCTION_BEGINNING /* inputs */            \
             : "cr7" /* clobbers */                                          \
-            : jitter_dispatch_label /* goto labels */)
+            : jitter_fake_target /* goto labels */)
 
 /* Low-level fast branches on sign. */
 #define _JITTER_LOW_LEVEL_BRANCH_FAST_IF_ZERO_(opd0, tgt)  \
@@ -327,7 +327,7 @@
               [jitter_xer_no_overflow] "r" (jitter_xer_no_overflow),            \
               JITTER_INPUT_VM_INSTRUCTION_BEGINNING /* inputs */                \
             : "xer", "cr0" /* clobbers */                                       \
-            : jitter_dispatch_label /* goto labels */);                         \
+            : jitter_fake_target /* goto labels */);                         \
   /* Make sure to get the current value in the register as the result, and not  \
      a previous copy.  In order to force this pretend to update the register    \
      here, only if the branch was not taken.  Inline asm will use the same      \
@@ -408,7 +408,7 @@
               [jitter_operand1] opd1_constraint (opd1),                         \
               JITTER_INPUT_VM_INSTRUCTION_BEGINNING /* inputs */                \
             : JITTER_STRINGIFY (JITTER_SCRATCH_REGISTER), "cr0" /* clobbers */  \
-            : jitter_dispatch_label /* goto labels */)
+            : jitter_fake_target /* goto labels */)
 
 /* This uses the macro above and itself factors two use cases: branch on and,
    branch on not and. */
@@ -509,7 +509,7 @@
                 : /* outputs. */                                               \
                 : [return_addr] "r" (jitter_the_return_address) /* inputs. */  \
                 : "lr" /* clobbers. */                                         \
-                : jitter_dispatch_label /* gotolabels. */);                    \
+                : jitter_fake_target /* gotolabels. */);                    \
       /* The rest of the VM instruction is unreachable. */                     \
       __builtin_unreachable ();                                                \
     }                                                                          \
@@ -528,7 +528,7 @@
                 : /* outputs. */                                              \
                 : [destination] "r" (jitter_destination) /* inputs. */        \
                 : "ctr", "lr" /* clobbers. */                                 \
-                : jitter_dispatch_label /* gotolabels. */);                   \
+                : jitter_fake_target /* gotolabels. */);                   \
       /* It would be incorrect to have __builtin_unreachable or               \
          JITTER_JUMP_TO_SPECIALIZED_INSTRUCTION_END here: see the comment in  \
          the x86_64 version. */                                               \
@@ -548,7 +548,7 @@
       asm goto (JITTER_ASM_DEFECT_DESCRIPTOR                                  \
                 JITTER_ASM_COMMENT_UNIQUE("Branch-and-link-with, pretending"  \
                                           "to go to "                         \
-                                          "%l[jitter_dispatch_label]")        \
+                                          "%l[jitter_fake_target]")        \
                 /* This PowerPC version is particularly pretty and natural,   \
                    and does not negatively affect branch target prediction    \
                    for once. */                                               \
@@ -559,7 +559,7 @@
                 : [jitter_callee_rvalue] "r" (jitter_callee_rvalue),          \
                   [jitter_new_link] "r" (jitter_new_link) /* inputs. */       \
                 : "ctr", "lr" /* clobbers. */                                 \
-                : jitter_dispatch_label /* gotolabels. */);                   \
+                : jitter_fake_target /* gotolabels. */);                   \
       /* The rest of the VM instruction is unreachable: this tail call is an  \
          unconditional jump. */                                               \
       __builtin_unreachable ();                                               \
@@ -582,7 +582,7 @@
                 : JITTER_PATCH_IN_INPUTS_FOR_EVERY_CASE,                       \
                   JITTER_INPUT_VM_INSTRUCTION_BEGINNING /* inputs */           \
                 : /* clobbers. */                                              \
-                : jitter_dispatch_label /* gotolabels. */);                    \
+                : jitter_fake_target /* gotolabels. */);                    \
       /* It would be incorrect to have __builtin_unreachable or                \
          JITTER_JUMP_TO_SPECIALIZED_INSTRUCTION_END here: see the comment in   \
          the x86_64 version. */                                                \

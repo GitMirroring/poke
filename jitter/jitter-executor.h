@@ -334,7 +334,7 @@
 
 /* // FIXME: comment. */
 /* // FIXME: remove.  Fake-jumping to an arbitrary label different from */
-/* // jitter_dispatch_label doesn't work well with defect descriptors. */
+/* // jitter_fake_target doesn't work well with defect descriptors. */
 /* #define JITTER_PRETEND_TO_POSSIBLY_JUMP_TO_(_jitter_label)             \ */
 /*   asm goto (JITTER_ASM_COMMENT_UNIQUE("Pretend to possibly jump to "   \ */
 /*                                       JITTER_STRINGIFY(_jitter_label)  \ */
@@ -368,11 +368,11 @@
       asm goto (JITTER_ASM_DEFECT_DESCRIPTOR                \
                 JITTER_ASM_COMMENT_UNIQUE( \
                    "# Pretending to possibly jump to " \
-                   "%l[jitter_dispatch_label] thru %[_jitter_ip]") \
+                   "%l[jitter_fake_target] thru %[_jitter_ip]") \
                 : \
                 : [_jitter_ip] JITTER_IP_INPUT_CONSTRAINT (jitter_ip) \
                 : \
-                : jitter_dispatch_label); \
+                : jitter_fake_target); \
     }                                                                  \
   while (false)
 
@@ -747,8 +747,8 @@ JITTER_PRETEND_TO_UPDATE_IP_;\
                                             JITTER_STRINGIFY(target) " "       \
                                             "at %[_jitter_the_target], "       \
                                             "not actually going to "           \
-                                            "jitter_dispatch_label at "        \
-                                            "%l[jitter_dispatch_label]")       \
+                                            "jitter_fake_target at "        \
+                                            "%l[jitter_fake_target]")       \
                   JITTER_ASM_COMPUTED_GOTO_TEMPLATE                            \
                   : /* outputs */                                              \
                   : [_jitter_the_target]                                       \
@@ -756,7 +756,7 @@ JITTER_PRETEND_TO_UPDATE_IP_;\
                        (_jitter_the_target)                                    \
                     /* inputs */                                               \
                   : JITTER_ASM_COMPUTED_GOTO_CLOBBERS /* clobbers */           \
-                  : jitter_dispatch_label /* gotolabels */);                   \
+                  : jitter_fake_target /* gotolabels */);                   \
         /* This is an unconditional branch: the following statement in the     \
            same block is unreachable. */                                       \
         __builtin_unreachable();                                               \

@@ -3552,6 +3552,13 @@ jitterc_emit_executor_main_function
   EMIT("                                struct vmprefix_state * const jitter_original_state)\n");
   EMIT("{\n");
 
+  EMIT("// FIXME: move generation of this to a different function.  Possibly\n");
+  EMIT("//        use the same logic as patch-in header/footer instead.\n");
+  EMIT("#if defined (JITTER_DISPATCH_MINIMAL_THREADING)  \\\n");
+  EMIT("    || defined (JITTER_DISPATCH_NO_THREADING)\n");
+  EMIT("  jitter_fake_target:;\n");
+  EMIT("#endif // #if defined (JITTER_DISPATCH_MINIMAL_THREADING) ...\n");
+
   /* Emit debugging prints.  FIXME: implement something like this, cleanly, in a
      different function. */
 /*
@@ -3869,32 +3876,36 @@ jitterc_emit_executor_main_function
   EMIT("    dispatches when not profiling.  (In reality it is always unused.)\n");
   EMIT("    FIXME: comment. */\n");
   // FIXME: same.
-  //EMIT("  asm volatile (\"\\njitter_dispatch_label_asm:\\n\" : : : \"memory\");\n");
-  EMIT("#if   defined(JITTER_DISPATCH_SWITCH)\n");
-  EMIT("  /* This code is unreachable, but the compiler does not know it.  FIXME: comment. */\n");
-  EMIT("  goto jitter_dispatching_switch_label;\n");
-  EMIT("#elif defined(JITTER_DISPATCH_DIRECT_THREADING)\n");
-  EMIT("  /* Again this code is unreachable, but the compiler does not know it.  FIXME: comment. */\n");
-  EMIT("  goto * jitter_ip;\n");
-  EMIT("#elif defined (JITTER_DISPATCH_MINIMAL_THREADING)  \\\n");
+  //EMIT("  asm volatile (\"\\njitter_fake_target_asm:\\n\" : : : \"memory\");\n");
+  // FIXME: this is completely useless for simple dispatches.
+  /* EMIT("#if   defined(JITTER_DISPATCH_SWITCH)\n"); */
+  /* EMIT("  /\* This code is unreachable, but the compiler does not know it.  FIXME: comment. *\/\n"); */
+  /* EMIT("  goto jitter_dispatching_switch_label;\n"); */
+  /* EMIT("#elif defined(JITTER_DISPATCH_DIRECT_THREADING)\n"); */
+  /* EMIT("  /\* Again this code is unreachable, but the compiler does not know it.  FIXME: comment. *\/\n"); */
+  /* EMIT("  goto * jitter_ip;\n"); */
+  /* EMIT("#elif defined (JITTER_DISPATCH_MINIMAL_THREADING)  \\\n"); */
+  /*
+  EMIT("#if defined (JITTER_DISPATCH_MINIMAL_THREADING)  \\\n");
   EMIT("    || defined (JITTER_DISPATCH_NO_THREADING)\n");
-  EMIT(" jitter_dispatch_label: __attribute__ ((hot, unused))\n");
+  EMIT(" jitter_fake_target: __attribute__ ((hot, unused))\n");
   EMIT("  asm volatile (JITTER_ASM_COMMENT_UNIQUE(\"\")\n");
-  EMIT("                \"\\njitter_dispatch_label_asm:\\n\"\n");
+  EMIT("                \"\\njitter_fake_target_asm:\\n\"\n");
   EMIT("                : \"+r\" (jitter_ip));\n");
   EMIT("  goto * jitter_ip;\n");
+  */
   /*
-  EMIT("JITTER_PRETEND_TO_POSSIBLY_JUMP_TO_(jitter_dispatch_label);\n");
+  EMIT("JITTER_PRETEND_TO_POSSIBLY_JUMP_TO_(jitter_fake_target);\n");
   EMIT("  if (jitter_ip != 0) goto * jitter_ip;\n");
-  EMIT("  jitter_dispatch_label_2:\n");
-  EMIT("  asm volatile (\"\\njitter_dispatch_label_asm_2:\\n\"\n");
+  EMIT("  jitter_fake_target_2:\n");
+  EMIT("  asm volatile (\"\\njitter_fake_target_asm_2:\\n\"\n");
   EMIT("                JITTER_ASM_COMMENT_UNIQUE(\"\")\n");
   EMIT("                : \"+r\" (jitter_ip));\n");
-  EMIT("  if (jitter_ip != 0) goto jitter_dispatch_label;\n");
-  EMIT("  JITTER_PRETEND_TO_POSSIBLY_JUMP_TO_(jitter_dispatch_label);\n");
-  EMIT("  goto jitter_dispatch_label_2;\n");
+  EMIT("  if (jitter_ip != 0) goto jitter_fake_target;\n");
+  EMIT("  JITTER_PRETEND_TO_POSSIBLY_JUMP_TO_(jitter_fake_target);\n");
+  EMIT("  goto jitter_fake_target_2;\n");
   */
-  EMIT("#endif\n");
+  //EMIT("#endif\n");
 
   EMIT("#ifdef JITTER_REPLICATE\n");
   /* EMIT("  JITTER_PRETEND_TO_UPDATE_IP_;\n"); */
@@ -3918,7 +3929,7 @@ jitterc_emit_executor_main_function
   EMIT("  JITTER_PRETEND_TO_UPDATE_IP_;\n");
   //EMIT("  JITTER_PRETEND_TO_POSSIBLY_JUMP_TO_(jitter_possibly_restore_registers_and_return_label);\n");
   EMIT("  JITTER_PRETEND_TO_POSSIBLY_JUMP_ANYWHERE();\n");
-  EMIT("  goto jitter_dispatch_label;\n");
+  EMIT("  goto jitter_fake_target;\n");
   EMIT("#endif // #ifdef JITTER_REPLICATE\n\n");
 
   /* EMIT("#ifdef JITTER_REPLICATE\n"); */
@@ -3929,7 +3940,7 @@ jitterc_emit_executor_main_function
   /* EMIT("     jump to any label within this function -- in practice it would\n"); */
   /* EMIT("     crash horribly if ever reached, but that is not a problem. *\/\n"); */
   /* EMIT(" jitter_jump_anywhere_label: __attribute__ ((cold, unused));\n"); */
-  /* EMIT("  jitter_next_program_point = && jitter_dispatch_label;\n"); */
+  /* EMIT("  jitter_next_program_point = && jitter_fake_target;\n"); */
   /* EMIT("  asm (JITTER_ASM_COMMENT_UNIQUE(\"Pretend to alter next_program_point\"\n"); */
   /* EMIT("                                 \" at %%[next_program_point] based on\"\n"); */
   /* EMIT("                                 \" jitter_state_runtime at %%[runtime]\"\n"); */
@@ -4127,6 +4138,13 @@ void
 jitterc_emit_executor_wrappers
    (FILE *f, const struct jitterc_vm *vm)
 {
+  EMIT("// FIXME: move generation of this to a different function.  Possibly\n");
+  EMIT("//        use the same logic as patch-in header/footer instead.\n");
+  EMIT("#if defined (JITTER_DISPATCH_MINIMAL_THREADING)  \\\n");
+  EMIT("    || defined (JITTER_DISPATCH_NO_THREADING)\n");
+  EMIT("  asm (\"jitter_fake_target_asm:\\n\");\n");
+  EMIT("#endif // #if defined (JITTER_DISPATCH_MINIMAL_THREADING) ...\n");
+
   /* This function is the most critical to compile with the right GCC options;
      for any threading model more sophisticated than direct threading this is a
      matter of correctness, not just efficiency. */
