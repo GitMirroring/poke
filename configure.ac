@@ -1844,13 +1844,11 @@ AC_MSG_RESULT([$jitter_enable_dispatch_switch$jitter_subpackage_disclaimer])
 # command-line option.
 AC_MSG_CHECKING([if direct-threading dispatch is enabled])
 default=$(test "x$ac_cv_have_gnu_c_computed_goto" = 'xyes' \
-          && test "x$ac_cv_have_gnu_c_constant_label_difference" = 'xyes' \
           && echo yes || echo no)
 AC_ARG_ENABLE([dispatch-direct-threading],
               AS_HELP_STRING([--enable-dispatch-direct-threading],
               [enable direct-threading dispatch: default yes if and
-only if the compiler supports GNU C computed goto and (same-function) label
-address differences are constant expressions]),
+only if the compiler supports GNU C's computed goto]),
               jitter_enable_dispatch_direct_threading="$enableval",
               jitter_enable_dispatch_direct_threading="$default")
 if test "x$jitter_enable_dispatch_direct_threading" = "xyes"; then
