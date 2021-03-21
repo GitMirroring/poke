@@ -1178,6 +1178,76 @@ fi
 # Check endianness.
 AC_C_BIGENDIAN
 
+# First define objdump options for the host architecture -- some of these are
+# necessary, others a matter of preference.  When the architecture is unknown
+# guess some default which will probably work.
+#
+# This is independent from enabling assembly, and only relies on $host_cpu.
+AC_MSG_CHECKING([for objdump options for \"$host_cpu\"])
+AS_CASE([$host_cpu],
+        [aarch64*],
+          [jitter_objdump_options="--architecture=aarch64 --disassembler-options=reg-names-raw"],
+        [alpha*],
+          [jitter_objdump_options="--architecture= --disassembler-options=no-aliases"],
+        [arm*],
+          [jitter_objdump_options="--architecture=arm --disassembler-options=reg-names-raw"],
+        [i?86],
+          [jitter_objdump_options="--architecture=i386 --disassembler-options=att,suffix"],
+        [m68k*],
+          [jitter_objdump_options="--architecture= --disassembler-options=no-aliases"],
+        [mips|mipsel],
+          [if echo "$host_cpu" | grep 64 > /dev/null; then
+             jitter_bitness=64;
+           else
+             jitter_bitness=32;
+           fi;
+           # This feature test unfortunately relies on GCC (and also contains some
+           # duplicated code with the MIPSr6 test below, which would be
+           # avoidable).  I know of no more portable way to distinguish MIPS r6
+           # from MIPS pre-r6.
+           if test "x$JITTER_HAVE_ACTUAL_GCC" = 'xyes'; then
+             jitter_mips_release=$(jitter_gcc_print_cpp_macro \
+                                     __mips_isa_rev);
+           fi;
+           if test "x$jitter_mips_release" = 'x'; then
+             jitter_mips_release=0;
+           fi;
+           if test "$jitter_mips_release" -ge 6; then
+             jitter_mips_architecture=mips:isa${jitter_bitness}r6;
+           else
+             jitter_mips_architecture=mips:isa${jitter_bitness};
+           fi;
+           jitter_objdump_options="--architecture=$jitter_mips_architecture --disassembler-options=no-aliases,reg-names=numeric"],
+        [mips64|mips64el],
+          [jitter_objdump_options="--architecture= --disassembler-options=no-aliases,reg-names=numeric"],
+        [parisc*],
+          [jitter_objdump_options="--architecture= --disassembler-options=no-aliases"],
+        [powerpc64|powerpc64le],
+          [jitter_objdump_options="--architecture=powerpc:common64"],
+        [ppc|powerpc|powerpcle],
+          [jitter_objdump_options="--architecture=powerpc:common"],
+        [riscv*],
+          [jitter_objdump_options="--architecture=riscv:rv64 --disassembler-options=no-aliases,numeric"],
+        [s390*],
+          [jitter_objdump_options="--architecture= --disassembler-options=no-aliases"],
+        [sh4*],
+          [jitter_objdump_options="--architecture=sh4a --disassembler-options=no-aliases"],
+        [sparc*],
+          [jitter_objdump_options="--architecture=sparc:v9b --disassembler-options=no-aliases"],
+        [x86_64],
+          [jitter_objdump_options="--architecture=i386:x86-64 --disassembler-options=x86-64,att,suffix"],
+        # Default case.  Notice that, as a fallback case, we call objdump with
+        # "--architecture=" , without actually specifying an architecture name.
+        # Using a default architecture might not be completely reliable in the
+        # case of ISA extensions, but appears to work well in practice; in any
+        # case this is a fallback case: it is easy to provide a sensible default
+        # for supported architectures by adding cases above.  There is no need
+        # for objdump to guess endianness, as the information is always provided
+        # as a separate option by the Jittery program, which knows the correct
+        # value from configure.
+          [jitter_objdump_options="--architecture= --disassembler-options=no-aliases"])
+AC_MSG_RESULT([$jitter_objdump_options])
+
 # Use a command-line option to explicitly disable assembly support.  I've needed
 # this for a version of FreeBSD, which shipped with a very old Gas.
 # This is used to compute $jitter_enable_host_assembly ; a check below
@@ -1197,10 +1267,6 @@ AC_MSG_RESULT([$jitter_enable_host_assembly])
 
 # Check whether we have assembly support for the host architecture, and an
 # actual GCC to compile it.
-#
-# For the architectures we know, also define sensible options for objdump --
-# some of these are necessary, others a matter of preference.  When the
-# architecture is unknown some default is guessed.
 #
 # At this point jitter_enable_host_assembly is defined to one of "no", "auto",
 # or an architecture name.  If assembly support is not found "auto" will turn
@@ -1227,93 +1293,63 @@ AS_CASE([$default_host_cpu],
                                              # near the end of "Defining C
                                              # Preprocessor Symbols".
                         #JITTER_ASSEMBLY_SUBDIRECTORY=aarch64
-                        jitter_has_host_assembly=no;
-                        jitter_objdump_options="--architecture=aarch64 --disassembler-options=reg-names-raw"],
+                        jitter_has_host_assembly=no],
         [alpha*],      [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_ALPHA], [1], []
                                            ) # No ";": see the Autoconf manual.
                         #JITTER_ASSEMBLY_SUBDIRECTORY=alpha
-                        jitter_has_host_assembly=no;
-                        # FIXME: test with a cross-objdump and see what options I like.
-                        jitter_objdump_options="--architecture= --disassembler-options=no-aliases"],
+                        jitter_has_host_assembly=no],
         [arm*],        [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_ARM], [1], []
                                            ) # No ";": see the Autoconf manual.
                         #JITTER_ASSEMBLY_SUBDIRECTORY=arm
-                        jitter_has_host_assembly=no;
-                        jitter_objdump_options="--architecture=arm --disassembler-options=reg-names-raw"],
+                        jitter_has_host_assembly=no],
         [i?86],        [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_I386], [1], []
                                            ) # No ";": see the Autoconf manual.
                         #JITTER_ASSEMBLY_SUBDIRECTORY=i386
-                        jitter_has_host_assembly=no;
-                        jitter_objdump_options="--architecture=i386 --disassembler-options=att,suffix"],
+                        jitter_has_host_assembly=no],
         [m68k*],       [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_M68K], [1], []
                                            ) # No ";": see the Autoconf manual.
                         JITTER_ASSEMBLY_SUBDIRECTORY=m68k;
                         jitter_has_host_assembly=yes;
-                        jitter_supports_no_threading=yes;
-                        jitter_objdump_options="--architecture= --disassembler-options=no-aliases"],
+                        jitter_supports_no_threading=yes],
         [mips|mipsel], [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_MIPS], [1], []
                                            ) # No ";": see the Autoconf manual.
                         JITTER_ASSEMBLY_SUBDIRECTORY=mips;
                         jitter_has_host_assembly=yes;
                         jitter_supports_no_threading=yes;
-                        # Check for the nice but incompatible MIPS release 6 (or
-                        # later); in particular objdump needs an option to be
-                        # able to recognize some instructions whose encoding
-                        # changed.
-                        if echo $default_host_cpu | grep 64 > /dev/null; then
-                          jitter_bitness=64;
-                        else
-                          jitter_bitness=32;
-                        fi;
-                        if test "x$JITTER_HAVE_ACTUAL_GCC" = 'xyes'; then
-                          jitter_mips_release=$(jitter_gcc_print_cpp_macro \
-                            __mips_isa_rev);
-                        fi;
-                        if test "x$jitter_mips_release" = 'x'; then
-                          jitter_mips_release=0;
-                        fi;
+                        # We reuse jitter_bitness and jitter_mips_release from
+                        # the test above.
                         if test "$jitter_mips_release" -ge 6; then
-                          jitter_mips_architecture=mips:isa${jitter_bitness}r6;
                           AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_MIPS_R6_OR_LATER],
                                              [1], []
                                              ) # No ";": see the Autoconf manual.
-                        else
-                          jitter_mips_architecture=mips:isa${jitter_bitness};
-                        fi;
-                        jitter_objdump_options="--architecture=$jitter_mips_architecture --disassembler-options=no-aliases,reg-names=numeric"],
+                        fi],
         [mips64|mips64el],
                        [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_MIPS], [1], []
                                            ) # No ";": see the Autoconf manual.
                         #JITTER_ASSEMBLY_SUBDIRECTORY=mips;
-                        jitter_has_host_assembly=no;
-                        jitter_objdump_options="--architecture= --disassembler-options=no-aliases,reg-names=numeric"],
+                        jitter_has_host_assembly=no],
         [parisc*],     [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_PARISC], [1], []
                                            ) # No ";": see the Autoconf manual.
-                        jitter_has_host_assembly=no;
-                        jitter_objdump_options="--architecture= --disassembler-options=no-aliases"],
+                        jitter_has_host_assembly=no],
         [powerpc64|powerpc64le],
                        [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_POWERPC], [1], []
                                            ) # No ";": see the Autoconf manual.
                         #JITTER_ASSEMBLY_SUBDIRECTORY=powerpc
-                        jitter_has_host_assembly=no;
-                        jitter_objdump_options="--architecture=powerpc:common64"],
+                        jitter_has_host_assembly=no],
         [ppc|powerpc|powerpcle],
                        [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_POWERPC], [1], []
                                            ) # No ";": see the Autoconf manual.
                         JITTER_ASSEMBLY_SUBDIRECTORY=powerpc;
                         jitter_has_host_assembly=yes;
-                        jitter_supports_no_threading=yes;
-                        jitter_objdump_options="--architecture=powerpc:common"],
+                        jitter_supports_no_threading=yes],
         [riscv*],      [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_RISCV], [1], []
                                            ) # No ";": see the Autoconf manual.
                         JITTER_ASSEMBLY_SUBDIRECTORY=riscv;
                         jitter_has_host_assembly=yes;
-                        jitter_supports_no_threading=yes;
-                        jitter_objdump_options="--architecture=riscv:rv64 --disassembler-options=no-aliases,numeric"],
+                        jitter_supports_no_threading=yes],
         [s390*],       [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_S390], [1], []
                                            ) # No ";": see the Autoconf manual.
-                        jitter_has_host_assembly=no;
-                        jitter_objdump_options="--architecture= --disassembler-options=no-aliases"],
+                        jitter_has_host_assembly=no],
         [sh4*],        [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_SH], [1], []
                                            ) # No ";": see the Autoconf manual.
                         JITTER_ASSEMBLY_SUBDIRECTORY=sh
@@ -1321,37 +1357,19 @@ AS_CASE([$default_host_cpu],
                         # might never be.  It is very difficult to support.
                         # See the manual.
                         jitter_has_host_assembly=no;
-                        jitter_supports_no_threading=no;
-                        jitter_objdump_options="--architecture=sh4a --disassembler-options=no-aliases"],
+                        jitter_supports_no_threading=no],
         [sparc*],      [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_SPARC], [1], []
                                            ) # No ";": see the Autoconf manual.
                         JITTER_ASSEMBLY_SUBDIRECTORY=sparc
                         jitter_has_host_assembly=yes;
-                        jitter_supports_no_threading=yes;
-                        jitter_objdump_options="--architecture=sparc:v9b --disassembler-options=no-aliases"],
+                        jitter_supports_no_threading=yes],
         [x86_64],      [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_X86_64], [1], []
                                            ) # No ";": see the Autoconf manual.
                         JITTER_ASSEMBLY_SUBDIRECTORY=x86_64;
                         jitter_has_host_assembly=yes;
-                        jitter_supports_no_threading=yes;
-                        jitter_objdump_options="--architecture=i386:x86-64 --disassembler-options=x86-64,att,suffix"],
-                       # Default case.  Notice that, as a fallback case, we call
-                       # objdump with "--architecture=" , without actually
-                       # specifying an architecture name.
-                       # Using a default architecture might not be completely
-                       # reliable in the case of ISA extensions, but appears to
-                       # work well in practice; in any case this is a fallback
-                       # case: it is easy to provide a sensible default for
-                       # supported architectures by adding cases above.
-                       # There is no need for objdump to guess endianness, as
-                       # the information is always provided as a separate option
-                       # by the Jittery program, which knows the correct value
-                       # from configure.
-                       [jitter_has_host_assembly=no;
-                        jitter_objdump_options="--architecture= --disassembler-options=no-aliases"])
-if test "x$jitter_objdump_options" = "x"; then
-  jitter_objdump_options="--architecture=$host_cpu"
-fi
+                        jitter_supports_no_threading=yes],
+                       # Default case.
+                       [jitter_has_host_assembly=no])
 
 # Define objdump options unconditionally, even if the user disabled host
 # assembly.  This is harmless enough, as the code is defensive and will
