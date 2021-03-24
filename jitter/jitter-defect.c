@@ -144,7 +144,8 @@ jitter_fill_replacement_table
     jitter_uint call_related_specialized_instruction_id_no,
     const bool *specialized_instruction_call_relateds,
     const struct jitter_defect_descriptor *descs,
-    size_t desc_no)
+    size_t desc_no,
+    jitter_int correct_displacement)
 {
   size_t specialized_instruction_no = vm->specialized_instruction_no;
 
@@ -167,9 +168,10 @@ jitter_fill_replacement_table
   int defective_no = 0;
   int call_related_defective_no = 0;
   for (i = 0; i < desc_no; i ++)
-    if (__builtin_expect (descs [i].displacement != 0,
+    if (__builtin_expect (descs [i].displacement != correct_displacement,
                           false))
       {
+        fprintf (stderr, "DEBUG: displacement is %li instaed of %li\n", (long) descs [i].displacement, (long) correct_displacement);
         bool call_related
           = specialized_instruction_call_relateds [descs[i].specialized_opcode];
         /* Count the defect, and mark its instruction as to be replaced.  If

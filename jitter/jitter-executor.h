@@ -332,30 +332,9 @@
 // FIXME: comment.
 #define JITTER_IP_INPUT_CONSTRAINT "r"
 
-/* // FIXME: comment. */
-/* // FIXME: remove.  Fake-jumping to an arbitrary label different from */
-/* // jitter_fake_target doesn't work well with defect descriptors. */
-/* #define JITTER_PRETEND_TO_POSSIBLY_JUMP_TO_(_jitter_label)             \ */
-/*   asm goto (JITTER_ASM_COMMENT_UNIQUE("Pretend to possibly jump to "   \ */
-/*                                       JITTER_STRINGIFY(_jitter_label)  \ */
-/*                                       " at %l["                        \ */
-/*                                       JITTER_STRINGIFY(_jitter_label)  \ */
-/*                                       "] based on "                    \ */
-/*                                       " jitter_ip"                     \ */
-/*                                       " at %[the_jitter_ip]")          \ */
-/*             : /\* outputs *\/                                            \ */
-/*             : [the_jitter_ip] JITTER_IP_INPUT_CONSTRAINT (jitter_ip)   \ */
-/*               /\* inputs *\/                                             \ */
-/*             : /\* clobbers *\/                                           \ */
-/*             : /\* jump destinations *\/ _jitter_label) */
-
 #define JITTER_PRETEND_TO_UPDATE_IP_                          \
   JITTER_MARK_AS_ASM_OUTPUT_("+" JITTER_IP_INPUT_CONSTRAINT,  \
                              jitter_ip)
-
-/* #define JITTER_PRETEND_TO_JUMP_TO_(_jitter_label)      \ */
-/*   JITTER_PRETEND_TO_POSSIBLY_JUMP_TO_(_jitter_label);  \ */
-/*   __builtin_unreachable () */
 
 /* Expand to zero assembly instructions, but with inline asm constraints
    affecting GCC's program representation as if the generated code could either
@@ -613,7 +592,7 @@
 JITTER_PRETEND_TO_UPDATE_IP_;\
      /* Mark the end of the specialized instruction with a label. */     \
     JITTER_SPECIALIZED_INSTRUCTION_END_LABEL_OF(mangled_name):           \
-/*if (jitter_ip != NULL) goto * jitter_ip;*/ \
+if (jitter_ip != NULL) goto * jitter_ip; \
 /*JITTER_PRETEND_TO_POSSIBLY_JUMP_ANYWHERE();*/ \
 /*__builtin_unreachable ();*/ \
 /*JITTER_PRETEND_TO_UPDATE_IP_;*/ \
@@ -628,7 +607,7 @@ JITTER_PRETEND_TO_UPDATE_IP_;\
         From GCC's point of view this goto * statement may reach any     \
         label in the function whose address I have taken. */             \
      JITTER_CRASH_;                                                      \
-     /*JITTER_PRETEND_TO_UPDATE_IP_;*/                                   \
+     JITTER_PRETEND_TO_UPDATE_IP_;                                   \
      goto * jitter_ip;
 #else
 # error "unknown dispatching model"

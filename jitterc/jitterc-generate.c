@@ -3341,7 +3341,7 @@ jitterc_emit_asm_headers (FILE *f, const struct jitterc_vm *vm)
      executor function .
      Where the attribute is not supported, with very old GCC versions, CFLAGS
      contains -fno-toplevel-reorder which enforces the same rule globally. */
-  EMIT("__attribute__ ((no_reorder))\n");
+  EMIT("__attribute__ ((noinline, noclone, no_reorder))\n");
   EMIT("void\n");
   EMIT("vmprefix_asm_headers (void)\n");
   EMIT("{\n");
@@ -3355,7 +3355,7 @@ jitterc_emit_asm_headers (FILE *f, const struct jitterc_vm *vm)
   EMIT("  JITTER_PATCH_IN_HEADER(vmprefix);\n");
   EMIT("#endif // #ifdef JITTER_HAVE_PATCH_IN\n\n");
   EMIT("#ifdef JITTER_HAVE_DEFECT_REPLACEMENT\n\n");
-  EMIT("  /* The same for defects. */\n");
+  EMIT("  /* The same for defects... */\n");
   EMIT("  JITTER_DEFECT_HEADER(vmprefix);\n");
   EMIT("#endif // #ifdef JITTER_HAVE_DEFECT_REPLACEMENT\n\n");
   EMIT("#ifndef JITTER_DISPATCH_SWITCH\n");
@@ -3375,7 +3375,7 @@ jitterc_emit_asm_footers (FILE *f, const struct jitterc_vm *vm)
   /* See the comment in jitterc_emit_asm_headers .  These statements are
      generated inside a separate function, again never called, which ends up
      in generated code *after* the executor function. */
-  EMIT("__attribute__ ((no_reorder))\n");
+  EMIT("__attribute__ ((noinline, noclone, no_reorder))\n");
   EMIT("void\n");
   EMIT("vmprefix_asm_footers (void)\n");
   EMIT("{\n");
@@ -3416,6 +3416,10 @@ jitterc_emit_executor_special_specialized_instruction_beginning
   EMIT("#define JITTER_SPECIALIZED_INSTRUCTION_NAME  %s\n", name);
   EMIT("#define JITTER_SPECIALIZED_INSTRUCTION_MANGLED_NAME  %s\n",
        jitterc_mangle (name));
+  /* By convention the beginning of this VM instruction is the fake target in
+     C. */
+  if (! strcmp (name, "!INVALID"))
+    EMIT ("jitter_fake_target: __attribute__ ((unused));");
   EMIT("{\n");
 }
 
@@ -3552,13 +3556,6 @@ jitterc_emit_executor_main_function
   EMIT("                                struct vmprefix_state * const jitter_original_state)\n");
   EMIT("{\n");
 
-  EMIT("// FIXME: move generation of this to a different function.  Possibly\n");
-  EMIT("//        use the same logic as patch-in header/footer instead.\n");
-  EMIT("#if defined (JITTER_DISPATCH_MINIMAL_THREADING)  \\\n");
-  EMIT("    || defined (JITTER_DISPATCH_NO_THREADING)\n");
-  EMIT("  jitter_fake_target:;\n");
-  EMIT("#endif // #if defined (JITTER_DISPATCH_MINIMAL_THREADING) ...\n");
-
   /* Emit debugging prints.  FIXME: implement something like this, cleanly, in a
      different function. */
 /*
@@ -3674,6 +3671,19 @@ jitterc_emit_executor_main_function
   EMIT("        = (const long *) vmprefix_the_thread_sizes;\n");
   EMIT("      vmprefix_threads = vmprefix_the_threads;\n");
   EMIT("      vmprefix_thread_ends = vmprefix_the_thread_ends;\n");
+  EMIT("\n");
+
+  /* Generate initialisation code for the correct displacement, where defects
+     are enabled. */
+  EMIT("#ifdef JITTER_HAVE_DEFECT_REPLACEMENT\n");
+  EMIT("      /* Define the correct distance between the fake target in C\n");
+  EMIT("         and in assembly, for this VM. */\n");
+  EMIT("      JITTER_DEFECT_CORRECT_DISPLACEMENT_NAME (vmprefix)\n");
+  EMIT("        = ((char *) && jitter_fake_target\n");
+  EMIT("           - (char *) vmprefix_fake_target_asm);\n");
+  EMIT("      fprintf (stderr, \"DEBUG: INITIALISE CORRECT DISPLACEMENT TO %%li\\n\", (long) JITTER_DEFECT_CORRECT_DISPLACEMENT_NAME (vmprefix));\n");
+  EMIT("#endif // #ifdef JITTER_HAVE_DEFECT_REPLACEMENT\n");
+  EMIT("\n");
 
   /// FIXME: this is for debugging: begin
   EMIT("#ifdef JITTER_PROFILE\n");
@@ -3864,14 +3874,14 @@ jitterc_emit_executor_main_function
   EMIT("#   error \"unknown dispatch\"\n");
   EMIT("# endif // if ... dispatch\n");
 
-  EMIT("  /* FIXME: comment: this is the fake dispatch routine. */\n");
+  /* EMIT("  /\* FIXME: comment: this is the fake dispatch routine. *\/\n"); */
   // FIXME: Is clobbering memory really needed?  It would be better if I didn't do this.
   //        I should explicitly mark as set the base and possibly the instruction pointer,
   //        but nothing more.
   //EMIT("  asm volatile (\"\" : : : \"memory\");\n");
-  EMIT(" /* The label is unused (from the compiler's point of view) for simple\n");
-  EMIT("    dispatches when not profiling.  (In reality it is always unused.)\n");
-  EMIT("    FIXME: comment. */\n");
+  /* EMIT(" /\* The label is unused (from the compiler's point of view) for simple\n"); */
+  /* EMIT("    dispatches when not profiling.  (In reality it is always unused.)\n"); */
+  /* EMIT("    FIXME: comment. *\/\n"); */
   // FIXME: same.
   //EMIT("  asm volatile (\"\\njitter_fake_target_asm:\\n\" : : : \"memory\");\n");
   // FIXME: this is completely useless for simple dispatches.
@@ -4135,12 +4145,12 @@ void
 jitterc_emit_executor_wrappers
    (FILE *f, const struct jitterc_vm *vm)
 {
-  EMIT("// FIXME: move generation of this to a different function.  Possibly\n");
-  EMIT("//        use the same logic as patch-in header/footer instead.\n");
-  EMIT("#if defined (JITTER_DISPATCH_MINIMAL_THREADING)  \\\n");
-  EMIT("    || defined (JITTER_DISPATCH_NO_THREADING)\n");
-  EMIT("  asm (\"jitter_fake_target_asm:\\n\");\n");
-  EMIT("#endif // #if defined (JITTER_DISPATCH_MINIMAL_THREADING) ...\n");
+  /* EMIT("// FIXME: move generation of this to a different function.  Possibly\n"); */
+  /* EMIT("//        use the same logic as patch-in header/footer instead.\n"); */
+  /* EMIT("#if defined (JITTER_DISPATCH_MINIMAL_THREADING)  \\\n"); */
+  /* EMIT("    || defined (JITTER_DISPATCH_NO_THREADING)\n"); */
+  /* EMIT("  asm (\"jitter_fake_target_asm:\\n\");\n"); */
+  /* EMIT("#endif // #if defined (JITTER_DISPATCH_MINIMAL_THREADING) ...\n"); */
 
   /* This function is the most critical to compile with the right GCC options;
      for any threading model more sophisticated than direct threading this is a
@@ -4307,6 +4317,7 @@ jitterc_emit_executor (const struct jitterc_vm *vm)
   EMIT("#endif // #ifdef JITTER_HAVE_PATCH_IN\n\n");
   EMIT("#ifdef JITTER_HAVE_DEFECT_REPLACEMENT\n");
   EMIT("  JITTER_DEFECT_DESCRIPTOR_DECLARATIONS_(vmprefix);\n");
+  EMIT("  extern const char *vmprefix_fake_target_asm;\n");
   EMIT("#endif // #ifdef JITTER_HAVE_DEFECT_REPLACEMENT\n\n");
 
   EMIT("/* Always include fast-branch definitions, which use patch-ins where possible\n");

@@ -253,6 +253,12 @@ vmprefix_dump_data_locations (jitter_print_context output)
 
 #if defined (JITTER_HAVE_DEFECT_REPLACEMENT)
 JITTER_DEFECT_DESCRIPTOR_DECLARATIONS_(vmprefix)
+
+/* This global is defined from C: there is no particular need of doing it in
+   assembly.  It is initialised in vmprefix_execute_or_initialize , where C
+   labels are visible. */ // FIXME: unless it turns out to be simpler in assembly ...
+jitter_int
+jitterlispvm_defect_descriptors_correct_displacement;
 #endif // #if defined (JITTER_HAVE_DEFECT_REPLACEMENT)
 #if defined (JITTER_HAVE_PATCH_IN)
 JITTER_PATCH_IN_DESCRIPTOR_DECLARATIONS_(vmprefix)
@@ -503,7 +509,8 @@ vmprefix_initialize (void)
           vmprefix_specialized_instruction_call_relateds,
           JITTER_DEFECT_DESCRIPTORS_NAME (vmprefix),
           (JITTER_DEFECT_DESCRIPTORS_SIZE_IN_BYTES_NAME (vmprefix)
-           / sizeof (struct jitter_defect_descriptor)));
+           / sizeof (struct jitter_defect_descriptor)),
+          JITTER_DEFECT_CORRECT_DISPLACEMENT_NAME (vmprefix));
 #else /* no defect replacement */
       /* In this configuration it is impossible to have defects: set every
          defect count to zero. */

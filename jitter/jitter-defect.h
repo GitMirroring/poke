@@ -80,6 +80,8 @@ struct jitter_defect_descriptor
   jitter_uint specialized_opcode;
 
   /* The distance between a used label as seen from C and the same label as seen
+FIXME: I am about to change this: the expected non-defect displacement will be
+       a specific non-zero value; any other value will mean defect.
      from assembly.  A displacement of zero means that the C and the assembly
      views agree; a non-zero displacement means that the instruction is
      defective. */
@@ -101,13 +103,20 @@ struct jitter_defect_descriptor
   JITTER_CONCATENATE_TWO(JITTER_DEFECT_DESCRIPTORS_NAME(_jitter_vm_the_prefix), \
                          _size_in_bytes)
 
+/* The name of the global descriptor vector. */
+#define JITTER_DEFECT_CORRECT_DISPLACEMENT_NAME(_jitter_vm_the_prefix)          \
+  JITTER_CONCATENATE_TWO(JITTER_DEFECT_DESCRIPTORS_NAME(_jitter_vm_the_prefix), \
+                         _correct_displacement)
+
 /* Expand to extern declaration of the variables defined in assembly, to be used
    from C. */
 #define JITTER_DEFECT_DESCRIPTOR_DECLARATIONS_(_jitter_vm_the_prefix)   \
   extern const struct jitter_defect_descriptor                          \
   JITTER_DEFECT_DESCRIPTORS_NAME(_jitter_vm_the_prefix) [];             \
   extern const jitter_uint                                              \
-  JITTER_DEFECT_DESCRIPTORS_SIZE_IN_BYTES_NAME(_jitter_vm_the_prefix);
+  JITTER_DEFECT_DESCRIPTORS_SIZE_IN_BYTES_NAME(_jitter_vm_the_prefix);  \
+  extern jitter_int                                                     \
+  JITTER_DEFECT_CORRECT_DISPLACEMENT_NAME(_jitter_vm_the_prefix);
 
 
 
@@ -125,10 +134,31 @@ struct jitter_defect_descriptor
 
 /* Expand to a C top-level inline asm statement containing the defect
    header. */
-#define JITTER_DEFECT_HEADER(_jitter_vm_the_prefix)                  \
-  asm (JITTER_ASM_OPEN_DEFINITION                                    \
-          (JITTER_ASM_DEFECT_SUBSECTION,                             \
-           JITTER_DEFECT_DESCRIPTORS_NAME (_jitter_vm_the_prefix)))
+#define JITTER_DEFECT_HEADER(_jitter_vm_the_prefix)                   \
+  asm (JITTER_ASM_OPEN_DEFINITION                                     \
+          (JITTER_ASM_DEFECT_SUBSECTION,                              \
+           JITTER_DEFECT_DESCRIPTORS_NAME (_jitter_vm_the_prefix))    \
+       /* ...And, for defects' sake, also define the fake_target_asm  \
+          label; it is important that it exist in only one copy, and  \
+          therefore generating it here is a good idea: this code      \
+          will not be cloned or duplicated by the optimiser. */       \
+       "\n"                                                           \
+       "jitter_fake_target_asm:\n"                                    \
+       /* Make the label visible from C with the appropriate prefix   \
+          (so that we can link multiple VM libraries together), as    \
+          a global. */                                                \
+       "\n"                                                           \
+       "#\t.section data\n"                                         \
+       "\t.balign 16\n"                                               \
+       "\t.globl " JITTER_STRINGIFY (_jitter_vm_the_prefix)           \
+                 "_fake_target_asm\n"                                 \
+       "\t.type " JITTER_STRINGIFY (_jitter_vm_the_prefix)            \
+                "_fake_target_asm, STT_OBJECT\n"                      \
+       JITTER_STRINGIFY (_jitter_vm_the_prefix)                       \
+                "_fake_target_asm:\n"                                 \
+       JITTER_ASM_WORD " jitter_fake_target_asm\n"                    \
+       "\t.text\n"                                                    \
+       "\n");
 
 /* Expand to a C top-level inline asm statement containing the defect
    footer. */
@@ -184,11 +214,12 @@ struct jitter_defect_descriptor
 struct jitter_vm;
 
 /* Given a pointer to the VM struct, an initial pointer to the defect descriptor
-   array, the number of defects descriptors and a pointer to the worst-case
-   defect table, initialize the pointed defect table.  The defect table is a
-   global, already existing for any given VM, which only needs to be initialized
-   once even if a VM subsystem is finalized and re-initialized multiple
-   times.
+   array, the number of defects descriptors, a pointer to the worst-case
+   defect table and the correct displacement initialize the pointed defect
+   table.
+   The defect table is a global, already existing for any given VM, which only
+   needs to be initialized once even if a VM subsystem is finalized and
+   re-initialized multiple times.
    Also set the defect fields in the pointed VM struct. */
 void
 jitter_fill_replacement_table
@@ -199,7 +230,8 @@ jitter_fill_replacement_table
     jitter_uint call_related_specialized_instruction_id_no,
     const bool *specialized_instruction_call_relateds,
     const struct jitter_defect_descriptor *descs,
-    size_t desc_no)
+    size_t desc_no,
+    jitter_int correct_displacement)
   __attribute__ ((nonnull (1, 2, 3, 4, 6, 7)));
 
 
