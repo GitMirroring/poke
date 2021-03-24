@@ -258,7 +258,7 @@ JITTER_DEFECT_DESCRIPTOR_DECLARATIONS_(vmprefix)
    assembly.  It is initialised in vmprefix_execute_or_initialize , where C
    labels are visible. */ // FIXME: unless it turns out to be simpler in assembly ...
 jitter_int
-jitterlispvm_defect_descriptors_correct_displacement;
+vmprefix_defect_descriptors_correct_displacement;
 #endif // #if defined (JITTER_HAVE_DEFECT_REPLACEMENT)
 #if defined (JITTER_HAVE_PATCH_IN)
 JITTER_PATCH_IN_DESCRIPTOR_DECLARATIONS_(vmprefix)
