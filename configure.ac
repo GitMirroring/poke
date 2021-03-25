@@ -1881,7 +1881,9 @@ AC_MSG_CHECKING([if minimal-threading dispatch is enabled])
 if    test "x$JITTER_HAVE_ACTUAL_GCC" = 'xyes' \
    && test "x$jitter_have_known_binary_format" = 'xyes' \
    && test "x$jitter_has_host_assembly" = 'xyes'; then
-  default=yes
+#  default=yes
+  # Temporary kludge before my public Jitter tutorial: disable minimal-threading by default.
+  default=no
 else
   default=no
 fi
