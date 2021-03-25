@@ -56,7 +56,7 @@ end
 register-class r
   c-type "jitterlisp_object"
 #  c-initial-value "JITTERLISP_UNINITIALIZED_REGISTER_VALUE"
-  fast-register-no 0#1
+  fast-register-no 2#0#1
 end
 
 
