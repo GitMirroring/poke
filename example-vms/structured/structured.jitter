@@ -35,7 +35,7 @@ register-class r
   c-type "union jitter_word"
   c-initial-value "(union jitter_word) {.fixnum = 0}"
   long-name "general-register"
-  fast-register-no 0#5
+  fast-register-no 0 #5
   slow-registers
 end
 

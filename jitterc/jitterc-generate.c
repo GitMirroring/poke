@@ -3681,7 +3681,7 @@ jitterc_emit_executor_main_function
   EMIT("      JITTER_DEFECT_CORRECT_DISPLACEMENT_NAME (vmprefix)\n");
   EMIT("        = ((char *) && jitter_fake_target\n");
   EMIT("           - (char *) vmprefix_fake_target_asm);\n");
-  EMIT("      fprintf (stderr, \"DEBUG: INITIALISE CORRECT DISPLACEMENT TO %%li\\n\", (long) JITTER_DEFECT_CORRECT_DISPLACEMENT_NAME (vmprefix));\n");
+  EMIT("      //fprintf (stderr, \"DEBUG: INITIALISE CORRECT DISPLACEMENT TO %%li\\n\", (long) JITTER_DEFECT_CORRECT_DISPLACEMENT_NAME (vmprefix));\n");
   EMIT("#endif // #ifdef JITTER_HAVE_DEFECT_REPLACEMENT\n");
   EMIT("\n");
 
