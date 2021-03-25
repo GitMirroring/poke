@@ -167,8 +167,8 @@ vmprefix_check_specialized_instruction_opcode_once (void)
            vmprefix_specialized_instruction_opcode__eUNREACHABLE1)
           == jitter_specialized_instruction_opcode_UNREACHABLE1);
   assert (((enum jitter_specialized_instruction_opcode)
-           vmprefix_specialized_instruction_opcode__eUNREACHABLE2)
-          == jitter_specialized_instruction_opcode_UNREACHABLE2);
+           vmprefix_specialized_instruction_opcode__ePRETENDTOJUMPANYWHERE)
+          == jitter_specialized_instruction_opcode_PRETENDTOJUMPANYWHERE);
 
   already_checked = true;
 }

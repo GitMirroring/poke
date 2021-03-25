@@ -171,7 +171,9 @@ jitter_fill_replacement_table
     if (__builtin_expect (descs [i].displacement != correct_displacement,
                           false))
       {
+#if 0
         fprintf (stderr, "DEBUG: displacement is %li instaed of %li\n", (long) descs [i].displacement, (long) correct_displacement);
+#endif
         bool call_related
           = specialized_instruction_call_relateds [descs[i].specialized_opcode];
         /* Count the defect, and mark its instruction as to be replaced.  If
@@ -186,10 +188,12 @@ jitter_fill_replacement_table
               call_related_defective_no ++;
           }
         replacement_table [descs [i].specialized_opcode] = true;
+#if 0
         fprintf (stderr,
                  "The specialized instruction %s is defective.\n",
                  vm->specialized_instruction_names
                     [descs [i].specialized_opcode]);
+#endif
       }
 
   /* Third pass: if any call-related instruction has been found to be defective

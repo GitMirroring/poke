@@ -3418,7 +3418,7 @@ jitterc_emit_executor_special_specialized_instruction_beginning
        jitterc_mangle (name));
   /* By convention the beginning of this VM instruction is the fake target in
      C. */
-  if (! strcmp (name, "!INVALID"))
+  if (! strcmp (name, "!PRETENDTOJUMPANYWHERE"))
     EMIT ("jitter_fake_target: __attribute__ ((unused));");
   EMIT("{\n");
 }
@@ -4031,10 +4031,10 @@ jitterc_emit_executor_main_function
       "cold", 0,
       "jitter_fatal (\"reached the !UNREACHABLE1 instruction\");");
   jitterc_emit_executor_special_specialized_instruction
-     (f, vm, "!UNREACHABLE2",
-      jitter_specialized_instruction_opcode_UNREACHABLE2,
+     (f, vm, "!PRETENDTOJUMPANYWHERE",
+      jitter_specialized_instruction_opcode_PRETENDTOJUMPANYWHERE,
       "cold", 0,
-      "jitter_fatal (\"reached the !UNREACHABLE2 instruction\");");
+      "#if ! defined(JITTER_DISPATCH_SWITCH)\nJITTER_PRETEND_TO_UPDATE_IP_; goto * jitter_ip;\n#endif\n");
 
   /* Generate code for the ordinary specialized instructions as specified in
      user code. */
