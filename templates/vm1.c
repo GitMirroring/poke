@@ -763,7 +763,7 @@ vmprefix_initialize_slow_registers (char *initial_array_pointer,
         = first_slow_register + (i * VMPREFIX_REGISTER_CLASS_NO);
       VMPREFIX_INITIALIZE_SLOW_REGISTER_RANK (rank);
     }
-#if 1
+#if 0
       fprintf (stderr, "initialised %li (up from %li) slow registers per class, array at %p\n",
                (long) new_slow_register_no_per_class,
                (long) old_slow_register_no_per_class,
@@ -824,7 +824,7 @@ vmprefix_make_place_for_slow_registers (struct vmprefix_state *s,
       if (suspending_sample_profiling)
         vmprefix_profile_sample_start (s);
 #endif // #if defined (JITTER_PROFILE_SAMPLE)
-#if 1
+#if 0
       fprintf (stderr, "slow registers are now %li per class, Array at %p (biased %p)\n",
                ((long)
                 s->vmprefix_state_backing.jitter_slow_register_no_per_class),
