@@ -1,6 +1,6 @@
 /* VM library: m68k definitions, to be included from both C and assembly.
 
-   Copyright (C) 2017, 2018, 2019, 2020 Luca Saiu
+   Copyright (C) 2017, 2018, 2019, 2020, 2021 Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -196,7 +196,7 @@
               [jitter_operand1] opd1_constraint (opd1),                        \
               JITTER_INPUT_VM_INSTRUCTION_BEGINNING /* inputs */               \
             : /* clobbers */                                                   \
-            : jitter_dispatch_label /* goto labels */)
+            : jitter_fake_target /* goto labels */)
 
 /* Low-level fast branches on sign. */
 #define _JITTER_LOW_LEVEL_BRANCH_FAST_IF_ZERO_(opd0, tgt)                \
@@ -506,7 +506,7 @@
 
 /* Return from a procedure call, to the given destination.  This uses the
    hardware stack to return. */
-#define JITTER_RETURN(link_rvalue)                                             \
+#define _JITTER_RETURN(link_rvalue)                                            \
   do                                                                           \
     {                                                                          \
       const void * jitter_the_return_address = (const void*) (link_rvalue);    \
@@ -518,14 +518,14 @@
                 : /* outputs. */                                               \
                 : [return_addr] "dam" (jitter_the_return_address) /* inputs. */ \
                 : /* clobbers. */                                              \
-                : jitter_dispatch_label /* gotolabels. */);                    \
+                : jitter_fake_target /* gotolabels. */);                    \
       /* The rest of the VM instruction is unreachable. */                     \
       __builtin_unreachable ();                                                \
     }                                                                          \
   while (false)
 
 /* Perform an indirect call. */
-#define JITTER_BRANCH_AND_LINK_INTERNAL(callee_rvalue)                        \
+#define _JITTER_BRANCH_AND_LINK_NATIVE(callee_rvalue)                         \
   do                                                                          \
     {                                                                         \
       const void * const jitter_destination =                                 \
@@ -538,16 +538,17 @@
                 : /* outputs. */                                              \
                 : [destination] "a" (jitter_destination) /* inputs. */        \
                 : /* clobbers. */                                             \
-                : jitter_dispatch_label /* gotolabels. */);                   \
-      /* Skip the rest of the specialised instruction, for compatibility */   \
-      /* with more limited dispatches. */                                     \
-      JITTER_JUMP_TO_SPECIALIZED_INSTRUCTION_END;                             \
+                : jitter_fake_target /* gotolabels. */);                   \
+      /* It would be incorrect to have __builtin_unreachable or               \
+         JITTER_JUMP_TO_SPECIALIZED_INSTRUCTION_END here: see the comment in  \
+         the x86_64 version. */                                               \
     }                                                                         \
   while (false)
 
 /* Perform an indirect call where the return address is not the next
    instruction, but the address given by the user. */
-#define JITTER_BRANCH_AND_LINK_WITH(_jitter_callee_rvalue, _jitter_new_link)  \
+#define _JITTER_BRANCH_AND_LINK_WITH_NATIVE(_jitter_callee_rvalue,            \
+                                            _jitter_new_link)                 \
   do                                                                          \
     {                                                                         \
       const void * const jitter_callee_rvalue =                               \
@@ -565,15 +566,15 @@
                 : [jitter_callee_rvalue] "a" (jitter_callee_rvalue),          \
                   [jitter_new_link] "dam" (jitter_new_link) /* inputs. */     \
                 : /* clobbers. */                                             \
-                : jitter_dispatch_label /* gotolabels. */);                   \
-      /* The rest of the VM instruction is unreachable: this is an            \
+                : jitter_fake_target /* gotolabels. */);                   \
+      /* The rest of the VM instruction is unreachable: this tail call is an  \
          unconditional jump. */                                               \
       __builtin_unreachable ();                                               \
     }                                                                         \
   while (false)
 
 /* Perform a procedure call to a known destination, using a patch-in. */
-#define _JITTER_BRANCH_FAST_AND_LINK_INTERNAL(target_index)                    \
+#define _JITTER_BRANCH_FAST_AND_LINK_NATIVE(target_index)                      \
   do                                                                           \
     {                                                                          \
       asm goto (JITTER_ASM_DEFECT_DESCRIPTOR                                   \
@@ -586,11 +587,10 @@
                 : JITTER_PATCH_IN_INPUTS_FOR_EVERY_CASE,                       \
                   JITTER_INPUT_VM_INSTRUCTION_BEGINNING /* inputs */           \
                 : /* clobbers. */                                              \
-                : jitter_dispatch_label /* gotolabels. */);                    \
-      /* The rest of this specialised instruction is unreachable.  This        \
-         implementation is not based on hardware call and return, so there     \
-         is no need to generate a hardware jump either. */                     \
-      __builtin_unreachable ();                                                \
+                : jitter_fake_target /* gotolabels. */);                    \
+      /* It would be incorrect to have __builtin_unreachable or                \
+         JITTER_JUMP_TO_SPECIALIZED_INSTRUCTION_END here: see the comment in   \
+         the x86_64 version. */                                                \
     }                                                                          \
   while (false)
 

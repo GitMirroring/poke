@@ -1,7 +1,6 @@
 ## A simple Jittery VM, used in the structured language example.
 
-## Copyright (C) 2017, 2019 Luca Saiu
-## Updated in 2020 by Luca Saiu
+## Copyright (C) 2017, 2019, 2020, 2021 Luca Saiu
 ## Written by Luca Saiu
 
 ## This file is part of Jitter.
@@ -36,7 +35,7 @@ register-class r
   c-type "union jitter_word"
   c-initial-value "(union jitter_word) {.fixnum = 0}"
   long-name "general-register"
-  fast-register-no 2
+  fast-register-no 0 #5
   slow-registers
 end
 
@@ -370,11 +369,11 @@ instruction minusi-stack (?n 1 2 structured_literal_printer)
   end
 end
 
-instruction minusr-stack (?R)
-  code
-    JITTER_TOP_MAINSTACK() -= JITTER_ARGN0;
-  end
-end
+# instruction minusr-stack (?R)
+#   code
+#     JITTER_TOP_MAINSTACK() -= JITTER_ARGN0;
+#   end
+# end
 
 instruction equali-stack (?n 0 1 2 structured_literal_printer)
   code
@@ -382,11 +381,11 @@ instruction equali-stack (?n 0 1 2 structured_literal_printer)
   end
 end
 
-instruction differenti-stack (?n 0 1 2 structured_literal_printer)
-  code
-    JITTER_TOP_MAINSTACK() = (JITTER_TOP_MAINSTACK() != JITTER_ARGN0);
-  end
-end
+# instruction differenti-stack (?n 0 1 2 structured_literal_printer)
+#   code
+#     JITTER_TOP_MAINSTACK() = (JITTER_TOP_MAINSTACK() != JITTER_ARGN0);
+#   end
+# end
 
 instruction beqi-stack (?n -1 0 1 2 structured_literal_printer, ?f)
   code
@@ -404,48 +403,48 @@ instruction bneqi-stack (?n -1 0 1 2 structured_literal_printer, ?f)
   end
 end
 
-instruction beqr-stack (?R, ?f)
-  code
-    jitter_int top = JITTER_TOP_MAINSTACK();
-    JITTER_DROP_MAINSTACK();
-    JITTER_BRANCH_FAST_IF_EQUAL(top, JITTER_ARGN0, JITTER_ARGF1);
-  end
-end
+# instruction beqr-stack (?R, ?f)
+#   code
+#     jitter_int top = JITTER_TOP_MAINSTACK();
+#     JITTER_DROP_MAINSTACK();
+#     JITTER_BRANCH_FAST_IF_EQUAL(top, JITTER_ARGN0, JITTER_ARGF1);
+#   end
+# end
 
-instruction bneqr-stack (?R, ?f)
-  code
-    jitter_int top = JITTER_TOP_MAINSTACK();
-    JITTER_DROP_MAINSTACK();
-    JITTER_BRANCH_FAST_IF_NOTEQUAL(top, JITTER_ARGN0, JITTER_ARGF1);
-  end
-end
+# instruction bneqr-stack (?R, ?f)
+#   code
+#     jitter_int top = JITTER_TOP_MAINSTACK();
+#     JITTER_DROP_MAINSTACK();
+#     JITTER_BRANCH_FAST_IF_NOTEQUAL(top, JITTER_ARGN0, JITTER_ARGF1);
+#   end
+# end
 
-instruction bger-stack (?R, ?f)
-  code
-    jitter_int top = JITTER_TOP_MAINSTACK();
-    JITTER_DROP_MAINSTACK();
-    JITTER_BRANCH_FAST_IF_NOTLESS_SIGNED(top, JITTER_ARGN0, JITTER_ARGF1);
-  end
-end
+# instruction bger-stack (?R, ?f)
+#   code
+#     jitter_int top = JITTER_TOP_MAINSTACK();
+#     JITTER_DROP_MAINSTACK();
+#     JITTER_BRANCH_FAST_IF_NOTLESS_SIGNED(top, JITTER_ARGN0, JITTER_ARGF1);
+#   end
+# end
 
-instruction pushr-minusr-pop-stack (?R, ?R, !R)
-  code
-    JITTER_ARGN2 = JITTER_ARGN0 - JITTER_ARGN1;
-  end
-end
+# instruction pushr-minusr-pop-stack (?R, ?R, !R)
+#   code
+#     JITTER_ARGN2 = JITTER_ARGN0 - JITTER_ARGN1;
+#   end
+# end
 
-instruction pushr-beqr-stack (?R, ?R, ?f)
-  code
-    JITTER_BRANCH_FAST_IF_EQUAL(JITTER_ARGN0, JITTER_ARGN1, JITTER_ARGF2);
-  end
-end
+# instruction pushr-beqr-stack (?R, ?R, ?f)
+#   code
+#     JITTER_BRANCH_FAST_IF_EQUAL(JITTER_ARGN0, JITTER_ARGN1, JITTER_ARGF2);
+#   end
+# end
 
-instruction pushr-bger-stack (?R, ?R, ?f)
-  code
-    JITTER_BRANCH_FAST_IF_NOTLESS_SIGNED(JITTER_ARGN0, JITTER_ARGN1,
-                                         JITTER_ARGF2);
-  end
-end
+# instruction pushr-bger-stack (?R, ?R, ?f)
+#   code
+#     JITTER_BRANCH_FAST_IF_NOTLESS_SIGNED(JITTER_ARGN0, JITTER_ARGN1,
+#                                          JITTER_ARGF2);
+#   end
+# end
 
 
 ## Register instructions.

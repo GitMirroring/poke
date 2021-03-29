@@ -903,6 +903,43 @@ if test "x$ac_cv_have_pragma_gcc_diagnostic_in_functions" = "xyes"; then
              functions.])
 fi
 
+# Check whether the compiler supports assembler names for functions.
+AC_CACHE_CHECK([assembly names for functions],
+  [ac_cv_have_assembly_names_for_functions],
+  [AC_COMPILE_IFELSE(
+     [AC_LANG_PROGRAM(
+        [[int
+          foo (int x) asm ("foobar");]
+         [int
+          foo (int x)
+          {
+            return x + 1;
+          }]],
+        [[return foo (42);]])],
+     [ac_cv_have_assembly_names_for_functions=yes],
+     [ac_cv_have_assembly_names_for_functions=no])])
+if test "x$ac_cv_have_assembly_names_for_functions" = "xyes"; then
+  AC_DEFINE([JITTER_HAVE_ASSEMBLY_NAMES_FOR_FUNCTIONS], [1],
+            [Define if the compiler supports assembly names for functions in
+             the style of GNU C])
+fi
+
+# Check whether the compiler supports assembler names for nonfunctions.
+AC_CACHE_CHECK([assembly names for non-functions],
+  [ac_cv_have_assembly_names_for_non_functions],
+  [AC_COMPILE_IFELSE(
+     [AC_LANG_PROGRAM(
+        [[int
+          foo asm ("foobarquux") = 42;]],
+        [[return foo;]])],
+     [ac_cv_have_assembly_names_for_non_functions=yes],
+     [ac_cv_have_assembly_names_for_non_functions=no])])
+if test "x$ac_cv_have_assembly_names_for_non_functions" = "xyes"; then
+  AC_DEFINE([JITTER_HAVE_ASSEMBLY_NAMES_FOR_NON_FUNCTIONS], [1],
+            [Define if the compiler supports assembly names for non-functions in
+             the style of GNU C])
+fi
+
 
 # Check for GCC attributes.
 ################################################################
@@ -1254,7 +1291,8 @@ AC_MSG_RESULT([$jitter_enable_host_assembly])
 #
 # An architecture name given by the user will be used in place of the
 # detected $host_cpu .
-# At the end of the case statement jitter_has_host_assembly will be defined.
+# At the end of the case statement jitter_has_host_assembly and
+# jitter_supports_no_threading will be defined.
 if test "x$jitter_enable_host_assembly" = 'xno' \
    || test "x$JITTER_HAVE_ACTUAL_GCC" = 'xno'; then \
   default_host_cpu="no-assembly"
@@ -1263,6 +1301,7 @@ elif test "x$jitter_enable_host_assembly" = "xauto"; then
 else
   default_host_cpu="$jitter_enable_host_assembly"
 fi
+jitter_supports_no_threading='no'
 AC_MSG_CHECKING([if we have assembly support for \"$default_host_cpu\"])
 AS_CASE([$default_host_cpu],
         [aarch64*],    [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_AARCH64], [1], []
@@ -1316,6 +1355,7 @@ AS_CASE([$default_host_cpu],
         [ppc|powerpc|powerpcle],
                        [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_POWERPC], [1], []
                                            ) # No ";": see the Autoconf manual.
+                        JITTER_ASSEMBLY_SUBDIRECTORY=powerpc;
                         jitter_has_host_assembly=yes;
                         jitter_supports_no_threading=yes],
         [riscv*],      [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_RISCV], [1], []
@@ -1358,6 +1398,8 @@ if test "x$jitter_has_host_assembly" = "xno"; then
 else
   AC_MSG_RESULT([yes: $JITTER_ASSEMBLY_SUBDIRECTORY])
 fi
+AC_MSG_CHECKING([if the architecture supports no-threading])
+AC_MSG_RESULT([$jitter_supports_no_threading])
 
 # If the user explicitly requested support for an architecture but that
 # was not found, fail.
@@ -1852,13 +1894,20 @@ AC_MSG_RESULT([$jitter_enable_dispatch_direct_threading$jitter_subpackage_discla
 # Is the minimal-threading dispatch enabled?  Check the default and the
 # configure command-line option.
 AC_MSG_CHECKING([if minimal-threading dispatch is enabled])
-# FIXME: reenable this when I make defect handling reliable.
-#default=$(test "x$JITTER_HAVE_ACTUAL_GCC" = "xyes" && echo yes || echo no)
-default=no
+if    test "x$JITTER_HAVE_ACTUAL_GCC" = 'xyes' \
+   && test "x$jitter_have_known_binary_format" = 'xyes' \
+   && test "x$jitter_has_host_assembly" = 'xyes' \
+   && test "x$ac_cv_have_assembly_names_for_non_functions" = 'xyes'; then
+  default=yes
+else
+  default=no
+fi
 AC_ARG_ENABLE([dispatch-minimal-threading],
               AS_HELP_STRING([--enable-dispatch-minimal-threading],
-              [enable minimal threading dispatch: default yes if and
-only if GCC (not an imitation) is used]),
+              [enable minimal-threading dispatch: default yes if and
+only if a sufficiently recent GCC (not an imitation) is used, the
+host architecture has assembly support, and the binary format is
+supported]),
               jitter_enable_dispatch_minimal_threading="$enableval",
               jitter_enable_dispatch_minimal_threading="$default")
 if test "x$jitter_enable_dispatch_minimal_threading" = "xyes"; then
@@ -1866,18 +1915,19 @@ if test "x$jitter_enable_dispatch_minimal_threading" = "xyes"; then
   jitter_enabled_dispatch_models="$jitter_enabled_dispatch_models minimal-threading"
 fi
 AC_MSG_RESULT([$jitter_enable_dispatch_minimal_threading$jitter_subpackage_disclaimer])
-# FIXME: remove this warning message when I make defect handling reliable.
-if test "x$jitter_enable_dispatch_minimal_threading" = "xyes"; then
-  AC_MSG_WARN([minimal-threading dispatch is currently unreliable, and should
-  not be used in production without careful testing])
-fi
 
 # Is the no-threading dispatch enabled?  Check the default and the configure
 # command-line option.
+# I see a problem with GCC 4 and no-threading that I still have to
+# investigate.  It might not be worth the trouble, as GCC 4 is now
+# very old.
 AC_MSG_CHECKING([if no-threading dispatch is enabled])
-if    test "x$JITTER_HAVE_ACTUAL_GCC" = "xyes" \
-   && test "x$jitter_has_host_assembly" = "xyes" \
-   && test "x$jitter_host_os_is_elf" = "xyes"; then
+if    test "x$JITTER_HAVE_ACTUAL_GCC" = 'xyes' \
+   && test "$JITTER_GCC_MAJOR_VERSION" -ge 5 \
+   && test "x$jitter_have_known_binary_format" = 'xyes' \
+   && test "x$jitter_has_host_assembly" = 'xyes' \
+   && test "x$jitter_supports_no_threading" = 'xyes' \
+   && test "x$ac_cv_have_assembly_names_for_non_functions" = 'xyes'; then
   default=yes
 else
   default=no
@@ -1885,8 +1935,9 @@ fi
 AC_ARG_ENABLE([dispatch-no-threading],
               AS_HELP_STRING([--enable-dispatch-no-threading],
               [enable no-threading dispatch: default yes if and
-only if GCC (not an imitation) is used, the host
-architecture has assembly support, and the binary format is supported]),
+only if GCC (not an imitation) version 5 or later is used, the host
+architecture has assembly and no-threading support, and the binary
+format is supported]),
               jitter_enable_dispatch_no_threading="$enableval",
               jitter_enable_dispatch_no_threading="$default")
 if test "x$jitter_enable_dispatch_no_threading" = "xyes"; then
@@ -2286,13 +2337,11 @@ for dispatch_model in $jitter_enabled_dispatch_models; do
   # I see some crashes with GCC 4, quite difficult to explain and debug and
   # unrelated to my low-level code; in fact some C code (for example
   # JitterLisp's library initialisation) crashes before doing anything with the
-  # VM.  This problem is reliably worked around by disabling sibling call
-  # optimisation.  I suspect the problem comes in fact from some other option I
-  # am using for minimal-threading and no-threading.
+  # VM.  This problem is reliably worked around, for minimal-threading, by
+  # disabling sibling call optimisation.  I suspect the problem comes in fact
+  # from some other option I am using for minimal-threading and no-threading.
   # Since GCC 4 is now very old it is probably not worth to investigate too
-  # hard.  Notice that with GCC 4 there are other problems as well.
-  #   FIXME: either forbid advanced dispatches at configure time with GCC 4,
-  #          or debug.
+  # hard.
   if test "x$JITTER_HAVE_ACTUAL_GCC" = 'xyes' \
      && test "$JITTER_GCC_MAJOR_VERSION" -le 4; then
     case "$dispatch_model" in

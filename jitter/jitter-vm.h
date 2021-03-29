@@ -1,6 +1,6 @@
 /* Jitter: VM-specific configuration and internal implementation header.
 
-   Copyright (C) 2017, 2018, 2019 Luca Saiu
+   Copyright (C) 2017, 2018, 2019, 2021 Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -157,12 +157,36 @@ struct jitter_vm
   /* This is NULL when using a dispatching model not needing the bitmask. */
   const unsigned long *specialized_instruction_fast_label_bitmasks;
 
-#ifdef JITTER_HAVE_PATCH_IN
+#if defined (JITTER_HAVE_PATCH_IN)
   const struct jitter_patch_in_descriptor *patch_in_descriptors;
   size_t patch_in_descriptor_no;
   /* A patch-in table as defined in jitter/jitter-patch-in.h . */
   struct patch_in_table_entry *patch_in_table;
-#endif // #ifdef JITTER_HAVE_PATCH_IN
+#endif // #if defined (JITTER_HAVE_PATCH_IN)
+
+  /* How many defects were found across all the instructions.
+     This field is unconditionally present, in order to make user code
+     consulting this struct simpler; if no defects are possible this field is
+     set to zero. */
+  int defect_no;
+
+  /* How many specialised instructions are defective.  Notice that the fields
+     keeps track of instructions, not of defects; the number of defects may be
+     higher when one instruction has multiple defects.
+     Defined unconditionally: see above. */
+  int defective_specialized_instruction_no;
+
+  /* How many call-related specialised instructions are defective.
+     Defined unconditionally: see above. */
+  int defective_call_related_specialized_instruction_no;
+
+  /* How many specialised instructions were replaced because of defects.  This
+     may be higher than defective_instruction_no when some but not all
+     call-related instructions are defective: in such cases *every*
+     call-releated instruction is replaced, in order to keep the calling
+     convention compatible across instructions.
+     Defined unconditionally: see above. */
+  int replacement_specialized_instruction_no;
 
   const bool *specialized_instruction_relocatables;
   const bool *specialized_instruction_callers;

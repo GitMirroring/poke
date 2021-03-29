@@ -1,6 +1,6 @@
 /* Jitter: VM generation-time data structures.
 
-   Copyright (C) 2017, 2018, 2019, 2020 Luca Saiu
+   Copyright (C) 2017, 2018, 2019, 2020, 2021 Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -45,9 +45,14 @@
 
 
 /* A number of characters sufficient to hold the printed representation of any
+   parameter in a specialized instruction, without counting specalized
+   literals, and without counting any terminating '\0'. */
+#define JITTERC_MAX_ARGUMENT_PRINTED_SIZE_PREFIX_SIZE  6
+
+/* A number of characters sufficient to hold the printed representation of any
    residual parameter.  Since even the largest 64-bit integers printed in
    decimal fit in 20 digits this is safe. */
-#define MAXIMUM_ARGUMENT_PRINTED_SIZE 25
+#define JITTERC_MAXIMUM_ARGUMENT_PRINTED_SIZE 25
 
 
 struct jitterc_register*
@@ -104,8 +109,10 @@ jitterc_add_implicit_instruction (struct jitterc_vm *vm,
   res->mangled_name = jitterc_mangle (res->name);
   res->hotness = jitterc_hotness_cold;
   res->relocatability = jitterc_relocatability_relocatable;
+  res->branchingness = jitterc_branchingness_branching;
   res->callerness = jitterc_callerness_non_caller;
   res->calleeness = jitterc_calleeness_non_callee;
+  res->returningness = jitterc_returningness_non_returning;
   res->has_fast_labels = false;
   res->code = jitter_clone_string (c_code);
 
@@ -168,6 +175,12 @@ jitterc_make_vm (void)
   res->state_backing_struct_c_code = jitter_clone_string ("");
   res->state_runtime_struct_c_code = jitter_clone_string ("");
   res->state_initialization_c_code = jitter_clone_string ("");
+
+  /* This is NULL unless explicitly specified, differently from similar fields:
+     the reason is that the default is non-empty: the default for state reset is
+     the composition of state finalisation and state initialisation. */
+  res->state_reset_c_code = NULL;
+
   res->state_finalization_c_code = jitter_clone_string ("");
   res->instruction_beginning_c_code = jitter_clone_string ("");
   res->instruction_end_c_code = jitter_clone_string ("");
@@ -638,7 +651,7 @@ jitterc_make_instruction_argument (void)
 
 /* Return a name for a specialized instruction or a prefix of it (meaning that
    not all specialized arguments need to be supplied), with the given suffix
-   appended.  Return a freshly-allocated string. */
+   appended.  The result is a freshly-allocated string. */
 static char*
 jitterc_specialized_instruction_name (const char *base,
                                       gl_list_t specialized_arguments,
@@ -650,13 +663,14 @@ jitterc_specialized_instruction_name (const char *base,
      separator, then you have either '%' and a register class letter or one
      letter indicates the literal kind, and the rest is the printed
      representation of a literal or a register index or "R" for residuals.  In
-     order to allow for future extensions where other literal types or register
-     classes are indicated by one more letter we make space for three characters
-     per specialized arguments rather than two.  There is a final '\0'
-     character. */
+     order to allow for future extensions we make space for
+     JITTERC_MAX_ARGUMENT_PRINTED_SIZE_PREFIX_SIZE plus
+     JITTERC_MAXIMUM_ARGUMENT_PRINTED_SIZE characters per specialized argument.
+     There is a final '\0' character. */
   size_t allocated_size
     = base_length
-      + specialized_argument_no * (3 + MAXIMUM_ARGUMENT_PRINTED_SIZE)
+      + specialized_argument_no * (JITTERC_MAX_ARGUMENT_PRINTED_SIZE_PREFIX_SIZE
+                                   + JITTERC_MAXIMUM_ARGUMENT_PRINTED_SIZE)
       + strlen (suffix) + 1;
   char *temporary = xmalloc (allocated_size);
   size_t used_size = 0;
@@ -696,8 +710,6 @@ jitterc_specialized_instruction_name (const char *base,
             ADD_STRING("R");
           else
             {
-              /* FIXME: this will need generalization when there are more
-                 literal types. */
               long value = sarg->nonresidual_literal->value.fixnum;
               ADD("%li", (unsigned long) value);
             }
@@ -709,6 +721,10 @@ jitterc_specialized_instruction_name (const char *base,
         case jitterc_instruction_argument_kind_fast_label:
           assert (sarg->residual);
           ADD_STRING("/fR");
+          break;
+        case jitterc_instruction_argument_kind_return_address:
+          assert (sarg->residual);
+          ADD_STRING("/QQretR");
           break;
         default:
           jitter_fatal ("jitterc_specialized_instruction_name: unhandled kind");
@@ -857,8 +873,10 @@ jitterc_make_instruction (void)
   res->hotness = jitterc_hotness_unspecified;
   res->relocatability = jitterc_relocatability_unspecified;
   res->has_fast_labels = false;
+  res->branchingness = jitterc_branchingness_unspecified;
   res->callerness = jitterc_callerness_unspecified;
   res->calleeness = jitterc_calleeness_unspecified;
+  res->returningness = jitterc_returningness_unspecified;
   res->arguments
     = jitterc_make_empty_list ();
   res->code = NULL;
@@ -951,6 +969,20 @@ jitterc_make_specialized_instruction_argument_residual_fast_label
 }
 
 struct jitterc_specialized_argument*
+jitterc_make_specialized_instruction_argument_return_address
+   (void)
+{
+  struct jitterc_instruction_argument *non_specialized_argument
+    = jitterc_make_instruction_argument ();
+  non_specialized_argument->mode = jitterc_instruction_argument_mode_in;
+  non_specialized_argument->kind
+    = jitterc_instruction_argument_kind_return_address;
+  return jitterc_make_specialized_instruction_argument_residual_common
+            (non_specialized_argument,
+             jitterc_instruction_argument_kind_return_address);
+}
+
+struct jitterc_specialized_argument*
 jitterc_make_specialized_instruction_argument_specialized_register
    (const struct jitterc_vm *vm,
     const struct jitterc_instruction_argument *unspecialized,
@@ -996,49 +1028,122 @@ jitterc_make_specialized_instruction_argument_specialized_literal
 
 
 
-/* Return a specialized instruction, ordinary if ui is non-NULL, in which case
-   the name is ignored, or special. */
+/* Return a new specialized instruction.
+   - If ui is non-NULL then the specialized instruction is based on it
+     and non-special, and the name is ignored;
+   - if ui is NULL then the specialized instruction is special; use the
+     given name for it.
+   Use the given relocatability for the new specialized instruction,
+   unless the relocatability is jitterc_relocatability_unspecified (in
+   which case ui's relocatability is used).
+   If replacement_of is non-NULL then the new specialised instruction
+   will be a replacement for the given specialised instruction; in that
+   case adapt the replacement name and make the two instructions point to
+   each other. */
 struct jitterc_specialized_instruction*
 jitterc_make_specialized_instruction_internal (struct jitterc_vm *vm,
                                                const struct jitterc_instruction *ui,
                                                const gl_list_t specialized_args_copy,
-                                               const char *name)
+                                               const char *name,
+                                               enum jitterc_relocatability given_r,
+                                               struct jitterc_specialized_instruction
+                                               *replacement_of)
 {
   struct jitterc_specialized_instruction *res
     = xmalloc (sizeof (struct jitterc_specialized_instruction));
 
-  /* Compute the instruction name, adding a /retR suffix if needed. */
-  bool has_retR
-    = (  (ui != NULL)
-       && (   ui->callerness == jitterc_callerness_caller
-           || ui->relocatability == jitterc_relocatability_non_relocatable));
-  if (ui != NULL)
+  /* The new specialized instruction opcode is not assigned yet.  It will be
+     decided late in the generation process. */
+  res->opcode = -1;
+
+  /* Decide on relocatability for the new specialized instruction.  First use
+     the given value; if that is unspecified, inherit from the unspecialized
+     version. */
+  enum jitterc_relocatability r = given_r;
+  if (r == jitterc_relocatability_unspecified)
+    {
+      if (ui != NULL)
+        /* Inherit relocatability from unspecialized version. */
+        r = ui->relocatability;
+
+      /* Sanity check: relocatability must be specified at this point. */
+      if (r == jitterc_relocatability_unspecified)
+        jitter_fatal ("jitterc_make_specialized_instruction_internal: "
+                      "unspecified relocatability");
+    }
+  res->relocatability = r;
+
+  /* The specialised branchingness is the same as the unspecialised
+     branchingness, if an unspecialised version exists.  Otherwise, let us make
+     it branching [FIXME: remove special specialised instructions, so that every
+     specialised instruction has an unspecialised counterpart] */
+  res->branchingness
+    = ui == NULL ? jitterc_branchingness_branching : ui->branchingness;
+
+  /* Compute the instruction name, adding a /retR suffix if needed.  Do not
+     add a second /retR suffix if one is already present. */
+  bool new_retR;
+  int arity;
+  if ((arity = gl_list_size (specialized_args_copy)) > 0
+      && (((const struct jitterc_specialized_argument *)
+           gl_list_get_at (specialized_args_copy, arity - 1))->kind
+          == jitterc_instruction_argument_kind_return_address))
+    new_retR = false;
+  else
+    new_retR = (res->relocatability == jitterc_relocatability_non_relocatable
+                || (ui != NULL
+                    && ui->callerness == jitterc_callerness_caller));
+
+  /* Clone arguments into the appropriate result field, and add a retR argument
+     to the clone.  It is harmless to share structure.  If the specialized
+     instruction has a return-address hidden argument, append it. */
+  res->specialized_arguments = jitterc_clone_list (specialized_args_copy);
+  if (new_retR)
+    {
+      struct jitterc_specialized_argument *retR_specialized_argument
+        = jitterc_make_specialized_instruction_argument_return_address ();
+      gl_list_add_last (res->specialized_arguments,
+                        retR_specialized_argument);
+    }
+
+  if (replacement_of != NULL)
+    {
+      /* Set the new specialized instruction name to make it easy to recognize
+         visually as a replacement. */
+      char *original_name = replacement_of->name;
+      size_t original_name_length = strlen (original_name);
+      const char *prefix = "!REPLACEMENT-";
+      const char *suffix = "!";
+      suffix = new_retR ? "/retR": "";
+      size_t prefix_length = strlen (prefix);
+      size_t suffix_length = strlen (suffix);
+      size_t new_name_length = prefix_length + original_name_length + suffix_length + 1;
+      char *new_name = xmalloc (new_name_length);
+      sprintf (new_name, "%s%s%s", prefix, original_name, suffix);
+      res->name = new_name;
+    }
+  else if (ui != NULL)
     res->name = jitterc_specialized_instruction_name (ui->name,
                                                       specialized_args_copy,
-                                                      has_retR ? "/retR" : "");
+                                                      new_retR ? "/retR" : "");
   else
     res->name = jitter_clone_string (name);
 
+  /* Set some simple fields in the result. */
   res->mangled_name = jitterc_mangle (res->name);
   res->instruction = (struct jitterc_instruction*) ui;
-  res->specialized_arguments = jitterc_clone_list (specialized_args_copy);
 
-  /* By default the instruction is not a replacement of another, and has no
-     replacement: replacements will be added in a later pass as needed, and
-     linked here replacing this field. */
+  /* Make this specialised instruction and the specialised instruction it
+     replaces point to each other correctly, or set the pointers to NULL if this
+     is not a replacement. */
   res->has_as_replacement = NULL;
-  res->is_replacement_of = NULL;
-
-  /* By default a specialized instruction has the same relocatability as its
-     unspecialized counterpart, when such counterpart exists.
-//     If it doesn't then the instruction is non-relocatable.
-     If it doesn't then the instruction is relocatable.
- */
-  if (ui != NULL)
-    res->relocatability = ui->relocatability;
+  if (replacement_of == NULL)
+    res->is_replacement_of = NULL;
   else
-//    res->relocatability = jitterc_relocatability_non_relocatable;
-    res->relocatability = jitterc_relocatability_relocatable;
+    {
+      res->is_replacement_of = replacement_of;
+      replacement_of->has_as_replacement = res;
+    }
 
   /* By default the specialized instruction hotness is the same as the
      unspecialized hotness.  However if a meta-instruction is declared hot its
@@ -1083,27 +1188,24 @@ jitterc_make_specialized_instruction_internal (struct jitterc_vm *vm,
         residual_arity ++;
     }
 
-  /* If this instruction is non-relocatable, count one residual argument more
-     for the return label.  Moreover non-relocatable specialized instructions
-     are always cold. */
-  if (   ui != NULL
-      && ui->relocatability == jitterc_relocatability_non_relocatable)
-    {
-      residual_arity ++;
-      res->hotness = jitterc_hotness_cold;
-    }
+  /* Non-relocatable specialized instructions are always cold.*/
+  if (res->relocatability == jitterc_relocatability_non_relocatable)
+    res->hotness = jitterc_hotness_cold;
 
-  /* Similarly to non-relocatable specialized instructions, caller instructions
-     also have an additional residual argument.  However they are not always
-     cold.  It's currently forbidden for an instruction to be both
-     non-relocatable and a caller. */
-  if (   ui != NULL
-      && ui->callerness == jitterc_callerness_caller)
-    residual_arity ++;
+  //printf ("RESIDUAL ARITY for %s: %i\n", res->name, (int) residual_arity);
+
+  /* [FIXME: test a non-relocatable non-replacement caller. */
+  //if (! (! (res->relocatability == jitterc_relocatability_non_relocatable
+  //          && ui != NULL
+  //          && ui->callerness == jitterc_callerness_caller)))
+  //  printf ("WARNING: non-relocatable caller.  This is probably not supported yet.\n");
 
   /* Update the maximum residual arity count. */
   if (residual_arity > vm->max_residual_arity)
-    vm->max_residual_arity = residual_arity;
+    {
+      vm->max_residual_arity = residual_arity;
+      //printf ("max residual arity: %i, because of %s\n", (int) residual_arity, res->name);
+    }
 
   return res;
 }
@@ -1115,6 +1217,8 @@ jitterc_make_ordinary_specialized_instruction (struct jitterc_vm *vm,
 {
   return jitterc_make_specialized_instruction_internal (vm, ui,
                                                         specialized_args_copy,
+                                                        NULL,
+                                                        ui->relocatability,
                                                         NULL);
 }
 
@@ -1125,7 +1229,9 @@ jitterc_make_special_specialized_instruction (struct jitterc_vm *vm,
 {
   return jitterc_make_specialized_instruction_internal (vm, NULL,
                                                         specialized_args_copy,
-                                                        name);
+                                                        name,
+                                                        jitterc_relocatability_relocatable,
+                                                        NULL);
 }
 
 struct jitterc_instruction *
@@ -1218,6 +1324,23 @@ jitterc_sort_vm (struct jitterc_vm *vm)
 
 
 
+/* Specialized instruction properties.
+ * ************************************************************************** */
+
+bool
+jitterc_specialized_instruction_is_call_related
+   (const struct jitterc_specialized_instruction *sins)
+{
+  struct jitterc_instruction *ins = sins->instruction;
+  return (ins != NULL
+          && (ins->calleeness == jitterc_calleeness_callee
+              || ins->callerness == jitterc_callerness_caller
+              || ins->returningness == jitterc_returningness_returning));
+}
+
+
+
+
 /* Building the name_to_instruction hash table.
  * ************************************************************************** */
 
@@ -1255,6 +1378,7 @@ jitterc_generate_replacement_for (struct jitterc_vm *vm,
   gl_list_t new_specialized_arguments
     = jitterc_clone_list (sins->specialized_arguments);
   int i;
+  //bool at_least_one_fast_label = false;
   for (i = 0; i < gl_list_size (new_specialized_arguments); i ++)
     {
       const struct jitterc_specialized_argument *old_sarg
@@ -1262,44 +1386,23 @@ jitterc_generate_replacement_for (struct jitterc_vm *vm,
            gl_list_get_at (new_specialized_arguments, i));
       if (old_sarg->kind == jitterc_instruction_argument_kind_fast_label)
         {
+          //at_least_one_fast_label = true;
           struct jitterc_specialized_argument *new_sarg
             = jitterc_clone_specialized_instruction_argument_common (old_sarg);
           new_sarg->replacement = true;
           new_sarg->residual = true;
           new_sarg->kind = jitterc_instruction_argument_kind_label;
-          gl_list_set_at (new_specialized_arguments, i, new_sarg); // FIXME: this is the right thing.  Reenable!
-          //gl_list_set_at (new_specialized_arguments, i, old_sarg); // FIXME: obviously wrong.
+          gl_list_set_at (new_specialized_arguments, i, new_sarg);
         }
     }
 
   /* Make a new specialized instruction. */
-  struct jitterc_specialized_instruction *new_sins
-    = jitterc_make_ordinary_specialized_instruction
-    (vm, sins->instruction, new_specialized_arguments);
-
-  /* Update the specialized instruction name, to make it easy to recognize
-     visually as a replacement. */
-  char *original_name = sins->name;
-  size_t original_name_length = strlen (original_name);
-  const char *prefix = "*";
-  const char *suffix = "*-no-fast-branches";
-  size_t prefix_length = strlen (prefix);
-  size_t suffix_length = strlen (suffix);
-  size_t new_name_length = prefix_length + original_name_length + suffix_length + 1;
-  char *new_name = xmalloc (new_name_length);
-  sprintf (new_name, "%s%s%s", prefix, original_name, suffix);
-  new_sins->name = new_name;
-  new_sins->mangled_name = jitterc_mangle (new_name);
-
-  /* Link the new specialized instruction from the potentially defective
-     specialized instruction it replaces. */
-  sins->has_as_replacement = new_sins;
-
-  /* Mark the new instruction as a replacement. */
-  new_sins->is_replacement_of = sins;
-
-  /* Replacement instructions are non-relocatable. */
-  new_sins->relocatability = jitterc_relocatability_non_relocatable;
+  jitterc_make_specialized_instruction_internal (vm,
+                                                 sins->instruction,
+                                                 new_specialized_arguments,
+                                                 NULL,
+                                                 jitterc_relocatability_non_relocatable,
+                                                 sins);
 }
 
 /* Generate replacement specialized instructions where needed, updating the
@@ -1313,7 +1416,7 @@ jitterc_generate_replacements (struct jitterc_vm *vm)
      beginning; the replacement specialized instructions to be added will be at
      the end, and will not be scanned by the same loop. */
   const size_t non_defective_sins_no = gl_list_size (vm->specialized_instructions);
-  fprintf (stderr, "Specialized instructions are %i, ignoring defects\n",
+  fprintf (stderr, "Specialized instructions, ignoring replacements: %i\n",
            (int) non_defective_sins_no);
 
   /* For every specialized instruction... */
@@ -1326,8 +1429,15 @@ jitterc_generate_replacements (struct jitterc_vm *vm)
         = ((struct jitterc_specialized_instruction *)
            gl_list_get_at (vm->specialized_instructions, i));
 
-      /* Check its arguments.  The specialized instruction is potentially
-         defective iff it has at least one fast-label residual argument. */
+      /* Special specialised instructions are never replaced.  If sins is
+         special, which is to say has no unspecialised counterpart, ignore
+         it. */
+      if (sins->instruction == NULL)
+        continue;
+
+      /* Check the specialized instruction arguments.  A specialized instruction
+         is potentially defective if it has at least one fast-label residual
+         argument. */
       bool potentially_defective = false;
       int j;
       for (j = 0; j < gl_list_size (sins->specialized_arguments); j ++)
@@ -1338,22 +1448,47 @@ jitterc_generate_replacements (struct jitterc_vm *vm)
           if (sarg->kind == jitterc_instruction_argument_kind_fast_label)
             {
               potentially_defective = true;
-              potentially_defective_no ++;
               break;
             }
         }
+
+      /* A specialized instruction is also potentially defective if it is
+         branching. */
+      if (sins->branchingness == jitterc_branchingness_branching)
+        potentially_defective = true;
+
+      /* A specialized instruction is also potentially defective if it is
+         call-related. */
+      if (jitterc_specialized_instruction_is_call_related (sins))
+        potentially_defective = true;
+
+      /* If the specialized instruction is potentially defective, for any
+         reason, generate a replacement for it.  Also update the potential
+         defect counter. */
       if (potentially_defective)
-        jitterc_generate_replacement_for (vm, sins);
-      /*
-      fprintf (stderr, "%i. %s at %p with %i arguments. P.d.: %s\n", i,
-               sins->name, sins, j,
-               potentially_defective ? "yes" : "no");
-      */
+        {
+          potentially_defective_no ++;
+          jitterc_generate_replacement_for (vm, sins);
+        }
     }
 
-  const size_t total_sins_no = gl_list_size (vm->specialized_instructions);
-  fprintf (stderr, "Potentially defective specialized instructions are %i.\n", potentially_defective_no);
-  fprintf (stderr, "Generated %i replacements.\n", (int) (total_sins_no - non_defective_sins_no));
+  int total_sins_no = gl_list_size (vm->specialized_instructions);
+  double replacement_ratio = 0;
+  double replacement_overhead = 0;
+  if (non_defective_sins_no > 0)
+    {
+      replacement_ratio = (double) potentially_defective_no / total_sins_no;
+      replacement_overhead
+        = (double) potentially_defective_no / non_defective_sins_no;
+    }
+  fprintf (stderr, "Potentially defective specialized instructions: %i\n",
+           (int) potentially_defective_no);
+  fprintf (stderr, "Replacements: %i (%.1f%% of total, %.1f%% overhead)\n",
+           (int) (total_sins_no - non_defective_sins_no),
+           replacement_ratio * 100,
+           replacement_overhead * 100);
+  fprintf (stderr, "Total instructions, including replacements: %i\n",
+           (int) total_sins_no);
 }
 
 
@@ -1431,7 +1566,7 @@ jitterc_make_special_specialized_instructions (struct jitterc_vm *vm)
   jitterc_make_special_specialized_instruction (vm, "!NOP", no_arguments);
   jitterc_make_special_specialized_instruction (vm, "!UNREACHABLE0", no_arguments);
   jitterc_make_special_specialized_instruction (vm, "!UNREACHABLE1", no_arguments);
-  jitterc_make_special_specialized_instruction (vm, "!UNREACHABLE2", no_arguments);
+  jitterc_make_special_specialized_instruction (vm, "!PRETENDTOJUMPANYWHERE", no_arguments);
 }
 
 static void
@@ -1448,27 +1583,28 @@ jitterc_specialize_recursive (struct jitterc_vm *vm,
         = jitterc_make_ordinary_specialized_instruction
              (vm, ui, specialized_arguments);
 
-      /* If this instruction is non-relocatable then add another residual
-         argument, not taken into account in the forest: it's the non-relocated
-         return address, automatically handled at specialization time and not
-         visible to the user.
-         Also do the same when the instruction is a caller, even if the argument
-         has a different meaning and is not used unconditionally. */
-      if (   ui->relocatability == jitterc_relocatability_non_relocatable
-          || ui->callerness == jitterc_callerness_caller)
-        {
-          struct jitterc_instruction_argument *arg_relocated_return
-            = jitterc_make_instruction_argument ();
-          arg_relocated_return->mode = jitterc_instruction_argument_mode_in;
-          arg_relocated_return->kind = jitterc_instruction_argument_kind_literal;
-          arg_relocated_return->literal_type = jitterc_literal_type_fixnum;
-          arg_relocated_return->literals = jitterc_make_empty_list ();
-          // FIXME: shall I bother freeing arg_relocated_return ?
-          struct jitterc_specialized_argument *sarg_relocated_return
-            = jitterc_make_specialized_instruction_argument_residual_literal
-                 (arg_relocated_return);
-          gl_list_add_last (si->specialized_arguments, sarg_relocated_return);
-        }
+      // FIXME: no: this is already handled within jitterc_make_specialized_instruction_internal, called by jitterc_make_ordinary_specialized_instruction
+      /* /\* If this instruction is non-relocatable then add another residual */
+      /*    argument, not taken into account in the forest: it's the non-relocated */
+      /*    return address, automatically handled at specialization time and not */
+      /*    visible to the user. */
+      /*    Also do the same when the instruction is a caller, even if the argument */
+      /*    has a different meaning and is not used unconditionally. *\/ */
+      /* if (   ui->relocatability == jitterc_relocatability_non_relocatable */
+      /*     || ui->callerness == jitterc_callerness_caller) */
+      /*   { */
+      /*     struct jitterc_instruction_argument *arg_relocated_return */
+      /*       = jitterc_make_instruction_argument (); */
+      /*     arg_relocated_return->mode = jitterc_instruction_argument_mode_in; */
+      /*     arg_relocated_return->kind = jitterc_instruction_argument_kind_literal; */
+      /*     arg_relocated_return->literal_type = jitterc_literal_type_fixnum; */
+      /*     arg_relocated_return->literals = jitterc_make_empty_list (); */
+      /*     // FIXME: shall I bother freeing arg_relocated_return ? */
+      /*     struct jitterc_specialized_argument *sarg_relocated_return */
+      /*       = jitterc_make_specialized_instruction_argument_residual_literal */
+      /*            (arg_relocated_return); */
+      /*     gl_list_add_last (si->specialized_arguments, sarg_relocated_return); */
+      /*   } */
 
       jitterc_specialized_instruction_tree_set_specialized_instruction
          (parent, si);
@@ -1594,9 +1730,10 @@ jitterc_specialize (struct jitterc_vm *vm,
   vm->max_nonresidual_literal_no = max_nonresidual_literal_no;
 
   /* First generate the special specialized instructions.  Those have to be the
-     first ones, an in particular the !INVALID specialized instruction must have
-     opcode zero: this is exploited in the specializer, where recognizers return
-     zero in case of failure, and use the opcode as a boolean condition. */
+     first ones, and in particular the !INVALID specialized instruction must
+     have opcode zero: this is exploited in the specializer, where recognizers
+     return zero in case of failure, and use the opcode as a boolean
+     condition. */
   jitterc_make_special_specialized_instructions (vm);
 
   /* Make a list to contain the specialized arguments.  The same list will be
@@ -1630,4 +1767,18 @@ jitterc_specialize (struct jitterc_vm *vm,
      use (non-replacement) specialized instructions to generate more specialized
      instructions. */
   jitterc_generate_replacements (vm);
+
+  /* Now we have generated every specialised instruction we will need, including
+     special specialised instructions and replacement specialised instructions.
+     Number them by assigning opcodes.  Specialised instruction opcodes have
+     been undefined up to this point. */
+  for (i = 0; i < gl_list_size (vm->specialized_instructions); i ++)
+    {
+      /* Get a pointer to the specialized instruction. */
+      struct jitterc_specialized_instruction *sins
+        = ((struct jitterc_specialized_instruction *)
+           gl_list_get_at (vm->specialized_instructions, i));
+      sins->opcode = i;
+      //printf ("sins %i: %s\n", i, sins->name);
+    }
 }

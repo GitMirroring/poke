@@ -299,6 +299,20 @@ jitterc_emit_early_header_c (const struct jitterc_vm *vm)
                             "early header");
 }
 
+/* Forward declaration. */
+static void
+jitterc_emit_stack_operation_definitions (FILE *f, const struct jitterc_vm *vm,
+                                          bool executor);
+
+static void
+jitterc_emit_non_instruction_stack_operation_definitions
+   (const struct jitterc_vm *vm)
+{
+  FILE *f = jitterc_fopen_a_basename (vm, "vm.h");
+  jitterc_emit_stack_operation_definitions (f, vm, false);
+  jitterc_fclose (f);
+}
+
 /* Emit the late part of the user-specified code for the header. */
 static void
 jitterc_emit_late_header_c (const struct jitterc_vm *vm)
@@ -464,15 +478,17 @@ jitterc_emit_meta_instructions (const struct jitterc_vm *vm)
         = (const struct jitterc_instruction*)
           (gl_list_get_at (vm->instructions, i));
       int in_arity = gl_list_size (in->arguments);
-      EMIT("      { %i, \"%s\", %i, %s, %s, %s, ",
+      EMIT("      { %i, \"%s\", %i, %s, %s, %s, %s, ",
            i, in->name, in_arity,
+           ((in->branchingness == jitterc_branchingness_branching)
+            ? "true" : "false"),
            ((in->callerness == jitterc_callerness_caller)
             ? "true" : "false"),
            ((in->calleeness == jitterc_calleeness_callee)
             ? "true" : "false"),
            ((in->relocatability == jitterc_relocatability_relocatable)
-            ? "true /* FIXME: this may be wrong with replacements. */"
-            : "false  /* FIXME: this may be wrong with replacements. */"));
+            ? "true /* this ignores replacements */"
+            : "false /* this ignores replacements */"));
       if (in_arity == 0)
         EMIT("NULL }%s\n", comma);
       else
@@ -483,6 +499,7 @@ jitterc_emit_meta_instructions (const struct jitterc_vm *vm)
   jitterc_fclose (f);
 }
 
+/* Emit a definition for specialised instruction opcodes as an enum */
 static void
 jitterc_emit_specialized_instructions_h (const struct jitterc_vm *vm)
 {
@@ -492,11 +509,14 @@ jitterc_emit_specialized_instructions_h (const struct jitterc_vm *vm)
   EMIT("  {\n");
   int i; char *comma;
   FOR_LIST(i, comma, vm->specialized_instructions)
-    EMIT("    vmprefix_specialized_instruction_opcode_%s = %i%s\n",
-         (((const struct jitterc_specialized_instruction*)
-           gl_list_get_at (vm->specialized_instructions, i))->mangled_name),
-         i,
-         comma);
+    {
+      struct jitterc_specialized_instruction *sins
+        = ((struct jitterc_specialized_instruction *)
+           gl_list_get_at (vm->specialized_instructions, i));
+      sins->opcode = i;
+      EMIT("    vmprefix_specialized_instruction_opcode_%s = %i%s\n",
+           sins->mangled_name, i, comma);
+    }
   EMIT("  };\n");
   EMIT("\n#define VMPREFIX_SPECIALIZED_INSTRUCTION_NO %i\n\n", i);
   EMIT("#endif // #ifndef VMPREFIX_SPECIALIZED_INSTRUCTIONS_H_\n");
@@ -750,15 +770,15 @@ jitterc_emit_specialized_instruction_to_unspecialized_instruction
   jitterc_fclose (f);
 }
 
-/* Emit the worst-case defect table for the pointed VM. */
+/* Emit the worst-case replacement table for the pointed VM. */
 static void
-jitterc_emit_worst_case_defect_table (const struct jitterc_vm *vm)
+jitterc_emit_worst_case_replacement_table (const struct jitterc_vm *vm)
 {
   FILE *f = jitterc_fopen_a_basename (vm, "vm1.c");
-  EMIT("#ifdef JITTER_HAVE_PATCH_IN\n");
-  EMIT("/* Worst-case defect table. */\n");
+  EMIT("#ifdef JITTER_HAVE_DEFECT_REPLACEMENT\n");
+  EMIT("/* Worst-case replacement table. */\n");
   EMIT("const jitter_uint\n");
-  EMIT("vmprefix_worst_case_defect_table [] =\n");
+  EMIT("vmprefix_worst_case_replacement_table [] =\n");
   EMIT("  {\n");
   int i; char *comma;
   FOR_LIST(i, comma, vm->specialized_instructions)
@@ -767,14 +787,75 @@ jitterc_emit_worst_case_defect_table (const struct jitterc_vm *vm)
         = ((const struct jitterc_specialized_instruction*)
            gl_list_get_at (vm->specialized_instructions, i));
       if (sins->has_as_replacement == NULL)
-        EMIT("    vmprefix_specialized_instruction_opcode_%s%s /* NOT potentially defective. */\n",
-             sins->mangled_name, comma);
+        EMIT("    vmprefix_specialized_instruction_opcode_%s%s /* %s is NOT potentially defective. */\n",
+             sins->mangled_name,
+             comma,
+             sins->name);
       else
-        EMIT("    /*vmprefix_specialized_instruction_opcode__eINVALID*/vmprefix_specialized_instruction_opcode_%s%s /* POTENTIALLY DEFECTIVE. */\n",
-             sins->has_as_replacement->mangled_name, comma);
+        EMIT("    vmprefix_specialized_instruction_opcode_%s%s /* %s is POTENTIALLY DEFECTIVE, and replaced by %s. */\n",
+             sins->has_as_replacement->mangled_name,
+             comma,
+             sins->name, sins->has_as_replacement->name);
     }
   EMIT("  };\n");
-  EMIT("#endif // #ifdef JITTER_HAVE_PATCH_IN\n");
+  EMIT("#endif // #ifdef JITTER_HAVE_DEFECT_REPLACEMENT\n");
+  EMIT("\n\n");
+  jitterc_fclose (f);
+}
+
+/* Emit the definition of vmprefix_call_related_specialized_instruction_ids,
+   vmprefix_call_related_specialized_instruction_id_no and
+   vmprefix_specialized_instruction_call_relateds , which are useful for
+   defective instruction replacement.  See the comment in templates/vm.h . */
+static void
+jitterc_emit_call_related_specialized_instruction_ids (const struct jitterc_vm *vm)
+{
+  FILE *f = jitterc_fopen_a_basename (vm, "vm1.c");
+  EMIT("#ifdef JITTER_HAVE_DEFECT_REPLACEMENT\n");
+  EMIT("const jitter_uint\n");
+  EMIT("vmprefix_call_related_specialized_instruction_ids []\n");
+  EMIT("= {\n");
+  int i; char *comma_unused __attribute__ ((unused));
+  bool first_already_emitted = false;
+  FOR_LIST(i, comma_unused, vm->specialized_instructions)
+    {
+      const struct jitterc_specialized_instruction* sins
+        = ((const struct jitterc_specialized_instruction*)
+           gl_list_get_at (vm->specialized_instructions, i));
+      if (sins->is_replacement_of == NULL
+          && jitterc_specialized_instruction_is_call_related (sins))
+        {
+          if (first_already_emitted)
+            EMIT(",\n");
+          EMIT("    vmprefix_specialized_instruction_opcode_%s",
+               sins->mangled_name);
+          first_already_emitted = true;
+        }
+    }
+  EMIT("\n  };\n");
+  EMIT("\n");
+  EMIT("const jitter_uint\n");
+  EMIT("vmprefix_call_related_specialized_instruction_id_no\n");
+  EMIT("= sizeof (vmprefix_call_related_specialized_instruction_ids) / sizeof (jitter_uint);\n");
+  EMIT("\n");
+  EMIT("const bool\n");
+  EMIT("vmprefix_specialized_instruction_call_relateds []\n");
+  EMIT("= {\n");
+  char *comma;
+  FOR_LIST(i, comma, vm->specialized_instructions)
+    {
+      const struct jitterc_specialized_instruction* sins
+        = ((const struct jitterc_specialized_instruction*)
+           gl_list_get_at (vm->specialized_instructions, i));
+      EMIT("    %i%s /* %s */\n",
+           ! ! (sins->is_replacement_of == NULL
+                && jitterc_specialized_instruction_is_call_related (sins)),
+           comma,
+           sins->name);
+    }
+  EMIT("  };\n");
+  EMIT("\n");
+  EMIT("#endif // #ifdef JITTER_HAVE_DEFECT_REPLACEMENT\n");
   EMIT("\n\n");
   jitterc_fclose (f);
 }
@@ -1293,10 +1374,10 @@ jitterc_emit_specializer (const struct jitterc_vm *vm)
        jitterc_mangle ("!INVALID"));
   EMIT("    jitter_fatal (\"specialization failed: %%s\", ins->meta_instruction->name);\n");
   EMIT("\n");
-  EMIT("#ifdef JITTER_HAVE_PATCH_IN\n");
+  EMIT("#ifdef JITTER_HAVE_DEFECT_REPLACEMENT\n");
   EMIT("  /* Replace the opcode with its non-defective counterpart. */\n");
-  EMIT("  opcode = vmprefix_defect_table [opcode];\n");
-  EMIT("#endif // #ifdef JITTER_HAVE_PATCH_IN\n");
+  EMIT("  opcode = vmprefix_replacement_table [opcode];\n");
+  EMIT("#endif // #ifdef JITTER_HAVE_DEFECT_REPLACEMENT\n");
   EMIT("\n");
   EMIT("  jitter_add_specialized_instruction_opcode (p, opcode);\n");
   EMIT("\n");
@@ -1311,6 +1392,7 @@ jitterc_emit_specializer (const struct jitterc_vm *vm)
       const struct jitterc_specialized_instruction* sins
         = ((const struct jitterc_specialized_instruction*)
            gl_list_get_at (vm->specialized_instructions, i));
+      EMIT("    /* %s. */\n", sins->name);
       EMIT("    case vmprefix_specialized_instruction_opcode_%s:\n", sins->mangled_name);
       const struct jitterc_instruction* uins = sins->instruction;
 
@@ -1318,26 +1400,35 @@ jitterc_emit_specializer (const struct jitterc_vm *vm)
          the last arguments of non-relocatable and caller instructions, which
          are special. */
       size_t residual_no = gl_list_size (sins->specialized_arguments);
-      bool is_non_relocatable
+      bool is_non_relocatable __attribute__ ((unused))
         = (   uins != NULL
            && sins->relocatability == jitterc_relocatability_non_relocatable);
-      bool is_caller
+      bool is_caller __attribute__ ((unused))
         = (   uins != NULL
            && uins->callerness == jitterc_callerness_caller);
-      if (is_non_relocatable || is_caller)
-        residual_no --;
+      bool is_callee __attribute__ ((unused))
+        = (   uins != NULL
+           && uins->calleeness == jitterc_calleeness_callee);
+      bool is_returning __attribute__ ((unused))
+        = (   uins != NULL
+           && uins->returningness == jitterc_returningness_returning);
+
       int j;
       for (j = 0; j < residual_no; j ++)
         {
+          EMIT("      /* j:%i residual_no:%i */\n", j, (int) residual_no);
           const struct jitterc_specialized_argument* sarg
             = ((const struct jitterc_specialized_argument*)
                gl_list_get_at (sins->specialized_arguments, j));
           if (! sarg->residual)
-            continue;
+            {
+              EMIT("      /* Argument %i (0-based, of %i) is non-residual */\n", j, (int) residual_no);
+              continue;
+            }
           switch (sarg->kind)
             {
             case jitterc_instruction_argument_kind_register:
-              EMIT("      /* A slow register is passed as a residual literal offset. */");
+              EMIT("      /* A slow register is passed as a residual literal offset. */\n");
               EMIT("      jitter_add_specialized_instruction_literal (p, VMPREFIX_SLOW_REGISTER_OFFSET(%c, ins->parameters[%i]->register_index));\n",
                    sarg->unspecialized->register_class_character, j);
               break;
@@ -1348,27 +1439,25 @@ jitterc_emit_specializer (const struct jitterc_vm *vm)
             case jitterc_instruction_argument_kind_fast_label:
               EMIT("      jitter_add_specialized_instruction_label_index (p, ins->parameters[%i]->label_as_index);\n", j);
               break;
+            case jitterc_instruction_argument_kind_return_address:
+              EMIT("      /* Non-relocatable or callee [[?????FIXME: Do I want this?????]] instruction. \n");
+              EMIT("         Special return-address parameter whose correct value will be patched in at specialization time. */\n");
+              EMIT("      jitter_add_specialized_instruction_literal (p, -1);\n");
+              break;
             default:
               jitter_fatal ("jitterc_emit_specializer: unhandled kind");
             }
         }
 
-      /* Add one more residual argument in case of a non-relocatable
-         instruction, as a placeholder for the return label. */
-      if (is_non_relocatable)
-        {
-          EMIT("      /* Non-relocatable instruction: make place for the return label,\n");
-          EMIT("         whose correct value will be patched in at specialization time. */\n");
-          EMIT("      jitter_add_specialized_instruction_literal (p, -1);\n");
-        }
-
-      /* Add one more residual argument in case of a caller instruction, as a
-         placeholder for the return label. */
+      /* Only emit a comment, for the time being.  This should become more
+         useful later. */
       if (is_caller)
         {
-          EMIT("      /* Caller instruction: make place for the return address,\n");
-          EMIT("         whose correct value will be patched in at specialization time. */\n");
-          EMIT("      jitter_add_specialized_instruction_literal (p, -1);\n");
+          EMIT("      /* This is a caller instruction. */\n");
+        }
+      if (is_callee)
+        {
+          EMIT("      /* This is a callee instruction. */\n");
         }
 
       /* Done handling sins . */
@@ -1398,25 +1487,51 @@ jitterc_emit_upper_case (FILE *f, const char *lower_case_string)
     EMIT("%c", toupper (* p));
 }
 
-/* Emit the CPP definition of a stack operation, to be called by user code
-   within instructions.  The generated macro is a wrapper around a stack
-   operation defined in jitter/jitter-stack.h . */
+/* Emit the CPP definition of a stack operation, to be called by user code --
+   within instructions if executor is non-false, out of VM code otherwise.
+   The versions meant to be used out of VM code have an additional first
+   argument, a VM state pointer.
+   The generated macro is a wrapper around a stack operation defined in
+   jitter/jitter-stack.h . */
 static void
 jitterc_emit_stack_operation_definition (FILE *f,
+                                         bool executor,
                                          const struct jitterc_stack *stack,
                                          const char *lower_case_operation_name,
                                          size_t arity)
 {
   assert (stack->implementation == jitterc_stack_implementation_tos
           || stack->implementation == jitterc_stack_implementation_no_tos);
-  EMIT("/* Wrapper definition of the %s operation for the %s stack \"%s\". */\n",
+  EMIT("/* Wrapper definition of the %s operation for the\n"
+       "   %s stack \"%s\". */\n",
        lower_case_operation_name,
        ((stack->implementation == jitterc_stack_implementation_tos)
         ? "TOS-optimized" : "non-TOS-optimized"),
        stack->lower_case_long_name);
-  EMIT("#define JITTER_");
+  char *prefix = executor ? "JITTER_" : "VMPREFIX_";
+  if (executor)
+    {
+      /* If in the executor undefine the external version, and define the
+         VMPREFIX version as an alias. */
+      EMIT("#undef JITTER_");
+      jitterc_emit_upper_case (f, lower_case_operation_name);
+      EMIT("_%s", stack->upper_case_long_name);
+      EMIT("\n");
+      EMIT("#undef VMPREFIX_");
+      jitterc_emit_upper_case (f, lower_case_operation_name);
+      EMIT("_%s", stack->upper_case_long_name);
+      EMIT("\n");
+      EMIT("#define VMPREFIX_");
+      jitterc_emit_upper_case (f, lower_case_operation_name);
+      EMIT("_%s /* The preferred name. */ \\\n  JITTER_", stack->upper_case_long_name);
+      jitterc_emit_upper_case (f, lower_case_operation_name);
+      EMIT("_%s\n", stack->upper_case_long_name);
+    }
+  EMIT("#define %s", prefix);
   jitterc_emit_upper_case (f, lower_case_operation_name);
   EMIT("_%s(", stack->upper_case_long_name);
+  if (! executor)
+    EMIT("state_p%s", (arity != 0) ? ", " : "");
   int i;
   for (i = 0; i < arity; i ++)
     EMIT("x%i%s", i, i != (arity - 1) ? ", ": "");
@@ -1425,54 +1540,83 @@ jitterc_emit_stack_operation_definition (FILE *f,
   EMIT(")  \\\n");
   EMIT("  JITTER_STACK_%s_", optimization_suffix);
   jitterc_emit_upper_case (f, lower_case_operation_name);
-  EMIT("(%s, jitter_state_runtime. , %s", stack->c_type,
+  EMIT(" (%s,  \\\n    %s /* not an error */,  \\\n    %s  \\\n    ",
+       stack->c_type,
+       (executor
+        ? "jitter_state_runtime."
+        : "(state_p)->vmprefix_state_runtime."),
        stack->lower_case_long_name);
   for (i = 0; i < arity; i ++)
     EMIT(", x%i", i);
-  EMIT(")\n\n");
+  EMIT(")\n");
 }
 
 /* Emit CPP definitions for stack operations, for every stack of the pointed
-   VM. */
+   VM.  About the executor parameter see the comment before
+   jitterc_emit_stack_operation_definition . */
 static void
-jitterc_emit_stack_operation_definitions (FILE *f, const struct jitterc_vm *vm)
+jitterc_emit_stack_operation_definitions (FILE *f, const struct jitterc_vm *vm,
+                                          bool executor)
 {
+  if (executor)
+    {
+      EMIT("/* The following stack operations (without the initial state\n");
+      EMIT("   argument) can be used inside instruction code blocks.\n");
+      EMIT("   Notice that macros with the same \"VMPREFIX_\" names are\n");
+      EMIT("   defined in the generated header to be used out of VM code,\n");
+      EMIT("   but those alternative definitions have an additional first\n");
+      EMIT("   argument, a VM state pointer. */\n\n");
+    }
+  else
+    {
+      EMIT("/* Stack operations.\n");
+      EMIT(" * ************************************************************************** */\n\n");
+      EMIT("/* The following stack operations (with the initial state\n");
+      EMIT("   pointer argument) can be used *out* of instruction code\n");
+      EMIT("   blocks, in non-VM code.\n");
+      EMIT("   Macros with the same names are available from instruction\n");
+      EMIT("   code blocks, but those alternative definitions lack the first\n");
+      EMIT("   argument: the state they operate on is always the current\n");
+      EMIT("   state -- in particular, its runtime. */\n\n");
+    }
+
   int i; char *comma __attribute__ ((unused));
   FOR_LIST(i, comma, vm->stacks)
     {
       const struct jitterc_stack *stack = gl_list_get_at (vm->stacks, i);
-      jitterc_emit_stack_operation_definition (f, stack, "top", 0);
-      jitterc_emit_stack_operation_definition (f, stack, "under_top", 0);
-      jitterc_emit_stack_operation_definition (f, stack, "at_depth", 1);
-      jitterc_emit_stack_operation_definition (f, stack, "at_nonzero_depth", 1);
-      jitterc_emit_stack_operation_definition (f, stack, "set_at_depth", 2);
-      jitterc_emit_stack_operation_definition (f, stack, "set_at_nonzero_depth", 2);
-      jitterc_emit_stack_operation_definition (f, stack, "push_unspecified", 0);
-      jitterc_emit_stack_operation_definition (f, stack, "push", 1);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "top", 0);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "under_top", 0);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "at_depth", 1);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "at_nonzero_depth", 1);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "set_at_depth", 2);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "set_at_nonzero_depth", 2);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "push_unspecified", 0);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "push", 1);
 
-      jitterc_emit_stack_operation_definition (f, stack, "drop", 0);
-      jitterc_emit_stack_operation_definition (f, stack, "dup", 0);
-      jitterc_emit_stack_operation_definition (f, stack, "swap", 0);
-      jitterc_emit_stack_operation_definition (f, stack, "quake", 0);
-      jitterc_emit_stack_operation_definition (f, stack, "over", 0);
-      jitterc_emit_stack_operation_definition (f, stack, "tuck", 0);
-      jitterc_emit_stack_operation_definition (f, stack, "nip", 0);
-      jitterc_emit_stack_operation_definition (f, stack, "rot", 0);
-      jitterc_emit_stack_operation_definition (f, stack, "mrot", 0);
-      jitterc_emit_stack_operation_definition (f, stack, "roll", 1);
-      jitterc_emit_stack_operation_definition (f, stack, "mroll", 1);
-      jitterc_emit_stack_operation_definition (f, stack, "slide", 2);
-      jitterc_emit_stack_operation_definition (f, stack, "whirl", 1);
-      jitterc_emit_stack_operation_definition (f, stack, "bulge", 1);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "drop", 0);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "dup", 0);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "swap", 0);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "quake", 0);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "over", 0);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "tuck", 0);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "nip", 0);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "rot", 0);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "mrot", 0);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "roll", 1);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "mroll", 1);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "slide", 2);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "whirl", 1);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "bulge", 1);
 
-      jitterc_emit_stack_operation_definition (f, stack, "height", 0);
-      jitterc_emit_stack_operation_definition (f, stack, "set_height", 1);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "height", 0);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "set_height", 1);
 
-      jitterc_emit_stack_operation_definition (f, stack, "reverse", 1);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "reverse", 1);
 
-      jitterc_emit_stack_operation_definition (f, stack, "unary", 1);
-      jitterc_emit_stack_operation_definition (f, stack, "binary", 1); // Not a mistake.
+      jitterc_emit_stack_operation_definition (f, executor, stack, "unary", 1);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "binary", 1); // Not a mistake.
     }
+  EMIT("\n");
 }
 
 /* Emit data structure declarations for VM stack backings.  This generates code
@@ -1515,12 +1659,15 @@ jitterc_emit_stack_runtime_declarations (FILE *f, const struct jitterc_vm *vm)
   EMIT("\n");
 }
 
-/* Emit initialization code for VM stacks.  This generates code within the VM
-   state initialization function. */
+/* Emit initialization code for VM stacks (if initialize is non-false), or reset
+   code otherwise.  This is intended for generating code within the VM state
+   initialisation or reset function. */
 static void
-jitterc_emit_stack_initializations (FILE *f, const struct jitterc_vm *vm)
+jitterc_emit_stack_initializations_or_resets (FILE *f,
+                                              const struct jitterc_vm *vm,
+                                              bool initialize)
 {
-  EMIT("  /* Initialize stack backings and stack runtime data structures, pointing\n");
+  EMIT("  /* Initialize stack backing and stack runtime data structures, pointing\n");
   EMIT("     to memory from the backings. */\n");
   int i; char *comma __attribute__ ((unused));
   FOR_LIST(i, comma, vm->stacks)
@@ -1541,7 +1688,7 @@ jitterc_emit_stack_initializations (FILE *f, const struct jitterc_vm *vm)
       int guard_underflow = stack->guard_underflow;
       int guard_overflow = stack->guard_overflow;
       char element_pointer_name [121];
-      if (c_initial_value != NULL)
+      if (initialize && c_initial_value != NULL)
         {
           char element_name [100];
           sprintf (element_name,
@@ -1553,14 +1700,39 @@ jitterc_emit_stack_initializations (FILE *f, const struct jitterc_vm *vm)
       else
         sprintf (element_pointer_name, "NULL");
 
-      EMIT("  jitter_stack_initialize_%s_backing(& jitter_state_backing->jitter_stack_%s_backing,\n",
-           optimization_lower_case_suffix, stack->lower_case_long_name);
-      EMIT("                                      sizeof (%s),\n",
-           stack->c_type);
-      EMIT("                                      %lu,\n", element_no);
-      EMIT("                                      %s,\n", element_pointer_name);
-      EMIT("                                      %i,\n", guard_underflow);
-      EMIT("                                      %i);\n", guard_overflow);
+      if (initialize)
+        {
+          EMIT("  /* Make the stack backing for %s . */\n",
+               stack->lower_case_long_name);
+          EMIT("  jitter_stack_initialize_%s_backing(& jitter_state_backing->jitter_stack_%s_backing,\n",
+             optimization_lower_case_suffix, stack->lower_case_long_name);
+          EMIT("                                      sizeof (%s),\n",
+               stack->c_type);
+          EMIT("                                      %lu,\n", element_no);
+          EMIT("                                      %s,\n", element_pointer_name);
+          EMIT("                                      %i,\n", guard_underflow);
+          EMIT("                                      %i);\n", guard_overflow);
+        }
+      else /* We are generating a reset, not initialisation, function. */
+        {
+          if (stack->c_initial_value)
+            {
+              /* The stack requires element initialisation. */
+              EMIT("  /* The stack backing for %s already exists.  Just reset\n",
+                   stack->lower_case_long_name);
+              EMIT("     it, which means re-initialise its backing memory. */\n");
+              EMIT("  jitter_stack_reset_backing\n");
+              EMIT("     (& jitter_state_backing->jitter_stack_%s_backing);\n",
+                   stack->lower_case_long_name);
+            }
+          else
+            {
+              /* The stack does not require element initialisation. */
+              EMIT("  /* The stack backing for %s already exists, and does\n",
+                   stack->lower_case_long_name);
+              EMIT("     not require element initialisation. */\n");
+            }
+        }
       EMIT("  JITTER_STACK_%s_INITIALIZE(%s, jitter_state_runtime-> ,\n",
            optimization_upper_case_suffix, stack->c_type);
       EMIT("                              %s, jitter_state_backing->jitter_stack_%s_backing);\n",
@@ -1592,14 +1764,8 @@ jitterc_emit_stack_finalizations (FILE *f, const struct jitterc_vm *vm)
 static void
 jitterc_emit_register_initializations (FILE *f, const struct jitterc_vm *vm)
 {
-  EMIT("  /* Initialise the link register, if present. */\n");
-  EMIT("#if    defined(JITTER_DISPATCH_SWITCH)                   \\\n");
-  EMIT("    || defined(JITTER_DISPATCH_DIRECT_THREADING)         \\\n");
-  EMIT("    || defined(JITTER_DISPATCH_MINIMAL_THREADING)        \\\n");
-  EMIT("    || (   defined(JITTER_DISPATCH_NO_THREADING)         \\\n");
-  EMIT("        && ! defined(JITTER_MACHINE_SUPPORTS_PROCEDURE))\n");
-  EMIT("  jitter_state_runtime->_jitter_link = NULL;\n");
-  EMIT("#endif\n");
+  EMIT("  /* Initialise the link register. */\n");
+  EMIT("  jitter_state_runtime->_jitter_link.label = NULL;\n");
   EMIT("\n");
 
   int i; char *comma __attribute__ ((unused));
@@ -1623,6 +1789,12 @@ jitterc_emit_register_initializations (FILE *f, const struct jitterc_vm *vm)
         EMIT("  /* No need to initialise %c-class fast registers. */\n", rc->letter);
       EMIT("\n");
     }
+
+  EMIT("  /* Initialise slow registers. */\n");
+  EMIT("  vmprefix_initialize_slow_registers\n");
+  EMIT("     (jitter_state->vmprefix_state_backing.jitter_array,\n");
+  EMIT("      0 /* overwrite any already existing rank */,\n");
+  EMIT("      jitter_state_backing->jitter_slow_register_no_per_class);\n");
   EMIT("\n");
 }
 
@@ -1661,6 +1833,17 @@ jitterc_emit_state_h (const struct jitterc_vm *vm)
   EMIT("     reallocated.  This number is always the same for evey class. */\n");
   EMIT("  jitter_int jitter_slow_register_no_per_class;\n");
   EMIT("\n");
+  EMIT("  /* The initial VM program point.  This is not part of the runtime,\n");
+  EMIT("     in fact with no-threading dispatch there is not even a copy of this\n");
+  EMIT("     datum being kept up to date during execution, anywhere; this field\n");
+  EMIT("     serves to keep track of where execution should *continue* from at the\n");
+  EMIT("     next execution.  It will become more useful when debubbing is\n");
+  EMIT("     implemented. */\n");
+  EMIT("  vmprefix_program_point initial_program_point;\n");
+  EMIT("\n");
+  EMIT("  /* The exit status. */\n");
+  EMIT("  enum vmprefix_exit_status exit_status;\n");
+  EMIT("\n");
 
   /* Emit declarations for stack backing data structures. */
   jitterc_emit_stack_backing_declarations (f, vm);
@@ -1674,16 +1857,19 @@ jitterc_emit_state_h (const struct jitterc_vm *vm)
   EMIT("/* The VM state runtime data structure, using memory from the VM state backing. */\n");
   EMIT("struct vmprefix_state_runtime\n");
   EMIT("{\n");
-  EMIT("#if    defined(JITTER_DISPATCH_SWITCH)                   \\\n");
-  EMIT("    || defined(JITTER_DISPATCH_DIRECT_THREADING)         \\\n");
-  EMIT("    || defined(JITTER_DISPATCH_MINIMAL_THREADING)        \\\n");
-  EMIT("    || (   defined(JITTER_DISPATCH_NO_THREADING)         \\\n");
-  EMIT("        && ! defined(JITTER_MACHINE_SUPPORTS_PROCEDURE))\n");
   EMIT("  /* A link register for branch-and-link operations.  This field must *not*\n");
   EMIT("     be accessed from user code, as it may not exist on all dispatching\n");
-  EMIT("     models.  It is only used internally for JITTER_PROCEDURE_PROLOG. */\n");
-  EMIT("  const union jitter_word *_jitter_link;\n");
-  EMIT("#endif\n");
+  EMIT("     models.  It is only used internally for JITTER_PROCEDURE_PROLOG .\n");
+  EMIT("\n");
+  EMIT("     With no-threading on arthitectures supporting procedures some\n");
+  EMIT("     hardware-dependent resource such as a designed register (general-\n");
+  EMIT("     purpose or not, reserved or not) or a stack location will be used\n");
+  EMIT("     instead of this, normally; however even with no-threading we need\n");
+  EMIT("     this for defect replacement: if any call-related instruction turns\n");
+  EMIT("     out to be defective they will all be replaced in order to keep their\n");
+  EMIT("     calling conventions compatible, and the replacement will use\n");
+  EMIT("     this. */\n");
+  EMIT("  union jitter_word _jitter_link;\n");
   EMIT("\n");
   EMIT("  /* With recent GCC versions (as of Summer 2017) the *last* declared fields\n");
   EMIT("     are the most likely to be allocated in registers; this is why VM registers\n");
@@ -1725,8 +1911,11 @@ jitterc_emit_state_h (const struct jitterc_vm *vm)
   EMIT("  struct vmprefix_state_backing vmprefix_state_backing;\n");
   EMIT("\n");
   EMIT("  /* Each state data structure contains its runtime data structures,\n");
-  EMIT("     to be allocated to registers as long as possible, and using\n");
-  EMIT("     memory from the backing. */\n");
+  EMIT("     which the compiler will try to keep in registers as far as\n");
+  EMIT("     possible.  Runtime structures are allowed to point to memory\n");
+  EMIT("     from the backing (which is particularly important for stacks),\n");
+  EMIT("     but the backing itself is not copied into registers at\n");
+  EMIT("     execution time. */\n");
   EMIT("  struct vmprefix_state_runtime vmprefix_state_runtime;\n");
   EMIT("};\n");
 
@@ -1739,8 +1928,11 @@ jitterc_emit_state (const struct jitterc_vm *vm)
 {
   FILE *f = jitterc_fopen_a_basename (vm, "vm1.c");
 
+  /* Generate initialisation function. */
   EMIT("void\n");
-  EMIT("vmprefix_state_initialize (struct vmprefix_state *jitter_state)\n");
+  EMIT("vmprefix_state_initialize_with_slow_registers\n");
+  EMIT("   (struct vmprefix_state *jitter_state,\n");
+  EMIT("    jitter_uint jitter_slow_register_no_per_class)\n");
   EMIT("{\n");
   EMIT("  struct vmprefix_state_backing * const jitter_state_backing\n");
   EMIT("    __attribute__ ((unused))\n");
@@ -1749,9 +1941,9 @@ jitterc_emit_state (const struct jitterc_vm *vm)
   EMIT("    __attribute__ ((unused))\n");
   EMIT("    = & jitter_state->vmprefix_state_runtime;\n");
   EMIT("\n");
-
-  EMIT("  /* Initialize the Array. */\n");
-  EMIT("  jitter_state_backing->jitter_slow_register_no_per_class = 0; // FIXME: raise?\n");
+  EMIT("  /* Initialize The Array. */\n");
+  EMIT("  jitter_state_backing->jitter_slow_register_no_per_class\n");
+  EMIT("    = jitter_slow_register_no_per_class;\n");
   EMIT("  jitter_state_backing->jitter_array\n");
   EMIT("    = jitter_xmalloc (VMPREFIX_ARRAY_SIZE(jitter_state_backing\n");
   EMIT("                         ->jitter_slow_register_no_per_class));\n");
@@ -1759,27 +1951,30 @@ jitterc_emit_state (const struct jitterc_vm *vm)
   EMIT("  /* Initialize special-purpose data. */\n");
   EMIT("  vmprefix_initialize_special_purpose_data (VMPREFIX_ARRAY_TO_SPECIAL_PURPOSE_STATE_DATA (jitter_state_backing->jitter_array));\n");
   EMIT("\n");
-
-  /* Emit initialisation code for stacks and registers. */
-  jitterc_emit_stack_initializations (f, vm);
+  EMIT("  /* Set the initial program point to an invalid value, for defensiveness. */\n");
+  EMIT("  jitter_state_backing->initial_program_point = NULL;\n");
+  EMIT("\n");
+  EMIT("  /* Set the initial exit status. */\n");
+  EMIT("  jitter_state_backing->exit_status\n");
+  EMIT("    = vmprefix_exit_status_never_executed;\n");
+  EMIT("\n");
+  jitterc_emit_stack_initializations_or_resets (f, vm, true);
   jitterc_emit_register_initializations (f, vm);
-
+  EMIT("  /* Link this new state to the list of states. */\n");
+  EMIT("  JITTER_LIST_LINK_LAST (vmprefix_state, links, & vmprefix_vm->states, jitter_state);\n");
+  EMIT("\n");
   EMIT("  /* User code for state initialization. */\n");
   EMIT("%s\n", vm->state_initialization_c_code);
   EMIT("  /* End of the user code for state initialization. */\n");
   EMIT("\n");
-  EMIT("  /* Link this new state to the list of states. */\n");
-  EMIT("  JITTER_LIST_LINK_LAST (vmprefix_state, links, & vmprefix_vm->states, jitter_state);\n");
-  EMIT("\n");
   EMIT("}\n");
   EMIT("\n");
 
+  /* Generate reset function. */
   EMIT("void\n");
-  EMIT("vmprefix_state_finalize (struct vmprefix_state *jitter_state)\n");
+  EMIT("vmprefix_state_reset\n");
+  EMIT("   (struct vmprefix_state *jitter_state)\n");
   EMIT("{\n");
-  EMIT("  /* Unlink this new state from the list of states. */\n");
-  EMIT("  JITTER_LIST_UNLINK (vmprefix_state, links, & vmprefix_vm->states, jitter_state);\n");
-  EMIT("\n");
   EMIT("  struct vmprefix_state_backing * const jitter_state_backing\n");
   EMIT("    __attribute__ ((unused))\n");
   EMIT("    = & jitter_state->vmprefix_state_backing;\n");
@@ -1787,17 +1982,62 @@ jitterc_emit_state (const struct jitterc_vm *vm)
   EMIT("    __attribute__ ((unused))\n");
   EMIT("    = & jitter_state->vmprefix_state_runtime;\n");
   EMIT("\n");
-  EMIT("  /* Finalize special-purpose data. */\n");
-  EMIT("  vmprefix_finalize_special_purpose_data (VMPREFIX_ARRAY_TO_SPECIAL_PURPOSE_STATE_DATA (jitter_state_backing->jitter_array));\n");
+  EMIT("  /* No need to touch The Array, which already exists. */\n");
+  EMIT("  /* No need to touch special-purpose data, which already exist. */\n");
   EMIT("\n");
-
-  /* Emit finalization for stacks. */
-  jitterc_emit_stack_finalizations (f, vm);
+  EMIT("  /* Set the initial program point to an invalid value, for defensiveness. */\n");
+  EMIT("  jitter_state_backing->initial_program_point = NULL;\n");
   EMIT("\n");
-
+  EMIT("  /* Set the initial exit status. */\n");
+  EMIT("  jitter_state_backing->exit_status\n");
+  EMIT("    = vmprefix_exit_status_never_executed;\n");
+  EMIT("\n");
+  jitterc_emit_stack_initializations_or_resets (f, vm, false);
+  jitterc_emit_register_initializations (f, vm);
+  EMIT("\n");
+  EMIT("  /* No need to touch links within the global list of states:\n");
+  EMIT("     this state already exists and is already linked. */\n");
+  EMIT("\n");
+  if (vm->state_reset_c_code != NULL)
+    {
+      EMIT("  /* User code for state reset. */\n");
+      EMIT("%s\n", vm->state_reset_c_code);
+      EMIT("  /* End of the user code for state reset. */\n");
+    }
+  else
+    {
+      EMIT("  /* The user supplied no explicit code for state reset: use\n");
+      EMIT("     finalisation code followed by initialisation code. */\n");
+      EMIT("/* User finalisation. */\n{\n%s\n}\n", vm->state_finalization_c_code);
+      EMIT("/* User Initialisation. */{\n%s\n}\n", vm->state_initialization_c_code);
+      EMIT("  /* End of the user code for state finalisation followed by\n");
+      EMIT("     initialisation. */\n");
+    }
+  EMIT("}\n");
+  EMIT("\n");
+  
+  /* Generate finalisation function. */
+  EMIT("void\n");
+  EMIT("vmprefix_state_finalize (struct vmprefix_state *jitter_state)\n");
+  EMIT("{\n");
+  EMIT("  struct vmprefix_state_backing * const jitter_state_backing\n");
+  EMIT("    __attribute__ ((unused))\n");
+  EMIT("    = & jitter_state->vmprefix_state_backing;\n");
+  EMIT("  struct vmprefix_state_runtime * const jitter_state_runtime\n");
+  EMIT("    __attribute__ ((unused))\n");
+  EMIT("    = & jitter_state->vmprefix_state_runtime;\n");
+  EMIT("\n");
   EMIT("  /* User code for state finalization. */\n");
   EMIT("%s\n", vm->state_finalization_c_code);
   EMIT("  /* End of the user code for state finalization. */\n");
+  EMIT("\n");
+  jitterc_emit_stack_finalizations (f, vm);
+  EMIT("\n");
+  EMIT("  /* Unlink this state from the list of states. */\n");
+  EMIT("  JITTER_LIST_UNLINK (vmprefix_state, links, & vmprefix_vm->states, jitter_state);\n");
+  EMIT("\n");
+  EMIT("  /* Finalize special-purpose data. */\n");
+  EMIT("  vmprefix_finalize_special_purpose_data (VMPREFIX_ARRAY_TO_SPECIAL_PURPOSE_STATE_DATA (jitter_state_backing->jitter_array));\n");
   EMIT("\n");
   EMIT("  /* Finalize the Array. */\n");
   EMIT("  free ((void *) jitter_state_backing->jitter_array);\n");
@@ -2020,6 +2260,37 @@ jitterc_emit_register_access_macros_h (const struct jitterc_vm *vm)
   EMIT("#define VMPREFIX_MAX_RESIDUAL_ARITY  %i\n\n", (int)vm->max_residual_arity);
 
   jitterc_fclose (f);
+}
+
+
+
+
+/* Executor generation: poisoning.
+ * ************************************************************************** */
+
+/* Begin the part where local poisoning definitions will be generated; see
+   the local poisoning section in jitter/jitter-cpp.h . */
+static void
+jitterc_open_local_poisoning (FILE *f)
+{
+  EMIT("/* Local poisoning will be in effect.  Avoid warnings. */\n");
+  EMIT("# pragma GCC diagnostic push\n");
+  EMIT("# pragma GCC diagnostic ignored \"-Wpragmas\"\n");
+  EMIT("# pragma GCC diagnostic ignored \"-Wunknown-warning-option\"\n");
+  EMIT("# pragma GCC diagnostic ignored \"-Wbuiltin-macro-redefined\"\n");
+  EMIT("# pragma GCC diagnostic ignored \"-Wbuiltin-declaration-mismatch\"\n");
+  EMIT("\n");
+}
+
+/* Close the part where local poisoning definitions are handled.  This is to
+   be called after unpoisoning. */
+static void
+jitterc_close_local_poisoning (FILE *f)
+{
+  EMIT("/* Local poisoning is no longer in effect.  Revert to the previous\n");
+  EMIT("   state of warnings. */\n");
+  EMIT("# pragma GCC diagnostic pop\n");
+  EMIT("\n");
 }
 
 
@@ -2334,6 +2605,8 @@ jitterc_emit_executor_sarg_definition
              index, (long)sarg->nonresidual_literal->value.fixnum);
       break;
 
+    case jitterc_instruction_argument_kind_return_address:
+      /* Fall thru. */
     case jitterc_instruction_argument_kind_label:
       EMIT("    /* The %ith argument is a %sresidual label. */\n",
            index, sarg->residual ? "" : "non");
@@ -2527,9 +2800,9 @@ jitter_fast_branch_macros []
       "_IF_NEVER_UNARY",
       "_IF_ALWAYS_UNARY",
       */
-      /* Here the underscore is intentional: even the name with (one) initial
-         underscore is defined conditionally, only in caller instructions. */
-      "_AND_LINK_INTERNAL"
+      /* /\* Here the underscore is intentional: even the name with (one) initial */
+      /*    underscore is defined conditionally, only in caller instructions. *\/ */
+      /* "_AND_LINK_INTERNAL" */
     };
 
 /* How many strings jitter_fast_branch_macros has. */
@@ -2555,38 +2828,387 @@ jitter_fast_branching_operation_macro_no
 = sizeof (jitter_fast_branching_operation_macros)
   / sizeof (jitter_fast_branching_operation_macros [0]);
 
-/* Emit macro definitions for fast branching.  These are defined in a different
-   way for replacement and non-replacement specialized instructions. */
+/* Emit a definition for JITTER_COMPUTED_GOTO; if use_native_where_available
+   use the native version where available; otherwise always use the fallback
+   version. */
 static void
-jitterc_emit_executor_fast_branch_definitions
-  (FILE *f, const struct jitterc_vm *vm,
-   const struct jitterc_specialized_instruction* sins)
+jitterc_emit_computed_goto_definition (FILE *f,
+                                       const struct jitterc_vm *vm,
+                                       bool use_native_where_available)
 {
+  if (use_native_where_available)
+    {
+      EMIT("#  undef JITTER_COMPUTED_GOTO\n");
+      EMIT("#  if defined (JITTER_COMPUTED_GOTO_IN_ASM)\n");
+      EMIT("#    define JITTER_COMPUTED_GOTO JITTER_COMPUTED_GOTO_IN_ASM\n");
+      EMIT("#  else /* JITTER_COMPUTED_GOTO_IN_ASM is not available. */\n");
+      EMIT("#    define JITTER_COMPUTED_GOTO JITTER_COMPUTED_GOTO_FALLBACK\n");
+      EMIT("#  endif /* if defined (JITTER_COMPUTED_GOTO_IN_ASM) */\n");
+    }
+  else
+    {
+      EMIT("#  undef JITTER_COMPUTED_GOTO\n");
+      EMIT("#  define JITTER_COMPUTED_GOTO JITTER_COMPUTED_GOTO_FALLBACK\n");
+    }
+}
+
+/* Emit macro definitions for use in the pointed specialised instruction.
+   Poison the identifiers which are not supposed to be used, so that the user
+   receives a clear error message in case she uses them by mistake. */
+static void
+jitterc_emit_executor_definitions (FILE *f,
+                                   const struct jitterc_vm *vm,
+                                   const struct jitterc_specialized_instruction
+                                   * sins)
+{
+  /* From this point we can use local poisoning. */
+  jitterc_open_local_poisoning (f);
+
   bool is_replacement = (sins->is_replacement_of != NULL);
+
+  struct jitterc_instruction* uins = sins->instruction;
+  bool is_relocatable
+    = (sins->relocatability == jitterc_relocatability_relocatable);
+  bool is_fast_branching = uins->has_fast_labels;
+  bool is_branching = (uins->branchingness == jitterc_branchingness_branching);
+  bool is_caller = (uins->callerness == jitterc_callerness_caller);
+  bool is_callee = (uins->calleeness == jitterc_calleeness_callee);
+  bool is_returning = (uins->returningness == jitterc_returningness_returning);
+
+  if (! is_relocatable)
+    {
+      EMIT("    /* This specialized instruction is non-relocatable.\n");
+      EMIT("       Its %i-th argument, a literal, is the return address where to jump\n",
+           (int) (gl_list_size (sins->specialized_arguments) - 1));
+      EMIT("       at the end, back to relocated code. */\n\n");
+    }
 
   if (is_replacement)
     EMIT("    /* This specialized instruction is a replacement. */\n");
   else
     EMIT("    /* This specialized instruction is not a replacement. */\n");
+  if (is_branching)
+    EMIT("    /* This specialized instruction is branching. */\n");
+  else
+    EMIT("    /* This specialized instruction is not branching. */\n");
   int i;
   for (i = 0; i < jitter_fast_branch_macro_no; i ++)
     {
       const char *macro_name = jitter_fast_branch_macros [i];
       EMIT("#   undef JITTER_BRANCH_FAST%s\n", macro_name);
-      if (is_replacement)
-        EMIT("#   define JITTER_BRANCH_FAST%s JITTER_BRANCH%s\n", macro_name, macro_name);
-      else
-        EMIT("#   define JITTER_BRANCH_FAST%s _JITTER_BRANCH_FAST%s\n", macro_name, macro_name);
+      if (is_fast_branching)
+        {
+          if (is_replacement)
+            EMIT("#   define JITTER_BRANCH_FAST%s JITTER_BRANCH%s\n",
+                 macro_name, macro_name);
+          else
+            EMIT("#   define JITTER_BRANCH_FAST%s _JITTER_BRANCH_FAST%s\n",
+                 macro_name, macro_name);
+        }
     }
   for (i = 0; i < jitter_fast_branching_operation_macro_no; i ++)
     {
       const char *macro_name = jitter_fast_branching_operation_macros [i];
       EMIT("#   undef JITTER_%s_BRANCH_FAST_IF_OVERFLOW\n", macro_name);
-      if (is_replacement)
-        EMIT("#   define JITTER_%s_BRANCH_FAST_IF_OVERFLOW JITTER_%s_BRANCH_IF_OVERFLOW\n", macro_name, macro_name);
-      else
-        EMIT("#   define JITTER_%s_BRANCH_FAST_IF_OVERFLOW _JITTER_%s_BRANCH_FAST_IF_OVERFLOW\n", macro_name, macro_name);
+      if (is_fast_branching)
+        {
+          if (is_replacement)
+            EMIT("#   define JITTER_%s_BRANCH_FAST_IF_OVERFLOW JITTER_%s_BRANCH_IF_OVERFLOW\n", macro_name, macro_name);
+          else
+            EMIT("#   define JITTER_%s_BRANCH_FAST_IF_OVERFLOW _JITTER_%s_BRANCH_FAST_IF_OVERFLOW\n", macro_name, macro_name);
+        }
     }
+
+  if (! is_relocatable)
+    {
+      EMIT("    /* This specialized instruction is non-relocatable.\n");
+      EMIT("       Its %i-th argument, a literal, is the return address where to jump\n",
+           (int) (gl_list_size (sins->specialized_arguments) - 1));
+      EMIT("       at the end, back to relocated code. */\n\n");
+      assert (gl_list_size (sins->specialized_arguments) > 0);
+    }
+
+  /* if (is_relocatable) */
+  /*   { */
+  /*     EMIT("/\* This instruction is relocatable: use more efficient branches\n"); */
+  /*     EMIT("   which may generate defects. *\/\n"); */
+  /*     jitterc_emit_computed_goto_definition (f, vm, true); */
+  /*   } */
+  /* else */
+  /*   { */
+  /*     EMIT("/\* This instruction is non-relocatable: use branches which\n"); */
+  /*     EMIT("   cannot ever generate defects. *\/\n"); */
+  /*     jitterc_emit_computed_goto_definition (f, vm, false); */
+  /*   } */
+
+  if (is_caller)
+    {
+      if (! is_branching)
+        jitter_fatal ("%s: caller but not branching: this should never happen", sins->name);
+      EMIT("    /* This specialized instruction is a %sreplacement and a caller.\n",
+           is_replacement ? "" : "non-");
+      EMIT("       Its %i-th argument, a literal, is the return address where to jump\n",
+           (int) (gl_list_size (sins->specialized_arguments) - 1));
+      EMIT("       back after the procedure returns.  Branch-and-link\n");
+      EMIT("       functionality is enabled for this instruction. */\n");
+      assert (gl_list_size (sins->specialized_arguments) > 0);
+      if (is_relocatable)
+        {
+          EMIT("/* This instruction is relocatable: use more efficient branches\n");
+          EMIT("   which can generate defects. */\n");
+          EMIT("#   undef JITTER_BRANCH_AND_LINK\n");
+          EMIT("#   define JITTER_BRANCH_AND_LINK      _JITTER_BRANCH_AND_LINK\n");
+          EMIT("#   undef JITTER_BRANCH_AND_LINK_WITH\n");
+          EMIT("#   define JITTER_BRANCH_AND_LINK_WITH _JITTER_BRANCH_AND_LINK_WITH\n");
+          EMIT("#   undef JITTER_BRANCH_FAST_AND_LINK\n");
+          EMIT("#   define JITTER_BRANCH_FAST_AND_LINK _JITTER_BRANCH_FAST_AND_LINK\n\n");
+        }
+      else
+        {
+          EMIT("/* This instruction is non-relocatable: use branches which\n");
+          EMIT("   cannot ever generate defects. */\n");
+          EMIT("#   undef JITTER_BRANCH_AND_LINK\n");
+          EMIT("#   define JITTER_BRANCH_AND_LINK      _JITTER_BRANCH_AND_LINK_FALLBACK\n");
+          EMIT("#   undef JITTER_BRANCH_AND_LINK_WITH\n");
+          EMIT("#   define JITTER_BRANCH_AND_LINK_WITH _JITTER_BRANCH_AND_LINK_WITH_FALLBACK\n");
+          EMIT("#   undef JITTER_BRANCH_FAST_AND_LINK\n");
+          EMIT("#   define JITTER_BRANCH_FAST_AND_LINK _JITTER_BRANCH_AND_LINK_FALLBACK\n\n");
+        }
+    }
+  else
+    {
+      EMIT("    /* This specialized instruction is not a caller.  Undefine macros only\n");
+      EMIT("       visible in caller instructions. */\n");
+      EMIT("#   undef JITTER_BRANCH_AND_LINK\n");
+      EMIT("#   undef JITTER_BRANCH_AND_LINK_WITH\n");
+      EMIT("#   undef JITTER_BRANCH_FAST_AND_LINK\n\n");
+    }
+
+  if (is_returning)
+    {
+      if (! is_branching)
+        jitter_fatal ("%s: returning but not branching: this should never happen", sins->name);
+      if (is_relocatable)
+        {
+          EMIT("    /* This specialized instruction is returning, and relocatable. */\n");
+          EMIT("#   define JITTER_RETURN  _JITTER_RETURN\n\n");
+        }
+      else
+        {
+          EMIT("    /* This specialized instruction is returning, and non-relocatable. */\n");
+          EMIT("#   define JITTER_RETURN  _JITTER_RETURN_FALLBACK\n\n");
+        }
+    }
+  else
+    {
+      EMIT("    /* This specialized instruction is not returning.  Undefine macros only\n");
+      EMIT("       visible in returning instructions. */\n");
+      EMIT("#   undef JITTER_RETURN\n\n");
+    }
+
+  /* Define branch macros iff this instruction is branching. */
+  // FIXME: this is very ugly, and will become long.  Merge with jitterc_emit_computed_goto_definition above.
+  if (is_branching)
+    {
+      EMIT ("    /* This instructions is branching: define branch macros. */\n");
+      jitterc_emit_computed_goto_definition (f, vm, is_relocatable);
+      EMIT ("#   undef JITTER_BRANCH\n");
+      EMIT ("#   define JITTER_BRANCH         _JITTER_BRANCH\n");
+    }
+  else
+    {
+      EMIT ("    /* This instructions is not branching: undefine branch\n");
+      EMIT ("       macros so that they cannot be used by mistake. */\n");
+      EMIT ("#   undef JITTER_BRANCH\n");
+      EMIT ("#   undef JITTER_COMPUTED_GOTO\n");
+    }
+
+  /* Define the specialized instruction opcode and name as macros, to be
+     used in the body and, in case of fast labels, in the arguments. */
+  /* EMIT("#   define JITTER_SPECIALIZED_INSTRUCTION_OPCODE /\*good*\/      vmprefix_specialized_instruction_opcode_%s\n", */
+  /*      sins->mangled_name); */
+  // FIXME: sanity check to remove later: begin
+  if (sins->opcode == -1)
+    jitter_fatal ("the specialised instruction %s has no opcode yet", sins->name);
+  // FIXME: sanity check to remove later: end
+  EMIT("    /* This must be a literal and not the enum case, since\n"
+       "       it will be used in assembly as well. */\n"
+       "#   define JITTER_SPECIALIZED_INSTRUCTION_OPCODE       %i\n",
+       sins->opcode);
+  EMIT("#   define JITTER_SPECIALIZED_INSTRUCTION_NAME         %s\n",
+       sins->name);
+  EMIT("#   define JITTER_INSTRUCTION_NAME_AS_STRING \"%s\"\n",
+       jitter_escape_string (uins->name));
+  EMIT("#   define JITTER_SPECIALIZED_INSTRUCTION_NAME_AS_STRING \"%s\"\n",
+       jitter_escape_string (sins->name));
+  EMIT("#   define JITTER_SPECIALIZED_INSTRUCTION_MANGLED_NAME %s\n",
+       sins->mangled_name);
+  EMIT("\n");
+
+  /* Emit a macro definition for the specialized instruction residual arity. */
+  jitterc_emit_specialized_instruction_residual_arity_definition (f, sins);
+  EMIT("\n");
+
+  /* Emit macro definitions for specialized arguments, to be used in the body. */
+  jitterc_emit_sarg_definitions (f, sins);
+  EMIT("\n");
+
+  if (is_callee)
+    {
+      if (! is_callee)
+        jitter_fatal ("%s: callee but not branching: this should never happen", sins->name);
+      if (is_replacement)
+        {
+          EMIT("  /* This specialized instruction is a replacement callee. */\n");
+          EMIT("# undef JITTER_LINK\n");
+          EMIT("# define JITTER_LINK ((const void *) (jitter_state_runtime._jitter_link.label))\n");
+          EMIT("\n");
+        }
+      else
+        {
+          EMIT("  /* This specialized instruction is a non-replacement callee.\n");
+          EMIT("     Set the link pointer if needed... */\n");
+          EMIT("  union jitter_word _jitter_the_link;\n");
+          EMIT("  _JITTER_PROCEDURE_PROLOG (_jitter_the_link);\n");
+          EMIT("  const void *_jitter_the_link_label = _jitter_the_link.label;\n");
+          EMIT("  /* ...And make it accessible to this instruction thru a macro. */\n");
+          EMIT("# undef JITTER_LINK\n");
+          EMIT("# define JITTER_LINK _jitter_the_link_label\n");
+          EMIT("\n");
+        }
+    }
+
+  /* If this is a non-relocatable instruction and replication is enabled, the
+     actual code to replicate is trivial: just a jump; then comes the epilog.
+     After the epilog we can put the label where relocated code jumps to, which
+     is where control flows to in the other cases.  The actual user-specified
+     code for the VM instruction comes after the label. */
+  if (! is_relocatable)
+    {
+      EMIT("#ifdef JITTER_REPLICATE\n");
+      EMIT("/* When jumping to the non-relocatable part it is important not\n");
+      EMIT("   to use a fallback version of JITTER_COMPUTED_GOTO, in order to\n");
+      EMIT("   prevent GCC from tail-merging. */\n");
+      jitterc_emit_computed_goto_definition (f, vm, true);
+      EMIT("    /* Jump to non-relocatable code. */\n");
+      EMIT("    JITTER_COMPUTED_GOTO(JITTER_SPECIALIZED_INSTRUCTION_NON_RELOCATABLE_CODE_VARIABLE);\n");
+      EMIT("\n");
+      EMIT("    /* Here the residual arity is given as zero: it's too late to\n");
+      EMIT("       skip residuals, since we've already jumped and this code is\n");
+      EMIT("       unreachable.  The instruction pointer, if any, is advanced\n");
+      EMIT("       in the non-relocatable code. */\n");
+      EMIT("    JITTER_INSTRUCTION_EPILOG_(%s, %s, 0)\n", sins->name, sins->mangled_name);
+      EMIT("\n");
+      EMIT("    /* Relocated code will jump to this label in non-relocated code. */\n");
+      EMIT("  JITTER_SPECIALIZED_INSTRUCTION_NON_RELOCATABLE_CODE_LABEL:\n");
+      EMIT("    JITTER_COMMENT_IN_ASM_(\"%s non-relocatable code\");\n", sins->name);
+      EMIT("#endif // #ifdef JITTER_REPLICATE\n");
+    }
+
+  if (is_caller)
+    {
+      EMIT("#if defined(JITTER_DISPATCH_NO_THREADING)             \\\n");
+      EMIT("    && (! defined(JITTER_MACHINE_SUPPORTS_PROCEDURE)  \\\n");
+      EMIT("        || /* is this a replacement? */ %i)\n",
+           is_replacement ? 1 : 0);
+      EMIT("  /* We use the implicit argument at the end of the calling.\n");
+      EMIT("     instruction to discover the procedure return address. */\n");
+      EMIT("  const void * const _jitter_return_pointer\n"
+           "    __attribute__ ((unused)) = JITTER_ARGP%i;\n",
+           (int) (gl_list_size (sins->specialized_arguments) - 1));
+      EMIT("  /* And make it accessible to the user (who will usually call \n");
+      EMIT("     JITTER_BRANCH_AND_LINK) thru a nice macro. */\n");
+      EMIT("# define _JITTER_RETURN_ADDRESS _jitter_return_pointer\n");
+      EMIT("#endif\n\n");
+    }
+
+  /* Emit computed goto definition. */
+  EMIT("#ifdef JITTER_REPLICATE\n");
+  EMIT("/* Define JITTER_COMPUTED_GOTO for the user code of %s ;\n", sins->name);
+  EMIT("   This will be more efficient but potentially defective\n");
+  EMIT("   for relocatable instructions, or less efficient but safe for\n");
+  EMIT("   non-relocatable instruction.  Is this relocatable?  %s. */\n",
+       is_relocatable ? "yes" : "no");
+  jitterc_emit_computed_goto_definition (f, vm, is_relocatable);
+  EMIT("#endif // #ifdef JITTER_REPLICATE\n");
+}
+
+/* Emit #undef directives for macros which were valid for the given instruction,
+   and unpoison identifiers. */
+static void
+jitterc_emit_executor_undefinitions (FILE *f,
+                                     const struct jitterc_vm *vm,
+                                     const struct jitterc_specialized_instruction
+                                     * sins)
+{
+  const struct jitterc_instruction* uins = sins->instruction;
+  bool is_relocatable
+    = (sins->relocatability == jitterc_relocatability_relocatable);
+  bool is_caller = (uins->callerness == jitterc_callerness_caller);
+  bool is_callee = (uins->calleeness == jitterc_calleeness_callee);
+  //bool is_replacement = (sins->is_replacement_of != NULL);
+
+  /* Undefine argument macros.  Those will be redefined before the next
+     instruction as needed; it would be dangerous to leave previous
+     definitions active, because some instruction body coming after this
+     might reuse some old definition by mistake in case the new instruction
+     doesn't override it. */
+  EMIT("    /* Undefine the %s argument macros so they can't be used\n",
+       sins->name);
+  EMIT("       by mistake in the instruction body coming next. */\n");
+  int j; char *comma __attribute__ ((unused));
+  FOR_LIST(j, comma, sins->specialized_arguments)
+    {
+      EMIT("#   undef JITTER_SLOW_REGISTER_OFFSET%i\n", j);
+      EMIT("#   undef JITTER_ARG%i\n", j);
+      EMIT("#   undef JITTER_ARGN%i\n", j);
+      EMIT("#   undef JITTER_ARGU%i\n", j);
+      EMIT("#   undef JITTER_ARGP%i\n", j);
+      EMIT("#   undef JITTER_ARGF%i\n", j);
+    }
+
+  /* Undefine the specialized instruction opcode and name. */
+  EMIT("\n");
+  EMIT("#   undef JITTER_SPECIALIZED_INSTRUCTION_OPCODE\n");
+  EMIT("#   undef JITTER_SPECIALIZED_INSTRUCTION_NAME\n");
+  EMIT("#   undef JITTER_INSTRUCTION_NAME_AS_STRING\n");
+  EMIT("#   undef JITTER_SPECIALIZED_INSTRUCTION_NAME_AS_STRING\n");
+  EMIT("#   undef JITTER_SPECIALIZED_INSTRUCTION_MANGLED_NAME\n\n");
+
+  /* If we have defined a link, undefine it: it is only visible in its
+     instruction. */
+  if (is_callee)
+    {
+      EMIT("  /* Undefine the link macro. */\n");
+      EMIT("#   undef JITTER_LINK\n\n");
+    }
+  if (is_caller)
+    {
+      EMIT("#if    defined(JITTER_DISPATCH_NO_THREADING)         \\\n");
+      EMIT("    && ! defined(JITTER_MACHINE_SUPPORTS_PROCEDURE)\n");
+      EMIT("# undef _JITTER_RETURN_ADDRESS\n");
+      EMIT("#endif\n\n");
+    }
+
+  /* This is the instruction epilog only for relocatable instructions, and
+     when replication is disabled. */
+  if (! is_relocatable)
+    EMIT("#ifndef JITTER_REPLICATE\n");
+
+  /* The JITTER_INSTRUCTION_EPILOG_ macro may use JITTER_COMPUTED_GOTO
+     internally.  It is harmless to unconditionally define it here, after
+     the user code has been emitted already. */
+  jitterc_emit_computed_goto_definition (f, vm, true);
+
+  EMIT(" JITTER_INSTRUCTION_EPILOG_(%s, %s, JITTER_SPECIALIZED_INSTRUCTION_RESIDUAL_ARITY)\n",
+       sins->name, sins->mangled_name);
+  if (! is_relocatable)
+    EMIT("#endif // #ifndef JITTER_REPLICATE\n");
+  EMIT("#   undef JITTER_SPECIALIZED_INSTRUCTION_RESIDUAL_ARITY\n");
+  EMIT("\n");
+
+  /* Local poisoning is no longer in effect. */
+  jitterc_close_local_poisoning (f);
 }
 
 static void
@@ -2611,129 +3233,37 @@ jitterc_emit_executor_ordinary_specialized_instructions
       bool is_relocatable
         = (sins->relocatability == jitterc_relocatability_relocatable);
       bool is_caller = (uins->callerness == jitterc_callerness_caller);
-      bool is_callee = (uins->calleeness == jitterc_calleeness_callee);
+      //bool is_callee = (uins->calleeness == jitterc_calleeness_callee);
+      bool is_replacement = (sins->is_replacement_of != NULL);
 
+      EMIT("  /* Ordinary specialised instruction %s%s */\n",
+           sins->name, is_replacement ? " (replacement)" : "");
+      if (is_replacement)
+        {
+          EMIT ("  /* Omit this specialised instruction altogether unless\n");
+          EMIT ("     replacements are in fact supported in this\n");
+          EMIT ("     configuration. */\n");
+          EMIT ("#if defined (JITTER_HAVE_DEFECT_REPLACEMENT)\n");
+        }
       EMIT("  JITTER_INSTRUCTION_PROLOG_(%s, %s, %s)\n",
            sins->name, sins->mangled_name,
            (sins->hotness == jitterc_hotness_hot)
            ? "hot"
            : "cold");
-      EMIT("  {\n");
 
-      /* Emit definitions for fast-branch macros.  The definitions will be
-         different for replacement and non-replacement instructions. */
-      jitterc_emit_executor_fast_branch_definitions (f, vm, sins);
-
-      if (! is_relocatable)
-        {
-          EMIT("    /* This specialized instruction is non-relocatable.\n");
-          EMIT("       Its %i-th argument, a literal, is the return address where to jump\n",
-               (int) (gl_list_size (sins->specialized_arguments) - 1));
-          EMIT("       at the end, back to relocated code. */\n\n");
-        }
-
-      if (is_caller)
-        {
-          EMIT("    /* This specialized instruction is a caller.\n");
-          EMIT("       Its %i-th argument, a literal, is the return address where to jump\n",
-               (int) (gl_list_size (sins->specialized_arguments) - 1));
-          EMIT("       back after the procedure returns.  Branch-and-link\n");
-          EMIT("       functionality is enabled for this instruction. */\n");
-          EMIT("#   define JITTER_BRANCH_AND_LINK      JITTER_BRANCH_AND_LINK_INTERNAL\n");
-          EMIT("#   define JITTER_BRANCH_FAST_AND_LINK JITTER_BRANCH_FAST_AND_LINK_INTERNAL\n\n");
-        }
-
-      /* Define the specialized instruction opcode and name as macros, to be
-         used in the body and, in case of fast labels, in the arguments. */
-      EMIT("#   define JITTER_SPECIALIZED_INSTRUCTION_OPCODE       %i\n", i);
-      EMIT("#   define JITTER_SPECIALIZED_INSTRUCTION_NAME         %s\n\n",
+      /* Emit definitions for branch macros, argument access and the like.  Some
+         definitions will be different for replacement and non-replacement
+         instructions. */
+      EMIT("  { /* This block begins with definitions for %s . */\n",
            sins->name);
-      EMIT("#   define JITTER_SPECIALIZED_INSTRUCTION_MANGLED_NAME %s\n\n",
-           sins->mangled_name);
-
-      /* Emit a macro definition for the specialized instruction residual arity. */
-      jitterc_emit_specialized_instruction_residual_arity_definition (f, sins);
-      EMIT("\n");
-
-      /* Emit macro definitions for specialized arguments, to be used in the body. */
-      jitterc_emit_sarg_definitions (f, sins);
-      EMIT("\n");
-
-      if (is_callee)
-        {
-          EMIT("  /* This specialized instruction is a callee.  Set the link\n");
-          EMIT("     pointer if needed... */\n");
-          EMIT("  union jitter_word _jitter_the_link;\n");
-          EMIT("  _JITTER_PROCEDURE_PROLOG (_jitter_the_link);\n");
-          EMIT("  /* ...And make it accessible to this instruction, read-only,\n");
-          EMIT("     through a macro. */\n");
-          EMIT("  #define JITTER_LINK \\\n");
-          EMIT("    ((const void *) \\\n");
-          EMIT("     (_jitter_the_link.pointer))\n");
-          EMIT("\n");
-        }
-
-      /* If this is a non-relocatable instruction and replication is enabled,
-         the actual code to replicate is trivial: just a jump; then comes the
-         epilog.  After the epilog we can put the label where relocated code
-         jumps to, which is where control flows to in the other cases.  The
-         actual user-specified code for the VM instruction comes after the
-         label. */
-      if (! is_relocatable)
-        {
-          EMIT("#ifdef JITTER_REPLICATE\n");
-          EMIT("    /* Pretend to modify the non-relocatable code pointer, to force GCC to keep\n");
-          EMIT("       it on the stack rather than in read-only memory.  I had to do this to prevent\n");
-          EMIT("       a GCC 8 snapshot on SH from being too clever. */\n");
-          EMIT("    //JITTER_MARK_MEMORY_AS_SET_BY_ASSEMBLY(JITTER_SPECIALIZED_INSTRUCTION_NON_RELOCATABLE_CODE_VARIABLE);\n");
-          EMIT("    /* FIXME: no, it's not enough.  GCC 8 on SH keeps the stack pointer *offset*\n");
-          EMIT("       in memory, as a 16-bit constant; and since it reads it with a PC-relative\n");
-          EMIT("       load the relocated part crashes.\n");
-          EMIT("                 mov.w     .L1667,r0\n");
-          EMIT("                 mov.l     @(r0,r15),r1\n");
-          EMIT("                 jmp       @r1\n");
-          EMIT("       r15 is the stack pointer.  The constant at .L1667 is\n");
-          EMIT("          .L1667:\n");
-          EMIT("                 .short    232\n");
-          EMIT("       and this explains everything: 232 doesn't fit in a byte sign-extended, so it\n");
-          EMIT("       can't work as an immediate.  Shall I keep these code pointers as a single array?\n");
-          EMIT("       I don't know.  I'll switch to GNU C nested functions for non-relocatable code,\n");
-          EMIT("       but the problem will be the same. */\n");
-          EMIT("    /* Jump to non-relocatable code. */\n");
-          EMIT("    JITTER_COMPUTED_GOTO(JITTER_SPECIALIZED_INSTRUCTION_NON_RELOCATABLE_CODE_VARIABLE);\n");
-          EMIT("\n");
-          EMIT("    /* Here the residual arity is given as zero: it's too late to\n");
-          EMIT("       skip residuals, since we've already jumped and this code is\n");
-          EMIT("       unreachable.  The instruction pointer, if any, is advanced\n");
-          EMIT("       in the non-relocatable code. */\n");
-          EMIT("    JITTER_INSTRUCTION_EPILOG_(%s, %s, 0)\n", sins->name, sins->mangled_name);
-          EMIT("\n");
-          EMIT("    /* Relocated code will jump to this label in non-relocated code. */\n");
-          EMIT("  JITTER_SPECIALIZED_INSTRUCTION_NON_RELOCATABLE_CODE_LABEL:\n");
-          EMIT("    JITTER_COMMENT_IN_ASM_(\"%s non-relocatable code\");\n", sins->name);
-          EMIT("#endif // #ifdef JITTER_REPLICATE\n");
-        }
-
-      if (is_caller)
-        {
-          EMIT("#if    defined(JITTER_DISPATCH_NO_THREADING)         \\\n");
-          EMIT("    && ! defined(JITTER_MACHINE_SUPPORTS_PROCEDURE)\n");
-          EMIT("  /* We use the implicit atgument at the end of the calling.\n");
-          EMIT("     instruction to discover the procedure return address. */\n");
-          EMIT("  const void * _jitter_return_pointer = JITTER_ARGP%i;\n",
-               (int) (gl_list_size (sins->specialized_arguments) - 1));
-          EMIT("  /* And make it accessible to the user (who will usually call \n");
-          EMIT("     JITTER_BRANCH_AND_LINK) thru a nice macro. */\n");
-          EMIT("# define JITTER_RETURN_ADDRESS _jitter_return_pointer\n");
-          EMIT("#endif\n\n");
-        }
+      jitterc_emit_executor_definitions (f, vm, sins);
 
       /* Emit profiling instrumentation code for the instruction. */
       EMIT("#if defined (JITTER_PROFILE_SAMPLE)\n");
       EMIT("  JITTER_PROFILE_SAMPLE_UPDATE\n");
       EMIT("     (VMPREFIX_OWN_SPECIAL_PURPOSE_STATE_DATA,\n");
       EMIT("      JITTER_SPECIALIZED_INSTRUCTION_OPCODE);\n");
-      EMIT("  /* Force the compiler not move sample-profiling instrumentation\n");
+      EMIT("  /* Force the compiler not to move sample-profiling instrumentation\n");
       EMIT("     beyond this point; this way the actual user code is timed.\n");
       EMIT("     This is still not perfect, as residuals are materialised before\n");
       EMIT("     we arrive here, but should be adequate at least for slow VM\n");
@@ -2752,137 +3282,165 @@ jitterc_emit_executor_ordinary_specialized_instructions
       EMIT("      JITTER_SPECIALIZED_INSTRUCTION_OPCODE);\n");
       EMIT("#endif\n");
       EMIT("\n");
-      
+
       /* Emit the user C code for the beginning of every instruction, if any. */
+      EMIT("  {\n");
       jitterc_emit_user_c_code_to_stream
          (vm, f, vm->instruction_beginning_c_code, "instruction-beginning-c");
+      EMIT("  }\n");
 
-      /* Emit user-specified code for the instruction.  We have already opened a brace, so
-         another pair is not needed. */
-      EMIT("\n    /* User code for %s . */\n", sins->name);
-      EMIT("%s\n", uins->code);
+      if (is_replacement)
+        EMIT ("//#if 0\n"); // FIXME: a test! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+      EMIT ("  //fprintf (stderr, \"Executing instruction %%s..\\n\", \"%s\"); fflush (stderr);\n", sins->name);
+      if (is_replacement)
+        EMIT ("  //fprintf (stderr, \"Executing replacement instruction %%s..\\n\", \"%s\"); fflush (stderr);\n",
+              sins->name);
+      if (! is_relocatable)
+        EMIT ("  //fprintf (stderr, \"Executing non-relocatable instruction %%s with JITTER_SPECIALIZED_INSTRUCTION_WORD_NO=%%i..\\n\", \"%s\", (int) JITTER_SPECIALIZED_INSTRUCTION_WORD_NO); fflush (stderr);\n",
+              sins->name);
+      if (is_replacement && is_caller)
+        EMIT ("  //fprintf (stderr, \"Executing caller replcament: _JITTER_RETURN_ADDRESS is %%p..\\n\", _JITTER_RETURN_ADDRESS); fflush (stderr);\n");
+
+      // FIXME: remove after testing.
+      if (is_replacement)
+        {
+          EMIT ("#undef JITTER_THIS_IS_NOT_A_REPLACEMENT\n");
+          EMIT ("#undef JITTER_THIS_IS_A_REPLACEMENT\n");
+          EMIT ("#define JITTER_THIS_IS_A_REPLACEMENT 1\n");
+        }
+      else
+        {
+          EMIT ("#undef JITTER_THIS_IS_A_REPLACEMENT\n");
+          EMIT ("#undef JITTER_THIS_IS_NOT_A_REPLACEMENT\n");
+          EMIT ("#define JITTER_THIS_IS_NOT_A_REPLACEMENT 1\n");
+        }
+
+      /* Emit user-specified code for the instruction.  We have already opened a
+         brace, so another pair is not needed. */
+      EMIT("\n");
+      EMIT("    /* User code for %s . */\n", sins->name);
+      EMIT("  {\n");
+      //EMIT("%s\n", uins->code);
+      jitterc_emit_user_c_code_to_stream (vm, f, uins->code, "user code block");
+      EMIT("  }\n");
       EMIT("    /* End of the user code for %s . */\n\n", sins->name);
+
+      if (is_replacement)
+        EMIT ("  //fprintf (stderr, \"..Executed replacement instruction %%s\\n\", \"%s\");\n",
+              sins->name);
+      EMIT ("  //fprintf (stderr, \"..Executed instruction %%s\\n\", \"%s\");\n", sins->name);
+
+      if (is_replacement)
+        EMIT ("//#endif // #if 0\n"); // FIXME: a test! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       /* Emit the user C code for the end of every instruction, if any.  Notice
          that the code is not always reachable. */
+      EMIT("  {\n");
       jitterc_emit_user_c_code_to_stream (vm, f, vm->instruction_end_c_code,
                                           "instruction-end-c");
-
-      if (! is_relocatable)
-        {
-          EMIT("#ifdef JITTER_REPLICATE\n");
-          EMIT("    /* Advance the instruction pointer, if any, to skip residuals;\n");
-          EMIT("       then jump back to replicated code. */\n");
-          EMIT("    const void *_jitter_back_to_replicated_code_pointer = JITTER_ARGP%i;\n",
-               (int) (gl_list_size (sins->specialized_arguments) - 1));
-          EMIT("    JITTER_SKIP_RESIDUALS_;\n");
-          EMIT("    goto * _jitter_back_to_replicated_code_pointer;\n");
-          EMIT("#endif // #ifdef JITTER_REPLICATE\n\n");
-        }
-
-      /* Undefine macros only visible in caller instructions. */
-      if (is_caller)
-        {
-          EMIT("    /* Undefine macros only visible in caller instructions. */\n");
-          EMIT("#   undef JITTER_BRANCH_AND_LINK\n");
-          EMIT("#   undef JITTER_BRANCH_FAST_AND_LINK\n\n");
-        }
-
-      /* Undefine argument macros.  Those will be redefined before the next
-         instruction as needed; it would be dangerous to leave previous
-         definitions active, because some instruction body coming after this
-         might reuse some old definition by mistake in case the new instruction
-         doesn't override it. */
-      EMIT("    /* Undefine the %s argument macros so they can't be used\n",
-           sins->name);
-      EMIT("       by mistake in the instruction body coming next. */\n");
-      int j; char *comma __attribute__ ((unused));
-      FOR_LIST(j, comma, sins->specialized_arguments)
-        {
-          EMIT("#   undef JITTER_SLOW_REGISTER_OFFSET%i\n", j);
-          EMIT("#   undef JITTER_ARG%i\n", j);
-          EMIT("#   undef JITTER_ARGN%i\n", j);
-          EMIT("#   undef JITTER_ARGU%i\n", j);
-          EMIT("#   undef JITTER_ARGP%i\n", j);
-          EMIT("#   undef JITTER_ARGF%i\n", j);
-        }
-
-      /* Undefine the specialized instruction opcode and name. */
-      EMIT("\n");
-      EMIT("#   undef JITTER_SPECIALIZED_INSTRUCTION_OPCODE\n");
-      EMIT("#   undef JITTER_SPECIALIZED_INSTRUCTION_NAME\n");
-      EMIT("#   undef JITTER_SPECIALIZED_INSTRUCTION_MANGLED_NAME\n\n");
-
       EMIT("  }\n");
 
-      /* If we have defined a link, undefine it: it is only visible in its
-         instruction. */
-      if (is_callee)
+      if (! is_relocatable)
         {
-          EMIT("  /* Undefine the link macro. */\n");
-          EMIT("#   undef JITTER_LINK\n\n");
-        }
-      if (is_caller)
-        {
-          EMIT("#if    defined(JITTER_DISPATCH_NO_THREADING)         \\\n");
-          EMIT("    && ! defined(JITTER_MACHINE_SUPPORTS_PROCEDURE)\n");
-          EMIT("# undef JITTER_RETURN_ADDRESS\n");
-          EMIT("#endif\n\n");
+          EMIT("#ifdef JITTER_REPLICATE\n"
+               "  {\n"
+               "    /* Advance the instruction pointer, if any, to skip every\n"
+               "       residual but the last; branch back to replicated\n"
+               "       code. */\n");
+          EMIT("    const void *_jitter_back_to_replicated_code_pointer =\n"
+               "      JITTER_ARGP%i;\n",
+               (int) (gl_list_size (sins->specialized_arguments) - 1));
+          EMIT("    JITTER_SKIP_RESIDUALS_;\n"
+               "    goto * _jitter_back_to_replicated_code_pointer;\n"
+               "  }\n"
+               "#endif // #ifdef JITTER_REPLICATE\n\n");
         }
 
-      /* This is the instruction epilog only for relocatable instructions, and
-         when replication is disabled. */
-      if (! is_relocatable)
-        EMIT("#ifndef JITTER_REPLICATE\n");
-      EMIT(" JITTER_INSTRUCTION_EPILOG_(%s, %s, JITTER_SPECIALIZED_INSTRUCTION_RESIDUAL_ARITY)\n",
-           sins->name, sins->mangled_name);
-      if (! is_relocatable)
-        EMIT("#endif // #ifndef JITTER_REPLICATE\n");
-      EMIT("#   undef JITTER_SPECIALIZED_INSTRUCTION_RESIDUAL_ARITY\n");
+      /* Undefine every macro that was defined for use in the instruction user
+         block. */
+      jitterc_emit_executor_undefinitions (f, vm, sins);
+      EMIT("    /* Here ends the block for %s, which started with its\n"
+           "       definitions. */\n", sins->name);
+      EMIT("  }\n");
+      if (is_replacement)
+        {
+          EMIT ("#endif // #if defined (JITTER_HAVE_DEFECT_REPLACEMENT)\n");
+          EMIT ("/*  End of %s , a replacement specialised instruction */\n",
+                sins->name);
+        }
       EMIT("\n");
-   }
-  EMIT("  /* End of the ordinary specialized instructions. */\n\n");
+    }
+  EMIT("  /* End of ordinary specialized instructions. */\n\n");
 }
 
-/* Emit the patch-in header, before the main executor. */
+/* Emit extended inline asm "header" statements which must precede the executor
+   code. */
 static void
-jitterc_emit_patch_in_header (FILE *f, const struct jitterc_vm *vm)
+jitterc_emit_asm_headers (FILE *f, const struct jitterc_vm *vm)
 {
-  /* Generate the patch-in header.  The generated code expands to an inline asm
-     statement.  It is convenient to keep header and footer within the main
-     executor function, so as to guarantee that the order is respected. */
+  /* The generated code expands to inline asm statements.
+     In order to prevent duplication or removal of these inline asm statemnets
+     they are genreated into a separate function, never called.
+     The no_reorder attribute ensures that the function ends up *before* the
+     executor function .
+     Where the attribute is not supported, with very old GCC versions, CFLAGS
+     contains -fno-toplevel-reorder which enforces the same rule globally. */
+  EMIT("__attribute__ ((noinline, noclone, no_reorder))\n");
+  EMIT("void\n");
+  EMIT("vmprefix_asm_headers (void)\n");
+  EMIT("{\n");
+
   EMIT("#ifdef JITTER_HAVE_PATCH_IN\n");
   EMIT("  /* Generate the single patch-in header for this executor as a\n");
   EMIT("     global asm statement.  This expands into a global definition in\n");
   EMIT("     assembly in a separate subsection, and relies on toplevel C\n");
   EMIT("     definitions not being reordered: vmprefix_execute_or_initialize\n");
   EMIT("     will add to the same global.  Do the same for defects. */\n");
-  EMIT("  JITTER_DEFECT_HEADER(vmprefix);\n");
   EMIT("  JITTER_PATCH_IN_HEADER(vmprefix);\n");
   EMIT("#endif // #ifdef JITTER_HAVE_PATCH_IN\n\n");
+  EMIT("#ifdef JITTER_HAVE_DEFECT_REPLACEMENT\n\n");
+  EMIT("  /* The same for defects... */\n");
+  EMIT("  JITTER_DEFECT_HEADER(vmprefix);\n");
+  EMIT("#endif // #ifdef JITTER_HAVE_DEFECT_REPLACEMENT\n\n");
   EMIT("#ifndef JITTER_DISPATCH_SWITCH\n");
   EMIT("  JITTER_DATA_LOCATION_HEADER(vmprefix);\n");
   EMIT("#endif // #ifndef JITTER_DISPATCH_SWITCH\n");
   EMIT("\n");
+
+  /* End the header function. */
+  EMIT("}\n");
 }
 
-/* Emit the patch-in footer, after the main executor. */
+/* Emit extended inline asm "footer" statements which must follow the executor
+   code. */
 static void
-jitterc_emit_patch_in_footer (FILE *f, const struct jitterc_vm *vm)
+jitterc_emit_asm_footers (FILE *f, const struct jitterc_vm *vm)
 {
-  /* Generate the patch-in footer.  See the comment in
-     jitterc_emit_patch_in_header . */
+  /* See the comment in jitterc_emit_asm_headers .  These statements are
+     generated inside a separate function, again never called, which ends up
+     in generated code *after* the executor function. */
+  EMIT("__attribute__ ((noinline, noclone, no_reorder))\n");
+  EMIT("void\n");
+  EMIT("vmprefix_asm_footers (void)\n");
+  EMIT("{\n");
+
   EMIT("#ifndef JITTER_DISPATCH_SWITCH\n");
   EMIT("  JITTER_DATA_LOCATION_FOOTER(vmprefix);\n");
   EMIT("#endif // #ifndef JITTER_DISPATCH_SWITCH\n");
-  EMIT("#ifdef JITTER_HAVE_PATCH_IN\n");
-  EMIT("  /* Close the patch-in global definition for this executor.  This defines a\n");
-  EMIT("     new global in the patch-in subsection, holding the descriptor number.\n");
-  EMIT("     This is a global asm statement.  Same for defects.  See the comment before\n");
-  EMIT("      the JITTER_PATCH_IN_HEADER use above. */\n");
-  EMIT("  JITTER_PATCH_IN_FOOTER(vmprefix);\n");
+  EMIT("#ifdef JITTER_HAVE_DEFECT_REPLACEMENT\n");
+  EMIT("  /* Close the defect global definition for this executor.  This defines a\n");
+  EMIT("     new global in the defect subsection, holding the descriptor number.\n");
+  EMIT("     This is a global asm statement. */\n");
   EMIT("  JITTER_DEFECT_FOOTER(vmprefix);\n");
+  EMIT("#endif // #ifdef JITTER_HAVE_DEFECT_REPLACEMENT\n\n");
+  EMIT("#ifdef JITTER_HAVE_PATCH_IN\n");
+  EMIT("  /* The same as for defects, here for patch-ins. */\n");
+  EMIT("  JITTER_PATCH_IN_FOOTER(vmprefix);\n");
   EMIT("#endif // #ifdef JITTER_HAVE_PATCH_IN\n\n");
+
+  /* End the footer function. */
+  EMIT("}\n");
 }
 
 /* Emit the beginning of the case for a special specialized instruction in the
@@ -2903,6 +3461,10 @@ jitterc_emit_executor_special_specialized_instruction_beginning
   EMIT("#define JITTER_SPECIALIZED_INSTRUCTION_NAME  %s\n", name);
   EMIT("#define JITTER_SPECIALIZED_INSTRUCTION_MANGLED_NAME  %s\n",
        jitterc_mangle (name));
+  /* By convention the beginning of this VM instruction is the fake target in
+     C. */
+  if (! strcmp (name, "!PRETENDTOJUMPANYWHERE"))
+    EMIT ("jitter_fake_target: __attribute__ ((unused));");
   EMIT("{\n");
 }
 
@@ -2916,6 +3478,12 @@ jitterc_emit_executor_special_specialized_instruction_end
     const char *hotness, int residual_arity)
 {
   EMIT("}\n");
+
+  /* The JITTER_INSTRUCTION_EPILOG_ macro may use JITTER_COMPUTED_GOTO
+     internally.  It is harmless to unconditionally define it here, after
+     the user code has been emitted already. */
+  jitterc_emit_computed_goto_definition (f, vm, true);
+
   EMIT("JITTER_INSTRUCTION_EPILOG_(%s, %s, %i)\n",
        name, jitterc_mangle (name), residual_arity);
   EMIT("#undef JITTER_SPECIALIZED_INSTRUCTION_OPCODE\n");
@@ -2934,6 +3502,9 @@ jitterc_emit_executor_special_specialized_instruction
     const char *hotness, int residual_arity,
     const char *c_code)
 {
+  jitterc_emit_computed_goto_definition (f, vm,
+                                         false); // FIXME: I am not sure. ///////////////////
+
   jitterc_emit_executor_special_specialized_instruction_beginning
      (f, vm, name, opcode, hotness, residual_arity);
   EMIT("\n%s\n", c_code);
@@ -2978,15 +3549,10 @@ jitterc_emit_executor_data_locations (FILE *f, const struct jitterc_vm *vm)
     }
   EMIT("#endif // #ifdef JITTER_DISPATCH_NO_THREADING\n");
 
-  /* Link register, if any. */
-  EMIT("#if    defined(JITTER_DISPATCH_SWITCH)                    \\\n");
-  EMIT("    || defined(JITTER_DISPATCH_DIRECT_THREADING)          \\\n");
-  EMIT("    || defined(JITTER_DISPATCH_MINIMAL_THREADING)         \\\n");
-  EMIT("    || (   defined(JITTER_DISPATCH_NO_THREADING)          \\\n");
-  EMIT("        && ! defined(JITTER_MACHINE_SUPPORTS_PROCEDURE))\n");
-  EMIT("\n");
+  /* Link register. */
+  // FIXME: re-conditionalise, so as to avoid this on no-threading when
+  // call-related specialised instructions are not defective.
   EMIT("  JITTER_DATA_LOCATION_DATUM (\"link register\", jitter_state_runtime._jitter_link);\n");
-  EMIT("#endif // link register\n");
 
   /* For each stack... */
   FOR_LIST(i, comma, vm->stacks)
@@ -3031,10 +3597,13 @@ static void
 jitterc_emit_executor_main_function
    (FILE *f, const struct jitterc_vm *vm)
 {
+  /* Emit asm headers.  These must come before the frist patch-in or defect
+     use; there is no harm if they come much earlier. */
+  jitterc_emit_asm_headers (f, vm);
+
   /* Generate the actual executor main function. */
-  EMIT("static void\n");
+  EMIT("static enum vmprefix_exit_status\n");
   EMIT("vmprefix_execute_or_initialize (bool jitter_initialize,\n");
-  EMIT("                                vmprefix_program_point jitter_initial_program_point,\n");
   EMIT("                                struct vmprefix_state * const jitter_original_state)\n");
   EMIT("{\n");
 
@@ -3073,10 +3642,6 @@ jitterc_emit_executor_main_function
   EMIT("  union jitter_word jitter_register_buffer [VMPREFIX_REGISTER_BUFFER_ELEMENT_NO];\n");
   EMIT("  vmprefix_save_registers (jitter_register_buffer);\n");
   EMIT("#endif // #ifdef JITTER_DISPATCH_NO_THREADING\n\n");
-
-  /* Emit the patch-in header.  This must come before the frist patch-in or
-     defect use. */
-  jitterc_emit_patch_in_header (f, vm);
 
   /* The main executor function begins with three big static arrays containing
      the labels where every specialized instruction begins and ends, and their sizes
@@ -3126,8 +3691,16 @@ jitterc_emit_executor_main_function
       const struct jitterc_specialized_instruction* sins
         = ((const struct jitterc_specialized_instruction*)
            gl_list_get_at (vm->specialized_instructions, i));
-      EMIT("            && JITTER_SPECIALIZED_INSTRUCTION_BEGIN_LABEL_OF(%s)%s\n",
-           sins->mangled_name, comma);
+      if (sins->is_replacement_of != NULL)
+        {
+          EMIT("            JITTER_IF2_DEFECT_\n");
+          EMIT("               (&& JITTER_SPECIALIZED_INSTRUCTION_BEGIN_LABEL_OF(%s),\n"
+               "                0)%s\n",
+               sins->mangled_name, comma);
+        }
+      else
+        EMIT("            && JITTER_SPECIALIZED_INSTRUCTION_BEGIN_LABEL_OF(%s)%s\n",
+             sins->mangled_name, comma);
     }
   EMIT("          };\n");
 
@@ -3139,8 +3712,16 @@ jitterc_emit_executor_main_function
       const struct jitterc_specialized_instruction* sins
         = ((const struct jitterc_specialized_instruction*)
            gl_list_get_at (vm->specialized_instructions, i));
-      EMIT("            && JITTER_SPECIALIZED_INSTRUCTION_END_LABEL_OF(%s)%s\n",
-           sins->mangled_name, comma);
+      if (sins->is_replacement_of != NULL)
+        {
+          EMIT("            JITTER_IF2_DEFECT_\n");
+          EMIT("               (&& JITTER_SPECIALIZED_INSTRUCTION_END_LABEL_OF(%s),\n"
+               "                0)%s\n",
+               sins->mangled_name, comma);
+        }
+      else
+        EMIT("            && JITTER_SPECIALIZED_INSTRUCTION_END_LABEL_OF(%s)%s\n",
+             sins->mangled_name, comma);
     }
   EMIT("          };\n");
   EMIT("      /* A few non-GCC compilers such as TCC support GNU C's labels\n");
@@ -3157,6 +3738,19 @@ jitterc_emit_executor_main_function
   EMIT("        = (const long *) vmprefix_the_thread_sizes;\n");
   EMIT("      vmprefix_threads = vmprefix_the_threads;\n");
   EMIT("      vmprefix_thread_ends = vmprefix_the_thread_ends;\n");
+  EMIT("\n");
+
+  /* Generate initialisation code for the correct displacement, where defects
+     are enabled. */
+  EMIT("#ifdef JITTER_HAVE_DEFECT_REPLACEMENT\n");
+  EMIT("      /* Define the correct distance between the fake target in C\n");
+  EMIT("         and in assembly, for this VM. */\n");
+  EMIT("      JITTER_DEFECT_CORRECT_DISPLACEMENT_NAME (vmprefix)\n");
+  EMIT("        = ((char *) && jitter_fake_target\n");
+  EMIT("           - (char *) vmprefix_fake_target_asm);\n");
+  EMIT("      //fprintf (stderr, \"DEBUG: INITIALISE CORRECT DISPLACEMENT TO %%li\\n\", (long) JITTER_DEFECT_CORRECT_DISPLACEMENT_NAME (vmprefix));\n");
+  EMIT("#endif // #ifdef JITTER_HAVE_DEFECT_REPLACEMENT\n");
+  EMIT("\n");
 
   /// FIXME: this is for debugging: begin
   EMIT("#ifdef JITTER_PROFILE\n");
@@ -3271,6 +3865,32 @@ jitterc_emit_executor_main_function
   EMIT("#endif // #ifdef JITTER_REPLICATE\n");
   // FIXME: move to a new function: END
 
+  EMIT("  /* Before setting up runtime structures and jumping to the first\n");
+  EMIT("     instruction check that the last exit status was correct, and\n");
+  EMIT("     update it for the present run. */\n");
+  EMIT("  switch (JITTER_STATE_BACKING_FIELD (exit_status))\n");
+  EMIT("    {\n");
+  EMIT("    case vmprefix_exit_status_never_executed:\n");
+  EMIT("    case vmprefix_exit_status_exited:\n");
+  EMIT("    case vmprefix_exit_status_debug:\n");
+  EMIT("      /* This is normal and expected. */\n");
+  EMIT("      JITTER_STATE_BACKING_FIELD (exit_status)\n");
+  EMIT("        = vmprefix_exit_status_being_executed;\n");
+  EMIT("      break;\n");
+  EMIT("\n");
+  EMIT("    case vmprefix_exit_status_being_executed:\n");
+  EMIT("      jitter_fatal (\"the exit status before execution is \"\n");
+  EMIT("                    \"vmprefix_exit_status_being_executed: \"\n");
+  EMIT("                    \"you may have exited the last evaluation \"\n");
+  EMIT("                    \"through longjmp, or reused the same VM \"\n");
+  EMIT("                    \"state for a new execution with a previous \"\n");
+  EMIT("                    \"execution still in progress.\");\n");
+  EMIT("\n");
+  EMIT("    default:\n");
+  EMIT("      jitter_fatal (\"invalid exit state %%i\",\n");
+  EMIT("                    (int) JITTER_STATE_BACKING_FIELD (exit_status));\n");
+  EMIT("    }\n");
+
   /* Insert C code from the user.  This is supposed to come in right before
      execution starts. */
   EMIT("  /* Initialization C code from the user */\n");
@@ -3299,7 +3919,8 @@ jitterc_emit_executor_main_function
   EMIT("     not work as intended (which prevents the use of global and static\n");
   EMIT("     variables, string literals and possibly large literal constants), and\n");
   EMIT("     GDB gets easily confused. */\n");
-  EMIT("  jitter_ip = jitter_initial_program_point;\n\n");
+  EMIT("  jitter_ip\n");
+  EMIT("    = jitter_original_state->vmprefix_state_backing.initial_program_point;\n\n");
   EMIT("  /* This is the actual jump to the first instruction: it's not an\n");
   EMIT("     inline asm constraint lie like below. */\n\n");
   EMIT("# if   defined(JITTER_DISPATCH_SWITCH)\n");
@@ -3320,47 +3941,69 @@ jitterc_emit_executor_main_function
   EMIT("#   error \"unknown dispatch\"\n");
   EMIT("# endif // if ... dispatch\n");
 
-  EMIT("  /* FIXME: comment: this is the fake dispatch routine. */\n");
+  /* EMIT("  /\* FIXME: comment: this is the fake dispatch routine. *\/\n"); */
   // FIXME: Is clobbering memory really needed?  It would be better if I didn't do this.
   //        I should explicitly mark as set the base and possibly the instruction pointer,
   //        but nothing more.
   //EMIT("  asm volatile (\"\" : : : \"memory\");\n");
-  EMIT(" /* The label is unused (from the compiler's point of view) for simple\n");
-  EMIT("    dispatches when not profiling.  (In reality it is always unused.)\n");
-  EMIT("    FIXME: comment. */\n");
-  EMIT(" jitter_dispatch_label: __attribute__ ((hot, unused))\n");
+  /* EMIT(" /\* The label is unused (from the compiler's point of view) for simple\n"); */
+  /* EMIT("    dispatches when not profiling.  (In reality it is always unused.)\n"); */
+  /* EMIT("    FIXME: comment. *\/\n"); */
   // FIXME: same.
-  //EMIT("  asm volatile (\"\\njitter_dispatch_label_asm:\\n\" : : : \"memory\");\n");
-  EMIT("#if   defined(JITTER_DISPATCH_SWITCH)\n");
-  EMIT("  /* This code is unreachable, but the compiler does not know it.  FIXME: comment. */\n");
-  EMIT("  goto jitter_dispatching_switch_label;\n");
-  EMIT("#elif defined(JITTER_DISPATCH_DIRECT_THREADING)\n");
-  EMIT("  /* Again this code is unreachable, but the compiler does not know it.  FIXME: comment. */\n");
+  //EMIT("  asm volatile (\"\\njitter_fake_target_asm:\\n\" : : : \"memory\");\n");
+  // FIXME: this is completely useless for simple dispatches.
+  /* EMIT("#if   defined(JITTER_DISPATCH_SWITCH)\n"); */
+  /* EMIT("  /\* This code is unreachable, but the compiler does not know it.  FIXME: comment. *\/\n"); */
+  /* EMIT("  goto jitter_dispatching_switch_label;\n"); */
+  /* EMIT("#elif defined(JITTER_DISPATCH_DIRECT_THREADING)\n"); */
+  /* EMIT("  /\* Again this code is unreachable, but the compiler does not know it.  FIXME: comment. *\/\n"); */
+  /* EMIT("  goto * jitter_ip;\n"); */
+  /* EMIT("#elif defined (JITTER_DISPATCH_MINIMAL_THREADING)  \\\n"); */
+  /*
+  EMIT("#if defined (JITTER_DISPATCH_MINIMAL_THREADING)  \\\n");
+  EMIT("    || defined (JITTER_DISPATCH_NO_THREADING)\n");
+  EMIT(" jitter_fake_target: __attribute__ ((hot, unused))\n");
+  EMIT("  asm volatile (JITTER_ASM_COMMENT_UNIQUE(\"\")\n");
+  EMIT("                \"\\njitter_fake_target_asm:\\n\"\n");
+  EMIT("                : \"+r\" (jitter_ip));\n");
   EMIT("  goto * jitter_ip;\n");
-  EMIT("#endif\n");
+  */
+  /*
+  EMIT("JITTER_PRETEND_TO_POSSIBLY_JUMP_TO_(jitter_fake_target);\n");
+  EMIT("  if (jitter_ip != 0) goto * jitter_ip;\n");
+  EMIT("  jitter_fake_target_2:\n");
+  EMIT("  asm volatile (\"\\njitter_fake_target_asm_2:\\n\"\n");
+  EMIT("                JITTER_ASM_COMMENT_UNIQUE(\"\")\n");
+  EMIT("                : \"+r\" (jitter_ip));\n");
+  EMIT("  if (jitter_ip != 0) goto jitter_fake_target;\n");
+  EMIT("  JITTER_PRETEND_TO_POSSIBLY_JUMP_TO_(jitter_fake_target);\n");
+  EMIT("  goto jitter_fake_target_2;\n");
+  */
+  //EMIT("#endif\n");
+
   EMIT("#ifdef JITTER_REPLICATE\n");
-  EMIT("  asm volatile (\"\\njitter_dispatch_label_asm:\\n\" :);\n");
+  /* EMIT("  JITTER_PRETEND_TO_UPDATE_IP_;\n"); */
+  /* FOR_LIST(i, comma, vm->specialized_instructions) */
+  /*   { */
+  /*     EMIT("  JITTER_PRETEND_TO_UPDATE_IP_;\n"); */
+  /*     const struct jitterc_specialized_instruction* sins */
+  /*       = ((const struct jitterc_specialized_instruction*) */
+  /*          gl_list_get_at (vm->specialized_instructions, i)); */
+  /*     EMIT("  JITTER_PRETEND_TO_POSSIBLY_JUMP_TO_(JITTER_SPECIALIZED_INSTRUCTION_BEGIN_LABEL_OF(%s));\n", */
+  /*          sins->mangled_name); */
+  /*     /\* */
+  /*     EMIT("  JITTER_PRETEND_TO_UPDATE_IP_;\n"); */
+  /*     EMIT("  JITTER_PRETEND_TO_POSSIBLY_JUMP_TO_(JITTER_SPECIALIZED_INSTRUCTION_END_LABEL_OF(%s));\n", */
+  /*          sins->mangled_name); */
+  /*     *\/ */
+  /*   } */
+  /* //EMIT("  JITTER_PRETEND_TO_POSSIBLY_JUMP_TO_(a_label);\n"); */
+  /* EMIT("  JITTER_PRETEND_TO_UPDATE_IP_;\n"); */
+  /* EMIT("  JITTER_PRETEND_TO_POSSIBLY_JUMP_TO_(jitter_exit_vm_label);\n"); */
   EMIT("  JITTER_PRETEND_TO_UPDATE_IP_;\n");
-  FOR_LIST(i, comma, vm->specialized_instructions)
-    {
-      EMIT("  JITTER_PRETEND_TO_UPDATE_IP_;\n");
-      const struct jitterc_specialized_instruction* sins
-        = ((const struct jitterc_specialized_instruction*)
-           gl_list_get_at (vm->specialized_instructions, i));
-      EMIT("  JITTER_PRETEND_TO_POSSIBLY_JUMP_TO_(JITTER_SPECIALIZED_INSTRUCTION_BEGIN_LABEL_OF(%s));\n",
-           sins->mangled_name);
-      /*
-      EMIT("  JITTER_PRETEND_TO_UPDATE_IP_;\n");
-      EMIT("  JITTER_PRETEND_TO_POSSIBLY_JUMP_TO_(JITTER_SPECIALIZED_INSTRUCTION_END_LABEL_OF(%s));\n",
-           sins->mangled_name);
-      */
-    }
-  //EMIT("  JITTER_PRETEND_TO_POSSIBLY_JUMP_TO_(a_label);\n");
-  EMIT("  JITTER_PRETEND_TO_UPDATE_IP_;\n");
-  EMIT("  JITTER_PRETEND_TO_POSSIBLY_JUMP_TO_(jitter_exit_vm_label);\n");
-  EMIT("  JITTER_PRETEND_TO_UPDATE_IP_;\n");
-  EMIT("  JITTER_PRETEND_TO_POSSIBLY_JUMP_TO_(jitter_possibly_restore_registers_and_return_label);\n");
-  EMIT("  goto jitter_dispatch_label;\n");
+  //EMIT("  JITTER_PRETEND_TO_POSSIBLY_JUMP_TO_(jitter_possibly_restore_registers_and_return_label);\n");
+  EMIT("  JITTER_PRETEND_TO_POSSIBLY_JUMP_ANYWHERE();\n");
+  EMIT("  goto jitter_fake_target;\n");
   EMIT("#endif // #ifdef JITTER_REPLICATE\n\n");
 
   /* EMIT("#ifdef JITTER_REPLICATE\n"); */
@@ -3371,7 +4014,7 @@ jitterc_emit_executor_main_function
   /* EMIT("     jump to any label within this function -- in practice it would\n"); */
   /* EMIT("     crash horribly if ever reached, but that is not a problem. *\/\n"); */
   /* EMIT(" jitter_jump_anywhere_label: __attribute__ ((cold, unused));\n"); */
-  /* EMIT("  jitter_next_program_point = && jitter_dispatch_label;\n"); */
+  /* EMIT("  jitter_next_program_point = && jitter_fake_target;\n"); */
   /* EMIT("  asm (JITTER_ASM_COMMENT_UNIQUE(\"Pretend to alter next_program_point\"\n"); */
   /* EMIT("                                 \" at %%[next_program_point] based on\"\n"); */
   /* EMIT("                                 \" jitter_state_runtime at %%[runtime]\"\n"); */
@@ -3455,10 +4098,13 @@ jitterc_emit_executor_main_function
       "cold", 0,
       "jitter_fatal (\"reached the !UNREACHABLE1 instruction\");");
   jitterc_emit_executor_special_specialized_instruction
-     (f, vm, "!UNREACHABLE2",
-      jitter_specialized_instruction_opcode_UNREACHABLE2,
+     (f, vm, "!PRETENDTOJUMPANYWHERE",
+      jitter_specialized_instruction_opcode_PRETENDTOJUMPANYWHERE,
       "cold", 0,
-      "jitter_fatal (\"reached the !UNREACHABLE2 instruction\");");
+      "#if ! defined(JITTER_DISPATCH_SWITCH)\n"
+      "  JITTER_PRETEND_TO_UPDATE_IP_;\n"
+      "  goto * jitter_ip;\n"
+      "#endif\n");
 
   /* Generate code for the ordinary specialized instructions as specified in
      user code. */
@@ -3484,11 +4130,6 @@ jitterc_emit_executor_main_function
   EMIT("  jitter_exit_vm_label: __attribute__ ((cold));\n");
   EMIT("    JITTER_COMMENT_IN_ASM_(\"About to exit the function\");\n");
   EMIT("    // fprintf (stderr, \"Restoring the VM state to the struct...\\n\");\n");
-  EMIT("    /* Copy the VM state from the local copy we have modified back to\n");
-  EMIT("       the structure to which we received a pointer. */\n");
-  EMIT("    jitter_original_state->vmprefix_state_runtime = jitter_state_runtime;\n");
-  EMIT("\n");
-  EMIT("    // fprintf (stderr, \"Exiting the VM...\\n\");\n\n");
   EMIT("\n");
   EMIT("#if defined (JITTER_PROFILE_SAMPLE)\n");
   EMIT("    /* Stop sample-profiling: this stops the periodic timer signal, while\n");
@@ -3496,23 +4137,26 @@ jitterc_emit_executor_main_function
   EMIT("       special-purpose struct in the Array. */\n");
   EMIT("    vmprefix_profile_sample_stop ();\n");
   EMIT("#endif // #if defined (JITTER_PROFILE_SAMPLE)\n");
-  EMIT("\n");
-
-  /* Emit the patch-in footer.  This must come after every patch-in or defect
-     use. */
-  jitterc_emit_patch_in_footer (f, vm);
-
-  /* Insert C code from the user.  This is supposed to come in right after
-     execution ends. */
-  EMIT("  /* Finalization C code from the user */\n");
-  EMIT("%s", vm->finalization_c_code);
-  EMIT("  /* End of the finalization C code from the user */\n\n");
-  EMIT("\n");
 
   /* Insert architecture-specific execution-end code. */
   EMIT("  /* Execute architecture-specific execution-end code, if any.  Make \n");
   EMIT("     sure it is safe to expand the macro without do..while (false). */\n");
   EMIT("  {}; JITTER_EXECUTION_END_; {};\n");
+  EMIT("\n");
+  EMIT("  //fprintf (stderr, \"still alive at the end of VM code: no-threading code compiled with GCC 4 runs VM code with success then crashes here.\\n\");\n");
+
+  EMIT("\n");
+  EMIT("    /* Copy the VM state from the local copy we have modified back to\n");
+  EMIT("       the structure to which we received a pointer. */\n");
+  EMIT("    jitter_original_state->vmprefix_state_runtime = jitter_state_runtime;\n");
+  EMIT("\n");
+  EMIT("    // fprintf (stderr, \"Exiting the VM...\\n\");\n\n");
+
+  /* Insert C code from the user.  This is supposed to come in right after
+     execution ends. */
+  EMIT("  /* Finalization C code from the user */\n");
+  EMIT("%s", vm->finalization_c_code);
+  EMIT("\n  /* End of the finalization C code from the user */\n\n");
   EMIT("\n");
 
   EMIT("  /* This program point is reachable for both thread initialization and\n");
@@ -3524,8 +4168,15 @@ jitterc_emit_executor_main_function
   EMIT("       values held in such registers at entry. */\n");
   EMIT("    vmprefix_restore_registers (jitter_register_buffer);\n");
   EMIT("#endif // #ifdef JITTER_DISPATCH_NO_THREADING\n");
+  EMIT("\n");
 
-  // FIXME: this is a test, for profiling: begin
+  EMIT("  /* Update the state exit status. */\n");
+  EMIT("  if (! jitter_initialize)\n");
+  EMIT("    JITTER_STATE_BACKING_FIELD (exit_status)\n");
+  EMIT("      = vmprefix_exit_status_exited;\n");
+  EMIT("\n");
+
+  // FIXME: this is a test for profil-based profiling, currently not implemented: begin
   EMIT("#ifdef JITTER_PROFILE\n");
   EMIT("#define PROFILING_SPACE (1024 * 1024 * 100)\n");
   EMIT("    if (jitter_initialize)\n");
@@ -3541,10 +4192,20 @@ jitterc_emit_executor_main_function
   EMIT("    asm volatile (\".fill (\" JITTER_STRINGIFY(PROFILING_SPACE) \")\");\n");
   EMIT("  return_label:\n");
   EMIT("#endif // #ifdef JITTER_PROFILE\n");
-  EMIT("    return;\n");
-  // FIXME: this is a test, for profiling: end
-  EMIT("}\n");
+  // FIXME: this is a test for profil-based profiling, currently not implemented: end
   EMIT("\n");
+  EMIT("  /* We are done.  If initialising return some arbitrary result,\n");
+  EMIT("     otherwise (which is the interesting case) return the exit\n");
+  EMIT("     status from the VM state. */\n");
+  EMIT("  if (jitter_initialize)\n");
+  EMIT("    return vmprefix_exit_status_never_executed;\n");
+  EMIT("  else\n");
+  EMIT("    return JITTER_STATE_BACKING_FIELD (exit_status);\n");
+  EMIT("}\n");
+
+  /* Emit asm footers.  These must come after the last patch-in or defect
+     use; there is no harm if they came much later. */
+  jitterc_emit_asm_footers (f, vm);
 }
 
 /* FIXME: move to a template.  This might need a forward declarartion for the
@@ -3560,22 +4221,22 @@ jitterc_emit_executor_wrappers
   EMIT("/* The definition of this is machine-generated in vmprefix-vm2.c , and the\n");
   EMIT("   function is not intended for the user.  If initializing then set\n");
   EMIT("   structuredvm_threads and structuredvm_thread_sizes and just return, ignoring\n");
-  EMIT("   the other fieldsp and s.  If not initializing then actually enter VM code\n");
-  EMIT("   starting from the given program point in the pointed state. */\n");
-  EMIT("static void\n");
+  EMIT("   the other fields and s.  If not initializing then actually enter VM code\n");
+  EMIT("   starting from the initial program point in the state. */\n");
+  EMIT("static enum vmprefix_exit_status\n");
   EMIT("vmprefix_execute_or_initialize (bool jitter_initialize,\n");
-  EMIT("                                vmprefix_program_point jitter_initial_program_point,\n");
   EMIT("                                struct vmprefix_state * const jitter_original_state)\n");
-  EMIT("  __attribute__ ((noclone, noinline));\n");
+  EMIT("  __attribute__ ((noclone, noinline, no_reorder));\n");
   EMIT("\n");
-  EMIT("void\n");
+  EMIT("enum vmprefix_exit_status\n");
   EMIT("vmprefix_execute_executable_routine (const struct jitter_executable_routine *er,\n");
   EMIT("                                     struct vmprefix_state *s)\n");
   EMIT("{\n");
   EMIT("  vmprefix_make_place_for_slow_registers (s, er->slow_register_per_class_no);\n");
   EMIT("  jitter_program_point initial_program_point\n");
   EMIT("    = VMPREFIX_EXECUTABLE_ROUTINE_BEGINNING (er);\n");
-  EMIT("  vmprefix_execute_or_initialize (false, initial_program_point, s);\n");
+  EMIT("  return vmprefix_branch_to_program_point (initial_program_point,\n");
+  EMIT("                                           s);\n");
   EMIT("}\n");
   EMIT("\n");
   EMIT("\n");
@@ -3596,14 +4257,18 @@ jitterc_emit_executor_wrappers
   EMIT("void\n");
   EMIT("vmprefix_initialize_threads (void)\n");
   EMIT("{\n");
-  EMIT("  vmprefix_execute_or_initialize (true, NULL, NULL);\n");
+  EMIT("  vmprefix_execute_or_initialize (true, NULL);\n");
   EMIT("}\n");
   EMIT("\n");
 
-  EMIT("void\n");
+  EMIT("enum vmprefix_exit_status\n");
   EMIT("vmprefix_branch_to_program_point (vmprefix_program_point p, struct vmprefix_state *s)\n");
   EMIT("{\n");
-  EMIT("  vmprefix_execute_or_initialize (false, p, s);\n");
+  EMIT("  /* Change the state to set the initial program point. */\n");
+  EMIT("  s->vmprefix_state_backing.initial_program_point = p;\n");
+  EMIT("\n");
+  EMIT("  /* Execute. */\n");
+  EMIT("  return vmprefix_execute_or_initialize (false, s);\n");
   EMIT("}\n");
   EMIT("\n");
 }
@@ -3704,15 +4369,22 @@ jitterc_emit_executor (const struct jitterc_vm *vm)
   EMIT("/* Include stack data structure support. */\n");
   EMIT("#include <jitter/jitter-stack.h>\n\n");
 
-  EMIT("/* Include patch-in definitions, only if patch-in is enabled.  We knoe whether it is\n");
-  EMIT("   by checking JITTER_HAVE_PATCH_IN , defined in jitter/jitter-patch-in.h . */\n");
+  EMIT("/* Include patch-in definitions, only if patch-in is enabled.  We know whether it is\n");
+  EMIT("   by checking JITTER_HAVE_PATCH_IN , defined in jitter/jitter-patch-in.h .\n");
+  EMIT("   The same for defects. */\n");
   EMIT("#include <jitter/jitter-patch-in.h>\n");
+  EMIT("#include <jitter/jitter-fast-branch.h>\n");
+  EMIT("#include <jitter/jitter-defect.h>\n");
   EMIT("#ifdef JITTER_HAVE_PATCH_IN\n");
-  EMIT("# include <jitter/jitter-fast-branch.h>\n");
-  EMIT("\n");
-  EMIT("  JITTER_DEFECT_DESCRIPTOR_DECLARATIONS_(vmprefix);\n");
   EMIT("  JITTER_PATCH_IN_DESCRIPTOR_DECLARATIONS_(vmprefix);\n");
   EMIT("#endif // #ifdef JITTER_HAVE_PATCH_IN\n\n");
+  EMIT("#ifdef JITTER_HAVE_DEFECT_REPLACEMENT\n");
+  EMIT("  static void jitter_useless_function (void) asm (\"jitter_fake_target_asm\");\n");
+  EMIT("  static void jitter_useless_function (void) {}\n");
+  EMIT("  JITTER_DEFECT_DESCRIPTOR_DECLARATIONS_(vmprefix);\n");
+  EMIT("  static const char * const vmprefix_fake_target_asm\n");
+  EMIT("    = (const char *) & jitter_useless_function;\n");
+  EMIT("#endif // #ifdef JITTER_HAVE_DEFECT_REPLACEMENT\n\n");
 
   EMIT("/* Always include fast-branch definitions, which use patch-ins where possible\n");
   EMIT("   or consist in fallback definitions otherwise. */\n");
@@ -3731,8 +4403,9 @@ jitterc_emit_executor (const struct jitterc_vm *vm)
   /* Emit global register code. */
   jitterc_emit_executor_reserve_registers (f, vm);
 
-  /* Emit CPP definitions for stack operations. */
-  jitterc_emit_stack_operation_definitions (f, vm);
+  /* Emit CPP definitions for stack operations, to be used in VM
+     instructions. */
+  jitterc_emit_stack_operation_definitions (f, vm, true);
 
   /* Insert C code from the user.  This is supposed to come in late, after CPP
      includes and definitions, right before the executor functions. */
@@ -4031,6 +4704,7 @@ jitterc_generate (struct jitterc_vm *vm,
   jitterc_emit_meta_instructions_h (vm);
   jitterc_emit_specialized_instructions_h (vm);
   jitterc_emit_register_access_macros_h (vm);
+  jitterc_emit_non_instruction_stack_operation_definitions (vm);
   jitterc_emit_late_header_c (vm);
   jitterc_emit_header_closing (vm);
 
@@ -4047,7 +4721,8 @@ jitterc_generate (struct jitterc_vm *vm,
   jitterc_emit_specialized_instruction_callers (vm);
   jitterc_emit_specialized_instruction_callees (vm);
   jitterc_emit_specialized_instruction_to_unspecialized_instruction (vm);
-  jitterc_emit_worst_case_defect_table (vm);
+  jitterc_emit_worst_case_replacement_table (vm);
+  jitterc_emit_call_related_specialized_instruction_ids (vm);
   jitterc_emit_rewriter (vm);
   jitterc_emit_specializer (vm);
   jitterc_emit_state (vm);

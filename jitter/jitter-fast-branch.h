@@ -1,6 +1,6 @@
 /* Jitter: fast-branch header.
 
-   Copyright (C) 2017, 2019, 2020 Luca Saiu
+   Copyright (C) 2017, 2019, 2020, 2021 Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -29,9 +29,9 @@
  * ************************************************************************** */
 
 /* This among the rest includes <jitter/machine/jitter-machine.h> , which is
-   enough to see the definition of JITTER_MACHINE_SUPPORTS_BRANCH_AND_LINK used
-   below, and all the machine-specific branch definitions, which are optional;
-   in case patch-ins are used what is missing will be defined here. */
+   enough to see the definition of JITTER_MACHINE_SUPPORTS_PROCEDURE used below,
+   and all the machine-specific branch definitions, which are optional; in case
+   patch-ins are used what is missing will be defined here. */
 #include <jitter/jitter-patch-in.h>
 
 
@@ -258,7 +258,7 @@
 /* High-level unconditional branch.  This definition is machine-independent,
    even if of course it relies on a low-level machine-specific primitive (itself
    having a fallback definition in case it is missing). */
-# define _JITTER_BRANCH_FAST(tgt)            \
+#define _JITTER_BRANCH_FAST(tgt)             \
   do                                         \
     {                                        \
       _JITTER_LOW_LEVEL_BRANCH_FAST_ (tgt);  \
@@ -284,31 +284,32 @@
 
 
 
-/* Fallback fast branch-and-link definition.
+/* Fast-branch-and-link definition.
  * ************************************************************************** */
 
-/* Provide a fallback definition of _JITTER_BRANCH_FAST_AND_LINK_INTERNAL , if
-   needed.  The definition will either use the slow JITTER_BRANCH_AND_LINK if
-   fast labels are not used in this configuration, or use a generic
-   branch-and-link implementation but do the actual branch as a fast branch.
+/* Provide a definition of _JITTER_BRANCH_FAST_AND_LINK , based on what is
+   available in the current configuration.
+   The definition will choose the best among the following alternatives:
+   - the slow JITTER_BRANCH_AND_LINK_FALLBACK if fast labels are not used in
+     this configuration;
+   - a generic branch-and-link implementation doing the actual branch as a fast
+     branch;
+   - a native machine-specific version, only available with no-threading
+     dispatch.
 
-   No fallback is provided if the machine already defiens its own
-   _JITTER_BRANCH_FAST_AND_LINK_INTERNAL : this means that the dispatching model
-   is no-threading, and the machine supports both patch-ins and procedures.
+   The user should never call _JITTER_BRANCH_FAST_AND_LINK nor the macros used
+   in its definition .  Suitable user macros, without the initial underscore
+   prefix and without the _INTERNAL suffix, are automatically defined to be only
+   visible in caller instructions .  This forces the user to correctly declare
+   callers so that return labels can be handled in every case. */
 
-   The user should never call _JITTER_BRANCH_FAST_AND_LINK_INTERNAL , or even
-   JITTER_BRANCH_AND_LINK_INTERNAL .  Suitable user macros, without the initial
-   underscore prefix and without the _INTERNAL suffix, are automatically defined
-   to be only visible in caller instructions .  This forces the user to correctly 
-   declare callers so that return labels can be handled in every case. */
-
-/* Provide a definition of _JITTER_BRANCH_FAST_AND_LINK_INTERNAL if needed. */
+/* Provide a definition of _JITTER_BRANCH_FAST_AND_LINK . */
 #if ! defined(JITTER_DISPATCH_NO_THREADING)
   /* With any dispatching model different from no-threading fast branches revert
      to generic slow branches; in the same way fast branch-and-link operations
      revert to generic slow branch-and-link operations. */
-# define _JITTER_BRANCH_FAST_AND_LINK_INTERNAL(target) \
-  JITTER_BRANCH_AND_LINK_INTERNAL(target)
+# define _JITTER_BRANCH_FAST_AND_LINK(target) \
+  _JITTER_BRANCH_AND_LINK_FALLBACK (target)
 #elif ! defined(JITTER_HAVE_PATCH_IN)
 # if defined(JITTER_MACHINE_SUPPORTS_PROCEDURE)
     /* Currently machine-specific support must also provide patch-ins if it
@@ -317,25 +318,33 @@
 # else
     /* The machine supports neither patch-ins, nor procedures.  We can use the
        generic implementation of branch-and-link with slow branches. */
-#   define _JITTER_BRANCH_FAST_AND_LINK_INTERNAL(target) \
-      JITTER_BRANCH_AND_LINK_INTERNAL(target)
+#   define _JITTER_BRANCH_FAST_AND_LINK(target) \
+      _JITTER_BRANCH_AND_LINK_FALLBACK (target)
 # endif // if defined(JITTER_MACHINE_SUPPORTS_PROCEDURE)
 #elif ! defined(JITTER_MACHINE_SUPPORTS_PROCEDURE)
   /* The machine supports patch-ins, but not procedures.  The best we can do is
      using a generic branch-and-link implementation (relying on a hidden
      residual parameter for caller instructions) which performs the actual
      branch with a fast branch. */
-# define _JITTER_BRANCH_FAST_AND_LINK_INTERNAL(target)                       \
+# define _JITTER_BRANCH_FAST_AND_LINK(target)                                \
     do                                                                       \
       {                                                                      \
         /* Use the return address from the implicit specialized argument */  \
-        jitter_state_runtime._jitter_link = JITTER_RETURN_ADDRESS;           \
+        jitter_state_runtime._jitter_link.label                              \
+          = _JITTER_RETURN_ADDRESS;                                          \
         _JITTER_BRANCH_FAST (target);                                        \
-        __builtin_unreachable ();                                            \
+        /* FIXME: __builtin_unreachable should not be needed, if             \
+           _JITTER_BRANCH_FAST is defined correctly. */                      \
+        /* __builtin_unreachable (); */                                      \
       }                                                                      \
     while (false)
-#elif ! defined(_JITTER_BRANCH_FAST_AND_LINK_INTERNAL)
-# error "The machine claims to support procedures but _JITTER_BRANCH_FAST_AND_LINK_INTERNAL is not defiend."
+#elif ! defined(_JITTER_BRANCH_FAST_AND_LINK_NATIVE)
+# error "The machine claims to support procedures but _JITTER_BRANCH_FAST_AND_LINK_NATIVE is not defined."
+#else
+  /* The efficient case: no-threading dispatch, the machine supports patch-ins
+     and procedures. */
+# define _JITTER_BRANCH_FAST_AND_LINK(target)   \
+  _JITTER_BRANCH_FAST_AND_LINK_NATIVE (target)
 #endif
 
 

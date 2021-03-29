@@ -225,6 +225,7 @@ CODECONTENTLINEMIDDLE3 end{LINEWHITESPACE}?[^\ \t\n\r\f#][^\n\r\f]*
 "state-struct-backing-c"  { return STATE_BACKING_STRUCT_C; }
 "state-struct-runtime-c"  { return STATE_RUNTIME_STRUCT_C; }
 "state-initialization-c"  { return STATE_INITIALIZATION_C; }
+"state-reset-c"           { return STATE_RESET_C; }
 "state-finalization-c"    { return STATE_FINALIZATION_C; }
 "instruction-beginning-c" { return INSTRUCTION_BEGINNING_C; }
 "instruction-end-c"       { return INSTRUCTION_END_C; }
@@ -245,8 +246,11 @@ CODECONTENTLINEMIDDLE3 end{LINEWHITESPACE}?[^\ \t\n\r\f#][^\n\r\f]*
 "LGBYTESPERWORD"          { return LGBYTESPERWORD; }
 "hot"                     { return HOT; }
 "cold"                    { return COLD; }
+"non-branching"           { return NON_BRANCHING; }
+"branching"               { return BRANCHING; }
 "caller"                  { return CALLER; }
 "callee"                  { return CALLEE; }
+"returning"               { return RETURNING; }
 "relocatable"             { return RELOCATABLE; }
 "non-relocatable"         { return NON_RELOCATABLE; }
 "rule"                    { return RULE; }

@@ -122,7 +122,8 @@ number in the printed document.
 [\bibliographyanchor\]
 @end rmacro
 @rmacro bibref{bibliographyanchor}
-@cite{[\bibliographyanchor\]}
+@c @cite{[\bibliographyanchor\]}
+[\bibliographyanchor\]
 @end rmacro
 @end iftex
 @ifnottex
@@ -1913,6 +1914,8 @@ The recommended way of using Jitter right now is @emph{sub-package mode}:
 @table @code
 @item non-relocatable
 @item cold
+@c @item non-branching
+@item branching
 @item caller
 @item callee
 @item returning
@@ -4066,12 +4069,30 @@ The MIT Press, 2009.
 @bibend
 @end ignore
 
-@bibbegin{Ertl al.@: 2004}
+@bibbegin{Ertl+ 2004}
 M.@: Anton Ertl, David Gregg.
-``Retargeting JIT compilers by using C-compiler generated executable code'',
+``Retargeting JIT compilers by using C-compiler generated executable
+code'',
 in @emph{Parallel Architecture and Compilation Techniques}, 2004.
 @doi{10.1.1.67.4231}
 @bibend
+
+@bibbegin{Fog 2020A}
+Agner Fog.
+``Optimizing subroutines in assembly language: An optimization guide
+for x86 platforms'',
+2020 (updated in).
+Available at @url{https://www.agner.org/optimize}.
+@bibend
+
+@bibbegin{Fog 2020B}
+Agner Fog.
+``The microarchitecture of Intel, AMD and VIA CPUs: An optimization
+guide for assembly programmers and compiler makers'',
+2020 (updated in).
+Available at @url{https://www.agner.org/optimize}.
+@bibend
+
 
 @bibbegin{Gudeman 1993}
 David Gudeman.
@@ -4083,8 +4104,18 @@ Department of Computer Science, The University of Arizona, 1993.
 
 @bibbegin{Jones et al.@: 2012}
 Richard Jones, Antony Hosking, Eliot Moss.
-``The Garbage Collection Handbook --- The art of automatic memory management'',
+``The Garbage Collection Handbook --- The art of automatic memory
+management'',
 Chapman & Hall, 2012.
+@*
+This book is ``the'' reference on garbage collection.  Its style of
+presentation, nonchalantly hinting at possible design alternatives
+and presenting algorithms in a quick way without details, while
+appropriate for a topic of such breadth, assumes an experienced
+audience.  We direct garbage collection beginners to
+@bibref{Wilson 1992} as a first introduction; a reader having mastered
+Wilson's article will thoroughly understand and enjoy this deep and
+subtle text.
 @bibend
 
 @c FIXME: uncomment as I cite this.
@@ -4143,7 +4174,7 @@ Luca Saiu, ``Scalable BIBOP garbage collection for parallel functional
 programs on multi-core machines'', draft,
 Laboratoire d’Informatique de l’Université Paris Nord, 2011.
 Available at @url{http://ageinghacker.net/publications/gc-draft.pdf}.
-@*@*
+@*
 An ultimately unsuccessful attempt by the Author to compete with
 Bohem's garbage collector playing by the same rules: mark-sweep,
 conservative pointer finding, no safe points.
@@ -4173,6 +4204,16 @@ Paul R. Wilson.
 ``Uniprocessor Garbage Collection Techniques'',
 submitted to @emph{ACM Computing Surveys}, 1992.
 @doi{10.1.1.39.7380}
+@*
+Even at its age this excellent introduction and survey article remains
+the best way for beginners to approach garbage collection
+implementation.
+@*
+We recommend the version bearing the heading ``[Submitted to ACM
+Computing Surveys]''; the often cited but less extensive version
+published in @emph{IWMM '92: Proceedings of the International Workshop
+on Memory Management} either is abridged or shows the work at an
+earlier stage.
 @bibend
 
 

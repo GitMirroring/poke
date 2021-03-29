@@ -224,7 +224,7 @@ enum jitter_specialized_instruction_opcode
     jitter_specialized_instruction_opcode_NOP = 4,
     jitter_specialized_instruction_opcode_UNREACHABLE0 = 5,
     jitter_specialized_instruction_opcode_UNREACHABLE1 = 6,
-    jitter_specialized_instruction_opcode_UNREACHABLE2 = 7,
+    jitter_specialized_instruction_opcode_PRETENDTOJUMPANYWHERE = 7,
   };
 
 /* Add an opcode to the specialized program which is being built.  This is an

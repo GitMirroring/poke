@@ -1,6 +1,6 @@
 /* VM library: main VM C file template.
 
-   Copyright (C) 2016, 2017, 2018, 2019, 2020 Luca Saiu
+   Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021 Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -167,8 +167,8 @@ vmprefix_check_specialized_instruction_opcode_once (void)
            vmprefix_specialized_instruction_opcode__eUNREACHABLE1)
           == jitter_specialized_instruction_opcode_UNREACHABLE1);
   assert (((enum jitter_specialized_instruction_opcode)
-           vmprefix_specialized_instruction_opcode__eUNREACHABLE2)
-          == jitter_specialized_instruction_opcode_UNREACHABLE2);
+           vmprefix_specialized_instruction_opcode__ePRETENDTOJUMPANYWHERE)
+          == jitter_specialized_instruction_opcode_PRETENDTOJUMPANYWHERE);
 
   already_checked = true;
 }
@@ -251,10 +251,18 @@ vmprefix_dump_data_locations (jitter_print_context output)
 /* Initialization and finalization.
  * ************************************************************************** */
 
-#ifdef JITTER_HAVE_PATCH_IN
+#if defined (JITTER_HAVE_DEFECT_REPLACEMENT)
 JITTER_DEFECT_DESCRIPTOR_DECLARATIONS_(vmprefix)
+
+/* This global is defined from C: there is no particular need of doing it in
+   assembly.  It is initialised in vmprefix_execute_or_initialize , where C
+   labels are visible. */ // FIXME: unless it turns out to be simpler in assembly ...
+jitter_int
+vmprefix_defect_descriptors_correct_displacement;
+#endif // #if defined (JITTER_HAVE_DEFECT_REPLACEMENT)
+#if defined (JITTER_HAVE_PATCH_IN)
 JITTER_PATCH_IN_DESCRIPTOR_DECLARATIONS_(vmprefix)
-#endif // #ifdef JITTER_HAVE_PATCH_IN
+#endif // #if defined (JITTER_HAVE_PATCH_IN)
 
 #ifndef JITTER_DISPATCH_SWITCH
 /* True iff thread sizes are all non-negative and non-huge.  We refuse to
@@ -355,11 +363,12 @@ vmprefix_validate_threads_once (void)
 }
 #endif // #ifndef JITTER_DISPATCH_SWITCH
 
-#ifdef JITTER_HAVE_PATCH_IN
-/* The actual defect table.  We only need it when patch-ins are in use. */
+#if defined (JITTER_HAVE_DEFECT_REPLACEMENT)
+/* The actual replacement table.  We only need it when defect replacement is in
+   use. */
 jitter_uint
-vmprefix_defect_table [VMPREFIX_SPECIALIZED_INSTRUCTION_NO];
-#endif // #ifdef JITTER_HAVE_PATCH_IN
+vmprefix_replacement_table [VMPREFIX_SPECIALIZED_INSTRUCTION_NO];
+#endif // #if defined (JITTER_HAVE_DEFECT_REPLACEMENT)
 
 void
 vmprefix_initialize (void)
@@ -416,7 +425,7 @@ vmprefix_initialize (void)
            + vmprefix_meta_instruction_id_unreachable);
 
       /* Threads or pointers to native code blocks of course don't exist with
-   switch-dispatching. */
+         switch-dispatching. */
 #ifndef JITTER_DISPATCH_SWITCH
       the_vmprefix_vm.threads = (jitter_thread *)vmprefix_threads;
       the_vmprefix_vm.thread_sizes = (long *) vmprefix_thread_sizes;
@@ -443,11 +452,14 @@ vmprefix_initialize (void)
         = (JITTER_PATCH_IN_DESCRIPTORS_SIZE_IN_BYTES_NAME(vmprefix)
            / patch_in_descriptor_size);
       /* Cheap sanity check: if the size in bytes is not a multiple of
-         the element size, we're doing something very wrong. */
+         the element size, we are doing something very wrong. */
       if (JITTER_PATCH_IN_DESCRIPTORS_SIZE_IN_BYTES_NAME(vmprefix)
           % patch_in_descriptor_size != 0)
-        jitter_fatal ("patch-in descriptors total size not a multiple "
-                      "of the element size");
+        jitter_fatal ("patch-in descriptors total size %li not a multiple "
+                      "of the element size %li",
+                      (long) (JITTER_PATCH_IN_DESCRIPTORS_SIZE_IN_BYTES_NAME
+                                 (vmprefix)),
+                      (long) patch_in_descriptor_size);
       /* Initialize the patch-in table for this VM. */
       the_vmprefix_vm.patch_in_table
         = jitter_make_patch_in_table (the_vmprefix_vm.patch_in_descriptors,
@@ -485,17 +497,28 @@ vmprefix_initialize (void)
       the_vmprefix_vm.specialize_instruction = vmprefix_specialize_instruction;
       the_vmprefix_vm.rewrite = vmprefix_rewrite;
 
-#ifdef JITTER_HAVE_PATCH_IN
-      /* Fill the defect table.  Since the array in question is a global with a
-         fixed size, this needs to be done only once. */
-      jitter_fill_defect_table (vmprefix_defect_table,
-                                & the_vmprefix_vm,
-                                vmprefix_worst_case_defect_table,
-                                JITTER_DEFECT_DESCRIPTORS_NAME (vmprefix),
-                                (JITTER_DEFECT_DESCRIPTORS_SIZE_IN_BYTES_NAME
-                                    (vmprefix)
-                                 / sizeof (struct jitter_defect_descriptor)));
-#endif // #ifdef JITTER_HAVE_PATCH_IN
+#if defined (JITTER_HAVE_DEFECT_REPLACEMENT)
+      /* Fill the replacement table.  Since the array in question is a global
+         with a fixed size, this needs to be done only once. */
+      jitter_fill_replacement_table
+         (vmprefix_replacement_table,
+          & the_vmprefix_vm,
+          vmprefix_worst_case_replacement_table,
+          vmprefix_call_related_specialized_instruction_ids,
+          vmprefix_call_related_specialized_instruction_id_no,
+          vmprefix_specialized_instruction_call_relateds,
+          JITTER_DEFECT_DESCRIPTORS_NAME (vmprefix),
+          (JITTER_DEFECT_DESCRIPTORS_SIZE_IN_BYTES_NAME (vmprefix)
+           / sizeof (struct jitter_defect_descriptor)),
+          JITTER_DEFECT_CORRECT_DISPLACEMENT_NAME (vmprefix));
+#else /* no defect replacement */
+      /* In this configuration it is impossible to have defects: set every
+         defect count to zero. */
+      the_vmprefix_vm.defect_no = 0;
+      the_vmprefix_vm.defective_specialized_instruction_no = 0;
+      the_vmprefix_vm.defective_call_related_specialized_instruction_no = 0;
+      the_vmprefix_vm.replacement_specialized_instruction_no = 0;
+#endif // #if defined (JITTER_HAVE_DEFECT_REPLACEMENT)
 
       /* Initialize the empty list of states. */
       JITTER_LIST_INITIALIZE_HEADER (& the_vmprefix_vm.states);
@@ -507,9 +530,15 @@ vmprefix_initialize (void)
                                          vmprefix_meta_instructions,
                                          VMPREFIX_META_INSTRUCTION_NO);
 
-#ifdef JITTER_HAVE_PATCH_IN
-  jitter_dump_defect_table (stderr, vmprefix_defect_table, & the_vmprefix_vm);
-#endif // #ifdef JITTER_HAVE_PATCH_IN
+#if defined (JITTER_HAVE_DEFECT_REPLACEMENT)
+  jitter_dump_replacement_table (stderr, vmprefix_replacement_table,
+                                 & the_vmprefix_vm);
+#endif // #if defined (JITTER_HAVE_DEFECT_REPLACEMENT)
+#if defined (JITTER_HAVE_PATCH_IN)
+  //printf ("======================= Patch-in descriptors: BEGIN\n");
+  //JITTER_DUMP_PATCH_IN_DESCRIPTORS(vmprefix);
+  //printf ("======================= Patch-in descriptors: END\n");
+#endif // #if defined (JITTER_HAVE_PATCH_IN)
 }
 
 void
@@ -699,6 +728,52 @@ vmprefix_profile_sample_stop (void)
 
 
 
+/* Slow register initialisation.
+ * ************************************************************************** */
+
+/* Initialise slow registers (for register classes defining an initial value) in
+   a given Array, starting from a given rank up to another given rank.  The
+   argument old_slow_register_no_per_class indicates the number of already
+   initialised ranks, which this functions does not touch;
+   new_slow_register_no_per_class indicates the new number of ranks.  Every rank
+   from old_slow_register_no_per_class + 1 to new_slow_register_no_per_class,
+   both included, will be initialised. */
+static void
+vmprefix_initialize_slow_registers (char *initial_array_pointer,
+                                    jitter_int old_slow_register_no_per_class,
+                                    jitter_int new_slow_register_no_per_class)
+{
+  /* Compute the address of the first slow registers, which is the beginning
+     of the first rank. */
+  union vmprefix_any_register *first_slow_register
+    = ((union vmprefix_any_register *)
+       ((char *) initial_array_pointer
+        + VMPREFIX_FIRST_SLOW_REGISTER_UNBIASED_OFFSET));
+
+  /* Initialise every *new* rank, without touching the old ones. */
+  jitter_int i;
+  for (i = old_slow_register_no_per_class;
+       i < new_slow_register_no_per_class;
+       i ++)
+    {
+      /* A pointer to the i-th rank of slow registers.  Every register
+         in the rank is new and in general (according to its class) may
+         need initialisation. */
+      union vmprefix_any_register *rank
+        = first_slow_register + (i * VMPREFIX_REGISTER_CLASS_NO);
+      VMPREFIX_INITIALIZE_SLOW_REGISTER_RANK (rank);
+    }
+#if 0
+      fprintf (stderr, "initialised %li (up from %li) slow registers per class, array at %p\n",
+               (long) new_slow_register_no_per_class,
+               (long) old_slow_register_no_per_class,
+               initial_array_pointer);
+#endif
+}
+
+
+
+
 /* Array re-allocation.
  * ************************************************************************** */
 
@@ -732,37 +807,29 @@ vmprefix_make_place_for_slow_registers (struct vmprefix_state *s,
       printf ("Array size %li -> %li\n", (long) VMPREFIX_ARRAY_SIZE(old_slow_register_no_per_class), (long) VMPREFIX_ARRAY_SIZE(new_slow_register_no_per_class));
 #endif
       /* Save the new value for new_slow_register_no_per_class in the state
-         structure; reallocate the Array. */
+         structure; reallocate The Array. */
       s->vmprefix_state_backing.jitter_slow_register_no_per_class
         = new_slow_register_no_per_class;
       s->vmprefix_state_backing.jitter_array
         = jitter_xrealloc ((void *) s->vmprefix_state_backing.jitter_array,
                            VMPREFIX_ARRAY_SIZE(new_slow_register_no_per_class));
 
-      /* Initialise the slow registers we have just added, for every class. */
-      union vmprefix_any_register *first_slow_register
-        = ((union vmprefix_any_register *)
-           ((char *) s->vmprefix_state_backing.jitter_array
-            + VMPREFIX_FIRST_SLOW_REGISTER_UNBIASED_OFFSET));
-      jitter_int i;
-      for (i = old_slow_register_no_per_class;
-           i < new_slow_register_no_per_class;
-           i ++)
-        {
-          /* A pointer to the i-th rank of slow registers.  Every register
-             in the rank is new and in general (according to its class) may
-             need initialisation. */
-          union vmprefix_any_register *rank
-            = first_slow_register + (i * VMPREFIX_REGISTER_CLASS_NO);
-          VMPREFIX_INITIALIZE_SLOW_REGISTER_RANK (rank);
-        }
+     /* Initialise the slow registers we have just added, for every class. */
+     vmprefix_initialize_slow_registers (s->vmprefix_state_backing.jitter_array,
+                                         old_slow_register_no_per_class,
+                                         new_slow_register_no_per_class);
+
 #if defined (JITTER_PROFILE_SAMPLE)
       /* Now we can resume sample-profiling on this state if we suspended it. */
       if (suspending_sample_profiling)
         vmprefix_profile_sample_start (s);
 #endif // #if defined (JITTER_PROFILE_SAMPLE)
 #if 0
-      printf ("Done resizing The Array\n");
+      fprintf (stderr, "slow registers are now %li per class, Array at %p (biased %p)\n",
+               ((long)
+                s->vmprefix_state_backing.jitter_slow_register_no_per_class),
+               s->vmprefix_state_backing.jitter_array,
+               s->vmprefix_state_backing.jitter_array + JITTER_ARRAY_BIAS);
 #endif
     }
 
@@ -808,6 +875,43 @@ vmprefix_parse_mutable_routine_from_string (const char *string,
 
 
 
+/* State making and destroying.
+ * ************************************************************************** */
+
+/* State initialisation (with a given number of slow registers), reset and
+   finalisation are machine-generated. */
+
+void
+vmprefix_state_initialize (struct vmprefix_state *sp)
+{
+  vmprefix_state_initialize_with_slow_registers (sp, 0);
+}
+
+struct vmprefix_state *
+vmprefix_state_make_with_slow_registers (jitter_uint slow_register_no_per_class)
+{
+  struct vmprefix_state *res = jitter_xmalloc (sizeof (struct vmprefix_state));
+  vmprefix_state_initialize_with_slow_registers (res,
+                                                 slow_register_no_per_class);
+  return res;
+}
+
+struct vmprefix_state *
+vmprefix_state_make (void)
+{
+  return vmprefix_state_make_with_slow_registers (0);
+}
+
+void
+vmprefix_state_destroy (struct vmprefix_state *state)
+{
+  vmprefix_state_finalize (state);
+  free (state);
+}
+
+
+
+
 /* Executing code: unified routine API.
  * ************************************************************************** */
 
@@ -820,13 +924,29 @@ vmprefix_ensure_enough_slow_registers_for_routine
   vmprefix_ensure_enough_slow_registers_for_executable_routine (e, s);
 }
 
-void
+enum vmprefix_exit_status
 vmprefix_execute_routine (jitter_routine r,
                           struct vmprefix_state *s)
 {
   struct jitter_executable_routine *e
     = jitter_routine_make_executable_if_needed (r);
-  vmprefix_execute_executable_routine (e, s);
+  return vmprefix_execute_executable_routine (e, s);
+}
+
+
+
+
+
+/* Defects and replacements: user API.
+ * ************************************************************************** */
+
+/* These functions are all trivial wrappers around the functionality declared
+   in jitter/jitter-defect.h, hiding the VM pointer. */
+
+void
+vmprefix_defect_print_summary (jitter_print_context cx)
+{
+  jitter_defect_print_summary (cx, vmprefix_vm);
 }
 
 

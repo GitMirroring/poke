@@ -1,6 +1,6 @@
 /* Jitter: header for VM generation-time data structures.
 
-   Copyright (C) 2017, 2018, 2019, 2020 Luca Saiu
+   Copyright (C) 2017, 2018, 2019, 2020, 2021 Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -91,7 +91,8 @@ struct jitterc_register_class
   char *c_type;
 
   /* An expression in C specifying the initial value for a register of this
-     class. */
+     class, or NULL if the registers of this class are not initialised with
+     valid elements. */
   char *c_initial_value;
 
   /* How many fast registers exist for this class.  This is int rather than
@@ -251,7 +252,11 @@ enum jitterc_instruction_argument_kind
        in human-readable input just like in the previous case; the label may
        only be used for jumping to, but yields more efficient code.  This only
        works with no-threading dispatch. */
-    jitterc_instruction_argument_kind_fast_label  = 8
+    jitterc_instruction_argument_kind_fast_label  = 8,
+
+    /* A return address.  This argument kind is special and never occurs in
+       non-specialized instructions. */
+    jitterc_instruction_argument_kind_return_address = 16
   };
 
 /* A VM unspecialized instruction argument as parsed from the Jitter
@@ -376,6 +381,42 @@ enum jitterc_calleeness
     jitterc_calleeness_non_callee
   };
 
+/* An instruction with a "returning" returningness is allowed (even if not
+   required) to use the JITTER_RETURN branch. */
+enum jitterc_returningness
+  {
+    /* The default returningness, for the VM instructions where an explicit value
+       is not specified; this is used within the parser, to ensure that no more
+       than one value is specified.  If no value is explicitly given after
+       parsing the returningness is automatically set to non-returning, and this
+       value is never seen by the rest of the code. */
+    jitterc_returningness_unspecified,
+
+    /* The instruction may execute return operations. */
+    jitterc_returningness_returning,
+
+    /* The instruction never executes return operations. */
+    jitterc_returningness_non_returning
+  };
+
+/* An instruction with "branching" branchingness is allowed (even if not
+   required to) to use non-fast branches. */
+enum jitterc_branchingness
+  {
+    /* The default branchingness, for the VM instructions where an explicit value
+       is not specified; this is used within the parser, to ensure that no more
+       than one value is specified.  If no value is explicitly given after
+       parsing the branchingness is automatically set to non-branching, and this
+       value is never seen by the rest of the code. */
+    jitterc_branchingness_unspecified,
+
+    /* The instruction may execute non-fast branch operations. */
+    jitterc_branchingness_branching,
+
+    /* The instruction never executes non-fast branch operations. */
+    jitterc_branchingness_non_branching
+  };
+
 /* A VM instruction specification as extracted from the text file. */
 struct jitterc_instruction
 {
@@ -401,11 +442,17 @@ struct jitterc_instruction
   /* True iff the instruction has one or more fast label arguments. */
   bool has_fast_labels;
 
+  /* The instruction branchingness. */
+  enum jitterc_branchingness branchingness;
+
   /* The instruction callerness. */
   enum jitterc_callerness callerness;
 
   /* The instruction calleeness. */
   enum jitterc_calleeness calleeness;
+
+  /* The instruction returningness. */
+  enum jitterc_returningness returningness;
 
   /* The C code implementing the instruction. */
   char *code;
@@ -470,6 +517,13 @@ struct jitterc_specialized_argument*
 jitterc_make_specialized_instruction_argument_residual_label
    (const struct jitterc_instruction_argument *unspecialized)
   __attribute__ ((returns_nonnull, nonnull (1)));
+
+/* Return a fresh specialized instruction argument, encoding a return
+   address.  There is no explicit non-specialized counterpart. */
+struct jitterc_specialized_argument*
+jitterc_make_specialized_instruction_argument_return_address
+   (void)
+  __attribute__ ((returns_nonnull));
 
 /* Return the specialization of the given instruction argument, specialized to a
    given register. */
@@ -586,6 +640,11 @@ jitterc_print_specialized_instruction_forest (const gl_list_t forest)
 /* A VM specialized instruction specification. */
 struct jitterc_specialized_instruction
 {
+  /* The unique identifier of the specialized instruction, or -1 if this has not
+     been assigned yet.  Specialized instructions are numbered late in the
+     generation process. */
+  int opcode;
+
   /* The specialized instruction name. */
   char *name;
 
@@ -598,6 +657,9 @@ struct jitterc_specialized_instruction
 
   /* The specialized instruction relocatability. */
   enum jitterc_relocatability relocatability;
+
+  /* The specialized instruction branchingness. */
+  enum jitterc_branchingness branchingness;
 
   /* A pointer to the unspecialized instruction of which the present structure
      is one specialization.  This is NULL for special specialized instructions,
@@ -638,6 +700,22 @@ jitterc_make_specialized_instruction (struct jitterc_vm *vm,
 
 
 
+/* Specialized instruction properties.
+ * ************************************************************************** */
+
+/* Return true iff the pointed specialized instruction is "call-related".  Here
+   call-related means any of:
+   - caller;
+   - callee;
+   - returning. */
+bool
+jitterc_specialized_instruction_is_call_related
+   (const struct jitterc_specialized_instruction *sins)
+  __attribute__ ((nonnull (1)));
+
+
+
+
 /* Generation-time desctiptors for run-time VM stacks.
  * ************************************************************************** */
 
@@ -666,7 +744,8 @@ struct jitterc_stack
   /* The stack element type, as expressed in C. */
   char *c_type;
 
-  /* An expression in C specifying the initial value of each element. */
+  /* An expression in C specifying the initial value of each element, or NULL
+     if the backing is not initialised with valid elements. */
   char *c_initial_value;
 
   /* The stack name, as given by the user. */
@@ -745,7 +824,9 @@ struct jitterc_vm
        *initialization_c_code, *finalization_c_code,
        *state_early_c_code,
        *state_backing_struct_c_code, *state_runtime_struct_c_code,
-       *state_initialization_c_code, *state_finalization_c_code,
+       *state_initialization_c_code,
+       *state_reset_c_code /* NULL if not explicitly specified */,
+       *state_finalization_c_code,
        *instruction_beginning_c_code, *instruction_end_c_code;
 
   /* These are gl_list_t of strings. */
@@ -876,7 +957,8 @@ jitterc_vm_last_argument (struct jitterc_vm *vm)
 /* Compute analyses on a VM having all of its unspecialized instructions
    already.  This currently sorts instructions by name in the list, builds
    the vm->name_to_instruction hash table, computes the maximum instruction
-   name length and checks for rewrite-rule semantic violations.
+   name length, checks for rewrite-rule semantic violations, assigns
+   specialized instruction opcodes.
    Other properties will be easy to add here, if needed. */
 void
 jitterc_analyze_vm (struct jitterc_vm *vm) __attribute__ ((nonnull (1)));

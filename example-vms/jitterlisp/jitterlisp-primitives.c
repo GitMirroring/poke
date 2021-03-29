@@ -1,6 +1,6 @@
 /* JitterLisp: primitives.
 
-   Copyright (C) 2017, 2018, 2019, 2020 Luca Saiu
+   Copyright (C) 2017, 2018, 2019, 2020, 2021 Luca Saiu
    Written by Luca Saiu
 
    This file is part of the JitterLisp language implementation, distributed as
@@ -389,7 +389,16 @@ JITTERLISP_PRIMITIVE_FUNCTION_2_(plus, FIXNUM, FIXNUM,
 JITTERLISP_PRIMITIVE_FUNCTION_2_(minus, FIXNUM, FIXNUM,
   { JITTERLISP_MINUS_(res, args [0], args [1]); })
 JITTERLISP_PRIMITIVE_FUNCTION_2_(times, FIXNUM, FIXNUM,
-  { JITTERLISP_TIMES_(res, args [0], args [1]); })
+  { /* FIXME: do this for the other operations as well.  Factor. */
+    /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+    jitter_int arg0 = args [0];
+    jitter_int arg1 = args [1];
+    if (JITTER_WOULD_TIMES_OVERFLOW (jitter_uint,
+                                     jitter_int,
+                                     arg0, JITTERLISP_FIXNUM_DECODE (arg1),
+                                     JITTER_WORD_BIT_NO))
+      jitterlisp_error_cloned ("primordial-* overflow");
+    JITTERLISP_TIMES_(res, args [0], args [1]); })
 JITTERLISP_PRIMITIVE_FUNCTION_2_(divided, FIXNUM, FIXNUM,
   { JITTERLISP_DIVIDED_(res, args [0], args [1]); })
 JITTERLISP_PRIMITIVE_FUNCTION_2_(divided_unsafe, FIXNUM, FIXNUM,
@@ -642,19 +651,31 @@ JITTERLISP_PRIMITIVE_FUNCTION_1_(compiled_closure_disassemble, COMPILED_CLOSURE,
 JITTERLISP_PRIMITIVE_FUNCTION_0_(print_locations,
   { jitterlispvm_dump_data_locations (jitterlisp_print_context); })
 JITTERLISP_PRIMITIVE_FUNCTION_0_(print_profile_specialized,
-  { struct jitterlispvm_profile_runtime *pr
+  { jitterlisp_print_error_char_star ("[profiling temporarily broken on jitterlisp]\n");
+    /*
+    struct jitterlispvm_profile_runtime *pr
       = jitterlispvm_state_profile_runtime (& jitterlispvm_state);
     jitterlispvm_profile_runtime_print_specialized (jitterlisp_print_context,
-                                                    pr); })
+                                                    pr);
+    */
+  })
 JITTERLISP_PRIMITIVE_FUNCTION_0_(print_profile_unspecialized,
-  { struct jitterlispvm_profile_runtime *pr
+  { jitterlisp_print_error_char_star ("[profiling temporarily broken on jitterlisp]\n");
+    /*
+    struct jitterlispvm_profile_runtime *pr
       = jitterlispvm_state_profile_runtime (& jitterlispvm_state);
     jitterlispvm_profile_runtime_print_unspecialized (jitterlisp_print_context,
-                                                      pr); })
+                                                      pr);
+    */
+  })
 JITTERLISP_PRIMITIVE_FUNCTION_0_(reset_profileb,
-  { struct jitterlispvm_profile_runtime *pr
+  { jitterlisp_print_error_char_star ("[profiling temporarily broken on jitterlisp]\n");
+    /*
+    struct jitterlispvm_profile_runtime *pr
       = jitterlispvm_state_profile_runtime (& jitterlispvm_state);
-    jitterlispvm_profile_runtime_clear (pr); })
+    jitterlispvm_profile_runtime_clear (pr);
+    */
+  })
 /* Operations to display legal notices. */
 JITTERLISP_PRIMITIVE_FUNCTION_0_(copying,
   { jitter_print_char_star (jitterlisp_print_context, jitterlisp_gpl); })

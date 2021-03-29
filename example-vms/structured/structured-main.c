@@ -1,6 +1,6 @@
 /* Jittery structured language example: main.
 
-   Copyright (C) 2017, 2019, 2020 Luca Saiu
+   Copyright (C) 2017, 2019, 2020, 2021 Luca Saiu
    Written by Luca Saiu
 
    This file is part of the Jitter structured-language example, distributed
@@ -109,6 +109,8 @@ structured_help (void)
   printf ("      --cross-disassemble          use the cross-disassembler rather than\n");
   printf ("                                   the native disassembler; also enable\n");
   printf ("                                   disassembly as per --disassemble\n");
+  printf ("      --print-defects              print information about defective\n");
+  printf ("                                   specialized instructions and replacements\n");
   printf ("      --profile-specialized        print profiling information for\n");
   printf ("                                   specialized instructions %s\n",
           (instrumentation != jitter_vm_instrumentation_none
@@ -122,6 +124,9 @@ structured_help (void)
   printf ("      --dry-run                    do not actually run the program\n");
   printf ("      --print-routine, --print     print VM instructions\n");
   printf ("      --no-dry-run                 run the program (default)\n");
+  printf ("      --no-print-defects           do not print information about defective\n");
+  printf ("                                   specialized instructions and replacements\n");
+  printf ("                                   (default)\n");
   printf ("      --no-profile-specialized     omit profiling information for specialized\n");
   printf ("                                   instructions (default)\n");
   printf ("      --no-profile-unspecialized   omit profiling information for unspecialized\n");
@@ -216,6 +221,10 @@ struct structured_command_line
   /* True iff we should disassemble the VM routine. */
   bool disassemble;
 
+  /* True iff we should print information about defective specialised
+     instructions and their replacements. */
+  bool print_defects;
+
   /* True iff we should print profiling information, respectively for
      specialised and unspecialised instructions. */
   bool profile_specialized;
@@ -252,6 +261,7 @@ structured_initialize_command_line (struct structured_command_line *cl)
   cl->print = false;
   cl->cross_disassemble = false;
   cl->disassemble = false;
+  cl->print_defects = false;
   cl->profile_specialized = false;
   cl->profile_unspecialized = false;
   cl->print_locations = false;
@@ -310,10 +320,14 @@ structured_parse_command_line (struct structured_command_line *cl,
           cl->cross_disassemble = true;
           cl->disassemble = true;
         }
+      else if (handle_options && ! strcmp (arg, "--print-defects"))
+        cl->print_defects = true;
       else if (handle_options && ! strcmp (arg, "--profile-specialized"))
         cl->profile_specialized = true;
       else if (handle_options && ! strcmp (arg, "--profile-unspecialized"))
         cl->profile_unspecialized = true;
+      else if (handle_options && ! strcmp (arg, "--no-print-defects"))
+        cl->print_defects = false;
       else if (handle_options && ! strcmp (arg, "--no-profile-unspecialized"))
         cl->profile_unspecialized = false;
       else if (handle_options && ! strcmp (arg, "--no-profile-specialized"))
@@ -438,6 +452,10 @@ structured_work (struct structured_command_line *cl)
      executable Jittery routine from a mutable Jittery routine by calling
      structuredvm_make_executable_routine.  However the unified API makes this
      automatic. */
+
+  /* Print defect information if the user asked to */
+  if (cl->print_defects)
+    structuredvm_defect_print_summary (ctx);
 
   /* Print and/or disassemble the routine as requested. */
   if (cl->print)

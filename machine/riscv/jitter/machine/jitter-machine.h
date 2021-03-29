@@ -1,6 +1,6 @@
 /* VM library: RISC-V definitions, to be included from both C and assembly.
 
-   Copyright (C) 2017, 2018, 2019, 2020 Luca Saiu
+   Copyright (C) 2017, 2018, 2019, 2020, 2021 Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -205,7 +205,7 @@
               [jitter_operand1] "rJ" (opd1),                                \
               JITTER_INPUT_VM_INSTRUCTION_BEGINNING /* inputs */            \
             : /* clobbers */                                                \
-            : jitter_dispatch_label /* goto labels */)
+            : jitter_fake_target /* goto labels */)
 
 /* Low-level fast branches on sign. */
 #define _JITTER_LOW_LEVEL_BRANCH_FAST_IF_ZERO_(opd0, tgt)                       \
@@ -293,7 +293,7 @@
             : JITTER_NON_RESERVED_REGISTER_TEMPORARY_OTHER1_STRING,             \
               JITTER_NON_RESERVED_REGISTER_TEMPORARY_OTHER2_STRING              \
               /* clobbers */                                                    \
-            : jitter_dispatch_label /* goto labels */);                         \
+            : jitter_fake_target /* goto labels */);                         \
   /* Make sure to get the current value in the register as the result, and not  \
      a previous copy.  In order to force this, pretend to update the resiter    \
      here, only if the branch was not taken.  Inline asm will use the same      \
@@ -342,7 +342,7 @@
    which takes the used register as a pop hint to, differently from when other
    registers (other than x5) are used.  So it is simple: place the target
    address into x1 , and jump to it. */
-#define JITTER_RETURN(link_rvalue)                                             \
+#define _JITTER_RETURN(link_rvalue)                                            \
   do                                                                           \
     {                                                                          \
       /* By using a local register variable we can avoid a register copy */    \
@@ -354,7 +354,7 @@
                 : /* outputs. */                                               \
                 : [return_addr] "r" (jitter_the_return_address) /* inputs. */  \
                 : /* clobbers. */                                              \
-                : jitter_dispatch_label /* gotolabels. */);                    \
+                : jitter_fake_target /* gotolabels. */);                    \
       /* The rest of the VM instruction is unreachable. */                     \
       __builtin_unreachable ();                                                \
     }                                                                          \
@@ -362,7 +362,7 @@
 
 /* Easy: perform a jalr with the return address set in x1 , which on RISC-V
    implies the correct branch prediction hint (push). */
-#define JITTER_BRANCH_AND_LINK_INTERNAL(callee_rvalue)                        \
+#define _JITTER_BRANCH_AND_LINK_NATIVE(callee_rvalue)                         \
   do                                                                          \
     {                                                                         \
       const void * const jitter_destination =                                 \
@@ -372,16 +372,17 @@
                 : /* outputs. */                                              \
                 : [destination] "r" (jitter_destination) /* inputs. */        \
                 : "x1" /* clobbers. */                                        \
-                : jitter_dispatch_label /* gotolabels. */);                   \
-      /* Skip the rest of the specialised instruction, for compatibility */   \
-      /* with more limited dispatches. */                                     \
-      JITTER_JUMP_TO_SPECIALIZED_INSTRUCTION_END;                             \
+                : jitter_fake_target /* gotolabels. */);                   \
+      /* It would be incorrect to have __builtin_unreachable or               \
+         JITTER_JUMP_TO_SPECIALIZED_INSTRUCTION_END here: see the comment in  \
+         the x86_64 version. */                                               \
     }                                                                         \
   while (false)
 
 /* Perform an ordinary jalr not saving the return register, after manually
    loading the given "return address" into x1. */
-#define JITTER_BRANCH_AND_LINK_WITH(_jitter_callee_rvalue, _jitter_new_link)  \
+#define _JITTER_BRANCH_AND_LINK_WITH_NATIVE(_jitter_callee_rvalue,            \
+                                            _jitter_new_link)                 \
   do                                                                          \
     {                                                                         \
       const void * const jitter_callee_rvalue =                               \
@@ -391,15 +392,15 @@
       asm goto (JITTER_ASM_DEFECT_DESCRIPTOR                                  \
                 JITTER_ASM_COMMENT_UNIQUE("Branch-and-link-with, pretending"  \
                                           "to go to "                         \
-                                          "%l[jitter_dispatch_label]")        \
+                                          "%l[jitter_fake_target]")        \
                 "addi x1, %[jitter_new_link], 0\n\t"                          \
                 "jalr x0, 0(%[jitter_callee_rvalue])\n\t"                     \
                 : /* outputs. */                                              \
                 : [jitter_callee_rvalue] "r" (jitter_callee_rvalue),          \
                   [jitter_new_link] "r" (jitter_new_link) /* inputs. */       \
                 : "x1" /* clobbers. */                                        \
-                : jitter_dispatch_label /* gotolabels. */);                   \
-      /* The rest of the VM instruction is unreachable: this is an            \
+                : jitter_fake_target /* gotolabels. */);                   \
+      /* The rest of the VM instruction is unreachable: this tail call is an  \
          unconditional jump. */                                               \
       __builtin_unreachable ();                                               \
     }                                                                         \
@@ -407,7 +408,7 @@
 
 /* Perform a jal with return address in x1 .  Of course we need a patch-in,
    since the destination address is encoded in the jumping instruction. */
-#define _JITTER_BRANCH_FAST_AND_LINK_INTERNAL(target_index)                    \
+#define _JITTER_BRANCH_FAST_AND_LINK_NATIVE(target_index)                      \
   do                                                                           \
     {                                                                          \
       asm goto (JITTER_ASM_DEFECT_DESCRIPTOR                                   \
@@ -420,11 +421,10 @@
                 : JITTER_PATCH_IN_INPUTS_FOR_EVERY_CASE,                       \
                   JITTER_INPUT_VM_INSTRUCTION_BEGINNING /* inputs */           \
                 : /* clobbers. */                                              \
-                : jitter_dispatch_label /* gotolabels. */);                    \
-      /* The rest of this specialised instruction is unreachable.  This        \
-         implementation is not based on hardware call and return, so there     \
-         is no need to generate a hardware jump either. */                     \
-      __builtin_unreachable ();                                                \
+                : jitter_fake_target /* gotolabels. */);                    \
+      /* It would be incorrect to have __builtin_unreachable or                \
+         JITTER_JUMP_TO_SPECIALIZED_INSTRUCTION_END here: see the comment in   \
+         the x86_64 version. */                                                \
     }                                                                          \
   while (false)
 

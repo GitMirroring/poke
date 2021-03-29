@@ -1,6 +1,7 @@
 ;;; JitterLisp (let's say -*- Scheme -*- for the purposes of Emacs) -- library.
 
 ;;; Copyright (C) 2017, 2018, 2019, 2020 Luca Saiu
+;;; Updated in 2021 by Luca Saiu
 ;;; Written by Luca Saiu
 
 ;;; This file is part of the JitterLisp language implementation, distributed as
@@ -5925,7 +5926,9 @@
           c
           (length formals)
           (reverse! reversed-nonlocal-values)
-          (reverse! (compiler-reversed-instructions s))))))
+          (reverse! (compiler-reversed-instructions s)))
+;;(newline) (disassemble-procedure c) (newline)
+      )))
 
 ;;; A convenient procedure to call when one closure is being compiled in
 ;;; isolation.

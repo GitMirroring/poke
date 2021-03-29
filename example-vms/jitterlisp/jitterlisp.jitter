@@ -1,6 +1,6 @@
 ## Jitter specification for the JitterLisp VM.
 
-## Copyright (C) 2017, 2018, 2020 Luca Saiu
+## Copyright (C) 2017, 2018, 2020, 2021 Luca Saiu
 ## Written by Luca Saiu
 
 ## This file is part of JitterLisp, distributed as an example along with Jitter
@@ -36,21 +36,27 @@ end
 stack m
   long-name "mainstack"
   c-element-type "jitterlisp_object"
-  c-initial-value "JITTERLISP_UNDEFINED"
+  element-no 10240
+  # c-initial-value "JITTERLISP_UNINITIALIZED_MAINSTACK_VALUE"
+  # guard-underflow guard-overflow
+  no-guard-underflow no-guard-overflow
   tos-optimized
 end
 
 stack t
   long-name "returnstack"
   c-element-type "jitterlisp_object"
-  c-initial-value "JITTERLISP_UNDEFINED"
+  element-no 10240
+  # c-initial-value "JITTERLISP_UNINITIALIZED_RETURNSTACK_VALUE"
+  # guard-underflow guard-overflow
+  no-guard-underflow no-guard-overflow
   non-tos-optimized
 end
 
 register-class r
   c-type "jitterlisp_object"
-  c-initial-value "JITTERLISP_UNDEFINED"
-  fast-register-no 0 #2
+#  c-initial-value "JITTERLISP_UNINITIALIZED_REGISTER_VALUE"
+  fast-register-no 0#1
 end
 
 
@@ -344,13 +350,25 @@ state-struct-runtime-c
 
     /* The nursery allocation limit, untagged -- which is to say, the maximum
        valid address in the nursery plus 1.
-       Notice that it is correct, is slightly conservative, to compare even a
+       Notice that it is correct, if slightly conservative, to compare even a
        tagged pointer against this in an expression like
           new_tagged_pointer < allocation_limit
        , since a tagged pointer is always greater than or equal to its untagged
        counterpart. */
     char *allocation_limit;
 #endif // #ifdef JITTER_GC_STUB
+  end
+end
+
+state-struct-backing-c
+  code
+    /* Every VM state which is not currently in use is linked within
+       the list jitterlisp_unused_states.  See the "State pool" section
+       in jitterlisp-eval-vm.h .
+       The code for linking and unlinking states within the list is in
+       jitterlisp-eval-vm.c ; it is not part of state initialisation or
+       finalisation. */
+    struct jitter_list_links unused_links;
   end
 end
 
@@ -365,9 +383,34 @@ state-initialization-c
   jitter_state_runtime->allocation_next = nursery;
   jitter_state_runtime->allocation_limit = nursery + nursery_size;
 #endif // #ifdef JITTER_GC_STUB
+
+  /* Register the two stack backings as GC roots. */
+  jitterlisp_push_stack_backing_as_gc_root
+     (& jitter_state_backing->jitter_stack_mainstack_backing);
+  jitterlisp_push_stack_backing_as_gc_root
+     (& jitter_state_backing->jitter_stack_returnstack_backing);
   end
 end
 
+state-reset-c
+  code
+    /* If this explicit code block were not provided a state would be reset
+       by first executing the user finalisation code, and then the user
+       initialisation code.  That would first unregister some roots, and
+       then re-register them.
+       The best solution here consists in explicitly doing nothing. */
+  end
+end
+
+state-finalization-c
+  code
+    /* This assumes that states are made and destroyed in LIFO order, which
+       is true in JitterLisp but still crude.  I will define a better API
+       when switching to the new Jitter GC (in Boehm's defense, it could
+       easily be done with his GC as well). */
+    jitterlisp_pop_gc_roots (2);
+  end
+end
 
 
 
@@ -759,6 +802,90 @@ instruction branch-if-not-null (?f)
     jitterlisp_object top = JITTER_TOP_MAINSTACK();
     JITTER_DROP_MAINSTACK();
     JITTER_BRANCH_FAST_IF_NOTEQUAL(top, JITTERLISP_EMPTY_LIST, JITTER_ARGF0);
+  end
+end
+
+instruction branch-if-positive (?f, ?f)
+  code
+    JITTERLISPVM_CHECK_TYPES_1(FIXNUM, JITTER_ARGF1);
+    jitterlisp_object top = JITTER_TOP_MAINSTACK();
+    JITTER_DROP_MAINSTACK();
+    JITTER_BRANCH_FAST_IF_POSITIVE(top, JITTER_ARGF0);
+  end
+end
+
+instruction branch-if-non-positive (?f, ?f)
+  code
+    JITTERLISPVM_CHECK_TYPES_1(FIXNUM, JITTER_ARGF1);
+    jitterlisp_object top = JITTER_TOP_MAINSTACK();
+    JITTER_DROP_MAINSTACK();
+    JITTER_BRANCH_FAST_IF_NONPOSITIVE(top, JITTER_ARGF0);
+  end
+end
+
+instruction branch-if-register-positive (?R, ?f, ?f)
+  code
+#if ! defined (JITTERLISP_UNSAFE)
+    JITTERLISP_BRANCH_FAST_UNLESS_FIXNUM (JITTER_ARG0, JITTER_ARGF2);
+#endif
+    JITTER_BRANCH_FAST_IF_POSITIVE(JITTER_ARG0, JITTER_ARGF1);
+  end
+end
+
+instruction branch-if-register-non-positive (?R, ?f, ?f)
+  code
+#if ! defined (JITTERLISP_UNSAFE)
+    JITTERLISP_BRANCH_FAST_UNLESS_FIXNUM (JITTER_ARG0, JITTER_ARGF2);
+#endif
+    JITTER_BRANCH_FAST_IF_NONPOSITIVE(JITTER_ARG0, JITTER_ARGF1);
+  end
+end
+
+instruction branch-if-register-null (?R, ?f)
+  code
+    JITTER_BRANCH_FAST_IF_EQUAL(JITTER_ARG0,
+                                JITTERLISP_EMPTY_LIST,
+                                JITTER_ARGF1);
+  end
+end
+
+instruction branch-if-register-not-null (?R, ?f)
+  code
+    JITTER_BRANCH_FAST_IF_NOTEQUAL(JITTER_ARG0,
+                                   JITTERLISP_EMPTY_LIST,
+                                   JITTER_ARGF1);
+  end
+end
+
+instruction one-minus-register (?R, !R, ?f)
+  code
+#if ! defined (JITTERLISP_UNSAFE)
+    JITTERLISP_BRANCH_FAST_UNLESS_FIXNUM (JITTER_ARG0, JITTER_ARGF2);
+#endif
+    JITTERLISP_1MINUS_OR_OVERFLOW_(JITTER_ARG1,
+                                   JITTER_ARG0,
+                                   JITTER_ARGF2);
+  end
+end
+
+instruction one-plus-register (?R, !R, ?f)
+  code
+#if ! defined (JITTERLISP_UNSAFE)
+    JITTERLISP_BRANCH_FAST_UNLESS_FIXNUM (JITTER_ARG0, JITTER_ARGF2);
+#endif
+    JITTERLISP_1PLUS_OR_OVERFLOW_(JITTER_ARG1,
+                                  JITTER_ARG0,
+                                  JITTER_ARGF2);
+  end
+end
+
+instruction cdr-register (?R, !R, ?f)
+  code
+#if ! defined (JITTERLISP_UNSAFE)
+    JITTERLISP_BRANCH_FAST_UNLESS_CONS (JITTER_ARG0, JITTER_ARGF2);
+#endif
+    JITTERLISP_CDR_(JITTER_ARG1,
+                    JITTER_ARG0);
   end
 end
 
@@ -1297,7 +1424,7 @@ end
 instruction call-from-c ()
   caller
   code
-    /* Pop a number (untagged) off the stack, so that I know at which
+    /* Get a number (untagged) from the stack top, so that I know at which
        depth to find the closure.  The arity check must have been
        performed already on the interpreter side. */
     const jitter_uint in_arity_plus_one = JITTER_TOP_MAINSTACK();
@@ -1306,20 +1433,13 @@ instruction call-from-c ()
        callee.  Shall I factor the common code with a macro? */
 
     /* Decode the closure. */
-//#define STRESS
-#ifndef STRESS
-    // FIXME: This is correct, and faster ...
     jitterlisp_object callee
       = JITTER_AT_NONZERO_DEPTH_MAINSTACK(in_arity_plus_one);
-    JITTER_DROP_MAINSTACK();
-#else
-    // FIXME ...But this stresses the code better (mips gcc 8, x86_64 gcc 7).
-    JITTER_DROP_MAINSTACK();
-    jitterlisp_object callee
-      = JITTER_AT_DEPTH_MAINSTACK(in_arity_plus_one - 1);
-#endif // #ifndef STRESS
     struct jitterlisp_closure *c = JITTERLISP_CLOSURE_DECODE(callee);
     struct jitterlisp_compiled_closure *cc = & c->compiled;
+
+    /* Drop the number of arguments. */
+    JITTER_DROP_MAINSTACK();
 
     /* Make place for the return address in the return stack.  The
        actual value will be written by the callee. */
@@ -1417,6 +1537,8 @@ end
 
 # FIXME: factor with the other call instructions.
 instruction tail-call (?n 0 1 2 3 4 5 6 7 8 9 10)
+  caller
+  returning
   code
     const jitter_uint in_arity = JITTER_ARGN0;
     jitterlisp_object callee = JITTER_AT_DEPTH_MAINSTACK(in_arity);
@@ -1485,7 +1607,7 @@ end
 
 # FIXME: factor with the other call instructions.
 instruction tail-call-compiled (?n 0 1 2 3 4 5 6 7 8 9 10)
-  #caller
+  caller
   code
     const jitter_uint in_arity = JITTER_ARGN0;
     jitterlisp_object callee = JITTER_AT_DEPTH_MAINSTACK(in_arity);
@@ -1514,18 +1636,15 @@ instruction procedure-prolog ()
        stack has already been pushed (with an unspecified value on the
        top) by the caller. */
     JITTER_TOP_RETURNSTACK() = (jitterlisp_object) JITTER_LINK;
-    //dump_stacks (0, the_jitter_state_runtime_pointer);
   end
 end
 
 instruction return ()
+  returning
   code
-    //dump_stacks (1, the_jitter_state_runtime_pointer);
     jitter_uint return_address = JITTER_TOP_RETURNSTACK();
     JITTER_DROP_RETURNSTACK();
-    //dump_stacks (2, the_jitter_state_runtime_pointer);
     JITTER_RETURN(return_address);
-    //dump_stacks (1, the_jitter_state_runtime_pointer);
   end
 end
 
@@ -1846,6 +1965,58 @@ rule non-nullp-branch-if-false rewrite
   primitive-non-nullp; branch-if-false $a
 into
   branch-if-null $a
+end
+
+rule positivep-branch-if-true rewrite
+  primitive-positivep $a; branch-if-true $b
+into
+  branch-if-positive $b, $a
+end
+rule positivep-branch-if-false rewrite
+  primitive-positivep $a; branch-if-false $b
+into
+  branch-if-non-positive $b, $a
+end
+
+rule push-register-branch-if-positive rewrite
+  push-register $a; branch-if-positive $b, $c
+into
+  branch-if-register-positive $a, $b, $c
+end
+rule push-register-branch-if-non-positive rewrite
+  push-register $a; branch-if-non-positive $b, $c
+into
+  branch-if-register-non-positive $a, $b, $c
+end
+
+rule push-register-branch-if-null rewrite
+  push-register $a; branch-if-null $b
+into
+  branch-if-register-null $a, $b
+end
+rule push-register-branch-if-non-null rewrite
+  push-register $a; branch-if-not-null $b
+into
+  branch-if-register-not-null $a, $b
+end
+
+# These rules optimise the common pattern in which a register
+# value's successor, predecessor or cdr is written into another
+# (or the same) register.
+rule push-register-one-minus-pop-to-register rewrite
+  push-register $a; primitive-one-minus $b; pop-to-register $c
+into
+  one-minus-register $a, $c, $b
+end
+rule push-register-one-plus-pop-to-register rewrite
+  push-register $a; primitive-one-plus $b; pop-to-register $c
+into
+  one-plus-register $a, $c, $b
+end
+rule push-register-cdr-pop-to-register rewrite
+  push-register $a; primitive-cdr $b; pop-to-register $c
+into
+  cdr-register $a, $c, $b
 end
 
 # # Some save/restore pairs are easy to eliminate.

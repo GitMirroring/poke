@@ -298,7 +298,7 @@ struct jitter_patch_in_descriptor
             : JITTER_PATCH_IN_INPUTS_FOR_EVERY_CASE,                 \
               JITTER_INPUT_VM_INSTRUCTION_BEGINNING /* inputs */     \
             : /* clobbers */                                         \
-            : jitter_dispatch_label /* gotolabels */)
+            : jitter_fake_target /* gotolabels */)
 
 /* The inline asm inputs to be used as part of the input constraints for every
    patch-in. */

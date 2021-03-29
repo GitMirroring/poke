@@ -1,6 +1,6 @@
 /* VM default frontend for vmprefix VM.
 
-   Copyright (C) 2016, 2017, 2018, 2019, 2020 Luca Saiu
+   Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021 Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -70,6 +70,7 @@
 struct vmprefix_main_command_line
 {
   bool debug;
+  bool print_defects;
   bool profile_specialized;
   bool profile_unspecialized;
   bool progress_on_stderr;
@@ -105,13 +106,14 @@ enum vmprefix_vm_negative_option
     vmprefix_vm_negative_option_no_dry_run = -4,
     vmprefix_vm_negative_option_no_print_locations = -5,
     vmprefix_vm_negative_option_no_print_routine = -6,
-    vmprefix_vm_negative_option_no_profile_specialized = -7,
-    vmprefix_vm_negative_option_no_profile_unspecialized = -8,
-    vmprefix_vm_negative_option_no_progress_on_stderr = -9,
-    vmprefix_vm_negative_option_no_slow_literals_only = -10,
-    vmprefix_vm_negative_option_no_slow_registers_only = -11,
-    vmprefix_vm_negative_option_no_slow_only = -12,
-    vmprefix_vm_negative_option_optimization_rewriting = -13
+    vmprefix_vm_negative_option_no_print_defects = -7,
+    vmprefix_vm_negative_option_no_profile_specialized = -8,
+    vmprefix_vm_negative_option_no_profile_unspecialized = -9,
+    vmprefix_vm_negative_option_no_progress_on_stderr = -10,
+    vmprefix_vm_negative_option_no_slow_literals_only = -11,
+    vmprefix_vm_negative_option_no_slow_registers_only = -12,
+    vmprefix_vm_negative_option_no_slow_only = -13,
+    vmprefix_vm_negative_option_optimization_rewriting = -14
   };
 
 /* Numeric keys for options having only a long format.  These must not conflict
@@ -119,10 +121,11 @@ enum vmprefix_vm_negative_option
 enum vmprefix_vm_long_only_option
   {
     vmprefix_vm_long_only_option_print_locations = -109,
-    vmprefix_vm_long_only_option_profile_specialized = -110,
-    vmprefix_vm_long_only_option_profile_unspecialized = -111,
-    vmprefix_vm_long_only_option_dump_jitter_version = -112,
-    vmprefix_vm_long_only_option_slow_only = -113
+    vmprefix_vm_long_only_option_print_defects = -110,
+    vmprefix_vm_long_only_option_profile_specialized = -111,
+    vmprefix_vm_long_only_option_profile_unspecialized = -112,
+    vmprefix_vm_long_only_option_dump_jitter_version = -113,
+    vmprefix_vm_long_only_option_slow_only = -114
   };
 
 /* Update our option state with the information from a single command-line
@@ -140,6 +143,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       cl->debug = false;
       cl->progress_on_stderr = false;
       cl->print_locations = false;
+      cl->print_defects = false;
       cl->profile_specialized = false;
       cl->profile_unspecialized = false;
       cl->print_routine = false;
@@ -210,6 +214,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case vmprefix_vm_long_only_option_print_locations:
       cl->print_locations = true;
       break;
+    case vmprefix_vm_long_only_option_print_defects:
+      cl->print_defects = true;
+      break;
     case vmprefix_vm_long_only_option_profile_specialized:
       cl->profile_specialized = true;
       break;
@@ -224,6 +231,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
     case vmprefix_vm_negative_option_no_print_routine:
       cl->print_routine = false;
+      break;
+    case vmprefix_vm_negative_option_no_print_defects:
+      cl->print_defects = false;
       break;
     case vmprefix_vm_negative_option_no_profile_specialized:
       cl->profile_specialized = false;
@@ -376,6 +386,8 @@ static struct argp_option vmprefix_main_option_specification[] =
    {"progress-on-stderr", 'e', NULL, 0,
     "Show progress information on stderr instead of stdout"},
    {"debug", 'd', NULL, 0, "Enable debugging" },
+   {"print-defects", vmprefix_vm_long_only_option_print_defects, NULL, 0,
+    "Print defect and replacement information"},
    {"profile-specialized", vmprefix_vm_long_only_option_profile_specialized,
     NULL, 0,
     "Print VM specialised instruction profiling information, if configured in"},
@@ -408,6 +420,8 @@ static struct argp_option vmprefix_main_option_specification[] =
     NULL, 0, "Show progress information on stdout (default)"},
    {"no-debug", vmprefix_vm_negative_option_no_debug,
     NULL, 0, "Disable debugging (default)"},
+   {"no-print-defects", vmprefix_vm_negative_option_no_print_defects, NULL, 0,
+    "Don't print defect and replacement information (default)"},
    {"no-profile-specialized", vmprefix_vm_negative_option_no_profile_specialized,
     NULL, 0, "Disable specialized instruction profiling (default)"},
    {"no-profile-unspecialized", vmprefix_vm_negative_option_no_profile_unspecialized,
@@ -599,6 +613,9 @@ main (int argc, char **argv)
     fprintf (progress, "Making executable...\n");
   struct vmprefix_executable_routine *er
     = vmprefix_make_executable_routine (r);
+
+  if (cl.print_defects)
+    vmprefix_defect_print_summary (ctx);
 
   if (cl.print_routine)
     {

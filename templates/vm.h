@@ -1,6 +1,6 @@
 /* VM library: main header file.
 
-   Copyright (C) 2016, 2017, 2018, 2019, 2020 Luca Saiu
+   Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021 Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -97,9 +97,16 @@ struct vmprefix_state;
 /* Initialize the pointed VM state data structure, or fail fatally.  The
    function definition is machine-generated, even if it may include user code.
    The state backing and runtime are initialized at the same time, and in fact
-   the distinction between them is invisible to the VM user. */
+   the distinction between them is invisible to the VM user.
+   The version not specifying a given number of slow registers per class
+   sets slow registers to be initially zero. */
 void
 vmprefix_state_initialize (struct vmprefix_state *state)
+  __attribute__ ((nonnull (1)));
+void
+vmprefix_state_initialize_with_slow_registers (struct vmprefix_state *state,
+                                               jitter_uint
+                                               slow_register_no_per_class)
   __attribute__ ((nonnull (1)));
 
 /* Finalize the pointed VM state data structure, or fail fatally.  The function
@@ -107,6 +114,23 @@ vmprefix_state_initialize (struct vmprefix_state *state)
    backing and runtime are finalized at the same time. */
 void
 vmprefix_state_finalize (struct vmprefix_state *state)
+  __attribute__ ((nonnull (1)));
+
+/* The make/destroy counterparts of the initialize/finalize functions above. */
+struct vmprefix_state *
+vmprefix_state_make (void)
+  __attribute__ ((returns_nonnull));
+struct vmprefix_state *
+vmprefix_state_make_with_slow_registers (jitter_uint slow_register_no_per_class)
+  __attribute__ ((returns_nonnull));
+void
+vmprefix_state_destroy (struct vmprefix_state *state)
+  __attribute__ ((nonnull (1)));
+
+/* Reset the pointed VM state, restoring its initial content.  This is cheaper
+   than finalising and re-initialising a state. */
+void
+vmprefix_state_reset (struct vmprefix_state *state)
   __attribute__ ((nonnull (1)));
 
 
@@ -880,6 +904,11 @@ vmprefix_vm_configuration;
    very existence is hidden.  For this reason some of the macros above, such
    vmprefix_make_executable_routine, have no unified counterpart here. */
 
+/* Defects and replacements. */
+void
+vmprefix_defect_print_summary (jitter_print_context cx)
+  __attribute__ ((nonnull (1)));
+
 /* Profiling.  Apart from vmprefix_state_profile, which returns a pointer to
    the profile within a pointed state structure, everything else here has the
    same API as the functionality in jitter/jitter-profile.h , without the VM
@@ -990,20 +1019,37 @@ vmprefix_make_place_for_slow_registers (struct vmprefix_state *s,
 
 
 
-/* Defect tables.
+/* Replacement tables.
  * ************************************************************************** */
 
 /* It is harmless to declare these unconditionally, even if they only used when
-   patch-ins are available.  See jitter/jitter-defect.h .*/
+   defect replacement is available.  See jitter/jitter-defect.h . */
 
-/* The worst-case defect table.  This is a global constant array, having one
-   element per specialized instruction. */
+/* The worst-case replacement table.  This is a global constant array, having
+   one element per specialised instruction. */
 extern const jitter_uint
-vmprefix_worst_case_defect_table [];
+vmprefix_worst_case_replacement_table [];
 
-/* The actual defect table, to be filled at initialization time. */
+/* The actual replacement table, to be filled at initialization time. */
 extern jitter_uint
-vmprefix_defect_table [];
+vmprefix_replacement_table [];
+
+/* An array of specialized instruction ids, holding the specialized instruction
+   ids of any non-replacement specialized instruction which is "call-related",
+   which is to say any of caller, callee or returning.  These are useful for
+   defect replacements, since any defect in even just one of them requires
+   replacing them all. */
+extern const jitter_uint
+vmprefix_call_related_specialized_instruction_ids [];
+
+/* The size of vmprefix_call_related_specialized_instruction_ids in elements. */
+extern const jitter_uint
+vmprefix_call_related_specialized_instruction_id_no;
+
+/* An array of Booleans in which each element is true iff the specialized
+   instruction whose opcode is the index is call-related. */
+extern const bool
+vmprefix_specialized_instruction_call_relateds [];
 
 
 
@@ -1073,25 +1119,27 @@ vmprefix_ensure_enough_slow_registers_for_executable_routine
 
 /* Run VM code starting from the given program point (which must belong to some
    executable routine), in the pointed VM state.
+   Return the VM execution state at the end.
 
    Since no executable routine is given this cannot automatically guarantee that
    the slow registers in the pointed state are in sufficient number; it is the
    user's responsibility to check, if needed.
 
    This function is also usable with the unified routine API. */
-void
+enum vmprefix_exit_status
 vmprefix_branch_to_program_point (vmprefix_program_point p,
                                   struct vmprefix_state *s)
   __attribute__ ((nonnull (1, 2)));
 
 /* Run VM code starting from the beginning of the pointed executable routine,
-   in the pointed VM state.  This does ensure that the slow registers in
-   the pointed state are in sufficient number, by calling
-   vmprefix_ensure_enough_slow_registers_for .
+   in the pointed VM state.
+   Return the VM execution state at the end.
+   This does ensure that the slow registers in the pointed state are in
+   sufficient number, by calling vmprefix_ensure_enough_slow_registers_for .
    This function is slightly less efficient than
    vmprefix_branch_to_program_point , and vmprefix_branch_to_program_point
    should be preferred in contexts where C code repeatedly calls VM code. */
-void
+enum vmprefix_exit_status
 vmprefix_execute_executable_routine (const struct jitter_executable_routine *er,
                                      struct vmprefix_state *s)
   __attribute__ ((nonnull (1, 2)));
@@ -1113,10 +1161,40 @@ vmprefix_ensure_enough_slow_registers_for_routine
    unified routine API. */
 
 /* Like vmprefix_execute_executable_routine, for a unified routine. */
-void
+enum vmprefix_exit_status
 vmprefix_execute_routine (jitter_routine r,
                           struct vmprefix_state *s)
   __attribute__ ((nonnull (1, 2)));
+
+
+
+
+/* VM exit status.
+ * ************************************************************************** */
+
+/* A value of this type is returned by a VM after execution, and the last
+   returned value is also held in the VM state in order to make consistency
+   checks. */
+enum vmprefix_exit_status
+  {
+    /* This state has never been used for execution.  This is the initial value
+       within the state, and is never returned after execution. */
+    vmprefix_exit_status_never_executed = 0,
+
+    /* The state is being used in execution right now; this is never returned by
+       the executor.  It is an error (checked for) to execute code with a VM
+       state containing this exit status, which shows that there has been a
+       problem -- likely VM code was exited via longjmp, skipping the proper
+       cleanup. */
+    vmprefix_exit_status_being_executed = 1,
+
+    /* Some VM code has been executed.  It is now possible to execute more code
+       (including the same code again) in the same state. */
+    vmprefix_exit_status_exited = 2,
+
+    /* Code execution has been interrupted for debugging, but can be resumed. */
+    vmprefix_exit_status_debug = 3,
+  };
 
 
 

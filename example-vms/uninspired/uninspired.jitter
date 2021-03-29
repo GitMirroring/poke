@@ -1,6 +1,7 @@
 ## An uninspired and unoriginal Jitter VM, useful as an example.
 
 ## Copyright (C) 2016, 2017, 2019, 2020 Luca Saiu
+## Updated in 2021 by Luca Saiu
 ## Written by Luca Saiu
 
 ## This file is part of Jitter.
@@ -107,7 +108,7 @@ register-class r
   long-name "general_registers"
   c-type "union vmprefix_currently_unique_kind_register_t"
   c-initial-value "(union vmprefix_currently_unique_kind_register_t) {.ufixnum = 0x11223344}"
-  fast-register-no 1 #2 #2
+  fast-register-no 0
 end
 
 register-class f
@@ -235,6 +236,7 @@ instruction drop-handler ()
 end
 
 instruction raise (?Rn 0 1 2 3 4 5 6 7 8 9 10)
+  branching
   code
     struct exception_handler h;
     do
@@ -476,6 +478,7 @@ instruction procedureprolog ()
 end
 
 instruction procedurereturn ()
+  returning
   code
     const void * return_address = JITTER_TOP_STACK().label;
     JITTER_DROP_STACK();
@@ -934,6 +937,7 @@ instruction b (?f)
 end
 
 instruction br (?R)
+  branching
   code
     JITTER_BRANCH (JITTER_ARGP0);
   end

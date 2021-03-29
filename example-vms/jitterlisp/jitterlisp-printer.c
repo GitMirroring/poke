@@ -1,6 +1,7 @@
 /* JitterLisp: printer.
 
    Copyright (C) 2017, 2018, 2019, 2020 Luca Saiu
+   Updated in 2021 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of the JitterLisp language implementation, distributed as
@@ -369,7 +370,7 @@ jitterlisp_print_recursive (jitter_print_context cx,
         {
           jitterlisp_begin_class (cx, "unique");
           jitter_print_char_star (cx,
-                                   jitterlisp_unique_object_names [index]);
+                                  jitterlisp_unique_object_names [index]);
         }
       else
         {

@@ -1,6 +1,6 @@
 /* JitterLisp: heap allocation.
 
-   Copyright (C) 2017, 2018 Luca Saiu
+   Copyright (C) 2017, 2018, 2021 Luca Saiu
    Updated in 2020 by Luca Saiu
    Written by Luca Saiu
 
@@ -223,11 +223,11 @@ jitterlisp_pop_all_gc_roots (void)
  * ************************************************************************** */
 
 /* If littering then we simply use global variables for limits, and large
-   infrequently allocated blocks for the heap.  This is currently suboptimal, as
-   these should stay in registers; but I can live with this until a proper VM
-   for JitterLisp exists. */
+   infrequently allocated blocks for the heap.  This is obviously suboptimal,
+   but this entire littering allocator is a toy; the real Jitter garbage
+   collector will be less naïf. */
 #ifdef JITTERLISP_LITTER
-#define JITTERLISP_LITTER_BLOCK_BYTE_NO (1 * 1024L * 1024L)
+#define JITTERLISP_LITTER_BLOCK_BYTE_NO (32 * 1024L * 1024L)
 
 /* The lowest heap address. */
 static char *litter_heap_beginning;
@@ -274,6 +274,13 @@ jitterlisp_add_litter_block (size_t block_size_in_bytes)
     = litter_heap_beginning
     = jitter_xmalloc (block_size_in_bytes);
   litter_allocator_limit = (litter_allocator_pointer + block_size_in_bytes);
+
+  /* For debugging purposes initialise the block: */
+  jitterlisp_object *p;
+  for (p = (jitterlisp_object *) litter_allocator_pointer;
+       p < (jitterlisp_object *) litter_allocator_limit;
+       p ++)
+    * p = JITTERLISP_UNINITIALIZED_HEAP_VALUE;
 
   /* Add information about it to the stack. */
   struct jitterlisp_litter_block block;
@@ -415,7 +422,7 @@ jitterlisp_allocate (size_t size_in_bytes)
 #if   defined(JITTERLISP_LITTER)
   char *res = litter_allocator_pointer;
   litter_allocator_pointer += size_in_bytes;
-  if (__builtin_expect (litter_allocator_pointer > litter_allocator_limit,
+  if (__builtin_expect (litter_allocator_pointer >= litter_allocator_limit,
                         false))
     {
       size_t new_block_size = JITTERLISP_LITTER_BLOCK_BYTE_NO;
