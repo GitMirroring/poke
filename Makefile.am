@@ -922,14 +922,20 @@ EXTRA_DIST += \
 # About the conditional see the comment below related to the examples target.
 EXTRA_PROGRAMS += \
   example-vms/structured/examples/count-primes-in-c \
-  example-vms/structured/examples/primes-in-c
+  example-vms/structured/examples/primes-in-c \
+  example-vms/jitterlisp/examples/fibo-in-c
 if ! JITTER_SUBPACKAGE
-benchmarking-examples: example-vms/structured/examples/primes-in-c$(EXEEXT)
+benchmarking-examples: \
+  example-vms/structured/examples/count-primes-in-c$(EXEEXT) \
+  example-vms/structured/examples/primes-in-c$(EXEEXT) \
+  example-vms/jitterlisp/examples/fibo-in-c$(EXEEXT)
 endif # ! JITTER_SUBPACKAGE
 example_vms_structured_examples_count_primes_in_c_SOURCES = \
   example-vms/structured/examples/count-primes.c
 example_vms_structured_examples_primes_in_c_SOURCES = \
   example-vms/structured/examples/primes.c
+example_vms_jitterlisp_examples_fibo_in_c_SOURCES = \
+  example-vms/jitterlisp/examples/fibo.c
 
 # Again out of convenience, I make examples depend on all , so that a user can
 # build the examples before having built the rest, which would normally fail
@@ -1737,8 +1743,8 @@ EXTRA_DIST += \
   example-vms/jitterlisp/examples/derivative.lisp \
   example-vms/jitterlisp/examples/factorial.lisp \
   example-vms/jitterlisp/examples/fibo.lisp \
-  example-vms/jitterlisp/examples/peano.lisp
-
+  example-vms/jitterlisp/examples/peano.lisp \
+  example-vms/jitterlisp/examples/fibo.c
 # Compatibility files for limited JitterLisp compatibility for
 # Common Lisp and Scheme.
 EXTRA_DIST += \
