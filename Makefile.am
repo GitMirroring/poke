@@ -1955,6 +1955,21 @@ info: doc/jitter.info example-vms/jitterlisp/doc/jitterlisp.info
 endif # JITTER_SUBPACKAGE
 
 
+# Web site manuals
+# ################################################################
+
+# This is never built as a dependency.
+web-manuals:
+	(cd "$(abs_builddir)/doc" && \
+           mkdir -p web-manuals && \
+	   cp "$(abs_srcdir)/build-aux/gendocs.sh" . && \
+	   cp "$(abs_srcdir)/gnulib-local-doc/gendocs_template" . && \
+           ./gendocs.sh --email "$(JITTER_PACKAGE_BUGREPORT)" \
+                        -s "$(abs_srcdir)/doc/jitter.texi" \
+                        -o "web-manuals" \
+                        jitter "The Jitter manual")
+
+
 # Man pages
 # ################################################################
 

@@ -2723,6 +2723,10 @@ jitter_define_prefixed_macro_string([PACKAGE_VERSION],   [PACKAGE_VERSION])
 jitter_define_prefixed_macro_string([PACKAGE_BUGREPORT], [PACKAGE_BUGREPORT])
 jitter_define_prefixed_macro_string([PACKAGE_URL],       [PACKAGE_URL])
 
+# Also define substitutions for the few macros also used in Makefile.am .
+AC_SUBST([JITTER_PACKAGE_BUGREPORT], [$PACKAGE_BUGREPORT])
+
+
 # Define prefixed versions of conditionally-defined feature macros.
 # Arguments:
 # * shell variable;
