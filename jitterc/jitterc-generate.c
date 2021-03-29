@@ -3143,21 +3143,18 @@ jitterc_emit_executor_main_function
            sins->mangled_name, comma);
     }
   EMIT("          };\n");
-  EMIT("      static const long\n");
-  EMIT("      vmprefix_the_thread_sizes [VMPREFIX_SPECIALIZED_INSTRUCTION_NO]\n");
-  EMIT("        = {\n");
-  FOR_LIST(i, comma, vm->specialized_instructions)
-    {
-      const struct jitterc_specialized_instruction* sins
-        = ((const struct jitterc_specialized_instruction*)
-           gl_list_get_at (vm->specialized_instructions, i));
-      EMIT("            (long) ((jitter_int) (&& JITTER_SPECIALIZED_INSTRUCTION_END_LABEL_OF(%s))\n",
-           sins->mangled_name);
-      EMIT("                    - (jitter_int) (&& JITTER_SPECIALIZED_INSTRUCTION_BEGIN_LABEL_OF(%s)))%s\n",
-           sins->mangled_name, comma);
-    }
-  EMIT("          };\n");
-  EMIT("      vmprefix_thread_sizes = vmprefix_the_thread_sizes;\n");
+  EMIT("      /* A few non-GCC compilers such as TCC support GNU C's labels\n");
+  EMIT("         as values, but do not recognise their differences as\n");
+  EMIT("         *constant* expressions.  Compute the difference at\n");
+  EMIT("         initialisation then. */\n");
+  EMIT("      static long\n");
+  EMIT("      vmprefix_the_thread_sizes [VMPREFIX_SPECIALIZED_INSTRUCTION_NO];\n");
+  EMIT("      int i;\n");
+  EMIT("      for (i = 0; i < VMPREFIX_SPECIALIZED_INSTRUCTION_NO; i ++)\n");
+  EMIT("        vmprefix_the_thread_sizes [i]\n");
+  EMIT("          = vmprefix_the_thread_ends [i] - vmprefix_the_threads [i];\n");
+  EMIT("      vmprefix_thread_sizes\n");
+  EMIT("        = (const long *) vmprefix_the_thread_sizes;\n");
   EMIT("      vmprefix_threads = vmprefix_the_threads;\n");
   EMIT("      vmprefix_thread_ends = vmprefix_the_thread_ends;\n");
 
