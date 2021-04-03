@@ -200,10 +200,14 @@ jitter_fill_replacement_table
      then set them all to be replaced. */
   if (call_related_defective_no > 0)
     {
+#if 0
       fprintf (stderr, "At least one call-related instruction is defective.  Marking them all as to be replaced:\n");
+#endif
       for (i = 0; i < call_related_specialized_instruction_id_no; i ++)
         {
+#if 0
           fprintf (stderr, "* Marking %s as to be replaced.\n", vm->specialized_instruction_names [call_related_specialized_instruction_ids [i]]);
+#endif
           replacement_table [call_related_specialized_instruction_ids [i]] = true;
         }
     }

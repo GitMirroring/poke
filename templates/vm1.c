@@ -521,7 +521,6 @@ vmprefix_initialize (void)
                             (vmprefix)),
                     (long) patch_in_descriptor_size);
     /* Initialize the patch-in table for this VM. */
-    fprintf (stderr, "W making a patch_in_table at %p with %li descriptors starting at %p\n", & the_vmprefix_vm.patch_in_table, (long) the_vmprefix_vm.patch_in_descriptor_no, the_vmprefix_vm.patch_in_descriptors); fflush (stderr);
     the_vmprefix_vm.patch_in_table
       = jitter_make_patch_in_table (the_vmprefix_vm.patch_in_descriptors,
                                     the_vmprefix_vm.patch_in_descriptor_no,
@@ -535,8 +534,10 @@ vmprefix_initialize (void)
                                          VMPREFIX_META_INSTRUCTION_NO);
 
 #if defined (JITTER_HAVE_DEFECT_REPLACEMENT)
+# if 0
   jitter_dump_replacement_table (stderr, vmprefix_replacement_table,
                                  & the_vmprefix_vm);
+# endif
 #endif // #if defined (JITTER_HAVE_DEFECT_REPLACEMENT)
 #if defined (JITTER_HAVE_PATCH_IN)
   //printf ("======================= Patch-in descriptors: BEGIN\n");
