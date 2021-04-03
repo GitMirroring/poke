@@ -441,33 +441,6 @@ vmprefix_initialize (void)
         = vmprefix_specialized_instruction_residual_arities;
       the_vmprefix_vm.specialized_instruction_label_bitmasks
         = vmprefix_specialized_instruction_label_bitmasks;
-#ifdef JITTER_HAVE_PATCH_IN
-      the_vmprefix_vm.specialized_instruction_fast_label_bitmasks
-        = vmprefix_specialized_instruction_fast_label_bitmasks;
-      the_vmprefix_vm.patch_in_descriptors =
-        JITTER_PATCH_IN_DESCRIPTORS_NAME(vmprefix);
-      const size_t patch_in_descriptor_size
-        = sizeof (struct jitter_patch_in_descriptor);
-      the_vmprefix_vm.patch_in_descriptor_no
-        = (JITTER_PATCH_IN_DESCRIPTORS_SIZE_IN_BYTES_NAME(vmprefix)
-           / patch_in_descriptor_size);
-      /* Cheap sanity check: if the size in bytes is not a multiple of
-         the element size, we are doing something very wrong. */
-      if (JITTER_PATCH_IN_DESCRIPTORS_SIZE_IN_BYTES_NAME(vmprefix)
-          % patch_in_descriptor_size != 0)
-        jitter_fatal ("patch-in descriptors total size %li not a multiple "
-                      "of the element size %li",
-                      (long) (JITTER_PATCH_IN_DESCRIPTORS_SIZE_IN_BYTES_NAME
-                                 (vmprefix)),
-                      (long) patch_in_descriptor_size);
-      /* Initialize the patch-in table for this VM. */
-      the_vmprefix_vm.patch_in_table
-        = jitter_make_patch_in_table (the_vmprefix_vm.patch_in_descriptors,
-                                      the_vmprefix_vm.patch_in_descriptor_no,
-                                      VMPREFIX_SPECIALIZED_INSTRUCTION_NO);
-#else
-      the_vmprefix_vm.specialized_instruction_fast_label_bitmasks = NULL;
-#endif // #ifdef JITTER_HAVE_PATCH_IN
 
       /* FIXME: I might want to conditionalize this. */
       the_vmprefix_vm.specialized_instruction_relocatables
@@ -525,6 +498,37 @@ vmprefix_initialize (void)
 
       vm_struct_initialized = true;
     }
+
+#ifdef JITTER_HAVE_PATCH_IN
+    /* Since the patch-in table is destroyed at finalisation time we have to
+       rebuild it at every initialisation, out of the previous conditional. */
+    the_vmprefix_vm.specialized_instruction_fast_label_bitmasks
+      = vmprefix_specialized_instruction_fast_label_bitmasks;
+    the_vmprefix_vm.patch_in_descriptors =
+      JITTER_PATCH_IN_DESCRIPTORS_NAME(vmprefix);
+    const size_t patch_in_descriptor_size
+      = sizeof (struct jitter_patch_in_descriptor);
+    the_vmprefix_vm.patch_in_descriptor_no
+      = (JITTER_PATCH_IN_DESCRIPTORS_SIZE_IN_BYTES_NAME(vmprefix)
+         / patch_in_descriptor_size);
+    /* Cheap sanity check: if the size in bytes is not a multiple of
+       the element size, we are doing something very wrong. */
+    if (JITTER_PATCH_IN_DESCRIPTORS_SIZE_IN_BYTES_NAME(vmprefix)
+        % patch_in_descriptor_size != 0)
+      jitter_fatal ("patch-in descriptors total size %li not a multiple "
+                    "of the element size %li",
+                    (long) (JITTER_PATCH_IN_DESCRIPTORS_SIZE_IN_BYTES_NAME
+                            (vmprefix)),
+                    (long) patch_in_descriptor_size);
+    /* Initialize the patch-in table for this VM. */
+    fprintf (stderr, "W making a patch_in_table at %p with %li descriptors starting at %p\n", & the_vmprefix_vm.patch_in_table, (long) the_vmprefix_vm.patch_in_descriptor_no, the_vmprefix_vm.patch_in_descriptors); fflush (stderr);
+    the_vmprefix_vm.patch_in_table
+      = jitter_make_patch_in_table (the_vmprefix_vm.patch_in_descriptors,
+                                    the_vmprefix_vm.patch_in_descriptor_no,
+                                    VMPREFIX_SPECIALIZED_INSTRUCTION_NO);
+#else
+    the_vmprefix_vm.specialized_instruction_fast_label_bitmasks = NULL;
+#endif // #ifdef JITTER_HAVE_PATCH_IN
 
   jitter_initialize_meta_instructions (& vmprefix_meta_instruction_hash,
                                          vmprefix_meta_instructions,
