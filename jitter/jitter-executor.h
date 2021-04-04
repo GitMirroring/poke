@@ -429,16 +429,18 @@
 /* VM routine termination.
  * ************************************************************************** */
 
-/* Exit the executor function and return to C. */
+/* Exit the executor function and return to C.  The user version of this macro,
+   JITTER_EXIT with no underscore at the beginning, is only usable from
+   branching instructions. */
 #ifdef JITTER_REPLICATE
   /* With replication enabled this works like an inter-VM-instruction branch,
      leading out of replicated code... */
-# define JITTER_EXIT()                                                    \
+# define _JITTER_EXIT()                                                   \
     JITTER_COMPUTED_GOTO (jitter_saved_exit_non_replicated_code_pointer)
 #else
   /* ...But in the case of switch dispatching computed gotos may not be usable
      at all, and with direct-threading there is no correctness problem. */
-# define JITTER_EXIT()              \
+# define _JITTER_EXIT()             \
     do                              \
       {                             \
         goto jitter_exit_vm_label;  \

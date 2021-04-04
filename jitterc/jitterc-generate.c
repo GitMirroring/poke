@@ -3012,15 +3012,18 @@ jitterc_emit_executor_definitions (FILE *f,
     {
       EMIT ("    /* This instructions is branching: define branch macros. */\n");
       jitterc_emit_computed_goto_definition (f, vm, is_relocatable);
-      EMIT ("#   undef JITTER_BRANCH\n");
+      EMIT ("#   undef  JITTER_BRANCH\n");
       EMIT ("#   define JITTER_BRANCH         _JITTER_BRANCH\n");
+      EMIT ("#   undef  JITTER_EXIT\n");
+      EMIT ("#   define JITTER_EXIT           _JITTER_EXIT\n");
     }
   else
     {
       EMIT ("    /* This instructions is not branching: undefine branch\n");
       EMIT ("       macros so that they cannot be used by mistake. */\n");
-      EMIT ("#   undef JITTER_BRANCH\n");
       EMIT ("#   undef JITTER_COMPUTED_GOTO\n");
+      EMIT ("#   undef JITTER_BRANCH\n");
+      EMIT ("#   undef JITTER_EXIT\n");
     }
 
   /* Define the specialized instruction opcode and name as macros, to be
@@ -4073,7 +4076,7 @@ jitterc_emit_executor_main_function
   jitterc_emit_executor_special_specialized_instruction
      (f, vm, "!EXITVM",
       jitter_specialized_instruction_opcode_EXITVM,
-      "cold", 0, "JITTER_EXIT();");
+      "cold", 0, "_JITTER_EXIT();");
   jitterc_emit_executor_special_specialized_instruction_beginning
      (f, vm, "!DATALOCATIONS",
       jitter_specialized_instruction_opcode_DATALOCATIONS,
@@ -4123,7 +4126,7 @@ jitterc_emit_executor_main_function
   /* Emit the final part of the function, consisting in the label to jump to
      before exiting from the executor. */
   EMIT("  /* The code jumps here when executing the special specialized instruction\n");
-  EMIT("     EXITVM, or on a call to the macro JITTER_EXIT from an ordinary specialized\n");
+  EMIT("     !EXITVM, or on a call to the macro JITTER_EXIT from an ordinary specialized\n");
   EMIT("     instruction.  This code is *not* replicated: when replication is enabled\n");
   EMIT("     jumping here means crossing the boundary from the fragaile replicated\n");
   EMIT("     code back into ordinary compiled C, where PC-relative addressing works. */\n");

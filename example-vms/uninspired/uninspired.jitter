@@ -1410,6 +1410,7 @@ end
 
 instruction endvm ()
   cold
+  branching # JITTER_EXIT is a branching macro.
   code
     JITTER_EXIT ();
   end
