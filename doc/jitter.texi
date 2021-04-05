@@ -1920,6 +1920,8 @@ The recommended way of using Jitter right now is @emph{sub-package mode}:
 Sample profiling is more accurate with complex dispatches, where it is
 possible to guarantee that sampling takes place at the same time
 during execution of each VM instruction --- the beginning.
+The current profiling support is non-reentrant and does not play well
+with multithreading.
 Profiling is unreliable under emulation, particularly with
 sophisticated JIT-type emulator like QEmu.}
 
