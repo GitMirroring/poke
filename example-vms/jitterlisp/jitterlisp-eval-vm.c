@@ -71,46 +71,75 @@ jitterlisp_apply_vm (jitterlisp_object closure_value,
  * ************************************************************************** */
 
 struct jitter_list_header
+jitterlisp_used_states;
+struct jitter_list_header
 jitterlisp_unused_states;
 
-/* Add the pointed state to the pool.  The state must not already belong to
-   it. */
+/* Initialise the links for the pointed state to make it belong to the used
+   state list.  This does not touch the unused state list, and is appropriate
+   for initialisation of a state. */
 static void
-jitterlisp_add_to_state_pool (struct jitterlispvm_state *s)
+jitterlisp_state_initialise_as_used (struct jitterlispvm_state *s)
 {
   JITTER_LIST_LINK_FIRST (jitterlispvm_state,
-                          jitterlispvm_state_backing.unused_links,
+                          jitterlispvm_state_backing.pool_links,
+                          & jitterlisp_used_states,
+                          s);
+}
+
+/* Add the pointed state to the unused pool, and remove it from the used pool.
+   The state must not already belong to its new list and must belong to its old
+   list. */
+static void
+jitterlisp_state_used_to_unused (struct jitterlispvm_state *s)
+{
+  JITTER_LIST_UNLINK (jitterlispvm_state,
+                      jitterlispvm_state_backing.pool_links,
+                      & jitterlisp_used_states,
+                      s);
+  JITTER_LIST_LINK_FIRST (jitterlispvm_state,
+                          jitterlispvm_state_backing.pool_links,
                           & jitterlisp_unused_states,
                           s);
 }
 
-/* Remove the pointed state, which must already belong to the pool, from the
-   pool. */
+/* Remove the pointed state from the unused pool, and add it to the used pool.
+   The state must not already belong to its new list and must belong to its old
+   list. */
 static void
-jitterlisp_remove_from_state_pool (struct jitterlispvm_state *s)
+jitterlisp_state_unused_to_used (struct jitterlispvm_state *s)
 {
   JITTER_LIST_UNLINK (jitterlispvm_state,
-                      jitterlispvm_state_backing.unused_links,
+                      jitterlispvm_state_backing.pool_links,
                       & jitterlisp_unused_states,
                       s);
+  JITTER_LIST_LINK_FIRST (jitterlispvm_state,
+                          jitterlispvm_state_backing.pool_links,
+                          & jitterlisp_used_states,
+                          s);
 }
 
 /* Procure an unused state.
    If the pool is not empty unlink one state, reset it and return it; if the
    pool is empty make a new state.
    In either case the new state will be in use, and therefore will *not* be
-   linked in the pool when this function returns. */
+   linked in the unused pool when this function returns. */
 static struct jitterlispvm_state *
 jitterlisp_get_state (void)
 {
   if (jitterlisp_unused_states.first == NULL)
-    return jitterlispvm_state_make_with_slow_registers
-              (jitterlisp_slow_register_per_class_no);
+    {
+      struct jitterlispvm_state *res
+        = jitterlispvm_state_make_with_slow_registers
+             (jitterlisp_slow_register_per_class_no);
+      jitterlisp_state_initialise_as_used (res);
+      return res;
+    }
   else
     {
       struct jitterlispvm_state *res = jitterlisp_unused_states.first;
-      jitterlisp_remove_from_state_pool (res);
       jitterlispvm_state_reset (res);
+      jitterlisp_state_unused_to_used (res);
       return res;
     }
 }
@@ -119,6 +148,7 @@ jitterlisp_get_state (void)
 static void
 jitterlisp_initialize_state_pool (void)
 {
+  JITTER_LIST_INITIALIZE_HEADER (& jitterlisp_used_states);
   JITTER_LIST_INITIALIZE_HEADER (& jitterlisp_unused_states);
 }
 
@@ -127,16 +157,120 @@ jitterlisp_initialize_state_pool (void)
 static void
 jitterlisp_finalize_state_pool (void)
 {
-  /* Destroy any state in the list of unused VM states. */
+  /* Destroy any state in the lists of used and unused VM states. */
   struct jitterlispvm_state *s;
+  while ((s = jitterlisp_used_states.first) != NULL)
+    {
+      JITTER_LIST_UNLINK (jitterlispvm_state,
+                          jitterlispvm_state_backing.pool_links,
+                          & jitterlisp_used_states,
+                          s);
+      jitterlispvm_state_destroy (s);
+    }
   while ((s = jitterlisp_unused_states.first) != NULL)
     {
       JITTER_LIST_UNLINK (jitterlispvm_state,
-                          jitterlispvm_state_backing.unused_links,
+                          jitterlispvm_state_backing.pool_links,
                           & jitterlisp_unused_states,
                           s);
       jitterlispvm_state_destroy (s);
     }
+}
+
+
+
+
+/* Profiling.
+ * ************************************************************************** */
+
+/* A function accepting a pointer to a runtime profile, returning no result. */
+typedef
+void (*jitterlisp_runtime_profile_function_1)
+(struct jitterlispvm_profile_runtime *spr);
+
+/* A function accepting two pointers to runtime profiles of which the second
+   pointer to const, returning no result. */
+typedef
+void (*jitterlisp_runtime_profile_function_2)
+(struct jitterlispvm_profile_runtime *spr_accumulator,
+ const struct jitterlispvm_profile_runtime *spr);
+
+/* Clear the runtime profile of every state in the pointed list. */
+static void
+jitterlisp_runtime_profiles_call_1_in (struct jitter_list_header *list,
+                                       jitterlisp_runtime_profile_function_1 f1)
+{
+  struct jitterlispvm_state *s;
+  for (s = list->first;
+       s != NULL;
+       s = s->jitterlispvm_state_backing.pool_links.next)
+    {
+      struct jitterlispvm_profile_runtime *spr
+        = jitterlispvm_state_profile_runtime (s);
+      f1 (spr);
+    }
+}
+
+/* For every element x of the pointed list call the given function on two
+   runtime profiles: sp, and the profile from x. */
+static void
+jitterlisp_runtime_profiles_call_2_in (struct jitter_list_header *list,
+                                       struct jitterlispvm_profile_runtime *sp,
+                                       jitterlisp_runtime_profile_function_2 f2)
+{
+  struct jitterlispvm_state *s;
+  for (s = list->first;
+       s != NULL;
+       s = s->jitterlispvm_state_backing.pool_links.next)
+    {
+      struct jitterlispvm_profile_runtime *spr
+        = jitterlispvm_state_profile_runtime (s);
+      f2 (sp, spr);
+    }
+}
+
+/* Merge the runtime profile from every state in the pointed list into the
+   pointed runtime profile. */
+static void
+jitterlisp_profile_runtime_merge_from_every_state_in
+   (struct jitterlispvm_profile_runtime *pr,
+    struct jitter_list_header *list)
+{
+  jitterlisp_runtime_profiles_call_2_in (list,
+                                         pr,
+                                         jitterlispvm_profile_runtime_merge_from);
+}
+
+/* Clear the runtime profile of every state in the pointed list. */
+static void
+jitterlisp_runtime_profiles_clear_in (struct jitter_list_header *list)
+{
+  jitterlisp_runtime_profiles_call_1_in (list,
+                                         jitterlispvm_profile_runtime_clear);
+}
+
+struct jitterlispvm_profile_runtime *
+jitterlisp_current_profile_runtime (void)
+{
+  /* Make a new clear state, with every count at zero. */
+  struct jitterlispvm_profile_runtime *res
+    = jitterlispvm_profile_runtime_make ();
+
+  /* Merge every state from the pool into the result. */
+  jitterlisp_profile_runtime_merge_from_every_state_in
+     (res, & jitterlisp_used_states);
+  jitterlisp_profile_runtime_merge_from_every_state_in
+     (res, & jitterlisp_unused_states);
+
+  /* The result has now been composed. */
+  return res;
+}
+
+void
+jitterlisp_reset_profile_runtime (void)
+{
+  jitterlisp_runtime_profiles_clear_in (& jitterlisp_used_states);
+  jitterlisp_runtime_profiles_clear_in (& jitterlisp_unused_states);
 }
 
 
@@ -198,7 +332,8 @@ jitterlisp_vm_finalize (void)
   jitterlisp_driver_vm_routine = NULL;
   jitterlisp_driver_vm_executable_routine = NULL;
 
-  /* Destroy any state existing in the pool, and make the pool empty. */
+  /* Destroy any state existing in the pool (unused or not), and make the lists
+     empty. */
   jitterlisp_finalize_state_pool ();
 
   /* Call the Jitter-generated function finalizing the VM subsystem. */
@@ -218,8 +353,8 @@ jitterlisp_vm_finalize (void)
    main stack must contain a compiled closure, its evaluated actuals and the
    (unencoded) number of actuals.  When the VM is done pop the result off the
    stack and return it.
-   Use the pointed state, and return it to the pool before exit so it can be
-   reused.
+   Use the pointed state, and return it to the unused list in the pool before
+   exit so it can be reused.
    This factors the trailing part of both jitterlisp_call_compiled and
    jitterlisp_apply_compiled. */
 static inline jitterlisp_object
@@ -246,11 +381,11 @@ jitterlisp_jump_to_driver_and_return_result (struct jitterlispvm_state *s)
 
   /* Pop the result off the stack and return it (it would in fact not be really
      necessary to alter the stack, since the state is going to be reset before
-     being used again).  Before doing so, link the state to the pool so it can
-     be reused. */
+     being used again).  Before doing so, link the state to the unused list in
+     the pool so it can be reused. */
   jitterlisp_object res = JITTERLISPVM_TOP_MAINSTACK (s);
   JITTERLISPVM_DROP_MAINSTACK (s);
-  jitterlisp_add_to_state_pool (s);
+  jitterlisp_state_used_to_unused (s);
   return res;
 }
 

@@ -651,31 +651,19 @@ JITTERLISP_PRIMITIVE_FUNCTION_1_(compiled_closure_disassemble, COMPILED_CLOSURE,
 JITTERLISP_PRIMITIVE_FUNCTION_0_(print_locations,
   { jitterlispvm_dump_data_locations (jitterlisp_print_context); })
 JITTERLISP_PRIMITIVE_FUNCTION_0_(print_profile_specialized,
-  { jitterlisp_print_error_char_star ("[profiling temporarily broken on jitterlisp]\n");
-    /*
-    struct jitterlispvm_profile_runtime *pr
-      = jitterlispvm_state_profile_runtime (& jitterlispvm_state);
+  { struct jitterlispvm_profile_runtime *pr
+      = jitterlisp_current_profile_runtime ();
     jitterlispvm_profile_runtime_print_specialized (jitterlisp_print_context,
                                                     pr);
-    */
-  })
+    jitterlispvm_profile_runtime_destroy (pr); })
 JITTERLISP_PRIMITIVE_FUNCTION_0_(print_profile_unspecialized,
-  { jitterlisp_print_error_char_star ("[profiling temporarily broken on jitterlisp]\n");
-    /*
-    struct jitterlispvm_profile_runtime *pr
-      = jitterlispvm_state_profile_runtime (& jitterlispvm_state);
+  { struct jitterlispvm_profile_runtime *pr
+      = jitterlisp_current_profile_runtime ();
     jitterlispvm_profile_runtime_print_unspecialized (jitterlisp_print_context,
                                                       pr);
-    */
-  })
+    jitterlispvm_profile_runtime_destroy (pr); })
 JITTERLISP_PRIMITIVE_FUNCTION_0_(reset_profileb,
-  { jitterlisp_print_error_char_star ("[profiling temporarily broken on jitterlisp]\n");
-    /*
-    struct jitterlispvm_profile_runtime *pr
-      = jitterlispvm_state_profile_runtime (& jitterlispvm_state);
-    jitterlispvm_profile_runtime_clear (pr);
-    */
-  })
+  { jitterlisp_reset_profile_runtime (); })
 /* Operations to display legal notices. */
 JITTERLISP_PRIMITIVE_FUNCTION_0_(copying,
   { jitter_print_char_star (jitterlisp_print_context, jitterlisp_gpl); })

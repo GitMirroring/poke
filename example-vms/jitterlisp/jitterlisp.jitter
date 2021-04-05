@@ -362,13 +362,16 @@ end
 
 state-struct-backing-c
   code
-    /* Every VM state which is not currently in use is linked within
-       the list jitterlisp_unused_states.  See the "State pool" section
-       in jitterlisp-eval-vm.h .
+    /* Every VM state which is currently in use is linked within the list
+       jitterlisp_used_states; every VM state which is *not* currently in use is
+       linked within the list jitterlisp_unused_states.  Since each state is at
+       any time only in one of the two lists, we can reuse the same pointer
+       fields.
+       See the "State pool" section in jitterlisp-eval-vm.h .
        The code for linking and unlinking states within the list is in
        jitterlisp-eval-vm.c ; it is not part of state initialisation or
        finalisation. */
-    struct jitter_list_links unused_links;
+    struct jitter_list_links pool_links;
   end
 end
 

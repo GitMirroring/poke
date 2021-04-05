@@ -69,8 +69,30 @@ jitterlisp_apply_vm (jitterlisp_object closure_value,
 /* State pool.
  * ************************************************************************** */
 
+/* This data structure links together every VM state which is currently in use. */
+extern struct jitter_list_header
+jitterlisp_used_states;
+
+/* This data structure links together every VM state not currently in use. */
 extern struct jitter_list_header
 jitterlisp_unused_states;
+
+
+
+
+/* Profiling.
+ * ************************************************************************** */
+
+/* Return a fresh runtime profile struct obtained by merging profiles from every
+   state in the pool, currently in use or not.  It is the user's responsibility
+   to destroy the result by calling jitterlispvm_profile_runtime_destroy .  */
+struct jitterlispvm_profile_runtime *
+jitterlisp_current_profile_runtime (void);
+
+/* Reset the runtime profile of the current state plus every state in the
+   pool, in use or not. */
+void
+jitterlisp_reset_profile_runtime (void);
 
 
 

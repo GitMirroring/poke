@@ -1,6 +1,7 @@
 /* Jitter: profiling subsystem.
 
    Copyright (C) 2020 Luca Saiu
+   Updated in 2021 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.

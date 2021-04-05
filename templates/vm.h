@@ -926,6 +926,9 @@ vmprefix_state_profile_runtime (struct vmprefix_state *s)
 struct vmprefix_profile_runtime*
 vmprefix_profile_runtime_make (void)
   __attribute__ ((returns_nonnull));
+void
+vmprefix_profile_runtime_destroy (struct vmprefix_profile_runtime *p)
+  __attribute__ ((nonnull (1)));
 #define vmprefix_profile_destroy jitter_profile_destroy
 void
 vmprefix_profile_runtime_clear (struct vmprefix_profile_runtime *p)

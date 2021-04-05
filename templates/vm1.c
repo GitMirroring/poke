@@ -991,6 +991,12 @@ vmprefix_profile_runtime_make (void)
 }
 
 void
+vmprefix_profile_runtime_destroy (struct vmprefix_profile_runtime *p)
+{
+  jitter_profile_runtime_destroy (vmprefix_vm, p);
+}
+
+void
 vmprefix_profile_runtime_clear (struct vmprefix_profile_runtime * p)
 {
   jitter_profile_runtime_clear (vmprefix_vm, p);
