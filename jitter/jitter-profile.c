@@ -355,9 +355,12 @@ jitter_profile_print_uninstrumented (jitter_print_context ct,
   jitter_profile_begin_class (ct, vm, "warning");
   jitter_print_char_star (ct, "[Profiling instrumentation not enabled for ");
   jitter_print_char_star (ct, vm->configuration->lower_case_prefix);
-  jitter_print_char_star (ct, "; you may want to recompile with the ");
-  jitter_print_char_star (ct, "macros JITTER_PROFILE_COUNT and ");
-  jitter_print_char_star (ct, "JITTER_PROFILE_SAMPLE defined.]\n");
+  jitter_print_char_star (ct, "; you may want to recompile with at least one ");
+  jitter_print_char_star (ct, "of the macros ");
+  jitter_print_char_star (ct, vm->configuration->upper_case_prefix);
+  jitter_print_char_star (ct, "_PROFILE_COUNT and ");
+  jitter_print_char_star (ct, vm->configuration->upper_case_prefix);
+  jitter_print_char_star (ct, "_PROFILE_SAMPLE defined.]\n");
   jitter_print_end_class (ct);
 }
 

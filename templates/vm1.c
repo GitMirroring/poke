@@ -34,9 +34,9 @@
 
 #include <jitter/jitter.h>
 
-#if defined (JITTER_PROFILE_SAMPLE)
+#if defined (VMPREFIX_PROFILE_SAMPLE)
 #include <sys/time.h>
-#endif // #if defined (JITTER_PROFILE_SAMPLE)
+#endif // #if defined (VMPREFIX_PROFILE_SAMPLE)
 
 #include <jitter/jitter-hash.h>
 #include <jitter/jitter-instruction.h>
@@ -69,12 +69,24 @@
  * ************************************************************************** */
 
 /* VM sample-profiling is only supported with GCC.  Do not bother activating it
-   with other compilers, if the numbers are unreliable in the end. */
-#if  defined (JITTER_PROFILE_SAMPLE)        \
+   with other compilers, when the numbers would turn out to be unreliable in the
+   end. */
+#if  defined (VMPREFIX_PROFILE_SAMPLE)        \
      && ! defined (JITTER_HAVE_ACTUAL_GCC)
-# error "Sample-profiling is only reliable with GCC: it requires (machine-independent)"
-# error "GNU C extended asm, and it is not worth supporting other compilers if"
+# error "Sample-profiling is only supported with GCC: it requires (machine-independent)"
+# error "GNU C extended asm.  It is not worth supporting other compilers if"
 # error "the numbers turn out to be unreliable in the end."
+#endif
+
+/* Warn about the unreliability of sample-profiling with simple dispatches
+   unless one of the complex dispatches is in use. */
+#if  defined (VMPREFIX_PROFILE_SAMPLE)                 \
+     && ! defined (JITTER_DISPATCH_MINIMAL_THREADING)  \
+     && ! defined (JITTER_DISPATCH_NO_THREADING)
+# warning "Sample-profiling is unreliable with simple dispatches: the sample"
+# warning "incrementation code can be executed at any point in the VM"
+# warning "instruction, not necessarily at the same point (the beginning) for"
+# warning "every VM instruction."
 #endif
 
 
@@ -111,10 +123,10 @@ vmprefix_vm_the_configuration
       /* The instrumentation field can be seen as a bit map.  See the comment
          in jitter/jitter-vm.h . */
       (jitter_vm_instrumentation_none
-#if defined (JITTER_PROFILE_COUNT)
+#if defined (VMPREFIX_PROFILE_COUNT)
        | jitter_vm_instrumentation_count
 #endif
-#if defined (JITTER_PROFILE_SAMPLE)
+#if defined (VMPREFIX_PROFILE_SAMPLE)
        | jitter_vm_instrumentation_sample
 #endif
        ) /* instrumentation */
@@ -591,7 +603,7 @@ vmprefix_make_mutable_routine (void)
 /* Sample profiling: internal API.
  * ************************************************************************** */
 
-#if defined (JITTER_PROFILE_SAMPLE)
+#if defined (VMPREFIX_PROFILE_SAMPLE)
 
 /* Sample profiling depends on some system features: fail immediately if they
    are not available */
@@ -728,7 +740,7 @@ vmprefix_profile_sample_stop (void)
   vmprefix_sample_profile_state.counts = NULL;
   vmprefix_sample_profile_state.specialized_opcode_p = NULL;
 }
-#endif // #if defined (JITTER_PROFILE_SAMPLE)
+#endif // #if defined (VMPREFIX_PROFILE_SAMPLE)
 
 
 
@@ -798,14 +810,14 @@ vmprefix_make_place_for_slow_registers (struct vmprefix_state *s,
                         > old_slow_register_no_per_class,
                         false))
     {
-#if defined (JITTER_PROFILE_SAMPLE)
+#if defined (VMPREFIX_PROFILE_SAMPLE)
       /* If sample-profiling is currently in progress on this state suspend it
          temporarily. */
       bool suspending_sample_profiling
         = (vmprefix_sample_profile_state.state_p == s);
       if (suspending_sample_profiling)
         vmprefix_profile_sample_stop ();
-#endif // #if defined (JITTER_PROFILE_SAMPLE)
+#endif // #if defined (VMPREFIX_PROFILE_SAMPLE)
 
 #if 0
       printf ("Increasing slow register-no (per class) from %li to %li\n", (long) old_slow_register_no_per_class, (long)new_slow_register_no_per_class);
@@ -824,11 +836,11 @@ vmprefix_make_place_for_slow_registers (struct vmprefix_state *s,
                                          old_slow_register_no_per_class,
                                          new_slow_register_no_per_class);
 
-#if defined (JITTER_PROFILE_SAMPLE)
+#if defined (VMPREFIX_PROFILE_SAMPLE)
       /* Now we can resume sample-profiling on this state if we suspended it. */
       if (suspending_sample_profiling)
         vmprefix_profile_sample_start (s);
-#endif // #if defined (JITTER_PROFILE_SAMPLE)
+#endif // #if defined (VMPREFIX_PROFILE_SAMPLE)
 #if 0
       fprintf (stderr, "slow registers are now %li per class, Array at %p (biased %p)\n",
                ((long)

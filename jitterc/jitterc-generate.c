@@ -3262,18 +3262,22 @@ jitterc_emit_executor_ordinary_specialized_instructions
       jitterc_emit_executor_definitions (f, vm, sins);
 
       /* Emit profiling instrumentation code for the instruction. */
-      EMIT("#if defined (JITTER_PROFILE_SAMPLE)\n");
+      EMIT("#if defined (VMPREFIX_PROFILE_SAMPLE)\n");
       EMIT("  JITTER_PROFILE_SAMPLE_UPDATE\n");
       EMIT("     (VMPREFIX_OWN_SPECIAL_PURPOSE_STATE_DATA,\n");
       EMIT("      JITTER_SPECIALIZED_INSTRUCTION_OPCODE);\n");
-      EMIT("  /* Force the compiler not to move sample-profiling instrumentation\n");
-      EMIT("     beyond this point; this way the actual user code is timed.\n");
-      EMIT("     This is still not perfect, as residuals are materialised before\n");
-      EMIT("     we arrive here, but should be adequate at least for slow VM\n");
-      EMIT("     instructions. */\n");
-      EMIT("  JITTER_PRETEND_TO_POSSIBLY_JUMP_ANYWHERE ();\n");
+      EMIT("# if defined (JITTER_DISPATCH_MINIMAL_THREADING) \\\n");
+      EMIT("     || defined (JITTER_DISPATCH_NO_THREADING)\n");
+      EMIT("   /* Force the compiler not to move sample-profiling instrumentation\n");
+      EMIT("      beyond this point; this way the actual user code is timed.\n");
+      EMIT("      This is still not perfect, as residuals are materialised before\n");
+      EMIT("      we arrive here, but should be adequate at least for slow VM\n");
+      EMIT("      instructions.  Unfortunately this is only possible with\n");
+      EMIT("      complex dispatches. */\n");
+      EMIT("   JITTER_PRETEND_TO_POSSIBLY_JUMP_ANYWHERE ();\n");
+      EMIT("# endif\n");
       EMIT("#endif\n");
-      EMIT("#if defined (JITTER_PROFILE_COUNT)\n");
+      EMIT("#if defined (VMPREFIX_PROFILE_COUNT)\n");
       EMIT("  /* Notice that, differently from the code above, this\n");
       EMIT("     instrumentation code *can* be reordered freely: as long as a\n");
       EMIT("     VM instruction is counted, the count increment can be placed\n");
@@ -3658,10 +3662,10 @@ jitterc_emit_executor_main_function
   EMIT("         bitmask: see the comment in jitter/jitter-vm.h . */\n");
   EMIT("      enum jitter_vm_instrumentation correct_instrumentation\n");
   EMIT("        = jitter_vm_instrumentation_none;\n");
-  EMIT("#if defined (JITTER_PROFILE_COUNT)\n");
+  EMIT("#if defined (VMPREFIX_PROFILE_COUNT)\n");
   EMIT("      correct_instrumentation |= jitter_vm_instrumentation_count;\n");
   EMIT("#endif\n");
-  EMIT("#if defined (JITTER_PROFILE_SAMPLE)\n");
+  EMIT("#if defined (VMPREFIX_PROFILE_SAMPLE)\n");
   EMIT("      correct_instrumentation |= jitter_vm_instrumentation_sample;\n");
   EMIT("#endif\n");
   EMIT("      if (vmprefix_vm_configuration->instrumentation != correct_instrumentation)\n");
@@ -3670,10 +3674,10 @@ jitterc_emit_executor_main_function
   EMIT("                      \"CPPFLAGS\");\n");
   EMIT("\n");
 
-  EMIT("#if defined (JITTER_PROFILE_SAMPLE)\n");
+  EMIT("#if defined (VMPREFIX_PROFILE_SAMPLE)\n");
   EMIT("    /* Initialise the sample-profile subsystem, once and for all. */\n");
   EMIT("    vmprefix_profile_sample_initialize ();\n");
-  EMIT("#endif // #if defined (JITTER_PROFILE_SAMPLE)\n");
+  EMIT("#endif // #if defined (VMPREFIX_PROFILE_SAMPLE)\n");
   EMIT("\n");
 
   EMIT("#ifndef JITTER_DISPATCH_SWITCH\n");
@@ -3908,12 +3912,12 @@ jitterc_emit_executor_main_function
   EMIT("  {}; JITTER_EXECUTION_BEGINNING_; {};\n");
   EMIT("\n");
 
-  EMIT("#if defined (JITTER_PROFILE_SAMPLE)\n");
+  EMIT("#if defined (VMPREFIX_PROFILE_SAMPLE)\n");
   EMIT("    /* Start sample-profiling: this starts the periodic timer signal,\n");
   EMIT("       whose handler will look at the current instruction field within\n");
   EMIT("       the special-purpose struct in the Array. */\n");
   EMIT("    vmprefix_profile_sample_start (VMPREFIX_OWN_STATE);\n");
-  EMIT("#endif // #if defined (JITTER_PROFILE_SAMPLE)\n");
+  EMIT("#endif // #if defined (VMPREFIX_PROFILE_SAMPLE)\n");
   EMIT("\n");
 
   EMIT("  /* Jump to the first instruction.  If replication is enabled this point\n");
@@ -4134,12 +4138,12 @@ jitterc_emit_executor_main_function
   EMIT("    JITTER_COMMENT_IN_ASM_(\"About to exit the function\");\n");
   EMIT("    // fprintf (stderr, \"Restoring the VM state to the struct...\\n\");\n");
   EMIT("\n");
-  EMIT("#if defined (JITTER_PROFILE_SAMPLE)\n");
+  EMIT("#if defined (VMPREFIX_PROFILE_SAMPLE)\n");
   EMIT("    /* Stop sample-profiling: this stops the periodic timer signal, while\n");
   EMIT("       we are no longer updating the current instruction field within the\n");
   EMIT("       special-purpose struct in the Array. */\n");
   EMIT("    vmprefix_profile_sample_stop ();\n");
-  EMIT("#endif // #if defined (JITTER_PROFILE_SAMPLE)\n");
+  EMIT("#endif // #if defined (VMPREFIX_PROFILE_SAMPLE)\n");
 
   /* Insert architecture-specific execution-end code. */
   EMIT("  /* Execute architecture-specific execution-end code, if any.  Make \n");

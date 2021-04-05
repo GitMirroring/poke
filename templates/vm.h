@@ -913,8 +913,8 @@ vmprefix_defect_print_summary (jitter_print_context cx)
    the profile within a pointed state structure, everything else here has the
    same API as the functionality in jitter/jitter-profile.h , without the VM
    pointer.
-   Notice that this API does nothing useful onless one of the CPP macros
-   JITTER_PROFILE_COUNT or JITTER_PROFILE_SAMPLE is defined. */
+   Notice that this API does nothing useful onless at least one of the CPP
+   macros VMPREFIX_PROFILE_COUNT or VMPREFIX_PROFILE_SAMPLE is defined. */
 #define vmprefix_profile_runtime  \
   jitter_profile_runtime /* the struct name */
 #define vmprefix_profile  \
