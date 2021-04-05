@@ -60,6 +60,18 @@
 @c I might change my mind in the future.
 @xrefautomaticsectiontitle on
 
+@c @set this is I really want to typeset the PDF version in color.  It
+@c is probably a bad idea.
+@set color
+@tex
+\global\def\linkcolor{0.75 0 0}
+\global\def\urlcolor{0 0 0.75}
+@end tex
+@c FIXME: in the JitterLisp manual I have a slightly more
+@c sophisticated way to do this.  It may or may not be worth the
+@c trouble.
+
+
 @c Information for the Info directory
 @c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -1762,6 +1774,7 @@ design, doesn't emulate L1i invalidation}
 @menu
 * Generating and compiling C code::  These are two separate steps.
 * Building a Jittery program::       How to do it in practice.
+* Non-production Jittery programs::  You can compile programs for debugging or profiling.
 @end menu
 
 @c @@@@@@@
@@ -1876,6 +1889,68 @@ The recommended way of using Jitter right now is @emph{sub-package mode}:
 @subsection Other systems
 @cindex script, shell (for building)
 
+@c @@@@@@@
+@node Non-production Jittery programs
+@section Non-production Jittery programs
+@cindex production, non-
+@cindex non-production
+
+@menu
+* Debugging Jittery programs::  You may want to observe VM execution...
+* Profiling Jittery programs::  ...Or measure where it spends most of the time.
+@end menu
+
+@node Debugging Jittery programs
+@subsection Debugging Jittery programs
+@cindex debug, Jittery program
+
+
+@node Profiling Jittery programs
+@subsection Profiling Jittery programs
+@cindex profile, Jittery program
+
+@fixme{Explain the idea.}
+
+@fixme{Preprocess Jitter-generated files (@code{@var{vmprefix}-vm1.c} and
+@code{@var{vmprefix}-vm2.c}) with at least one of these macros defined:
+@code{@var{VMPREFIX}_PROFILE_SAMPLE}
+@code{@var{VMPREFIX}_PROFILE_COUNT}}
+
+@fixme{Explain the implementation limits and give details about the overhead.
+Sample profiling is more accurate with complex dispatches, where it is
+possible to guarantee that sampling takes place at the same time
+during execution of each VM instruction --- the beginning.
+Profiling is unreliable under emulation, particularly with
+sophisticated JIT-type emulator like QEmu.}
+
+@fixme{Example: profile @code{nop} on Uninspired.}
+
+No-threading, x86_64:
+@smallexample
+# nop (19 B):
+    0x00007f15f0d7f244 48 c7 43 e8 62 01 00 00  movq   $0x162,-0x18(%rbx)
+    0x00007f15f0d7f24c 48 8b 43 e0              movq   -0x20(%rbx),%rax
+    0x00007f15f0d7f250 48 ff 80 10 0b 00 00     incq   0xb10(%rax)
+@end smallexample
+
+No-threading in a less favourable case, 32-bit MIPS.
+@smallexample
+# nop (40 B):
+    0x3fd7f290 24030162         addiu   $3,$0,354
+    0x3fd7f294 ae03fff4         sw      $3,-12($16)
+    0x3fd7f298 8e03fff0         lw      $3,-16($16)
+    0x3fd7f29c 8c620b14         lw      $2,2836($3)
+    0x3fd7f2a0 8c650b10         lw      $5,2832($3)
+    0x3fd7f2a4 24440001         addiu   $4,$2,1
+    0x3fd7f2a8 0082102b         sltu    $2,$4,$2
+    0x3fd7f2ac 00451021         addu    $2,$2,$5
+    0x3fd7f2b0 ac620b10         sw      $2,2832($3)
+    0x3fd7f2b4 ac640b14         sw      $4,2836($3)
+@end smallexample
+
+
+@fixme{Driver: @code{--profile-unspecialized}
+@code{--profile-specialized}}
 
 @c The Jitter language
 @c @@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -1910,32 +1985,27 @@ The recommended way of using Jitter right now is @emph{sub-package mode}:
 @cindex header, meta-instruction
 @cindex meta-instruction, header
 
-@subsubsection Meta-instruction properties
+@subsubsection Meta-instruction attributes
 @table @code
 @item non-relocatable
 @item cold
 @c @item non-branching
 @item branching
+@fixme{The following macros are only available in branching macros:
+@code{JITTER_EXIT}, every macro with @code{_BRANCH_} in its name
+}
 @item caller
 @item callee
 @item returning
 @end table
 
+Using a Jitter macro not available from some instruction lacking the
+required attribute yields a compile-time error message, which will be
+friendlier and more explicit when compiling with GCC.
+@c @fixme{I may want to suggest reading about local poisoning in the sources}
+
 @fixme{Talk about @code{JITTER_LINK} and branch-and-link branches.}
 
-Talk about @code{JITTER_LINK} and branch-and-link branches.
-Talk about @code{JITTER_LINK} and branch-and-link branches.
-Talk about @code{JITTER_LINK} and branch-and-link branches.
-Talk about @code{JITTER_LINK} and branch-and-link branches.
-Talk about @code{JITTER_LINK} and branch-and-link branches.
-Talk about @code{JITTER_LINK} and branch-and-link branches.
-Talk about @code{JITTER_LINK} and branch-and-link branches.
-Talk about @code{JITTER_LINK} and branch-and-link branches.
-Talk about @code{JITTER_LINK} and branch-and-link branches.
-Talk about @code{JITTER_LINK} and branch-and-link branches.
-Talk about @code{JITTER_LINK} and branch-and-link branches.
-Talk about @code{JITTER_LINK} and branch-and-link branches.
-Talk about @code{JITTER_LINK} and branch-and-link branches.
 
 
 @subsubsection Embedding C code in meta-instructions
@@ -1969,7 +2039,7 @@ this is for comments in inline assembly.}
    The given index must be a register index counting from 0 and including fast
    regusters as well, if there are any.  For example if an r class had 3 fast
    registers then the first slow register would be %r3, to be accessed as
-   JITTER_SLOW_REGISTER(r, 3).  It would be invalid to access %r0, %r1 and
+   @code{JITTER_SLOW_REGISTER(r, 3)}.  It would be invalid to access %r0, %r1 and
    %r2 which this macro, as %r0, %r1 and %r2 would be fast. */
 @table @code
 @item JITTER_SLOW_REGISTER_@var{c}_@var{i}
