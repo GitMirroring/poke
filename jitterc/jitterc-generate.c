@@ -2268,18 +2268,116 @@ jitterc_emit_register_access_macros_h (const struct jitterc_vm *vm)
 /* Executor generation: poisoning.
  * ************************************************************************** */
 
+/* Information about why an identifier may be poisoned */
+enum jitterc_poisoning_reason
+  {
+    jitterc_poisoning_reason_everywhere,
+    jitterc_poisoning_reason_attribute_present,
+    jitterc_poisoning_reason_attribute_missing
+  };
+
+/* A structure containing information about a poisoned identifier.  Each element
+   of poisoning_stack has this type. */
+struct jitterc_poisoned_identifier
+{
+  /* This copy is allocated with malloc when entered into the stack, and never
+     freed. */
+  char *name;
+};
+
+/* The stack of currently active poisoned identifiers.  Each element has type
+   struct jitterc_poisoned_identifier .
+   This global data structure is non-reentrant, which is not a problem within
+   jitterc. */
+static struct jitter_dynamic_buffer
+jitterc_poisoning_stack;
+
+/* Initialise the global poisoning stack.  There is no need for finalisation in
+   jitterc. */
+static void
+jitterc_initialize_local_poisoning (void)
+{
+  jitter_dynamic_buffer_initialize (& jitterc_poisoning_stack);
+}
+
+/* Emit a poisoning definition for the given identifier, usign the given reason
+   and reason-dependent strings. */
+static void
+jitterc_poison (FILE *f, const char *identifier,
+                enum jitterc_poisoning_reason reason,
+                char *arg0)
+{
+  struct jitterc_poisoned_identifier element;
+  element.name = jitter_clone_string (identifier);
+  jitter_dynamic_buffer_push (& jitterc_poisoning_stack,
+                              & element,
+                              sizeof (struct jitterc_poisoned_identifier));
+  EMIT("/* Locally poison %s . */\n", identifier);
+  EMIT("#if defined (JITTER_HAVE_LOCAL_POISONING)\n");
+  EMIT("# pragma push_macro (\"%s\")\n", identifier);
+  EMIT("# undef %s\n", identifier);
+  switch (reason)
+    {
+    case jitterc_poisoning_reason_everywhere:
+      EMIT("# define %s JITTER_POISONED_EVERYWHERE (%s)\n",
+           identifier, identifier);
+      break;
+    case jitterc_poisoning_reason_attribute_present:
+      EMIT("# define %s JITTER_POISONED_WITH_ATTRIBUTE (%s, \"%s\")\n",
+           identifier, identifier, arg0);
+      break;
+    case jitterc_poisoning_reason_attribute_missing:
+      EMIT("# define %s JITTER_POISONED_WITHOUT_ATTRIBUTE (%s, \"%s\")\n",
+           identifier, identifier, arg0);
+      break;
+    default:
+      jitter_fatal ("this should never happen (jitterc_poison)");
+    }
+  EMIT("#else // ! defined (JITTER_HAVE_LOCAL_POISONING)\n");
+  EMIT("# undef %s\n", identifier);
+  EMIT("#endif // #if defined (JITTER_HAVE_LOCAL_POISONING)\n");
+  EMIT("/* End of the poisoning of %s . */\n", identifier);
+  EMIT("\n");
+}
+
+static void
+jitterc_unpoison_all (FILE *f)
+{
+  while (jitter_dynamic_buffer_size (& jitterc_poisoning_stack) > 0)
+    {
+      struct jitterc_poisoned_identifier *elementp
+        = jitter_dynamic_buffer_pop
+             (& jitterc_poisoning_stack,
+              sizeof (struct jitterc_poisoned_identifier));
+      EMIT("#if defined (JITTER_HAVE_LOCAL_POISONING)\n");
+      EMIT("# pragma pop_macro (\"%s\")\n", elementp->name);
+      EMIT("#endif // #if defined (JITTER_HAVE_LOCAL_POISONING)\n");
+    }
+}
+
 /* Begin the part where local poisoning definitions will be generated; see
    the local poisoning section in jitter/jitter-cpp.h . */
 static void
 jitterc_open_local_poisoning (FILE *f)
 {
-  EMIT("/* Local poisoning will be in effect.  Avoid warnings. */\n");
+  EMIT("#if defined (JITTER_HAVE_LOCAL_POISONING)\n");
+  EMIT("  /* Local poisoning will be in effect.  Avoid warnings. */\n");
   EMIT("# pragma GCC diagnostic push\n");
   EMIT("# pragma GCC diagnostic ignored \"-Wpragmas\"\n");
   EMIT("# pragma GCC diagnostic ignored \"-Wunknown-warning-option\"\n");
   EMIT("# pragma GCC diagnostic ignored \"-Wbuiltin-macro-redefined\"\n");
   EMIT("# pragma GCC diagnostic ignored \"-Wbuiltin-declaration-mismatch\"\n");
+  EMIT("#endif // #if defined (JITTER_HAVE_LOCAL_POISONING)\n");
   EMIT("\n");
+
+  /* Poison some identifiers that should always be poisoned: */
+  /* This would be nice, but "return" is useful as an instruction name. */
+  //jitterc_poison (f, "return",
+  //                    jitterc_poisoning_reason_everywhere, NULL);
+  jitterc_poison (f, "longjmp",
+                      jitterc_poisoning_reason_everywhere, NULL);
+  jitterc_poison (f, "setjmp",
+                      jitterc_poisoning_reason_everywhere, NULL);
 }
 
 /* Close the part where local poisoning definitions are handled.  This is to
@@ -2287,9 +2385,16 @@ jitterc_open_local_poisoning (FILE *f)
 static void
 jitterc_close_local_poisoning (FILE *f)
 {
+  /* Undo the effects of poisoning for every identifier currently being poisoned
+     -- which is to say unpoison every element currently on the stack, emptying
+     the stack in the process. */
+  jitterc_unpoison_all (f);
+
+  EMIT("#if defined (JITTER_HAVE_LOCAL_POISONING)\n");
   EMIT("/* Local poisoning is no longer in effect.  Revert to the previous\n");
   EMIT("   state of warnings. */\n");
   EMIT("# pragma GCC diagnostic pop\n");
+  EMIT("#endif // #if defined (JITTER_HAVE_LOCAL_POISONING)\n");
   EMIT("\n");
 }
 
@@ -2861,12 +2966,25 @@ jitterc_emit_executor_definitions (FILE *f,
                                    const struct jitterc_specialized_instruction
                                    * sins)
 {
+  struct jitterc_instruction* uins = sins->instruction;
+  EMIT("    /* This must be a literal and not the enum case, since\n"
+       "       it will be used in assembly as well. */\n"
+       "#   define JITTER_SPECIALIZED_INSTRUCTION_OPCODE       %i\n",
+       sins->opcode);
+  EMIT("#   define JITTER_SPECIALIZED_INSTRUCTION_NAME         %s\n",
+       sins->name);
+  EMIT("#   define JITTER_INSTRUCTION_NAME_AS_STRING \"%s\"\n",
+       jitter_escape_string (uins->name));
+  EMIT("#   define JITTER_SPECIALIZED_INSTRUCTION_NAME_AS_STRING \"%s\"\n",
+       jitter_escape_string (sins->name));
+  EMIT("#   define JITTER_SPECIALIZED_INSTRUCTION_MANGLED_NAME %s\n",
+       sins->mangled_name);
+  EMIT("\n");
+
   /* From this point we can use local poisoning. */
   jitterc_open_local_poisoning (f);
 
   bool is_replacement = (sins->is_replacement_of != NULL);
-
-  struct jitterc_instruction* uins = sins->instruction;
   bool is_relocatable
     = (sins->relocatability == jitterc_relocatability_relocatable);
   bool is_fast_branching = uins->has_fast_labels;
@@ -3021,9 +3139,15 @@ jitterc_emit_executor_definitions (FILE *f,
     {
       EMIT ("    /* This instructions is not branching: undefine branch\n");
       EMIT ("       macros so that they cannot be used by mistake. */\n");
-      EMIT ("#   undef JITTER_COMPUTED_GOTO\n");
-      EMIT ("#   undef JITTER_BRANCH\n");
-      EMIT ("#   undef JITTER_EXIT\n");
+      jitterc_poison (f, "JITTER_COMPUTED_GOTO",
+                      jitterc_poisoning_reason_attribute_missing,
+                      "branching");
+      jitterc_poison (f, "JITTER_BRANCH",
+                      jitterc_poisoning_reason_attribute_missing,
+                      "branching");
+      jitterc_poison (f, "JITTER_EXIT",
+                      jitterc_poisoning_reason_attribute_missing,
+                      "branching");
     }
 
   /* Define the specialized instruction opcode and name as macros, to be
@@ -3034,19 +3158,6 @@ jitterc_emit_executor_definitions (FILE *f,
   if (sins->opcode == -1)
     jitter_fatal ("the specialised instruction %s has no opcode yet", sins->name);
   // FIXME: sanity check to remove later: end
-  EMIT("    /* This must be a literal and not the enum case, since\n"
-       "       it will be used in assembly as well. */\n"
-       "#   define JITTER_SPECIALIZED_INSTRUCTION_OPCODE       %i\n",
-       sins->opcode);
-  EMIT("#   define JITTER_SPECIALIZED_INSTRUCTION_NAME         %s\n",
-       sins->name);
-  EMIT("#   define JITTER_INSTRUCTION_NAME_AS_STRING \"%s\"\n",
-       jitter_escape_string (uins->name));
-  EMIT("#   define JITTER_SPECIALIZED_INSTRUCTION_NAME_AS_STRING \"%s\"\n",
-       jitter_escape_string (sins->name));
-  EMIT("#   define JITTER_SPECIALIZED_INSTRUCTION_MANGLED_NAME %s\n",
-       sins->mangled_name);
-  EMIT("\n");
 
   /* Emit a macro definition for the specialized instruction residual arity. */
   jitterc_emit_specialized_instruction_residual_arity_definition (f, sins);
@@ -3203,15 +3314,15 @@ jitterc_emit_executor_undefinitions (FILE *f,
      the user code has been emitted already. */
   jitterc_emit_computed_goto_definition (f, vm, true);
 
+  /* Local poisoning is no longer in effect. */
+  jitterc_close_local_poisoning (f);
+
   EMIT(" JITTER_INSTRUCTION_EPILOG_(%s, %s, JITTER_SPECIALIZED_INSTRUCTION_RESIDUAL_ARITY)\n",
        sins->name, sins->mangled_name);
   if (! is_relocatable)
     EMIT("#endif // #ifndef JITTER_REPLICATE\n");
   EMIT("#   undef JITTER_SPECIALIZED_INSTRUCTION_RESIDUAL_ARITY\n");
   EMIT("\n");
-
-  /* Local poisoning is no longer in effect. */
-  jitterc_close_local_poisoning (f);
 }
 
 static void
@@ -4393,7 +4504,7 @@ jitterc_emit_executor (const struct jitterc_vm *vm)
   EMIT("    = (const char *) & jitter_useless_function;\n");
   EMIT("#endif // #ifdef JITTER_HAVE_DEFECT_REPLACEMENT\n\n");
 
-  EMIT("/* Always include fast-branch definitions, which use patch-ins where possible\n");
+  EMIT("/* Always include the non-user fast-branch definitions, which use patch-ins where possible\n");
   EMIT("   or consist in fallback definitions otherwise. */\n");
   EMIT("#include <jitter/jitter-fast-branch.h>\n\n");
   EMIT("#define JITTER_FAST_BRANCH_PREFIX vmprefix_\n\n");
@@ -4660,9 +4771,13 @@ jitterc_generate (struct jitterc_vm *vm,
                   const char *template_directory,
                   const char *output_directory)
 {
+  /* Sanity checks. */
   assert (vm->template_directory == NULL);
   assert (vm->directory == NULL);
   assert (vm->tmp_directory == NULL);
+
+  /* Global initialisation. */
+  jitterc_initialize_local_poisoning ();
 
   /* Set directories in the VM data structure.  Make output directories if needed. */
   vm->template_directory = jitter_clone_string (template_directory);

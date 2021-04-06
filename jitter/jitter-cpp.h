@@ -94,11 +94,20 @@
    system will fail in a less friendly way in case of incorrect code, but
    correctness will not be compromised. */
 
+/* Define JITTER_HAVE_LOCAL_POISONING iff the machinery is supported in the
+   current configuration. */
+#if defined (JITTER_HAVE_PRAGMA_GCC_DIAGNOSTIC_IN_FUNCTIONS)  \
+    && defined (JITTER_HAVE_GNU_C_STATEMENT_EXPRESSIONS)
+    // FIXME: require GCC as well?  I think I can discover whether this works
+    //        by some Autoconf test.
+# define JITTER_HAVE_LOCAL_POISONING  1
+#endif
+
 /* This is how to poison an indentifier foo, for example with the error message
-   about relocatable VM instructions::
+   about a missing "threading" attribute:
 #    pragma push_macro ("foo")
 #    undef foo
-#    define foo JITTER_FORBIDDEN_EXPRESSION_IN_RELOCATABLE (foo)
+#    define foo JITTER_POISONED_WITHOUT_ATTRIBUTE (foo, "threading")
 
    And this is how to unpoison it:
 #    pragma pop_macro ("foo")
@@ -123,44 +132,45 @@
 #define JITTER_PRAGMA_WARN_WITH_REASON(identifier, reason_string_literal)      \
   /* This is printed in a nicer way than #pragma GCC error. */                 \
   JITTER_PRAGMA (message ("\nYou cannot use \"" # identifier "\" in "          \
-                          JITTER_SPECIALIZED_INSTRUCTION_NAME_AS_STRING ":\n"  \
-                          reason_string_literal                                \
-                          ".\nAny type error you may see after this "          \
-                          "message is probably an effect of this macro "       \
-                          "which serves to prevent the use of "                \
-                          "\"" #identifier "\"."                               \
-                          ));                                                  \
+                          JITTER_SPECIALIZED_INSTRUCTION_NAME_AS_STRING " \n"  \
+                          "(a specialisation of "                              \
+                          JITTER_INSTRUCTION_NAME_AS_STRING ")\n"              \
+                          reason_string_literal ". \n"                         \
+                          "Any type error you may see after this message \n"   \
+                          "is probably an effect of this macro which \n"       \
+                          "serves to prevent the use of \"" #identifier        \
+                          "\"." ));                                            \
   /* And now fail, as well.  This literal string is printed nicely. */         \
   JITTER_PRAGMA (GCC error "Refusing to compile.");
-
-/* Expand to a use of JITTER_PRAGMA_WARN_WITH_REASON with the appropriate error
-   message. */
-#define JITTER_POISONED_IN_ANY_INSTRUCTION(identifier)      \
-  JITTER_PRAGMA_WARN_WITH_REASON                            \
-     (identifier, "it is forbidden in any VM instruction")
-#define JITTER_POISONED_IN_RELOCATABLE_INSTRUCTION(identifier)        \
-  JITTER_PRAGMA_WARN_WITH_REASON                                      \
-     (identifier,                                                     \
-      "it is forbidden in relocatable VM instructions (but you may "  \
-      "change the instruction to be non-relocatable)")
-#define JITTER_POISONED_IN_NON_BRANCHING_INSTRUCTION(identifier)        \
-  JITTER_PRAGMA_WARN_WITH_REASON                                      \
-     (identifier,                                                     \
-      "it is forbidden in non-branching VM instructions (but you may "  \
-      "change the instruction to be branching)")
 
 /* Expand to a GNU C statement-expresison evaluating to zero (which is
    compatible with most types in C) and a use of JITTER_PRAGMA_WARN_WITH_REASON.
    The fact that the identifier expands to an expression makes it likely that
    the resulting expression remains well-formed syntactically, which avoids
-   distracting syntax errors in many cases.
-   The intended error message related to the use of the identifier is printend
-   in any case. */
-#define JITTER_FORBIDDEN_EXPRESSION(identifier)                      \
-  ({ JITTER_POISONED_IN_ANY_INSTRUCTION (identifier); 0; })
-#define JITTER_FORBIDDEN_EXPRESSION_IN_RELOCATABLE(identifier)       \
-  ({ JITTER_POISONED_IN_RELOCATABLE_INSTRUCTION (identifier); 0; })
-#define JITTER_FORBIDDEN_EXPRESSION_IN_NON_BRANCHING(identifier)       \
-  ({ JITTER_POISONED_IN_NON_BRANCHING_INSTRUCTION (identifier); 0; })
+   distracting syntax errors in many cases. */
+#define JITTER_POISONED_EXPRESSION(identifier, reason_string_literal)    \
+  ({ JITTER_PRAGMA_WARN_WITH_REASON(identifier, reason_string_literal);  \
+     0; })
+
+/* Expand to a use of JITTER_PRAGMA_WARN_WITH_REASON with the appropriate error
+   message. */
+#define JITTER_POISONED_EVERYWHERE(identifier)                                \
+  JITTER_POISONED_EXPRESSION (identifier,                                 \
+                              "-- this is forbidden everywhere in user "  \
+                              "code")
+
+/* This factors the common code in JITTER_POISONED_WITH_ATTRIBUTE and
+   JITTER_POISONED_WITHOUT_ATTRIBUTE . */
+#define JITTER_POISONED_WITH_OR_WITHOUT_ATTRIBUTE(identifier, participle,     \
+                                                  attribute)                  \
+  JITTER_POISONED_EXPRESSION (identifier,                                     \
+                              participle " the attribute \"" attribute "\"")
+
+#define JITTER_POISONED_WITH_ATTRIBUTE(identifier, attribute)       \
+  JITTER_POISONED_WITH_OR_WITHOUT_ATTRIBUTE (identifier, "which has",  \
+                                             attribute)
+#define JITTER_POISONED_WITHOUT_ATTRIBUTE(identifier, attribute)        \
+  JITTER_POISONED_WITH_OR_WITHOUT_ATTRIBUTE (identifier, "which lacks",  \
+                                             attribute)
 
 #endif // #ifndef JITTER_CPP_H_
