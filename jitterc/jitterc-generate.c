@@ -3878,24 +3878,6 @@ jitterc_emit_executor_main_function
   EMIT("#endif // #ifdef JITTER_HAVE_DEFECT_REPLACEMENT\n");
   EMIT("\n");
 
-  /// FIXME: this is for debugging: begin
-  EMIT("#ifdef JITTER_PROFILE\n");
-  EMIT("      fprintf (stderr, \"VM instruction range: \");\n");
-  const struct jitterc_specialized_instruction* first_sins
-    = ((const struct jitterc_specialized_instruction*)
-       gl_list_get_at (vm->specialized_instructions, 0));
-  const struct jitterc_specialized_instruction* last_sins
-    = ((const struct jitterc_specialized_instruction*)
-       gl_list_get_at (vm->specialized_instructions,
-                       gl_list_size (vm->specialized_instructions) - 1));
-  EMIT("      fprintf (stderr, \"[%%p, \", && JITTER_SPECIALIZED_INSTRUCTION_BEGIN_LABEL_OF(%s));\n",
-       first_sins->mangled_name);
-  EMIT("      fprintf (stderr, \"%%p)\", && JITTER_SPECIALIZED_INSTRUCTION_END_LABEL_OF(%s));\n",
-       last_sins->mangled_name);
-  EMIT("      fprintf (stderr, \"\\n\");\n");
-  EMIT("#endif // #ifdef JITTER_PROFILE\n");
-  /// FIXME: this is for debugging: end
-
   EMIT("#endif // #ifndef JITTER_DISPATCH_SWITCH\n");
   EMIT("\n");
   EMIT("      /* Back to regular C, without our reserved registers if any; I can share\n");
@@ -4302,24 +4284,6 @@ jitterc_emit_executor_main_function
   EMIT("      = vmprefix_exit_status_exited;\n");
   EMIT("\n");
 
-  // FIXME: this is a test for profil-based profiling, currently not implemented: begin
-  EMIT("#ifdef JITTER_PROFILE\n");
-  EMIT("#define PROFILING_SPACE (1024 * 1024 * 100)\n");
-  EMIT("    if (jitter_initialize)\n");
-  EMIT("      fprintf (stderr, \"Profiling space: [%%p, %%p)\\n\", && vmprefix_profiling_space, ((char *) (&& vmprefix_profiling_space)) + PROFILING_SPACE);\n");
-  EMIT("    /* Do an indirect jump to the return statement rather than a simple\n");
-  EMIT("       conditional.  With this trick I can afford even a very large gap\n");
-  EMIT("       within the code for a single C function, without being constrained\n");
-  EMIT("       by branch offset limits on any architecture. */\n");
-  EMIT("    void *return_address_variable = && return_label;\n");
-  EMIT("    JITTER_MARK_LVALUE_AS_SET_BY_ASSEMBLY (return_address_variable);\n");
-  EMIT("    goto *return_address_variable;\n");
-  EMIT("  vmprefix_profiling_space: __attribute__ ((unused)) // FIXME: do this from assembly\n");
-  EMIT("    asm volatile (\".fill (\" JITTER_STRINGIFY(PROFILING_SPACE) \")\");\n");
-  EMIT("  return_label:\n");
-  EMIT("#endif // #ifdef JITTER_PROFILE\n");
-  // FIXME: this is a test for profil-based profiling, currently not implemented: end
-  EMIT("\n");
   EMIT("  /* We are done.  If initialising return some arbitrary result,\n");
   EMIT("     otherwise (which is the interesting case) return the exit\n");
   EMIT("     status from the VM state. */\n");
