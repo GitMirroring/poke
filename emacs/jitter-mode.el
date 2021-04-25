@@ -1,7 +1,7 @@
 ;;; jitter-mode.el --- Major mode for editing Jitter VM specifications.
 
-;; Copyright (C) 2017, 2018, 2019 Luca Saiu
-;; Updated in 2020 and 2021 by Luca Saiu
+;; Copyright (C) 2017, 2018, 2019, 2021 Luca Saiu
+;; Updated in 2020 by Luca Saiu
 ;; Written by Luca Saiu
 
 ;; Maintainer: Luca Saiu
@@ -265,7 +265,7 @@ Right now the mode only provides font-locking support.
        0 font-lock-builtin-face t)
       ("\\<JITTER_BRANCH\\(?:_FAST\\)?\\(?:_AND_LINK\\(?:_WITH\\)?\\)?\\>"
        0 font-lock-builtin-face t)
-      ("\\<JITTER_BRANCH_\\(FAST_\\)?IF_\\(?:ZERO\\|NONZERO\\|POSITIVE\\|NONPOSITIVE\\|NEGATIVE\\|NONNEGATIVE\\|EQUAL\\|NOTEQUAL\\|LESS_UNSIGNED\\|LESS_SIGNED\\|GREATER_UNSIGNED\\|GREATER_SIGNED\\|NOTLESS_UNSIGNED\\|NOTLESS_SIGNED\\|NOTGREATER_UNSIGNED\\|NOTGREATER_SIGNED\\|AND\\|NOTAND\\|\\(\\(PLUS\\|MINUS\\|TIMES\\|DIVIDED\\|REMAINDER\\|NEGATE\\)_OVERFLOWS\\)\\)\\>"
+      ("\\<JITTER_CALL_C\\>\\|\\<JITTER_BRANCH_\\(FAST_\\)?IF_\\(?:ZERO\\|NONZERO\\|POSITIVE\\|NONPOSITIVE\\|NEGATIVE\\|NONNEGATIVE\\|EQUAL\\|NOTEQUAL\\|LESS_UNSIGNED\\|LESS_SIGNED\\|GREATER_UNSIGNED\\|GREATER_SIGNED\\|NOTLESS_UNSIGNED\\|NOTLESS_SIGNED\\|NOTGREATER_UNSIGNED\\|NOTGREATER_SIGNED\\|AND\\|NOTAND\\|\\(\\(PLUS\\|MINUS\\|TIMES\\|DIVIDED\\|REMAINDER\\|NEGATE\\)_OVERFLOWS\\)\\)\\>"
        0 font-lock-builtin-face t)
       ("\\<JITTER_\\(PLUS\\|MINUS\\|TIMES\\|DIVIDED\\|REMAINDER\\|NEGATE\\)_BRANCH_\\(FAST_\\)?IF_OVERFLOW\\>"
        0 font-lock-builtin-face t)
