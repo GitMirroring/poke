@@ -3711,6 +3711,10 @@ jitterc_emit_executor_data_locations (FILE *f, const struct jitterc_vm *vm)
   EMIT("#endif // #ifndef JITTER_DISPATCH_SWITCH\n");
 }
 
+/* Forward declration. */
+static void
+jitterc_emit_executor_state_field_access_macros (FILE *f);
+
 static void
 jitterc_emit_executor_main_function
    (FILE *f, const struct jitterc_vm *vm)
@@ -3724,6 +3728,10 @@ jitterc_emit_executor_main_function
   EMIT("vmprefix_execute_or_initialize (bool jitter_initialize,\n");
   EMIT("                                struct vmprefix_state * const jitter_original_state)\n");
   EMIT("{\n");
+
+  /* From this function (and only from this function) state runtime fields
+     are accessible for "the" current VM state. */
+  jitterc_emit_executor_state_field_access_macros (f);
 
   /* Emit debugging prints.  FIXME: implement something like this, cleanly, in a
      different function. */
@@ -3986,13 +3994,13 @@ jitterc_emit_executor_main_function
   EMIT("  /* Before setting up runtime structures and jumping to the first\n");
   EMIT("     instruction check that the last exit status was correct, and\n");
   EMIT("     update it for the present run. */\n");
-  EMIT("  switch (JITTER_STATE_BACKING_FIELD (exit_status))\n");
+  EMIT("  switch (_JITTER_STATE_BACKING_FIELD (exit_status))\n");
   EMIT("    {\n");
   EMIT("    case vmprefix_exit_status_never_executed:\n");
   EMIT("    case vmprefix_exit_status_exited:\n");
   EMIT("    case vmprefix_exit_status_debug:\n");
   EMIT("      /* This is normal and expected. */\n");
-  EMIT("      JITTER_STATE_BACKING_FIELD (exit_status)\n");
+  EMIT("      _JITTER_STATE_BACKING_FIELD (exit_status)\n");
   EMIT("        = vmprefix_exit_status_being_executed;\n");
   EMIT("      break;\n");
   EMIT("\n");
@@ -4006,7 +4014,7 @@ jitterc_emit_executor_main_function
   EMIT("\n");
   EMIT("    default:\n");
   EMIT("      jitter_fatal (\"invalid exit state %%i\",\n");
-  EMIT("                    (int) JITTER_STATE_BACKING_FIELD (exit_status));\n");
+  EMIT("                    (int) _JITTER_STATE_BACKING_FIELD (exit_status));\n");
   EMIT("    }\n");
 
   /* Insert C code from the user.  This is supposed to come in right before
@@ -4290,7 +4298,7 @@ jitterc_emit_executor_main_function
 
   EMIT("  /* Update the state exit status. */\n");
   EMIT("  if (! jitter_initialize)\n");
-  EMIT("    JITTER_STATE_BACKING_FIELD (exit_status)\n");
+  EMIT("    _JITTER_STATE_BACKING_FIELD (exit_status)\n");
   EMIT("      = vmprefix_exit_status_exited;\n");
   EMIT("\n");
 
@@ -4318,7 +4326,7 @@ jitterc_emit_executor_main_function
   EMIT("  if (jitter_initialize)\n");
   EMIT("    return vmprefix_exit_status_never_executed;\n");
   EMIT("  else\n");
-  EMIT("    return JITTER_STATE_BACKING_FIELD (exit_status);\n");
+  EMIT("    return _JITTER_STATE_BACKING_FIELD (exit_status);\n");
   EMIT("}\n");
 
   /* Emit asm footers.  These must come after the last patch-in or defect
@@ -4429,8 +4437,30 @@ jitterc_emit_executor_general_purpose_state_data_access_macros
 {
   EMIT("/* Most of the needed macros are in jitter-executor.h .  This however\n");
   EMIT("   needs to be here, as it relies on a prefix to be substituted. */\n");
-  EMIT("#define JITTER_STATE_BACKING  \\\n");
+  EMIT("#define _JITTER_STATE_BACKING  \\\n");
   EMIT("  (jitter_original_state->vmprefix_state_backing)\n");
+}
+
+/* Emit the definition of VMPREFIX_STATE_RUNTIME_FIELD and
+   VMPREFIX_STATE_BACKING_FIELD , to be used within instruction code blocks.
+   These replace the general definitions from the vm.h template, but are not
+   compatible with them.  See the comment in vm.h and jitter-executor.h . */
+static void
+jitterc_emit_executor_state_field_access_macros (FILE *f)
+{
+  EMIT("/* Undefine the state field access macros which are meant to be\n");
+  EMIT("   used out of VM instructions. */\n");
+  EMIT("#undef VMPREFIX_STATE_RUNTIME_FIELD\n");
+  EMIT("#undef VMPREFIX_STATE_BACKING_FIELD\n");
+  EMIT("\n");
+
+  EMIT("/* Replace the definitions by versions which will work (only!)\n");
+  EMIT("   inside instruction bodies.  These macros have one argument\n");
+  EMIT("   instead of two: the VM state being used is *the* current\n");
+  EMIT("   state. */\n");
+  EMIT("#define VMPREFIX_STATE_RUNTIME_FIELD  _JITTER_STATE_RUNTIME_FIELD\n");
+  EMIT("#define VMPREFIX_STATE_BACKING_FIELD  _JITTER_STATE_BACKING_FIELD\n");
+  EMIT("\n");
 }
 
 /* Emit access macros for special-purpose data, to be used from VM code. */

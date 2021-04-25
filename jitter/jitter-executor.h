@@ -360,25 +360,30 @@
 
 
 
-/* User macros to access VM state data structures.
+/* User macros to access VM state data structures (from VM instructions).
  * ************************************************************************** */
 
-/* Expand to the current VM state runtime, as a struct. */
-#define JITTER_STATE_RUNTIME  \
+/* Expand to the current VM state runtime, as a struct.  This is only to be
+   used from the executor, where the required automatic variable is visible. */
+#define _JITTER_STATE_RUNTIME  \
   jitter_state_runtime
 
-/* The macro JITTER_STATE_BACKING expands to the current VM state backing, as a
+/* The macro _JITTER_STATE_BACKING expands to the current VM state backing, as a
    struct.  It is defined in machine-generated code. */
 
 /* Expand to an l-value referring the named field in the current VM state
    runtime. */
-#define JITTER_STATE_RUNTIME_FIELD(field_name)  \
-  (JITTER_STATE_RUNTIME.field_name)
+#define _JITTER_STATE_RUNTIME_FIELD(field_name)  \
+  (_JITTER_STATE_RUNTIME.field_name)
 
 /* Expand to an l-value referring the named field in the current VM state
    backing. */
-#define JITTER_STATE_BACKING_FIELD(field_name)  \
-  (JITTER_STATE_BACKING.field_name)
+#define _JITTER_STATE_BACKING_FIELD(field_name)  \
+  (_JITTER_STATE_BACKING.field_name)
+
+/* The macros _JITTER_STATE_RUNTIME_FIELD and _JITTER_STATE_BACKING_FIELD are
+   meant to be accessed by their aliases VMPREFIX_STATE_RUNTIME_FIELD and
+   VMPREFIX_STATE_BACKING_FIELD , defined in machine-generated code. */
 
 
 

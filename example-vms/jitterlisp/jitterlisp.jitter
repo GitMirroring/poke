@@ -967,7 +967,7 @@ instruction heap-allocate (?n 4 8 12 16 24 32 36 48 52 64)
     /* Bump the allocation pointer, unconditionally.  Another instruction
        will check if it went out of the nursery. */
     const size_t allocation_size = JITTER_ARGN0;
-    JITTER_STATE_RUNTIME_FIELD (allocation_next) += allocation_size;
+    JITTERLISPVM_STATE_RUNTIME_FIELD (allocation_next) += allocation_size;
 #else
     /* Nothing to do.  With the ordinary non-stub heap all the actual
        memory allocation happens in primitive-cons-special. */
@@ -990,8 +990,8 @@ instruction gc-if-needed (?f)
        field) is not problematic with respect to defects, I will need to seriously
        stress the system after defect replacement is really implemented. */
     JITTER_BRANCH_FAST_IF_NOTLESS_UNSIGNED
-       (JITTER_STATE_RUNTIME_FIELD (allocation_next),
-        JITTER_STATE_RUNTIME_FIELD (allocation_limit),
+       (JITTERLISPVM_STATE_RUNTIME_FIELD (allocation_next),
+        JITTERLISPVM_STATE_RUNTIME_FIELD (allocation_limit),
         JITTER_ARGF0);
 #else
     /* Nothing to do.  With the ordinary non-stub heap all the actual
@@ -1013,7 +1013,7 @@ instruction primitive-cons-special ()
     const size_t header_size = 0;
     jitterlisp_object tagged_cons
       = JITTERLISP_CONS_ENCODE
-          (JITTER_STATE_RUNTIME_FIELD (allocation_next)
+          (JITTERLISPVM_STATE_RUNTIME_FIELD (allocation_next)
            - allocation_size + header_size);
     JITTERLISP_CONS_DECODE (tagged_cons)->car = JITTER_UNDER_TOP_MAINSTACK();
     JITTERLISP_CONS_DECODE (tagged_cons)->cdr = JITTER_TOP_MAINSTACK();

@@ -1240,6 +1240,34 @@ vmprefix_profile_sample_stop (void);
 
 
 
+/* User macros to access VM state data structures (out of VM instructions).
+ * ************************************************************************** */
+
+/* Notice that these macros are to be used out of VM instruction code blocks:
+   for use within instructions see the alternative definitions of
+   _JITTER_STATE_RUNTIME_FIELD and _JITTER_STATE_BACKING_FIELD in
+   jitter-executor.h .  The alternative definitions are *not* compatible: the
+   macros defined here have one more argument, the VM state structure. */
+
+/* Given a VM state and a state runtime field name expand to an l-value
+   referring the named field in the given VM state runtime.
+   This macro is not usable within VM instruction code blocks: see the commmnt
+   above. */
+#define VMPREFIX_STATE_RUNTIME_FIELD(state /* see the comment above */,  \
+                                     field_name)                         \
+  ((state).vmprefix_state_runtime.field_name)
+
+/* Given a VM state and a state backing field name expand to an l-value
+   referring the named field in the given VM state backing.
+   This macro is not usable within VM instruction code blocks: see the commmnt
+   above. */
+#define VMPREFIX_STATE_BACKING_FIELD(state /* see the comment above */,  \
+                                     field_name)                         \
+  ((state).vmprefix_state_backing.field_name)
+
+
+
+
 /* Machine-generated code.
  * ************************************************************************** */
 
