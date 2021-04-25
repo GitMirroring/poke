@@ -1291,7 +1291,7 @@ AC_MSG_RESULT([$jitter_enable_host_assembly])
 #
 # An architecture name given by the user will be used in place of the
 # detected $host_cpu .
-# At the end of the case statement jitter_has_host_assembly and
+# At the end of the case statement jitter_supports_minimal_threading and
 # jitter_supports_no_threading will be defined.
 if test "x$jitter_enable_host_assembly" = 'xno' \
    || test "x$JITTER_HAVE_ACTUAL_GCC" = 'xno'; then \
@@ -1301,6 +1301,7 @@ elif test "x$jitter_enable_host_assembly" = "xauto"; then
 else
   default_host_cpu="$jitter_enable_host_assembly"
 fi
+jitter_supports_minimal_threading='no'
 jitter_supports_no_threading='no'
 AC_MSG_CHECKING([if we have assembly support for \"$default_host_cpu\"])
 AS_CASE([$default_host_cpu],
@@ -1308,29 +1309,29 @@ AS_CASE([$default_host_cpu],
                                            ) # No ";": see the Autoconf manual
                                              # near the end of "Defining C
                                              # Preprocessor Symbols".
-                        #JITTER_ASSEMBLY_SUBDIRECTORY=aarch64
-                        jitter_has_host_assembly=no],
+                        JITTER_ASSEMBLY_SUBDIRECTORY=aarch64
+                        jitter_supports_minimal_threading=yes],
         [alpha*],      [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_ALPHA], [1], []
                                            ) # No ";": see the Autoconf manual.
-                        #JITTER_ASSEMBLY_SUBDIRECTORY=alpha
-                        jitter_has_host_assembly=no],
+                        JITTER_ASSEMBLY_SUBDIRECTORY=alpha
+                        jitter_supports_minimal_threading=yes],
         [arm*],        [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_ARM], [1], []
                                            ) # No ";": see the Autoconf manual.
                         #JITTER_ASSEMBLY_SUBDIRECTORY=arm
-                        jitter_has_host_assembly=no],
+                        true],
         [i?86],        [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_I386], [1], []
                                            ) # No ";": see the Autoconf manual.
                         #JITTER_ASSEMBLY_SUBDIRECTORY=i386
-                        jitter_has_host_assembly=no],
+                        true],
         [m68k*],       [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_M68K], [1], []
                                            ) # No ";": see the Autoconf manual.
                         JITTER_ASSEMBLY_SUBDIRECTORY=m68k;
-                        jitter_has_host_assembly=yes;
+                        jitter_supports_minimal_threading=yes;
                         jitter_supports_no_threading=yes],
         [mips|mipsel], [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_MIPS], [1], []
                                            ) # No ";": see the Autoconf manual.
                         JITTER_ASSEMBLY_SUBDIRECTORY=mips;
-                        jitter_has_host_assembly=yes;
+                        jitter_supports_minimal_threading=yes;
                         jitter_supports_no_threading=yes;
                         # We reuse jitter_bitness and jitter_mips_release from
                         # the test above.
@@ -1343,53 +1344,63 @@ AS_CASE([$default_host_cpu],
                        [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_MIPS], [1], []
                                            ) # No ";": see the Autoconf manual.
                         #JITTER_ASSEMBLY_SUBDIRECTORY=mips;
-                        jitter_has_host_assembly=no],
+                        true],
         [parisc*],     [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_PARISC], [1], []
                                            ) # No ";": see the Autoconf manual.
-                        jitter_has_host_assembly=no],
+                        #JITTER_ASSEMBLY_SUBDIRECTORY=parisc
+                        true],
         [powerpc64|powerpc64le],
                        [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_POWERPC], [1], []
                                            ) # No ";": see the Autoconf manual.
                         #JITTER_ASSEMBLY_SUBDIRECTORY=powerpc
-                        jitter_has_host_assembly=no],
+                        true],
         [ppc|powerpc|powerpcle],
                        [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_POWERPC], [1], []
                                            ) # No ";": see the Autoconf manual.
                         JITTER_ASSEMBLY_SUBDIRECTORY=powerpc;
-                        jitter_has_host_assembly=yes;
+                        jitter_supports_minimal_threading=yes;
                         jitter_supports_no_threading=yes],
         [riscv*],      [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_RISCV], [1], []
                                            ) # No ";": see the Autoconf manual.
                         JITTER_ASSEMBLY_SUBDIRECTORY=riscv;
-                        jitter_has_host_assembly=yes;
+                        jitter_supports_minimal_threading=yes;
                         jitter_supports_no_threading=yes],
         [s390*],       [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_S390], [1], []
                                            ) # No ";": see the Autoconf manual.
-                        jitter_has_host_assembly=no],
+                        true],
         [sh4*],        [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_SH], [1], []
                                            ) # No ";": see the Autoconf manual.
                         JITTER_ASSEMBLY_SUBDIRECTORY=sh
                         # Assembly support is not ready for SH, and sadly it
                         # might never be.  It is very difficult to support.
                         # See the manual.
-                        jitter_has_host_assembly=no;
+                        jitter_supports_minimal_threading=no;
                         jitter_supports_no_threading=no],
         [sparc*],      [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_SPARC], [1], []
                                            ) # No ";": see the Autoconf manual.
                         JITTER_ASSEMBLY_SUBDIRECTORY=sparc
-                        jitter_has_host_assembly=yes;
+                        jitter_supports_minimal_threading=yes;
                         jitter_supports_no_threading=yes],
         [x86_64],      [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_X86_64], [1], []
                                            ) # No ";": see the Autoconf manual.
                         JITTER_ASSEMBLY_SUBDIRECTORY=x86_64;
-                        jitter_has_host_assembly=yes;
+                        jitter_supports_minimal_threading=yes;
                         jitter_supports_no_threading=yes],
                        # Default case.
-                       [jitter_has_host_assembly=no])
+                       [])
+
+# Define jitter_has_host_assembly .  We still have to give feedback about
+# whether we have host assembly support...
+if test "$xJITTER_ASSEMBLY_SUBDIRECTORY" = 'x'; then
+  jitter_has_host_assembly=no
+else
+  jitter_has_host_assembly=yes
+fi
 
 # Define objdump options unconditionally, even if the user disabled host
 # assembly.  This is harmless enough, as the code is defensive and will
 # revert to a sensible fallback solution when objdump fails.
+# Finally give feedback about having assembly support.
 AC_DEFINE_UNQUOTED([JITTER_OBJDUMP_OPTIONS],
                    ["$jitter_objdump_options"],
                    [architecture-specific options for objdump])
@@ -1398,8 +1409,6 @@ if test "x$jitter_has_host_assembly" = "xno"; then
 else
   AC_MSG_RESULT([yes: $JITTER_ASSEMBLY_SUBDIRECTORY])
 fi
-AC_MSG_CHECKING([if the architecture supports no-threading])
-AC_MSG_RESULT([$jitter_supports_no_threading])
 
 # If the user explicitly requested support for an architecture but that
 # was not found, fail.
@@ -1408,6 +1417,12 @@ if test "x$jitter_enable_host_assembly" != "xno" \
    && test "x$JITTER_ASSEMBLY_SUBDIRECTORY" = "x"; then
    AC_MSG_ERROR([could not find assembly for $jitter_enable_host_assembly])
 fi
+
+# Give feedback about minimal-threading and no-threading support.
+AC_MSG_CHECKING([if the architecture supports minimal-threading])
+AC_MSG_RESULT([$jitter_supports_minimal_threading])
+AC_MSG_CHECKING([if the architecture supports no-threading])
+AC_MSG_RESULT([$jitter_supports_no_threading])
 
 
 # Check if assembly support exists for the host machine.
@@ -1897,6 +1912,7 @@ AC_MSG_CHECKING([if minimal-threading dispatch is enabled])
 if    test "x$JITTER_HAVE_ACTUAL_GCC" = 'xyes' \
    && test "x$jitter_have_known_binary_format" = 'xyes' \
    && test "x$jitter_has_host_assembly" = 'xyes' \
+   && test "x$jitter_supports_minimal_threading" = 'xyes' \
    && test "x$ac_cv_have_assembly_names_for_non_functions" = 'xyes'; then
   default=yes
 else

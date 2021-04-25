@@ -866,6 +866,12 @@ endif # if JITTER_ENABLE_ASSEMBLY
 # All the source files for every architecture have to be distributed,
 # independently from which ones we use, if any, in the current configuration.
 EXTRA_DIST += \
+  machine/aarch64/jitter/machine/jitter-machine.h \
+  machine/aarch64/jitter/machine/jitter-machine-assembly.S \
+  machine/aarch64/jitter/machine/jitter-machine-c.c \
+  machine/alpha/jitter/machine/jitter-machine.h \
+  machine/alpha/jitter/machine/jitter-machine-assembly.S \
+  machine/alpha/jitter/machine/jitter-machine-c.c \
   machine/m68k/jitter/machine/jitter-machine.h \
   machine/m68k/jitter/machine/jitter-machine-assembly.S \
   machine/m68k/jitter/machine/jitter-machine-c.c \
@@ -891,9 +897,12 @@ EXTRA_DIST += \
 # Also distribute the dummy architecture-specific files for unsupported
 # architectures.  These help with make dist: see the comment in configure.ac .
 EXTRA_DIST += \
-  machine/dummy/jitter/machine/jitter-machine.h \
-  machine/dummy/jitter/machine/jitter-machine-assembly.S \
-  machine/dummy/jitter/machine/jitter-machine-c.c
+  machine/dummy--no-threading/jitter/machine/jitter-machine.h \
+  machine/dummy--no-threading/jitter/machine/jitter-machine-assembly.S \
+  machine/dummy--no-threading/jitter/machine/jitter-machine-c.c \
+  machine/dummy--minimal-threading/jitter/machine/jitter-machine.h \
+  machine/dummy--minimal-threading/jitter/machine/jitter-machine-assembly.S \
+  machine/dummy--minimal-threading/jitter/machine/jitter-machine-c.c
 
 
 # A remark about building examples and their library dependencies.
