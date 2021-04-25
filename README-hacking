@@ -1,4 +1,4 @@
-Copyright (C) 2017-2020 Luca Saiu
+Copyright (C) 2017-2021 Luca Saiu
 Written by Luca Saiu
 
 This file is part of Jitter.
@@ -19,9 +19,10 @@ this software.  If not, see <http://www.gnu.org/licenses/>.
 Obtaining the latest version
 ============================
 
-Jitter is developed on a public git repository, accessible over HTTP at
+Jitter is developed on a public git repository, accessible by anybody over HTTP
+at
   http://git.ageinghacker.net/jitter
-and over ssh to developers.
+, and over ssh by developers.
 
 
 How to compile from a git copy
@@ -30,7 +31,8 @@ How to compile from a git copy
 You need an Internet connection, git, GNU Autoconf, GNU Automake, GNU Libtool,
 GNU Bison, Flex, GNU Texinfo, GNU help2man, plus the usual build tools.  The GNU
 Binutils are needed for disassembly support, and advanced dispatching modes rely
-on GCC.
+on GCC; a non-GCC modern C compiler suffices to build VMs, but their performance
+will be suboptimal.
 
 Running
   ./bootstrap
@@ -67,11 +69,11 @@ almost always run autoreconf, which runs autoconf, thru the bootstrap script
 coming from Gnulib.  I've added an rm line to Jitter's bootstrap.conf , taking
 care of removing .version .
 
-Therefore, running
+Therefore running
   ./bootstrap
 in the source dir *seems* to be enough.  This regenerates configure with the
 good version name, and any make target in a build directory after that point
-will trigger a reconfiguration, and everything will be good.
+will trigger a reconfiguration.
 Tarballs will have .version and .tarball-version , both correctly updated.
 
 Without this kind of explicit updates any expansion PACKAGE_VERSION may be stale
