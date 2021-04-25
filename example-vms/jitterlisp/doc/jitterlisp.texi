@@ -4130,8 +4130,8 @@ disassemblies.
 Print cumulative profile information about the specialised
 VM instructions run up to this point.  This just prints a warning if
 JitterLisp was not compiled with profiling instrumentation enabled,
-defining at least one of the CPP macros @code{JITTER_PROFILE_COUNT}
-and @code{JITTER_PROFILE_SAMPLE}; since profiling instrumentation
+defining at least one of the CPP macros @code{JITTERLISPVM_PROFILE_COUNT}
+and @code{JITTERLISPVM_PROFILE_SAMPLE}; since profiling instrumentation
 incurs a performance penalty it is disabled by default.
 @end deffn
 
