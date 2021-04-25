@@ -61,6 +61,7 @@ jitter_print_vm_configuration (FILE *f,
 
   PRINT("lower_case_prefix:              %s\n", c->lower_case_prefix);
   PRINT("upper_case_prefix:              %s\n", c->upper_case_prefix);
+  PRINT("hash_prefix:                    %s\n", c->hash_prefix);
   PRINT("max_fast_register_no_per_class: %i\n",
         (int) c->max_fast_register_no_per_class);
   PRINT("max_nonresidual_literal_no:     %i\n", (int) c->max_nonresidual_literal_no);

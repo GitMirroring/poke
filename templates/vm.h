@@ -1255,7 +1255,7 @@ vmprefix_profile_sample_stop (void);
    above. */
 #define VMPREFIX_STATE_RUNTIME_FIELD(state /* see the comment above */,  \
                                      field_name)                         \
-  ((state).vmprefix_state_runtime.field_name)
+  ((state).vmprefixhash_state_runtime.field_name)
 
 /* Given a VM state and a state backing field name expand to an l-value
    referring the named field in the given VM state backing.

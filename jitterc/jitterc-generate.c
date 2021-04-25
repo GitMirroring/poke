@@ -53,8 +53,9 @@
 
 /* VM prefixes as occurring in templates and generated files before
    replacement. */
-#define INPUT_LOWER_CASE_PREFIX  "vmprefix"
-#define INPUT_UPPER_CASE_PREFIX  "VMPREFIX"
+#define INPUT_HASH_PREFIX             "vmprefixhash"
+#define INPUT_LOWER_CASE_PREFIX       "vmprefix"
+#define INPUT_UPPER_CASE_PREFIX       "VMPREFIX"
 
 /* The temporary subdirectory basename.  This directory contains a temporary
    copy of the generated files, to be copied to the actual output directory
@@ -1544,7 +1545,7 @@ jitterc_emit_stack_operation_definition (FILE *f,
        stack->c_type,
        (executor
         ? "jitter_state_runtime."
-        : "(state_p)->vmprefix_state_runtime."),
+        : "(state_p)->vmprefixhash_state_runtime."),
        stack->lower_case_long_name);
   for (i = 0; i < arity; i ++)
     EMIT(", x%i", i);
@@ -1915,8 +1916,12 @@ jitterc_emit_state_h (const struct jitterc_vm *vm)
   EMIT("     possible.  Runtime structures are allowed to point to memory\n");
   EMIT("     from the backing (which is particularly important for stacks),\n");
   EMIT("     but the backing itself is not copied into registers at\n");
-  EMIT("     execution time. */\n");
-  EMIT("  struct vmprefix_state_runtime vmprefix_state_runtime;\n");
+  EMIT("     execution time.\n");
+  EMIT("     It is important for this identifier not to be directly used in\n");
+  EMIT("     user code, since at some points during execution the data stored\n");
+  EMIT("     struct field may be out of date.  In order to prevent this kind\n");
+  EMIT("     of mistakes this field has a hard-to-predict name. */\n");
+  EMIT("  struct vmprefix_state_runtime vmprefixhash_state_runtime;\n");
   EMIT("};\n");
 
   EMIT("#endif // #ifndef VMPREFIX_STATE_H_\n");
@@ -1939,7 +1944,7 @@ jitterc_emit_state (const struct jitterc_vm *vm)
   EMIT("    = & jitter_state->vmprefix_state_backing;\n");
   EMIT("  struct vmprefix_state_runtime * const jitter_state_runtime\n");
   EMIT("    __attribute__ ((unused))\n");
-  EMIT("    = & jitter_state->vmprefix_state_runtime;\n");
+  EMIT("    = & jitter_state->vmprefixhash_state_runtime;\n");
   EMIT("\n");
   EMIT("  /* Initialize The Array. */\n");
   EMIT("  jitter_state_backing->jitter_slow_register_no_per_class\n");
@@ -1980,7 +1985,7 @@ jitterc_emit_state (const struct jitterc_vm *vm)
   EMIT("    = & jitter_state->vmprefix_state_backing;\n");
   EMIT("  struct vmprefix_state_runtime * const jitter_state_runtime\n");
   EMIT("    __attribute__ ((unused))\n");
-  EMIT("    = & jitter_state->vmprefix_state_runtime;\n");
+  EMIT("    = & jitter_state->vmprefixhash_state_runtime;\n");
   EMIT("\n");
   EMIT("  /* No need to touch The Array, which already exists. */\n");
   EMIT("  /* No need to touch special-purpose data, which already exist. */\n");
@@ -2025,7 +2030,7 @@ jitterc_emit_state (const struct jitterc_vm *vm)
   EMIT("    = & jitter_state->vmprefix_state_backing;\n");
   EMIT("  struct vmprefix_state_runtime * const jitter_state_runtime\n");
   EMIT("    __attribute__ ((unused))\n");
-  EMIT("    = & jitter_state->vmprefix_state_runtime;\n");
+  EMIT("    = & jitter_state->vmprefixhash_state_runtime;\n");
   EMIT("\n");
   EMIT("  /* User code for state finalization. */\n");
   EMIT("%s\n", vm->state_finalization_c_code);
@@ -2072,6 +2077,7 @@ jitterc_emit_configuration_macros (const struct jitterc_vm *vm)
   EMIT("#define VMPREFIX_VM_NAME JITTER_STRINGIFY(%s)\n", name);
   EMIT("#define VMPREFIX_LOWER_CASE_PREFIX \"%s\"\n", vm->lower_case_prefix);
   EMIT("#define VMPREFIX_UPPER_CASE_PREFIX \"%s\"\n", vm->upper_case_prefix);
+  EMIT("#define VMPREFIX_HASH_PREFIX \"%s\"\n", vm->hash_prefix);
   EMIT("#define VMPREFIX_DISPATCH_HUMAN_READABLE \\\n");
   EMIT("  JITTER_DISPATCH_NAME_STRING\n");
   EMIT("#define VMPREFIX_MAX_FAST_REGISTER_NO_PER_CLASS %i\n",
@@ -3898,7 +3904,7 @@ jitterc_emit_executor_main_function
   EMIT("  /* Make an automatic struct holding a copy of the state whose pointer was given.\n");
   EMIT("     The idea is that the copy should be in registers, as far as possible. */\n");
   EMIT("  struct vmprefix_state_runtime jitter_state_runtime\n");
-  EMIT("    = jitter_original_state->vmprefix_state_runtime;\n\n");
+  EMIT("    = jitter_original_state->vmprefixhash_state_runtime;\n\n");
 
   EMIT("  /* Initialize a pointer to The Array base.  This pointer will be in a\n");
   EMIT("     global register variable with no-threading dispatch, and with\n");
@@ -4256,7 +4262,7 @@ jitterc_emit_executor_main_function
   EMIT("\n");
   EMIT("    /* Copy the VM state from the local copy we have modified back to\n");
   EMIT("       the structure to which we received a pointer. */\n");
-  EMIT("    jitter_original_state->vmprefix_state_runtime = jitter_state_runtime;\n");
+  EMIT("    jitter_original_state->vmprefixhash_state_runtime = jitter_state_runtime;\n");
   EMIT("\n");
   EMIT("    // fprintf (stderr, \"Exiting the VM...\\n\");\n\n");
 
@@ -4703,12 +4709,16 @@ jitterc_fix_and_move (const struct jitterc_vm *vm,
   /* Perform the replacements. */
   content
     = jitterc_filter_and_realloc_string (content,
-                                           vm->lower_case_prefix,
-                                           INPUT_LOWER_CASE_PREFIX);
+                                         vm->hash_prefix,
+                                         INPUT_HASH_PREFIX);
   content
     = jitterc_filter_and_realloc_string (content,
-                                           vm->upper_case_prefix,
-                                           INPUT_UPPER_CASE_PREFIX);
+                                         vm->lower_case_prefix,
+                                         INPUT_LOWER_CASE_PREFIX);
+  content
+    = jitterc_filter_and_realloc_string (content,
+                                         vm->upper_case_prefix,
+                                         INPUT_UPPER_CASE_PREFIX);
 
   /* Write the modified text to the output file, and free it. */
   FILE *to_stream = jitterc_fopen_w_pathname (to_pathname);

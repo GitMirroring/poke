@@ -116,6 +116,7 @@ vmprefix_vm_the_configuration
   = {
       VMPREFIX_LOWER_CASE_PREFIX /* lower_case_prefix */,
       VMPREFIX_UPPER_CASE_PREFIX /* upper_case_prefix */,
+      VMPREFIX_HASH_PREFIX /* hash_prefix */,
       VMPREFIX_MAX_FAST_REGISTER_NO_PER_CLASS
         /* max_fast_register_no_per_class */,
       VMPREFIX_MAX_NONRESIDUAL_LITERAL_NO /* max_nonresidual_literal_no */,

@@ -131,6 +131,83 @@ jitterc_add_implicit_instructions (struct jitterc_vm *vm)
 
 
 
+/* Name hash.
+ * ************************************************************************** */
+
+/* Given a VM prefix return a pointer to a fresh malloc-allocated string
+   containing some hash of the prefix, still usable as a C identifier.
+   The result is independent from word length and endianness.
+   Rationale: this is intended to generate identifiers preventing *accidental*
+   uses of reserved fields, in generated code. */
+static char*
+jitterc_hash_prefix (const char *original)
+{
+#define JITTERC_CHARACTER_NO 10
+  /* The result will contain:
+     - one underscore;
+     - a copy of the original string;
+     - one underscore;
+     - exactly JITTERC_CHARACTER_NO ASCII characters. */
+  size_t original_length = strlen (original);
+  size_t prefix_length = 1 + original_length + 1;
+  size_t length = prefix_length + JITTERC_CHARACTER_NO;
+  char *res = jitter_xmalloc (length + 1);
+
+#define JITTERC_BIT_NO 6
+  /* These are at least 2 ** JITTERC_BIT_NO characters.  It is desirable for
+     hashing quality, but not required for correctness, that the characters are
+     all distinct. */
+  const char *characters = ("abcdefghijklmnopqrstuvwxyz" // 26 characters
+                            "0123456789"                 // 10 characters
+                            "ABCDEFGHIJKLMNOPQRSTUVWXYZ" // 26 characters
+                            "_"                          // 1 character
+                            "a");                        // duplicates
+  /* Compute a crude hash. */
+  uint32_t hash = 1234567890U;
+  unsigned char *p;
+  for (p = (unsigned char *) original; * p != '\0'; p ++)
+    {
+#if 0
+      printf ("HASH: %u\n", (unsigned) hash);
+#endif
+      hash
+        = ((* p)
+           ^ ((hash << JITTERC_BIT_NO)
+              | (hash & ((1U << JITTERC_BIT_NO) - 1))));
+    }
+#if 0
+  printf ("HASH: %u (final)\n", (unsigned) hash);
+#endif
+
+  /* Encode the hash into text. */
+  sprintf (res, "_%s_", original);
+  uint32_t state = hash;
+  int i;
+  for (i = 0; i < JITTERC_CHARACTER_NO; i ++)
+    {
+#if 0
+      printf ("STATE: %u\n", (unsigned) state);
+#endif
+      char c = characters [state & ((1u << JITTERC_BIT_NO) - 1)];
+      state = ((state >> JITTERC_BIT_NO)
+               | ((state & ((1u << JITTERC_BIT_NO) - 1))
+                  << (32 - JITTERC_BIT_NO)));
+      res [prefix_length + i] = c;
+    }
+  res [prefix_length + i] = '\0';
+#if 0
+  printf ("*  %s -> %s\n", original, res);
+#endif
+
+#undef JITTERC_CHARACTER_NO
+#undef JITTERC_BIT_NO
+
+  return res;
+}
+
+
+
+
 /* VM initialization.
  * ************************************************************************** */
 
@@ -150,6 +227,7 @@ jitterc_make_vm (void)
   /* Use sensible defaults for fields customizable by the user. */
   res->lower_case_prefix = "vm";
   res->upper_case_prefix = "VM";
+  res->hash_prefix = jitterc_hash_prefix (res->lower_case_prefix);
   res->name = NULL;
   res->generate_line = true;
   res->register_classes = jitterc_make_empty_list ();
@@ -243,6 +321,7 @@ jitterc_vm_add_setting (struct jitterc_vm *vm,
                           vm->upper_case_prefix [i]);
           vm->upper_case_prefix [i] = toupper (vm->upper_case_prefix [i]);
         }
+      vm->hash_prefix = jitterc_hash_prefix (vm->lower_case_prefix);
     }
   else if (! strcmp (name, "name"))
     vm->name = jitter_clone_string (value);

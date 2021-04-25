@@ -94,7 +94,7 @@ jitter_vm_instrumentation_to_string (enum jitter_vm_instrumentation i);
 struct jitter_vm_configuration
 {
   /* Identifier prefixes for the generated C code. */
-  char *lower_case_prefix, *upper_case_prefix;
+  char *lower_case_prefix, *upper_case_prefix, *hash_prefix;
 
   /* How many fast registers per class this VM can have, as a maximum.  -1 means
      that there is no limit. */

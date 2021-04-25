@@ -787,10 +787,14 @@ struct jitterc_vm
   /* The directory containing template files. */
   char *template_directory;
 
-  /* The identifier prefixes to use in generated C code, without underscores or
-     dashes. */
+  /* The identifier prefixes to use in generated C code, without final
+     underscores or dashes. */
   char *lower_case_prefix;
   char *upper_case_prefix;
+
+  /* The hash identifier prefixes to use in generated C code, without final
+     underscores or dashes. */
+  char *hash_prefix;
 
   /* A nice human-readable name for the VM, NULL by default.  When this field is
      NULL a capitalized version of the prefix is used instead. */
