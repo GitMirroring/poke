@@ -1,7 +1,7 @@
 #!@SHELL@
 # Jitter testsuite: VM programs.  This is -*- sh -*-, to be preprocessed.
-# Copyright (C) 2017, 2018 Luca Saiu
-# Updated in 2020 and 2021 by Luca Saiu
+# Copyright (C) 2017, 2018, 2021 Luca Saiu
+# Updated in 2020 by Luca Saiu
 # Written by Luca Saiu
 
 # This file is part of Jitter.
@@ -94,7 +94,7 @@ jitterlisp_case_all_confs ()
 ################################################################
 
 # Print a range for test case indices.
-echo 1..$((31 * 16))
+echo 1..$((32 * 16))
 
 
 # Run the test cases.
@@ -154,3 +154,13 @@ jitterlisp_case_all_confs 'sort-1' '(sort (iota 10))' \
                           '(0 1 2 3 4 5 6 7 8 9)' ''
 jitterlisp_case_all_confs 'sort-2' '(sort (reverse (iota 10)))' \
                           '(0 1 2 3 4 5 6 7 8 9)' ''
+
+# Call I/O procedures, which may reveal problems with saving and restoring a
+# global register across calls.
+jitterlisp_case_all_confs \
+  'character-display' \
+  '(begin
+     (compile! character-display)
+     (character-display #\a)
+     (character-display #\newline))' \
+  'a/#<nothing>' ''
