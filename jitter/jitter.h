@@ -390,4 +390,4 @@ problems.  See the source code for more information."
 # include <jitter/machine/jitter-machine.h>
 #endif // #ifdef JITTER_ENABLE_ASSEMBLY
 
-#endif // #ifndef JITTER_CONFIG_H_
+#endif // #ifndef JITTER_H_
