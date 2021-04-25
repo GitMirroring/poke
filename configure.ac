@@ -1395,8 +1395,8 @@ AS_CASE([$default_host_cpu],
                         jitter_supports_minimal_threading=yes],
         [arm*],        [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_ARM], [1], []
                                            ) # No ";": see the Autoconf manual.
-                        #JITTER_ASSEMBLY_SUBDIRECTORY=arm
-                        true],
+                        JITTER_ASSEMBLY_SUBDIRECTORY=arm
+                        jitter_supports_minimal_threading=yes],
         [i?86],        [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_I386], [1], []
                                            ) # No ";": see the Autoconf manual.
                         #JITTER_ASSEMBLY_SUBDIRECTORY=i386

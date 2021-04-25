@@ -872,6 +872,9 @@ EXTRA_DIST += \
   machine/alpha/jitter/machine/jitter-machine.h \
   machine/alpha/jitter/machine/jitter-machine-assembly.S \
   machine/alpha/jitter/machine/jitter-machine-c.c \
+  machine/arm/jitter/machine/jitter-machine.h \
+  machine/arm/jitter/machine/jitter-machine-assembly.S \
+  machine/arm/jitter/machine/jitter-machine-c.c \
   machine/m68k/jitter/machine/jitter-machine.h \
   machine/m68k/jitter/machine/jitter-machine-assembly.S \
   machine/m68k/jitter/machine/jitter-machine-c.c \
