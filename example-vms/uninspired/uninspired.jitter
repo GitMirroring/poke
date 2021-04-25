@@ -767,6 +767,7 @@ instruction div (?Rn, ?Rn 2, !R)
 end
 
 instruction divo (?Rn, ?Rn 2, !R, ?f)
+  # non-relocatable # FIXME: this should only be non-relocatable on some architectures.
 ##  two-operands
 #  commutative
   code
@@ -785,7 +786,7 @@ instruction mod (?Rn, ?Rn 2, !R)
 end
 
 instruction modo (?Rn, ?Rn 2, !R, ?f)
-##  two-operands
+  # non-relocatable # FIXME: this should only be non-relocatable on some architectures.
 #  commutative
   code
     JITTER_REMAINDER_BRANCH_FAST_IF_OVERFLOW (JITTER_ARGN2,

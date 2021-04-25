@@ -182,6 +182,7 @@ instruction times-stack ()
 end
 
 instruction divided-stack ()
+  non-relocatable # FIXME: this should be non-relocatable only on some architectures.
   code
 #define F(res, a, b) { res = a / b; }
     JITTER_BINARY_MAINSTACK(F);
@@ -190,6 +191,7 @@ instruction divided-stack ()
 end
 
 instruction remainder-stack ()
+  non-relocatable # FIXME: this should be non-relocatable only on some architectures.
   code
 #define F(res, a, b) { res = a % b; }
     JITTER_BINARY_MAINSTACK(F);
@@ -483,6 +485,7 @@ end
 instruction divided (?Rn structured_literal_printer,
                      ?Rn 2 structured_literal_printer,
                      !R)
+  non-relocatable # FIXME: this should be non-relocatable only on some architectures.
   code
     JITTER_ARGN2 = JITTER_ARGN0 / JITTER_ARGN1;
   end
@@ -491,6 +494,7 @@ end
 instruction remainder (?Rn structured_literal_printer,
                        ?Rn 2 structured_literal_printer,
                        !R)
+  non-relocatable # FIXME: this should be non-relocatable only on some architectures.
   code
     JITTER_ARGN2 = JITTER_ARGN0 % JITTER_ARGN1;
   end
