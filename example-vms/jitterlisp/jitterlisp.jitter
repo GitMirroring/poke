@@ -917,22 +917,7 @@ instruction primitive (?n, ?n 0 1 2 3 4, ?f)
     jitterlisp_object *first_arg
       // FIXME: add a stack operator to compute this address.
       = (& JITTER_UNDER_TOP_MAINSTACK()) - in_arity + 1;
-    /* This workaround is needed for Alpha.  I have macros to make this nicer in
-       ~luca/repos/jitter/gcc-call-function-macro.c , still to be integrated into
-       Jitter. */
-/*
-    void *saved_gp;
-    asm volatile ("stq $gp, %[saved_gp]"
-                  : [saved_gp] "=o" (saved_gp),
-                    "+X" (p));
-*/
-    jitterlisp_object res = p (first_arg);
-    /* Second part of the Alpha workaround. */
-/*
-    asm volatile ("ldq $gp, %[saved_gp]"
-                  : "+X" (res)
-                  : [saved_gp] "o" (saved_gp));
-*/
+    jitterlisp_object res = JITTER_CALL_C (p, first_arg);
 
     jitter_uint i;
     // Remove as many elements as the primitive in-arity, but not more:
