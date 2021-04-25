@@ -2339,9 +2339,9 @@ jitterc_poison (FILE *f, const char *identifier,
     default:
       jitter_fatal ("this should never happen (jitterc_poison)");
     }
-  EMIT("#else // ! defined (JITTER_HAVE_LOCAL_POISONING)\n");
+  EMIT("#else // ! defined (JITTER_HAVE_LOCAL_POISONING_REQUIREMENTS)\n");
   EMIT("# undef %s\n", identifier);
-  EMIT("#endif // #if defined (JITTER_HAVE_LOCAL_POISONING)\n");
+  EMIT("#endif // #if defined (JITTER_HAVE_LOCAL_POISONING_REQUIREMENTS)\n");
   EMIT("/* End of the poisoning of %s . */\n", identifier);
   EMIT("\n");
 }
@@ -2355,9 +2355,9 @@ jitterc_unpoison_all (FILE *f)
         = jitter_dynamic_buffer_pop
              (& jitterc_poisoning_stack,
               sizeof (struct jitterc_poisoned_identifier));
-      EMIT("#if defined (JITTER_HAVE_LOCAL_POISONING)\n");
+      EMIT("#if defined (JITTER_HAVE_LOCAL_POISONING_REQUIREMENTS)\n");
       EMIT("# pragma pop_macro (\"%s\")\n", elementp->name);
-      EMIT("#endif // #if defined (JITTER_HAVE_LOCAL_POISONING)\n");
+      EMIT("#endif // #if defined (JITTER_HAVE_LOCAL_POISONING_REQUIREMENTS)\n");
     }
 }
 
@@ -2366,14 +2366,14 @@ jitterc_unpoison_all (FILE *f)
 static void
 jitterc_open_local_poisoning (FILE *f)
 {
-  EMIT("#if defined (JITTER_HAVE_LOCAL_POISONING)\n");
+  EMIT("#if defined (JITTER_HAVE_LOCAL_POISONING_REQUIREMENTS)\n");
   EMIT("  /* Local poisoning will be in effect.  Avoid warnings. */\n");
   EMIT("# pragma GCC diagnostic push\n");
   EMIT("# pragma GCC diagnostic ignored \"-Wpragmas\"\n");
   EMIT("# pragma GCC diagnostic ignored \"-Wunknown-warning-option\"\n");
   EMIT("# pragma GCC diagnostic ignored \"-Wbuiltin-macro-redefined\"\n");
   EMIT("# pragma GCC diagnostic ignored \"-Wbuiltin-declaration-mismatch\"\n");
-  EMIT("#endif // #if defined (JITTER_HAVE_LOCAL_POISONING)\n");
+  EMIT("#endif // #if defined (JITTER_HAVE_LOCAL_POISONING_REQUIREMENTS)\n");
   EMIT("\n");
 
   /* Poison some identifiers that should always be poisoned: */
@@ -2396,11 +2396,11 @@ jitterc_close_local_poisoning (FILE *f)
      the stack in the process. */
   jitterc_unpoison_all (f);
 
-  EMIT("#if defined (JITTER_HAVE_LOCAL_POISONING)\n");
+  EMIT("#if defined (JITTER_HAVE_LOCAL_POISONING_REQUIREMENTS)\n");
   EMIT("/* Local poisoning is no longer in effect.  Revert to the previous\n");
   EMIT("   state of warnings. */\n");
   EMIT("# pragma GCC diagnostic pop\n");
-  EMIT("#endif // #if defined (JITTER_HAVE_LOCAL_POISONING)\n");
+  EMIT("#endif // #if defined (JITTER_HAVE_LOCAL_POISONING_REQUIREMENTS)\n");
   EMIT("\n");
 }
 

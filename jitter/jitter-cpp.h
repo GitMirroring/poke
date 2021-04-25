@@ -94,15 +94,6 @@
    system will fail in a less friendly way in case of incorrect code, but
    correctness will not be compromised. */
 
-/* Define JITTER_HAVE_LOCAL_POISONING iff the machinery is supported in the
-   current configuration. */
-#if defined (JITTER_HAVE_PRAGMA_GCC_DIAGNOSTIC_IN_FUNCTIONS)  \
-    && defined (JITTER_HAVE_GNU_C_STATEMENT_EXPRESSIONS)
-    // FIXME: require GCC as well?  I think I can discover whether this works
-    //        by some Autoconf test.
-# define JITTER_HAVE_LOCAL_POISONING  1
-#endif
-
 /* This is how to poison an indentifier foo, for example with the error message
    about a missing "threading" attribute:
 #    pragma push_macro ("foo")

@@ -390,6 +390,9 @@ AC_CHECK_ALIGNOF([long double])
 # substitution as well.
 AC_SUBST([SIZEOF_VOID_P], [$ac_cv_sizeof_void_p])
 
+# Check for typeof.
+AC_C_TYPEOF
+
 
 # Check for a compiler which is actually GCC, and for versions.
 ################################################################
@@ -1091,6 +1094,81 @@ if test "x$ac_cv_have_gcc_builtin_unreachable" = "xyes"; then
             [Define if __builtin_unreachable exists.])
 fi
 
+# Very old GCCs (pre-3.1) or non-GCC compilers will not have
+# __builtin_types_compatible_p.
+AC_CACHE_CHECK([for GCC __builtin_types_compatible_p],
+  [ac_cv_have_gcc_builtin_types_compatible_p],
+  [AC_LINK_IFELSE(
+     [AC_LANG_PROGRAM(
+        [[]],
+        [[return __builtin_types_compatible_p (int, const int);
+        ]])],
+     [ac_cv_have_gcc_builtin_types_compatible_p=yes],
+     [ac_cv_have_gcc_builtin_types_compatible_p=no])])
+if test "x$ac_cv_have_gcc_builtin_types_compatible_p" = "xyes"; then
+  AC_DEFINE([JITTER_HAVE_GCC_BUILTIN_TYPES_COMPATIBLE_P], [1],
+            [Define if __builtin_types_compatible_p exists.])
+fi
+
+# Very old GCCs (pre-3.1) or non-GCC compilers will not have
+# __builtin_choose_expr.
+AC_CACHE_CHECK([for GCC __builtin_choose_expr],
+  [ac_cv_have_gcc_builtin_choose_expr],
+  [AC_LINK_IFELSE(
+     [AC_LANG_PROGRAM(
+        [[]],
+        [[return __builtin_choose_expr (1, 2, 3);
+        ]])],
+     [ac_cv_have_gcc_builtin_choose_expr=yes],
+     [ac_cv_have_gcc_builtin_choose_expr=no])])
+if test "x$ac_cv_have_gcc_builtin_choose_expr" = "xyes"; then
+  AC_DEFINE([JITTER_HAVE_GCC_BUILTIN_CHOOSE_EXPR], [1],
+            [Define if __builtin_choose_expr exists.])
+fi
+
+
+# Check for features depending on previous checks.
+################################################################
+
+# Function wrappers depend on the following GNU C features, which have all been
+# available for a very long time:
+# * typeof ;
+# * statement expression ;
+# *  __builtin_types_compatible_p ;
+# *  __builtin_choose_expr .
+AC_CACHE_CHECK([for function wrappers requirements],
+  [ac_cv_have_function_wrappers_requirements],
+  [if test "x$ac_cv_c_typeof" != '' \
+      && test "x$ac_cv_have_gnu_c_statement_expressions" != '' \
+      && test "x$ac_cv_have_gcc_builtin_types_compatible_p" != '' \
+      && test "x$ac_cv_have_gcc_builtin_choose_expr" != ''; then
+     ac_cv_have_function_wrappers_requirements=yes
+   else
+     ac_cv_have_function_wrappers_requirements=no
+   fi])
+if test "x$ac_cv_have_function_wrappers_requirements" = 'xyes'; then
+  AC_DEFINE([JITTER_HAVE_FUNCTION_WRAPPERS_REQUIREMENTS], [1],
+            [Define if the platform supports the GNU C extensions necessray
+             for function wrappers])
+fi
+
+# Local poisoning depends on the following GNU C features:
+# * statement expressions;
+# * pragma GCC diagnostic in function bodies.
+AC_CACHE_CHECK([for local poisoning requirements],
+  [ac_cv_have_local_poisoning_requirements],
+  [if test "x$ac_cv_have_gnu_c_statement_expressions" != '' \
+      && test "x$ac_cv_have_pragma_gcc_diagnostic_in_functions" != ''; then
+     ac_cv_have_local_poisoning_requirements=yes
+   else
+     ac_cv_have_local_poisoning_requirements=no
+   fi])
+if test "x$ac_cv_have_local_poisoning_requirements" = 'xyes'; then
+  AC_DEFINE([JITTER_HAVE_LOCAL_POISONING_REQUIREMENTS], [1],
+            [Define if the platform supports the GNU C extensions necessray
+             for local poisoning])
+fi
+
 
 # Check for inline assembly or binary format features.
 ################################################################
@@ -1638,6 +1716,7 @@ AC_MSG_RESULT([$jitter_enable_visibility_hidden])
 AM_CONDITIONAL([JITTER_ENABLE_VISIBILITY_HIDDEN],
                [test "x$jitter_enable_visibility_hidden" = "xyes"])
 
+
 # Recognize specific operating systems.
 ################################################################
 
@@ -1913,7 +1992,8 @@ if    test "x$JITTER_HAVE_ACTUAL_GCC" = 'xyes' \
    && test "x$jitter_have_known_binary_format" = 'xyes' \
    && test "x$jitter_has_host_assembly" = 'xyes' \
    && test "x$jitter_supports_minimal_threading" = 'xyes' \
-   && test "x$ac_cv_have_assembly_names_for_non_functions" = 'xyes'; then
+   && test "x$ac_cv_have_assembly_names_for_non_functions" = 'xyes' \
+   && test "x$ac_cv_have_function_wrappers_requirements" = 'xyes'; then
   default=yes
 else
   default=no
@@ -1922,8 +2002,8 @@ AC_ARG_ENABLE([dispatch-minimal-threading],
               AS_HELP_STRING([--enable-dispatch-minimal-threading],
               [enable minimal-threading dispatch: default yes if and
 only if a sufficiently recent GCC (not an imitation) is used, the
-host architecture has assembly support, and the binary format is
-supported]),
+host architecture has assembly and minimal-threading support, function
+wrapper prerequisites are satisfied and the binary format is supported]),
               jitter_enable_dispatch_minimal_threading="$enableval",
               jitter_enable_dispatch_minimal_threading="$default")
 if test "x$jitter_enable_dispatch_minimal_threading" = "xyes"; then
@@ -1943,7 +2023,8 @@ if    test "x$JITTER_HAVE_ACTUAL_GCC" = 'xyes' \
    && test "x$jitter_have_known_binary_format" = 'xyes' \
    && test "x$jitter_has_host_assembly" = 'xyes' \
    && test "x$jitter_supports_no_threading" = 'xyes' \
-   && test "x$ac_cv_have_assembly_names_for_non_functions" = 'xyes'; then
+   && test "x$ac_cv_have_assembly_names_for_non_functions" = 'xyes' \
+   && test "x$ac_cv_have_function_wrappers_requirements" = 'xyes'; then
   default=yes
 else
   default=no
@@ -1952,8 +2033,9 @@ AC_ARG_ENABLE([dispatch-no-threading],
               AS_HELP_STRING([--enable-dispatch-no-threading],
               [enable no-threading dispatch: default yes if and
 only if GCC (not an imitation) version 5 or later is used, the host
-architecture has assembly and no-threading support, and the binary
-format is supported]),
+architecture has assembly and no-threading support, function
+wrapper prerequisites are satisfied and the binary format is
+supported]),
               jitter_enable_dispatch_no_threading="$enableval",
               jitter_enable_dispatch_no_threading="$default")
 if test "x$jitter_enable_dispatch_no_threading" = "xyes"; then
@@ -2835,6 +2917,8 @@ m4_define([jitter_define_prefixed_feature_macro],
            else
              AC_MSG_NOTICE([not defining prefixed feature macro JITTER_$3])
            fi])
+jitter_define_prefixed_feature_macro([ac_cv_c_typeof], [typeof],
+                                     [HAVE_TYPEOF])
 jitter_define_prefixed_feature_macro([ac_cv_c_bigendian], [yes],
                                      [WORDS_BIGENDIAN])
 jitter_define_prefixed_feature_macro([ac_cv_type_long_long_int], [yes],

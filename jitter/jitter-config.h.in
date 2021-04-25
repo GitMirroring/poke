@@ -310,6 +310,9 @@
 #undef JITTER_CLANG_PATCHLEVEL_VERSION
 #undef JITTER_CLANG_COMBINED_VERSION
 
+/* Define iff GNU C's typeof works. */
+#undef JITTER_HAVE_TYPEOF
+
 /* Define if the language supports mixing declarations and statements, as
    standard in C since 1999 and widely supported even earlier.  If this is not
    defined I expect major problems, and the compiler will not be supported.
@@ -356,6 +359,12 @@
 /* Define if __builtin_unreachable is available. */
 #undef JITTER_HAVE_GCC_BUILTIN_UNREACHABLE
 
+/* Define if __builtin_types_compatible_p is available. */
+#undef JITTER_HAVE_GCC_BUILTIN_TYPES_COMPATIBLE_P
+
+/* Define if __builtin_choose_expr is available. */
+#undef JITTER_HAVE_GCC_BUILTIN_CHOOSE_EXPR
+
 /* Define if the C compilers supports GNU C attributes. */
 #undef JITTER_HAVE_GNU_C_ATTRIBUTE
 
@@ -375,6 +384,18 @@
 /* Define if the compiler supports assembly names for nonfunctions in the style
    of GNU C. */
 #undef JITTER_HAVE_ASSEMBLY_NAMES_FOR_NON_FUNCTIONS
+
+
+/* Features depending on previous checks.
+ * ************************************************************************** */
+
+/* Define if the platform supports the GNU C extensions necessray for function
+   wrappers. */
+#undef JITTER_HAVE_FUNCTION_WRAPPERS_REQUIREMENTS
+
+/* Define if the platform supports the GNU C extensions necessray for local
+   poisoning. */
+#undef JITTER_HAVE_LOCAL_POISONING_REQUIREMENTS
 
 
 /* Optimization: machine-specific alternatives.
