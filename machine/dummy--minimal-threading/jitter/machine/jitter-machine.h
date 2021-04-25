@@ -61,4 +61,41 @@
 #define JITTER_ASM_COMPUTED_GOTO_INPUT_CONSTRAINT  \
   "FIXME: define this: it will typically be:  r"
 
+
+
+
+/* Execution-beginning and execution-end code.
+ * ************************************************************************** */
+
+/* Some architectures need some code to be executed at VM execution beginning,
+   VM execution end, pre-C-function-call, post-C-function-call; a typical
+   use case would be saving and restoring the value of a register.
+
+   All of these macros can be left undefined for configurations not needing
+   them.  These macros are not used in simple dispatches. */
+
+/* A sequence of statements and variable declarations to be executed at
+   execution entry.  This can define automatic variables, visible within the
+   executor body. */
+/*#define JITTER_EXECUTION_BEGINNING_*/                                 \
+  /* Nothing here.  See the powerpc or the alpha version of jitter-machine.h for
+     an example. */
+
+/* Like JITTER_EXECUTION_BEGINNING_ , to be run at VM execution end. */
+/*#define JITTER_EXECUTION_END_*/                                       \
+  /* Nothing here.  See the powerpc version of jitter-machine.h for an
+     example. */
+
+/* A sequence of statements to be executed before every call to a wrapped C
+   function. */
+/*#define JITTER_EXECUTION_PRE_C_CALL_*/                                 \
+  /* Nothing here.  See the alpha version of jitter-machine.h for an
+     example. */
+
+/* A sequence of statements to be executed after every call to a wrapped C
+   function. */
+/*#define JITTER_EXECUTION_POST_C_CALL_*/                                \
+  /* Nothing here.  See the alpha version of jitter-machine.h for an
+     example. */
+
 #endif // #ifndef JITTER_NATIVE_MACHINE_H_

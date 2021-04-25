@@ -87,7 +87,8 @@
 
 
 
-/* Architecture-specific initialisation and finalisation.
+/* Architecture-specific initialisation, finalisation, pre-C-call and post-C-
+ * -call.
  * ************************************************************************** */
 
 /* Some ports may add their own custom code to be executed at initialisation and
@@ -103,21 +104,179 @@
 /* This feature is only meant for minimal-threading and no-threading.  Disable
    any architecture-specific execution begin and end code when using simple
    dispatches. */
-#if (! defined(JITTER_DISPATCH_MINIMAL_THREADING)) \
+#if (! defined(JITTER_DISPATCH_MINIMAL_THREADING))  \
     && (! defined(JITTER_DISPATCH_NO_THREADING))
 # undef JITTER_EXECUTION_BEGINNING_
 # undef JITTER_EXECUTION_END_
+# undef JITTER_EXECUTION_PRE_C_CALL_
+# undef JITTER_EXECUTION_POST_C_CALL_
 #endif
 
-/* Define a fallback JITTER_EXECUTION_BEGINNING_ if none is defined. */
+/* Set missing statements to fallback values doing nothing. */
 #if ! defined (JITTER_EXECUTION_BEGINNING_)
 # define JITTER_EXECUTION_BEGINNING_ {}
 #endif // #if ! defined (JITTER_EXECUTION_BEGINNING_)
-
-/* Define a fallback JITTER_EXECUTION_END_ if none is defined. */
 #if ! defined (JITTER_EXECUTION_END_)
 # define JITTER_EXECUTION_END_ {}
 #endif // #if ! defined (JITTER_EXECUTION_END_)
+#if ! defined (JITTER_EXECUTION_PRE_C_CALL_)
+# define JITTER_EXECUTION_PRE_C_CALL_ {}
+#endif // #if ! defined (JITTER_EXECUTION_PRE_C_CALL_)
+#if ! defined (JITTER_EXECUTION_POST_C_CALL_)
+# define JITTER_EXECUTION_POST_C_CALL_ {}
+#endif // #if ! defined (JITTER_EXECUTION_POST_C_CALL_)
+
+
+
+
+/* Function wrapping.
+ * ************************************************************************** */
+
+/* The machinery in this section is only used for complex dispatches. */
+#if defined(JITTER_DISPATCH_MINIMAL_THREADING) \
+    || defined(JITTER_DISPATCH_NO_THREADING)
+  /* If we arrived here then the system should have the requirements for
+     function wrapping; but let us try and go on in any case, in order to make
+     porting easier. */
+# if ! defined (JITTER_HAVE_FUNCTION_WRAPPERS_REQUIREMENTS)
+#   warning "using a complex dispatch requiring function wrappers, without"
+#   warning "having the prerequisites for function wrapping: trying to go on,"
+#   warning "but expect problems with function wrappers."
+# endif
+#endif // complex dispatches
+
+/* This is a realistic example of wrapping functions:
+long
+f (int a, bool b)
+{
+  printf ("Hello from f\n");
+  return b ? a : -1;
+}
+
+void
+g (const char *foo)
+{
+  printf ("Hello from g: \"%s\"\n", foo);
+}
+
+#define F(...)                             \
+  JITTER_PRE_POST ((printf ("before f\n")),  \
+                   (f (__VA_ARGS__)),      \
+                   (printf ("after f\n")))
+#define G(...)                             \
+  JITTER_PRE_POST ((printf ("before g\n")),  \
+                   (g (__VA_ARGS__)),      \
+                   (printf ("after g\n")))
+
+  printf ("%li\n", F (10, true));
+  G ("some text");
+*/
+
+/* I use asm constraints on _jitter_useless_variable to prevent reordering of
+   the "pre" and "post" statements.  This asm statement is volatile; if the pre
+   and post statements are also volatile, then none can be reordered with
+   respect to the others. */
+#define JITTER_PRE_POST_FORCE_SEQUENCE_()                                   \
+  asm volatile (JITTER_ASM_COMMENT_UNIQUE ("# Pretend to use [useless]")    \
+                : /* outputs */ [useless] "+m" (_jitter_useless_variable))
+
+/* Expand to an expression which, if the discriminand expression, which is not
+   evaluated, has a void type, yields the result of the ifvoid expression, and
+   otherise yields the result of the ifnonvoid expression.  This is a helper for
+   JITTER_PRE_POST . */
+#define JITTER_IF_VOID_ELSE(discriminand, ifvoid, ifnonvoid)       \
+  __builtin_choose_expr                                            \
+     (__builtin_types_compatible_p (typeof (discriminand), void),  \
+      (ifvoid),                                                    \
+      (ifnonvoid))
+
+/* Like JITTER_PRE_POST, below, assuming that e has a void type.  This is in
+   fact a helper for JITTER_PRE_POST . */
+#define JITTER_PRE_POST_VOID(pre, expression, post)  \
+  ({                                                 \
+     JITTER_PRE_POST_FORCE_SEQUENCE_ ();             \
+     do { pre; } while (false);                      \
+     JITTER_PRE_POST_FORCE_SEQUENCE_ ();             \
+     (expression);                                   \
+     JITTER_PRE_POST_FORCE_SEQUENCE_ ();             \
+     do { post; } while (false);                     \
+     JITTER_PRE_POST_FORCE_SEQUENCE_ ();             \
+   })
+
+/* Like JITTER_PRE_POST, below, assuming that e has a non-void type.  This is in
+   fact a helper for JITTER_PRE_POST . */                         \
+#define JITTER_PRE_POST_NONVOID(pre, expression, post)            \
+  ({                                                              \
+     JITTER_PRE_POST_FORCE_SEQUENCE_ ();                          \
+     do { pre; } while (false);                                   \
+     JITTER_PRE_POST_FORCE_SEQUENCE_ ();                          \
+     typeof (expression) _jitter_pre_post_result = (expression);  \
+     JITTER_PRE_POST_FORCE_SEQUENCE_ ();                          \
+     do { post; } while (false);                                  \
+     JITTER_PRE_POST_FORCE_SEQUENCE_ ();                          \
+     _jitter_pre_post_result;                                     \
+   })
+
+/* Given a statement "pre", an expression "e" and a statement "post" expand to
+   an expression which will evaluate, in order:
+   - pre
+   - e
+   - post
+   The expansion result will be the result of e if its type is not void;
+   otherwise it will be void.  */
+#define JITTER_PRE_POST(pre, e, post)                             \
+  /* The difficulty here is to have the non-void case compile     \
+     correctly when the expression is in fact void: this trick    \
+     (using an integer result in unreachable code) lets me avoid  \
+     a void-typed variable in the expansion. */                   \
+  JITTER_IF_VOID_ELSE                                             \
+    ((e),                                                         \
+     JITTER_PRE_POST_VOID (({ pre; }),                            \
+                           (e),                                   \
+                           ({ post; })),                          \
+     JITTER_PRE_POST_NONVOID (({ pre; }),                         \
+                              JITTER_IF_VOID_ELSE                 \
+                                 (/* not void-typed */ (e),       \
+                                  /* unreachable */ 42,           \
+                                  (e)),                           \
+                              ({ post; })))
+
+
+
+
+/* Calling a C function from a VM instruction through a pointer.
+ * ************************************************************************** */
+
+/* A C function called through a pointer will still need the pre- and post-
+   statement as described in the previous section.  In order to automatically
+   add such code the user should write
+     JITTER_CALL_C (operator, operand0, ..., operandN)
+   instead of simply
+     operator (operand0, ..., operandN)
+   .  The same machinery employed in the previous section makes sure that the
+   expansion is correct with respect to types, in particular when the result is
+   void.  Like in the section above if the return type is not void, the result
+   is *not* lost. */
+#if defined(JITTER_DISPATCH_SWITCH)               \
+    || defined(JITTER_DISPATCH_DIRECT_THREADING)
+  /* The dispatch is simple: there is actually no need to wrap this function
+     call. */
+# define JITTER_CALL_C(operator, ...)  \
+    (operator) (__VA_ARGS__)
+#else
+  /* The dispatch is complex.  Use the machinery from the previous section
+     to insert pre- and post-statements. */
+# define JITTER_CALL_C(operator, ...)                     \
+    JITTER_PRE_POST (({ JITTER_EXECUTION_PRE_C_CALL_; }),   \
+                     ((operator) (__VA_ARGS__)),          \
+                     ({ JITTER_EXECUTION_POST_C_CALL_; }))
+#endif /* simple dispatch */
+
+/* The functionality in this section, when employed directly in user code, is
+   intended for C functions called through a C pointer: however any call to a
+   C function from a relocatable VM instruction could use this same machinery.
+   This is in fact the case in generated code: every machine-generated
+   function wrapper relies on JITTER_CALL_C internally. */
 
 
 

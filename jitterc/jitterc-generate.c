@@ -2595,7 +2595,7 @@ jitterc_emit_executor_reserve_registers (FILE *f,
 }
 
 static void
-jitterc_emit_executor_global_wrappers
+jitterc_emit_executor_global_and_function_wrappers
    (FILE *f, const struct jitterc_vm *vm)
 {
   EMIT("/* Selectively suppress suprious -Wmaybe-uninitialized .\n");
@@ -2646,13 +2646,14 @@ jitterc_emit_executor_global_wrappers
     {
       const char *name
         = ((const char*) gl_list_get_at (vm->wrapped_functions, i));
-      EMIT("  typeof (%s) * volatile _my_volatile_pointer_to_%s = & %s;\n",
+      EMIT("  typeof (%s) * volatile _jitter_my_volatile_pointer_to_%s = & %s;\n",
            name, name, name);
-      EMIT("  typeof (%s) * const _my_%s __attribute__ ((unused))\n",
+      EMIT("  typeof (%s) * const _jitter_my_%s __attribute__ ((unused))\n",
            name, name);
-      EMIT("     = * _my_volatile_pointer_to_%s;\n", name);
+      EMIT("     = * _jitter_my_volatile_pointer_to_%s;\n", name);
       EMIT("# undef %s\n", name);
-      EMIT("# define %s _my_%s\n\n", name, name);
+      EMIT("# define %s(...)  \\\n", name);
+      EMIT("  JITTER_CALL_C (_jitter_my_%s, __VA_ARGS__)\n", name);
     }
   EMIT("/* See the comment above about spurious -Wmaybe-uninitialized warnings. */\n");
   EMIT("//#pragma GCC diagnostic pop\n");
@@ -3721,6 +3722,39 @@ jitterc_emit_executor_data_locations (FILE *f, const struct jitterc_vm *vm)
 static void
 jitterc_emit_executor_state_field_access_macros (FILE *f);
 
+/* Generate a variable per non-relocatable specialized instruction holding the
+   address where to jump out of the relocated code.  Such variables will be
+   useful as jump targets in indirect jumps via automatic variables --
+   therefore, immune to relocation problems. */
+static void
+jitterc_generate_non_relocatable_instruction_label_variables
+   (FILE *f, const struct jitterc_vm *vm)
+{
+  int i; char *comma __attribute__ ((unused));
+  EMIT("#ifdef JITTER_REPLICATE\n");
+  EMIT("  /* FIXME: comment. */\n");
+  FOR_LIST(i, comma, vm->specialized_instructions)
+    {
+      const struct jitterc_specialized_instruction* sins
+        = ((const struct jitterc_specialized_instruction*)
+           gl_list_get_at (vm->specialized_instructions, i));
+
+      /* Ignore special and relocatable specialized instructions. */
+      if (sins->instruction == NULL
+          || sins->relocatability == jitterc_relocatability_relocatable)
+        continue;
+
+      EMIT("  volatile void *JITTER_SPECIALIZED_INSTRUCTION_NON_RELOCATABLE_CODE_VARIABLE_OF(%s)\n",
+           sins->mangled_name);
+      EMIT("    = && JITTER_SPECIALIZED_INSTRUCTION_NON_RELOCATABLE_CODE_LABEL_OF(%s);\n",
+           sins->mangled_name);
+      EMIT("  asm volatile (\"#pretend to affect \" JITTER_STRINGIFY(JITTER_SPECIALIZED_INSTRUCTION_NON_RELOCATABLE_CODE_VARIABLE_OF(%s)) \"\\n\"\n", sins->mangled_name);
+      EMIT("                : \"+m\" (JITTER_SPECIALIZED_INSTRUCTION_NON_RELOCATABLE_CODE_VARIABLE_OF(%s)));\n", sins->mangled_name);
+    }
+  EMIT("#endif // #ifdef JITTER_REPLICATE\n");
+  EMIT("\n");
+}
+
 static void
 jitterc_emit_executor_main_function
    (FILE *f, const struct jitterc_vm *vm)
@@ -3895,10 +3929,37 @@ jitterc_emit_executor_main_function
   EMIT("    }\n");
   EMIT("\n\n");
 
+  EMIT("  /* Before setting up runtime structures and jumping to the first\n");
+  EMIT("     instruction check that the last exit status was correct, and\n");
+  EMIT("     update it for the present run. */\n");
+  EMIT("  switch (_JITTER_STATE_BACKING_FIELD (exit_status))\n");
+  EMIT("    {\n");
+  EMIT("    case vmprefix_exit_status_never_executed:\n");
+  EMIT("    case vmprefix_exit_status_exited:\n");
+  EMIT("    case vmprefix_exit_status_debug:\n");
+  EMIT("      /* This is normal and expected. */\n");
+  EMIT("      _JITTER_STATE_BACKING_FIELD (exit_status)\n");
+  EMIT("        = vmprefix_exit_status_being_executed;\n");
+  EMIT("      break;\n");
+  EMIT("\n");
+  EMIT("    case vmprefix_exit_status_being_executed:\n");
+  EMIT("      jitter_fatal (\"the exit status before execution is \"\n");
+  EMIT("                    \"vmprefix_exit_status_being_executed: \"\n");
+  EMIT("                    \"you may have exited the last evaluation \"\n");
+  EMIT("                    \"through longjmp, or reused the same VM \"\n");
+  EMIT("                    \"state for a new execution with a previous \"\n");
+  EMIT("                    \"execution still in progress.\");\n");
+  EMIT("\n");
+  EMIT("    default:\n");
+  EMIT("      jitter_fatal (\"invalid exit state %%i\",\n");
+  EMIT("                    (int) _JITTER_STATE_BACKING_FIELD (exit_status));\n");
+  EMIT("    }\n");
+  EMIT("\n");
+
   EMIT("  /* Here is the actual *executor* initialization, to be run before\n");
   EMIT("     actually running the code. */\n\n");
 
-  jitterc_emit_executor_global_wrappers (f, vm);
+  jitterc_emit_executor_global_and_function_wrappers (f, vm);
 
   /* If control flow reaches this point then we are actually executing code. */
   EMIT("  /* Make an automatic struct holding a copy of the state whose pointer was given.\n");
@@ -3928,14 +3989,6 @@ jitterc_emit_executor_main_function
   EMIT("     model is no-threading, in which case no thread array even exists. */\n");
   EMIT("  vmprefix_program_point jitter_ip = NULL; /* Invalidate to catch errors. */\n");
 
-  /* EMIT("  /\* Declare a variable to be supposedly used as a computed goto target for jumping;\n"); */
-  /* EMIT("     to any VM instruction; in actuality the variable is not ever accessed by reachable\n"); */
-  /* EMIT("     code, but only mentioned in inline assembly constraints to force GCC to keep its\n"); */
-  /* EMIT("     register allocation compatible between the end of a VM instruction and the beginning\n"); */
-  /* EMIT("     of any other.  Assembly constraints will always require jitter_anywhere_label to be\n"); */
-  /* EMIT("     in memory rather than in a register, so as not to waste one register on this. *\/\n"); */
-  /* EMIT("  volatile union jitter_word jitter_anywhere_variable __attribute__ ((unused));\n\n"); */
-
   EMIT("#ifdef JITTER_REPLICATE\n");
   EMIT("  /* Save an instruction address within this function, to jump to at VM exit\n");
   EMIT("     time; that way we can be sure that at exit time we are back to\n");
@@ -3952,58 +4005,11 @@ jitterc_emit_executor_main_function
   EMIT("#endif // #ifdef JITTER_REPLICATE\n");
   EMIT("\n\n");
 
-  // FIXME: move to a new function: BEGIN
   /* Generate a variable per non-relocatable specialized instruction holding the
-     address where to jump out of the relocated code.  This will be useful as a
-     jump target, in the first implementation of non-relocatability. */
-  EMIT("#ifdef JITTER_REPLICATE\n");
-  EMIT("  /* FIXME: comment. */\n");
-  FOR_LIST(i, comma, vm->specialized_instructions)
-    {
-      const struct jitterc_specialized_instruction* sins
-        = ((const struct jitterc_specialized_instruction*)
-           gl_list_get_at (vm->specialized_instructions, i));
-
-      /* Ignore special and relocatable specialized instructions. */
-      if (sins->instruction == NULL
-          || sins->relocatability == jitterc_relocatability_relocatable)
-        continue;
-
-      EMIT("  volatile void *JITTER_SPECIALIZED_INSTRUCTION_NON_RELOCATABLE_CODE_VARIABLE_OF(%s)\n",
-           sins->mangled_name);
-      EMIT("    = && JITTER_SPECIALIZED_INSTRUCTION_NON_RELOCATABLE_CODE_LABEL_OF(%s);\n",
-           sins->mangled_name);
-      EMIT("  asm volatile (\"#pretend to affect \" JITTER_STRINGIFY(JITTER_SPECIALIZED_INSTRUCTION_NON_RELOCATABLE_CODE_VARIABLE_OF(%s)) \"\\n\"\n", sins->mangled_name);
-      EMIT("                : \"+m\" (JITTER_SPECIALIZED_INSTRUCTION_NON_RELOCATABLE_CODE_VARIABLE_OF(%s)));\n", sins->mangled_name);
-    }
-  EMIT("#endif // #ifdef JITTER_REPLICATE\n");
-  // FIXME: move to a new function: END
-
-  EMIT("  /* Before setting up runtime structures and jumping to the first\n");
-  EMIT("     instruction check that the last exit status was correct, and\n");
-  EMIT("     update it for the present run. */\n");
-  EMIT("  switch (_JITTER_STATE_BACKING_FIELD (exit_status))\n");
-  EMIT("    {\n");
-  EMIT("    case vmprefix_exit_status_never_executed:\n");
-  EMIT("    case vmprefix_exit_status_exited:\n");
-  EMIT("    case vmprefix_exit_status_debug:\n");
-  EMIT("      /* This is normal and expected. */\n");
-  EMIT("      _JITTER_STATE_BACKING_FIELD (exit_status)\n");
-  EMIT("        = vmprefix_exit_status_being_executed;\n");
-  EMIT("      break;\n");
-  EMIT("\n");
-  EMIT("    case vmprefix_exit_status_being_executed:\n");
-  EMIT("      jitter_fatal (\"the exit status before execution is \"\n");
-  EMIT("                    \"vmprefix_exit_status_being_executed: \"\n");
-  EMIT("                    \"you may have exited the last evaluation \"\n");
-  EMIT("                    \"through longjmp, or reused the same VM \"\n");
-  EMIT("                    \"state for a new execution with a previous \"\n");
-  EMIT("                    \"execution still in progress.\");\n");
-  EMIT("\n");
-  EMIT("    default:\n");
-  EMIT("      jitter_fatal (\"invalid exit state %%i\",\n");
-  EMIT("                    (int) _JITTER_STATE_BACKING_FIELD (exit_status));\n");
-  EMIT("    }\n");
+     address where to jump out of the relocated code.  Such variables will be
+     useful as jump targets in indirect jumps via automatic variables --
+     therefore, immune to relocation problems. */
+  jitterc_generate_non_relocatable_instruction_label_variables (f, vm);
 
   /* Insert C code from the user.  This is supposed to come in right before
      execution starts. */
@@ -4013,10 +4019,18 @@ jitterc_emit_executor_main_function
   EMIT("\n");
 
   /* Insert architecture-specific execution-beginning code. */
+  EMIT("# if defined(JITTER_DISPATCH_MINIMAL_THREADING) \\\n");
+  EMIT("     || defined(JITTER_DISPATCH_NO_THREADING)\n");
   EMIT("  /* Execute architecture-specific execution-beginning code, if any.\n");
   EMIT("     Make sure it is safe to expand the macro without do..while\n");
-  EMIT("     (false). */\n");
+  EMIT("     (false), since the expansion may contain declarations of\n");
+  EMIT("     variables to be used later. */\n");
   EMIT("  {}; JITTER_EXECUTION_BEGINNING_; {};\n");
+  EMIT("  /* Declare a variable used in asm constraints on some architectures:\n");
+  EMIT("     see the comment in jitter-executor.h . */\n");
+  EMIT("  volatile long _jitter_useless_variable __attribute__ ((unused))\n");
+  EMIT("    = 0;\n");
+  EMIT("# endif\n");
   EMIT("\n");
 
   EMIT("#if defined (VMPREFIX_PROFILE_SAMPLE)\n");
@@ -4253,9 +4267,12 @@ jitterc_emit_executor_main_function
   EMIT("#endif // #if defined (VMPREFIX_PROFILE_SAMPLE)\n");
 
   /* Insert architecture-specific execution-end code. */
+  EMIT("# if defined(JITTER_DISPATCH_MINIMAL_THREADING) \\\n");
+  EMIT("     || defined(JITTER_DISPATCH_NO_THREADING)\n");
   EMIT("  /* Execute architecture-specific execution-end code, if any.  Make \n");
   EMIT("     sure it is safe to expand the macro without do..while (false). */\n");
   EMIT("  {}; JITTER_EXECUTION_END_; {};\n");
+  EMIT("# endif\n");
   EMIT("\n");
   EMIT("  //fprintf (stderr, \"still alive at the end of VM code: no-threading code compiled with GCC 4 runs VM code with success then crashes here.\\n\");\n");
 

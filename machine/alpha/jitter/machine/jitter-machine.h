@@ -38,7 +38,7 @@
 /* Expand to an inline assembly template generating a nop instruction containing
    the given literal as an argument. */
 #define _JITTER_ASM_DEBUGGING_NOP(integer_literal_as_string)  \
-  "lda r31, " integer_literal_as_string "(r31)"
+  "lda $31, " integer_literal_as_string "($31)"
 
 /* Expand to a native machine code snippet causing a trap, as a string literal
    in a syntax suitable for extended inline asm. */
@@ -60,5 +60,36 @@
   "jmp (%[_jitter_the_target])"
 #define JITTER_ASM_COMPUTED_GOTO_INPUT_CONSTRAINT  \
   "r"
+
+
+
+
+/* Execution-beginning and execution-end code.
+ * ************************************************************************** */
+
+/* On Alpha, at least with the GNU/Linux ABI, the global pointer $29 / $gp is
+   *not* preserved across calls; this means that the register value must be
+   restored after each C function call.  GCC of course provides for this, but
+   unfortunately the techinque used to reconstruct $gp depends on the program
+   counter, and breaks under replication.
+   In order to work around the issue save $gp at the beginning of VM code
+   execution, and restore it after each call to C. */
+
+/* Save $gp to an automatic variable (in memory). */
+#define JITTER_EXECUTION_BEGINNING_                                         \
+  void *_jitter_saved_alpha_gp __attribute__ ((unused));                    \
+  asm volatile ("stq $gp, %[_jitter_saved_alpha_gp]"                        \
+                : [_jitter_saved_alpha_gp] "=m" (_jitter_saved_alpha_gp));
+
+/* No need for JITTER_EXECUTION_END_. */
+
+/* No need for JITTER_EXECUTION_PRE_C_CALL_. */
+
+/* Restore $gp from the automatic variable (in memory). */
+#define JITTER_EXECUTION_POST_C_CALL_                                      \
+  asm volatile ("ldq $gp, %[_jitter_saved_alpha_gp]"                       \
+                : /* outputs */                                            \
+                : /* inputs */                                             \
+                  [_jitter_saved_alpha_gp] "m" (_jitter_saved_alpha_gp));
 
 #endif // #ifndef JITTER_NATIVE_MACHINE_H_
