@@ -308,6 +308,7 @@ else
    AC_MSG_RESULT([yes, cross-compiling from $build to $host .])
    jitter_cross_compiling=yes
 fi
+AC_SUBST([JITTER_CROSS_COMPILING], [$jitter_cross_compiling])
 
 # I never test on weird systems not supporting shebangs.
 AC_SYS_INTERPRETER

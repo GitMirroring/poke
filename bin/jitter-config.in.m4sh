@@ -437,10 +437,14 @@ while test "$#" != "0"; do
         --cppflags)
             no_option_argument
             append_to_output cppflags
-            # Append a -I argument.  This is defined separately from the rest,
-            # as the installation prefix can be decided very late, at Jitter
+            # Unless cross-compiling, append a -I argument referring the
+            # installation path.  This is defined separately from the rest, as
+            # the installation prefix can be decided very late, at Jitter
             # installation time.
-            output="$output -I $includedir";;
+            # (When cross-compiling this would be difficult to do correctly.)
+            if test "x@JITTER_CROSS_COMPILING@" != 'xyes'; then
+              output="$output -I $includedir"
+            fi;;
         --ldadd)
             no_option_argument
             append_to_output ldadd;;
