@@ -1272,11 +1272,11 @@ AS_CASE([$default_host_cpu],
                         jitter_objdump_options="--architecture=sparc:v9b --disassembler-options=no-aliases"],
         [x86_64],      [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_X86_64], [1], []
                                            ) # No ";": see the Autoconf manual.
-                        if test "x$ac_cv_sizeof_void_p" = 8; then
+                        if test "x$ac_cv_sizeof_void_p" = 'x8'; then
                           # Ordinary x86_64 in long mode, sizeof (void *) == 8.
                           JITTER_ASSEMBLY_SUBDIRECTORY=x86_64;
                           jitter_has_host_assembly=yes;
-                        elif test "x$ac_cv_sizeof_void_p" = 4; then
+                        elif test "x$ac_cv_sizeof_void_p" = 'x4'; then
                           # Special case, for handling -m32: if sizeof (void *)
                           # is not 64 bits, treat this as i386.
                           # Presumably we are using -m32.
