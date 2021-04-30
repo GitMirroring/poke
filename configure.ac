@@ -1461,9 +1461,23 @@ AS_CASE([$default_host_cpu],
                         jitter_supports_no_threading=yes],
         [x86_64],      [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_X86_64], [1], []
                                            ) # No ";": see the Autoconf manual.
-                        JITTER_ASSEMBLY_SUBDIRECTORY=x86_64;
-                        jitter_supports_minimal_threading=yes;
-                        jitter_supports_no_threading=yes],
+                        # x86_64 is used in several unusual ways where the
+                        # pointer size is not 64 bits.  Check.
+                        if test "x$ac_cv_sizeof_void_p" = 8; then
+                          # Ordinary x86_64 in long mode, sizeof (void *) == 8.
+                          JITTER_ASSEMBLY_SUBDIRECTORY=x86_64
+                          jitter_supports_minimal_threading=yes
+                          jitter_supports_no_threading=yes
+                        elif test "x$ac_cv_sizeof_void_p" = 4; then
+                          # Special case, for handling -m32: if sizeof (void *)
+                          # is not 64 bits, treat this as i386.
+                          # Presumably we are using -m32.
+                          # FIXME: i386
+                          true
+                        else
+                          AC_MSG_ERROR([this should never happen: on x86_64 we
+have that sizeof (void *) is not 8 nor 4])
+                        fi],
                        # Default case.
                        [])
 
