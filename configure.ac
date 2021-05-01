@@ -2616,18 +2616,8 @@ case "$host_cpu" in
     AC_SUBST([JITTER_MACHINE_SPECIFIC_READABLE_ASSEMBLY_FLAGS], [-mregnames]);;
 esac
 
-# Look for the indent utility, and remember whether it is available in an
-# Automake conditional.  This is only used for debugging targets.
-AC_PATH_PROG([JITTER_INDENT], [indent])
-if test "x$JITTER_INDENT" = "x"; then
-  AC_MSG_WARN([no indent utility found. \
-You will not be able to build nice-looking preprocessed C files for \
-debugging.  You can still generate preprocessed files, but they will \
-not look as nice])
-fi
-# FIXME: use AC_PATH_PROGS_FEATURE_CHECK to check for indent command line
-# argument support.
-AM_CONDITIONAL([JITTER_HAVE_INDENT], ! test "x$JITTER_INDENT" = "x")
+# FIXME: use AC_PATH_PROGS_FEATURE_CHECK to check for command line argument
+# support in specific programs.
 
 
 # Test suite.

@@ -1829,67 +1829,6 @@ READABLE_ASSEMBLY_FLAGS = \
 # Preprocessor options to produce readable preprocessed C.
 READABLE_PREPROCESSED_C_FLAGS =
 
-# Define a variable expanding to an indent command line working as a filter to
-# be run in a shell pipe, or cat as a fallback replacement if indent is not
-# available.  This currently assumes that the indent utility, if it exists, is
-# GNU indent.
-if JITTER_HAVE_INDENT
-  INDENT = \
-    "$(JITTER_INDENT)" \
-      --no-tabs --swallow-optional-blank-lines \
-      --line-length100 --preprocessor-indentation2 -
-else
-  INDENT = cat
-endif # JITTER_HAVE_INDENT
-
-# Assembly and preprocessed C for direct-threading dispatch.
-if JITTER_ENABLE_DISPATCH_DIRECT_THREADING
-  ASSEMBLY_FILES_FOR_UNINSPIRED += uninspired--direct-threading.s
-  PREPROCESSED_FILES_FOR_UNINSPIRED += uninspired--direct-threading.i
-  uninspired--direct-threading.s: $(GENERATED_C_FILES_FOR_UNINSPIRED)
-	  $(CCAS) $(CCASFLAGS) $(AM_CPPFLAGS) $(DEFAULT_INCLUDES) $(AM_CFLAGS) \
-	    $(bin_uninspired__direct_threading_CPPFLAGS) \
-	    $(READABLE_ASSEMBLY_FLAGS) \
-	    -o $@ -S "example-vms/uninspired/uninspired-vm2.c"
-  uninspired--direct-threading.i: $(GENERATED_C_FILES_FOR_UNINSPIRED)
-	  $(CC) $(CFLAGS) $(AM_CPPFLAGS) $(DEFAULT_INCLUDES) \
-	    $(bin_uninspired__direct_threading_CPPFLAGS) \
-	    $(READABLE_PREPROCESSED_C_FLAGS) \
-	    -E -P "example-vms/uninspired/uninspired-vm2.c" | $(INDENT) > $@
-endif # JITTER_ENABLE_DISPATCH_DIRECT_THREADING
-
-# Assembly and preprocessed C for minimal-threading dispatch.
-if JITTER_ENABLE_DISPATCH_MINIMAL_THREADING
-  ASSEMBLY_FILES_FOR_UNINSPIRED += uninspired--minimal-threading.s
-  PREPROCESSED_FILES_FOR_UNINSPIRED += uninspired--minimal-threading.i
-  uninspired--minimal-threading.s: $(GENERATED_C_FILES_FOR_UNINSPIRED)
-	  $(CCAS) $(CCASFLAGS) $(AM_CPPFLAGS) $(DEFAULT_INCLUDES) $(AM_CFLAGS) \
-	    $(bin_uninspired__minimal_threading_CPPFLAGS) \
-	    $(READABLE_ASSEMBLY_FLAGS) \
-	    -o $@ -S "example-vms/uninspired/uninspired-vm2.c"
-  uninspired--minimal-threading.i: $(GENERATED_C_FILES_FOR_UNINSPIRED)
-	  $(CC) $(CFLAGS) $(AM_CPPFLAGS) $(DEFAULT_INCLUDES) \
-	    $(bin_uninspired__minimal_threading_CPPFLAGS) \
-	    $(READABLE_PREPROCESSED_C_FLAGS) \
-	    -E -P "example-vms/uninspired/uninspired-vm2.c" | $(INDENT) > $@
-endif # JITTER_ENABLE_DISPATCH_MINIMAL_THREADING
-
-# Assembly and preprocessed C for no-threading dispatch.
-if JITTER_ENABLE_DISPATCH_NO_THREADING
-  ASSEMBLY_FILES_FOR_UNINSPIRED += uninspired--no-threading.s
-  PREPROCESSED_FILES_FOR_UNINSPIRED += uninspired--no-threading.i
-  uninspired--no-threading.s: $(GENERATED_C_FILES_FOR_UNINSPIRED)
-	  $(CCAS) $(CCASFLAGS) $(AM_CPPFLAGS) $(DEFAULT_INCLUDES) $(AM_CFLAGS) \
-	    $(bin_uninspired__no_threading_CPPFLAGS) \
-	    $(READABLE_ASSEMBLY_FLAGS) \
-	    -o $@ -S "example-vms/uninspired/uninspired-vm2.c"
-  uninspired--no-threading.i: $(GENERATED_C_FILES_FOR_UNINSPIRED)
-	  $(CC) $(CFLAGS) $(AM_CPPFLAGS) $(DEFAULT_INCLUDES) \
-	    $(bin_uninspired__no_threading_CPPFLAGS) \
-	    $(READABLE_PREPROCESSED_C_FLAGS) \
-	    -E -P "example-vms/uninspired/uninspired-vm2.c" | $(INDENT) > $@
-endif # JITTER_ENABLE_DISPATCH_NO_THREADING
-
 
 # More files to distribute: build system and small doc files.
 # ################################################################
