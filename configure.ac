@@ -2648,10 +2648,6 @@ AC_CONFIG_FILES([tests/jitterlisp/jitterlisp.test],
 AC_CONFIG_FILES([scripts/emulator],
                 [chmod +x scripts/emulator])
 
-# Generate convenience disassembly highlighter for ANSI terminals.
-AC_CONFIG_FILES([scripts/highlight-disassembly],
-                [chmod +x scripts/highlight-disassembly])
-
 # Generate the jitter-config script.
 AC_CONFIG_FILES([bin/jitter-config],
                 [chmod +x bin/jitter-config])
