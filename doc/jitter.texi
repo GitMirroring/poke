@@ -347,7 +347,7 @@ The generated C code is heavily conditionalized and can be configured
 to run using different dispatching techniques, of varying
 sophistication; the most efficient dispatching techniques rely on some
 architecture-specific---but @emph{not} VM-specific---assembly support
-already included in this software; every dispatching model but one
+already included in this software; every dispatch but one
 also relies on GNU C extensions.
 @cindex @code{switch} dispatching
 @cindex ANSI C
@@ -522,7 +522,7 @@ debatable whether the software still counts as an @emph{interpreter}
 generator.
 @*
 Some ideas definitely belong more in JITs than in threaded
-interpreters, and in fact the most advanced dispatching model
+interpreters, and in fact the most advanced dispatch
 supported by Jitter requires no threaded code to be processed at run time,
 nor indeed any data structure representing routine code other than an array
 of native machine instructions in executable memory---``interpreting''
@@ -896,7 +896,7 @@ Jitter is a solution for such reuse.
 @cindex requirements, software
 @fixme{Anything non-GNU is secondary; some effort will be made to run
 with just a standard ANSI C compiler supporting only the simplest
-dispatching models, as long as the supported C standard is recent.
+dispatch, as long as the supported C standard is recent.
 There is no support yet, but I'd like a Jittery system to run on the
 metal, in kernel mode if there are protection rings.}
 
@@ -957,7 +957,7 @@ Jitter already supports several CPU architectures:
 @pxref{Architecture-specific notes}.
 
 @cindex GCC
-@cindex dispatching model
+@cindex dispatch
 @cindex minimal threading
 @cindex direct threading
 @cindex icache
@@ -989,8 +989,8 @@ threading models dependent on @code{mmap} in @file{configure.ac}.}]}
 
 @*
 @cindex API, Jitter
-@cindex dispatching model
-While dispatching models differ in performance, they are all functionally
+@cindex dispatch
+While dispatches differ in performance, they are all functionally
 identical and controlled by the same API.
 
 @cindex porting
@@ -1088,7 +1088,7 @@ format.  Another problem, in the future, will be data embedded in
 routines @fixme{did I mean what are now called snippets?}.
 Since introducing tagging in every word is out of the
 question, data would be in a state where saving is possible only right
-after initialization.  Again, this may complicate the C API.}
+after initialisation.  Again, this may complicate the C API.}
 
 
 @c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -1181,6 +1181,7 @@ a custom memory allocator (@pxref{Garbage collection}), if so desired;
 runtime information about the type of each object can be made available
 at runtime if so desired---or not, when not needed.
 @cindex Andrew Appel
+@cindex Appel, Andrew
 @cindex Compiling with Continuations
 @cindex Forth
 @cindex stack
@@ -1233,7 +1234,7 @@ of fast labels my instruction immediates are slightly less efficient than in
 Ertl's proposal.  In most instances this disadvantage is canceled, if not
 reversed, by specialization on immediates.}
 
-When using advanced dispatching models @fixme{Jitter} is more strongly
+When using advanced dispatches @fixme{Jitter} is more strongly
 reliant on GCC, and therefore more fragile, than Vmgen---and similar in this
 respect to @command{gforth-fast}.
 
@@ -1280,14 +1281,14 @@ a competitive advantage, let that be in favor of free software.
 @cindex copyright
 @cindex copyright assignment
 I plan to propose Jitter to the GNU Project, to be released as
-official GNU software.  If the project is accepted I will then
-immediately assign its copyright to the Free Software Foundation,
-which will then have the power to decide on the specific license as
-long as Jitter remains free software.  If RMS decided to use a more
-lax license for some strategic reason I would trust his judgement;
-indeed I cannot think of anybody I would trust more on these issues.
-But as long as I legally control this software, its code will be
-distributed only under strong copyleft.
+official GNU software.  If the project is accepted I may assign its
+copyright to the Free Software Foundation, which will then have the
+power to decide on the specific license as long as Jitter remains free
+software.  If RMS decided to use a more lax license for some strategic
+reason I would trust his judgement; indeed I cannot think of anybody I
+would trust more on these issues.  But as long as I legally control
+this software, its code will be distributed only under strong
+copyleft.
 
 This is free software, released under the GNU General Public License,
 version 3 or later.
@@ -1518,7 +1519,7 @@ information about your system, your @command{configure} command line and the com
 After configuration has succeeded building Jitter should be a simple
 matter of running @samp{make}.  This will generate the
 @command{jitter} program in the @file{bin} build subdirectory, plus
-one runtime library per enabled dispatching model.  Building should be
+one runtime library per enabled dispatch.  Building should be
 fast.
 
 At this point it is recommended to build the examples as well, by
@@ -1534,8 +1535,8 @@ also require more RAM.
 @*
 If everything works the example programs will appear in the @file{bin}
 build subdirectory along with @file{jitter}.  Again the example
-programs will be one per dispatching model, each with the name
-@file{uninspired--} followed by the dispatching model name.  The
+programs will be one per dispatch, each with the name
+@file{uninspired--} followed by the dispatch name.  The
 ``Uninspired'' VM, if not terribly original, is a representative example
 of a Jitter virtual machine, to be discussed later in some detail:
 @pxref{Tutorial}.
@@ -1557,7 +1558,7 @@ to be more recent than their dependencies for @command{make} not to attempt
 to regenerate them.
 
 The test suite will run the ``Uninspired'' VM programs under each enabled
-dispatching model, building the Uninspired VM executables as
+dispatch, building the Uninspired VM executables as
 dependencies if not already present.
 
 
@@ -1579,8 +1580,8 @@ dependencies if not already present.
 @cindex Valgrind
 @cindex memory leak
 @cindex leak, memory
-@cindex initialization
-@cindex finalization
+@cindex initialisation
+@cindex finalisation
 The test suite works by compiling the Uninspired VM using all the enabled
 dispatching modes and then running small routines on top of it, comparing
 the program output against expected results.
@@ -1665,7 +1666,7 @@ tar c tests/interpreter/interpreter-44.* | gzip -9 > interpreter-44.tar.gz
 
 @fixme{be sure to check particularly in critical cases: unusual platform, new GCC version, new Jitter version}
 
-@fixme{in case some test fails reconfigure disabling the offending dispatching model and try again}
+@fixme{in case some test fails reconfigure disabling the offending dispatch and try again}
 
 @cindex timeout (test suite)
 @fixme{A test case hanging is bad.  The Uninspired driver as invoked
@@ -1962,6 +1963,7 @@ No-threading in a less favourable case, 32-bit MIPS.
 
 @menu
 * Syntax::                      How to write a VM specification.
+* VM states::                   What data a VM routine run needs.
 * Instruction rewriting::       Specialized instructions should not be too many.
 * Emacs major mode for Jitter:: Editing VM specification with Emacs.
 * Performance tips::            Suggestions for making your VMs fast.
@@ -2128,6 +2130,23 @@ enough indices @var{i} to cover every fast register and 32 slow registers.
 @fixme{document stacks operations}
 
 @c @@@@@@@
+@node VM states
+@section VM states
+
+@fixme{Blocks: @code{state-initialization-c} @code{state-finalization-c}
+@code{state-reset-c}}
+
+@fixme{Access macros evaluating to lvalues, with either one (from VM
+instructions) or two arguments (elsewhere):
+@code{JITTERLISPVM_STATE_RUNTIME_FIELD}
+@code{JITTERLISPVM_STATE_BACKING_FIELD}}
+
+@fixme{Make these macros usable, with one argument (or, better, with
+two: in that case specify also the formal name) from the code blocks
+mentioned above.}
+
+
+@c @@@@@@@
 @node Instruction rewriting
 @section Instruction rewriting
 @cindex rewriting
@@ -2272,8 +2291,8 @@ experiments to confirm this.}
 @chapter C API
 
 @menu
-* Initialization::              Setting up a VM before making routines.
-* Finalization::                Cleaning up the global state.
+* Initialisation::              Setting up a VM before making routines.
+* Finalisation::                Cleaning up the global state.
 * VM state::                    Runtime data structures manipulated by routines.
 * VM routines::                 Making and destroying VM routines.
 * Running VM routines::         How to call specialized routines.
@@ -2281,14 +2300,14 @@ experiments to confirm this.}
 @end menu
 
 @c @@@@@@@
-@node Initialization
-@section Initialization
-@cindex initialization
+@node Initialisation
+@section Initialisation
+@cindex initialisation
 
 @c @@@@@@@
-@node Finalization
-@section Finalization
-@cindex finalization
+@node Finalisation
+@section Finalisation
+@cindex finalisation
 
 @fixme{This has nothing to do with @emph{garbage collection} finalisation:
 @pxref{gc-object-finalisation}}
@@ -2363,7 +2382,7 @@ experiments to confirm this.}
 @cindex concurrency
 
 @fixme{The Jittery C API is thread-safe, including the Flex/Bison
-frontend.  After initialization no global variables are written, and
+frontend.  After initialisation no global variables are written, and
 the code is reentrant.  @fixme{This is currently true becasue I use a
 separate call to @code{mmap} for every native code allocation, but it
 will get more complicated: in the future I will need a mutex for code
@@ -2706,7 +2725,7 @@ which is easy.}.
 @node Code objects
 @subsubsection Code objects
 
-@fixme{finalization of some resources different from the garbage-collected
+@fixme{finalisation of some resources different from the garbage-collected
 heap memory may require reference counting.  The C API makes it easy to
 handle VM routines in this way, with pin and unpin functions already
 provided.}
@@ -4110,6 +4129,7 @@ easy to test each individual feature}
 @c @@@@@@@@@@@@@@@@@@@@@@@@@@@
 @node Bibliography
 @unnumbered Bibliography
+@cindex bibliography
 
 @ignore
 This is really quite crude, but I do not feel like writing a generator
@@ -4141,7 +4161,38 @@ The MIT Press, 2009.
 @bibend
 @end ignore
 
+@bibbegin{Derick+ 1982}
+@cindex Derick, Mitch
+@cindex Mitch Derick
+@cindex Baker, Linda
+@cindex Linda Baker
+@cindex Forth
+@cindex figForth
+@cindex Forth 79
+Mitch Derick, Linda Baker, ``FORTH encyclopedia --- The complete
+FORTH Programmer's manual'', second edition, Mountain View Press, 1982.
+@*
+A reference book on figForth and the slightly later Forth 79,
+particularly useful to follow the details of the source code in
+@bibref{Ting 2013}.
+@cindex dialect, Forth
+@cindex Forth, old dialect
+@cindex Forth 79
+@cindex figForth
+@cindex @samp{CREATE} (old Forth dialects)
+@cindex @samp{<BUILDS} (old Forth dialects)
+The remarks about dialect incompatibilities are particularly useful
+to read such code today: a glaring example is
+Forth 79's @code{CREATE} behaving like figForth's @code{<BUILDS}, with
+figForth's @code{CREATE} having different semantics.
+@bibend
+
 @bibbegin{Ertl+ 2004}
+@cindex Forth
+@cindex M.@: Anton Ertl
+@cindex Ertl, M.@: Anton
+@cindex David Gregg
+@cindex Gregg, David
 M.@: Anton Ertl, David Gregg.
 ``Retargeting JIT compilers by using C-compiler generated executable
 code'',
@@ -4150,6 +4201,8 @@ in @emph{Parallel Architecture and Compilation Techniques}, 2004.
 @bibend
 
 @bibbegin{Fog 2020A}
+@cindex Fog, Agner
+@cindex Agner Fog
 Agner Fog.
 ``Optimizing subroutines in assembly language: An optimization guide
 for x86 platforms'',
@@ -4158,6 +4211,8 @@ Available at @url{https://www.agner.org/optimize}.
 @bibend
 
 @bibbegin{Fog 2020B}
+@cindex Fog, Agner
+@cindex Agner Fog
 Agner Fog.
 ``The microarchitecture of Intel, AMD and VIA CPUs: An optimization
 guide for assembly programmers and compiler makers'',
@@ -4167,6 +4222,8 @@ Available at @url{https://www.agner.org/optimize}.
 
 
 @bibbegin{Gudeman 1993}
+@cindex Gudeman, David
+@cindex David Gudeman
 David Gudeman.
 ``Representing Type Information in Dynamically Typed Languages'',
 technical report,
@@ -4174,7 +4231,14 @@ Department of Computer Science, The University of Arizona, 1993.
 @doi{10.1.1.39.4394}
 @bibend
 
-@bibbegin{Jones et al.@: 2012}
+@bibbegin{Jones+ 2012}
+@cindex garbage collection
+@cindex Richard Jones
+@cindex Jones, Richard
+@cindex Antony Hosking
+@cindex Hosking, Antony
+@cindex Eliot Moss
+@cindex Moss, Eliot
 Richard Jones, Antony Hosking, Eliot Moss.
 ``The Garbage Collection Handbook --- The art of automatic memory
 management'',
@@ -4194,6 +4258,11 @@ subtle text.
 @c FIXME: shall I cite the combined set of volumes?  It may be less pompous.
 @ignore
 @bibbegin{Knuth, 2011}
+@cindex Art, computer programming
+@cindex computer programming
+@cindex The Art of Computer Programming
+@cindex Donald E. Knuth
+@cindex Knuth, Donald E.
 The Art of Computer Programming
 Donald E.@: Knuth.
 ``The Art of Computer Programming, Volumes 1-4A'',
@@ -4204,6 +4273,11 @@ Addison-Wesley, 2011.
 @c FIXME: uncomment as I cite this.
 @ignore
 @bibbegin{Knuth, 1997}
+@cindex Art, computer programming
+@cindex computer programming
+@cindex The Art of Computer Programming
+@cindex Donald E. Knuth
+@cindex Knuth, Donald E.
 Donald E.@: Knuth.
 ``The Art of Computer Programming, Volume 1: Fundamental Algorithms'',
 3rd edition,
@@ -4214,6 +4288,11 @@ Addison-Wesley, 1997.
 @c FIXME: uncomment as I cite this.
 @ignore
 @bibbegin{Knuth, 1998}
+@cindex Art, computer programming
+@cindex computer programming
+@cindex The Art of Computer Programming
+@cindex Donald E. Knuth
+@cindex Knuth, Donald E.
 Donald E.@: Knuth.
 ``The Art of Computer Programming, Volume 2: Seminumerical Algorithms'',
 3rd edition,
@@ -4224,6 +4303,11 @@ Addison-Wesley, 1998.
 @c FIXME: uncomment as I cite this.
 @ignore
 @bibbegin{Knuth, 1998}
+@cindex Art, computer programming
+@cindex computer programming
+@cindex The Art of Computer Programming
+@cindex Donald E. Knuth
+@cindex Knuth, Donald E.
 Donald E.@: Knuth.
 ``The Art of Computer Programming, Volume 3: Sorting and Searching'',
 2nd edition,
@@ -4234,6 +4318,11 @@ Addison-Wesley, 1998.
 @c FIXME: uncomment as I cite this.
 @ignore
 @bibbegin{Knuth, 2011}
+@cindex Art, computer programming
+@cindex computer programming
+@cindex The Art of Computer Programming
+@cindex Donald E. Knuth
+@cindex Knuth, Donald E.
 Donald E.@: Knuth.
 ``The Art of Computer Programming, Volume 4a: Combinatorial Algorithms Part 1'',
 1st edition,
@@ -4241,7 +4330,56 @@ Addison-Wesley, 2011.
 @bibend
 @end ignore
 
+@bibbegin{Rodriguez 1993}
+Bradford J. Rodriguez, ``Moving Forth''
+in @emph{The Computer Journal} issue 59,
+ISSN #0748-9331,
+@c Bill D. Kibler editions,
+@c (A later editor was Dave Baldwin)
+@c ...all of this is irrelvant: the journal ceased publication in 1998.
+January/February 1993.
+@*
+@cindex indirect threading (not used in Jittery VMs)
+@cindex threading, indirect (not used in Jittery VMs)
+@cindex direct threading
+@cindex threading, direct
+@cindex subroutine threading (not used in Jittery VMs)
+@cindex threading, subroutine (not used in Jittery VMs)
+@cindex token threading (not used in Jittery VMs)
+@cindex threading, token (not used in Jittery VMs)
+@cindex segment threading (not used in Jittery VMs)
+@cindex threading, segment (not used in Jittery VMs)
+This article contains a good detailed description of dispatches as
+used in Forth implementations, starting from indirect threading
+(not used in Jitter) and
+progressing to direct threading and other techniques such as
+subroutine threading, token threading and segment threading
+(also not used in Jitter).
+Dispatch in Jittery VMs is in a sense even simpler than in Forth,
+because Jittery VMs do not need to
+distinguish between ``code definitions'' and ``colon definitions''; it
+is however remarkable how closely the definitions of @code{NEXT} in a
+Forth implementation match fallthrough code in Jitter: in particular
+Rodriguez presents ``[t]he @code{NEXT} pseudo-code for direct
+threading'' as
+@smallexample
+(IP) -> V     @r{fetch memory pointed by IP into @samp{W} register}
+IP + 2 -> IP  @r{advance @samp{IP} (assuming 2-byte addresses)}
+JP (W)        @r{jump to the address in the @samp{W} register}
+@end smallexample
+@c The reader will immediately recognize the @emph{load, increment, jump}
+@c pattern.
+@ignore
+The Computer Journal unfortunately ceased publication in 1998.  It
+must have been incredibly fun.
+@*
+@end ignore
+Available at @url{http://www.bradrodriguez.com/papers/moving1.htm}.
+@bibend
+
 @bibbegin{Saiu 2011}
+@cindex Saiu, Luca
+@cindex Luca Saiu
 Luca Saiu, ``Scalable BIBOP garbage collection for parallel functional
 programs on multi-core machines'', draft,
 Laboratoire d’Informatique de l’Université Paris Nord, 2011.
@@ -4256,8 +4394,16 @@ very complex and fragile, requiring substantial computation in signal
 handlers where most of the libc runtime is unusable.
 @bibend
 
-@bibbegin{Shi et al.@: 2005}
-Yunhe Shi, David Gregg, Andrew Beatty, M.@: Anton Ertl.
+@bibbegin{Shi+ 2005}
+@cindex Shi, Yunhe
+@cindex Yunhe Shi
+@cindex Gregg, David
+@cindex David Gregg
+@cindex Beatty, Andrew
+@cindex Andrew Beatty
+@cindex M.@: Anton Ertl
+@cindex Ertl, M.@: Anton
+Yunhe Shi, David Gregg, Andrew Beatty, M.@: Anton Ertl,
 ``Virtual Machine Showdown: Stack Versus Registers'',
 in @emph{VEE ’05: Proceedings of the 1st ACM/USENIX international
 conference on Virtual execution environments}, 2005.
@@ -4265,14 +4411,41 @@ Available at @url{https://www.usenix.org/legacy/events%2Fvee05%2Ffull_papers/p15
 @bibend
 
 @bibbegin{Shi 2007}
-Yunhe Shi.
+@cindex Shi, Yunhe
+@cindex Yunhe Shi
+Yunhe Shi,
 ``Virtual machine showdown stack vs.@: registers'',
 PhD thesis, University of Dublin, 2007.
 @doi{10.1.1.391.1562}
 @bibend
 
+@bibbegin{Ting 2013}
+@cindex Ting, Chen-Hanson
+@cindex Chen-Hanson Ting
+Chen-Hanson Ting,
+``Systems Guide to figForth'', third edition, Offete Enterprises
+Inc.@:, 2013.
+A very detailed description of the internal workings of a Forth system
+running directly on the metal, which highlights the beauty and
+simplicity of the Forth design.
+The text follows the first edition from 1981, and as was
+@cindex indirect threading (not used in Jittery VMs)
+@cindex threading, indirect (not used in Jittery VMs)
+typical in the era assumes indirect threading --- a technique not
+used in Jittery VMs.
+It is useful to keep the first edition as well, since some glitches in
+the 2013 typesetting have garbled the text between Forth words
+happening to resemble HTML tags, a few figures and some semantically
+significant markup.
+@*
+The Author recommends @bibref{Derick+ 1982} as a reference to follow
+the details of @bibref{Ting 2013}.
+@bibend
+
 @bibbegin{Wilson 1992}
-Paul R. Wilson.
+@cindex Wilson, Paul R.
+@cindex Paul R. Wilson
+Paul R. Wilson,
 ``Uniprocessor Garbage Collection Techniques'',
 submitted to @emph{ACM Computing Surveys}, 1992.
 @doi{10.1.1.39.7380}
@@ -4367,7 +4540,7 @@ doing, say, graphics, my priorities would be different and I'd have
 pursued some paths which I've left open.
 
 A program using a Jitter-generated VM does not need to
-know the dispatching model or the number of fast registers: it can be
+know the dispatch or the number of fast registers: it can be
 simply linked to one of several libraries generated for a given VM,
 all having a compatible APIs.  No preprocessor feature macros are
 needed externally and all such libraries are functionally
@@ -4376,7 +4549,7 @@ interchangeable.
 Document how to install the Emacs major mode for Jitter, even if it is
 completely standard.
 
-Every dispatching model more sophisticated than
+Every dispatch more sophisticated than
 @code{switch}-dispatching relies on GNU C, and freely uses GNU C
 extensions: @code{typeof}, computed gotos, nested functions, GCC
 builtins, function attributes, empty inline assembly with constraints
@@ -4420,7 +4593,7 @@ without ever referring to addresses out of the interval either for
 native instructions or data.
 
 @section (Meta-)language
-Shall I replace the phrase ``dispatching model'' with something else?
+Shall I replace the phrase ``dispatch'' with something else?
 I use it to describe two different runtime behaviors:
 @dfn{dispatching}, in the sense of jumping from one VM instruction to
 the next, and @dfn{argument access}.  Maybe I should just say
@@ -4430,7 +4603,7 @@ About the word ``word'': it does not mean what it means in Gas.
 
 Replication/relocation: GForth's ``dynamic superinstructions with
 replication'' corresponds to my @emph{minimal-threading} dispatch
-model; my @emph{no-threading} dispatching model is close to what
+model; my @emph{no-threading} dispatch is close to what
 @command{gforth-fast} did.
 Jitter does not support ``dynamic superinstructions without
 replication''.
@@ -4569,7 +4742,7 @@ accept the small additional linear-time overhead of specialization and
 compile @emph{everything} to native code.  In a very dynamic
 environment where code is rewritten multiple times at run time (like
 GNU epsilon does, in some execution phases) old native code can be
-garbage collected with finalizers, and its space reused for new
+garbage collected with finalisers, and its space reused for new
 generated code.
 
 I am personally unconvinced about the need for the additional
@@ -4969,6 +5142,6 @@ Everything would remain thread-local, which is good.
 @bye
 Local Variables:
   eval: (flyspell-mode t)
-  eval: (ispell-change-dictionary "american")
-  compile-command: "bash -ci 'make -C ~/repos/jitter/_build/native-gcc-9 info pdf'"
+  eval: (ispell-change-dictionary "british")
+  compile-command: "bash -ci 'make -C ~/repos/jitter/_build/native-gcc-10 info pdf'"
 End:
