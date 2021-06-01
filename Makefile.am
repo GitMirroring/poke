@@ -1943,8 +1943,8 @@ EXTRA_DIST += doc/missing-man-page.1
 
 # The actual man pages.
 dist_man1_MANS += \
-  bin/jitter-config.1 \
-  jitterc/jitter.1
+  doc/jitter-config.1 \
+  doc/jitter.1
 
 # Rules for always-installed programs.
 if JITTER_CAN_REBUILD_MAN_PAGES
@@ -1953,10 +1953,12 @@ if JITTER_CAN_REBUILD_MAN_PAGES
   # to force the user to have help2man installed.  This is sensible, but this
   # solution based on an Automake conditional is even better and allows for more
   # precise control and, importantly, parallel building.
-  jitterc/jitter.1: bin/jitter$(EXEEXT)
-	  $(HELP2MAN_WITH_OPTIONS) --output=$@ "$(JITTER_EMULATOR) bin/jitter$(EXEEXT)"
-  bin/jitter-config.1: bin/jitter-config
-	  $(HELP2MAN_WITH_OPTIONS) --output=$@ bin/jitter-config
+  doc/jitter.1: bin/jitter$(EXEEXT)
+	$(HELP2MAN_WITH_OPTIONS) --output="$@" \
+	  "$(JITTER_EMULATOR) bin/jitter$(EXEEXT)"
+  doc/jitter-config.1: bin/jitter-config
+	$(HELP2MAN_WITH_OPTIONS) --output="$@" \
+	  bin/jitter-config
 else # ! JITTER_CAN_REBUILD_MAN_PAGES
   # We can't build real man pages on this system, so we just distribute copies
   # of a single stub page.
@@ -1965,9 +1967,9 @@ else # ! JITTER_CAN_REBUILD_MAN_PAGES
   # contain pre-generated man pages (presumably not copied from the stub), and
   # an actual man pages never becomes older than the stub unless the user
   # touches the stub.
-  jitterc/jitter.1: doc/missing-man-page.1
+  doc/jitter.1: doc/missing-man-page.1
 	cp "$(srcdir)/doc/missing-man-page.1" "$@"
-  bin/jitter-config.1: doc/missing-man-page.1
+  doc/jitter-config.1: doc/missing-man-page.1
 	cp "$(srcdir)/doc/missing-man-page.1" "$@"
 endif # JITTER_CAN_REBUILD_MAN_PAGES
 
