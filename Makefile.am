@@ -2244,6 +2244,8 @@ clean-local:
 	rm -f tests/*/*.stdout
 	rm -f tests/*/*.stderr
 	rm -f tests/*/*.command-line
+	rm -f core
+	rm -f vgcore.[0-9]*
 	@echo 'the clean rule failing in gnulib-local is benign'
 	$(MAKE) -C gnulib-local clean || true
 
