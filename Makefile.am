@@ -2236,6 +2236,11 @@ check_SCRIPTS += \
 # Cleanup.
 # ################################################################
 
+# Remove generated files for the examples.  This is useful to test changes
+# in jitterc or in the templates, without touching VM specifications.
+clean-generated-examples:
+	(cd "$(srcdir)"; rm -f $(JITTER_GENERATED_FILES))
+
 clean-local:
 	rm -r -f "$(builddir)/example-vms/*/*.$(OBJEXT)"
 	rm -r -f $(EXTRA_PROGRAMS) $(EXTRA_LTLIBRARIES) $(noinst_DATA)
@@ -2263,11 +2268,8 @@ distclean-local:
 
 # The maintainer-clean target should remove built sources, from both the build
 # and the source directories.
-maintainer-clean-local:
-	rm -f $(GENERATED_C_FILES_FOR_UNINSPIRED)
-	rm -f $(GENERATED_C_FILES_FOR_STRUCTURED)
-	rm -f $(GENERATED_C_FILES_FOR_JITTERLISP)
+maintainer-clean-local: clean-generated-examples
 	rm -f $(DEBUG_ASSEMBLY_FILES)
-	(cd "$(srcdir)"; rm -f $(BUILT_SOURCES) $(JITTER_GENERATED_FILES))
+	(cd "$(srcdir)"; rm -f $(BUILT_SOURCES))
 	@echo 'the maintainer-clean rule failing in gnulib-local is benign'
 	$(MAKE) -C gnulib-local maintainer-clean || true
