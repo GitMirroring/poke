@@ -1498,7 +1498,7 @@ AS_CASE([$default_host_cpu],
                           # Presumably we are using -m32.
                           # FIXME: i386
                           true
-                        else
+                       else
                           AC_MSG_ERROR([this should never happen: on x86_64 we
 have that sizeof (void *) is $ac_cv_sizeof_void_p instead of 8 nor 4])
                         fi],
@@ -1507,7 +1507,7 @@ have that sizeof (void *) is $ac_cv_sizeof_void_p instead of 8 nor 4])
 
 # Define jitter_has_host_assembly .  We still have to give feedback about
 # whether we have host assembly support...
-if test "$xJITTER_ASSEMBLY_SUBDIRECTORY" = 'x'; then
+if test "x$JITTER_ASSEMBLY_SUBDIRECTORY" = 'x'; then
   jitter_has_host_assembly=no
 else
   jitter_has_host_assembly=yes
