@@ -20,12 +20,35 @@
 ## along with Jitter.  If not, see <http://www.gnu.org/licenses/>.
 
 
+# Early definitions.
+################################################################
+
+# The following definitions need to come very early, as they are used in the
+# AC_INIT call.
+
+# Expand to the git branch name preceded by '--', or to nothing if the branch
+# name is either unknown or 'master'.
+m4_define([jitter_git_branch_suffix],
+          [m4_esyscmd_s([git branch --show-current 2> /dev/null \
+                         | sed 's/^master$//;s/^\(.\)/--\1/' ])])
+
+# Expand to a version number extracted from the most recent tag whose name
+# starts with 'v', relying on git-version-gen from Gnulib.
+m4_define([jitter_version_from_git_tag],
+          [m4_esyscmd_s([build-aux/git-version-gen .tarball-version])])
+
+# Expand to a nice-looking version string containing the branch name as well,
+# when it is not a distraction.
+m4_define([jitter_version],
+          [jitter_version_from_git_tag()][jitter_git_branch_suffix()])
+
+
 # Global initialization.
 ################################################################
 
 AC_PREREQ([2.69])
 AC_INIT([Jitter],
-        m4_esyscmd([build-aux/git-version-gen .tarball-version]),
+        jitter_version(),
         [bug-epsilon@gnu.org],
         [jitter],
         [http://ageinghacker.net/projects/jitter])
