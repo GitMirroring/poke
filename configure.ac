@@ -57,6 +57,8 @@ AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIRS([build-aux])
 AC_REQUIRE_AUX_FILE([trivial-source.c])
 
+AC_MSG_NOTICE([configuring $PACKAGE_NAME $PACKAGE_VERSION])
+
 
 # Generated C headers.
 ################################################################
