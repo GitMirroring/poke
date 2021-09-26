@@ -242,10 +242,10 @@ jitterlispvm_error_invalid_primitive_argument_type_friendly
      don't dare yet to print it as a Lisp object, as the printer might
      crash if there is a bug and the object is invalid. */
   char buffer [1000];
-  printf (buffer,
-          "%s: About the %i-th (0-based) primitive argument %p\n",
-          jitterlispvm_specialized_instruction_names [sins_opcode],
-          arg_index, (void *) o);
+  sprintf (buffer,
+           "%s: About the %i-th (0-based) primitive argument %p\n",
+           jitterlispvm_specialized_instruction_names [sins_opcode],
+           arg_index, (void *) o);
   jitterlisp_print_error_char_star (buffer);
 
   /* This shouldn't be needed on GNU, but flush the output so that we can be
