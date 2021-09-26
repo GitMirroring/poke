@@ -1,6 +1,7 @@
 /* VM library: ARM definitions, to be included from both C and assembly.
 
    Copyright (C) 2017, 2018, 2019, 2020, 2021 Luca Saiu
+   Copyright (C) 2021 pEp foundation (_JITTER_ASM_CRASH)
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -47,10 +48,16 @@
 
 /* Expand to a native machine code snippet causing a trap, as a string literal
    in a syntax suitable for extended inline asm. */
-#define _JITTER_ASM_CRASH                                                \
-  /* Return from exception.  This will cause an exception in user mode,  \
-     which is exactly what we want. */                                   \
-  "rfe r1"
+#define _JITTER_ASM_CRASH                                              \
+  /* Generate a software interrupt with a meaningless argument         \
+     obtained via                                                      \
+       (insert (format "%s" (random (expt 256 3))))                    \
+     nd crash, hopefully.                                              \
+     Unfortunately I cannot use an obvious alternative such as         \
+       rfe r1                                                          \
+     because rfe is not to be supported on very old revisions of       \
+     the architecture. */                                              \
+  "swi 13865506" //"mov r15, #0"
 
 
 
