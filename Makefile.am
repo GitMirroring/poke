@@ -384,10 +384,22 @@ FRONTEND_GENERATED_FILES += \
 $(srcdir)/jitterc/jitterc-parser.c: jitterc/jitterc.y
 	$(YACC) $(BISONFLAGS) -o "$@" "$(srcdir)/jitterc/jitterc.y"
 $(srcdir)/jitterc/jitterc-parser.h: jitterc/jitterc-parser.c
+# Unfortunately a file $(srcdir)/jitterc/jitterc-scanner.c generated the obvious
+# way contains #include lines including standard headers before config.h , which
+# breaks Gnulib.  Amend the generated file by prepending an appopriate #include
+# line.  The same is true for the header file.
 $(srcdir)/jitterc/jitterc-scanner.c: jitterc/jitterc.l
-	$(LEX) --header-file=$(srcdir)/jitterc/jitterc-scanner.h -o"$@" \
-	  "$(srcdir)/jitterc/jitterc.l"
+	$(LEX) \
+	  --header-file=$(srcdir)/jitterc/jitterc-scanner.h_tmp \
+	  -o"$@"_tmp \
+	  "$(srcdir)/jitterc/jitterc.l" && \
+	  echo '#include <config.h> /* Non-flex-generated line */' \
+	  | cat - "$@"_tmp > "$@" && \
+          rm "$@"_tmp
 $(srcdir)/jitterc/jitterc-scanner.h: jitterc/jitterc-scanner.c
+	echo '#include <config.h> /* Non-flex-generated line */' \
+	  | cat - "$@"_tmp > "$@" && \
+          rm "$@"_tmp
 
 
 # jitter C-code-generator program.
