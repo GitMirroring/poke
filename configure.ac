@@ -2,6 +2,7 @@
 ## to obtain a configure script.
 
 ## Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021 Luca Saiu
+## Copyright (C) 2021 pEp foundation (Android port)
 ## Written by Luca Saiu
 
 ## This file is part of Jitter.
@@ -1651,6 +1652,8 @@ AS_CASE([$host_os],
         [*elf*],
           [jitter_host_os_is_elf=yes],
         # Specific known-ELF systems.
+        [*linux-android*],
+          [jitter_host_os_is_elf=yes],
         # Do not add GNU systems as a special case: very old GNU/Linux systems
         # use non-ELF formats, and GNU is covered by the fallback case below in
         # any case.
@@ -1784,13 +1787,19 @@ if test "x$ac_cv_func_VirtualAlloc" = "xyes" \
 fi
 
 # ...and some other systems that are more difficult to match by the triplet.
+jitter_host_os_is_android='no'
 jitter_host_os_is_freebsd='no'
 jitter_host_os_is_openbsd='no'
 jitter_host_os_is_netbsd='no'
 AS_CASE([$host_os],
+        [*linux-android*], [jitter_host_os_is_android='yes'],
         [*freebsd*],  [jitter_host_os_is_freebsd='yes'],
         [*netbsd*],   [jitter_host_os_is_netbsd='yes'],
         [*openbsd*],  [jitter_host_os_is_openbsd='yes'])
+if test "x$jitter_host_os_is_android" = 'xyes'; then
+  AC_DEFINE_UNQUOTED([JITTER_HOST_OS_IS_ANDROID], [1],
+                     [Define to 1 iff the host system is android])
+fi
 if test "x$jitter_host_os_is_freebsd" = 'xyes'; then
   AC_DEFINE_UNQUOTED([JITTER_HOST_OS_IS_FREEBSD], [1],
                      [Define to 1 iff the host system is FreeBSD])

@@ -1,6 +1,7 @@
 /* Jitter: host configuration header to install.
 
    Copyright (C) 2017, 2019, 2020, 2021 Luca Saiu
+   Updated in 2021 by pEp foundation (JITTER_HOST_OS_IS_ANDROID)
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -158,6 +159,7 @@
 #undef JITTER_HOST_OS_IS_GNU
 #undef JITTER_HOST_OS_IS_GNU_HURD   /* FIXME: recognize this. */
 #undef JITTER_HOST_OS_IS_GNU_LINUX  /* FIXME: recognize this. */
+#undef JITTER_HOST_OS_IS_ANDROID
 #undef JITTER_HOST_OS_IS_FREEBSD
 #undef JITTER_HOST_OS_IS_NETBSD
 #undef JITTER_HOST_OS_IS_OPENBSD
