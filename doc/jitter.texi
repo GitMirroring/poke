@@ -1372,9 +1372,8 @@ Autoconf and Automake
 (@pxref{Top,,, autoconf, The GNU Autoconf Manual}
 and
 @ref{Top,,, automake, The GNU Automake Manual}).  It also uses
-Gnulib (@pxref{Top,,, libtool, The Gnulib Manual})
-for portability of the code-generating utility, but not in the
-generated C code, and
+Gnulib (@pxref{Top,,, libtool, The Gnulib Manual}) (@emph{only}
+for portability of the code-generating utility and examples), and
 GNU Libtool (@pxref{Top,,, libtool, The GNU Libtool Manual})
 for handling shared libraries.
 
@@ -4490,7 +4489,8 @@ Cross-compiling: configure with
 
 Configuring with @code{--disable-shared} will speed up builds.
 
-Why not using Gnulib in generated code.
+Why not using Gnulib in generated code or in the Jitter runtime
+library.
 
 I should find a good name for this software.  ``@file{vmgen}'', possibly
 the best choice, has already been taken by the GForth people for a

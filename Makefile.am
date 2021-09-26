@@ -181,6 +181,10 @@ lib_libgnulib__partial_la_LIBADD = \
 CPPFLAGS_FOR_GNULIB = -I$(top_builddir)/gnulib-local -I$(top_srcdir)/gnulib-local
 LDADD_FOR_GNULIB = lib/libgnulib--partial.la
 
+# Gnulib scrits tell me I should link with these libraries; the variables expand
+# to nothing on GNU, but they should be needed on some other system.
+LDADD_FOR_GNULIB += $(LIB_CLOCK_GETTIME) $(LIB_GETRANDOM) $(LTLIBINTL)
+
 # Allow everything but Gnulib to be built with a single-level Makefile, as I
 # prefer; the only recusrive make invokation we need is for building libgnulib .
 gnulib-local/libgnulib.la:
