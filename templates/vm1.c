@@ -29,6 +29,15 @@
 
 
 
+/* When we are using Gnulib the standard header files included below will in
+   fact be Gnulib replacements; make sure that the Gnulib macros are
+   recognised.
+   It is in fact possible that  HAVE_CONFIG_H  is defined even in other
+   contexts; it should be harmless to include config.h anyway. */
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif // #ifdef HAVE_CONFIG_H
+
 #include <assert.h>
 #include <string.h>
 

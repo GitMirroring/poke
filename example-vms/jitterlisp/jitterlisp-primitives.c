@@ -23,6 +23,9 @@
 #ifndef JITTERLISP_PRIMITIVES_H_
 #define JITTERLISP_PRIMITIVES_H_
 
+/* Include the Gnulib header. */
+#include <config.h>
+
 #include "jitterlisp-primitives.h"
 
 #include <string.h>
