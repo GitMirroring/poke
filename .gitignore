@@ -32,6 +32,8 @@ config.log
 autom4te.cache
 doc/stamp-vti
 doc/version.texi
+doc/jitter-config.1
+doc/jitter.1
 configure
 Makefile.in
 Makefile
@@ -147,6 +149,7 @@ example-vms/jitterlisp/examples/other-systems/
 example-vms/uninspired/examples/counter.lisp
 example-vms/uninspired/examples/counter.lua
 example-vms/uninspired/examples/scratch.vm
+machine/dummy
 
 # This may be the only thing I manually build in the source directory.
 example-vms/structured/examples/primes.class
@@ -155,6 +158,8 @@ example-vms/structured/examples/primes.class
 # computer, not belonging in the repository.
 ANALYSIS
 ANALYSIS-COMMAND-LINE
+BACKUP
+BACKUP-INCLUDING-BUILDS
 BACKUP-JITTER-DIRECTORY
 BACKUP-NOT-COMMITTED-2019-11-25.diff
 BACKUP-TO-EXTERNAL-DISK
