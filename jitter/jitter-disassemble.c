@@ -1,7 +1,6 @@
 /* VM library: native code disassembler.
 
-   Copyright (C) 2017, 2019, 2020 Luca Saiu
-   Updated in 2021 by Luca Saiu
+   Copyright (C) 2017, 2019, 2020, 2021 Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -264,9 +263,11 @@ jitter_disassemble_range_objdump (jitter_print_context output,
        previous_previous_previous_char = '\0';
   bool the_useful_part_has_started = false;
   enum disassemble_objdump_state state = disassemble_objdump_state_address;
+//fprintf (stderr, "Beginning the loop\n");
   while (   ! feof (objdump_output)
          && (c = fgetc (objdump_output)) != EOF)
     {
+//fprintf (stderr, "[%c %i]\n", c, c);
       /* Are we already past the first "\n0x" in the output from objdump? */
       if (the_useful_part_has_started)
         {
@@ -302,10 +303,12 @@ jitter_disassemble_range_objdump (jitter_print_context output,
       previous_previous_char = previous_char;
       previous_char = c;
     }
+//fprintf (stderr, "After the loop: c is [%c %i]\n", c, c);
 
   /* Close the pipe, and remove the temporary file.  We get the subprocess exit
      status from pclose. */
   int res = pclose (objdump_output);
+//fprintf (stderr, "res was %i\n", res);
   unlink (temporary_file_name); // !!! A useful line to disable when debugging.
   free (temporary_file_name);
 
