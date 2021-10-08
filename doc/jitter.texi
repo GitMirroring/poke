@@ -1201,7 +1201,9 @@ makes it easy to experiment with unusual runtime data structures,
 for example a Forth-style dual-stack architecture, the
 stack-plus-accumulator
 organization adopted by Caml bytecode, or Appel's ``Compiling with
-Continuations'' model relying on a fixed number of registers and
+Continuations'' model
+@bibref{Appel 1992}
+relying on a fixed number of registers and
 @emph{no stack}, with function activation
 records allocated on a garbage-collected heap.  Even C
 ABIs are only relevant when a Jittery VM calls external functions
@@ -3173,6 +3175,7 @@ jitter_gc_write_barrier_queue_flush_1 (struct jitter_gc_heaplet *a,
 * Register code generation::   Generating code for register VMs can still be easy.
 * Specific language features:: Suggestions for how to compile some language forms.
 * Specific runtime features::  Suggestions for how to handle runtime features.
+* Calling conventions::        Parameter and result passing should be efficient.
 @end menu
 
 @c @@@@@@@@@@@@@@@@@@@@@@@@
@@ -3232,6 +3235,11 @@ jitter_gc_write_barrier_queue_flush_1 (struct jitter_gc_heaplet *a,
 
 @fixme{Sometimes called dynamic dispatch, but nothing to do with VM dispatches}
 
+@c @@@@@@@@@@@
+@node Calling conventions
+@section Calling conventions
+
+@fixme{Give suggestions}
 
 @c @@@@@@@@@@@@@@@@@@@@@@@@
 @node Specific runtime features
@@ -4161,6 +4169,37 @@ The MIT Press, 2009.
 @bibend
 @end ignore
 
+@ignore
+@c FIXME: If I cite this, then I should also cite
+@c   garbage-collection-is-fast-but-stack-is-faster--miller--rozas--1994--aim-1462.pdf
+@bibbegin{Appel 1987}
+@cindex Andrew Appel
+@cindex Appel, Andrew
+@cindex garbage collection
+@cindex GC
+@cindex performance
+Andrew Appel.
+``Garbage Collection Can Be Faster Than Stack Allocation'',
+in @emph{Information Processing Letters}, Volume 25, Issue 4, 1987.
+@doi{10.1.1.84.2064}
+@bibend
+@end ignore
+
+@bibbegin{Appel 1992}
+@cindex Compiling with Continuations
+@cindex Andrew Appel
+@cindex Appel, Andrew
+@cindex CPS
+@cindex Continuation-Passing Style
+@cindex ML
+@cindex SML
+@cindex Standard ML
+Andrew Appel. ``Compiling with Continuations'', Cambridge University
+Press, New York, 1992.
+@*
+@fixme{comment}
+@bibend
+
 @bibbegin{Derick+ 1982}
 @cindex Derick, Mitch
 @cindex Mitch Derick
@@ -4169,7 +4208,7 @@ The MIT Press, 2009.
 @cindex Forth
 @cindex figForth
 @cindex Forth 79
-Mitch Derick, Linda Baker, ``FORTH encyclopedia --- The complete
+Mitch Derick, Linda Baker. ``FORTH encyclopedia --- The complete
 FORTH Programmer's manual'', second edition, Mountain View Press, 1982.
 @*
 A reference book on figForth and the slightly later Forth 79,
@@ -4179,8 +4218,8 @@ particularly useful to follow the details of the source code in
 @cindex Forth, old dialect
 @cindex Forth 79
 @cindex figForth
-@cindex @samp{CREATE} (old Forth dialects)
-@cindex @samp{<BUILDS} (old Forth dialects)
+@cindex @samp{CREATE} (in old Forth dialects)
+@cindex @samp{<BUILDS} (in old Forth dialects)
 The remarks about dialect incompatibilities are particularly useful
 to read such code today: a glaring example is
 Forth 79's @code{CREATE} behaving like figForth's @code{<BUILDS}, with
@@ -4363,7 +4402,7 @@ Forth implementation match fallthrough code in Jitter: in particular
 Rodriguez presents ``[t]he @code{NEXT} pseudo-code for direct
 threading'' as
 @smallexample
-(IP) -> V     @r{fetch memory pointed by IP into @samp{W} register}
+(IP) -> W     @r{fetch memory pointed by IP into @samp{W} register}
 IP + 2 -> IP  @r{advance @samp{IP} (assuming 2-byte addresses)}
 JP (W)        @r{jump to the address in the @samp{W} register}
 @end smallexample
