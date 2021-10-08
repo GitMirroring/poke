@@ -228,7 +228,16 @@ structured_translate_expression_variable (struct structuredvm_mutable_routine *v
       jitter_fatal ("unexpected variable expression result location: constant");
 
     case structured_location_case_temporary:
-      jitter_fatal ("unexpected variable expression result location: temporary");
+      {
+        /* This can happen in expressions such as
+             if x then 3 else x end
+           where either a non-variable or a variable is to be stored
+           in a temporary. */
+        structuredvm_mutable_routine_append_instruction_name (vmp, "mov");
+        STRUCTUREDVM_MUTABLE_ROUTINE_APPEND_REGISTER_PARAMETER (vmp, r, ri);
+        STRUCTUREDVM_MUTABLE_ROUTINE_APPEND_REGISTER_PARAMETER (vmp, r, rl->register_index);
+        break;
+      }
 
     default:
       jitter_fatal ("unexpected variable expression result location: unexpected (bug): %i",
