@@ -1956,7 +1956,7 @@ AC_ARG_ENABLE([jitter-test-suite],
               jitter_enable_test_suite="$default")
 if    ! test "x$jitter_enable_test_suite" = "xyes" \
    && ! test "x$jitter_enable_test_suite" = "xno"; then
-   AC_MSG_ERROR([invalid option argument for --enable-test-suite])
+   AC_MSG_ERROR([invalid option argument for --enable-jitter-test-suite])
 fi
 
 # Now we know if the test suite is enabled or not.  Define a substitution and
@@ -1975,7 +1975,7 @@ fi
 
 # Print a warning about skipped test cases if we can run the test suite but
 # Valgrind is disabled.
-if    test "x$JITTER_CAN_RUN_TESTSUITE" = "xyes" \
+if    test "x$jitter_enable_test_suite" = "xyes" \
    && test "x$JITTER_VALGRIND" = "x"; then
   AC_MSG_WARN([the test suite will skip Valgrind test cases])
 fi
