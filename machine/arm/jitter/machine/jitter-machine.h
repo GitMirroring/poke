@@ -1,7 +1,7 @@
 /* VM library: ARM definitions, to be included from both C and assembly.
 
    Copyright (C) 2017, 2018, 2019, 2020, 2021 Luca Saiu
-   Copyright (C) 2021 pEp foundation (_JITTER_ASM_CRASH)
+   Copyright (C) 2021 pEp foundation
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -74,5 +74,22 @@
   "mov r15, %[_jitter_the_target]"
 #define JITTER_ASM_COMPUTED_GOTO_INPUT_CONSTRAINT  \
   "r"
+
+
+
+
+/* Reserved registers.
+ * ************************************************************************** */
+
+// FIXME: not used yet.
+
+/* The following ARM registers have a special use:
+     r13 stack pointer
+     r14 link register
+     r15 program counter
+   The following registers are callee-save in the ABIs supoorted by Jitter and
+   suitable to be reserved:
+     FIXME: I do not know yet
+   */
 
 #endif // #ifndef JITTER_NATIVE_MACHINE_H_
