@@ -1,6 +1,5 @@
 ## Process this file with automake to produce Makefile.in .
-# Copyright (C) 2016, 2017, 2018, 2019, 2020 Luca Saiu
-# Updated in 2021 by Luca Saiu
+# Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021 Luca Saiu
 # Written by Luca Saiu
 
 # This file is part of the Jitter structured-language example,
@@ -140,7 +139,9 @@ EXTRA_DIST = \
   examples/count-down.structured \
   examples/count-primes.structured \
   examples/count-up-down.structured \
-  examples/euclid.structured \
+  examples/euclid-iterative.structured \
+  examples/euclid-recursive.structured \
+  examples/fibo.structured \
   examples/primes.structured \
   examples/count-primes.c \
   examples/primes.c \

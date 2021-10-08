@@ -168,7 +168,9 @@ EXTRA_DIST = \
   examples/count-down.structured \
   examples/count-primes.structured \
   examples/count-up-down.structured \
-  examples/euclid.structured \
+  examples/euclid-iterative.structured \
+  examples/euclid-recursive.structured \
+  examples/fibo.structured \
   examples/primes.structured \
   examples/count-primes.c \
   examples/primes.c \
