@@ -1382,6 +1382,7 @@ EXTRA_DIST += \
   example-vms/structured/examples/count-up-down.structured \
   example-vms/structured/examples/euclid-iterative.structured \
   example-vms/structured/examples/euclid-recursive.structured \
+  example-vms/structured/examples/even-odd.structured \
   example-vms/structured/examples/fibo.structured \
   example-vms/structured/examples/primes.structured \
   example-vms/structured/examples/count-primes.c \
