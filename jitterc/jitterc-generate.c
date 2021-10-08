@@ -1594,6 +1594,9 @@ jitterc_emit_stack_operation_definitions (FILE *f, const struct jitterc_vm *vm,
       jitterc_emit_stack_operation_definition (f, executor, stack, "push_unspecified", 0);
       jitterc_emit_stack_operation_definition (f, executor, stack, "push", 1);
 
+      jitterc_emit_stack_operation_definition (f, executor, stack, "under_push_unspecified", 0);
+      jitterc_emit_stack_operation_definition (f, executor, stack, "under_push", 1);
+
       jitterc_emit_stack_operation_definition (f, executor, stack, "drop", 0);
       jitterc_emit_stack_operation_definition (f, executor, stack, "dup", 0);
       jitterc_emit_stack_operation_definition (f, executor, stack, "swap", 0);

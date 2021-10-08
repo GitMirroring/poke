@@ -330,7 +330,7 @@ Right now the mode only provides font-locking support.
        1 font-lock-preprocessor-face t)
 
       ;; Highlight stack operation prefixes, for instruction bodies.
-      ("\\<\\(JITTER_\\(?:TOP\\|UNDER_TOP\\|AT_NONZERO_DEPTH\\|AT_DEPTH\\|AT_NONZERO_DEPTH\\|SET_AT_DEPTH\\|SET_AT_NONZERO_DEPTH\\|PUSH_UNSPECIFIED\\|PUSH\\|DROP\\|DUP\\|SWAP\\|QUAKE\\|OVER\\|TUCK\\|NIP\\|ROT\\|MROT\\|ROLL\\|MROLL\\|SLIDE\\|WHIRL\\|BULGE\\|UNARY\\|BINARY\\|REVERSE\\|HEIGHT\\|SET_HEIGHT\\)_\\)\\([A-Z]+\\)\\>"
+      ("\\<\\(JITTER_\\(?:TOP\\|UNDER_TOP\\|AT_NONZERO_DEPTH\\|AT_DEPTH\\|AT_NONZERO_DEPTH\\|SET_AT_DEPTH\\|SET_AT_NONZERO_DEPTH\\|PUSH_UNSPECIFIED\\|PUSH\\|UNDER_PUSH_UNSPECIFIED\\|UNDER_PUSH\\|DROP\\|DUP\\|SWAP\\|QUAKE\\|OVER\\|TUCK\\|NIP\\|ROT\\|MROT\\|ROLL\\|MROLL\\|SLIDE\\|WHIRL\\|BULGE\\|UNARY\\|BINARY\\|REVERSE\\|HEIGHT\\|SET_HEIGHT\\)_\\)\\([A-Z]+\\)\\>"
        (1 font-lock-preprocessor-face t)
        ;;(2 font-lock-variable-name-face t)
        )

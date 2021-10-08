@@ -1,7 +1,6 @@
 /* Jitter: Forth-style stacks with optional TOS optimization: header.
 
-   Copyright (C) 2017, 2018, 2019, 2020 Luca Saiu
-   Updated in 2021 by Luca Saiu
+   Copyright (C) 2017, 2018, 2019, 2020, 2021 Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -433,6 +432,66 @@ f678c044 39 ef 00 04    addi r15,r15,4
       JITTER_STACK_NTOS_PUSH_UNSPECIFIED(type, stack_container, name);    \
     }                                                                     \
   while (false)
+
+/* Expand to a statement pushing the given new element *under* the top of the
+   given stack, moving the current top one position up.
+   The stack effect of
+     underpush b
+   is
+     ( a -- b a )
+   The new element expression is evaluated only once.  Undefined behavior on
+   overflow.  There is no result.
+   Rationale:  underpush b  has the same behavious of  push b; swap  but is
+   much more efficient (in fact, even more efficient than push alone) with a
+   TOS-optimised stack.  The non-TOS-optimised case will not be particularly
+   efficient. */
+#define JITTER_STACK_TOS_UNDER_PUSH(type, stack_container, name, new_element)  \
+  do                                                                           \
+    {                                                                          \
+      const type _jitter_stack_new_element_temp = (new_element);               \
+      JITTER_STACK_TOS_UNDER_PUSH_UNSPECIFIED(type, stack_container, name);    \
+      JITTER_STACK_TOS_UNDER_TOP(type, stack_container, name)                  \
+        = _jitter_stack_new_element_temp;                                      \
+    }                                                                          \
+  while (false)
+#define JITTER_STACK_NTOS_UNDER_PUSH(type, stack_container, name, new_element)  \
+  do                                                                            \
+    {                                                                           \
+      const type _jitter_stack_new_element_temp = (new_element);                \
+      JITTER_STACK_NTOS_UNDER_PUSH_UNSPECIFIED(type, stack_container, name);    \
+      JITTER_STACK_NTOS_UNDER_TOP(type, stack_container, name)                  \
+        = _jitter_stack_new_element_temp;                                       \
+    }                                                                           \
+  while (false)
+
+/* Like underpush, but the value of the new element (right below the top after
+   the macro execution) is undefined.  The stack effect
+   of
+     underpush-unspecified
+   is
+     ( a -- ? a )
+   .  The TOS case is very efficient. */
+#define JITTER_STACK_TOS_UNDER_PUSH_UNSPECIFIED(type, stack_container, name)    \
+  do                                                                            \
+    {                                                                           \
+      /* Increment the under-top pointer; the top remains as it is; the new     \
+         element below the top is left unitialised. */                          \
+      JITTER_STACK_TOS_UNDER_TOP_POINTER_NAME(type, stack_container, name) ++;  \
+    }                                                                           \
+  while (false)
+#define JITTER_STACK_NTOS_UNDER_PUSH_UNSPECIFIED(type, stack_container, name)  \
+  do                                                                           \
+    {                                                                          \
+      /* Much more painful than the TOS case: load old top, increment, store   \
+         new top; and the store part depends on the load part. */              \
+      const type _jitter_stack_old_top_temp                                    \
+        = * JITTER_STACK_NTOS_TOP_POINTER_NAME(type, stack_container, name);   \
+      JITTER_STACK_NTOS_TOP_POINTER_NAME(type, stack_container, name) ++;      \
+      * JITTER_STACK_NTOS_TOP_POINTER_NAME(type, stack_container, name)        \
+       = _jitter_stack_old_top_temp;                                           \
+    }                                                                          \
+  while (false)
+
 
 /* A stack height should be treated like an abstract type, only to be used with
    JITTER_STACK_*_HEIGHT and JITTER_STACK_*_SET_HEIGHT .  It represents the
