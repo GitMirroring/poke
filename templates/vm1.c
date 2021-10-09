@@ -390,6 +390,13 @@ vmprefix_validate_threads_once (void)
    use. */
 jitter_uint
 vmprefix_replacement_table [VMPREFIX_SPECIALIZED_INSTRUCTION_NO];
+
+/* The defective-instruction array for this VM.  The first
+   defective_specialized_instruction_no elements of the array contain the
+   specialized_instruction_ids of defective instructions; the remaining elements
+   are set to -1.  This is initialised by jitter_fill_replacement_table . */
+jitter_int
+vmprefix_defective_specialized_instructions [VMPREFIX_SPECIALIZED_INSTRUCTION_NO];
 #endif // #if defined (JITTER_HAVE_DEFECT_REPLACEMENT)
 
 void
@@ -497,6 +504,7 @@ vmprefix_initialize (void)
          with a fixed size, this needs to be done only once. */
       jitter_fill_replacement_table
          (vmprefix_replacement_table,
+          vmprefix_defective_specialized_instructions,
           & the_vmprefix_vm,
           vmprefix_worst_case_replacement_table,
           vmprefix_call_related_specialized_instruction_ids,
@@ -506,6 +514,11 @@ vmprefix_initialize (void)
           (JITTER_DEFECT_DESCRIPTORS_SIZE_IN_BYTES_NAME (vmprefix)
            / sizeof (struct jitter_defect_descriptor)),
           JITTER_DEFECT_CORRECT_DISPLACEMENT_NAME (vmprefix));
+      the_vmprefix_vm.replacement_table = vmprefix_replacement_table;
+      the_vmprefix_vm.defective_specialized_instructions
+        = vmprefix_defective_specialized_instructions;
+      the_vmprefix_vm.specialized_instruction_call_relateds
+        = vmprefix_specialized_instruction_call_relateds;
 #else /* no defect replacement */
       /* In this configuration it is impossible to have defects: set every
          defect count to zero. */
@@ -513,6 +526,9 @@ vmprefix_initialize (void)
       the_vmprefix_vm.defective_specialized_instruction_no = 0;
       the_vmprefix_vm.defective_call_related_specialized_instruction_no = 0;
       the_vmprefix_vm.replacement_specialized_instruction_no = 0;
+      the_vmprefix_vm.replacement_table = NULL;
+      the_vmprefix_vm.defective_specialized_instructions = NULL;
+      the_vmprefix_vm.specialized_instruction_call_relateds = NULL;
 #endif // #if defined (JITTER_HAVE_DEFECT_REPLACEMENT)
 
       /* Initialize the empty list of states. */
@@ -559,6 +575,9 @@ vmprefix_initialize (void)
 # if 0
   jitter_dump_replacement_table (stderr, vmprefix_replacement_table,
                                  & the_vmprefix_vm);
+  jitter_dump_defects (stderr, vmprefix_defective_specialized_instructions,
+                       & the_vmprefix_vm,
+                       vmprefix_specialized_instruction_call_relateds);
 # endif
 #endif // #if defined (JITTER_HAVE_DEFECT_REPLACEMENT)
 #if defined (JITTER_HAVE_PATCH_IN)
@@ -974,6 +993,20 @@ void
 vmprefix_defect_print_summary (jitter_print_context cx)
 {
   jitter_defect_print_summary (cx, vmprefix_vm);
+}
+
+void
+vmprefix_defect_print (jitter_print_context cx,
+                       unsigned indentation_column_no)
+{
+  jitter_defect_print (cx, vmprefix_vm, indentation_column_no);
+}
+
+void
+vmprefix_defect_print_replacement_table (jitter_print_context cx,
+                                         unsigned indentation_column_no)
+{
+  jitter_defect_print_replacement_table (cx, vmprefix_vm, indentation_column_no);
 }
 
 

@@ -60,8 +60,8 @@ jitter_defect_print_summary (jitter_print_context cx,
                              const struct jitter_vm *vm)
 {
   int defect_no = vm->defect_no;
-  int defective_instruction_no = vm->defective_specialized_instruction_no;
-  int call_related_defective_instruction_no
+  int defective_specialized_instruction_no = vm->defective_specialized_instruction_no;
+  int call_related_defective_specialized_instruction_no
     = vm->defective_call_related_specialized_instruction_no;
   int replacement_no = vm->replacement_specialized_instruction_no;
 
@@ -85,11 +85,11 @@ jitter_defect_print_summary (jitter_print_context cx,
   JITTER_END_WARNING_;
   jitter_print_char_star (cx, " defects in ");
   JITTER_BEGIN_WARNING_;
-  jitter_print_int (cx, 10, defective_instruction_no);
+  jitter_print_int (cx, 10, defective_specialized_instruction_no);
   JITTER_END_WARNING_;
   jitter_print_char_star (cx, " specialized instructions (of which ");
   JITTER_BEGIN_WARNING_;
-  jitter_print_int (cx, 10, call_related_defective_instruction_no);
+  jitter_print_int (cx, 10, call_related_defective_specialized_instruction_no);
   JITTER_END_WARNING_;
   jitter_print_char_star (cx, " call-related), ");
   JITTER_BEGIN_WARNING_;
@@ -121,6 +121,95 @@ jitter_defect_print_summary (jitter_print_context cx,
 #undef JITTER_END_WARNING_
 }
 
+/* Print the name of the given specialised instruction name to the given print
+   context using the given class. */
+static void
+jitter_print_specialized_instruction_name (jitter_print_context cx,
+                                           const struct jitter_vm *vm,
+                                           jitter_print_decoration_name
+                                           class_name_suffix,
+                                           const jitter_int
+                                           specialized_instruction_opcode)
+{
+  const char *specialized_instruction_name
+    = vm->specialized_instruction_names [specialized_instruction_opcode];
+
+  jitter_defect_begin_class (cx, vm, class_name_suffix);
+  jitter_print_char_star (cx, specialized_instruction_name);
+  jitter_print_end_class (cx);
+#if 0
+  jitter_print_char_star (cx, " ");
+  jitter_defect_begin_class (cx, vm, class_name_suffix);
+  jitter_print_long (cx, 10, (long) specialized_instruction_opcode);
+  jitter_print_end_class (cx);
+#endif
+}
+
+/* Print the given number of spaces to the given output context, without
+   changing classes. */
+static void
+jitter_indent (jitter_print_context cx, unsigned column_no)
+{
+  int i;
+  for (i = 0; i < column_no; i ++)
+    jitter_print_char (cx, ' ');
+}
+
+void
+jitter_defect_print (jitter_print_context cx,
+                     const struct jitter_vm *vm,
+                     unsigned indentation_column_no)
+{
+  size_t defective_specialized_instruction_no
+    = vm->defective_specialized_instruction_no;
+  int i;
+  for (i = 0; i < defective_specialized_instruction_no; i ++)
+    {
+      int opcode = vm->defective_specialized_instructions [i];
+      jitter_indent (cx, indentation_column_no);
+      jitter_print_char_star (cx, "* ");
+      jitter_print_specialized_instruction_name (cx, vm, "warning", opcode);
+      jitter_print_char (cx, '\n');
+    }
+}
+
+void
+jitter_defect_print_replacement_table (jitter_print_context cx,
+                                       const struct jitter_vm *vm,
+                                       unsigned indentation_column_no)
+{
+  /* If the configuration does not support defect handling return immediately.
+     This is important, because otherwise we would try to access the elements of
+     vm->replacement_table when it is a NULL pointer. */
+#if ! defined (JITTER_HAVE_DEFECT_REPLACEMENT)
+  return;
+#else // defined (JITTER_HAVE_DEFECT_REPLACEMENT)
+  const bool *specialized_instruction_call_relateds
+    = vm->specialized_instruction_call_relateds;
+  size_t specialized_instruction_no = vm->specialized_instruction_no;
+  int opcode;
+  for (opcode = 0; opcode < specialized_instruction_no; opcode ++)
+    {
+      int replacement_opcode = vm->replacement_table [opcode];
+      if (opcode != replacement_opcode)
+        {
+          bool call_related = specialized_instruction_call_relateds [opcode];
+          jitter_indent (cx, indentation_column_no);
+          jitter_print_char_star (cx, "* ");
+          jitter_print_specialized_instruction_name (cx, vm, "warning", opcode);
+          jitter_print_char_star (cx, " -> ");
+          jitter_print_specialized_instruction_name (cx, vm, "comment",
+                                                     replacement_opcode);
+          if (call_related)
+            jitter_print_char_star (cx, " (call-related)");
+          jitter_print_char (cx, '\n');
+        }
+    }
+#endif
+}
+
+
+
 
 /* Conditional expansion: begin.
  * ************************************************************************** */
@@ -138,6 +227,7 @@ jitter_defect_print_summary (jitter_print_context cx,
 void
 jitter_fill_replacement_table
    (jitter_uint *replacement_table,
+    jitter_int *defective_specialized_instructions,
     struct jitter_vm *vm,
     const jitter_uint *worst_case_replacement_table,
     const jitter_uint *call_related_specialized_instruction_ids,
@@ -163,7 +253,10 @@ jitter_fill_replacement_table
      scan defect descriptors, and for every defect found mark the associated
      specialized instruction as to be replaced.  Of course one defect is enough
      to make a specialized instruction defective, even if the same specialized
-     instruction has other descriptors not encoding any defect. */
+     instruction has other descriptors not encoding any defect.
+     Also fill the first part of defective_specialized_instructions, which is
+     the part actually containing specialised instruction opcodes for defective
+     specialised instructions. */
   int defect_no = 0;
   int defective_no = 0;
   int call_related_defective_no = 0;
@@ -188,6 +281,11 @@ jitter_fill_replacement_table
               call_related_defective_no ++;
           }
         replacement_table [descs [i].specialized_opcode] = true;
+
+        /* Remember that this specialised instruction is in fact defective,
+           by adding its opcode to defective_specialized_instructions. */
+        defective_specialized_instructions [defective_no - 1]
+          = descs [i].specialized_opcode;
 #if 0
         fprintf (stderr,
                  "The specialized instruction %s is defective.\n",
@@ -195,6 +293,12 @@ jitter_fill_replacement_table
                     [descs [i].specialized_opcode]);
 #endif
       }
+
+  /* (Second-and-a-half pass: invalidate every remaining element of
+     defective_specialized_instructions by setting it to -1.) */
+  for (i = defect_no; i < specialized_instruction_no; i ++)
+    defective_specialized_instructions [i] = -1;
+  /* (We are now done with defective_specialized_instructions.) */
 
   /* Third pass: if any call-related instruction has been found to be defective
      then set them all to be replaced. */
@@ -296,7 +400,7 @@ jitter_fill_replacement_table
 
 
 
-/* Defect debugging.
+/* Defect debugging or printing.
  * ************************************************************************** */
 
 void
@@ -324,6 +428,32 @@ jitter_dump_replacement_table (FILE *f,
     }
   if (defective_count > 0)
     fprintf (f, "Replaced %i specialized instructions.\n", defective_count);
+}
+
+void
+jitter_dump_defects (FILE *f,
+                     const jitter_int *defective_specialized_instructions,
+                     const struct jitter_vm *vm,
+                     const bool *specialized_instruction_call_relateds)
+{
+  const char * const * specialized_instruction_names
+    = vm->specialized_instruction_names;
+  jitter_uint i;
+  for (i = 0; i < vm->defect_no; i ++)
+    {
+      jitter_int opcode = defective_specialized_instructions [i];
+      if (opcode < 0)
+        jitter_fatal ("defective_specialized_instructions [%i] < 0: this "
+                      "should never happen", (int) opcode);
+      if (opcode >= vm->specialized_instruction_no)
+        jitter_fatal ("defective_specialized_instructions [%i] >= "
+                      "specialized_instruction_no : this should never happen",
+                      (int) opcode);
+      bool call_related = specialized_instruction_call_relateds [opcode];
+      fprintf (f, "%s %i%s\n",
+               specialized_instruction_names [opcode], (int) opcode,
+               (call_related ? " (call-related)" : ""));
+    }
 }
 
 

@@ -908,6 +908,14 @@ vmprefix_vm_configuration;
 void
 vmprefix_defect_print_summary (jitter_print_context cx)
   __attribute__ ((nonnull (1)));
+void
+vmprefix_defect_print (jitter_print_context cx,
+                       unsigned indentation_column_no)
+  __attribute__ ((nonnull (1)));
+void
+vmprefix_defect_print_replacement_table (jitter_print_context cx,
+                                         unsigned indentation_column_no)
+  __attribute__ ((nonnull (1)));
 
 /* Profiling.  Apart from vmprefix_state_profile, which returns a pointer to
    the profile within a pointed state structure, everything else here has the
@@ -1032,6 +1040,13 @@ vmprefix_make_place_for_slow_registers (struct vmprefix_state *s,
    one element per specialised instruction. */
 extern const jitter_uint
 vmprefix_worst_case_replacement_table [];
+
+/* An array whose first defective_specialized_instruction_no elements contain
+   the specialized_instruction_ids of defective instructions; the remaining
+   elements are set to -1.  This array is initialised by
+   jitter_fill_replacement_table . */
+extern jitter_int
+vmprefix_defective_specialized_instructions [];
 
 /* The actual replacement table, to be filled at initialization time. */
 extern jitter_uint

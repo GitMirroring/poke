@@ -66,11 +66,20 @@
 /* Command line handling.
  * ************************************************************************** */
 
+/* The way to print defects. */
+enum vmprefix_print_defects_how
+  {
+    vmprefix_print_defects_how_summary,
+    vmprefix_print_defects_how_list,
+    vmprefix_print_defects_how_replacements,
+    vmprefix_print_defects_how_no
+  };
+
 /* All the information encoded by the user in the command line. */
 struct vmprefix_main_command_line
 {
   bool debug;
-  bool print_defects;
+  enum vmprefix_print_defects_how print_defects;
   bool profile_specialized;
   bool profile_unspecialized;
   bool progress_on_stderr;
@@ -143,7 +152,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       cl->debug = false;
       cl->progress_on_stderr = false;
       cl->print_locations = false;
-      cl->print_defects = false;
+      cl->print_defects = vmprefix_print_defects_how_no;
       cl->profile_specialized = false;
       cl->profile_unspecialized = false;
       cl->print_routine = false;
@@ -215,7 +224,18 @@ parse_opt (int key, char *arg, struct argp_state *state)
       cl->print_locations = true;
       break;
     case vmprefix_vm_long_only_option_print_defects:
-      cl->print_defects = true;
+      if      (! strcmp (arg, "summary"))
+        cl->print_defects = vmprefix_print_defects_how_summary;
+      else if (! strcmp (arg, "list"))
+        cl->print_defects = vmprefix_print_defects_how_list;
+      else if (! strcmp (arg, "replacements"))
+        cl->print_defects = vmprefix_print_defects_how_replacements;
+      else if (! strcmp (arg, "no"))
+        cl->print_defects = vmprefix_print_defects_how_no;
+      else
+        argp_error (state, "invalid --print-defects argument \"%s\": "
+                    "not one of \"summary\", \"list\", "
+                    "\"replacements\", \"no\".", arg);
       break;
     case vmprefix_vm_long_only_option_profile_specialized:
       cl->profile_specialized = true;
@@ -233,7 +253,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       cl->print_routine = false;
       break;
     case vmprefix_vm_negative_option_no_print_defects:
-      cl->print_defects = false;
+      cl->print_defects = vmprefix_print_defects_how_no;
       break;
     case vmprefix_vm_negative_option_no_profile_specialized:
       cl->profile_specialized = false;
@@ -386,8 +406,13 @@ static struct argp_option vmprefix_main_option_specification[] =
    {"progress-on-stderr", 'e', NULL, 0,
     "Show progress information on stderr instead of stdout"},
    {"debug", 'd', NULL, 0, "Enable debugging" },
-   {"print-defects", vmprefix_vm_long_only_option_print_defects, NULL, 0,
-    "Print defect and replacement information"},
+   {"print-defects", vmprefix_vm_long_only_option_print_defects, "HOW", 0,
+    "Print information about defective instructions.  HOW can be "
+    "\"summary\" (only show the number of defect and replacement counts), "
+    "\"list\" (show which specialised instructions are defective), "
+    "\"replacements\" (show which specialised instructions replaces which), "
+    "\"no\" (print nothing).  "
+    "Default: no"},
    {"profile-specialized", vmprefix_vm_long_only_option_profile_specialized,
     NULL, 0,
     "Print VM specialised instruction profiling information, if configured in"},
@@ -421,7 +446,8 @@ static struct argp_option vmprefix_main_option_specification[] =
    {"no-debug", vmprefix_vm_negative_option_no_debug,
     NULL, 0, "Disable debugging (default)"},
    {"no-print-defects", vmprefix_vm_negative_option_no_print_defects, NULL, 0,
-    "Don't print defect and replacement information (default)"},
+    "Don't print defect and replacement information, as with "
+    "--print-defects=no (default)"},
    {"no-profile-specialized", vmprefix_vm_negative_option_no_profile_specialized,
     NULL, 0, "Disable specialized instruction profiling (default)"},
    {"no-profile-unspecialized", vmprefix_vm_negative_option_no_profile_unspecialized,
@@ -508,6 +534,22 @@ static struct argp argp =
 
 /* Main function.
  * ************************************************************************** */
+
+/* Print a heading.  This is useful for defects. */
+static void
+vmprefix_print_heading (jitter_print_context ctx, const char *heading)
+{
+  jitter_print_begin_class (ctx, "vmprefix-comment");
+  if (vmprefix_vm->defect_no == 0)
+    jitter_print_char_star (ctx, "No defects.");
+  else
+    {
+      jitter_print_char_star (ctx, heading);
+      jitter_print_char_star (ctx, ":");
+    }
+  jitter_print_end_class (ctx);
+  jitter_print_char_star (ctx, "\n");
+}
 
 int
 main (int argc, char **argv)
@@ -614,8 +656,28 @@ main (int argc, char **argv)
   struct vmprefix_executable_routine *er
     = vmprefix_make_executable_routine (r);
 
-  if (cl.print_defects)
-    vmprefix_defect_print_summary (ctx);
+  /* Print defect information. */
+  switch (cl.print_defects)
+    {
+    case vmprefix_print_defects_how_summary:
+      /* Do not print a heading line: this report is meant to be compact. */
+      vmprefix_defect_print_summary (ctx);
+      break;
+    case vmprefix_print_defects_how_list:
+      vmprefix_print_heading (ctx, "Defects");
+      vmprefix_defect_print (ctx, 0);
+      break;
+    case vmprefix_print_defects_how_replacements:
+      vmprefix_print_heading (ctx, "Defect replacements");
+      vmprefix_defect_print_replacement_table (ctx, 0);
+      break;
+    case vmprefix_print_defects_how_no:
+      /* Print nothing. */
+      break;
+    default:
+      jitter_fatal ("invalid value for cl.print_defects: this should never "
+                    "happen");
+    }
 
   if (cl.print_routine)
     {

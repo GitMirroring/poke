@@ -188,6 +188,18 @@ struct jitter_vm
      Defined unconditionally: see above. */
   int replacement_specialized_instruction_no;
 
+  /* The defective-instruction array for this VM.  See the comment about
+     vmprefix_defective_instructions in templates/vm.h . */
+  jitter_int *defective_specialized_instructions;
+
+  /* For each index this array contains true iff the specialised instruction
+     with the index as specialised opcode is call-related. */
+  const bool *specialized_instruction_call_relateds;
+
+  /* The replacement table for this VM.  See the comment about
+     vmprefix_replacement_table in templates/vm.h . */
+  jitter_uint *replacement_table;
+
   const bool *specialized_instruction_relocatables;
   const bool *specialized_instruction_callers;
   const bool *specialized_instruction_callees;

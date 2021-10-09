@@ -229,16 +229,23 @@ struct jitter_defect_descriptor
 struct jitter_vm;
 
 /* Given a pointer to the VM struct, an initial pointer to the defect descriptor
-   array, the number of defects descriptors, a pointer to the worst-case
-   defect table and the correct displacement initialize the pointed defect
-   table.
-   The defect table is a global, already existing for any given VM, which only
-   needs to be initialized once even if a VM subsystem is finalized and
-   re-initialized multiple times.
+   array, a pointer to the defective-instruction array, the number of defects
+   descriptors, a pointer to the worst-case defect table and the correct
+   displacement initialize the pointed defect table and the
+   defective-instruction array.
+   In the defective-instruction array the first
+   defective_specialized_instruction_no elements are initialised to contain the
+   specialized_instruction_ids of defective instructions; the remaining elements
+   are set to -1.
+   The replacement table is a global, already existing for any given VM, which
+   only needs to be initialized once even if a VM subsystem is finalized and
+   re-initialized multiple times; the same holds for the
+   defective_specialized_instructions table.
    Also set the defect fields in the pointed VM struct. */
 void
 jitter_fill_replacement_table
    (jitter_uint *replacement_table,
+    jitter_int *defective_specialized_instructions,
     struct jitter_vm *vm,
     const jitter_uint *worst_case_replacement_table,
     const jitter_uint *call_related_specialized_instruction_ids,
@@ -247,12 +254,12 @@ jitter_fill_replacement_table
     const struct jitter_defect_descriptor *descs,
     size_t desc_no,
     jitter_int correct_displacement)
-  __attribute__ ((nonnull (1, 2, 3, 4, 6, 7)));
+  __attribute__ ((nonnull (1, 2, 3, 4, 5, 7, 8)));
 
 
 
 
-/* Defect debugging and printing.
+/* Defect debugging.
  * ************************************************************************** */
 
 /* Dump the pointed replacement table to the given stream. */
@@ -262,6 +269,22 @@ jitter_dump_replacement_table (FILE *f,
                                const struct jitter_vm *vm)
   __attribute__ ((nonnull (1, 2, 3)));
 
+/* Dump the pointed defective specialised instruction id array to the given
+   stream.  The given call-relatedness data and VM struct pointer must belong
+   to the same VM as the defective_specialized_instructions array. */
+void
+jitter_dump_defects (FILE *f,
+                     const jitter_int *defective_specialized_instructions,
+                     const struct jitter_vm *vm,
+                     const bool *specialized_instruction_call_relateds)
+  __attribute__ ((nonnull (1, 2, 3)));
+
+
+
+
+
+/* Defect printing.
+ * ************************************************************************** */
 
 /* Print compact information about defects for the pointed VM to the given print
    context.  This uses the following classes, where "vmprefix" is replaced by
@@ -274,6 +297,24 @@ jitter_dump_replacement_table (FILE *f,
 void
 jitter_defect_print_summary (jitter_print_context cx,
                              const struct jitter_vm *vm)
+  __attribute__ ((nonnull (1, 2)));
+
+/* Print human-readable information about defective instructions for the pointed
+   VM, using the given print context, indented by the given number of
+   characters.  This uses the same classes as the function above. */
+void
+jitter_defect_print (jitter_print_context cx,
+                     const struct jitter_vm *vm,
+                     unsigned indentation_column_no)
+  __attribute__ ((nonnull (1, 2)));
+
+/* Print the replacement table for the pointed VM in human-readable form, using
+   the given print context, indented by the given number of characters.  This
+   uses the same classes as the function above. */
+void
+jitter_defect_print_replacement_table (jitter_print_context cx,
+                                       const struct jitter_vm *vm,
+                                       unsigned indentation_column_no)
   __attribute__ ((nonnull (1, 2)));
 
 #endif // JITTER_DEFECT_H_
