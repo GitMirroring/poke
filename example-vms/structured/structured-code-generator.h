@@ -138,4 +138,49 @@ structured_temporary
 structured_static_environment_fresh_temporary
    (struct structured_static_environment *e);
 
+/* Return the number of registers used.  This assumes that registers are
+   allocated consecutively, and that if N registers are in use then the
+   highest-index register in use will have index N - 1. */
+size_t
+structured_static_environment_used_register_no
+   (struct structured_static_environment *e);
+
+/* Bind a procedure with the given name in the static environment to the given
+   label. */
+void
+structured_static_environment_bind_procedure
+   (struct structured_static_environment *e,
+    char *procedure_name,
+    structuredvm_label label_non_tail_recursive,
+    structuredvm_label label_tail_recursive,
+    size_t arity);
+
+/* Return non-false iff the pointed static environment contains a binding for
+   the pointed procedure name. */
+bool
+structured_static_environment_has_procedure
+   (struct structured_static_environment *e,
+    char *procedure_name);
+
+/* Return the label associated to the pointed procedure name in the pointed
+   static environment, or fail fatally if no association exists. */
+structuredvm_label
+structured_static_environment_lookup_procedure
+   (struct structured_static_environment *e,
+    char *procedure_name);
+
+/* Same as structured_static_environment_lookup_procedure , but return the
+   program point meant for tail calls. */
+structuredvm_label
+structured_static_environment_lookup_procedure_tail
+   (struct structured_static_environment *e,
+    char *procedure_name);
+
+/* Return the arity of the given procedure.  Fail fatally if the procedure
+   is not defined.*/
+size_t
+structured_static_environment_lookup_procedure_arity
+   (struct structured_static_environment *e,
+    char *procedure_name);
+
 #endif // #ifndef STRUCTURED_CODE_GENERATOR_H_

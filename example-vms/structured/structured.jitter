@@ -35,7 +35,7 @@ register-class r
   c-type "union jitter_word"
   c-initial-value "(union jitter_word) {.fixnum = 0}"
   long-name "general-register"
-  fast-register-no 0 #5
+  fast-register-no 0 #3 #0 #5
   slow-registers
 end
 
@@ -117,6 +117,12 @@ end
 instruction drop-stack ()
   code
     JITTER_DROP_MAINSTACK();
+  end
+end
+
+instruction push-unspecified-stack ()
+  code
+    JITTER_PUSH_UNSPECIFIED_MAINSTACK();
   end
 end
 
@@ -448,6 +454,47 @@ end
 #   end
 # end
 
+# This is useful for binding the next parameter in a callee, without touching
+# the return address at the top.
+instruction underpop-stack (!R)
+  code
+    JITTER_ARGN0 = JITTER_UNDER_TOP_MAINSTACK();
+    JITTER_NIP_MAINSTACK();
+  end
+end
+
+# This is useful for passing parameters to a tail call, without disturbing the
+# (old) return address on the top.
+instruction underpush-stack (?Rn)
+  code
+    JITTER_UNDER_PUSH_MAINSTACK(JITTER_ARGN0);
+  end
+end
+
+# Return to the return address, which is at the undertop at the beginning of
+# the instruction, and nip, leaving the procedure result on the top.
+instruction return-to-undertop ()
+  returning
+  code
+    structuredvm_label return_address = JITTER_UNDER_TOP_MAINSTACK();
+    JITTER_NIP_MAINSTACK();
+    JITTER_RETURN (return_address);
+  end
+end
+
+instruction procedure-prolog ()
+  callee
+  code
+    JITTER_PUSH_MAINSTACK ((jitter_uint) JITTER_LINK);
+  end
+end
+
+instruction call (?f)
+  caller
+  code
+    JITTER_BRANCH_FAST_AND_LINK (JITTER_ARGF0);
+  end
+end
 
 ## Register instructions.
 #################################################################

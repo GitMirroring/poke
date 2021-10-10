@@ -1,6 +1,6 @@
 /* Jittery structured language example: code generator common machinery.
 
-   Copyright (C) 2107, 2019 Luca Saiu
+   Copyright (C) 2017, 2019, 2021 Luca Saiu
    Written by Luca Saiu
 
    This file is part of the Jitter structured-language example, distributed
@@ -63,6 +63,24 @@ struct structured_binding
   structured_register_index register_index;
 };
 
+/* Compile-time informations about a procedure. */
+struct structured_procedure_binding
+{
+  /* A procedure name.  malloc-allocated, from the parser. */
+  char *procedure_name;
+
+  /* A program point: the beginning of the procedure, right before the
+     callee instruction. */
+  structuredvm_label label;
+
+  /* A program point: the instruction where a caller should jump to in a tail
+     call. */
+  structuredvm_label label_tail;
+
+  /* The number of arguments. */
+  size_t arity;
+};
+
 /* A static environment structure contains a datum-to-register-index
    mapping.  This is used as an abstract type, the actual definition
    being in structured-code-generator.h */
@@ -76,6 +94,11 @@ struct structured_static_environment
   /* The next unused temporary.  This is used to sequentially generate fresh
      temporary names.  Temporary names are not reused. */
   structured_temporary next_temporary;
+
+  /* A dynamic array of struct structured_procedure_binding elements.  This
+     is used as a stack, with the top on the right (high indices) at the bottom
+     on the left (low indices). */
+  struct jitter_dynamic_buffer procedure_bindings;
 };
 
 
@@ -90,6 +113,7 @@ structured_static_environment_initialize (struct structured_static_environment *
 {
   jitter_dynamic_buffer_initialize (& e->bindings);
   e->next_temporary = 0;
+  jitter_dynamic_buffer_initialize (& e->procedure_bindings);
 }
 
 /* Finalize the pointed static-environment struct, without freeing the struct
@@ -98,6 +122,7 @@ static void
 structured_static_environment_finalize (struct structured_static_environment *e)
 {
   jitter_dynamic_buffer_finalize (& e->bindings);
+  jitter_dynamic_buffer_finalize (& e->procedure_bindings);
 }
 
 struct structured_static_environment*
@@ -176,6 +201,26 @@ structured_static_environment_pop_binding (struct structured_static_environment
 {
   jitter_dynamic_buffer_pop (& e->bindings,
                              sizeof (struct structured_binding));
+}
+
+/* Bind a procedure with the given name in the static environment to the given
+   labels. */
+void
+structured_static_environment_bind_procedure
+   (struct structured_static_environment *e,
+    char *procedure_name,
+    structuredvm_label label,
+    structuredvm_label label_tail,
+    size_t arity)
+{
+  struct structured_procedure_binding pb;
+  pb.procedure_name = procedure_name;
+  pb.label = label;
+  pb.label_tail = label_tail;
+  pb.arity = arity;
+  jitter_dynamic_buffer_push (& e->procedure_bindings,
+                              & pb,
+                              sizeof (struct structured_procedure_binding));
 }
 
 
@@ -326,13 +371,12 @@ structured_static_environment_lookup_temporary
   jitter_fatal ("unbound temporary %i", (int) t);
 }
 
-structured_register_index
-structured_static_environment_fresh_register (struct
-                                              structured_static_environment *e)
+static structured_register_index
+structured_static_environment_highest_register_index_in_use
+  (struct structured_static_environment *e)
 {
-  /* First pass: look for the highest-index currently used register.  Notice
-     that highest must be signed, as I need to initialize the maximum to -1.
-     See the comment below. */
+  /* Look for the highest-index currently used register.  Notice that highest
+     must be signed, as I need to initialize the maximum to -1. */
   structured_register_index highest = -1;
   size_t binding_no = structured_static_environment_to_binding_no (e);
   struct structured_binding *bindings
@@ -342,14 +386,29 @@ structured_static_environment_fresh_register (struct
     if (bindings [i].register_index > highest)
       highest = bindings [i].register_index;
 
+  return highest;
+}
+
+structured_register_index
+structured_static_environment_fresh_register (struct
+                                              structured_static_environment *e)
+{
+  /* First pass: look for the highest-index currently used register. */
+  structured_register_index highest
+    = structured_static_environment_highest_register_index_in_use (e);
+
   /* Second pass: make a boolean array indexed by register indices, saying which
      register is being used, and fill it.  The result we are looking for will be
      highest + 1, or smaller; therefore highest + 2 is a safe array size.
      Notice that if no register is being used at this time then highest will be -1,
      and array_size will be 1: there's no need for a special case. */
+  size_t binding_no = structured_static_environment_to_binding_no (e);
+  struct structured_binding *bindings
+    = structured_static_environment_to_bindings (e);
   size_t array_size = highest + 2;
   bool *used_registers = jitter_xmalloc (array_size * sizeof (bool));
   memset (used_registers, 0, array_size * sizeof (bool));
+  int i;
   for (i = 0; i < binding_no; i ++)
     used_registers [bindings [i].register_index] = true;
 
@@ -368,4 +427,77 @@ structured_static_environment_fresh_temporary
    (struct structured_static_environment *e)
 {
   return e->next_temporary ++;
+}
+
+size_t
+structured_static_environment_used_register_no
+   (struct structured_static_environment *e)
+{
+  return structured_static_environment_highest_register_index_in_use (e) + 1;
+}
+
+
+bool
+structured_static_environment_has_procedure
+   (struct structured_static_environment *e,
+    char *procedure_name)
+{
+  size_t procedure_binding_no = (e->procedure_bindings.used_size
+                                 / sizeof (struct structured_procedure_binding));
+  struct structured_procedure_binding *bindings
+    = (struct structured_procedure_binding *) e->procedure_bindings.region;
+  int i;
+  for (i = 0; i < procedure_binding_no; i ++)
+    if (! strcmp (bindings [i].procedure_name, procedure_name))
+      return true;
+  return false;
+}
+
+/* The common factor of structured_static_environment_lookup_procedure and
+   structured_static_environment_lookup_procedure_tail, returning a pointer to
+   the internal binding. */
+static struct structured_procedure_binding *
+structured_static_environment_lookup_procedure_helper
+   (struct structured_static_environment *e,
+    char *procedure_name)
+{
+  size_t procedure_binding_no = (e->procedure_bindings.used_size
+                                 / sizeof (struct structured_procedure_binding));
+  struct structured_procedure_binding *bindings
+    = (struct structured_procedure_binding *) e->procedure_bindings.region;
+  int i;
+  for (i = 0; i < procedure_binding_no; i ++)
+    if (! strcmp (bindings [i].procedure_name, procedure_name))
+      return bindings + i;
+  jitter_fatal ("unbound procedure %s", procedure_name);
+}
+
+structuredvm_label
+structured_static_environment_lookup_procedure
+   (struct structured_static_environment *e,
+    char *procedure_name)
+{
+  struct structured_procedure_binding *binding
+    = structured_static_environment_lookup_procedure_helper (e, procedure_name);
+  return binding->label;
+}
+
+structuredvm_label
+structured_static_environment_lookup_procedure_tail
+   (struct structured_static_environment *e,
+    char *procedure_name)
+{
+  struct structured_procedure_binding *binding
+    = structured_static_environment_lookup_procedure_helper (e, procedure_name);
+  return binding->label_tail;
+}
+
+size_t
+structured_static_environment_lookup_procedure_arity
+   (struct structured_static_environment *e,
+    char *procedure_name)
+{
+  struct structured_procedure_binding *binding
+    = structured_static_environment_lookup_procedure_helper (e, procedure_name);
+  return binding->arity;
 }

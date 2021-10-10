@@ -1,3 +1,4 @@
+#include <assert.h>
 /* Jittery structured language example: register-based code generator.
 
    Copyright (C) 2017, 2018, 2019 Luca Saiu
@@ -104,6 +105,23 @@ struct structured_location
 #define STRUCTURED_LOCATION_REGISTER(register_idx)                         \
   { .case_ = structured_location_case_register, .register_index = (register_idx) }
 
+/* If the pointed location, active on the pointed environment, is anywhere
+   or nonconstant, change it to be a temporary.  This serves to be sure that
+   the location can be used as an operand after the call. */
+static void
+structured_conctetize_location (struct structured_static_environment *env,
+                                struct structured_location *l)
+{
+  if (l->case_ == structured_location_case_anywhere
+      || l->case_ == structured_location_case_nonconstant)
+    {
+      l->case_ = structured_location_case_temporary;
+      l->temporary = structured_static_environment_fresh_temporary (env);
+      l->register_index
+        = structured_static_environment_bind_temporary (env, l->temporary);
+    }
+}
+
 /* Mark the fact that the pointed location has been used.  This does nothing if
    the location is anything but a temporary.  If the location is a temporary,
    unbind it.
@@ -127,17 +145,19 @@ structured_consume_location (struct structured_static_environment *env,
    the pointed VM routine. */
 static void
 structured_emit_operand (struct structuredvm_mutable_routine *vmp,
-                         const struct structured_location *l)
+                         struct structured_static_environment *env,
+                         struct structured_location *l)
 {
+  structured_conctetize_location (env, l);
+
   switch (l->case_)
     {
-    // FIXME: shall I support this case, and just decide the location late?
+    /* The following two cases are impossible if structured_conctetize_location
+       has done its job. */
     case structured_location_case_anywhere:
-      jitter_fatal ("invalid instruction operand: anywhere");
-
-    // FIXME: shall I support this case, and just decide the location late?
+      jitter_fatal ("invalid instruction operand: anywhere (impossible)");
     case structured_location_case_nonconstant:
-      jitter_fatal ("invalid instruction operand: nonconstant");
+      jitter_fatal ("invalid instruction operand: nonconstant (impossible)");
 
     case structured_location_case_register:
     case structured_location_case_temporary:
@@ -230,7 +250,7 @@ structured_translate_expression_variable (struct structuredvm_mutable_routine *v
     case structured_location_case_temporary:
       {
         /* This can happen in expressions such as
-             if x then 3 else x end
+             if EXP then 3 else x end
            where either a non-variable or a variable is to be stored
            in a temporary. */
         structuredvm_mutable_routine_append_instruction_name (vmp, "mov");
@@ -250,7 +270,8 @@ static void
 structured_translate_expression (struct structuredvm_mutable_routine *vmp,
                                  struct structured_location *rl,
                                  struct structured_expression *e,
-                                 struct structured_static_environment *env);
+                                 struct structured_static_environment *env,
+                                 bool tail);
 
 
 /* Emit one opcode, without the operands, for the given non-conditional
@@ -326,10 +347,10 @@ structured_translate_expression_non_conditional_primitive
   struct structured_location o0l = STRUCTURED_LOCATION_ANYWHERE;
   struct structured_location o1l = STRUCTURED_LOCATION_ANYWHERE;
   if (operand_0 != NULL)
-    structured_translate_expression (vmp, &o0l, operand_0, env);
+    structured_translate_expression (vmp, &o0l, operand_0, env, false);
   if (operand_1 != NULL)
     {
-      structured_translate_expression (vmp, &o1l, operand_1, env);
+      structured_translate_expression (vmp, &o1l, operand_1, env, false);
       structured_consume_location (env, & o1l);
     }
   if (operand_0 != NULL)
@@ -337,23 +358,16 @@ structured_translate_expression_non_conditional_primitive
 
   /* The result of the primitive will go to a temporary if no specific location
      was requested. */
-  if (rl->case_ == structured_location_case_anywhere
-      || rl->case_ == structured_location_case_nonconstant)
-    {
-      rl->case_ = structured_location_case_temporary;
-      rl->temporary = structured_static_environment_fresh_temporary (env);
-      rl->register_index
-        = structured_static_environment_bind_temporary (env, rl->temporary);
-    }
+  structured_conctetize_location (env, rl);
 
   /* Give the two operand results, or the one operand result, as operands of
      the primitive instruction. */
   structured_translate_non_conditional_primitive_opcode (vmp, case_);
   if (operand_0 != NULL)
-    structured_emit_operand (vmp, & o0l);
+    structured_emit_operand (vmp, env, & o0l);
   if (operand_1 != NULL)
-    structured_emit_operand (vmp, & o1l);
-  structured_emit_operand (vmp, rl);
+    structured_emit_operand (vmp, env, & o1l);
+  structured_emit_operand (vmp, env, rl);
 }
 
 /* Translate a conditional primitive used to materialize a result rather than
@@ -395,14 +409,124 @@ structured_translate_expression_conditional_primitive
   structured_translate_conditional (vmp, e, false_comparison, false, env);
   structuredvm_mutable_routine_append_instruction_name (vmp, "mov");
   structuredvm_mutable_routine_append_signed_literal_parameter (vmp, 1);
-  structured_emit_operand (vmp, rl);
+  structured_emit_operand (vmp, env, rl);
   structuredvm_mutable_routine_append_instruction_name (vmp, "b");
   structuredvm_mutable_routine_append_label_parameter (vmp, after);
   structuredvm_mutable_routine_append_label (vmp, false_comparison);
   structuredvm_mutable_routine_append_instruction_name (vmp, "mov");
   structuredvm_mutable_routine_append_signed_literal_parameter (vmp, 0);
-  structured_emit_operand (vmp, rl);
+  structured_emit_operand (vmp, env, rl);
   structuredvm_mutable_routine_append_label (vmp, after);
+}
+
+/* Emit instruction to save the given number of registers, starting from index
+   0, consecutively. */
+static void
+structured_emit_save_registers (structuredvm_routine vmp,
+                                size_t register_no)
+{
+  int i;
+  for (i = 0; i < register_no; i ++)
+    {
+      STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, push_mstack);
+      STRUCTUREDVM_ROUTINE_APPEND_REGISTER_PARAMETER(vmp, r, i);
+    }
+}
+
+/* Emit instruction to restore the given number of registers, starting from
+   index 0, consecutively; the generated code pops register values off the stack
+   in reversed order compared to the code generated by
+   structured_emit_save_registers .  Notice that the top is not popped, because
+   that is supposed to contain the procedure result. */
+static void
+structured_emit_restore_registers (structuredvm_routine vmp,
+                                   size_t register_no)
+{
+  int i;
+  for (i = register_no - 1; i >= 0; i --)
+    {
+      STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, underpop_mstack);
+      STRUCTUREDVM_ROUTINE_APPEND_REGISTER_PARAMETER(vmp, r, i);
+    }
+}
+
+static void
+structured_translate_call (structuredvm_routine vmp,
+                           struct structured_location *rl,
+                           char *callee_name,
+                           struct structured_expression **actuals,
+                           size_t actual_no,
+                           bool drop_result,
+                           struct structured_static_environment *env,
+                           bool tail)
+{
+  /* Check arity. */
+  size_t formal_no
+    = structured_static_environment_lookup_procedure_arity (env, callee_name);
+  if (actual_no != formal_no)
+    jitter_fatal ("%s called with %i arguments (expected %i)",
+                  callee_name, (int) actual_no, (int) formal_no);
+
+  size_t used_register_no
+    = structured_static_environment_used_register_no (env);
+
+  /* On a non-tail call, push instructions to save used registers.  It is
+     correct to do it now since in this language evaluating actuals for a call
+     can not change the values of locals. */
+  if (! tail)
+    structured_emit_save_registers (vmp, used_register_no);
+
+  /* Push actual values. */
+  int i;
+  for (i = 0; i < actual_no; i ++)
+    {
+      struct structured_location al = STRUCTURED_LOCATION_ANYWHERE;
+      structured_translate_expression (vmp, & al, actuals [i], env, false);
+      structured_consume_location (env, & al);
+      if (tail)
+        STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, underpush_mstack);
+      else
+        STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, push_mstack);
+      structured_emit_operand (vmp, env, & al);
+    }
+
+  /* Call -- or, on a tail call, branch. */
+  structuredvm_label procedure_label;
+  if (tail)
+    {
+      procedure_label
+        = structured_static_environment_lookup_procedure_tail (env, callee_name);
+      STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, b);
+      structuredvm_routine_append_label_parameter (vmp, procedure_label);
+    }
+  else
+    {
+      procedure_label
+        = structured_static_environment_lookup_procedure (env, callee_name);
+      STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, call);
+      structuredvm_routine_append_label_parameter (vmp, procedure_label);
+    }
+
+  /* Restore registers, unless this is a tail call. */
+  if (! tail)
+    structured_emit_restore_registers (vmp, used_register_no);
+
+  /* Drop the procedure result off the stack, if that was requested.  This
+     behaviour is correct for call *statements*, which ignore any result. */
+  if (drop_result)
+    {
+      if (! tail)
+        STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, drop_mstack);
+    }
+  else
+    {
+      structured_conctetize_location (env, rl);
+      if (! tail)
+        {
+          STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, pop_mstack);
+          structured_emit_operand (vmp, env, rl);
+        }
+    }
 }
 
 /* Emit code translating the pointed expression AST to the pointed Jittery
@@ -413,10 +537,24 @@ static void
 structured_translate_expression (struct structuredvm_mutable_routine *vmp,
                                  struct structured_location *rl,
                                  struct structured_expression *e,
-                                 struct structured_static_environment *env)
+                                 struct structured_static_environment *env,
+                                 bool tail)
 {
   switch (e->case_)
     {
+    case structured_expression_case_undefined:
+      /* If a location has not been decided yet then use register 0, even if it
+         is already used for something else; otherwise keep whatever location
+         has been decided.  Anyway do not generate any instruction to set a
+         value: the value of an "undefined" expression does not matter. */
+      if (rl->case_ == structured_location_case_anywhere
+          || rl->case_ == structured_location_case_nonconstant)
+        {
+          struct structured_location good_location
+            = STRUCTURED_LOCATION_REGISTER (0);
+          *rl = good_location;
+        }
+      break;
     case structured_expression_case_literal:
       structured_translate_expression_literal (vmp, rl, e->literal, env);
       break;
@@ -440,6 +578,8 @@ structured_translate_expression (struct structuredvm_mutable_routine *vmp,
         if (rl->case_ == structured_location_case_anywhere)
           rl->case_ = structured_location_case_nonconstant;
 
+        /* About tailness and labels, the conditional case comment in
+           structured_translate_statement does not apply here. */
         structuredvm_label before_else = structuredvm_fresh_label (vmp);
         structuredvm_label after_else = structuredvm_fresh_label (vmp);
         structured_translate_conditional (vmp, e->if_then_else_condition,
@@ -447,12 +587,16 @@ structured_translate_expression (struct structuredvm_mutable_routine *vmp,
                                           false,
                                           env);
         structured_translate_expression (vmp, rl, e->if_then_else_then_branch,
-                                         env);
-        structuredvm_mutable_routine_append_instruction_name (vmp, "b");
-        structuredvm_mutable_routine_append_label_parameter (vmp, after_else);
+                                         env, tail);
+        if (! tail)
+          {
+            structuredvm_mutable_routine_append_instruction_name (vmp, "b");
+            structuredvm_mutable_routine_append_label_parameter (vmp,
+                                                                 after_else);
+          }
         structuredvm_mutable_routine_append_label (vmp, before_else);
         structured_translate_expression (vmp, rl, e->if_then_else_else_branch,
-                                         env);
+                                         env, tail);
         structuredvm_mutable_routine_append_label (vmp, after_else);
         break;
       }
@@ -465,6 +609,12 @@ structured_translate_expression (struct structuredvm_mutable_routine *vmp,
           structured_translate_expression_non_conditional_primitive
              (vmp, rl, e->primitive, e->primitive_operand_0,
               e->primitive_operand_1, env);
+        break;
+      }
+    case structured_expression_case_call:
+      {
+        structured_translate_call (vmp, rl, e->callee, e->actuals, e->actual_no,
+                                   false, env, tail);
         break;
       }
     default:
@@ -524,9 +674,9 @@ structured_translate_conditional_primitive
       {
         /* Translate the two operands, the ordinary way. */
         struct structured_location o0l = STRUCTURED_LOCATION_ANYWHERE;
-        structured_translate_expression (vmp, &o0l, operand_0, env);
+        structured_translate_expression (vmp, &o0l, operand_0, env, false);
         struct structured_location o1l = STRUCTURED_LOCATION_ANYWHERE;
-        structured_translate_expression (vmp, &o1l, operand_1, env);
+        structured_translate_expression (vmp, &o1l, operand_1, env, false);
         structured_consume_location (env, & o1l);
         structured_consume_location (env, & o0l);
           /* Generate a conditional branch, with the appropriate opcode for the
@@ -539,8 +689,8 @@ structured_translate_conditional_primitive
         const char *opcode
           = structured_comparison_primitive_to_instruction (actual_case);
         structuredvm_mutable_routine_append_instruction_name (vmp, opcode);
-        structured_emit_operand (vmp, & o0l);
-        structured_emit_operand (vmp, & o1l);
+        structured_emit_operand (vmp, env, & o0l);
+        structured_emit_operand (vmp, env, & o1l);
         structuredvm_mutable_routine_append_label_parameter (vmp, label);
         break;
       }
@@ -565,7 +715,7 @@ structured_translate_conditional_primitive
           structuredvm_mutable_routine_append_instruction_name (vmp, "bne");
         else
           structuredvm_mutable_routine_append_instruction_name (vmp, "be");
-        structured_emit_operand (vmp, & rl);
+        structured_emit_operand (vmp, env, & rl);
         structuredvm_mutable_routine_append_signed_literal_parameter (vmp, 0);
         structuredvm_mutable_routine_append_label_parameter (vmp, label);
       }
@@ -587,6 +737,12 @@ structured_translate_conditional (struct structuredvm_mutable_routine *vmp,
 {
   switch (e->case_)
     {
+    case structured_expression_case_undefined:
+      /* The condition is undefined, so it is correct to either branch or not;
+         we arbitrarily choose not to.  We cannot really tell if this is more
+         efficient than the alternative without checking the rest of the code,
+         but at least there will be no runtime conditional. */
+      break;
     case structured_expression_case_literal:
       {
         /* The condition is constant: generate an unconditional branch, or
@@ -652,23 +808,35 @@ structured_translate_conditional (struct structuredvm_mutable_routine *vmp,
     }
 }
 
+/* Emit instructions returning an undefined value.  This is meant to be used
+   at the end of a tail statement when there is no explicit return. */
+static void
+structured_generate_return_statement (struct structuredvm_mutable_routine *vmp)
+{
+  STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, push_munspecified_mstack);
+  STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, return_mto_mundertop);
+}
+
 /* Emit code translating the pointed statement AST to the pointed Jittery
    routine, using the pointed static environment to be looked up and updated. */
 static void
 structured_translate_statement (struct structuredvm_mutable_routine *vmp,
                                 struct structured_statement *s,
-                                struct structured_static_environment *env)
+                                struct structured_static_environment *env,
+                                bool tail)
 {
   switch (s->case_)
     {
     case structured_statement_case_skip:
       {
+        if (tail)
+          structured_generate_return_statement (vmp);
         break;
       }
     case structured_statement_case_block:
       {
         structured_static_environment_bind_variable (env, s->block_variable);
-        structured_translate_statement (vmp, s->block_body, env);
+        structured_translate_statement (vmp, s->block_body, env, tail);
         structured_static_environment_unbind_variable (env, s->block_variable);
         break;
       }
@@ -679,23 +847,42 @@ structured_translate_statement (struct structuredvm_mutable_routine *vmp,
                (env, s->assignment_variable);
         struct structured_location vl = STRUCTURED_LOCATION_REGISTER (idx);
         structured_translate_expression (vmp, & vl, s->assignment_expression,
-                                         env);
+                                         env, false);
         structured_consume_location (env, & vl);
+        if (tail)
+          structured_generate_return_statement (vmp);
         break;
       }
     case structured_statement_case_print:
       {
         struct structured_location l = STRUCTURED_LOCATION_ANYWHERE;
-        structured_translate_expression (vmp, & l, s->print_expression, env);
+        structured_translate_expression (vmp, & l, s->print_expression, env,
+                                         false);
         structured_consume_location (env, & l);
         structuredvm_mutable_routine_append_instruction_name (vmp, "print");
-        structured_emit_operand (vmp, & l);
+        structured_emit_operand (vmp, env, & l);
+        if (tail)
+          structured_generate_return_statement (vmp);
         break;
       }
     case structured_statement_case_sequence:
       {
-        structured_translate_statement (vmp, s->sequence_statement_0, env);
-        structured_translate_statement (vmp, s->sequence_statement_1, env);
+        /* Avoid at least some tailness anonmalies due to parsing, where there
+           can be trivial skip statements.  This does not really count as an
+           optimisation to me. */
+        if (s->sequence_statement_0->case_ == structured_statement_case_skip)
+          structured_translate_statement (vmp, s->sequence_statement_1, env,
+                                          tail);
+        else if (s->sequence_statement_1->case_ == structured_statement_case_skip)
+          structured_translate_statement (vmp, s->sequence_statement_0, env,
+                                          tail);
+        else
+          {
+            structured_translate_statement (vmp, s->sequence_statement_0, env,
+                                            false);
+            structured_translate_statement (vmp, s->sequence_statement_1, env,
+                                            tail);
+          }
         break;
       }
     case structured_statement_case_if_then_else:
@@ -708,16 +895,21 @@ structured_translate_statement (struct structuredvm_mutable_routine *vmp,
                b $AFTER_ELSE
              $BEFORE_ELSE:
                E
-             $AFTER_ELSE: */
+             $AFTER_ELSE:
+           In a tail context omit $AFTER_ELSE and the branch to it. */
         structuredvm_label before_else = structuredvm_fresh_label (vmp);
         structuredvm_label after_else = structuredvm_fresh_label (vmp);
         structured_translate_conditional (vmp, s->if_then_else_condition,
                                           before_else, false, env);
-        structured_translate_statement (vmp, s->if_then_else_then_branch, env);
-        structuredvm_mutable_routine_append_instruction_name (vmp, "b");
-        structuredvm_mutable_routine_append_label_parameter (vmp, after_else);
+        structured_translate_statement (vmp, s->if_then_else_then_branch, env, tail);
+        if (! tail)
+          {
+            structuredvm_mutable_routine_append_instruction_name (vmp, "b");
+            structuredvm_mutable_routine_append_label_parameter (vmp,
+                                                                 after_else);
+          }
         structuredvm_mutable_routine_append_label (vmp, before_else);
-        structured_translate_statement (vmp, s->if_then_else_else_branch, env);
+        structured_translate_statement (vmp, s->if_then_else_else_branch, env, tail);
         structuredvm_mutable_routine_append_label (vmp, after_else);
         break;
       }
@@ -731,9 +923,48 @@ structured_translate_statement (struct structuredvm_mutable_routine *vmp,
                branch-unless G $BEFORE_BODY */
         structuredvm_label before_body = structuredvm_fresh_label (vmp);
         structuredvm_mutable_routine_append_label (vmp, before_body);
-        structured_translate_statement (vmp, s->repeat_until_body, env);
+        structured_translate_statement (vmp, s->repeat_until_body, env, false);
         structured_translate_conditional (vmp, s->repeat_until_guard,
                                           before_body, false, env);
+        if (tail)
+          structured_generate_return_statement (vmp);
+        break;
+      }
+    case structured_statement_case_return:
+      {
+        struct structured_expression *e = s->return_result;
+        /* In every case but one, compile the expression and generate a return
+           instruction.  The return address will be at the undertop, right below
+           the result.
+           We can do better in one case, which is a return statement in tail
+           position whose return result is a procedure call.  In that case we
+           can compile the statement as a tail call, without any additional
+           return instruction. */
+        if (tail && e->case_ == structured_expression_case_call)
+          {
+            struct structured_location l = STRUCTURED_LOCATION_ANYWHERE;
+            structured_translate_call (vmp, & l,
+                                       e->callee, e->actuals, e->actual_no,
+                                       false, env, tail);
+            structured_consume_location (env, & l);
+          }
+        else
+          {
+            struct structured_location l = STRUCTURED_LOCATION_ANYWHERE;
+            structured_translate_expression (vmp, & l, e, env, tail);
+            structured_consume_location (env, & l);
+            STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, push_mstack);
+            structured_emit_operand (vmp, env, & l);
+            STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, return_mto_mundertop);
+          }
+        break;
+      }
+    case structured_statement_case_call:
+      {
+        struct structured_location l = STRUCTURED_LOCATION_ANYWHERE;
+        structured_translate_call (vmp, & l, s->callee, s->actuals, s->actual_no,
+                                   true, env, tail);
+        structured_consume_location (env, & l);
         break;
       }
     default:
@@ -741,13 +972,90 @@ structured_translate_statement (struct structuredvm_mutable_routine *vmp,
     }
 }
 
+/* Generate two labels, one for non-tail calls and another for tail calls,
+   associate them to the procedure name in the environment and save them.
+   These will be used when procedures are actually compiled, elsewhere.
+   It is useful to be able to get these labels before compilation, so that
+   procedures can call one another in any order without declarations. */
 static void
-structured_translate_program (struct structuredvm_mutable_routine *vmp,
+structured_bind_procedure_labels (structuredvm_routine vmp,
+                                  struct structured_procedure *p,
+                                  struct structured_static_environment *env)
+{
+  structuredvm_label label = structuredvm_fresh_label (vmp);
+  structuredvm_label label_tail_recursive = structuredvm_fresh_label (vmp);
+  structured_static_environment_bind_procedure (env, p->procedure_name,
+                                                label, label_tail_recursive,
+                                                p->formal_no);
+}
+
+/* Emit code for the pointed procedure. */
+static void
+structured_translate_procedure (structuredvm_routine vmp,
+                                struct structured_procedure *p,
+                                struct structured_static_environment *env)
+{
+  /* Obtain the two labels, one for non-tail calls and another for tail calls,
+     as generated in structured_bind_procedure_labels.  Emit the prolog
+     including the two labels at their appropriate program points. */
+  structuredvm_label label
+    = structured_static_environment_lookup_procedure (env, p->procedure_name);
+  structuredvm_label label_tail_recursive
+    = structured_static_environment_lookup_procedure_tail (env,
+                                                           p->procedure_name);
+  structuredvm_routine_append_label (vmp, label);
+  STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, procedure_mprolog);
+  structuredvm_routine_append_label (vmp, label_tail_recursive);
+
+  /* Pop formals into registers, backwards. */
+  int i;
+  for (i = p->formal_no - 1; i >= 0; i --)
+    {
+      char *name = p->formals [i];
+      structured_register_index register_index
+        = structured_static_environment_bind_variable (env, name);
+      STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, underpop_mstack);
+      STRUCTUREDVM_ROUTINE_APPEND_REGISTER_PARAMETER(vmp, r, register_index);
+    }
+
+  /* Translate the body. */
+  structured_translate_statement (vmp, p->body, env, true);
+
+  /* Unbind formals. */
+  for (i = 0; i < p->formal_no; i ++)
+    {
+      char *name = p->formals [i];
+      structured_static_environment_unbind_variable (env, name);
+    }
+}
+
+/* Add code to translate the pointed program AST to the pointed Jittery
+   routine. */
+static void
+structured_translate_program (structuredvm_routine vmp,
                               struct structured_program *p)
 {
   struct structured_static_environment *env
     = structured_static_environment_make ();
-  structured_translate_statement (vmp, p->main_statement, env);
+
+  /* Jump to a label right right before the main statement. */
+  structuredvm_label main_statement = structuredvm_fresh_label (vmp);
+  STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, b);
+  structuredvm_routine_append_label_parameter (vmp, main_statement);
+
+  /* First make every procedure name globally visible, to allow for mutual call;
+     then translate every procedure. */
+  int i;
+  for (i = 0; i < p->procedure_no; i ++)
+    structured_bind_procedure_labels (vmp, p->procedures [i], env);
+  for (i = 0; i < p->procedure_no; i ++)
+    structured_translate_procedure (vmp, p->procedures [i], env);
+
+  /* Translate the main statement. */
+  structuredvm_routine_append_label (vmp, main_statement);
+  structured_translate_statement (vmp, p->main_statement, env,
+                                  false /* no implicit return to generate */);
+
   structured_static_environment_destroy (env);
 }
 

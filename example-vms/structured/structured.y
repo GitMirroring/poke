@@ -1,6 +1,6 @@
 /* Jittery structured language example: Bison parser.
 
-   Copyright (C) 2016, 2017, 2019, 2020 Luca Saiu
+   Copyright (C) 2016, 2017, 2019, 2020, 2021 Luca Saiu
    Written by Luca Saiu
 
    This file is part of the Jitter structured-language example, distributed
@@ -58,6 +58,18 @@ structured_error (YYLTYPE *locp, struct structured_program *p,
 /* A copy of what would be yytext in a non-reentrant scanner. */
 #define STRUCTURED_TEXT_COPY \
   (jitter_clone_string (STRUCTURED_TEXT))
+
+/* Initialise the fields of the pointed program, except for the main statement.
+   The name will be copied.  */
+static void
+structured_initialize_program (struct structured_program *p,
+                               const char *file_name)
+{
+  p->source_file_name = jitter_clone_string (file_name);
+  p->procedures = NULL;
+  p->procedure_no = 0;
+  /* Do not initialise p->main_statement . */
+}
 
 /* Return a pointer to a fresh malloc-allocated expression of the given case.
    No field is initialized but case_. */
@@ -117,31 +129,118 @@ structured_make_statement (enum structured_statement_case case_)
   return res;
 }
 
-/* If the pointed expressions is non-NULL return a pointer to a fresh
-   malloc-allocated statement containing a sequence setting the given variable
-   to the pointed expression, and then the pointed statement.  If the expression
-   pointer is NULL just return the pointed body without allocating anything
-   more. */
+/* Return a pointer to a fresh malloc-allocated statement containing a sequence
+   setting the given variable to the pointed expression, and then the pointed
+   statement. */
 static struct structured_statement*
-structured_with_optional_initialization (structured_variable v,
-                                         struct structured_expression *e,
-                                         struct structured_statement *body)
+structured_make_block (structured_variable v,
+                       struct structured_expression *e,
+                       struct structured_statement *body)
 {
-  if (e == NULL)
-    return body;
-  else
-    {
-      struct structured_statement *sequence
-        = structured_make_statement (structured_statement_case_sequence);
-      struct structured_statement *assignment
-        = structured_make_statement (structured_statement_case_assignment);
-      assignment->assignment_variable = v;
-      assignment->assignment_expression = e;
-      sequence->sequence_statement_0 = assignment;
-      sequence->sequence_statement_1 = body;
-      return sequence;
-    }
+  struct structured_statement *sequence
+    = structured_make_statement (structured_statement_case_sequence);
+  struct structured_statement *assignment
+    = structured_make_statement (structured_statement_case_assignment);
+  assignment->assignment_variable = v;
+  assignment->assignment_expression = e;
+  sequence->sequence_statement_0 = assignment;
+  sequence->sequence_statement_1 = body;
+  return sequence;
 }
+
+/* Add an element at the end of the pointed array of pointers, which is
+   currently allocated with malloc and of size *element_no (in elements), by
+   using realloc.  Add new_pointer as the new value at the end.  Increment the
+   pointed size. */
+static void
+structured_append_pointer (void ***pointers, size_t *element_no,
+                           void *new_pointer)
+{
+  * pointers = jitter_xrealloc (* pointers,
+                                sizeof (void *) * ((* element_no) + 1));
+  (* pointers) [* element_no] = new_pointer;
+  (* element_no) ++;
+}
+
+/* Return a pointer to a fresh malloc-allocated procedure with the given name
+   and zero formals.  The body is undefined.
+   Only used as a helper for structured_program_append_procedure . */
+static struct structured_procedure *
+structured_make_procedure (const char *procedure_name)
+{
+  struct structured_procedure *res
+    = jitter_xmalloc (sizeof (struct structured_procedure));
+  res->procedure_name = jitter_clone_string (procedure_name);
+  res->formals = NULL;
+  res->formal_no = 0;
+  /* Do not initialise res->body . */
+  return res;
+}
+
+/* Append a fresh procedure with the name given in the pointed string to the
+   pointed program. */
+static void
+structured_program_append_procedure (struct structured_program *p,
+                                     const char *procedure_name)
+{
+  structured_append_pointer ((void ***) & p->procedures, & p->procedure_no,
+                             structured_make_procedure (procedure_name));
+}
+
+/* Destructively append a formal with a copy of the pointed string as name to
+   the pointed procedure. */
+static void
+structured_procedure_append_formal (struct structured_procedure *p,
+                                    const char *new_formal_name)
+{
+  int i;
+  for (i = 0; i < p->formal_no; i ++)
+    if (! strcmp (p->formals [i], new_formal_name))
+      jitter_fatal ("duplicated formal name %s in %s",
+                    p->procedure_name, new_formal_name);
+  structured_append_pointer ((void ***) & p->formals, & p->formal_no,
+                             jitter_clone_string (new_formal_name));
+}
+
+/* Return a pointer to the last procedure of the pointed program.  This assumes
+   that there is at least one procedure. */
+static struct structured_procedure *
+structured_last_procedure (struct structured_program *p)
+{
+  if (p->procedure_no == 0)
+    jitter_fatal ("structured_last_procedure: no procedure exists");
+  return p->procedures [p->procedure_no - 1];
+}
+
+/* These are used internally, when parsing sequences. */
+struct structured_sequence
+{
+  /* A malloc-allocated array of pointers to malloc-allocated objects. */
+  void **pointers;
+
+  /* The number of pointers of the previous array. */
+  size_t pointer_no;
+};
+
+/* Initialise the pointed actuals structure to be empty. */
+static void
+structured_initialize_sequence (struct structured_sequence *s)
+{
+  s->pointers = NULL;
+  s->pointer_no = 0;
+}
+
+/* Return a pointer to a fresh malloc-allocated sequence structure, initialised
+   to contain zero elements. */
+static struct structured_sequence *
+structured_make_sequence (void)
+{
+  struct structured_sequence *res
+    = jitter_xmalloc (sizeof (struct structured_sequence));
+  structured_initialize_sequence (res);
+  return res;
+}
+
 
 %}
 
@@ -195,8 +294,11 @@ structured_parse_file (const char *input_file_name);
   structured_variable variable;
   struct structured_expression *expression;
   struct structured_statement *statement;
+  struct structured_sequence *pointers;
 }
 
+%token PROCEDURE
+%token RETURN
 %token BEGIN_ END
 %token SKIP
 %token VAR
@@ -209,7 +311,8 @@ structured_parse_file (const char *input_file_name);
 %token WHILE DO
 %token REPEAT UNTIL
 %token OPEN_PAREN CLOSE_PAREN
-%token VARIABLE
+%token UNDEFINED
+       VARIABLE
        /*BINARY_LITERAL OCTAL_LITERAL*/ DECIMAL_LITERAL /*HEXADECIMAL_LITERAL*/
        TRUE FALSE
 %left PLUS MINUS
@@ -234,13 +337,54 @@ structured_parse_file (const char *input_file_name);
 %type <expression> optional_initialization;
 %type <expression> if_expression;
 %type <expression> if_expression_rest;
+%type <pointers> actuals;
+%type <pointers> non_empty_actuals;
 
 %%
 
 program:
   statements
   { p->main_statement = $1; }
+| procedure_definition program
+;
+
+/* FIXME: use the style of actuals for formals and procedures. */
+formals:
+  /* nothing */
+| non_empty_formals
+;
+
+non_empty_formals:
+  variable
+    { structured_procedure_append_formal (structured_last_procedure (p), $1); }
+| variable COMMA
+    { structured_procedure_append_formal (structured_last_procedure (p), $1); }
+  non_empty_formals
+;
+
+actuals:
+  /* nothing */
+  { $$ = structured_make_sequence (); }
+| non_empty_actuals
+  { $$ = $1; }
   ;
+
+non_empty_actuals:
+  expression
+  { $$ = structured_make_sequence ();
+    structured_append_pointer ((void ***) & $$->pointers, & $$->pointer_no,
+                               $1); }
+| non_empty_actuals COMMA expression
+  { structured_append_pointer ((void ***) & $$->pointers, & $$->pointer_no,
+                               $3); }
+;
+
+procedure_definition:
+  PROCEDURE variable
+    { structured_program_append_procedure (p, $2); }
+  OPEN_PAREN formals CLOSE_PAREN statements END SEMICOLON
+    { structured_last_procedure (p)->body = $7; }
+;
 
 statement:
   optional_skip SEMICOLON
@@ -249,6 +393,14 @@ statement:
   { $$ = structured_make_statement (structured_statement_case_assignment);
     $$->assignment_variable = $1;
     $$->assignment_expression = $3; }
+| RETURN expression SEMICOLON
+  { $$ = structured_make_statement (structured_statement_case_return);
+    $$->return_result = $2; }
+| RETURN SEMICOLON
+  { $$ = structured_make_statement (structured_statement_case_return);
+    struct structured_expression *e
+      = structured_make_expression (structured_expression_case_undefined);
+    $$->return_result = e; }
 | PRINT expression SEMICOLON
   { $$ = structured_make_statement (structured_statement_case_print);
     $$->print_expression = $2; }
@@ -275,6 +427,13 @@ statement:
   { $$ = structured_make_statement (structured_statement_case_repeat_until);
     $$->repeat_until_body = $2;
     $$->repeat_until_guard = $4; }
+| variable OPEN_PAREN actuals CLOSE_PAREN
+    { $$ = structured_make_statement (structured_statement_case_call);
+      $$->callee = $1;
+      $$->actuals = (struct structured_expression **) $3->pointers;
+      $$->actual_no = $3->pointer_no;
+      /* FIXME: I could free $3 if I cared about not leaking memory at
+         parsing time. */}
   ;
 
 if_statement:
@@ -320,25 +479,27 @@ block:
   variable optional_initialization block_rest
   { $$ = structured_make_statement (structured_statement_case_block);
     $$->block_variable = $1;
-    $$->block_body = structured_with_optional_initialization ($1, $2, $3); }
+    $$->block_body = structured_make_block ($1, $2, $3); }
   ;
 
 block_rest:
-  SEMICOLON one_or_more_statements
+  SEMICOLON statements
   { $$ = $2; }
 | COMMA block
   { $$ = $2; }
   ;
 
-optional_initialization :
+optional_initialization:
   /* nothing*/
-  { $$ = NULL; }
+  { $$ = structured_make_expression (structured_expression_case_undefined); }
 | EQUAL expression
   { $$ = $2; }
   ;
 
 expression:
-  literal
+  UNDEFINED
+  { $$ = structured_make_expression (structured_expression_case_undefined); }
+| literal
   { $$ = structured_make_expression (structured_expression_case_literal);
     $$->literal = $1; }
 | variable
@@ -392,6 +553,13 @@ expression:
   { $$ = structured_make_unary (structured_primitive_logical_not, $2); }
 | INPUT
   { $$ = structured_make_nullary (structured_primitive_input); }
+| variable OPEN_PAREN actuals CLOSE_PAREN
+    { $$ = structured_make_expression (structured_expression_case_call);
+      $$->callee = $1;
+      $$->actuals = (struct structured_expression **) $3->pointers;
+      $$->actual_no = $3->pointer_no;
+      /* FIXME: I could free $3 if I cared about not leaking memory at
+         parsing time. */}
   ;
 
 if_expression:
@@ -475,7 +643,7 @@ structured_parse_file_star_with_name (FILE *input_file, const char *file_name)
 
   struct structured_program *res
     = jitter_xmalloc (sizeof (struct structured_program));
-  res->source_file_name = jitter_clone_string (file_name);
+  structured_initialize_program (res, file_name);
   /* FIXME: if I ever make parsing errors non-fatal, call structured_lex_destroy before
      returning, and finalize the program -- which might be incomplete! */
   if (structured_parse (res, scanner))

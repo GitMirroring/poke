@@ -51,11 +51,12 @@
 /* The case of an AST expression. */
 enum structured_expression_case
   {
+    structured_expression_case_undefined,
     structured_expression_case_literal,
     structured_expression_case_variable,
     structured_expression_case_if_then_else,
     structured_expression_case_primitive,
-    //, structured_expression_case_call
+    structured_expression_case_call
   };
 
 /* An identifier for a structured-language primitive.  Primitives always work on
@@ -133,6 +134,14 @@ struct structured_expression
          expression; NULL if there is no second operand. */
       struct structured_expression *primitive_operand_1;
     };
+
+    /* Call fields. */
+    struct
+    {
+      structured_variable callee;
+      struct structured_expression **actuals;
+      size_t actual_no;
+    };
   }; /* end of the anonymous union. */
 };
 
@@ -146,6 +155,8 @@ enum structured_statement_case
     structured_statement_case_sequence,
     structured_statement_case_if_then_else,
     structured_statement_case_repeat_until,
+    structured_statement_case_return,
+    structured_statement_case_call
   };
 
 
@@ -247,7 +258,38 @@ struct structured_statement
       /* A pointer to the guard expression, as a malloc-allocated struct. */
       struct structured_expression *repeat_until_guard;
     };
+
+    /* Return fields. */
+    struct
+    {
+      /* A pointer to the return expression, as a malloc-allocated struct. */
+      struct structured_expression *return_result;
+    };
+
+    /* Call fields. */
+    struct
+    {
+      structured_variable callee;
+      struct structured_expression **actuals;
+      size_t actual_no;
+    };
   }; /* end of the anonymous union. */
+};
+
+struct structured_procedure
+{
+  /* A pointer to the procedure name as a malloc-allocated C string. */
+  char *procedure_name;
+
+  /* A malloc-allocated array of malloc-allocated C strings containing formal
+     parameter names. */
+  char **formals;
+
+  /* The number of formal parameters. */
+  size_t formal_no;
+
+  /* The procedure body. */
+  struct structured_statement *body;
 };
 
 /* A structured program AST.  Right now a program consists of a single
@@ -256,6 +298,12 @@ struct structured_program
 {
   /* A pointer to the source file pathname as a malloc-allocated C string. */
   char *source_file_name;
+
+  /* A malloc-allocated array of pointers to malloc-allocated procedures. */
+  struct structured_procedure **procedures;
+
+  /* The number of procedures. */
+  size_t procedure_no;
 
   /* A pointer to the main statement, as a malloc-allocated struct. */
   struct structured_statement *main_statement;

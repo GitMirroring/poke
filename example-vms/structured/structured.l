@@ -2,6 +2,7 @@
 
    Copyright (C) 2016, 2017 Luca Saiu
    Updated in 2019 and 2020 by Luca Saiu
+   Updated in 2021 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of the Jitter structured-language example, distributed
@@ -101,8 +102,10 @@ COMMENT              "//".*{NEWLINE}
 "do"                      { return DO; }
 "repeat"                  { return REPEAT; }
 "until"                   { return UNTIL; }
+"return"                  { return RETURN; }
 "("                       { return OPEN_PAREN; }
 ")"                       { return CLOSE_PAREN; }
+"undefined"               { return UNDEFINED; }
  /* {BINARY_INTEGER}          { return BINARY_LITERAL; }
 {OCTAL_INTEGER}           { return OCTAL_LITERAL; } */
 {DECIMAL_INTEGER}         { return DECIMAL_LITERAL; }
@@ -124,6 +127,7 @@ COMMENT              "//".*{NEWLINE}
 "or"                      { return LOGICAL_OR; }
 "not"                     { return LOGICAL_NOT; }
 "var"                     { return VAR; }
+"procedure"               { return PROCEDURE; }
 {IDENTIFIER}              { return VARIABLE; }
 .                         { structured_scan_error (yyscanner); }
 

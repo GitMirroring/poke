@@ -109,8 +109,11 @@ structured_help (void)
   printf ("      --cross-disassemble          use the cross-disassembler rather than\n");
   printf ("                                   the native disassembler; also enable\n");
   printf ("                                   disassembly as per --disassemble\n");
-  printf ("      --print-defects              print information about defective\n");
-  printf ("                                   specialized instructions and replacements\n");
+  printf ("      --print-defects=WHAT         print information about defective\n");
+  printf ("                                   specialised instructions and their\n");
+  printf ("                                   replacements.  WHAT must be one of:\n");
+  printf ("                                   \"summary\", \"list\", \"replacements\",\n");
+  printf ("                                   \"no\"\n");
   printf ("      --profile-specialized        print profiling information for\n");
   printf ("                                   specialized instructions %s\n",
           (instrumentation != jitter_vm_instrumentation_none
@@ -125,8 +128,9 @@ structured_help (void)
   printf ("      --print-routine, --print     print VM instructions\n");
   printf ("      --no-dry-run                 run the program (default)\n");
   printf ("      --no-print-defects           do not print information about defective\n");
-  printf ("                                   specialized instructions and replacements\n");
-  printf ("                                   (default)\n");
+  printf ("                                   specialized instructions and\n");
+  printf ("                                   replacements; (default and functionally\n");
+  printf ("                                   equivalent to --print-defects=no)\n");
   printf ("      --no-profile-specialized     omit profiling information for specialized\n");
   printf ("                                   instructions (default)\n");
   printf ("      --no-profile-unspecialized   omit profiling information for unspecialized\n");
@@ -207,6 +211,15 @@ enum structured_code_generator
     structured_code_generator_register
   };
 
+/* What to print about defective specialised instructions. */
+enum structured_print_defect_what
+  {
+    structured_print_defect_what_summary,
+    structured_print_defect_what_list,
+    structured_print_defect_what_replacements,
+    structured_print_defect_what_no
+  };
+
 /* The state encoded in a user command line. */
 struct structured_command_line
 {
@@ -223,7 +236,7 @@ struct structured_command_line
 
   /* True iff we should print information about defective specialised
      instructions and their replacements. */
-  bool print_defects;
+  enum structured_print_defect_what print_defects;
 
   /* True iff we should print profiling information, respectively for
      specialised and unspecialised instructions. */
@@ -261,7 +274,7 @@ structured_initialize_command_line (struct structured_command_line *cl)
   cl->print = false;
   cl->cross_disassemble = false;
   cl->disassemble = false;
-  cl->print_defects = false;
+  cl->print_defects = structured_print_defect_what_no;
   cl->profile_specialized = false;
   cl->profile_unspecialized = false;
   cl->print_locations = false;
@@ -320,14 +333,20 @@ structured_parse_command_line (struct structured_command_line *cl,
           cl->cross_disassemble = true;
           cl->disassemble = true;
         }
-      else if (handle_options && ! strcmp (arg, "--print-defects"))
-        cl->print_defects = true;
+      else if (handle_options && ! strcmp (arg, "--print-defects=summary"))
+        cl->print_defects = structured_print_defect_what_summary;
+      else if (handle_options && ! strcmp (arg, "--print-defects=list"))
+        cl->print_defects = structured_print_defect_what_list;
+      else if (handle_options && ! strcmp (arg, "--print-defects=replacements"))
+        cl->print_defects = structured_print_defect_what_replacements;
+      else if (handle_options && ! strcmp (arg, "--print-defects=no"))
+        cl->print_defects = structured_print_defect_what_no;
       else if (handle_options && ! strcmp (arg, "--profile-specialized"))
         cl->profile_specialized = true;
       else if (handle_options && ! strcmp (arg, "--profile-unspecialized"))
         cl->profile_unspecialized = true;
       else if (handle_options && ! strcmp (arg, "--no-print-defects"))
-        cl->print_defects = false;
+        cl->print_defects = structured_print_defect_what_no;
       else if (handle_options && ! strcmp (arg, "--no-profile-unspecialized"))
         cl->profile_unspecialized = false;
       else if (handle_options && ! strcmp (arg, "--no-profile-specialized"))
@@ -390,6 +409,22 @@ structured_parse_command_line (struct structured_command_line *cl,
 
 /* Execute what the command line says.
  * ************************************************************************** */
+
+/* Print a heading.  This is useful for defects. */
+static void
+structured_print_heading (jitter_print_context ctx, const char *heading)
+{
+  jitter_print_begin_class (ctx, "structuredvm-comment");
+  if (structuredvm_vm->defect_no == 0)
+    jitter_print_char_star (ctx, "No defects.");
+  else
+    {
+      jitter_print_char_star (ctx, heading);
+      jitter_print_char_star (ctx, ":");
+    }
+  jitter_print_end_class (ctx);
+  jitter_print_char_star (ctx, "\n");
+}
 
 /* Do what the pointed command line data structure says. */
 static void
@@ -454,8 +489,27 @@ structured_work (struct structured_command_line *cl)
      automatic. */
 
   /* Print defect information if the user asked to */
-  if (cl->print_defects)
-    structuredvm_defect_print_summary (ctx);
+  switch (cl->print_defects)
+    {
+    case structured_print_defect_what_summary:
+      /* No heading: this is a compact format. */
+      structuredvm_defect_print_summary (ctx);
+      break;
+    case structured_print_defect_what_list:
+      structured_print_heading (ctx, "Defective specialised instructions");
+      structuredvm_defect_print (ctx, 0);
+      break;
+    case structured_print_defect_what_replacements:
+      structured_print_heading
+         (ctx, "Defective specialised instruction replacements");
+      structuredvm_defect_print_replacement_table (ctx, 0);
+      break;
+    case structured_print_defect_what_no:
+      /* Do nothing. */
+      break;
+    default:
+      jitter_fatal ("invalid cl->print_defects value: this should never happen");
+    }
 
   /* Print and/or disassemble the routine as requested. */
   if (cl->print)
