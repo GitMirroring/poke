@@ -1,6 +1,6 @@
 /* Jitter: data locations.
 
-   Copyright (C) 2019, 2020 Luca Saiu
+   Copyright (C) 2019, 2020, 2021 Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -66,10 +66,16 @@ jitter_make_data_locations (const struct jitter_vm *vm)
   size_t string_length;
   size_t string_no = 0;
 #ifndef JITTER_DISPATCH_SWITCH
+  s = vm->data_locations;
+
+  /* In case data location information is not available, use an empty string
+     in its place: */
+  if (s == NULL)
+    s = "";
+
   /* First pass: find how many entries there are, by counting non-empty strings
      up to the final empty string used as a terminator.  They must come in an
      even number, since each entry contains one name and one location. */
-  s = vm->data_locations;
   while ((string_length = strlen (s)) != 0)
     {
       s += string_length + 1;
@@ -97,6 +103,9 @@ jitter_make_data_locations (const struct jitter_vm *vm)
 #else // switch dispatch
   s = ""; /* End immediately. */
 #endif // #ifndef JITTER_DISPATCH_SWITCH
+  /* Again, provide a fallback solution in case information is missing. */
+  if (s == NULL)
+    s = "";
   while ((string_length = strlen (s)) != 0)
     {
       if (name)
@@ -116,14 +125,19 @@ jitter_make_data_locations (const struct jitter_vm *vm)
   /* The result is reliable as long as the !DATALOCATIONS special specialized
      instruction has the same size as the !NOP special specialized instruction.
      In other words, there must be no loads or moves in the compiled code for
-     !DATALOCATIONS . */
+     !DATALOCATIONS ... */
   res->reliable
 #ifndef JITTER_DISPATCH_SWITCH
     = (vm->thread_sizes [jitter_specialized_instruction_opcode_DATALOCATIONS]
        == vm->thread_sizes [jitter_specialized_instruction_opcode_NOP]);
+  /* ...Except that, of course, if all the information was missing in the first
+     place then we have nothing useful to show. */
+  if (vm->data_locations == NULL)
+    res->reliable = false;
 #else  // switch dispatch
     = true;
 #endif // #ifndef JITTER_DISPATCH_SWITCH
+
 
   /* Done. */
   return res;
