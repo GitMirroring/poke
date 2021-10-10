@@ -4122,6 +4122,41 @@ into hardware machine resources.  This is convenient for reading
 disassemblies.
 @end deffn
 
+@cindex defective specialised instruction, print
+@cindex print, defective specialised instructions
+@cindex VM instruction, specialised
+@cindex instruction, VM, specialised
+@cindex call-related VM instruction
+@syindex print-defects
+@anchor{@samp{print-defects}}
+@deffn {primitive wrapper} print-defects
+Print the names of all defective specialised instructions.  Notice
+that the set of defective specialised instructions may be different
+from the set of replaced specialised instructions: when
+@emph{any} call-related specialised instruction is defective then
+@emph{every} call-related specialized will be replaced.
+@*
+The output is meant for the user.
+@end deffn
+
+@cindex defective specialised instruction, print replacements
+@cindex print replacements, defective specialised instructions
+@cindex replacement, defective specialised instructions, printing
+@cindex VM instruction, specialised
+@cindex instruction, VM, specialised
+@cindex call-related VM instruction
+@syindex print-defect-replacements
+@deffn {primitive wrapper} print-defect-replacements
+Print information about defective specialised instruction, listing
+the name of each replaced specialised instruction along with the
+specialised instruction replacing it.  About the difference between
+defective specialised instruction and replaced specialised instruction
+@pxref{@samp{print-defects}}.
+@*
+The output is meant for the user.
+@end deffn
+
+
 @cindex profile, specialised, print
 @cindex print, profile, specialised
 @cindex specialised, profile, print

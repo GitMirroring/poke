@@ -651,6 +651,10 @@ JITTERLISP_PRIMITIVE_FUNCTION_1_(compiled_closure_print, COMPILED_CLOSURE,
 JITTERLISP_PRIMITIVE_FUNCTION_1_(compiled_closure_disassemble, COMPILED_CLOSURE,
   { JITTERLISP_COMPILED_CLOSURE_DISASSEMBLE_(res, args [0]); })
 /* Operations for handling debugging and profiling information. */
+JITTERLISP_PRIMITIVE_FUNCTION_0_(print_defects,
+  { jitterlispvm_defect_print (jitterlisp_print_context, 0); })
+JITTERLISP_PRIMITIVE_FUNCTION_0_(print_defect_replacements,
+  { jitterlispvm_defect_print_replacement_table (jitterlisp_print_context, 0); })
 JITTERLISP_PRIMITIVE_FUNCTION_0_(print_locations,
   { jitterlispvm_dump_data_locations (jitterlisp_print_context); })
 JITTERLISP_PRIMITIVE_FUNCTION_0_(print_profile_specialized,
@@ -914,6 +918,10 @@ jitterlisp_primitives []
       JITTERLISP_PRIMITIVE_PROCEDURE_STRUCT_("compiled-closure-disassemble", 1,
                                              compiled_closure_disassemble),
       /* Operations for handling debugging and profiling information. */
+      JITTERLISP_PRIMITIVE_PROCEDURE_STRUCT_("print-defects", 0,
+                                             print_defects),
+      JITTERLISP_PRIMITIVE_PROCEDURE_STRUCT_("print-defect-replacements", 0,
+                                             print_defect_replacements),
       JITTERLISP_PRIMITIVE_PROCEDURE_STRUCT_("print-locations", 0,
                                              print_locations),
       JITTERLISP_PRIMITIVE_PROCEDURE_STRUCT_("print-profile-specialized", 0,
