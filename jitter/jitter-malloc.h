@@ -1,6 +1,6 @@
 /* Jitter: safe malloc wrappers.
 
-   Copyright (C) 2017, 2020 Luca Saiu
+   Copyright (C) 2017, 2020, 2021 Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -25,21 +25,6 @@
 #include <stdlib.h>
 
 
-/* Gnulib "malloc" attribute workaround: disabling.
- * ************************************************************************** */
-
-/* When Gnulib is used it may redefine "malloc" as a macro, in order to use a
-   fixed version on some platforms.  That is all good, except that having it
-   defined as a macro generates very distracting warnings when "malloc" is used
-   as a function attribute, and breaks the intended optimization.  Let's avoid
-   that. */
-#ifdef malloc
-# define JITTER_MALLOC_WAS_DEFINED_AS_A_MACRO  1
-# define JITTER_MALLOC_PREVIOUS_DEFINITION     malloc
-# undef malloc
-#endif // #ifdef malloc
-
-
 
 
 /* Safe malloc wrappers, not using Gnulib for minimality.
@@ -52,7 +37,7 @@
    of returning a result to check.  */
 void *
 jitter_xmalloc (size_t char_no)
-  __attribute__ ((malloc));
+  __attribute__ ((__malloc__));
 
 /* Allocate char_no chars with realloc in place of the pointed buffer and return
    realloc's result, as long as it is non-NULL (or the new requested size is
@@ -61,19 +46,7 @@ jitter_xmalloc (size_t char_no)
    instead of returning a result to check.  */
 void *
 jitter_xrealloc (void *previous, size_t char_no)
-  __attribute__ ((warn_unused_result));
-
-
-
-
-/* Gnulib "malloc" attribute workaround: re-enabling.
- * ************************************************************************** */
-
-/* Restore the previous malloc redefinition from Gnulib, if any.  This assumes
-   that malloc was defined without arguments, which is currently the case. */
-#ifdef JITTER_MALLOC_WAS_DEFINED_AS_A_MACRO
-# define malloc JITTER_MALLOC_PREVIOUS_DEFINITION
-#endif
+  __attribute__ ((__warn_unused_result__));
 
 
 #endif // #ifndef JITTER_MALLOC_H_

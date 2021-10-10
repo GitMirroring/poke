@@ -1,6 +1,7 @@
 /* JitterLisp: heap allocation header.
 
    Copyright (C) 2017, 2018 Luca Saiu
+   Updated in 2021 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of the JitterLisp language implementation, distributed as
@@ -103,7 +104,7 @@
    initialized. */
 struct jitterlisp_symbol *
 jitterlisp_symbol_make_uninterned (void)
-  __attribute__ ((returns_nonnull));
+  __attribute__ ((__returns_nonnull__));
 
 
 
@@ -122,7 +123,7 @@ jitterlisp_symbol_make_uninterned (void)
    caller may destroy it after this function returns. */
 struct jitterlisp_symbol *
 jitterlisp_symbol_make_interned (const char *name)
-  __attribute__ ((nonnull (1), returns_nonnull));
+  __attribute__ ((__nonnull__ (1), __returns_nonnull__));
 
 
 
@@ -206,7 +207,7 @@ jitterlisp_symbol_make_interned (const char *name)
    with an incorrectly aligned size may lead to subtle bugs. */
 char *
 jitterlisp_allocate (size_t size_in_bytes)
-  __attribute__ ((returns_nonnull, malloc));
+  __attribute__ ((__returns_nonnull__, __malloc__));
 
 
 
@@ -225,13 +226,13 @@ jitterlisp_allocate (size_t size_in_bytes)
 void
 jitterlisp_push_gc_root (jitterlisp_object *object_pointer,
                          size_t element_no)
-  __attribute__ ((nonnull (1)));
+  __attribute__ ((__nonnull__ (1)));
 
 /* A convenience function registering the memory of the pointed stack backing
    as a GC root. */
 void
 jitterlisp_push_stack_backing_as_gc_root (struct jitter_stack_backing *sb)
-  __attribute__ ((nonnull (1)));
+  __attribute__ ((__nonnull__ (1)));
 
 
 /* Unregister the last how_many roots which have been registered.

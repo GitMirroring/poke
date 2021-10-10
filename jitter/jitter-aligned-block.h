@@ -1,6 +1,7 @@
 /* Jitter: allocated heap memory blocks -- header.
 
    Copyright (C) 2020 Luca Saiu
+   Updated in 2021 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -133,8 +134,8 @@ jitter_aligned_block_id;
 void *
 jitter_aligned_block_make (jitter_aligned_block_id *id,
                            size_t alignment_in_bytes, size_t size_in_bytes)
-  __attribute__ ((malloc, warn_unused_result, returns_nonnull,
-                  nonnull (1)));
+  __attribute__ ((__malloc__, __warn_unused_result__, __returns_nonnull__,
+                  __nonnull__ (1)));
 
 /* Free the block with the given id.  It is not necessary to supply the block
    pointer. */

@@ -51,7 +51,7 @@
    size. */
 void *
 jitter_executable_allocate (size_t size_in_bytes)
-  __attribute__ ((malloc));
+  __attribute__ ((__malloc__));
 
 /* Given an initial pointer to an object previously allocated by
    jitter_executable_allocate and possibly already shrunk by this function,
@@ -61,13 +61,13 @@ jitter_executable_allocate (size_t size_in_bytes)
    if shrinking is not possible. */
 void
 jitter_executable_shrink_in_place (void *object, size_t new_size_in_bytes)
-  __attribute__ ((nonnull (1)));
+  __attribute__ ((__nonnull__ (1)));
 
 /* Release the pointed buffer of executable memory returned by a previous call
    to jitter_mmap_allocate_executable . */
 void
 jitter_executable_deallocate (void *buffer)
-  __attribute__ ((nonnull (1)));
+  __attribute__ ((__nonnull__ (1)));
 
 
 

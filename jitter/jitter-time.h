@@ -1,6 +1,7 @@
 /* Jitter utility: timing function header.
 
    Copyright (C) 2020 Luca Saiu
+   Updated in 2021 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -54,12 +55,12 @@ jitter_point_in_time;
    The same structure can be overwritten and reused over and over again. */
 jitter_point_in_time
 jitter_point_in_time_make (void)
-  __attribute__ ((returns_nonnull, malloc));
+  __attribute__ ((__returns_nonnull__, __malloc__));
 
 /* Destroy a point-in-time structure allocated by jitter_point_in_time_make. */
 void
 jitter_point_in_time_destroy (jitter_point_in_time)
-  __attribute__ ((nonnull (1)));
+  __attribute__ ((__nonnull__ (1)));
 
 
 
@@ -71,7 +72,7 @@ jitter_point_in_time_destroy (jitter_point_in_time)
    any previous value it contained. */
 void
 jitter_time_set_now (jitter_point_in_time now)
-  __attribute__ ((nonnull (1)));
+  __attribute__ ((__nonnull__ (1)));
 
 /* Subtract the time stored in the structure pointed by the second argument
    from the time stored in the structure pointed by the first argument, and
@@ -79,7 +80,7 @@ jitter_time_set_now (jitter_point_in_time now)
 double
 jitter_time_subtract (jitter_point_in_time later,
                       jitter_point_in_time earlier)
-  __attribute__ ((nonnull (1), nonnull (2), pure));
+  __attribute__ ((__nonnull__ (1), __nonnull__ (2), __pure__));
 
 /* Subtract the time stored in the pointed structure from the present time,
    and return the difference in seconds.  This is more convenient than using
@@ -87,7 +88,7 @@ jitter_time_subtract (jitter_point_in_time later,
    very slightly more efficient. */
 double
 jitter_time_subtract_from_now (jitter_point_in_time earlier)
-  __attribute__ ((nonnull (1)));
+  __attribute__ ((__nonnull__ (1)));
 
 
 #endif // #ifndef JITTER_TIME_H_
