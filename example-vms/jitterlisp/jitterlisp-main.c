@@ -192,7 +192,7 @@ the_argp_program_version_hook (FILE * restrict stream, struct argp_state *s)
   const char *instrumentation
     = jitter_vm_instrumentation_to_string (c->instrumentation);
   fprintf (stream,
-           "JitterLisp, %s%s%s dispatch "
+           "JitterLisp with %s%s%s dispatch "
            "(" JITTER_PACKAGE_NAME ") " JITTER_PACKAGE_VERSION "\n",
            instrumentation,
            (strlen (instrumentation) > 0 ? ", " : ""),

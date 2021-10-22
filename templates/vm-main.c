@@ -497,7 +497,7 @@ the_argp_program_version_hook (FILE * restrict stream, struct argp_state *s)
   const char *instrumentation
     = jitter_vm_instrumentation_to_string (c->instrumentation);
   fprintf (stream,
-           "VM driver for %s, %s%s%s dispatch "
+           "%s VM driver, %s%s%s dispatch "
            "(" JITTER_PACKAGE_NAME ") " JITTER_PACKAGE_VERSION "\n",
            c->lower_case_prefix,
            instrumentation,

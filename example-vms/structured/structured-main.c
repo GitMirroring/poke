@@ -178,7 +178,7 @@ structured_version (void)
   const char *instrumentation
     = jitter_vm_instrumentation_to_string (c->instrumentation);
 
-  printf ("structured, %s%s%s dispatch ("
+  printf ("Structured language executor with %s%s%s dispatch ("
           JITTER_PACKAGE_NAME ") " JITTER_PACKAGE_VERSION "\n",
           instrumentation,
           (strlen (instrumentation) > 0 ? ", " : ""),
