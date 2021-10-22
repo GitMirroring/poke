@@ -1520,6 +1520,7 @@ bin_jitterlisp_LDADD = \
   $(AM_LDADD) $(JITTER_LDADD) $(LDADD_FOR_EXAMPLES) $(LDADD_FOR_GNULIB)
 bin_jitterlisp_LDFLAGS = \
   $(AM_LDFLAGS) $(JITTER_NON_INSTALLED_LDFLAGS) $(JITTER_LDFLAGS)
+EXTRA_bin_jitterlisp_DEPENDENCIES = $(lib_LTLIBRARIES)
 PROGRAMS_JITTERLISP += bin/jitterlisp--unsafe
 bin_jitterlisp__unsafe_SOURCES = $(SOURCES_FOR_JITTERLISP)
 bin_jitterlisp__unsafe_CPPFLAGS = \
@@ -1527,6 +1528,7 @@ bin_jitterlisp__unsafe_CPPFLAGS = \
 bin_jitterlisp__unsafe_CFLAGS = $(bin_jitterlisp_CFLAGS)
 bin_jitterlisp__unsafe_LDADD = $(bin_jitterlisp_LDADD)
 bin_jitterlisp__unsafe_LDFLAGS = $(bin_jitterlisp_LDFLAGS)
+EXTRA_bin_jitterlisp__unsafe_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
 # ...And their safe and unsafe best-dispatch Boehm-GC versions, if enabled.
 if JITTER_HAVE_BOEHM_GC
   PROGRAMS_JITTERLISP += bin/jitterlisp--boehm
@@ -1536,6 +1538,7 @@ if JITTER_HAVE_BOEHM_GC
   bin_jitterlisp__boehm_CFLAGS = $(bin_jitterlisp_CFLAGS)
   bin_jitterlisp__boehm_LDADD = -lgc $(bin_jitterlisp_LDADD)
   bin_jitterlisp__boehm_LDFLAGS = $(bin_jitterlisp_LDFLAGS)
+  EXTRA_bin_jitterlisp__boehm_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
   PROGRAMS_JITTERLISP += bin/jitterlisp--unsafe--boehm
   bin_jitterlisp__unsafe__boehm_SOURCES = $(SOURCES_FOR_JITTERLISP)
   bin_jitterlisp__unsafe__boehm_CPPFLAGS = \
@@ -1543,7 +1546,24 @@ if JITTER_HAVE_BOEHM_GC
   bin_jitterlisp__unsafe__boehm_CFLAGS = $(bin_jitterlisp__boehm_CFLAGS)
   bin_jitterlisp__unsafe__boehm_LDADD = $(bin_jitterlisp__boehm_LDADD)
   bin_jitterlisp__unsafe__boehm_LDFLAGS = $(bin_jitterlisp__boehm_LDFLAGS)
+  EXTRA_bin_jitterlisp__unsafe__boehm_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
 endif # JITTER_HAVE_BOEHM_GC
+
+# Man page for the main JitterLisp executable.  We currently generate only
+# one man page instead of one per each of the up to sixteen functionally
+# indentical executables.
+if JITTER_CAN_REBUILD_MAN_PAGES
+  # See the comment about doc/jitter.1 and its conditional generation.
+  $(srcdir)/doc/jitterlisp.1: bin/jitterlisp$(EXEEXT)
+	$(HELP2MAN_WITH_OPTIONS) --output="$@" \
+          --info-page='jitterlisp'\
+	  "$(JITTER_EMULATOR) bin/jitterlisp$(EXEEXT)" || true
+else # ! JITTER_CAN_REBUILD_MAN_PAGES
+  $(srcdir)/doc/jitterlisp.1: doc/missing-man-page.1
+	cp "$(srcdir)/doc/missing-man-page.1" "$@" || true
+endif
+dist_man1_MANS += $(srcdir)/doc/jitterlisp.1
+
 
 if JITTER_ENABLE_DISPATCH_SWITCH
   # The safe and unsafe JitterLisp programs, with switch dispatch...
@@ -1561,6 +1581,7 @@ if JITTER_ENABLE_DISPATCH_SWITCH
   bin_jitterlisp__switch_LDFLAGS = \
     $(AM_LDFLAGS) $(JITTER_NON_INSTALLED_LDFLAGS) \
     $(JITTER_SWITCH_LDFLAGS)
+  EXTRA_bin_jitterlisp__switch_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
   PROGRAMS_JITTERLISP += bin/jitterlisp--unsafe--switch
   bin_jitterlisp__unsafe__switch_SOURCES = $(SOURCES_FOR_JITTERLISP)
   bin_jitterlisp__unsafe__switch_CPPFLAGS = \
@@ -1571,7 +1592,8 @@ if JITTER_ENABLE_DISPATCH_SWITCH
     $(bin_jitterlisp__switch_LDADD)
   bin_jitterlisp__unsafe__switch_LDFLAGS = \
     $(bin_jitterlisp__switch_LDFLAGS)
-  # ...And their safe and unsafe switch-dispatch Boehm-GC versions, if enabled.
+  EXTRA_bin_jitterlisp__unsafe__switch_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
+# ...And their safe and unsafe switch-dispatch Boehm-GC versions, if enabled.
 if JITTER_HAVE_BOEHM_GC
     PROGRAMS_JITTERLISP += bin/jitterlisp--boehm--switch
     bin_jitterlisp__boehm__switch_SOURCES = $(SOURCES_FOR_JITTERLISP)
@@ -1584,6 +1606,7 @@ if JITTER_HAVE_BOEHM_GC
       -lgc $(bin_jitterlisp__switch_LDADD)
     bin_jitterlisp__boehm__switch_LDFLAGS = \
       $(bin_jitterlisp__switch_LDFLAGS)
+    EXTRA_bin_jitterlisp__boehm__switch_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
   PROGRAMS_JITTERLISP += bin/jitterlisp--unsafe--boehm--switch
   bin_jitterlisp__unsafe__boehm__switch_SOURCES = \
     $(SOURCES_FOR_JITTERLISP)
@@ -1595,6 +1618,7 @@ if JITTER_HAVE_BOEHM_GC
     $(bin_jitterlisp__boehm__switch_LDADD)
   bin_jitterlisp__unsafe__boehm__switch_LDFLAGS = \
     $(bin_jitterlisp__boehm__switch_LDFLAGS)
+  EXTRA_bin_jitterlisp__unsafe__boehm__switch_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
 endif # JITTER_HAVE_BOEHM_GC
 endif # JITTER_ENABLE_DISPATCH_SWITCH
 
@@ -1614,6 +1638,7 @@ if JITTER_ENABLE_DISPATCH_DIRECT_THREADING
   bin_jitterlisp__direct_threading_LDFLAGS = \
     $(AM_LDFLAGS) $(JITTER_NON_INSTALLED_LDFLAGS) \
     $(JITTER_DIRECT_THREADING_LDFLAGS)
+  EXTRA_bin_jitterlisp__direct_threading_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
   PROGRAMS_JITTERLISP += bin/jitterlisp--unsafe--direct-threading
   bin_jitterlisp__unsafe__direct_threading_SOURCES = \
     $(SOURCES_FOR_JITTERLISP)
@@ -1625,6 +1650,7 @@ if JITTER_ENABLE_DISPATCH_DIRECT_THREADING
     $(bin_jitterlisp__direct_threading_LDADD)
   bin_jitterlisp__unsafe__direct_threading_LDFLAGS = \
     $(bin_jitterlisp__direct_threading_LDFLAGS)
+  EXTRA_bin_jitterlisp__unsafe__direct_threading_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
   # ...And their safe and unsafe direct-threading Boehm-GC versions, if enabled.
 if JITTER_HAVE_BOEHM_GC
     PROGRAMS_JITTERLISP += bin/jitterlisp--boehm--direct-threading
@@ -1638,6 +1664,7 @@ if JITTER_HAVE_BOEHM_GC
       -lgc $(bin_jitterlisp__direct_threading_LDADD)
     bin_jitterlisp__boehm__direct_threading_LDFLAGS = \
       $(bin_jitterlisp__direct_threading_LDFLAGS)
+    EXTRA_bin_jitterlisp__boehm__direct_threading_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
   PROGRAMS_JITTERLISP += bin/jitterlisp--unsafe--boehm--direct-threading
   bin_jitterlisp__unsafe__boehm__direct_threading_SOURCES = \
     $(SOURCES_FOR_JITTERLISP)
@@ -1649,6 +1676,7 @@ if JITTER_HAVE_BOEHM_GC
     $(bin_jitterlisp__boehm__direct_threading_LDADD)
   bin_jitterlisp__unsafe__boehm__direct_threading_LDFLAGS = \
     $(bin_jitterlisp__boehm__direct_threading_LDFLAGS)
+  EXTRA_bin_jitterlisp__unsafe__boehm__direct_threading_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
 endif # JITTER_HAVE_BOEHM_GC
 endif # JITTER_ENABLE_DISPATCH_DIRECT_THREADING
 
@@ -1668,6 +1696,7 @@ if JITTER_ENABLE_DISPATCH_MINIMAL_THREADING
   bin_jitterlisp__minimal_threading_LDFLAGS = \
     $(AM_LDFLAGS) $(JITTER_NON_INSTALLED_LDFLAGS) \
     $(JITTER_MINIMAL_THREADING_LDFLAGS)
+  EXTRA_bin_jitterlisp__minimal_threading_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
   PROGRAMS_JITTERLISP += bin/jitterlisp--unsafe--minimal-threading
   bin_jitterlisp__unsafe__minimal_threading_SOURCES = \
     $(SOURCES_FOR_JITTERLISP)
@@ -1679,6 +1708,7 @@ if JITTER_ENABLE_DISPATCH_MINIMAL_THREADING
     $(bin_jitterlisp__minimal_threading_LDADD)
   bin_jitterlisp__unsafe__minimal_threading_LDFLAGS = \
     $(bin_jitterlisp__minimal_threading_LDFLAGS)
+  EXTRA_bin_jitterlisp__unsafe__minimal_threading_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
   # ...And their safe and unsafe minimal-threading Boehm-GC versions, if enabled.
 if JITTER_HAVE_BOEHM_GC
     PROGRAMS_JITTERLISP += bin/jitterlisp--boehm--minimal-threading
@@ -1692,6 +1722,7 @@ if JITTER_HAVE_BOEHM_GC
       -lgc $(bin_jitterlisp__minimal_threading_LDADD)
     bin_jitterlisp__boehm__minimal_threading_LDFLAGS = \
       $(bin_jitterlisp__minimal_threading_LDFLAGS)
+    EXTRA_bin_jitterlisp__boehm__minimal_threading_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
   PROGRAMS_JITTERLISP += bin/jitterlisp--unsafe--boehm--minimal-threading
   bin_jitterlisp__unsafe__boehm__minimal_threading_SOURCES = \
     $(SOURCES_FOR_JITTERLISP)
@@ -1703,6 +1734,7 @@ if JITTER_HAVE_BOEHM_GC
     $(bin_jitterlisp__boehm__minimal_threading_LDADD)
   bin_jitterlisp__unsafe__boehm__minimal_threading_LDFLAGS = \
     $(bin_jitterlisp__boehm__minimal_threading_LDFLAGS)
+  EXTRA_bin_jitterlisp__unsafe__boehm__minimal_threading_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
 endif # JITTER_HAVE_BOEHM_GC
 endif # JITTER_ENABLE_DISPATCH_MINIMAL_THREADING
 
@@ -1722,6 +1754,7 @@ if JITTER_ENABLE_DISPATCH_NO_THREADING
   bin_jitterlisp__no_threading_LDFLAGS = \
     $(AM_LDFLAGS) $(JITTER_NON_INSTALLED_LDFLAGS) \
     $(JITTER_NO_THREADING_LDFLAGS)
+  EXTRA_bin_jitterlisp__no_threading_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
   PROGRAMS_JITTERLISP += bin/jitterlisp--unsafe--no-threading
   bin_jitterlisp__unsafe__no_threading_SOURCES = \
     $(SOURCES_FOR_JITTERLISP)
@@ -1733,6 +1766,7 @@ if JITTER_ENABLE_DISPATCH_NO_THREADING
     $(bin_jitterlisp__no_threading_LDADD)
   bin_jitterlisp__unsafe__no_threading_LDFLAGS = \
     $(bin_jitterlisp__no_threading_LDFLAGS)
+  EXTRA_bin_jitterlisp__unsafe__no_threading_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
   # ...And their safe and unsafe no-threading Boehm-GC versions, if enabled.
 if JITTER_HAVE_BOEHM_GC
     PROGRAMS_JITTERLISP += bin/jitterlisp--boehm--no-threading
@@ -1746,6 +1780,7 @@ if JITTER_HAVE_BOEHM_GC
       -lgc $(bin_jitterlisp__no_threading_LDADD)
     bin_jitterlisp__boehm__no_threading_LDFLAGS = \
       $(bin_jitterlisp__no_threading_LDFLAGS)
+    EXTRA_bin_jitterlisp__boehm__no_threading_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
   PROGRAMS_JITTERLISP += bin/jitterlisp--unsafe--boehm--no-threading
   bin_jitterlisp__unsafe__boehm__no_threading_SOURCES = \
     $(SOURCES_FOR_JITTERLISP)
@@ -1757,6 +1792,7 @@ if JITTER_HAVE_BOEHM_GC
     $(bin_jitterlisp__boehm__no_threading_LDADD)
   bin_jitterlisp__unsafe__boehm__no_threading_LDFLAGS = \
     $(bin_jitterlisp__boehm__no_threading_LDFLAGS)
+  EXTRA_bin_jitterlisp__unsafe__boehm__no_threading_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
 endif # JITTER_HAVE_BOEHM_GC
 endif # JITTER_ENABLE_DISPATCH_NO_THREADING
 
@@ -1972,12 +2008,16 @@ if JITTER_CAN_REBUILD_MAN_PAGES
   # to force the user to have help2man installed.  This is sensible, but this
   # solution based on an Automake conditional is even better and allows for more
   # precise control and, importantly, parallel building.
-  doc/jitter.1: bin/jitter$(EXEEXT)
+  # The  || true  part at the end is a kludge to avoid failure on distcheck,
+  # where man page are generated in a directory which is artificially made
+  # read-only; in theory the source directory could be on a read-only filesystem
+  # and this might support that use case as well.
+  $(srcdir)/doc/jitter.1: bin/jitter$(EXEEXT)
 	$(HELP2MAN_WITH_OPTIONS) --output="$@" \
-	  "$(JITTER_EMULATOR) bin/jitter$(EXEEXT)"
-  doc/jitter-config.1: bin/jitter-config
+	  "$(JITTER_EMULATOR) bin/jitter$(EXEEXT)" || true
+  $(srcdir)/doc/jitter-config.1: bin/jitter-config
 	$(HELP2MAN_WITH_OPTIONS) --output="$@" \
-	  bin/jitter-config
+	  bin/jitter-config || true
 else # ! JITTER_CAN_REBUILD_MAN_PAGES
   # We can't build real man pages on this system, so we just distribute copies
   # of a single stub page.
@@ -1986,10 +2026,11 @@ else # ! JITTER_CAN_REBUILD_MAN_PAGES
   # contain pre-generated man pages (presumably not copied from the stub), and
   # an actual man pages never becomes older than the stub unless the user
   # touches the stub.
-  doc/jitter.1: doc/missing-man-page.1
-	cp "$(srcdir)/doc/missing-man-page.1" "$@"
-  doc/jitter-config.1: doc/missing-man-page.1
-	cp "$(srcdir)/doc/missing-man-page.1" "$@"
+  # About  || true  see the comment in the other conditional branch.
+  $(srcdir)/doc/jitter.1: doc/missing-man-page.1
+	cp "$(srcdir)/doc/missing-man-page.1" "$@" || true
+  $(srcdir)/doc/jitter-config.1: doc/missing-man-page.1
+	cp "$(srcdir)/doc/missing-man-page.1" "$@" || true
 endif # JITTER_CAN_REBUILD_MAN_PAGES
 
 # A user target to build man pages.
