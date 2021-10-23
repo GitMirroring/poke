@@ -1,0 +1,43 @@
+// Structued -*- Pascal -*- -style language: tail recursion test
+
+// Copyright (C) 2021 Luca Saiu
+// Written by Luca Saiu
+
+// This file is part of Jitter.
+
+// Jitter is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// Jitter is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with Jitter.  If not, see <http://www.gnu.org/licenses/>.
+
+procedure even (n)
+  if n = 0 then
+     return true;
+  elif n = 1 then
+     return false;
+  else
+     return odd (n - 1);
+  end;
+end;
+
+procedure odd (n)
+  if n = 0 then
+     return false;
+  elif n = 1 then
+     return true;
+  else
+     return even (n - 1);
+  end;
+end;
+
+// In practice this requires tail recursion to work correctly in order not
+// to crash.
+print odd (10003);  // This should print 1

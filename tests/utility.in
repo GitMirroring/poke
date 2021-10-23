@@ -283,7 +283,8 @@ jitter_run_case_with_and_without_valgrind ()
 #   dispatching-model suffix;
 # - options to pass to the executor;
 # - extension of program files for the executor, including the dot if present;
-# - basename of the program to interpret, without the .vm extension;
+# - a suffix for the description to print;
+# - basename of the program to interpret, without its extension;
 # - expected output;
 # - the dispatching model name in a form nice to print, and used as a suffix in
 #   the executor executable files;
@@ -295,12 +296,13 @@ jitter_run_program_case ()
     executor="$1"
     options="$2"
     extension="$3"
-    program="$4"
-    expected_output="$5"
-    dispatching_model_name="$6"
-    dispatching_model_subst="$7"
-    skip="$8"
-    description="$program $dispatching_model_name"
+    description_suffix="$4"
+    program="$5"
+    expected_output="$6"
+    dispatching_model_name="$7"
+    dispatching_model_subst="$8"
+    skip="$9"
+    description="$program $dispatching_model_name$description_suffix"
     if    test "x$dispatching_model_subst" = "x" \
        || test "x$skip" = "xskip"; then
         jitter_skip_case "$description"
@@ -314,13 +316,14 @@ jitter_run_program_case ()
     fi
 }
 
-# Run a program-based test with the given executor.  One test case per dispatching
-# model, skipping the ones which were disabled.
+# Run a program-based test with the given executor.  One test case per dispatch,
+# skipping the dispatches which were disabled.
 # Arguments:
 # - basename of the executor program (VM or high-level), without the
 #   dispatching-model suffix;
 # - options to pass to the executor;
 # - extension of program files for the executor, including the dot if present;
+# - a suffix for the description to print;
 # - basename of the program to interpret, without the extension;
 # - expected output.
 # - "skip" if the test case has to be skipped, an empty string otherwise.
@@ -329,23 +332,24 @@ jitter_run_program_case_all_dispatches ()
     executor="$1"
     options="$2"
     extension="$3"
-    program="$4"
-    expected_output="$5"
-    skip="$6"
-    jitter_run_program_case "$executor" "$options" "$extension" "$program" \
-       "$expected_output" "switch" \
+    description_suffix="$4"
+    program="$5"
+    expected_output="$6"
+    skip="$7"
+    jitter_run_program_case "$executor" "$options" "$extension" \
+       "$description_suffix" "$program" "$expected_output" "switch" \
        "@JITTER_ENABLE_DISPATCH_SWITCH@" \
        "$skip"
-    jitter_run_program_case "$executor" "$options" "$extension" "$program" \
-       "$expected_output" "direct-threading" \
+    jitter_run_program_case "$executor" "$options" "$extension" \
+       "$description_suffix" "$program" "$expected_output" "direct-threading" \
        "@JITTER_ENABLE_DISPATCH_DIRECT_THREADING@" \
        "$skip"
-    jitter_run_program_case "$executor" "$options" "$extension" "$program" \
-       "$expected_output" "minimal-threading" \
+    jitter_run_program_case "$executor" "$options" "$extension" \
+       "$description_suffix" "$program" "$expected_output" "minimal-threading" \
        "@JITTER_ENABLE_DISPATCH_MINIMAL_THREADING@" \
        "$skip"
-    jitter_run_program_case "$executor" "$options" "$extension" "$program" \
-       "$expected_output" "no-threading" \
+    jitter_run_program_case "$executor" "$options" "$extension" \
+       "$description_suffix" "$program" "$expected_output" "no-threading" \
        "@JITTER_ENABLE_DISPATCH_NO_THREADING@" \
        "$skip"
 }
@@ -358,19 +362,20 @@ jitter_run_program_case_all_dispatches ()
 # fixed to "uninspired", the appropriate timeout options, and ".vm".
 #
 # Arguments: like jitter_run_program_case_all_dispatches, without the first
-# three.
+# four.
 jitter_run_uninspired_case_all_dispatches ()
 {
     jitter_run_program_case_all_dispatches "uninspired" \
-       "$jitter_vm_timeout_options" ".vm" "$@"
+       "$jitter_vm_timeout_options" ".vm" '' "$@"
 }
 
 # Same as jitter_run_uninspired_case_all_dispatches , for structured
 # (high-level) programs.  Test both code generators.
 jitter_run_structured_case_all_dispatches ()
 {
-    for code_generator in "--stack" "--register"; do
-        jitter_run_program_case_all_dispatches "structured" "$code_generator" \
-                                               ".structured" "$@"
+    for option in "--stack" "--register"; do
+        description_suffix=" $(echo $option | @SED@ 's/--//')"
+        jitter_run_program_case_all_dispatches "structured" \
+           "$option" ".structured" "$description_suffix" "$@"
     done
 }

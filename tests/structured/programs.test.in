@@ -1,7 +1,7 @@
 #!@SHELL@
 # Jitter testsuite: VM programs.  This is -*- sh -*-, to be preprocessed.
 # Copyright (C) 2017 Luca Saiu
-# Updated in 2019 by Luca Saiu
+# Updated in 2019 and 2021 by Luca Saiu
 # Written by Luca Saiu
 
 # This file is part of Jitter.
@@ -25,7 +25,7 @@
 . "@abs_top_builddir@/tests/utility"
 
 # Print a range for test case indices.
-echo 1..40
+echo 1..48
 
 # Test programs doing nothing.
 jitter_run_structured_case_all_dispatches "skip" "" ""
@@ -41,3 +41,6 @@ jitter_run_structured_case_all_dispatches "euclid" "21" ""
 # Test a simple structured program computing the first few prime numbers in a
 # naïve way.
 jitter_run_structured_case_all_dispatches "primes" "2/3/5/7/11/13/17/19/23/29" ""
+
+# Test deeply nested procedures tail calls.
+jitter_run_structured_case_all_dispatches "even-odd" "1" ""

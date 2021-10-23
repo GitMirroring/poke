@@ -2235,6 +2235,7 @@ EXTRA_DIST += \
   tests/structured/conditional.structured \
   tests/structured/euclid.structured \
   tests/structured/primes.structured \
+  tests/structured/even-odd.structured \
   tests/uninspired/load-3-bit.vm \
   tests/uninspired/load-4-bit.vm \
   tests/uninspired/load-5-bit.vm \
