@@ -1007,7 +1007,7 @@ structured_translate_procedure (structuredvm_routine vmp,
   STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, procedure_mprolog);
   structuredvm_routine_append_label (vmp, label_tail_recursive);
 
-  /* Pop formals into registers, backwards. */
+  /* Pop actuals into registers, backwards. */
   int i;
   for (i = p->formal_no - 1; i >= 0; i --)
     {
