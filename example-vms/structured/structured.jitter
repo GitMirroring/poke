@@ -1,6 +1,7 @@
 ## A simple Jittery VM, used in the structured language example.
 
 ## Copyright (C) 2017, 2019, 2020, 2021 Luca Saiu
+## Copyright (C) 2021 pEp Foundation
 ## Written by Luca Saiu
 
 ## This file is part of Jitter.
@@ -350,6 +351,8 @@ rule minusi-- rewrite minusi-stack 0 into end
 
 # rule equali0-to-not rewrite equali $a into not when is_zero ($a) end
 
+rule push-swap--underpush rewrite push-stack $a; swap-stack into underpush-stack $a end
+
 ## Optimized instructions (scratch).
 #################################################################
 
@@ -481,6 +484,15 @@ instruction return-to-undertop ()
     JITTER_RETURN (return_address);
   end
 end
+
+# This is needed in tail calls for stack code: see structured_translate_call in
+# structured-code-generator-stack.c .
+instruction swap-stack ()
+  code
+    JITTER_SWAP_MAINSTACK();
+  end
+end
+
 
 instruction procedure-prolog ()
   callee

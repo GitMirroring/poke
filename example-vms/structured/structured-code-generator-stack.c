@@ -1,6 +1,7 @@
 /* Jittery structured language example: stack-based code generator.
 
    Copyright (C) 2017, 2018, 2019, 2021 Luca Saiu
+   Copyright (C) 2021 pEp Foundation
    Written by Luca Saiu
 
    This file is part of the Jitter structured-language example, distributed
@@ -39,11 +40,13 @@
 /* Add code to translate the pointed expression AST to the pointed Jittery
    routine, using the pointed static environment to be looked up and updated.
    We need one forward-declaration here, as structured_translate_expression and
-   structured_translate_primitive are mutually recursive. */
+   structured_translate_primitive are mutually recursive.
+   The expression is in tail position iff tail is non-false. */
 static void
 structured_translate_expression (structuredvm_routine vmp,
                                  struct structured_expression *e,
-                                 struct structured_static_environment *env);
+                                 struct structured_static_environment *env,
+                                 bool tail);
 
 /* Add code to translate a primitive-case expression AST to the pointed Jittery
    routine, using the pointed static environment to be looked up and updated.
@@ -66,11 +69,11 @@ structured_translate_primitive (structuredvm_routine vmp,
     case structured_primitive_unary_minus:
     case structured_primitive_logical_not:
     case structured_primitive_is_nonzero:
-      structured_translate_expression (vmp, operand_0, env);
+      structured_translate_expression (vmp, operand_0, env, false);
       break;
     default: /* The other primitives are binary. */
-      structured_translate_expression (vmp, operand_0, env);
-      structured_translate_expression (vmp, operand_1, env);
+      structured_translate_expression (vmp, operand_0, env, false);
+      structured_translate_expression (vmp, operand_1, env, false);
     }
 
   /* Emit one VM instruction actually implementing the primitive, working over
@@ -151,7 +154,8 @@ structured_translate_call (structuredvm_routine vmp,
                            struct structured_expression **actuals,
                            size_t actual_no,
                            bool drop_result,
-                           struct structured_static_environment *env)
+                           struct structured_static_environment *env,
+                           bool tail)
 {
   /* Check arity. */
   size_t formal_no
@@ -163,35 +167,70 @@ structured_translate_call (structuredvm_routine vmp,
   size_t used_register_no
     = structured_static_environment_used_register_no (env);
 
-  /* Push instructions to save used registers.  It is correct to do it now
-     since in this language evaluating actuals for a call can not change
-     the values of locals. */
-  structured_emit_save_registers (vmp, used_register_no);
+  /* If the call is non-tail generate push instructions to save used registers.
+     It is correct to do it now since in this language evaluating actuals for a
+     call can not change the values of locals.
+     A tail-called callee will never return, so in that case we do not need to
+     save or restore anything. */
+  if (! tail)
+    structured_emit_save_registers (vmp, used_register_no);
 
   /* Push actual values. */
   int i;
   for (i = 0; i < actual_no; i ++)
-    structured_translate_expression (vmp, actuals [i], env);
+    {
+      structured_translate_expression (vmp, actuals [i], env, false);
+      /* For a tail call we need to keep the caller return address on the top of
+         the stack: this means that after pushing each actual the actual value
+         must be swapped with the under-top, which is in fact the return addres
+         for the *caller*.  This is ugly and inefficient, but I see no better
+         solution other than possibly a single roll instruction before the
+         branch; whether that would be better is questionable. */
+      if (tail)
+        STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, swap_mstack);
+    }
 
-  /* Call. */
-  structuredvm_label procedure_label
-    = structured_static_environment_lookup_procedure (env, callee_name);
-  STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, call);
-  structuredvm_routine_append_label_parameter (vmp, procedure_label);
+  /* If this is a non-tail call emit a call instruction to the callee
+     instruction; otherwise emit a branch instruction to the appropriate
+     instruction which, with our calling conventions, is the one immediately
+     following the callee instruction. */
+  structuredvm_label procedure_label;
+  if (tail)
+    {
+      procedure_label
+        = structured_static_environment_lookup_procedure_tail (env, callee_name);
+      STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, b);
+      structuredvm_routine_append_label_parameter (vmp, procedure_label);
+    }
+  else
+    {
+      procedure_label
+        = structured_static_environment_lookup_procedure (env, callee_name);
+      STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, call);
+      structuredvm_routine_append_label_parameter (vmp, procedure_label);
+    }
 
-  /* Restore registers. */
-  structured_emit_restore_registers (vmp, used_register_no);
+  /* Restore registers, if the call is non-tail. */
+  if (! tail)
+    structured_emit_restore_registers (vmp, used_register_no);
 
   /* Drop the procedure result off the stack, if that was requested.  This
      behaviour is correct for call *statements*, which ignore any result. */
   if (drop_result)
-    STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, drop_mstack);
+    {
+      /* This is a call statement, where we need to drop the result. */
+      if (! tail)
+        STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, drop_mstack);
+    }
+  /* else this is a call expression and we do not need to drop the result,
+     which is already on the top of the stack where it is expected. */
 }
 
 static void
 structured_translate_expression (structuredvm_routine vmp,
                                  struct structured_expression *e,
-                                 struct structured_static_environment *env)
+                                 struct structured_static_environment *env,
+                                 bool tail)
 {
   switch (e->case_)
     {
@@ -216,16 +255,33 @@ structured_translate_expression (structuredvm_routine vmp,
       }
     case structured_expression_case_if_then_else:
       {
+        /* Translate
+             if C then T else E end
+           into
+               C
+               bf $before_else
+               T
+               b $after_else
+             $before_else:
+               E
+             $after_else:
+           If the expression is tail, omit $after_else and the branch to it. */
         structuredvm_label before_else = structuredvm_fresh_label (vmp);
         structuredvm_label after_else = structuredvm_fresh_label (vmp);
-        structured_translate_expression (vmp, e->if_then_else_condition, env);
+        structured_translate_expression (vmp, e->if_then_else_condition, env,
+                                         false);
         STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, bf_mstack);
         structuredvm_routine_append_label_parameter (vmp, before_else);
-        structured_translate_expression (vmp, e->if_then_else_then_branch, env);
-        STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, b);
-        structuredvm_routine_append_label_parameter (vmp, after_else);
+        structured_translate_expression (vmp, e->if_then_else_then_branch, env,
+                                         tail);
+        if (! tail)
+          {
+            STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, b);
+            structuredvm_routine_append_label_parameter (vmp, after_else);
+          }
         structuredvm_routine_append_label (vmp, before_else);
-        structured_translate_expression (vmp, e->if_then_else_else_branch, env);
+        structured_translate_expression (vmp, e->if_then_else_else_branch, env,
+                                         tail);
         structuredvm_routine_append_label (vmp, after_else);
         break;
       }
@@ -239,7 +295,10 @@ structured_translate_expression (structuredvm_routine vmp,
     case structured_expression_case_call:
       {
         structured_translate_call (vmp, e->callee, e->actuals, e->actual_no,
-                                   false, env);
+                                   false, env,
+                                   false /* FIXME: expresisons also need to
+                                            handle tailness */
+                                   );
         break;
       }
     default:
@@ -247,23 +306,35 @@ structured_translate_expression (structuredvm_routine vmp,
     }
 }
 
+/* Emit instructions returning an undefined value.  This is meant to be used
+   at the end of a tail statement when there is no explicit return. */
+static void
+structured_generate_return_statement (struct structuredvm_mutable_routine *vmp)
+{
+  STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, push_munspecified_mstack);
+  STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, return_mto_mundertop);
+}
+
 /* Add code to translate the pointed statement AST to the pointed Jittery
    routine, using the pointed static environment to be looked up and updated. */
 static void
 structured_translate_statement (structuredvm_routine vmp,
                                 struct structured_statement *s,
-                                struct structured_static_environment *env)
+                                struct structured_static_environment *env,
+                                bool tail)
 {
   switch (s->case_)
     {
     case structured_statement_case_skip:
       {
+        if (tail)
+          structured_generate_return_statement (vmp);
         break;
       }
     case structured_statement_case_block:
       {
         structured_static_environment_bind_variable (env, s->block_variable);
-        structured_translate_statement (vmp, s->block_body, env);
+        structured_translate_statement (vmp, s->block_body, env, tail);
         structured_static_environment_unbind_variable (env, s->block_variable);
         break;
       }
@@ -272,60 +343,119 @@ structured_translate_statement (structuredvm_routine vmp,
         structured_register_index idx
           = structured_static_environment_lookup_variable
                (env, s->assignment_variable);
-        structured_translate_expression (vmp, s->assignment_expression, env);
+        structured_translate_expression (vmp, s->assignment_expression, env,
+                                         false);
         STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, pop_mstack);
         STRUCTUREDVM_ROUTINE_APPEND_REGISTER_PARAMETER(vmp, r, idx);
+        if (tail)
+          structured_generate_return_statement (vmp);
         break;
       }
     case structured_statement_case_print:
       {
-        structured_translate_expression (vmp, s->print_expression, env);
+        structured_translate_expression (vmp, s->print_expression, env, false);
         STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, print_mstack);
+        if (tail)
+          structured_generate_return_statement (vmp);
         break;
       }
     case structured_statement_case_sequence:
       {
-        structured_translate_statement (vmp, s->sequence_statement_0, env);
-        structured_translate_statement (vmp, s->sequence_statement_1, env);
+        /* Avoid at least some tailness anonmalies due to parsing, where there
+           can be trivial skip statements.  This does not really count as an
+           optimisation to me.
+           FIXME: factor with the other code generator; better: move to parsing
+           or to a pass right after parsing. */
+        if (s->sequence_statement_0->case_ == structured_statement_case_skip)
+          structured_translate_statement (vmp, s->sequence_statement_1, env,
+                                          tail);
+        else if (s->sequence_statement_1->case_ == structured_statement_case_skip)
+          structured_translate_statement (vmp, s->sequence_statement_0, env,
+                                          tail);
+        else
+          {
+            structured_translate_statement (vmp, s->sequence_statement_0, env,
+                                            false);
+            structured_translate_statement (vmp, s->sequence_statement_1, env,
+                                            tail);
+          }
         break;
       }
     case structured_statement_case_if_then_else:
       {
+        /* Translate
+             if E then T else E end
+           into
+               E
+               bf $BEFORE_ELSE
+               T
+               b $AFTER_ELSE
+             $BEFORE_ELSE:
+               E
+             $AFTER_ELSE:
+           In a tail context omit $AFTER_ELSE and the branch to it. */
         structuredvm_label before_else = structuredvm_fresh_label (vmp);
         structuredvm_label after_else = structuredvm_fresh_label (vmp);
-        structured_translate_expression (vmp, s->if_then_else_condition, env);
+        structured_translate_expression (vmp, s->if_then_else_condition, env,
+                                         false);
         STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, bf_mstack);
         structuredvm_routine_append_label_parameter (vmp, before_else);
-        structured_translate_statement (vmp, s->if_then_else_then_branch, env);
-        STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, b);
-        structuredvm_routine_append_label_parameter (vmp, after_else);
+        structured_translate_statement (vmp, s->if_then_else_then_branch, env,
+                                        tail);
+        if (! tail)
+          {
+            STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, b);
+            structuredvm_routine_append_label_parameter (vmp, after_else);
+          }
         structuredvm_routine_append_label (vmp, before_else);
-        structured_translate_statement (vmp, s->if_then_else_else_branch, env);
-        structuredvm_routine_append_label (vmp, after_else);
+        structured_translate_statement (vmp, s->if_then_else_else_branch, env,
+                                        tail);
+        if (! tail)
+          structuredvm_routine_append_label (vmp, after_else);
         break;
       }
     case structured_statement_case_repeat_until:
       {
         structuredvm_label before_body = structuredvm_fresh_label (vmp);
         structuredvm_routine_append_label (vmp, before_body);
-        structured_translate_statement (vmp, s->repeat_until_body, env);
-        structured_translate_expression (vmp, s->repeat_until_guard, env);
+        structured_translate_statement (vmp, s->repeat_until_body, env, false);
+        structured_translate_expression (vmp, s->repeat_until_guard, env, false);
         STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, bf_mstack);
         structuredvm_routine_append_label_parameter (vmp, before_body);
+        if (tail)
+          structured_generate_return_statement (vmp);
         break;
       }
     case structured_statement_case_return:
       {
-        /* Compile the expression and generate a return instruction.  The return
-           address will be at the undertop, right below the result. */
-        structured_translate_expression (vmp, s->return_result, env);
-        STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, return_mto_mundertop);
+        struct structured_expression *e = s->return_result;
+        /* In every case but one, compile the expression and generate a return
+           instruction.  The return address will be at the undertop, right below
+           the result.
+           We can do better in one case, which is a return statement in tail
+           position whose return result is a procedure call.  In that case we
+           can compile the statement as a tail call, without any additional
+           return instruction. */
+        if (tail && e->case_ == structured_expression_case_call)
+          {
+            structured_translate_call (vmp,
+                                       e->callee, e->actuals, e->actual_no,
+                                       false, env, tail);
+          }
+        else
+          {
+            /* Compile the expression and generate a return instruction.  The
+               return address will be at the undertop, right below the
+               result. */
+            structured_translate_expression (vmp, s->return_result, env, true);
+            STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, return_mto_mundertop);
+          }
         break;
       }
     case structured_statement_case_call:
       {
         structured_translate_call (vmp, s->callee, s->actuals, s->actual_no,
-                                   true, env);
+                                   true, env, tail);
         break;
       }
     default:
@@ -380,11 +510,8 @@ structured_translate_procedure (structuredvm_routine vmp,
       STRUCTUREDVM_ROUTINE_APPEND_REGISTER_PARAMETER(vmp, r, register_index);
     }
 
-  structured_translate_statement (vmp, p->body, env);
-
-  /* Add an implicit return, which may or may not be reachable. */
-  STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, push_munspecified_mstack);
-  STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, return_mto_mundertop);
+  /* Translate the body. */
+  structured_translate_statement (vmp, p->body, env, true);
 
   /* Unbind formals. */
   for (i = 0; i < p->formal_no; i ++)
@@ -418,7 +545,8 @@ structured_translate_program (structuredvm_routine vmp,
 
   /* Translate the main statement. */
   structuredvm_routine_append_label (vmp, main_statement);
-  structured_translate_statement (vmp, p->main_statement, env);
+  structured_translate_statement (vmp, p->main_statement, env,
+                                  false /* no implicit return to generate */);
 
   structured_static_environment_destroy (env);
 }

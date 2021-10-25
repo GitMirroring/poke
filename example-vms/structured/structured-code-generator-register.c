@@ -1,7 +1,8 @@
 #include <assert.h>
 /* Jittery structured language example: register-based code generator.
 
-   Copyright (C) 2017, 2018, 2019 Luca Saiu
+   Copyright (C) 2017, 2018, 2019, 2021 Luca Saiu
+   Copyright (C) 2021 pEp Foundation
    Written by Luca Saiu
 
    This file is part of the Jitter structured-language example, distributed
@@ -470,9 +471,11 @@ structured_translate_call (structuredvm_routine vmp,
   size_t used_register_no
     = structured_static_environment_used_register_no (env);
 
-  /* On a non-tail call, push instructions to save used registers.  It is
-     correct to do it now since in this language evaluating actuals for a call
-     can not change the values of locals. */
+  /* If the call is non-tail generate push instructions to save used registers.
+     It is correct to do it now since in this language evaluating actuals for a
+     call can not change the values of locals.
+     A tail-called callee will never return, so in that case we do not need to
+     save or restore anything. */
   if (! tail)
     structured_emit_save_registers (vmp, used_register_no);
 
@@ -490,7 +493,10 @@ structured_translate_call (structuredvm_routine vmp,
       structured_emit_operand (vmp, env, & al);
     }
 
-  /* Call -- or, on a tail call, branch. */
+  /* If this is a non-tail call emit a call instruction to the callee
+     instruction; otherwise emit a branch instruction to the appropriate
+     instruction which, with our calling conventions, is the one immediately
+     following the callee instruction. */
   structuredvm_label procedure_label;
   if (tail)
     {
@@ -515,11 +521,13 @@ structured_translate_call (structuredvm_routine vmp,
      behaviour is correct for call *statements*, which ignore any result. */
   if (drop_result)
     {
+      /* This is a call statement, where we need to drop the result. */
       if (! tail)
         STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, drop_mstack);
     }
   else
     {
+      /* This is a call expression, where we do not need to drop the result. */
       structured_conctetize_location (env, rl);
       if (! tail)
         {
@@ -869,7 +877,9 @@ structured_translate_statement (struct structuredvm_mutable_routine *vmp,
       {
         /* Avoid at least some tailness anonmalies due to parsing, where there
            can be trivial skip statements.  This does not really count as an
-           optimisation to me. */
+           optimisation to me.
+           FIXME: factor with the other code generator; better: move to parsing
+           or to a pass right after parsing. */
         if (s->sequence_statement_0->case_ == structured_statement_case_skip)
           structured_translate_statement (vmp, s->sequence_statement_1, env,
                                           tail);
