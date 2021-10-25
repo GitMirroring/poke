@@ -432,21 +432,23 @@ structured_translate_statement (structuredvm_routine vmp,
         /* In every case but one, compile the expression and generate a return
            instruction.  The return address will be at the undertop, right below
            the result.
-           We can do better in one case, which is a return statement in tail
-           position whose return result is a procedure call.  In that case we
-           can compile the statement as a tail call, without any additional
-           return instruction. */
-        if (tail && e->case_ == structured_expression_case_call)
+           We can do better in one case, which is a return statement whose
+           return result is a procedure call.  In that case we can compile the
+           statement as a tail call, without any additional return
+           instruction.  Notice that the return statement is always considered
+           tail, even if not in a tail position, for example inside a loop
+           body. */
+        if (e->case_ == structured_expression_case_call)
           {
             structured_translate_call (vmp,
                                        e->callee, e->actuals, e->actual_no,
-                                       false, env, tail);
+                                       false, env, true);
           }
         else
           {
             /* Compile the expression and generate a return instruction.  The
                return address will be at the undertop, right below the
-               result. */
+               result.  The result expression is in a tail position. */
             structured_translate_expression (vmp, s->return_result, env, true);
             STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, return_mto_mundertop);
           }

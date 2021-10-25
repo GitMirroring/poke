@@ -946,22 +946,25 @@ structured_translate_statement (struct structuredvm_mutable_routine *vmp,
         /* In every case but one, compile the expression and generate a return
            instruction.  The return address will be at the undertop, right below
            the result.
-           We can do better in one case, which is a return statement in tail
-           position whose return result is a procedure call.  In that case we
-           can compile the statement as a tail call, without any additional
-           return instruction. */
-        if (tail && e->case_ == structured_expression_case_call)
+           We can do better in one case, which is a return statement whose
+           return result is a procedure call.  In that case we can compile the
+           statement as a tail call, without any additional return
+           instruction.  Notice that the return statement is always considered
+           tail, even if not in a tail position, for example inside a loop
+           body. */
+        if (e->case_ == structured_expression_case_call)
           {
             struct structured_location l = STRUCTURED_LOCATION_ANYWHERE;
             structured_translate_call (vmp, & l,
                                        e->callee, e->actuals, e->actual_no,
-                                       false, env, tail);
+                                       false, env, true);
             structured_consume_location (env, & l);
           }
         else
           {
+            /* The result expression is in a tail position. */
             struct structured_location l = STRUCTURED_LOCATION_ANYWHERE;
-            structured_translate_expression (vmp, & l, e, env, tail);
+            structured_translate_expression (vmp, & l, e, env, true);
             structured_consume_location (env, & l);
             STRUCTUREDVM_ROUTINE_APPEND_INSTRUCTION(vmp, push_mstack);
             structured_emit_operand (vmp, env, & l);
