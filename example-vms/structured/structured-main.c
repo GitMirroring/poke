@@ -100,9 +100,15 @@ structured_help (void)
 
   printf ("Usage: %s [OPTION...] FILE.structured\n", structured_program_name);
   printf ("   or: %s [OPTION...] -\n", structured_program_name);
-  printf ("Run a structured-language program on a Jittery VM, using the\n");
-  printf ("%s dispatch %s.\n", c->dispatch_human_readable,
-          jitter_vm_instrumentation_to_string (instrumentation));
+  printf ("Run a structured-language program on a Jittery VM, either\n"
+          "stack-based or register-based according to the options,\n"
+          "using the\n");
+  const char *instrumentation_string
+    = jitter_vm_instrumentation_to_string (instrumentation);
+  bool instrumentation_empty = instrumentation_string [0] == '\0';
+  printf ("%s dispatch%s%s.\n", c->dispatch_human_readable,
+          instrumentation_empty ? "" : " with ",
+          instrumentation_string);
 
   structured_help_section ("Debugging options");
   printf ("      --disassemble                print hardware machine instructions\n");
