@@ -1399,6 +1399,21 @@ EXTRA_DIST += \
 # Distribute the GNU Libtextstyle default style for Structured and the Structured VM.  FIXME: install.
 EXTRA_DIST += example-vms/structured/structured-style.css
 
+# Man page for the main Structured executable.  We currently generate only
+# one man page instead of one per each of the up to four functionally
+# indentical executables.
+if JITTER_CAN_REBUILD_MAN_PAGES
+  # See the comment about doc/jitter.1 and its conditional generation.
+  $(srcdir)/doc/structured.1: bin/structured$(EXEEXT)
+	$(HELP2MAN_WITH_OPTIONS) --output="$@" \
+          --info-page='structured'\
+	  "$(JITTER_EMULATOR) bin/structured$(EXEEXT)" || true
+else # ! JITTER_CAN_REBUILD_MAN_PAGES
+  $(srcdir)/doc/structured.1: doc/missing-man-page.1
+	cp "$(srcdir)/doc/missing-man-page.1" "$@" || true
+endif
+dist_man1_MANS += $(srcdir)/doc/structured.1
+
 
 # Jittery Lisp example.
 # ################################################################
