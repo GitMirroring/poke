@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (C) 2019, 2020 Luca Saiu
+# Copyright (C) 2019, 2020, 2021 Luca Saiu
 # Written by Luca Saiu
 
 # This file is part of the Jitter build system examples, distributed along with
@@ -105,7 +105,7 @@ for target_directory in $subs; do
                 ; do
         cp_or_fail ${file} ${target_directory}/examples/
     done
-    
+
     # Copy files from this directory.
     for file in README AUTHORS NEWS ChangeLog; do
         cp_or_fail ${file} ${target_directory}/
@@ -114,6 +114,17 @@ for target_directory in $subs; do
     # Copy files from the Jitter source directory.
     for file in COPYING; do
         cp_or_fail ../${file} ${target_directory}/
+    done
+
+    # Copy documentation files.
+    mkdir ${target_directory}/doc 2> /dev/null || true
+    cp_or_fail ../example-vms/structured/doc/structured.texi \
+               ${target_directory}/doc/
+
+    # Copy included documentation files of which only one copy is in the Jitter
+    # sources, under the doc/ directory.
+    for file in gpl.texi fdl.texi; do
+        cp_or_fail ../doc/${file} ${target_directory}/doc/
     done
 
     # Copy files from the Jitter source directory not following the general

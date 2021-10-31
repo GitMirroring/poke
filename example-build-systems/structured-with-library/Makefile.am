@@ -1,6 +1,5 @@
 ## Process this file with automake to produce Makefile.in .
-# Copyright (C) 2016, 2017, 2018, 2019, 2020 Luca Saiu
-# Updated in 2021 by Luca Saiu
+# Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021 Luca Saiu
 # Written by Luca Saiu
 
 # This file is part of the Jitter structured-language example,
@@ -142,6 +141,13 @@ $(srcdir)/structured-scanner.c: structured.l
 	$(LEX) --header-file="$(srcdir)/structured-scanner.h" -o"$@" \
           "$(srcdir)/structured.l"
 $(srcdir)/structured-scanner.h: structured-scanner.c
+
+
+# Documentation
+################################################################
+
+info_TEXINFOS = doc/structured.texi
+doc_structured_TEXINFOS = doc/gpl.texi doc/fdl.texi
 
 
 # Files to be distributed.

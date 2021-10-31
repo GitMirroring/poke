@@ -1414,6 +1414,18 @@ else # ! JITTER_CAN_REBUILD_MAN_PAGES
 endif
 dist_man1_MANS += $(srcdir)/doc/structured.1
 
+# Structured documentation.
+info_TEXINFOS += \
+  example-vms/structured/doc/structured.texi
+example_vms_structured_doc_structured_TEXINFOS = \
+  $(srcdir)/example-vms/structured/doc/gpl.texi \
+  $(srcdir)/example-vms/structured/doc/fdl.texi
+# This is an easy way of not distributing two copies of the same two files.
+$(srcdir)/example-vms/structured/doc/gpl.texi: doc/gpl.texi
+	cp "$<" "$@"
+$(srcdir)/example-vms/structured/doc/fdl.texi: doc/fdl.texi
+	cp "$<" "$@"
+
 
 # Jittery Lisp example.
 # ################################################################

@@ -1,0 +1,429 @@
+\input texinfo.tex @c This is -*- Texinfo -*-.
+
+@c This file is part of the Structured manual, which is part of Jitter.
+@c Copyright (C) 2017, 2018, 2019, 2020, 2021  Luca Saiu
+@c Written by Luca Saiu
+@c Document skeleton copied from the JitterLisp manual in late 2021.
+
+@c Permission is granted to copy, distribute and/or modify this
+@c document under the terms of the GNU Free Documentation License,
+@c Version 1.3 or any later version published by the Free Software
+@c Foundation; with no Invariant Sections, no Front-Cover Texts, and
+@c no Back-Cover Texts.  A copy of the license is included in the
+@c section entitled ``GNU Free Documentation License''.
+
+
+@c Conditionals
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+@c @set this if building a preview for myself rather than a nice clean manual
+@c to be distributed.
+@c @set preview
+
+@c @set this if I decide to include license texts.  It will look silly unless
+@c the manual is long.
+@c @set includelicenses
+
+@c @set this is I really want to typeset the PDF version in color.  It is
+@c probably a bad idea.
+@set color
+
+
+@c Index settings which must come early
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+@c @c Define a symbol index, with entries typeset in @code .
+@c @defcodeindex sy
+
+@c @c Merge index entries for symbols to the concept index.
+@c I've noticed that it's unfortunately impossible to reliably print
+@c both indices, when one is merged into the other.
+@c @syncodeindex sy cp
+
+
+@c File name and title
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+@setfilename structured.info
+@include version-structured.texi
+@settitle The Structured manual, for Jitter version @value{VERSION}
+
+
+@c Global settings
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+@documentencoding UTF-8
+@c As Bruno Haible told me, @documentlanguage is recommended against for
+@c English and leaving it out might in fact make builds easier on some
+@c older systems:
+@c   https://lists.gnu.org/archive/html/bug-bison/2019-05/msg00034.html
+@c
+@c I am leaving this comment mostly as a note for myself, in case I forget
+@c about this later and wanted to specify the language in a bout of pedantry.
+@c
+@c @documentlanguage en   @c No: see above.
+
+@syncodeindex pg cp
+
+@c @ignore
+@afourpaper
+@c @end ignore
+
+@c Use color for previews, which are not to be printed.  On screen it is
+@c convenient to check that links point to the right thing.
+@ifset preview
+@set color
+@end ifset @c preview
+
+@ifclear color
+@c Don't use color for hyperlinks.  If the manual is really to be printed
+@c out it will almost certainly be in black and white.
+@tex
+\global\def\linkcolor{0 0 0}
+\global\def\urlcolor{0 0 0}
+@end tex
+@end ifclear @c color
+
+@c FIXME: comment
+@ifset color
+@tex
+\global\def\linkcolor{0.75 0 0}
+\global\def\urlcolor{0 0 0.75}
+@end tex
+@end ifset @c color
+
+@ignore
+@fonttextsize 10
+@afivepaper
+@smallbook
+@c @pagesizes 200mm,100mm
+@c @cropmarks
+@end ignore
+
+@c This is for production of a nice manual; I might want to enable it
+@c when the actual manual is written.  The default (start chapters on
+@c pages of any parity) looks less nice.
+@ifclear preview
+@setchapternewpage odd
+@end ifclear @c preview
+
+@c This come in handy for private testing printouts.
+@ifset preview
+@setchapternewpage off
+@end ifset @c preview
+
+@c Information for the Info directory
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+@dircategory Programming
+@direntry
+* The Structured langauge manual: (structured).  A simple programming language implementation using a Jittery VM.
+* @command{structured}:  (structured).           Invoking @command{structured}.
+@end direntry
+
+
+@c Macros
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+@iftex
+@macro epsilonsubscript{subscript}
+@inlineraw{tex,$@varepsilon_{\subscript\}$}@inlineraw{tex,{}}
+@end macro
+@end iftex
+
+@ifnottex
+@ifhtml
+@macro epsilonsubscript{subscript}
+@inlineraw{html,&epsilon;<sub>\subscript\</sub>}
+@end macro
+@end ifhtml
+@ifnothtml
+@macro epsilonsubscript{subscript}
+epsilon\subscript\
+@end macro
+@end ifnothtml
+@end ifnottex
+
+@macro epsilonzero{}
+@epsilonsubscript{0}
+@end macro
+
+@macro epsilonone{}
+@epsilonsubscript{1}
+@end macro
+
+@rmacro fixme{text}
+@strong{[@emph{FIXME}: \text\]}
+@end rmacro
+
+@rmacro fill
+@fixme{Fill this.}
+@end rmacro
+
+@rmacro rephrase{text}
+@strong{[@emph{REPHRASE}: \text\]}
+@end rmacro
+
+
+@c Copying conditions
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+@copying
+This is the manual for Structured
+@c (edition @value{EDITION} for
+(for Jitter version @value{VERSION},
+last updated on @value{UPDATED}), a programming language
+implementation using a Jittery VM, conceived as an example for Jitter.
+
+@noindent
+Copyright @copyright{} 2018, 2019, 2020, 2021  Luca Saiu.@*
+Copyright @copyright{} 2021 p≡p Foundation.@*
+Written by Luca Saiu.
+
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation;
+@ifset includelicenses
+  with the Invariant Sections being ``GNU General Public License'' and
+  ``GNU Free Documentation License'',
+@end ifset @c includelicenses
+with no Front-Cover texts and with the Back-Cover text being
+``@emph{You have freedom to copy and modify this manual, like GNU
+software.}''.
+
+A copy of the GNU Free Documentation License is
+@ifset includelicenses
+  included in this book in the appendix entitled ``GNU Free
+  Documentation License'', and the license text is also
+@end ifset @c includelicenses
+distributed in electronic form along with the software in the file
+@file{doc/COPYING.DOC}, and available on the web at the URL
+@url{https://www.gnu.org/licenses/fdl.html}.
+@end quotation
+
+The author's personal web site @url{http://ageinghacker.net} contains
+his contact information.
+@end copying
+
+
+@c Title page
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+@titlepage
+@title Structured
+@subtitle A programming language using a Jittery VM, conceived as an example for Jitter
+@subtitle for Jitter version @value{VERSION}, updated in @value{UPDATED-MONTH}
+@c @author Luca Saiu (@email{positron@@gnu.org}, @url{http://ageinghacker.net})
+@c @author Luca Saiu (@url{http://ageinghacker.net})
+@c @author Luca Saiu (@email{positron@@gnu.org})
+@author Luca Saiu
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+
+@c Contents (only actually used for the hardcopy version)
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+@contents
+
+
+@c First page for the Info version, with the main menu
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+@ifnottex
+@node Top
+@top Structured
+
+@c An @insertcopying within the Top node is not explicitly mandated by
+@c the GNU Standards, nor even suggested in the Texinfo documentation;
+@c however without such a line the Info and HTML versions don't bear any
+@c copying information near the beginning.  Notice that the very short
+@c introduction about what the software is comes from @copying.
+@insertcopying
+@end ifnottex
+
+@menu
+Overview
+* Introduction::                   What Structured is and why you should care.
+* Using Structured::               How to build and run the software.
+
+Internals
+* Frontend::                       Structured programs are parsed in a very ordinary way.
+* Stack-based execution::          Structured programs turn into stack-based operations...
+* Register-based execution::       ...or into register-based operations
+
+@ifset includelicenses
+
+Licenses
+* GNU General Public License::     How you can share and modify the software.
+* GNU Free Documentation License:: How you can share and modify this manual.
+@end ifset @c includelicenses
+
+Indices
+* Concept index::                  The key words of this manual, with links.
+@end menu
+
+@part Part I:@* Overview
+
+@c Introduction
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+@c The introduction is written in the first person singular, and uses
+@c a more informal tone than the rest.  The clear fracture in style
+@c from the introduction to the first chapter is intentional, meant to
+@c convey first a more personal, vaguely sentimental touch, and then
+@c the reliable terseness of comprehensive documentation.  This
+@c distinction should be kept.
+
+@node Introduction
+@c @unnumbered Introduction
+@chapter Introduction
+
+@fixme{}
+
+@section History and purpose
+
+Around 2017 José Marchesi had already started his poke project, which
+is now part of GNU (@pxref{Top,,, poke, The GNU poke Manual}), using
+a Jittery VM.
+
+@fixme{However...lack of documentation and even lack of experience
+by anybody, even me, using jitter}
+
+I wrote the first version of @dfn{Structured} very quickly, as a
+minimalistic example of a system using a Jittery VM including a code
+generator.
+
+@fixme{at first stack only; then two different code generators; then
+procedure, tail calls.  Manual.  Things get out of hand}
+
+@fixme{Thank José and Mohammad.}
+
+@section Obtaining the software
+@cindex obtaining
+@cindex downloading
+@cindex distribution
+@cindex C
+@cindex source
+@cindex distribution
+@cindex git
+Structured is distributed as an example within Jitter, and can be
+obtained along with the Jitter source code.
+The current web page for Jitter, containing a link to a publicly
+readable git repository, is on my web site at the URL
+@url{http://ageinghacker.net/projects/jitter/}.
+
+@cindex branch, git
+@cindex git branch
+@cindex @code{master}, git branch
+As of 2021 Structured development takes place on the
+main git branch named @code{master}.
+
+@fixme{talk about build system examples using structured: it is in
+fact trivial to generate clean source tarballs for structured.}
+
+@cindex feedback
+@cindex contacting the author
+@cindex author, contacting
+@cindex Luca Saiu, contacting
+@cindex Saiu, Luca, contacting
+I welcome feedback.  If you need to contact me or want to discuss
+about Structured please
+@pxref{Contacting the author,,, jitter, The Jitter Manual}.
+
+
+@c Using Structured
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+@node Using Structured
+@chapter Using Structured
+@cindex using Structured
+
+@menu
+Overview
+* Invoking @samp{structured}::          The command line interface.
+@end menu
+
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@node Invoking @samp{structured}
+@cindex invoking, @samp{structured}
+@cindex @samp{structured}, invoking
+@section Invoking @samp{structured}
+@fixme{Foo}
+
+
+@part Part II:@* Internals
+
+@c Frontend
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@node Frontend
+@chapter Frontend
+@cindex frontend
+
+@c Stack-based execution
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@node Stack-based execution
+@chapter Stack-based execution
+@cindex stack-based execution
+@cindex execution, stack-based
+
+
+@c Register-based execution
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@node Register-based execution
+@chapter Register-based execution
+@cindex register-based execution
+@cindex execution, register-based
+
+
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@c Footer.
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+@ifset includelicenses
+
+@part Part III:@* Licenses
+
+@node GNU General Public License
+@appendix GNU General Public License
+@cindex GPL
+@cindex GNU General Public License
+@cindex software, license
+@cindex license, for Structured
+@include gpl.texi
+
+@node GNU Free Documentation License
+@appendix GNU Free Documentation License
+@cindex FDL
+@cindex GNU Free Documentation License
+@cindex documentation, license
+@cindex manual, license
+@cindex license, for this manual
+@include fdl.texi
+@end ifset @c includelicenses
+
+
+@c Indices
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+@node Concept index
+@unnumbered Concept index
+
+@cindex concept index
+@cindex index, for concepts
+@printindex cp
+
+
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@c Footer.
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+@bye
+Local Variables:
+  eval: (flyspell-mode t)
+  eval: (ispell-change-dictionary "british")
+  compile-command: "bash -ci 'make -C ~/repos/jitter/_build/native-gcc-11 info pdf'"
+End:

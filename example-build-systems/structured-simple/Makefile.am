@@ -115,6 +115,13 @@ $(srcdir)/structured-scanner.c: structured.l
 $(srcdir)/structured-scanner.h: structured-scanner.c
 
 
+# Documentation
+################################################################
+
+info_TEXINFOS = doc/structured.texi
+doc_structured_TEXINFOS = doc/gpl.texi doc/fdl.texi
+
+
 # Files to be distributed.
 ################################################################
 
