@@ -178,7 +178,9 @@ This is the manual for JitterLisp
 (for Jitter version @value{VERSION},
 last updated on @value{UPDATED}), an efficient Lisp system using a Jittery VM.
 
-Copyright @copyright{} 2018, 2019, 2020, 2021  Luca Saiu.  Written by Luca Saiu.
+@noindent
+Copyright @copyright{} 2018, 2019, 2020, 2021  Luca Saiu.@*
+Written by Luca Saiu.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -4336,6 +4338,6 @@ macros, may not be.
 @bye
 Local Variables:
   eval: (flyspell-mode t)
-  eval: (ispell-change-dictionary "american")
-  compile-command: "bash -ci 'make -C ~/repos/jitter/_build/native-gcc-9 info pdf'"
+  eval: (ispell-change-dictionary "british")
+  compile-command: "bash -ci 'make -C ~/repos/jitter/_build/native-gcc-11 info pdf'"
 End:
