@@ -18,5 +18,6 @@ You should have received a copy of the GNU General Public License
 along with Jitter.  If not, see <http://www.gnu.org/licenses/>.
 
 
-A ChangeLog is not actually maintained for these relatively trivial
-examples.
+A separate ChangeLog is not actually maintained for these relatively
+trivial examples; however the (generated) ChangeLog file in the jitter
+source directory contains all the relevant information.
