@@ -45,7 +45,7 @@
 # Global configration.
 # ################################################################
 
-AUTOMAKE_OPTIONS = subdir-objects info-in-builddir
+AUTOMAKE_OPTIONS = subdir-objects
 
 # I prefer to define all variables as empty in the beginning, and then add to
 # each group of them as part of the implementation of the same feature.
@@ -1924,7 +1924,7 @@ AM_MAKEINFOHTMLFLAGS = $(AM_MAKEINFOFLAGS) --number-sections --fill-column=100
 info_TEXINFOS += \
   doc/jitter.texi
 doc_jitter_TEXINFOS = \
-  $(srcdir)/doc/gpl.texi $(srcdir)/doc/fdl.texi
+  doc/gpl.texi doc/fdl.texi
 
 EXTRA_DIST += \
   doc/COPYING.DOC
