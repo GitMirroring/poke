@@ -59,6 +59,11 @@ example-vms/structured/structuredvm-vm-main.c
 example-vms/structured/structuredvm-vm.h
 example-vms/structured/structuredvm-vm1.c
 example-vms/structured/structuredvm-vm2.c
+example-vms/structured/doc/fdl.texi
+example-vms/structured/doc/gpl.texi
+example-vms/structured/doc/stamp-vti
+example-vms/structured/doc/structured.info
+example-vms/structured/doc/version-structured.texi
 example-vms/uninspired/uninspired-vm-main.c
 example-vms/uninspired/uninspired-vm.h
 example-vms/uninspired/uninspired-vm1.c
@@ -76,6 +81,7 @@ jitterc/jitterc-parser.output
 jitterc/jitterc-scanner.c
 jitterc/jitterc-scanner.h
 doc/stamp-1
+doc/stamp-2
 doc/jitter.info
 example-vms/jitterlisp/jitterlisp-constant-strings.c
 example-vms/jitterlisp/doc/fdl.texi
@@ -99,6 +105,8 @@ example-build-systems/structured-simple/README
 example-build-systems/structured-simple/build-aux/
 example-build-systems/structured-simple/examples/
 example-build-systems/structured-simple/jitter
+example-build-systems/structured-simple/doc/
+example-build-systems/structured-simple/confdefs.h
 example-build-systems/structured-simple/structured-code-generator-register.c
 example-build-systems/structured-simple/structured-code-generator-register.h
 example-build-systems/structured-simple/structured-code-generator-stack.c
@@ -126,6 +134,7 @@ example-build-systems/structured-with-library/README
 example-build-systems/structured-with-library/build-aux/
 example-build-systems/structured-with-library/examples/
 example-build-systems/structured-with-library/jitter
+example-build-systems/structured-with-library/doc/
 example-build-systems/structured-with-library/structured-code-generator-register.c
 example-build-systems/structured-with-library/structured-code-generator-register.h
 example-build-systems/structured-with-library/structured-code-generator-stack.c
@@ -151,6 +160,7 @@ example-vms/jitterlisp/examples/other-systems/
 example-vms/uninspired/examples/counter.lisp
 example-vms/uninspired/examples/counter.lua
 example-vms/uninspired/examples/scratch.vm
+example-vms/jitterlisp/doc/stamp-1
 machine/dummy
 
 # This may be the only thing I manually build in the source directory.
