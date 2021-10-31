@@ -35,6 +35,7 @@ doc/version.texi
 doc/jitter-config.1
 doc/jitter.1
 doc/jitterlisp.1
+doc/structured.1
 configure
 Makefile.in
 Makefile
