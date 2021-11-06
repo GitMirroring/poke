@@ -965,6 +965,18 @@ example_vms_structured_examples_primes_in_c_SOURCES = \
 example_vms_jitterlisp_examples_fibo_in_c_SOURCES = \
   example-vms/jitterlisp/examples/fibo.c
 
+# About example binary dependencies: the examples written in C need to be linked
+# to some libraries, possibly including the Jitter runtime library in the
+# appropriate dispatch, Gnulib and some wrapper libraries such as the one for
+# GNU Realine and GNU Libtextstyle.
+# It is complicated to keep track of which libraries are exactly needed for each
+# C example for dependency purposes as well: but it is a safe conservative
+# approximation to say that each C example depends on *all* such libraries.
+# The trick keeps this Makefile.am file a little simpler while allowing parallel
+# compilation.
+OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES = \
+  $(lib_LTLIBRARIES)
+
 # Again out of convenience, I make examples depend on all , so that a user can
 # build the examples before having built the rest, which would normally fail
 # because of BUILT_SOURCES.  This target is convenient for the user to build
@@ -1059,6 +1071,7 @@ if JITTER_ENABLE_DISPATCH_SWITCH
     $(AM_LDFLAGS) $(JITTER_NON_INSTALLED_LDFLAGS) $(JITTER_SWITCH_LDFLAGS)
   bin_uninspired__switch_LDADD = \
     $(JITTER_SWITCH_LDADD) $(LDADD_FOR_EXAMPLES) $(LDADD_FOR_GNULIB)
+  EXTRA_bin_uninspired__switch_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
 endif # JITTER_ENABLE_DISPATCH_SWITCH
 
 # Uninspired VM program: direct threading.
@@ -1075,6 +1088,7 @@ if JITTER_ENABLE_DISPATCH_DIRECT_THREADING
     $(AM_LDFLAGS) $(JITTER_NON_INSTALLED_LDFLAGS) $(JITTER_DIRECT_THREADING_LDFLAGS)
   bin_uninspired__direct_threading_LDADD = \
     $(JITTER_DIRECT_THREADING_LDADD) $(LDADD_FOR_EXAMPLES) $(LDADD_FOR_GNULIB)
+  EXTRA_bin_uninspired__direct_threading_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
 endif # JITTER_ENABLE_DISPATCH_DIRECT_THREADING
 
 # Uninspired VM program: minimal threading.
@@ -1091,6 +1105,7 @@ if JITTER_ENABLE_DISPATCH_MINIMAL_THREADING
     $(AM_LDFLAGS) $(JITTER_NON_INSTALLED_LDFLAGS) $(JITTER_MINIMAL_THREADING_LDFLAGS)
   bin_uninspired__minimal_threading_LDADD = \
     $(JITTER_MINIMAL_THREADING_LDADD) $(LDADD_FOR_EXAMPLES) $(LDADD_FOR_GNULIB)
+  EXTRA_bin_uninspired__minimal_threading_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
 endif # JITTER_ENABLE_DISPATCH_MINIMAL_THREADING
 
 # Uninspired VM program: no threading.
@@ -1107,6 +1122,7 @@ if JITTER_ENABLE_DISPATCH_NO_THREADING
     $(AM_LDFLAGS) $(JITTER_NON_INSTALLED_LDFLAGS) $(JITTER_NO_THREADING_LDFLAGS)
   bin_uninspired__no_threading_LDADD = \
     $(JITTER_NO_THREADING_LDADD) $(LDADD_FOR_EXAMPLES) $(LDADD_FOR_GNULIB)
+  EXTRA_bin_uninspired__no_threading_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
 endif # JITTER_ENABLE_DISPATCH_NO_THREADING
 
 # Examples VM routines for the Uninspired VM example, to be distributed.
@@ -1224,6 +1240,7 @@ bin_structured_LDADD = \
   $(AM_LDADD) $(JITTER_LDADD) $(LDADD_FOR_EXAMPLES)
 bin_structured_LDFLAGS = \
   $(AM_LDFLAGS) $(JITTER_NON_INSTALLED_LDFLAGS) $(JITTER_LDFLAGS)
+EXTRA_bin_structured_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
 PROGRAMS_STRUCTURED += bin/structuredvm
 bin_structuredvm_SOURCES = $(SOURCES_FOR_STRUCTUREDVM)
 bin_structuredvm_CPPFLAGS = $(bin_structured_CPPFLAGS) $(CPPFLAGS_FOR_GNULIB)
@@ -1231,6 +1248,7 @@ bin_structuredvm_CFLAGS = $(bin_structured_CFLAGS)
 bin_structuredvm_LDADD = \
   $(bin_structured_LDADD) $(LDADD_FOR_EXAMPLES) $(LDADD_FOR_GNULIB)
 bin_structuredvm_LDFLAGS = $(bin_structured_LDFLAGS)
+EXTRA_bin_structuredvm_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
 
 # The structured example , with switch dispatch.
 if JITTER_ENABLE_DISPATCH_SWITCH
@@ -1245,6 +1263,7 @@ if JITTER_ENABLE_DISPATCH_SWITCH
     $(AM_LDADD) $(JITTER_SWITCH_LDADD) $(LDADD_FOR_EXAMPLES)
   bin_structured__switch_LDFLAGS = \
     $(AM_LDFLAGS) $(JITTER_NON_INSTALLED_LDFLAGS) $(JITTER_SWITCH_LDFLAGS)
+  EXTRA_bin_structured__switch_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
   PROGRAMS_STRUCTURED += bin/structuredvm--switch
   bin_structuredvm__switch_SOURCES = $(SOURCES_FOR_STRUCTUREDVM)
   bin_structuredvm__switch_CPPFLAGS = \
@@ -1255,6 +1274,7 @@ if JITTER_ENABLE_DISPATCH_SWITCH
     $(bin_structured__switch_LDADD) $(LDADD_FOR_EXAMPLES) $(LDADD_FOR_GNULIB)
   bin_structuredvm__switch_LDFLAGS = \
     $(bin_structured__switch_LDFLAGS)
+  EXTRA_bin_structuredvm__switch_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
 endif # JITTER_ENABLE_DISPATCH_SWITCH
 
 # The structured-language example and the matching standalone "structured" VM,
@@ -1271,6 +1291,7 @@ if JITTER_ENABLE_DISPATCH_DIRECT_THREADING
     $(AM_LDADD) $(JITTER_DIRECT_THREADING_LDADD) $(LDADD_FOR_EXAMPLES)
   bin_structured__direct_threading_LDFLAGS = \
     $(AM_LDFLAGS) $(JITTER_NON_INSTALLED_LDFLAGS) $(JITTER_DIRECT_THREADING_LDFLAGS)
+  EXTRA_bin_structured__direct_threading_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
   PROGRAMS_STRUCTURED += bin/structuredvm--direct-threading
   bin_structuredvm__direct_threading_SOURCES = $(SOURCES_FOR_STRUCTUREDVM)
   bin_structuredvm__direct_threading_CPPFLAGS = \
@@ -1282,6 +1303,7 @@ if JITTER_ENABLE_DISPATCH_DIRECT_THREADING
     $(LDADD_FOR_EXAMPLES) $(LDADD_FOR_GNULIB)
   bin_structuredvm__direct_threading_LDFLAGS = \
     $(bin_structured__direct_threading_LDFLAGS)
+  EXTRA_bin_structuredvm__direct_threading_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
 endif # JITTER_ENABLE_DISPATCH_DIRECT_THREADING
 
 # The structured-language example and the matching standalone "structured" VM,
@@ -1298,6 +1320,7 @@ if JITTER_ENABLE_DISPATCH_MINIMAL_THREADING
     $(AM_LDADD) $(JITTER_MINIMAL_THREADING_LDADD) $(LDADD_FOR_EXAMPLES)
   bin_structured__minimal_threading_LDFLAGS = \
     $(AM_LDFLAGS) $(JITTER_NON_INSTALLED_LDFLAGS) $(JITTER_MINIMAL_THREADING_LDFLAGS)
+  EXTRA_bin_structured__minimal_threading_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
   PROGRAMS_STRUCTURED += bin/structuredvm--minimal-threading
   bin_structuredvm__minimal_threading_SOURCES = $(SOURCES_FOR_STRUCTUREDVM)
   bin_structuredvm__minimal_threading_CPPFLAGS = \
@@ -1309,6 +1332,7 @@ if JITTER_ENABLE_DISPATCH_MINIMAL_THREADING
     $(LDADD_FOR_EXAMPLES) $(LDADD_FOR_GNULIB)
   bin_structuredvm__minimal_threading_LDFLAGS = \
     $(bin_structured__minimal_threading_LDFLAGS)
+  EXTRA_bin_structuredvm__minimal_threading_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
 endif # JITTER_ENABLE_DISPATCH_MINIMAL_THREADING
 
 # The structured-language example and the matching standalone "structured" VM,
@@ -1325,6 +1349,7 @@ if JITTER_ENABLE_DISPATCH_NO_THREADING
     $(AM_LDADD) $(JITTER_NO_THREADING_LDADD) $(LDADD_FOR_EXAMPLES)
   bin_structured__no_threading_LDFLAGS = \
     $(AM_LDFLAGS) $(JITTER_NON_INSTALLED_LDFLAGS) $(JITTER_NO_THREADING_LDFLAGS)
+  EXTRA_bin_structured__no_threading_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
   PROGRAMS_STRUCTURED += bin/structuredvm--no-threading
   bin_structuredvm__no_threading_SOURCES = $(SOURCES_FOR_STRUCTUREDVM)
   bin_structuredvm__no_threading_CPPFLAGS = \
@@ -1336,6 +1361,7 @@ if JITTER_ENABLE_DISPATCH_NO_THREADING
     $(LDADD_FOR_EXAMPLES) $(LDADD_FOR_GNULIB)
   bin_structuredvm__no_threading_LDFLAGS = \
     $(bin_structured__no_threading_LDFLAGS)
+  EXTRA_bin_structuredvm__no_threading_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
 endif # JITTER_ENABLE_DISPATCH_NO_THREADING
 
 # Structured-language scanner and parser generated by Flex and Bison.
@@ -1547,7 +1573,7 @@ bin_jitterlisp_LDADD = \
   $(AM_LDADD) $(JITTER_LDADD) $(LDADD_FOR_EXAMPLES) $(LDADD_FOR_GNULIB)
 bin_jitterlisp_LDFLAGS = \
   $(AM_LDFLAGS) $(JITTER_NON_INSTALLED_LDFLAGS) $(JITTER_LDFLAGS)
-EXTRA_bin_jitterlisp_DEPENDENCIES = $(lib_LTLIBRARIES)
+EXTRA_bin_jitterlisp_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
 PROGRAMS_JITTERLISP += bin/jitterlisp--unsafe
 bin_jitterlisp__unsafe_SOURCES = $(SOURCES_FOR_JITTERLISP)
 bin_jitterlisp__unsafe_CPPFLAGS = \
@@ -1555,7 +1581,7 @@ bin_jitterlisp__unsafe_CPPFLAGS = \
 bin_jitterlisp__unsafe_CFLAGS = $(bin_jitterlisp_CFLAGS)
 bin_jitterlisp__unsafe_LDADD = $(bin_jitterlisp_LDADD)
 bin_jitterlisp__unsafe_LDFLAGS = $(bin_jitterlisp_LDFLAGS)
-EXTRA_bin_jitterlisp__unsafe_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
+EXTRA_bin_jitterlisp__unsafe_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
 # ...And their safe and unsafe best-dispatch Boehm-GC versions, if enabled.
 if JITTER_HAVE_BOEHM_GC
   PROGRAMS_JITTERLISP += bin/jitterlisp--boehm
@@ -1565,7 +1591,7 @@ if JITTER_HAVE_BOEHM_GC
   bin_jitterlisp__boehm_CFLAGS = $(bin_jitterlisp_CFLAGS)
   bin_jitterlisp__boehm_LDADD = -lgc $(bin_jitterlisp_LDADD)
   bin_jitterlisp__boehm_LDFLAGS = $(bin_jitterlisp_LDFLAGS)
-  EXTRA_bin_jitterlisp__boehm_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
+  EXTRA_bin_jitterlisp__boehm_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
   PROGRAMS_JITTERLISP += bin/jitterlisp--unsafe--boehm
   bin_jitterlisp__unsafe__boehm_SOURCES = $(SOURCES_FOR_JITTERLISP)
   bin_jitterlisp__unsafe__boehm_CPPFLAGS = \
@@ -1573,7 +1599,7 @@ if JITTER_HAVE_BOEHM_GC
   bin_jitterlisp__unsafe__boehm_CFLAGS = $(bin_jitterlisp__boehm_CFLAGS)
   bin_jitterlisp__unsafe__boehm_LDADD = $(bin_jitterlisp__boehm_LDADD)
   bin_jitterlisp__unsafe__boehm_LDFLAGS = $(bin_jitterlisp__boehm_LDFLAGS)
-  EXTRA_bin_jitterlisp__unsafe__boehm_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
+  EXTRA_bin_jitterlisp__unsafe__boehm_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
 endif # JITTER_HAVE_BOEHM_GC
 
 # Man page for the main JitterLisp executable.  We currently generate only
@@ -1608,7 +1634,7 @@ if JITTER_ENABLE_DISPATCH_SWITCH
   bin_jitterlisp__switch_LDFLAGS = \
     $(AM_LDFLAGS) $(JITTER_NON_INSTALLED_LDFLAGS) \
     $(JITTER_SWITCH_LDFLAGS)
-  EXTRA_bin_jitterlisp__switch_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
+  EXTRA_bin_jitterlisp__switch_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
   PROGRAMS_JITTERLISP += bin/jitterlisp--unsafe--switch
   bin_jitterlisp__unsafe__switch_SOURCES = $(SOURCES_FOR_JITTERLISP)
   bin_jitterlisp__unsafe__switch_CPPFLAGS = \
@@ -1619,7 +1645,7 @@ if JITTER_ENABLE_DISPATCH_SWITCH
     $(bin_jitterlisp__switch_LDADD)
   bin_jitterlisp__unsafe__switch_LDFLAGS = \
     $(bin_jitterlisp__switch_LDFLAGS)
-  EXTRA_bin_jitterlisp__unsafe__switch_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
+  EXTRA_bin_jitterlisp__unsafe__switch_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
 # ...And their safe and unsafe switch-dispatch Boehm-GC versions, if enabled.
 if JITTER_HAVE_BOEHM_GC
     PROGRAMS_JITTERLISP += bin/jitterlisp--boehm--switch
@@ -1633,7 +1659,7 @@ if JITTER_HAVE_BOEHM_GC
       -lgc $(bin_jitterlisp__switch_LDADD)
     bin_jitterlisp__boehm__switch_LDFLAGS = \
       $(bin_jitterlisp__switch_LDFLAGS)
-    EXTRA_bin_jitterlisp__boehm__switch_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
+    EXTRA_bin_jitterlisp__boehm__switch_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
   PROGRAMS_JITTERLISP += bin/jitterlisp--unsafe--boehm--switch
   bin_jitterlisp__unsafe__boehm__switch_SOURCES = \
     $(SOURCES_FOR_JITTERLISP)
@@ -1645,7 +1671,7 @@ if JITTER_HAVE_BOEHM_GC
     $(bin_jitterlisp__boehm__switch_LDADD)
   bin_jitterlisp__unsafe__boehm__switch_LDFLAGS = \
     $(bin_jitterlisp__boehm__switch_LDFLAGS)
-  EXTRA_bin_jitterlisp__unsafe__boehm__switch_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
+  EXTRA_bin_jitterlisp__unsafe__boehm__switch_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
 endif # JITTER_HAVE_BOEHM_GC
 endif # JITTER_ENABLE_DISPATCH_SWITCH
 
@@ -1665,7 +1691,7 @@ if JITTER_ENABLE_DISPATCH_DIRECT_THREADING
   bin_jitterlisp__direct_threading_LDFLAGS = \
     $(AM_LDFLAGS) $(JITTER_NON_INSTALLED_LDFLAGS) \
     $(JITTER_DIRECT_THREADING_LDFLAGS)
-  EXTRA_bin_jitterlisp__direct_threading_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
+  EXTRA_bin_jitterlisp__direct_threading_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
   PROGRAMS_JITTERLISP += bin/jitterlisp--unsafe--direct-threading
   bin_jitterlisp__unsafe__direct_threading_SOURCES = \
     $(SOURCES_FOR_JITTERLISP)
@@ -1691,7 +1717,7 @@ if JITTER_HAVE_BOEHM_GC
       -lgc $(bin_jitterlisp__direct_threading_LDADD)
     bin_jitterlisp__boehm__direct_threading_LDFLAGS = \
       $(bin_jitterlisp__direct_threading_LDFLAGS)
-    EXTRA_bin_jitterlisp__boehm__direct_threading_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
+    EXTRA_bin_jitterlisp__boehm__direct_threading_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
   PROGRAMS_JITTERLISP += bin/jitterlisp--unsafe--boehm--direct-threading
   bin_jitterlisp__unsafe__boehm__direct_threading_SOURCES = \
     $(SOURCES_FOR_JITTERLISP)
@@ -1703,7 +1729,7 @@ if JITTER_HAVE_BOEHM_GC
     $(bin_jitterlisp__boehm__direct_threading_LDADD)
   bin_jitterlisp__unsafe__boehm__direct_threading_LDFLAGS = \
     $(bin_jitterlisp__boehm__direct_threading_LDFLAGS)
-  EXTRA_bin_jitterlisp__unsafe__boehm__direct_threading_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
+  EXTRA_bin_jitterlisp__unsafe__boehm__direct_threading_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
 endif # JITTER_HAVE_BOEHM_GC
 endif # JITTER_ENABLE_DISPATCH_DIRECT_THREADING
 
@@ -1723,7 +1749,7 @@ if JITTER_ENABLE_DISPATCH_MINIMAL_THREADING
   bin_jitterlisp__minimal_threading_LDFLAGS = \
     $(AM_LDFLAGS) $(JITTER_NON_INSTALLED_LDFLAGS) \
     $(JITTER_MINIMAL_THREADING_LDFLAGS)
-  EXTRA_bin_jitterlisp__minimal_threading_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
+  EXTRA_bin_jitterlisp__minimal_threading_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
   PROGRAMS_JITTERLISP += bin/jitterlisp--unsafe--minimal-threading
   bin_jitterlisp__unsafe__minimal_threading_SOURCES = \
     $(SOURCES_FOR_JITTERLISP)
@@ -1735,7 +1761,7 @@ if JITTER_ENABLE_DISPATCH_MINIMAL_THREADING
     $(bin_jitterlisp__minimal_threading_LDADD)
   bin_jitterlisp__unsafe__minimal_threading_LDFLAGS = \
     $(bin_jitterlisp__minimal_threading_LDFLAGS)
-  EXTRA_bin_jitterlisp__unsafe__minimal_threading_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
+  EXTRA_bin_jitterlisp__unsafe__minimal_threading_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
   # ...And their safe and unsafe minimal-threading Boehm-GC versions, if enabled.
 if JITTER_HAVE_BOEHM_GC
     PROGRAMS_JITTERLISP += bin/jitterlisp--boehm--minimal-threading
@@ -1749,7 +1775,7 @@ if JITTER_HAVE_BOEHM_GC
       -lgc $(bin_jitterlisp__minimal_threading_LDADD)
     bin_jitterlisp__boehm__minimal_threading_LDFLAGS = \
       $(bin_jitterlisp__minimal_threading_LDFLAGS)
-    EXTRA_bin_jitterlisp__boehm__minimal_threading_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
+    EXTRA_bin_jitterlisp__boehm__minimal_threading_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
   PROGRAMS_JITTERLISP += bin/jitterlisp--unsafe--boehm--minimal-threading
   bin_jitterlisp__unsafe__boehm__minimal_threading_SOURCES = \
     $(SOURCES_FOR_JITTERLISP)
@@ -1761,7 +1787,7 @@ if JITTER_HAVE_BOEHM_GC
     $(bin_jitterlisp__boehm__minimal_threading_LDADD)
   bin_jitterlisp__unsafe__boehm__minimal_threading_LDFLAGS = \
     $(bin_jitterlisp__boehm__minimal_threading_LDFLAGS)
-  EXTRA_bin_jitterlisp__unsafe__boehm__minimal_threading_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
+  EXTRA_bin_jitterlisp__unsafe__boehm__minimal_threading_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
 endif # JITTER_HAVE_BOEHM_GC
 endif # JITTER_ENABLE_DISPATCH_MINIMAL_THREADING
 
@@ -1781,7 +1807,7 @@ if JITTER_ENABLE_DISPATCH_NO_THREADING
   bin_jitterlisp__no_threading_LDFLAGS = \
     $(AM_LDFLAGS) $(JITTER_NON_INSTALLED_LDFLAGS) \
     $(JITTER_NO_THREADING_LDFLAGS)
-  EXTRA_bin_jitterlisp__no_threading_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
+  EXTRA_bin_jitterlisp__no_threading_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
   PROGRAMS_JITTERLISP += bin/jitterlisp--unsafe--no-threading
   bin_jitterlisp__unsafe__no_threading_SOURCES = \
     $(SOURCES_FOR_JITTERLISP)
@@ -1793,7 +1819,7 @@ if JITTER_ENABLE_DISPATCH_NO_THREADING
     $(bin_jitterlisp__no_threading_LDADD)
   bin_jitterlisp__unsafe__no_threading_LDFLAGS = \
     $(bin_jitterlisp__no_threading_LDFLAGS)
-  EXTRA_bin_jitterlisp__unsafe__no_threading_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
+  EXTRA_bin_jitterlisp__unsafe__no_threading_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
   # ...And their safe and unsafe no-threading Boehm-GC versions, if enabled.
 if JITTER_HAVE_BOEHM_GC
     PROGRAMS_JITTERLISP += bin/jitterlisp--boehm--no-threading
@@ -1807,7 +1833,7 @@ if JITTER_HAVE_BOEHM_GC
       -lgc $(bin_jitterlisp__no_threading_LDADD)
     bin_jitterlisp__boehm__no_threading_LDFLAGS = \
       $(bin_jitterlisp__no_threading_LDFLAGS)
-    EXTRA_bin_jitterlisp__boehm__no_threading_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
+    EXTRA_bin_jitterlisp__boehm__no_threading_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
   PROGRAMS_JITTERLISP += bin/jitterlisp--unsafe--boehm--no-threading
   bin_jitterlisp__unsafe__boehm__no_threading_SOURCES = \
     $(SOURCES_FOR_JITTERLISP)
@@ -1819,7 +1845,7 @@ if JITTER_HAVE_BOEHM_GC
     $(bin_jitterlisp__boehm__no_threading_LDADD)
   bin_jitterlisp__unsafe__boehm__no_threading_LDFLAGS = \
     $(bin_jitterlisp__boehm__no_threading_LDFLAGS)
-  EXTRA_bin_jitterlisp__unsafe__boehm__no_threading_DEPENDENCIES = $(EXTRA_bin_jitterlisp_DEPENDENCIES)
+  EXTRA_bin_jitterlisp__unsafe__boehm__no_threading_DEPENDENCIES = $(OTHER_DEPENDENCIES_FOR_ALL_C_EXAMPLES)
 endif # JITTER_HAVE_BOEHM_GC
 endif # JITTER_ENABLE_DISPATCH_NO_THREADING
 
