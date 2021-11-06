@@ -1430,15 +1430,15 @@ EXTRA_DIST += example-vms/structured/structured-style.css
 # indentical executables.
 if JITTER_CAN_REBUILD_MAN_PAGES
   # See the comment about doc/jitter.1 and its conditional generation.
-  $(srcdir)/doc/structured.1: bin/structured$(EXEEXT)
+  $(srcdir)/example-vms/structured/doc/structured.1: bin/structured$(EXEEXT)
 	$(HELP2MAN_WITH_OPTIONS) --output="$@" \
           --info-page='structured'\
 	  "$(JITTER_EMULATOR) bin/structured$(EXEEXT)" || true
 else # ! JITTER_CAN_REBUILD_MAN_PAGES
-  $(srcdir)/doc/structured.1: doc/missing-man-page.1
+  $(srcdir)/example-vms/structured/doc/structured.1: doc/missing-man-page.1
 	cp "$(srcdir)/doc/missing-man-page.1" "$@" || true
 endif
-dist_man1_MANS += $(srcdir)/doc/structured.1
+dist_man1_MANS += $(srcdir)/example-vms/structured/doc/structured.1
 
 # Structured documentation.
 info_TEXINFOS += \
@@ -1607,15 +1607,15 @@ endif # JITTER_HAVE_BOEHM_GC
 # indentical executables.
 if JITTER_CAN_REBUILD_MAN_PAGES
   # See the comment about doc/jitter.1 and its conditional generation.
-  $(srcdir)/doc/jitterlisp.1: bin/jitterlisp$(EXEEXT)
+  $(srcdir)/example-vms/jitterlisp/doc/jitterlisp.1: bin/jitterlisp$(EXEEXT)
 	$(HELP2MAN_WITH_OPTIONS) --output="$@" \
           --info-page='jitterlisp'\
 	  "$(JITTER_EMULATOR) bin/jitterlisp$(EXEEXT)" || true
 else # ! JITTER_CAN_REBUILD_MAN_PAGES
-  $(srcdir)/doc/jitterlisp.1: doc/missing-man-page.1
+  $(srcdir)/example-vms/jitterlisp/doc/jitterlisp.1: doc/missing-man-page.1
 	cp "$(srcdir)/doc/missing-man-page.1" "$@" || true
 endif
-dist_man1_MANS += $(srcdir)/doc/jitterlisp.1
+dist_man1_MANS += $(srcdir)/example-vms/jitterlisp/doc/jitterlisp.1
 
 
 if JITTER_ENABLE_DISPATCH_SWITCH
