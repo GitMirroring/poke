@@ -1564,6 +1564,11 @@ The test suite will run the ``Uninspired'' VM programs under each enabled
 dispatch, building the Uninspired VM executables as
 dependencies if not already present.
 
+@fixme{Parallel @command{make} runs with @samp{-j} are supported.
+Having a build directory separate from the source directory is
+supported, and in fact encouraged. @fixme{I suspect that does not
+work with non-GNU make: I can check} @command{ccache} is supported.}
+
 
 @c @@@@@@@
 @node Running the test suite

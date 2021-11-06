@@ -176,8 +176,8 @@ last updated on @value{UPDATED}), a programming language
 implementation using a Jittery VM, conceived as an example for Jitter.
 
 @noindent
-Copyright @copyright{} 2018, 2019, 2020, 2021  Luca Saiu.@*
-Copyright @copyright{} 2021 p≡p Foundation.@*
+Copyright @copyright{} 2018, 2019, 2020, 2021  Luca Saiu@*
+Copyright @copyright{} 2021 p≡p Foundation@*
 Written by Luca Saiu.
 
 @quotation
@@ -265,6 +265,10 @@ Licenses
 Indices
 * Concept index::                  The key words of this manual, with links.
 @end menu
+
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@c Overview part
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 @part Part I:@* Overview
 
@@ -355,6 +359,10 @@ Overview
 @fixme{Foo}
 
 
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@c Internals part
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
 @part Part II:@* Internals
 
 @c Frontend
@@ -380,7 +388,7 @@ Overview
 
 
 @c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@c Footer.
+@c Licenses part (conditional)
 @c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 @ifset includelicenses
