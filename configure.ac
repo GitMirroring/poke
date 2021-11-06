@@ -569,6 +569,20 @@ fi
 # Check for programs.
 ################################################################
 
+# Check for sed.  This defines the substitution SED and the shell variable
+# ac_cv_path_SED .
+AC_PROG_SED
+
+# Unfortunately when cross-compiling we cannot use the build-time sed we have
+# found here on the host machine, about which we can only guess:
+if test "x$jitter_cross_compiling" = 'xyes'; then
+  AC_SUBST([JITTER_HOST_SED], [sed])
+  AC_MSG_WARN([cross-compiling: guessing that the host machine sed will be \
+$JITTER_HOST_SED])
+else
+  AC_SUBST([JITTER_HOST_SED], [$SED])
+fi
+
 # mkdir -p is convenient.  It is currently used in the makefile and in
 # vm/generate-instructions.in .
 AC_PROG_MKDIR_P
