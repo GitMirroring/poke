@@ -903,6 +903,9 @@ EXTRA_DIST += \
   machine/riscv/jitter/machine/jitter-machine.h \
   machine/riscv/jitter/machine/jitter-machine-assembly.S \
   machine/riscv/jitter/machine/jitter-machine-c.c \
+  machine/s390x/jitter/machine/jitter-machine.h \
+  machine/s390x/jitter/machine/jitter-machine-assembly.S \
+  machine/s390x/jitter/machine/jitter-machine-c.c \
   machine/sh/jitter/machine/jitter-machine.h \
   machine/sh/jitter/machine/jitter-machine-assembly.S \
   machine/sh/jitter/machine/jitter-machine-c.c \

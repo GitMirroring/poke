@@ -1494,7 +1494,11 @@ AS_CASE([$default_host_cpu],
                         JITTER_ASSEMBLY_SUBDIRECTORY=riscv;
                         jitter_supports_minimal_threading=yes;
                         jitter_supports_no_threading=yes],
-        [s390*],       [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_S390], [1], []
+        [s390x],       [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_S390], [1], []
+                                           ) # No ";": see the Autoconf manual.
+                        JITTER_ASSEMBLY_SUBDIRECTORY=s390x
+                        jitter_supports_minimal_threading=yes],
+        [s390],        [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_S390], [1], []
                                            ) # No ";": see the Autoconf manual.
                         true],
         [sh4*],        [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_SH], [1], []
