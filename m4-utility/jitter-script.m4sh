@@ -1,6 +1,6 @@
 ## Common M4sh library.  For the purposes of Emacs this is -*- sh -*-.
 
-## Copyright (C) 2017 Luca Saiu
+## Copyright (C) 2017, 2021 Luca Saiu
 ## Written by Luca Saiu
 
 ## This file is part of Jitter.
@@ -50,3 +50,115 @@ m4_define([AC_DEFUN], [])
 
 # Include.
 m4_include([../autoconf/jitter.m4])
+
+
+# Define some useful shell variables and functions.
+################################################################
+
+# The following assumes that the following variables are defined by the
+# including script:
+# * script_printed_name
+
+
+# The actually used name for this script.
+script_name="$0"
+
+# Path definitions.  These have to be kept in sync with the ones at the
+# beginning of Makefile.am ; see the comment there about the reason why
+# they are just all set with AC_SUBST by configure .
+prefix="@prefix@"
+exec_prefix="@exec_prefix@"
+datarootdir="@datarootdir@"
+includedir="@prefix@/include"
+flagdir="@exec_prefix@/@JITTER_FLAG_SUBDIRECTORY@"
+templatedir="@datarootdir@/@JITTER_TEMPLATE_SUBDIRECTORY@"
+
+# By default argp generates a --help text with section heading starting at the
+# second column.  This doesn't play well with help2man, and while with argp I
+# can use the environment setting ARGP_HELP_FMT='header-col=0' to override the
+# look when calling help2man, here I can't.  So I'll set an indentation string
+# to "" by default.
+# Changing to the default argp look entails setting the variable to " ".  This
+# script is not worth the trouble of really emulating argp's behavior with
+# respect to the environment.
+help_section_indentation=""
+
+#####################
+### FIXME: remove
+set -e
+# echo prefix is $prefix
+# echo exec_prefix is $exec_prefix
+# echo datadir is $datadir
+# echo includedir is $includedir
+# echo flagdir is $flagdir
+# echo templatedir is $templatedir
+####################
+
+
+# Functions for printing information.
+################################################################
+
+# According to the Autoconf manual using echo with an argument starting with a
+# dash is a common source of problems.  This crude replacement seems good
+# enough.
+my_echo ()
+{
+    cat <<EOF
+$@
+EOF
+}
+
+
+# Functions for printing information and exiting.
+################################################################
+
+# Run my_echo with the arguments, then exit with success.
+echo_and_exit ()
+{
+    my_echo $@
+    exit 0
+}
+
+# Print a usage message and exit with failure, as a response to an incorrect
+# command line.  The message to print is the only function argument.
+fail_usage ()
+{
+    message="$1"
+    cat <<EOF
+$script_name: $1.
+Try '$script_name --help' for more information.
+EOF
+    exit 1
+}
+
+# Print a usage message and exit with failure, as a response to a semantic
+# problem in the request.  This is similar to fail_usage , but does not invite the
+# user to check --help .
+fail_semantic ()
+{
+    message="$1"
+    cat <<EOF
+$script_name: $1.
+EOF
+    exit 1
+}
+
+# Print version information and exit with success.
+version ()
+{
+    cat <<EOF
+${script_printed_name} (@PACKAGE_NAME@) @PACKAGE_VERSION@
+Copyright (C) 2016-2021 Luca Saiu.
+Jitter comes with ABSOLUTELY NO WARRANTY.
+You may redistribute copies of Jitter under the terms of the GNU General
+Public License, version 3 or any later version published by the Free Software
+Foundation.  For more information see the file named COPYING in the source
+distribution.
+
+Written by Luca Saiu <http://ageinghacker.net>.
+EOF
+    exit 0
+}
+
+# A help function would be impractical to define here, as the output for --help
+# depends strongly on the script.

@@ -1,0 +1,106 @@
+#!@SHELL@
+## An -*- sh -*- script (to be preprocessed by M4sh and then by config.status:
+## if the file extension of this file is not .in.m4sh then you are not looking
+## at the actual source), part of Jitter.
+
+## Run a cross-compiled program thru an emulator with args from this script.
+
+## Copyright (C) 2017, 2021 Luca Saiu
+## Written by Luca Saiu
+
+## This file is part of Jitter.
+
+## Jitter is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+
+## Jitter is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+
+## You should have received a copy of the GNU General Public License
+## along with Jitter.  If not, see <http://www.gnu.org/licenses/>.
+
+
+# M4sh initialization.
+################################################################
+
+# Include the M4sh script "library", part of every M4sh script here.  That
+# library starts with the AS_INIT call.
+m4_include([jitter-script.m4sh])
+
+# Define the globals required by jitter-script.m4sh :
+script_printed_name=emulator
+
+
+# Global settings and main variables.
+################################################################
+
+# Nothing here.
+
+
+# Helper functions
+################################################################
+
+# Print --help output and exit with success
+help ()
+{
+    cat <<EOF
+Usage: ${script_name} NONNATIVEPROGRAM @<:@ARGS...@:>@
+Usage: ${script_name} --help
+Usage: ${script_name} --version
+
+$(if test "x@JITTER_CROSS_COMPILING@" = 'xyes'; then
+  echo "Execute a non-native @host@ program"
+  echo "on a @build@ machine using the emulator specified"
+  echo "at the time of Jitter configuration."
+  if test "x@JITTER_EMULATOR@" = 'x'; then
+    echo "Notice that NO EMULATOR WAS SELECTED at Jitter configure time,"
+    echo "and therefore it will only be possible to run"
+    echo "@host@ programs if they are compatible with"
+    echo "a @build@ machine --- This compatibility has not"
+    echo "been verified."
+  fi
+else
+  echo "Execute a native @host@ program."
+  echo "This wrapper script does nothing very useful in this native"
+  echo "configuration, but if Jitter had been compiled in cross-compiling"
+  echo "mode this script would have wrapped an emulator."
+fi)
+
+${help_section_indentation}Common GNU-style options:
+  -?, --help                 Give this help list
+  -V, --version              Print program version
+
+Report bugs to: <@PACKAGE_BUGREPORT@>
+Jitter home page: <@PACKAGE_URL@>
+EOF
+# FIXME: add this when/if Jitter is approved as a GNU package.
+#     General help using GNU software: <http://www.gnu.org/gethelp/>
+    exit 0
+}
+
+
+# Main program
+################################################################
+
+# This only recognizes --help and --version , as the *first* argument: even an
+# option "--help" or "--version" in a position different from $1 should be
+# passed as-is to the emulated program.
+if test "x$#" = 'x0'; then
+    fail_usage "no arguments given"
+fi
+case "$1" in
+    '--help' | '-?')
+        help;;
+    '--version' | '-V')
+        version;;
+    *)
+        # Take any other argument as the program to be emulated; any following
+        # argument will be passed as is to the program.
+        # The problem is that that the emulator might be missing, but we can
+        # try anyway since the two architectures might be compatible.
+        @JITTER_EMULATOR@ "$@";;
+esac

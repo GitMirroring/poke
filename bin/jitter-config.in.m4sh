@@ -31,116 +31,19 @@
 # library starts with the AS_INIT call.
 m4_include([jitter-script.m4sh])
 
+# Define the globals required by jitter-script.m4sh :
+script_printed_name=jitter-config
+
 
 # Global settings and main variables.
 ################################################################
-
-# The actually used name for this script.
-script_name="$0"
-
-# By default argp generates a --help text with section heading starting at the
-# second column.  This doesn't play well with help2man, and while with argp I
-# can use the environment setting ARGP_HELP_FMT='header-col=0' to override the
-# look when calling help2man, here I can't.  So I'll set an indentation string
-# to "" by default.
-# Changing to the default argp look entails setting the variable to " ".  This
-# script is not worth the trouble of really emulating argp's behavior with
-# respect to the environment.
-help_section_indentation=""
-
-# Path definitions.  These have to be kept in sync with the ones at the
-# beginning of Makefile.am ; see the comment there about the reason why
-# they are just all set with AC_SUBST by configure .
-prefix="@prefix@"
-exec_prefix="@exec_prefix@"
-datarootdir="@datarootdir@"
-includedir="@prefix@/include"
-flagdir="@exec_prefix@/@JITTER_FLAG_SUBDIRECTORY@"
-templatedir="@datarootdir@/@JITTER_TEMPLATE_SUBDIRECTORY@"
-
-#####################
-### FIXME: remove
-set -e
-# echo prefix is $prefix
-# echo exec_prefix is $exec_prefix
-# echo datadir is $datadir
-# echo includedir is $includedir
-# echo flagdir is $flagdir
-# echo templatedir is $templatedir
-####################
-
-
-# Functions for printing information.
-################################################################
-
-# According to the Autoconf manual using echo with an argument starting with a
-# dash is a common source of problems.  This crude replacement seems good
-# enough.
-my_echo ()
-{
-    cat <<EOF
-$@
-EOF
-}
-
-
-# Functions for printing information and exiting.
-################################################################
-
-# Run my_echo with the arguments, then exit with success.
-echo_and_exit ()
-{
-    my_echo $@
-    exit 0
-}
-
-# Print a usage message and exit with failure, as a response to an incorrect
-# command line.  The message to print is the only function argument.
-fail_usage ()
-{
-    message="$1"
-    cat <<EOF
-$script_name: $1.
-Try '$script_name --help' for more information.
-EOF
-    exit 1
-}
-
-# Print a usage message and exit with failure, as a response to a semantic
-# problem in the request; for example, demanding CFLAGS for a disabled
-# dispatching model.  This is similar to fail_usage , but does not invite the
-# user to check --help .
-fail_semantic ()
-{
-    message="$1"
-    cat <<EOF
-$script_name: $1.
-EOF
-    exit 1
-}
-
-# Print version information and exit with success.
-version ()
-{
-    cat <<EOF
-jitter-config (@PACKAGE_NAME@) @PACKAGE_VERSION@
-Copyright (C) 2016-2021 Luca Saiu.
-Jitter comes with ABSOLUTELY NO WARRANTY.
-You may redistribute copies of Jitter under the terms of the GNU General
-Public License, version 3 or any later version published by the Free Software
-Foundation.  For more information see the file named COPYING in the source
-distribution.
-
-Written by Luca Saiu <http://ageinghacker.net>.
-EOF
-    exit 0
-}
 
 # Print help information and exit with success.
 help ()
 {
     cat <<EOF
-Usage: jitter-config OPTION @<:@OPTION...@:>@
+Usage: ${script_name} OPTION @<:@OPTION...@:>@
+
 Print Jitter configuration information and compiler/linker flags to be used
 for generated code.
 
@@ -285,7 +188,7 @@ best_dispatch_and_exit ()
 # No arguments.
 suppress_redundant_spaces ()
 {
-    @SED@ 's/^ *//;s/ *$//;s/  */ /g'
+    @JITTER_HOST_SED@ 's/^ *//;s/ *$//;s/  */ /g'
 }
 
 # Append the value of the given option for $dispatch to the output variable.
@@ -390,8 +293,8 @@ while test "$#" != "0"; do
         # Notice that arguments with options only support the GNU-style syntax
         # --long-option=value ; the '=' character is part of $argument .  Short
         # options cannot have arguments here.
-        option="$(my_echo $argument | @SED@ 's/=.*$//')"
-        option_argument="$(my_echo $argument | @SED@ 's/^@<:@^=@:>@*=//')"
+        option="$(my_echo $argument | @JITTER_HOST_SED@ 's/=.*$//')"
+        option_argument="$(my_echo $argument | @JITTER_HOST_SED@ 's/^@<:@^=@:>@*=//')"
     else
         # There is no argument.
         option="$argument"
