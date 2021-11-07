@@ -69,6 +69,7 @@ example-vms/uninspired/uninspired-vm.h
 example-vms/uninspired/uninspired-vm1.c
 example-vms/uninspired/uninspired-vm2.c
 scripts/jitter-config.in
+scripts/emulator.in
 jitter/jitter-fast-branch-machine-generated.h
 jitter/jitter-routine-parser.c
 jitter/jitter-routine-parser.h
