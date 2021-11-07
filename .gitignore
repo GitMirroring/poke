@@ -34,8 +34,8 @@ doc/stamp-vti
 doc/version.texi
 doc/jitter-config.1
 doc/jitter.1
-doc/jitterlisp.1
-doc/structured.1
+example-vms/jitterlisp/doc/jitterlisp.1
+example-vms/structured/doc/structured.1
 configure
 Makefile.in
 Makefile
