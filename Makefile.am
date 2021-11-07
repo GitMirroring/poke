@@ -928,6 +928,9 @@ EXTRA_DIST += \
 # Also distribute the dummy architecture-specific files for unsupported
 # architectures.  These help with make dist: see the comment in configure.ac .
 EXTRA_DIST += \
+  machine/dummy/jitter/machine/jitter-machine.h \
+  machine/dummy/jitter/machine/jitter-machine-assembly.S \
+  machine/dummy/jitter/machine/jitter-machine-c.c \
   machine/dummy--no-threading/jitter/machine/jitter-machine.h \
   machine/dummy--no-threading/jitter/machine/jitter-machine-assembly.S \
   machine/dummy--no-threading/jitter/machine/jitter-machine-c.c \
@@ -2285,8 +2288,8 @@ if JITTER_ENABLE_TEST_SUITE
   TESTS += tests/jitterlisp/jitterlisp.test
   check_PROGRAMS += $(PROGRAMS_JITTERLISP)
   tests/jitterlisp/jitterlisp.log: $(check_PROGRAMS)
-  EXTRA_DIST += tests/jitterlisp/test-definitions.scm
 endif # if JITTER_ENABLE_TEST_SUITE
+EXTRA_DIST += tests/jitterlisp/test-definitions.scm
 
 # Tests have to be distributed, but it's not needed to add them to EXTRA_DIST in
 # this case since all my tests are script processed by aclocal, and
