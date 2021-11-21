@@ -59,7 +59,8 @@ Usage: ${script_name} --version
 $(if test "x@JITTER_CROSS_COMPILING@" = 'xyes'; then
   echo "Execute a @host@ program with the given arguments"
   echo "on a @build@ machine, through the emulator"
-  echo "specified at the time of Jitter configuration."
+  echo '  @JITTER_EMULATOR@'
+  echo "which was specified at the time of Jitter configuration."
   if test "x@JITTER_EMULATOR@" = 'x'; then
     echo "Notice that NO EMULATOR WAS SELECTED at Jitter configure time,"
     echo "and therefore it will only be possible to run"
