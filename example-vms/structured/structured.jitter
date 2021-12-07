@@ -517,7 +517,7 @@ instruction mov (?Rn 0 1 -1 2 structured_literal_printer, !R)
   end
 end
 
-instruction plus (?Rn structured_literal_printer,
+instruction plus (?Rn 1 2 structured_literal_printer,
                   ?Rn 1 2 structured_literal_printer,
                   !R)
   code

@@ -59,9 +59,11 @@ I wish to thank the people who maintained a package for Jitter; I know of
 Darshit Shah, but there are others as well who would deserve a mention here.
 
 
-As of 2021 my employer, pEp Foundation, graciously allows me to spend some paid
-time working on free software including Jitter.  On pEp Foundation's time I:
+As of 2021 my employer p≡p Foundation (https://pep.foundation ) allows me to
+spend some paid time working on free software projects including Jitter; this
+support is greatly appreciated.  On p≡p Foundation's time I:
 
 * ported Jitter to Android;
 * improved ARM support;
-* greatly improved the Structured example: procedures, tail calls.
+* greatly improved the Structured example: procedures, tail calls,
+  documentation.

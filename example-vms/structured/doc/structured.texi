@@ -251,6 +251,7 @@ Overview
 * Using Structured::               How to build and run the software.
 
 Internals
+* Architecture::                   How the program is organised.
 * Frontend::                       Structured programs are parsed in a very ordinary way.
 * Stack-based execution::          Structured programs turn into stack-based operations...
 * Register-based execution::       ...or into register-based operations
@@ -304,7 +305,7 @@ generator.
 @fixme{at first stack only; then two different code generators; then
 procedure, tail calls.  Manual.  Things get out of hand}
 
-@fixme{Thank José and Mohammad.}
+@fixme{Thank José and Mohammad.  Thanks p≡p Foundation.}
 
 @section Obtaining the software
 @cindex obtaining
@@ -365,11 +366,20 @@ Overview
 
 @part Part II:@* Internals
 
+
+@c Architecture
+@c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@node Architecture
+@chapter Architecture
+@cindex architecture
+
+
 @c Frontend
 @c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @node Frontend
 @chapter Frontend
 @cindex frontend
+
 
 @c Stack-based execution
 @c @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
