@@ -539,7 +539,10 @@ jitter_replicate_program (struct jitter_mutable_routine *p)
 #endif // #ifdef JITTER_DISPATCH_NO_THREADING
 
   /* Release unneeded memory at the end of the object. */
-  jitter_executable_shrink_in_place (code, written_bytes);
+  if (code_length > written_bytes)
+    jitter_executable_shrink_in_place (code, written_bytes);
+  else if (code_length < written_bytes)
+    jitter_fatal ("buffer overflow in writing executable code: crash now, in case we have not crashed already");
 
   fprintf (stderr, "The written code is %li bytes (of %li estimated bytes: %.2f%%)\n",
            (long)written_bytes, (long)code_length,
