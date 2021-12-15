@@ -19,8 +19,8 @@ along with Jitter.  If not, see <http://www.gnu.org/licenses/>.
 
 About Jitter
 ============
-Jitter is a software automatically building a portable, very efficient language
-virtual machine with performance close to native code, starting from a
+Jitter is a software automatically generating a portable, very efficient
+language virtual machine with performance close to native code, starting from a
 relatively high-level specification provided by the user.
 
 The VM state may include registers, stacks or a combination of both along with
@@ -30,9 +30,10 @@ attempts to map such state data structures into hardware machine registers.
 The specification contains some C code associated to every VM instruction; the
 generator takes care of combining such small blocks of C into a whole body of
 code with low---usually zero---dispatching and branching overhead.
+
 The generated code includes a simple C API to dynamically emit and execute VM
-code, and a self-contained driver program for running VM routines from text
-files.
+code, an optional self-contained driver program for running VM routines from
+text files, and development features such as disassembling and profiling.
 
 The generated C code is heavily conditionalized and can be configured to run
 using different dispatching techniques, of varying sophistication; the most
@@ -55,7 +56,8 @@ garbage collection]
 Online resources
 ================
 The Jitter home page is http://ageinghacker.net/projects/jitter .
-A public git repository is available at the URL http://git.ageinghacker.net/jitter .
+A public git repository is available at the URL
+http://git.ageinghacker.net/jitter .
 
 Discussions about Jitter, which spawned off as a sub-project of GNU epsilon, are
 always considered on topic on the GNU epsilon mailing list.  See

@@ -37,7 +37,7 @@ will be suboptimal.
 Running
   ./bootstrap
 from the source directory will download Gnulib and copy some files needed at
-configuration time, and already included in tarballs.
+configuration time, or to be included in source distributions.
 
 From that point on you can configure, compile and install as per the standard
 GNU conventions; see the generic INSTALL file and the Jitter manual for more
@@ -64,23 +64,24 @@ for others with make dist , and for releases.
 Updating PACKAGE_VERSION in the source tree
 -------------------------------------------
 
-A comment in git-version-gen says to delete .version before running autoconf; I
-almost always run autoreconf, which runs autoconf, thru the bootstrap script
-coming from Gnulib.  I've added an rm line to Jitter's bootstrap.conf , taking
-care of removing .version .
+A comment in git-version-gen says one should delete .version before running
+autoconf, or risk missing version changes.
+I almost always run autoreconf, which runs autoconf, through the bootstrap
+script coming from Gnulib.  I have added an rm line to Jitter's bootstrap.conf ,
+taking care of removing .version .
 
 Therefore running
   ./bootstrap
-in the source dir *seems* to be enough.  This regenerates configure with the
-good version name, and any make target in a build directory after that point
-will trigger a reconfiguration.
+in the source directory *seems* to be enough.  This regenerates the configure
+script with the version string correctly updated, and any make target in a build
+directory after that point will trigger a reconfiguration.
 Tarballs will have .version and .tarball-version , both correctly updated.
 
-Without this kind of explicit updates any expansion PACKAGE_VERSION may be stale
-and refer to an older version; this is particularly relevant for bug reports
-mentioning a version number, which should not be taken at face value; this kind
-of distraction can easily happen even to experienced users knowing about the
-issue.
+Without this kind of explicit updates any expansion of PACKAGE_VERSION or
+JITTER_PACKAGE_VERSION may be stale and refer to an older version; this is
+particularly relevant for bug reports mentioning a version number, which should
+not be taken at face value; this kind of distraction can easily happen even to
+experienced users knowing about the issue.
 
 
 Release checklist
