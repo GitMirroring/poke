@@ -1,7 +1,7 @@
 /* Jitter: Flex scanner.
 
-   Copyright (C) 2016, 2017, 2018, 2020 Luca Saiu
-   Updated in 2019 and 2021 by Luca Saiu
+   Copyright (C) 2016, 2017, 2018, 2020, 2021 Luca Saiu
+   Updated in 2019 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of Jitter.
@@ -172,6 +172,9 @@ CODECONTENTLINEMIDDLE1 ""
 CODECONTENTLINEMIDDLE2 {LINENOTENDORWHITESPACE}[^\n\r\f]*
 CODECONTENTLINEMIDDLE3 end{LINEWHITESPACE}?[^\ \t\n\r\f#][^\n\r\f]*
 
+/* Legal notices work exactly like code.  */
+LEGALNOTICEOPENLINE    "legal-notice"{LINEWHITESPACE}?{LINECOMMENT}?{NEWLINE}
+LEGALNOTICEBLOCK       {LEGALNOTICEOPENLINE}{CODECONTENTLINE}*{CODECLOSELINE}
 
 /* End of the definition section.
  * ************************************************************************** */
@@ -183,6 +186,8 @@ CODECONTENTLINEMIDDLE3 end{LINEWHITESPACE}?[^\ \t\n\r\f#][^\n\r\f]*
 
 {CODEBLOCK}               { yytext = jitterc_strip_code (yytext);
                             return CODE; }
+{LEGALNOTICEBLOCK}        { yytext = jitterc_strip_code (yytext);
+                            return LEGAL_NOTICE; }
 ({WHITESPACE}|{COMMENT})+ { /* Do nothing. */ }
 "end"                     { return END; }
 "vm"                      { return VM; }

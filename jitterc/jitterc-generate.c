@@ -235,6 +235,44 @@ jitterc_emit_text_to_stream (const struct jitterc_vm *vm,
   jitterc_fclose (f);
 }
 
+/* Call jitterc_emit_text_to_stream to emit the initial comment with legal
+   notices. */
+static void
+jitterc_emit_initial_comments_to_stream (const struct jitterc_vm *vm,
+                                         const char *file_basename)
+{
+  const char *fixed_part
+    = "/* This machine-generated file includes source code from Jitter.\n"
+      "\n"
+      "   Copyright (C) 2016-2021 Luca Saiu\n"
+      "   Written by Luca Saiu\n"
+      "\n"
+      "   Jitter is free software: you can redistribute it and/or modify\n"
+      "   it under the terms of the GNU General Public License as published\n"
+      "   by the Free Software Foundation, either version 3 of the License,\n"
+      "   or (at your option) any later version.\n"
+      "\n"
+      "   Jitter is distributed in the hope that it will be useful,\n"
+      "   but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+      "   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+      "   GNU General Public License for more details.\n"
+      "\n"
+      "   You should have received a copy of the GNU General Public License\n"
+      "   along with Jitter.  If not, see <http://www.gnu.org/licenses/>.\n"
+      "\n";
+  const char *no_explicit_legal_notice_text
+    = "This generated code also is also derived from a user VM specification.\n";
+  jitterc_emit_text_to_stream (vm, file_basename, fixed_part);
+  if (strcmp (vm->legal_notice, ""))
+    jitterc_emit_text_to_stream (vm, file_basename, vm->legal_notice);
+  else
+    {
+      jitterc_emit_text_to_stream (vm, file_basename,
+                                   no_explicit_legal_notice_text);
+    }
+  jitterc_emit_text_to_stream (vm, file_basename, "\n*/\n\n");
+}
+
 /* Emit user-specified code.  FIXME: use this everywhere and find some way of
    handling #line directives out of user code. */
 static void
@@ -4819,21 +4857,17 @@ jitterc_generate (struct jitterc_vm *vm,
                    vm->tmp_directory);
 
   /* Emit the code part coming *before* templates. */
-  const char *initial_comment
-    = "/* This code is machine-generated.  See its source for license\n"
-      "   information. This software is derived from software\n"
-      "   distributed under the GNU GPL version 3 or later. */\n\n";
-  jitterc_emit_text_to_stream (vm, "vm.h",  initial_comment);
+  jitterc_emit_initial_comments_to_stream (vm, "vm.h");
   jitterc_emit_initial_header_c (vm);
-  jitterc_emit_text_to_stream (vm, "vm1.c",  initial_comment);
+  jitterc_emit_initial_comments_to_stream (vm, "vm1.c");
   jitterc_emit_initial_vm1_c (vm);
-  jitterc_emit_text_to_stream (vm, "vm2.c",  initial_comment);
+  jitterc_emit_initial_comments_to_stream (vm, "vm2.c");
   jitterc_emit_initial_vm2_c (vm);
   if (generate_frontend)
     {
       /* Nothing is really customizable in vm-main.c ; but I can emit user code,
          and only that, if vm-main.c is actually used. */
-      jitterc_emit_text_to_stream (vm, "vm-main.c",  initial_comment);
+      jitterc_emit_initial_comments_to_stream (vm, "vm-main.c");
       jitterc_emit_initial_vm_main_c (vm);
     }
 

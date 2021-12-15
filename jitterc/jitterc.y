@@ -121,6 +121,32 @@ jitterc_error (YYLTYPE *locp, struct jitterc_vm *vm,
     }                                                                           \
   while (false)                                                                 \
 
+/* Return a struct jitterc_code_block containing a copy of the pointed text,
+   starting at the given line number. */
+struct jitterc_code_block
+jitterc_make_code_struct (struct jitterc_vm *vm,
+                          const char *text, int line_number)
+{
+  /* Count newline characters. */
+  int newline_no = 0;
+  int i;
+  for (i = 0; text [i] != '\0'; i++)
+    if (text [i] == '\n')
+      newline_no ++;
+
+  /* Make the struct to be returned.  Its initial content must be
+     malloc-allocated, here with jitter_clone_string, because of 
+     JITTERC_APPEND_CODE which frees its parameters. */
+  struct jitterc_code_block res;
+  char *s = xmalloc (1);
+  strcpy (s, "");
+  res.line_number = line_number - newline_no - 1;
+  res.code = jitter_clone_string (text);
+  JITTERC_APPEND_CODE(s, & res);
+  res.code = s;
+  return res;
+}
+
 /* FIXME: unfactor this code back into the only rule which should need it. */
 #define KIND_CASE(character, suffix)                      \
   case character:                                         \
@@ -228,6 +254,7 @@ jitterc_parse_file (const char *input_file_name, bool generate_line);
   jitter_int fixnum;
   bool boolean;
   struct jitterc_code_block code_block;
+  struct jitterc_code_block legal_notice;
 
   struct jitterc_argument_pattern *argument_pattern;
   struct jitterc_template_expression *template_expression;
@@ -252,7 +279,7 @@ jitterc_parse_file (const char *input_file_name, bool generate_line);
   struct jitterc_stack *stack;
 }
 
-%token VM END CODE /*END_CODE*/ STRING
+%token VM LEGAL_NOTICE END CODE /*END_CODE*/ STRING
 %token SET
 %token INITIAL_HEADER_C INITIAL_VM1_C INITIAL_VM2_C INITIAL_VM_MAIN_C
 %token EARLY_HEADER_C LATE_HEADER_C
@@ -285,6 +312,7 @@ jitterc_parse_file (const char *input_file_name, bool generate_line);
 %type <string> optional_identifier optional_placeholder; /* either a heap-allocated string or NULL */
 %type <character> register_or_stack_letter;
 %type <code_block> code;
+%type <code_block> legal_notice;
 %type <mode> modes mode_character modes_rest;
 %type <bare_argument> bare_argument;
 %type <fixnum> literal;
@@ -317,7 +345,8 @@ sections:
 ;
 
 section:
-  vm_section
+  legal_notice
+| vm_section
 | c_section
 | wrapped_functions_section
 | wrapped_globals_section
@@ -331,6 +360,21 @@ vm_section:
   VM
     vm_section_contents
   END /*VM*/
+;
+
+/* This is not a section with contents: the legal-notice element counts as an
+   entire block.  I want it to be easy to write at the top level near the
+   beginning of the file, without any nested groups. */
+legal_notice:
+  LEGAL_NOTICE
+  { /* Add the current text, temporarily disabling #lineno directives even if
+       they are enabled for C code.  The non-reentrancy is dirty but acceptable
+       in this code generator, meant to always remain single-threaded. */
+    bool old_generate_line = vm->generate_line;
+    vm->generate_line = false;
+    $$ = jitterc_make_code_struct (vm, JITTERC_TEXT, JITTERC_LINENO);
+    JITTERC_APPEND_CODE(vm->legal_notice, & $$);
+    vm->generate_line = old_generate_line; }
 ;
 
 vm_section_contents:
@@ -876,19 +920,7 @@ string:
 
 code:
   CODE
-  { char *s = xmalloc (1);
-    strcpy (s, "");
-    int newline_no = 0;
-    char *text = JITTERC_TEXT;
-    int i;
-    for (i = 0; text [i] != '\0'; i++)
-      if (text [i] == '\n')
-        newline_no ++;
-    $$.line_number = JITTERC_LINENO - newline_no - 1;
-    $$.code = JITTERC_TEXT_COPY;
-    JITTERC_APPEND_CODE(s, & $$);
-    $$.code = s;
-  }
+  { $$ = jitterc_make_code_struct (vm, JITTERC_TEXT, JITTERC_LINENO); }
 ;
 
 literal:

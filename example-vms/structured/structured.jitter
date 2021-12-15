@@ -1,23 +1,25 @@
-## A simple Jittery VM, used in the structured language example.
+## The Jittery VM for Structured.
 
-## Copyright (C) 2017, 2019, 2020, 2021 Luca Saiu
-## Copyright (C) 2021 pEp Foundation
-## Written by Luca Saiu
+legal-notice
+  Copyright (C) 2017, 2019, 2020, 2021 Luca Saiu
+  Copyright (C) 2021 pEp Foundation
+  Written by Luca Saiu
 
-## This file is part of Jitter.
+  This file is part of Structured, a Jitter example.
 
-## Jitter is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+  Structured is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-## Jitter is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
+  Structured is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-## You should have received a copy of the GNU General Public License
-## along with Jitter.  If not, see <http://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU General Public License
+  along with Structured.  If not, see <http://www.gnu.org/licenses/>.
+end
 
 
 ## Global configuration.

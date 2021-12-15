@@ -213,11 +213,13 @@ Right now the mode only provides font-locking support.
       ;; non-comment right after an "end" following "code" is just part of the C
       ;; code--it's not recognized as the end of the block, but is certainly not
       ;; an error).
-      ("^[^#\n]*\\<code\\>[ \t]*\\([^\n#]*\\)\\(\\(?:#.*\\)?\\)\n\\(\\(?:.\\|\n\\)*?\\)\n[ \t]*\\<end\\>[ \t]*\\(\\(?:#.*\\)?\\)$"
-       (1 font-lock-warning-face prepend)
-       (2 font-lock-comment-face prepend)
-       (3 'default append)
-       (4 font-lock-comment-face prepend))
+      ;; Legal notices are handled exactly like C code from the point of view
+      ;; of the mode.
+      ("^[^#\n]*\\(\\<code\\>\\|legal-notice\\)[ \t]*\\([^\n#]*\\)\\(\\(?:#.*\\)?\\)\n\\(\\(?:.\\|\n\\)*?\\)\n[ \t]*\\<end\\>[ \t]*\\(\\(?:#.*\\)?\\)$"
+       (2 font-lock-warning-face prepend)
+       (3 font-lock-comment-face prepend)
+       (4 'default append)
+       (5 font-lock-comment-face prepend))
 
       ;; A non-comment non-whitespace character right after a non-commented
       ;; "end" in the same line is wrong out of "code" blocks.  This will not
@@ -310,7 +312,7 @@ Right now the mode only provides font-locking support.
        1 font-lock-function-name-face t)
 
       ;; Highlight keywords.
-      ("\\(set\\|register-class\\|fast-register-no\\|no-slow-registers\\|slow-registers\\|stack\\|letter\\|long-name\\|c-type\\|element-no\\|c-initial-value\\|c-element-type\\|non-tos-optimized\\|tos-optimized\\|guard-underflow\\|guard-overflow\\|no-guard-underflow\\|no-guard-overflow\\|initial-header-c\\|early-header-c\\|initial-vm-main-c\\|initial-vm1-c\\|initial-vm2-c\\|initial-vmmain-c\\|printer-c\\|rewriter-c\\|early-c\\|late-c\\|initialization-c\\|finalization-c\\|state-struct-backing-c\\|state-struct-runtime-c\\|state-initialization-c\\|state-reset-c\\|state-finalization-c\\|instruction-beginning-c\\|instruction-end-c\\|wrapped-functions\\|wrapped-globals\\|instruction\\|hot\\|cold\\|relocatable\\|non-relocatable\\|non-branching\\|branching\\|caller\\|callee\\|returning\\|code\\|end\\|vm\\)"
+      ("\\(set\\|register-class\\|fast-register-no\\|no-slow-registers\\|slow-registers\\|stack\\|letter\\|long-name\\|c-type\\|element-no\\|c-initial-value\\|c-element-type\\|non-tos-optimized\\|tos-optimized\\|guard-underflow\\|guard-overflow\\|no-guard-underflow\\|no-guard-overflow\\|initial-header-c\\|early-header-c\\|initial-vm-main-c\\|initial-vm1-c\\|initial-vm2-c\\|initial-vmmain-c\\|printer-c\\|rewriter-c\\|early-c\\|late-c\\|initialization-c\\|finalization-c\\|state-struct-backing-c\\|state-struct-runtime-c\\|state-initialization-c\\|state-reset-c\\|state-finalization-c\\|instruction-beginning-c\\|instruction-end-c\\|wrapped-functions\\|wrapped-globals\\|instruction\\|hot\\|cold\\|relocatable\\|non-relocatable\\|non-branching\\|branching\\|caller\\|callee\\|returning\\|code\\|end\\|vm\\|legal-notice\\)"
        (0 font-lock-keyword-face nil))
 
       ;; Highlight rule names.

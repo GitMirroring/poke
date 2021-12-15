@@ -237,6 +237,7 @@ jitterc_make_vm (void)
 
   /* These need to be heap-allocated and distinct from one another, since we may
      concatenate an old part with something new and free the two parts. */
+  res->legal_notice = jitter_clone_string ("");
   res->initial_header_c_code = jitter_clone_string ("");
   res->initial_vm1_c_code = jitter_clone_string ("");
   res->initial_vm2_c_code = jitter_clone_string ("");
