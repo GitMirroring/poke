@@ -2155,8 +2155,10 @@ JITTER_GITLOG_TO_CHANGELOG_FLAGS = \
 if JITTER_BUILDING_FROM_GIT
   regenerate-changelog:
 	(cd "$(top_srcdir)" \
-          && ./build-aux/gitlog-to-changelog \
-                $(JITTER_GITLOG_TO_CHANGELOG_FLAGS) > ChangeLog)
+          && (./build-aux/gitlog-to-changelog \
+                $(JITTER_GITLOG_TO_CHANGELOG_FLAGS) \
+	      && echo && echo && head -19 README) \
+	     > ChangeLog)
 else
   regenerate-changelog:
 	@echo "Not rebuilding $(top_srcdir)/ChangeLog: no git log"
