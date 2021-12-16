@@ -156,6 +156,8 @@ SUBDIRS = gnulib-local
 ACLOCAL_AMFLAGS = -I build-aux
 EXTRA_DIST += build-aux/gnulib-cache.m4
 
+EXTRA_DIST += gnulib-local/COPYING.LESSER
+
 # Add other source files to the Gnulib library; this helps on stupid platforms
 # relying on the order of libraries in a link command line, where having the
 # extension files as part of the Jitter utility library wouldn't work.
