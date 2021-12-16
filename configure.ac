@@ -47,7 +47,7 @@ m4_define([jitter_version],
 # Global initialization.
 ################################################################
 
-AC_PREREQ([2.69])
+AC_PREREQ([2.71])
 AC_INIT([Jitter],
         jitter_version(),
         [bug-epsilon@gnu.org],
@@ -313,9 +313,24 @@ AC_PROG_CC
 # right after AC_PROG_CC .
 gl_EARLY
 
-# Make sure the compiler supports a recent version of C.  Without this I
-# have problem on OpenBSD, which ships with a very old GCC.
-AC_PROG_CC_C99
+# Search for a C compiler.  Recent Autoconf versions consider AC_PROG_CC_C99
+# obsolete...
+AC_PROG_CC
+# ...but now AC_PROG_CC also sets ac_prog_cc_stdc , which is very convenient to
+# check that the supported C dialect is recent enough, even before performing
+# specific tests.
+AS_CASE([$ac_prog_cc_stdc],
+        [no],
+          [AC_MSG_WARN([this C compiler seems not to support standard C: \
+expect trouble])],
+        [c89],
+          [AC_MSG_WARN([this C compiler seems to only support C89: expect \
+trouble])],
+        [c99],
+          [AC_MSG_WARN([this C compiler seems to only support C99: expect \
+trouble])],
+        # Default case.
+          [AC_MSG_NOTICE([this C compiler seems modern: good])])
 
 # Check that we can use -c and -o together with the compiler.  I currently don't
 # bother supporting compilers lacking this basic feature, but I could if it were
@@ -620,7 +635,7 @@ else
 fi
 
 # Check for flex.
-AM_PROG_LEX
+AC_PROG_LEX([noyywrap])
 if test "x$LEX" != "xflex"; then
   if test -e "$srcdir/jitterc/jitterc-scanner.c"; then
     AC_MSG_WARN([you will need flex (instead of $LEX) if you modify the
@@ -1328,7 +1343,7 @@ AC_C_BIGENDIAN
 # guess some default which will probably work.
 #
 # This is independent from enabling assembly, and only relies on $host_cpu.
-AC_MSG_CHECKING([for objdump options for \"$host_cpu\"])
+AC_MSG_CHECKING([for objdump options for "$host_cpu"])
 AS_CASE([$host_cpu],
         [aarch64*],
           [jitter_objdump_options="--architecture=aarch64 --disassembler-options=reg-names-raw"],
@@ -1432,7 +1447,7 @@ else
 fi
 jitter_supports_minimal_threading='no'
 jitter_supports_no_threading='no'
-AC_MSG_CHECKING([if we have assembly support for \"$default_host_cpu\"])
+AC_MSG_CHECKING([if we have assembly support for "$default_host_cpu"])
 AS_CASE([$default_host_cpu],
         [aarch64*],    [AC_DEFINE_UNQUOTED([JITTER_HOST_CPU_IS_AARCH64], [1], []
                                            ) # No ";": see the Autoconf manual
@@ -2349,7 +2364,7 @@ for dispatch_model in $jitter_enabled_dispatch_models; do
 
   # Generate flags for $dispatch_model
   mkdir "flags/$dispatch_model"
-  AC_MSG_NOTICE([generating flags for dispatching model \"$dispatch_model\"...])
+  AC_MSG_NOTICE([generating flags for dispatching model "$dispatch_model"...])
   JITTER_FLAGS_CFLAGS=""
 
   # We always want these options.  See the comment below about why
