@@ -7,20 +7,20 @@
 ## Copyright (C) 2019, 2020, 2021 Luca Saiu
 ## Written by Luca Saiu
 
-## This file is part of Jitter.
+## This file is part of GNU Jitter.
 
-## Jitter is free software: you can redistribute it and/or modify
+## GNU Jitter is free software: you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
 ## the Free Software Foundation, either version 3 of the License, or
 ## (at your option) any later version.
 
-## Jitter is distributed in the hope that it will be useful,
+## GNU Jitter is distributed in the hope that it will be useful,
 ## but WITHOUT ANY WARRANTY; without even the implied warranty of
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ## GNU General Public License for more details.
 
 ## You should have received a copy of the GNU General Public License
-## along with Jitter.  If not, see <http://www.gnu.org/licenses/>.
+## along with GNU Jitter.  If not, see <http://www.gnu.org/licenses/>.
 
 
 # Introduction.
@@ -87,27 +87,12 @@ fatal ()
 # Command line handling.
 ################################################################
 
-version ()
-{
-    cat <<EOF
-generate-fast-branches (@PACKAGE_NAME@) @PACKAGE_VERSION@
-Copyright (C) 2016-2019 Luca Saiu.
-Jitter comes with ABSOLUTELY NO WARRANTY.
-You may redistribute copies of Jitter under the terms of the GNU General Public
-License, version 3 or any later version published by the Free Software
-Foundation.  For more information see the file named COPYING in the source
-distribution.
-
-Written by Luca Saiu <http://ageinghacker.net>.
-EOF
-}
-
 help ()
 {
     cat <<EOF
 Usage: $0 @<:@OPTION@:>@
 An internal shell script machine-generating a C header containing repetitive
-CPP macro definitions under the Jitter source directory (in this case
+CPP macro definitions under the GNU Jitter source directory (in this case
 @abs_top_srcdir@ ).
 This script emits C code to the standard output.
 
@@ -115,8 +100,9 @@ Common GNU-style options:
   -?, --help                 Give this help list
   -V, --version              Print program version
 
-Report bugs to: <@PACKAGE_BUGREPORT@>
-Jitter home page: <@PACKAGE_URL@>
+Report bugs to: <@JITTER_PACKAGE_BUGREPORT@>.
+@JITTER_PACKAGE_NAME@ home page: <@JITTER_PACKAGE_URL@>.
+General help using GNU software: <https://www.gnu.org/gethelp/>.
 EOF
 }
 
@@ -978,7 +964,7 @@ emit_everything ()
 set -e
 
 # Handle options, just to support --help and --version .
-handle_command_line
+handle_command_line "$@"
 
 # Print code to the standard input.  The user will take care of redirecting it.
 emit_everything

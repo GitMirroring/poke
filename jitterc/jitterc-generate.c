@@ -3,20 +3,20 @@
    Copyright (C) 2017, 2018, 2019, 2020, 2021 Luca Saiu
    Written by Luca Saiu
 
-   This file is part of Jitter.
+   This file is part of GNU Jitter.
 
-   Jitter is free software: you can redistribute it and/or modify
+   GNU Jitter is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
 
-   Jitter is distributed in the hope that it will be useful,
+   GNU Jitter is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with Jitter.  If not, see <http://www.gnu.org/licenses/>. */
+   along with GNU Jitter.  If not, see <http://www.gnu.org/licenses/>. */
 
 
 /* Include the Gnulib header. */
@@ -247,18 +247,18 @@ jitterc_emit_initial_comments_to_stream (const struct jitterc_vm *vm,
       "   Copyright (C) 2016-2021 Luca Saiu\n"
       "   Written by Luca Saiu\n"
       "\n"
-      "   Jitter is free software: you can redistribute it and/or modify\n"
+      "   GNU Jitter is free software: you can redistribute it and/or modify\n"
       "   it under the terms of the GNU General Public License as published\n"
       "   by the Free Software Foundation, either version 3 of the License,\n"
       "   or (at your option) any later version.\n"
       "\n"
-      "   Jitter is distributed in the hope that it will be useful,\n"
+      "   GNU Jitter is distributed in the hope that it will be useful,\n"
       "   but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
       "   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
       "   GNU General Public License for more details.\n"
       "\n"
       "   You should have received a copy of the GNU General Public License\n"
-      "   along with Jitter.  If not, see <http://www.gnu.org/licenses/>.\n"
+      "   along with GNU Jitter.  If not, see <http://www.gnu.org/licenses/>.\n"
       "\n";
   const char *no_explicit_legal_notice_text
     = "This generated code also is also derived from a user VM specification.\n";

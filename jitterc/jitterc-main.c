@@ -4,20 +4,20 @@
    Updated in 2019 and 2021 by Luca Saiu
    Written by Luca Saiu
 
-   This file is part of Jitter.
+   This file is part of GNU Jitter.
 
-   Jitter is free software: you can redistribute it and/or modify
+   GNU Jitter is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
 
-   Jitter is distributed in the hope that it will be useful,
+   GNU Jitter is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with Jitter.  If not, see <http://www.gnu.org/licenses/>. */
+   along with GNU Jitter.  If not, see <http://www.gnu.org/licenses/>. */
 
 
 /* Include the Gnulib header. */
@@ -177,8 +177,8 @@ static struct argp_option jitterc_option_specification[] =
 const char *argp_program_version
   = "jitter (" PACKAGE_NAME ") " PACKAGE_VERSION "\n"
     "Copyright (C) 2021 Luca Saiu.\n"
-    "Jitter comes with ABSOLUTELY NO WARRANTY.\n"
-    "You may redistribute copies of Jitter under the terms of the GNU\n"
+    "GNU Jitter comes with ABSOLUTELY NO WARRANTY.\n"
+    "You may redistribute copies of GNU Jitter under the terms of the GNU\n"
     "General Public License, version 3 or any later version published\n"
     "by the Free Software Foundation.  For more information see the\n"
     "file named COPYING.\n"

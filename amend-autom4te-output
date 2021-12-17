@@ -3,20 +3,20 @@
 # Updated in 2021 by Luca Saiu
 # Written by Luca Saiu
 
-# This file is part of Jitter.
+# This file is part of GNU Jitter.
 
-# Jitter is free software: you can redistribute it and/or modify
+# GNU Jitter is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-# Jitter is distributed in the hope that it will be useful,
+# GNU Jitter is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with Jitter.  If not, see <http://www.gnu.org/licenses/>.
+# along with GNU Jitter.  If not, see <http://www.gnu.org/licenses/>.
 
 
 # Introduction and rationale.
@@ -69,16 +69,17 @@ Options:
   --version                    show the version number
 
 Report bugs to <@JITTER_PACKAGE_BUGREPORT@>.
-Jitter home page: <@JITTER_PACKAGE_URL@>.
+@JITTER_PACKAGE_NAME@ home page: <@JITTER_PACKAGE_URL@>.
+General help using GNU software: <https://www.gnu.org/gethelp/>.
 EOF
     exit 0
   elif test "$1" = '--version'; then
     cat <<EOF
 $0 script from @JITTER_PACKAGE_NAME@ @JITTER_PACKAGE_VERSION@
 Copyright (C) 2020-2021 Luca Saiu.
-Jitter comes with ABSOLUTELY NO WARRANTY.
-You may redistribute copies of Jitter under the terms of the GNU General Public
-License, version 3 or any later version published by the Free Software
+GNU Jitter comes with ABSOLUTELY NO WARRANTY.
+You may redistribute copies of GNU Jitter under the terms of the GNU General
+Public License, version 3 or any later version published by the Free Software
 Foundation.  For more information see the file named COPYING in the source
 distribution.
 
@@ -105,7 +106,7 @@ handle_gnu_option ${file}
 mv "${file}" "${file}.tmp" \
   && echo '@JITTER_SHEBANG@' \
        > "${file}" \
-  && echo "# This machine-generated portable shell script is part of Jitter." \
+  && echo "# This machine-generated portable shell script is part of GNU Jitter." \
        >> "${file}" \
   && echo "# The human-written source file for this script is ${file}.m4sh ." \
        >> "${file}" \

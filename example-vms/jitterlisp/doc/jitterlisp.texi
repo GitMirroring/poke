@@ -1,6 +1,6 @@
 \input texinfo.tex @c This is -*- Texinfo -*-.
 
-@c This file is part of the JitterLisp manual, which is part of Jitter.
+@c This file is part of the JitterLisp manual, which is part of GNU Jitter.
 @c Copyright (C) 2017, 2018, 2019, 2020, 2021  Luca Saiu
 @c Written by Luca Saiu
 
@@ -10,6 +10,9 @@
 @c Foundation; with no Invariant Sections, no Front-Cover Texts, and
 @c no Back-Cover Texts.  A copy of the license is included in the
 @c section entitled ``GNU Free Documentation License''.
+
+@c The code examples contained in this manual are released into the
+@c public domain, up to the extent of the applicable law.
 
 
 @c Conditionals
@@ -45,7 +48,7 @@
 
 @setfilename jitterlisp.info
 @include version-jitterlisp.texi
-@settitle The JitterLisp manual, for Jitter version @value{VERSION}
+@settitle The JitterLisp manual, for GNU Jitter version @value{VERSION}
 
 
 @c Global settings
@@ -175,7 +178,7 @@ epsilon\subscript\
 @copying
 This is the manual for JitterLisp
 @c (edition @value{EDITION} for
-(for Jitter version @value{VERSION},
+(for GNU Jitter version @value{VERSION},
 last updated on @value{UPDATED}), an efficient Lisp system using a Jittery VM.
 
 @noindent
@@ -202,6 +205,9 @@ A copy of the GNU Free Documentation License is
 distributed in electronic form along with the software in the file
 @file{doc/COPYING.DOC}, and available on the web at the URL
 @url{https://www.gnu.org/licenses/fdl.html}.
+
+All the code examples contained in this manual are released into the
+public domain, up to the extent of the applicable law.
 @end quotation
 
 The author's personal web site @url{http://ageinghacker.net} contains
@@ -214,7 +220,7 @@ his contact information.
 
 @titlepage
 @title JitterLisp
-@subtitle An efficient Lisp system, conceived as an advanced example for Jitter
+@subtitle An efficient Lisp system, conceived as an advanced example for GNU Jitter
 @subtitle for Jitter version @value{VERSION}, updated in @value{UPDATED-MONTH}
 @c @author Luca Saiu (@email{positron@@gnu.org}, @url{http://ageinghacker.net})
 @c @author Luca Saiu (@url{http://ageinghacker.net})
@@ -297,7 +303,7 @@ Temporary stuff, for myself
 @chapter Introduction
 
 JitterLisp is a comparatively simple and efficient Lisp system,
-relying on a Jitter virtual machine for compiled code.
+relying on a Jittery virtual machine for compiled code.
 
 @menu
 * History::                            How JitterLisp came to be.
@@ -315,8 +321,8 @@ relying on a Jitter virtual machine for compiled code.
 @cindex Jitter
 @cindex sub-project
 @c @cindex @ @epsilonzero{} @c The initial forced space is less ugly than the alternative.
-Jitter (@pxref{Top,,, jitter, The Jitter Manual}) was borne out of an
-attempt to optimize the programming language GNU epsilon
+GNU Jitter (@pxref{Top,,, jitter, The GNU Jitter Manual}) was borne
+out of an attempt to optimize the programming language GNU epsilon
 (@pxref{Top,,, epsilon, The GNU epsilon Manual}), my main long-term
 project.  Dissatisfied with the speedup provided by a simple
 direct-threaded virtual machine I started exploring more advanced
@@ -702,8 +708,8 @@ Documentation License, version 1.3 or later.
 
 @cindex source
 @cindex distribution
-JitterLisp is distributed along with Jitter as an advanced example of
-its use, and must be compiled from the source code.
+JitterLisp is distributed along with GNU Jitter as an advanced example
+of its use, and must be compiled from the source code.
 
 @cindex cross compilation
 @cindex GNU build system
@@ -714,7 +720,7 @@ its use, and must be compiled from the source code.
 @cindex build directory (Jitter)
 JitterLisp has no separate distribution or build system of its own,
 but is easy to build from the Jitter build directory.  The build
-process follows the GNU conventions, and supports cross-compilation.
+process follows the GNU conventions and supports cross-compilation.
 
 @cindex REPL
 @cindex Read-Eval-Print Loop

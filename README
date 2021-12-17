@@ -1,25 +1,26 @@
 Copyright (C) 2016-2021 Luca Saiu
 Written by Luca Saiu
 
-This file is part of Jitter.
+This file is part of GNU Jitter.
 
-Jitter is free software: you can redistribute it and/or modify
+GNU Jitter is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-Jitter is distributed in the hope that it will be useful,
+GNU Jitter is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with Jitter.  If not, see <http://www.gnu.org/licenses/>.
+along with GNU Jitter.  If not, see <http://www.gnu.org/licenses/>.
 
 
-About Jitter
-============
-Jitter is a software automatically generating a portable, very efficient
+About GNU Jitter
+================
+
+GNU Jitter is a software automatically generating a portable, very efficient
 language virtual machine with performance close to native code, starting from a
 relatively high-level specification provided by the user.
 
@@ -33,7 +34,10 @@ code with low---usually zero---dispatching and branching overhead.
 
 The generated code includes a simple C API to dynamically emit and execute VM
 code, an optional self-contained driver program for running VM routines from
-text files, and development features such as disassembling and profiling.
+text files, and development features such as disassembling and profiling.  The
+Jitter runtime also features efficient support for conditional branching
+operations difficult to implement using just C such as value tag checking, as
+required by dynamically typed langauges, and overflow checking.
 
 The generated C code is heavily conditionalized and can be configured to run
 using different dispatching techniques, of varying sophistication; the most
@@ -49,22 +53,28 @@ even the C API: a VM routine will always behave in the same way independently
 from the dispatching technique and other configuration parameters, the only
 observable difference being execution speed.
 
-[FIXME: talk about optional features for VMs such as overflow checking and
-garbage collection]
+A new garbage collector featuring precise pointer finding is in preparation.
+Garbage collection is compatible with Jittery VMs but optional; alternatives
+such as the the Boehm-Demers-Weiser garbage collection are also supported.
 
 
 Online resources
 ================
-The Jitter home page is http://ageinghacker.net/projects/jitter .
-A public git repository is available at the URL
-http://git.ageinghacker.net/jitter .
 
-Discussions about Jitter, which spawned off as a sub-project of GNU epsilon, are
-always considered on topic on the GNU epsilon mailing list.  See
+A temporary Jitter home page is at http://ageinghacker.net/projects/jitter .
+A public git repository is available at the URL
+http://git.ageinghacker.net/jitter .  The web site will move to the GNU
+GNU domain soon.
+
+Discussions about Jitter, which spawned off as a sub-project of GNU epsilon,
+are always considered on topic on the GNU epsilon mailing list.  See
 https://lists.gnu.org/mailman/listinfo/epsilon-devel .
+
+A new mailing list specific to Jitter might be added soon.
 
 
 About the author
 ================
-Jitter was written by Luca Saiu.  His personal web site, which includes contact
-information, is http://ageinghacker.net .
+
+GNU Jitter was written by Luca Saiu.  His personal web site, which includes
+contact information, is http://ageinghacker.net .

@@ -4,20 +4,20 @@
    Written by Luca Saiu
 
    This file is part of the Jitter structured-language example, distributed
-   along with Jitter under the same license.
+   along with GNU Jitter under the same license.
 
-   Jitter is free software: you can redistribute it and/or modify
+   GNU Jitter is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
 
-   Jitter is distributed in the hope that it will be useful,
+   GNU Jitter is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with Jitter.  If not, see <http://www.gnu.org/licenses/>. */
+   along with GNU Jitter.  If not, see <http://www.gnu.org/licenses/>. */
 
 
 #include <stdio.h>
@@ -124,7 +124,8 @@ structured_help (void)
   printf ("                                   specialized instructions %s\n",
           (instrumentation != jitter_vm_instrumentation_none
            ? ""
-           : " if available (disabled: recompile with -DPROFILE_COUNT=1 or -DPROFILE_SAMPLE=1)"));
+           : "\n                                   "
+             "if available (disabled: recompile with -DPROFILE_COUNT=1 or -DPROFILE_SAMPLE=1)"));
   printf ("      --profile-unspecialized      like --profile-specialized, for\n");
   printf ("                                   unspecialized instructions\n");
   printf ("      --print-locations            print the mapping between VM structures\n");
@@ -172,6 +173,7 @@ structured_help (void)
 
   printf ("\n");
   printf ("Report bugs to " JITTER_PACKAGE_BUGREPORT ".\n");
+  printf ("General help using GNU software: <https://www.gnu.org/gethelp/>.\n");
 
   exit (EXIT_SUCCESS);
 }
@@ -190,8 +192,8 @@ structured_version (void)
           (strlen (instrumentation) > 0 ? ", " : ""),
           c->dispatch_human_readable);
   printf ("Copyright (C) 2021 Luca Saiu.\n"
-          "Jitter comes with ABSOLUTELY NO WARRANTY.\n"
-          "You may redistribute copies of Jitter under the terms of the GNU\n"
+          "GNU Jitter comes with ABSOLUTELY NO WARRANTY.\n"
+          "You may redistribute copies of GNU Jitter under the terms of the GNU\n"
           "General Public License, version 3 or any later version published\n"
           "by the Free Software Foundation.  For more information see the\n"
           "file named COPYING.\n"

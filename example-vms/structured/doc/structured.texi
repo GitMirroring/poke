@@ -1,6 +1,6 @@
 \input texinfo.tex @c This is -*- Texinfo -*-.
 
-@c This file is part of the Structured manual, which is part of Jitter.
+@c This file is part of the Structured manual, which is part of GNU Jitter.
 @c Copyright (C) 2017, 2018, 2019, 2020, 2021  Luca Saiu
 @c Written by Luca Saiu
 @c Document skeleton copied from the JitterLisp manual in late 2021.
@@ -11,6 +11,9 @@
 @c Foundation; with no Invariant Sections, no Front-Cover Texts, and
 @c no Back-Cover Texts.  A copy of the license is included in the
 @c section entitled ``GNU Free Documentation License''.
+
+@c The code examples contained in this manual are released into the
+@c public domain, up to the extent of the applicable law.
 
 
 @c Conditionals
@@ -46,7 +49,7 @@
 
 @setfilename structured.info
 @include version-structured.texi
-@settitle The Structured manual, for Jitter version @value{VERSION}
+@settitle The Structured manual, for GNU Jitter version @value{VERSION}
 
 
 @c Global settings
@@ -171,9 +174,9 @@ epsilon\subscript\
 @copying
 This is the manual for Structured
 @c (edition @value{EDITION} for
-(for Jitter version @value{VERSION},
+(for GNU Jitter version @value{VERSION},
 last updated on @value{UPDATED}), a programming language
-implementation using a Jittery VM, conceived as an example for Jitter.
+implementation using a Jittery VM, conceived as an example for GNU Jitter.
 
 @noindent
 Copyright @copyright{} 2018, 2019, 2020, 2021  Luca Saiu@*
@@ -200,6 +203,9 @@ A copy of the GNU Free Documentation License is
 distributed in electronic form along with the software in the file
 @file{doc/COPYING.DOC}, and available on the web at the URL
 @url{https://www.gnu.org/licenses/fdl.html}.
+
+All the code examples contained in this manual are released into the
+public domain, up to the extent of the applicable law.
 @end quotation
 
 The author's personal web site @url{http://ageinghacker.net} contains
@@ -212,8 +218,8 @@ his contact information.
 
 @titlepage
 @title Structured
-@subtitle A programming language using a Jittery VM, conceived as an example for Jitter
-@subtitle for Jitter version @value{VERSION}, updated in @value{UPDATED-MONTH}
+@subtitle A programming language using a Jittery VM, conceived as an example for GNU Jitter
+@subtitle for GNU Jitter version @value{VERSION}, updated in @value{UPDATED-MONTH}
 @c @author Luca Saiu (@email{positron@@gnu.org}, @url{http://ageinghacker.net})
 @c @author Luca Saiu (@url{http://ageinghacker.net})
 @c @author Luca Saiu (@email{positron@@gnu.org})
@@ -305,6 +311,9 @@ generator.
 @fixme{at first stack only; then two different code generators; then
 procedure, tail calls.  Manual.  Things get out of hand}
 
+Since Jitter became part of the GNU Project in December 2021
+documenting this sub-project, now more visible, has become important.
+
 @fixme{Thank José and Mohammad.  Thanks p≡p Foundation.}
 
 @section Obtaining the software
@@ -315,7 +324,7 @@ procedure, tail calls.  Manual.  Things get out of hand}
 @cindex source
 @cindex distribution
 @cindex git
-Structured is distributed as an example within Jitter, and can be
+Structured is distributed as an example within GNU Jitter, and can be
 obtained along with the Jitter source code.
 The current web page for Jitter, containing a link to a publicly
 readable git repository, is on my web site at the URL
@@ -337,7 +346,7 @@ fact trivial to generate clean source tarballs for structured.}
 @cindex Saiu, Luca, contacting
 I welcome feedback.  If you need to contact me or want to discuss
 about Structured please
-@pxref{Contacting the author,,, jitter, The Jitter Manual}.
+@pxref{Contacting the author,,, jitter, The GNU Jitter Manual}.
 
 
 @c Using Structured

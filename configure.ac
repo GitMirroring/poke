@@ -5,20 +5,20 @@
 ## Copyright (C) 2021 pEp foundation (Android port)
 ## Written by Luca Saiu
 
-## This file is part of Jitter.
+## This file is part of GNU Jitter.
 
-## Jitter is free software: you can redistribute it and/or modify
+## GNU Jitter is free software: you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
 ## the Free Software Foundation, either version 3 of the License, or
 ## (at your option) any later version.
 
-## Jitter is distributed in the hope that it will be useful,
+## GNU Jitter is distributed in the hope that it will be useful,
 ## but WITHOUT ANY WARRANTY; without even the implied warranty of
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ## GNU General Public License for more details.
 
 ## You should have received a copy of the GNU General Public License
-## along with Jitter.  If not, see <http://www.gnu.org/licenses/>.
+## along with GNU Jitter.  If not, see <http://www.gnu.org/licenses/>.
 
 
 # Early definitions.
@@ -48,7 +48,7 @@ m4_define([jitter_version],
 ################################################################
 
 AC_PREREQ([2.71])
-AC_INIT([Jitter],
+AC_INIT([GNU Jitter],
         jitter_version(),
         [bug-epsilon@gnu.org],
         [jitter],
@@ -2980,8 +2980,11 @@ jitter_define_prefixed_macro_string([PACKAGE_VERSION],   [PACKAGE_VERSION])
 jitter_define_prefixed_macro_string([PACKAGE_BUGREPORT], [PACKAGE_BUGREPORT])
 jitter_define_prefixed_macro_string([PACKAGE_URL],       [PACKAGE_URL])
 
-# Also define substitutions for the few macros also used in Makefile.am .
+# Also define substitutions for the few macros also used in Makefile.am , or
+# in generated scripts.
+AC_SUBST([JITTER_PACKAGE_NAME], [$PACKAGE_NAME])
 AC_SUBST([JITTER_PACKAGE_BUGREPORT], [$PACKAGE_BUGREPORT])
+AC_SUBST([JITTER_PACKAGE_URL], [$PACKAGE_URL])
 
 
 # Define prefixed versions of conditionally-defined feature macros.
