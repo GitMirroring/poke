@@ -37,9 +37,9 @@ code, an optional self-contained driver program for running VM routines from
 text files, and development features such as disassembling and profiling.  The
 Jitter runtime also features efficient support for conditional branching
 operations difficult to implement using just C such as value tag checking, as
-required by dynamically typed langauges, and overflow checking.
+required by dynamically typed languages, and overflow checking.
 
-The generated C code is heavily conditionalized and can be configured to run
+The generated C code is heavily conditionalised and can be configured to run
 using different dispatching techniques, of varying sophistication; the most
 efficient dispatching techniques rely on some architecture-specific---but not
 VM-specific---assembly support already included in this software; every
