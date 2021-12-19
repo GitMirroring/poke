@@ -206,4 +206,5 @@ niobos/
 openbsd/
 papers/
 signal-test.s
-webpage/
+tutorial/
+gnu-webpage/
