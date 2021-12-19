@@ -55,7 +55,7 @@ observable difference being execution speed.
 
 A new garbage collector featuring precise pointer finding is in preparation.
 Garbage collection is compatible with Jittery VMs but optional; alternatives
-such as the the Boehm-Demers-Weiser garbage collector are also supported.
+such as the Boehm-Demers-Weiser garbage collector are also supported.
 
 
 Online resources
