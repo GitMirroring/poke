@@ -25,7 +25,6 @@
 # Global initialization.
 ################################################################
 
-AC_PREREQ([2.69])
 # There is no real need to keep an independent version number for the
 # structured-language example.
 AC_INIT([Structured],
@@ -61,7 +60,8 @@ LT_INIT
 # Check for the C compiler and its features.
 ################################################################
 
-# We need a C compiler.
+# We need a C compiler.  This would not even be needed, because
+# AC_JITTER or AC_JITTER_SUBPACKAGE already require it.
 AC_PROG_CC
 
 
@@ -78,7 +78,7 @@ AC_JITTER_SUBPACKAGE([jitter])
 ################################################################
 
 # Check for flex.
-AM_PROG_LEX
+AC_PROG_LEX([noyywrap])
 if test "x$LEX" != "xflex"; then
   if test -e "$srcdir/structured-scanner.c"; then
     AC_MSG_WARN([you will need flex (instead of $LEX) if you modify the

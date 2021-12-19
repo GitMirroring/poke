@@ -1,5 +1,5 @@
 # Autoconf macros for Jitter.
-# Copyright (C) 2017, 2018, 2019, 2020 Luca Saiu
+# Copyright (C) 2017, 2018, 2019, 2020, 2021 Luca Saiu
 # Written by Luca Saiu
 
 # This file is part of GNU Jitter.
@@ -185,6 +185,53 @@ subdirs="${jitter_subdirs_backup}"
 # Jitter Autoconf macros, not meant for the user.
 ################################################################
 
+# AC_JITTER_CHECK_AUTOCONF_VERSION
+# --------------------------------
+# Make sure that the Autoconf being used is recent enough.  We rely on features
+# from a recent version, without considering this to be a particular problem for
+# the ordinary user installing a tarball.
+AC_DEFUN([AC_JITTER_CHECK_AUTOCONF_VERSION], [
+# We need:
+# - a version sufficiently recent for AC_JITTER_CHECK_CC_AND_ITS_C_DIALECT, which
+#   relies on AC_PROG_CC setting $ac_prog_cc_stdc.  Notice that AC_PROG_CC_C99
+#   is considered obsolete by recent versions or Autoconf.
+AC_PREREQ([2.71])
+]) # AC_JITTER_CHECK_AUTOCONF_VERSION
+
+# AC_JITTER_CHECK_CC_AND_ITS_C_DIALECT
+# ----------------------------
+# Use AC_PROG_CC to check for a C compiler, and warn if the supported dialect
+# is not recent enough; try to continue in any case.
+# Also require a recent Autoconf version, which is necessary for checking the
+# C dialect.
+AC_DEFUN([AC_JITTER_CHECK_CC_AND_ITS_C_DIALECT], [
+# Recent Autoconf versions consider AC_PROG_CC_C99 obsolete...
+AC_REQUIRE([AC_JITTER_CHECK_AUTOCONF_VERSION])
+AC_REQUIRE([AC_PROG_CC])
+# ...but now AC_PROG_CC also sets ac_prog_cc_stdc , which is very convenient to
+# check that the supported C dialect is recent enough, even before performing
+# specific tests.
+AC_MSG_CHECKING([the C dialect supported by "$CC"])
+AS_CASE([$ac_prog_cc_stdc],
+        [no],
+          [AC_MSG_RESULT([pre-standard C])
+           AC_MSG_WARN([expect huge trouble])],
+        [c89],
+          [AC_MSG_RESULT([C89])
+           AC_MSG_WARN([expect trouble unless the compiler supports a lot of \
+extensions: C89 is now very old])],
+        [c99],
+          [AC_MSG_RESULT([C99 only])
+           AC_MSG_WARN([C99 compilers are less commonly tested but should \
+work])],
+        [c11],
+          [AC_MSG_RESULT([C11])
+           AC_MSG_NOTICE([good: we routinely test Jitter with C11 compilers])],
+        # Default case (for future compatibility).
+          [AC_MSG_RESULT(["$ac_prog_cc_stdc", which I assume to be least C11])
+           AC_MSG_NOTICE([this C compiler seems modern])])
+]) # AC_JITTER_CHECK_CC_AND_ITS_C_DIALECT
+
 # AC_JITTER_WITH_JITTER_COMMAND_LINE_OPTION
 # -----------------------------------------
 # Provide a configure-time option --with-jitter="PREFIX", setting a prefix
@@ -220,6 +267,8 @@ AC_ARG_WITH([jitter],
 
 # AC_JITTER_CONFIG
 # ----------------
+# Make sure that the system can compile Jittery VMs; this also tests
+# for a C compiler using AC_PROG_CC.
 # Look for the jitter-config script:
 # * if the shell variable JITTER_SUBPACKAGE is defined as a non-empty
 #   value, in ${JITTER_SUBPACKAGE}/bin relative to the super-package
@@ -290,16 +339,8 @@ AC_REQUIRE([AC_JITTER_USING_AUTOMAKE])
 # Every test from now on is about C.
 AC_LANG_PUSH([C])
 
-# In order to compile Jittery VMs we need a recent C compiler; actually
-# I've never tested on anything as old as C99, and that doesn't seem to
-# be supported by Autoconf yet.  Let's at least test for C99 and give a
-# warning if something is not okay.
-AC_REQUIRE([AC_PROG_CC])  # This defines EXEEXT .
-AC_REQUIRE([AC_PROG_CC_C99])
-if test "x$ac_cv_prog_cc_c99" = "no"; then
-  AC_MSG_WARN([the C compiler $CC does not seem to support C99.  I will
-               try to go on, but there may be problems])
-fi
+# In order to compile Jittery VMs we need a recent C compiler.
+AC_REQUIRE([AC_JITTER_CHECK_CC_AND_ITS_C_DIALECT])  # This also defines EXEEXT .
 
 # Define ac_jitter_path from JITTER_SUBPACKAGE, if Jitter is being
 # used in sub-package mode.  From the point of view of prefixes, this is
@@ -389,7 +430,7 @@ if test "x$JITTER_CONFIG" != "x"; then
   # Define the best available dispatching model.
   AC_SUBST([JITTER_BEST_DISPATCH],
            [$("$JITTER_CONFIG" --best-dispatch)])
-  AC_MSG_NOTICE([the best available Jitter dispatch is \"$JITTER_BEST_DISPATCH\"])
+  AC_MSG_NOTICE([the best available Jitter dispatch is "$JITTER_BEST_DISPATCH"])
 
   # Define the default dispatching model.  In case "best" was requested, replace
   # it with the actual name.  If the dispatching model selected as default is
@@ -398,14 +439,14 @@ if test "x$JITTER_CONFIG" != "x"; then
     ac_jitter_default_dispatch="$JITTER_BEST_DISPATCH"
   elif ! "$JITTER_CONFIG" --has-dispatch="$ac_jitter_default_dispatch"; then
     AC_MSG_WARN([the requested Jitter dispatch \
-\"$ac_jitter_default_dispatch\" is not available: choosing the best available \
-\"$JITTER_BEST_DISPATCH\" instead])
+"$ac_jitter_default_dispatch" is not available: choosing the best available \
+"$JITTER_BEST_DISPATCH" instead])
     ac_jitter_default_dispatch="$JITTER_BEST_DISPATCH"
   fi
   AC_SUBST([JITTER_DEFAULT_DISPATCH],
            [$ac_jitter_default_dispatch])
   AC_MSG_NOTICE([the default Jitter dispatching model used here will be \
-\"$JITTER_DEFAULT_DISPATCH\"])
+"$JITTER_DEFAULT_DISPATCH"])
 
   # Define flags for the default dispatching model.
   jitter_for_flag([a_flag],

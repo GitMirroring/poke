@@ -47,7 +47,9 @@ m4_define([jitter_version],
 # Global initialization.
 ################################################################
 
-AC_PREREQ([2.71])
+# We do not explicitly need to call AC_PREREQ here and specify a minimum
+# Autoconf version: AC_PREREQ is requried by the macros from jitter.m4 we use
+# below for tests.
 AC_INIT([GNU Jitter],
         jitter_version(),
         [bug-epsilon@gnu.org],
@@ -313,24 +315,10 @@ AC_PROG_CC
 # right after AC_PROG_CC .
 gl_EARLY
 
-# Search for a C compiler.  Recent Autoconf versions consider AC_PROG_CC_C99
-# obsolete...
-AC_PROG_CC
-# ...but now AC_PROG_CC also sets ac_prog_cc_stdc , which is very convenient to
-# check that the supported C dialect is recent enough, even before performing
-# specific tests.
-AS_CASE([$ac_prog_cc_stdc],
-        [no],
-          [AC_MSG_WARN([this C compiler seems not to support standard C: \
-expect trouble])],
-        [c89],
-          [AC_MSG_WARN([this C compiler seems to only support C89: expect \
-trouble])],
-        [c99],
-          [AC_MSG_WARN([this C compiler seems to only support C99: expect \
-trouble])],
-        # Default case.
-          [AC_MSG_NOTICE([this C compiler seems modern: good])])
+# In order to compile Jitter we need a recent C compiler.  This macro, also
+# used internally by AC_JITTER for packages compiling Jittery VMs, takes care
+# oc calling AC_PROG_CC and checking the supported C dialect.
+AC_JITTER_CHECK_CC_AND_ITS_C_DIALECT
 
 # Check that we can use -c and -o together with the compiler.  I currently don't
 # bother supporting compilers lacking this basic feature, but I could if it were
