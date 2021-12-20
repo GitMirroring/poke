@@ -640,7 +640,7 @@ target the same VM, or even when a single compiler needs to evolve
 but at the same time needs to retain compatibility with older
 versions of a VM satisfying a given specification; the impossibility
 of implementing efficient method tail calls in the JVM depends on such
-a case of excessive decoupling---and in some measure, I dare to say,
+a case of excessive decoupling---and in some measure, I dare say,
 on a community of programmers in general too conditioned by cultural
 inertia and irrational fashions to appreciate the benefit of a clean
 break.
@@ -728,7 +728,8 @@ questionable at best:
 being able to run page scripts in some other (very similar) language rather
 than JavaScript, or running programs without having an interpreter
 installed---because in 2021 the voice of the crowd says that people who run
-software and just @emph{compute on their computers} are no longer hip.
+software different from a web browser and just
+@emph{compute on their computers} are no longer hip.
 
 @cindex craziness
 This craziness must stop.

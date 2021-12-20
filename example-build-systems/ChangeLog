@@ -1,8 +1,8 @@
 Copyright (C) 2017-2021 Luca Saiu
 Written by Luca Saiu
 
-This file is part of the Jitter build system examples, distributed
-along with GNU Jitter under the same license.
+This file is part of the GNU Jitter build system examples, distributed
+along with Jitter under the same license.
 
 GNU Jitter is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,6 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GNU Jitter.  If not, see <http://www.gnu.org/licenses/>.
 
 
-A separate ChangeLog is not actually maintained for these relatively
-trivial examples; however the (generated) ChangeLog file in the jitter
-source directory contains all the relevant information.
+A separate ChangeLog is not actually maintained for these examples;
+However the (generated) ChangeLog file in the GNU Jitter source
+distribution contains all the relevant information.

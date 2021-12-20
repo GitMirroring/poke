@@ -61,16 +61,15 @@ such as the Boehm-Demers-Weiser garbage collector are also supported.
 Online resources
 ================
 
-A temporary Jitter home page is at http://ageinghacker.net/projects/jitter .
+The Jitter home page is at https://www.gnu.org/software/jitter .
 A public git repository is available at the URL
-http://git.ageinghacker.net/jitter .  The web site will move to the GNU
-GNU domain soon.
+http://git.ageinghacker.net/jitter .
 
 Discussions about Jitter, which spawned off as a sub-project of GNU epsilon,
 are always considered on topic on the GNU epsilon mailing list.  See
 https://lists.gnu.org/mailman/listinfo/epsilon-devel .
 
-A new mailing list specific to Jitter might be added soon.
+A new mailing list specific to Jitter might be added if needed.
 
 
 About the author

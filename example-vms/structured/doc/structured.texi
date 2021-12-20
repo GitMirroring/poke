@@ -328,7 +328,7 @@ Structured is distributed as an example within GNU Jitter, and can be
 obtained along with the Jitter source code.
 The current web page for Jitter, containing a link to a publicly
 readable git repository, is on my web site at the URL
-@url{http://ageinghacker.net/projects/jitter/}.
+@url{https://www.gnu.org/software/jitter} .
 
 @cindex branch, git
 @cindex git branch
