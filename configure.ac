@@ -54,7 +54,7 @@ AC_INIT([GNU Jitter],
         jitter_version(),
         [bug-epsilon@gnu.org],
         [jitter],
-        [http://ageinghacker.net/projects/jitter])
+        [https://www.gnu.org/software/jitter])
 AC_CONFIG_SRCDIR([NO-WARRANTY])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIRS([build-aux])
