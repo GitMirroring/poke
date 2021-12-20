@@ -102,11 +102,13 @@ structured_help (void)
   printf ("   or: %s [OPTION...] -\n", structured_program_name);
   printf ("Run a structured-language program on a Jittery VM, either\n"
           "stack-based or register-based according to the options,\n"
-          "using the\n");
+          "using the");
   const char *instrumentation_string
     = jitter_vm_instrumentation_to_string (instrumentation);
   bool instrumentation_empty = instrumentation_string [0] == '\0';
-  printf ("%s dispatch%s%s.\n", c->dispatch_human_readable,
+  printf ("%c%s dispatch%s%s.\n",
+          instrumentation_empty ? ' ' : '\n',
+          c->dispatch_human_readable,
           instrumentation_empty ? "" : " with ",
           instrumentation_string);
 

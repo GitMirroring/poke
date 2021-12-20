@@ -242,7 +242,7 @@ jitterc_emit_initial_comments_to_stream (const struct jitterc_vm *vm,
                                          const char *file_basename)
 {
   const char *fixed_part
-    = "/* This machine-generated file includes source code from Jitter.\n"
+    = "/* This machine-generated file includes source code from GNU Jitter.\n"
       "\n"
       "   Copyright (C) 2016-2021 Luca Saiu\n"
       "   Written by Luca Saiu\n"
