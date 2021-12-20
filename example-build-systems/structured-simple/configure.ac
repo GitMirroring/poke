@@ -39,7 +39,7 @@ AC_CONFIG_HEADERS([config.h])
 # Autoconf macro inclusion.
 ################################################################
 
-# Make the file jitter.m4 visible from here, to get access to AC_JITTER .
+# Make the file jitter.m4 visible from here, to get access to JITTER .
 AC_CONFIG_MACRO_DIR([build-aux])
 
 
@@ -54,8 +54,8 @@ AM_INIT_AUTOMAKE([tar-pax])
 # Check for the C compiler and its features.
 ################################################################
 
-# We need a C compiler.  This would not even be needed, because
-# AC_JITTER or AC_JITTER_SUBPACKAGE already require it.
+# We need a C compiler.  This call would not even be needed, because
+# JITTER_JITTER or JITTER_JITTER_SUBPACKAGE already require it.
 AC_PROG_CC
 
 
@@ -65,7 +65,7 @@ AC_PROG_CC
 # Configure Jitter as a sub-package, without depending on it being installed
 # anywere.  This assumes that the Jitter top source directory has been copied
 # or symbolically linked as "jitter" within this directory.
-AC_JITTER_SUBPACKAGE([jitter])
+JITTER_JITTER_SUBPACKAGE([jitter])
 
 
 # Check for frontend C-code-generation tools.

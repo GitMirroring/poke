@@ -83,7 +83,7 @@ AC_CONFIG_HEADERS([config-private/config.h jitter/jitter-config.h])
 # Autoconf macros for Jitter.
 ################################################################
 
-# We will not use AC_JITTER here, since we are building Jitter itself rather
+# We will not use JITTER here, since we are building Jitter itself rather
 # than checking for an installed Jitter; however some of our Autoconf macros,
 # which of course are not installed yet, will come in handy.
 m4_include([autoconf/jitter.m4])
@@ -240,13 +240,13 @@ jitter_gcc_print_cpp_macro ()
 # either kind; on modern platforms this means in practice that there is a PIC
 # version built for every compilation unit.
 
-# Sub-package mode is enabled if the environment variable JITTER_SUBPACKAGE is
-# defined to any non-empty value.  This is meant to be defined, and exported, by
-# the configure script of the super-package using Jitter as a subpackage; the
-# value is meant to be the Jitter subdirectory name relative to the
-# super-package source directory, but the actual value is only useful for the
-# super-package configuration: here any non-empty value will do, and the source
-# and build directories are known in any case.
+# Sub-package mode is enabled if the environment variable
+# JITTER_SUBPACKAGE_DIRECTORY is defined to any non-empty value.  This is meant
+# to be defined, and exported, by the configure script of the super-package
+# using Jitter as a subpackage; the value is meant to be the Jitter subdirectory
+# name relative to the super-package source directory, but the actual value is
+# only useful for the super-package configuration: here any non-empty value will
+# do, and the source and build directories are known in any case.
 
 # Define the feature macro and change the kind of libraries to build by default
 # if sub-package mode is enabled.
@@ -254,18 +254,18 @@ jitter_gcc_print_cpp_macro ()
 # libraries to be enabled and shared libraries to be also enabled, just giving a
 # warning: see "Libtool support" below.
 
-# Define JITTER_SUBPACKAGE as a precious variable, so that it is described by
-# --help and, more importantly, its value at the time of the first configuration
-# is kept around in case of an automatic re-configuration.  This is very useful
-# in case some Autoconf or Automake source in a sub-package Jitter source
-# directory is modified.
-AC_ARG_VAR([JITTER_SUBPACKAGE],
+# Define JITTER_SUBPACKAGE_DIRECTORY as a precious variable, so that it is
+# described by --help and, more importantly, its value at the time of the first
+# configuration is kept around in case of an automatic re-configuration.  This
+# is very useful in case some Autoconf or Automake source in a sub-package
+# Jitter source directory is modified.
+AC_ARG_VAR([JITTER_SUBPACKAGE_DIRECTORY],
            [define to a non-empty value to configure Jitter as a
             sub-package rather than as a dependency])
 
 # Change library defaults.
-if test "x$JITTER_SUBPACKAGE" != 'x'; then
-    AC_DEFINE_UNQUOTED([JITTER_SUBPACKAGE], [1],
+if test "x$JITTER_SUBPACKAGE_DIRECTORY" != 'x'; then
+    AC_DEFINE_UNQUOTED([JITTER_SUBPACKAGE_MODE], [1],
                        [Jitter is configured in sub-package mode])
     AC_ENABLE_STATIC
     AC_ENABLE_SHARED
@@ -281,16 +281,16 @@ fi
 # FIXME: sub-sub-packages, or sub-packages at any depth different from 1, are
 # not supported.  The desired semantics is not completely clear, particularly
 # for packages not using Jitter's autoconf machineary at every embedding level.
-AC_SUBST([JITTER_SUBPACKAGE_SUBDIRECTORY], [$JITTER_SUBPACKAGE])
+AC_SUBST([JITTER_SUBPACKAGE_DIRECTORY], [$JITTER_SUBPACKAGE_DIRECTORY])
 
 # Define an Automake conditional.
 AM_CONDITIONAL([JITTER_SUBPACKAGE],
-               [test "x$JITTER_SUBPACKAGE" != 'x'])
+               [test "x$JITTER_SUBPACKAGE_DIRECTORY" != 'x'])
 
 # Provide feedback.
 AC_MSG_CHECKING([if we are configuring in sub-package mode])
-if test "x$JITTER_SUBPACKAGE" != 'x'; then
-  AC_MSG_RESULT([yes: "$JITTER_SUBPACKAGE"])
+if test "x$JITTER_SUBPACKAGE_DIRECTORY" != 'x'; then
+  AC_MSG_RESULT([yes: the subdirectory is "$JITTER_SUBPACKAGE_DIRECTORY"])
 else
   AC_MSG_RESULT([no])
 fi
@@ -315,10 +315,11 @@ AC_PROG_CC
 # right after AC_PROG_CC .
 gl_EARLY
 
-# In order to compile Jitter we need a recent C compiler.  This macro, also
-# used internally by AC_JITTER for packages compiling Jittery VMs, takes care
-# oc calling AC_PROG_CC and checking the supported C dialect.
-AC_JITTER_CHECK_CC_AND_ITS_C_DIALECT
+# In order to compile Jitter we need a recent C compiler.  This macro, also used
+# internally by JITTER_JITTER and JITTER_JITTER_SUBPACKAGE for packages
+# compiling Jittery VMs, takes care of calling AC_PROG_CC and checking the
+# supported C dialect.
+JITTER_PROG_CC_AND_CHECK_C_DIALECT
 
 # Check that we can use -c and -o together with the compiler.  I currently don't
 # bother supporting compilers lacking this basic feature, but I could if it were
@@ -744,7 +745,7 @@ AC_PATH_PROGS([JITTER_TIMEOUT], [timeout])
 # This is reasonable in a sub-package: of course the super-package remains free
 # to choose differently.
 # REMARK: enable_static and enable_shared are not explicitly documented.
-if test "x$JITTER_SUBPACKAGE" != 'x'; then
+if test "x$JITTER_SUBPACKAGE_DIRECTORY" != 'x'; then
   if test "x${enable_static}" = 'xno'; then
     AC_MSG_WARN([forcing static libraries to be enabled in sub-package mode])
     enable_static=yes
@@ -1777,7 +1778,7 @@ if test "x$jitter_host_os_is_elf" = "xyes" \
            && test "$JITTER_GCC_MAJOR_VERSION" -ge 4) \
        || (test "x$JITTER_HAVE_CLANG" = "xyes" \
            && test "$JITTER_CLANG_MAJOR_VERSION" -ge 2)) \
-   && test "x$JITTER_SUBPACKAGE" != 'x'; then
+   && test "x$JITTER_SUBPACKAGE_DIRECTORY" != 'x'; then
   jitter_enable_visibility_hidden_default=yes
 else
   jitter_enable_visibility_hidden_default=no
@@ -1894,7 +1895,7 @@ AC_SUBST([JITTER_EMULATOR], $jitter_with_emulator)
 AC_MSG_CHECKING([if we should use help2man to rebuild man pages])
 if    test "x$jitter_cross_compiling" != "xyes" \
    && test "x$jitter_has_help2man"    =  "xyes" \
-   && test "x$JITTER_SUBPACKAGE" = 'x'; then
+   && test "x$JITTER_SUBPACKAGE_DIRECTORY" = 'x'; then
    jitter_can_rebuild_man_pages="yes"
    AC_MSG_RESULT([yes])
 else
@@ -1960,7 +1961,7 @@ AC_MSG_CHECKING([if we should enable the test suite])
 if    test "x$jitter_test_suite_missing_progs" = "x" \
    && (   test "x$jitter_cross_compiling" = "xno" \
        || ! test "x$JITTER_EMULATOR" = "x") \
-   && test "x$JITTER_SUBPACKAGE" = 'x'; then
+   && test "x$JITTER_SUBPACKAGE_DIRECTORY" = 'x'; then
   default=yes
 else
   default=no
@@ -2011,7 +2012,7 @@ fi
 # the cost of generating a warning when Automake is run.
 # This way of using AC_SUBST to override Automake default behavior is in fact
 # supported and documented in the Automake manual (§"Extending Automake Rules").
-if test "x$JITTER_SUBPACKAGE" != 'x' \
+if test "x$JITTER_SUBPACKAGE_DIRECTORY" != 'x' \
    && test "x$jitter_enable_test_suite" = 'xno'; then
   jitter_test_suite_log_value=''
 else
@@ -2031,7 +2032,7 @@ jitter_best_dispatch_model=""
 
 # Define a disclaimer to be printed to the user when checking which dispatches
 # are enabled, showing that the decision is not final in sub-package mode.
-if test "x$JITTER_SUBPACKAGE" != 'x'; then
+if test "x$JITTER_SUBPACKAGE_DIRECTORY" != 'x'; then
   jitter_subpackage_disclaimer=', provisionally (sub-package mode)'
 else
   jitter_subpackage_disclaimer=''
@@ -2140,7 +2141,7 @@ fi
 
 # In sub-package mode disable every dispatch except for the best one, in order
 # to speed up compilation and testing.
-if test "x$JITTER_SUBPACKAGE" != 'x'; then
+if test "x$JITTER_SUBPACKAGE_DIRECTORY" != 'x'; then
   AC_MSG_NOTICE([sub-package mode: disabling every dispatch except]
 [$jitter_best_dispatch_model])
   AC_MSG_NOTICE([  (the following dispatches could have been enabled:]
@@ -2549,7 +2550,7 @@ for dispatch_model in $jitter_enabled_dispatch_models; do
   # Makefile.am (see section "Native-code libjitter sources for supported
   # architectures") uses this same trick to compile examples when Jitter may not
   # be installed.
-  if test "x$JITTER_SUBPACKAGE" != 'x'; then
+  if test "x$JITTER_SUBPACKAGE_DIRECTORY" != 'x'; then
     JITTER_FLAGS_CPPFLAGS="$JITTER_FLAGS_CPPFLAGS -I ${jitter_abs_top_srcdir}"
     JITTER_FLAGS_CPPFLAGS="$JITTER_FLAGS_CPPFLAGS -I ${jitter_abs_top_builddir}"
     if test "x$JITTER_ASSEMBLY_SUBDIRECTORY" != 'x'; then
@@ -2559,7 +2560,7 @@ for dispatch_model in $jitter_enabled_dispatch_models; do
 
   JITTER_FLAGS_LDADD="-ljitter--$dispatch_model"
 
-  if test "x$JITTER_SUBPACKAGE" != 'x'; then
+  if test "x$JITTER_SUBPACKAGE_DIRECTORY" != 'x'; then
     JITTER_FLAGS_LIBADD="${jitter_abs_top_builddir}/lib/libjitter--$dispatch_model.la"
   else
     # If the library is installed we can avoid specifying an explicit directory
@@ -2570,7 +2571,7 @@ for dispatch_model in $jitter_enabled_dispatch_models; do
   fi
 
   # Search for Jitter runtime libraries in the right place.
-  if test "x$JITTER_SUBPACKAGE" != 'x'; then
+  if test "x$JITTER_SUBPACKAGE_DIRECTORY" != 'x'; then
     # See the comment above for sub-package mode and include paths.  This case
     # is simpler.
     JITTER_FLAGS_LDFLAGS="-L${jitter_abs_top_builddir}/lib"

@@ -220,7 +220,8 @@
    The convenient way of linking libjitter-readline (along with the actual GNU
    Readline library, when used) is by using
      jitter-config
-   or the substitutions defined by AC_JITTER and AC_JITTER_SUBPACKAGE . */
+   or the substitutions defined by JITTER_JITTER and JITTER_JITTER_SUBPACKAGE
+   . */
 #undef JITTER_HAVE_READLINE
 
 /* This macro is defined iff GNU Libtextstyle is available, in which case the
@@ -234,7 +235,7 @@
    the functionality to be actually used. The convenient way of doing this is
    by using
      jitter-config
-   or the substitutions defined by AC_JITTER and AC_JITTER_SUBPACKAGE . 
+   or the substitutions defined by JITTER_JITTER and JITTER_JITTER_SUBPACKAGE .
    User code should conditionalise using only JITTER_WITH_LIBTEXTSTYLE : it is
    the build system's responsibility to define
      JITTER_WITH_LIBTEXTSTYLE

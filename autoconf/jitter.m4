@@ -34,7 +34,7 @@
 # Expand to the argument where each letter is converted to upper case, and
 # each dash is replaced by an underscore.
 # Example: jitter_tocpp([my-teXt_4]) --> MY_TEXT_4
-# About the namespace, see the comment for ac_jitter_using_automake.
+# About the namespace, see the comment for jitter_using_automake.
 m4_define([jitter_tocpp],
           [m4_translit([m4_toupper([$1])], ][-][, ][_][)])dnl
 
@@ -124,29 +124,29 @@ m4_define([jitter_flags],
 # The Autoconf macros in this section are subject to change in the future, and
 # should not be directly invoked by the user.
 
-# AC_JITTER_USING_AUTOMAKE
-# ------------------------
+# JITTER_USING_AUTOMAKE
+# ---------------------
 # This is only used internally.  If Automake is being used, then define
-# the shell variable ac_jitter_using_automake to "yes".
-AC_DEFUN([AC_JITTER_USING_AUTOMAKE], [
-# Define ac_jitter_using_automake to a non-empty value iff the configuration
+# the shell variable jitter_using_automake to "yes".
+AC_DEFUN([JITTER_USING_AUTOMAKE], [
+# Define jitter_using_automake to a non-empty value iff the configuration
 # system is used Automake and well, and not just Autoconf.  I have found no
 # documented way of doing this, so I am relying on am__api_version being
 # defined, which happens, indirectly, when AM_INIT_AUTOMAKE is called.
 # This is not particularly related to Jitter but I found no predefined way
-# of doing it, and I'm adding the variable to the AC_JITTER namespace just
+# of doing it, and I'm adding the variable to the JITTER namespace just
 # to prevent conflicts.
 if test "x$am__api_version" != "x"; then
-  ac_jitter_using_automake="yes"
+  jitter_using_automake="yes"
 fi
-]) # AC_JITTER_USING_AUTOMAKE
+]) # JITTER_USING_AUTOMAKE
 
 
 # Sub-packages to be configured immediately, not on AC_OUTPUT.
 ################################################################
 
-# AC_JITTER_CONFIG_SUBDIRS_NOW([dir ...])
-# ---------------------------------------
+# JITTER_CONFIG_SUBDIRS_NOW([dir ...])
+# ------------------------------------
 # Behave like AC_CONFIG_SUBDIRS , but call the recursive configure immediately
 # rather that at the time of AC_OUTPUT.  A final explicit AC_OUTPUT call by
 # the user will still be required, as usual.
@@ -154,7 +154,7 @@ fi
 # Rationale: If the sub-package is configured immediately, the rest of
 # the outer package configure script can make its configuration depend
 # on the inner package.
-AC_DEFUN([AC_JITTER_CONFIG_SUBDIRS_NOW], [
+AC_DEFUN([JITTER_CONFIG_SUBDIRS_NOW], [
 # Keep a backup of some shell variables used by configure at AC_OUTPUT time to
 # handle generated files and subdirectories.  Then clean up the current values
 # of these variables so that AC_OUTPUT *only* deals with the subpackage.
@@ -179,34 +179,34 @@ AC_MSG_NOTICE([back from the recursive configuration in] [$1])
 # already will not be configured again.
 ac_config_files="${jitter_ac_config_files_backup}"
 subdirs="${jitter_subdirs_backup}"
-]) # AC_JITTER_CONFIG_SUBDIRS_NOW
+]) # JITTER_CONFIG_SUBDIRS_NOW
 
 
 # Jitter Autoconf macros, not meant for the user.
 ################################################################
 
-# AC_JITTER_CHECK_AUTOCONF_VERSION
-# --------------------------------
+# JITTER_CHECK_AUTOCONF_VERSION
+# -----------------------------
 # Make sure that the Autoconf being used is recent enough.  We rely on features
 # from a recent version, without considering this to be a particular problem for
 # the ordinary user installing a tarball.
-AC_DEFUN([AC_JITTER_CHECK_AUTOCONF_VERSION], [
+AC_DEFUN([JITTER_CHECK_AUTOCONF_VERSION], [
 # We need:
-# - a version sufficiently recent for AC_JITTER_CHECK_CC_AND_ITS_C_DIALECT, which
+# - a version sufficiently recent for JITTER_PROG_CC_AND_CHECK_C_DIALECT, which
 #   relies on AC_PROG_CC setting $ac_prog_cc_stdc.  Notice that AC_PROG_CC_C99
 #   is considered obsolete by recent versions or Autoconf.
 AC_PREREQ([2.71])
-]) # AC_JITTER_CHECK_AUTOCONF_VERSION
+]) # JITTER_CHECK_AUTOCONF_VERSION
 
-# AC_JITTER_CHECK_CC_AND_ITS_C_DIALECT
-# ----------------------------
+# JITTER_PROG_CC_AND_CHECK_C_DIALECT
+# ---------------------------------
 # Use AC_PROG_CC to check for a C compiler, and warn if the supported dialect
 # is not recent enough; try to continue in any case.
 # Also require a recent Autoconf version, which is necessary for checking the
 # C dialect.
-AC_DEFUN([AC_JITTER_CHECK_CC_AND_ITS_C_DIALECT], [
+AC_DEFUN([JITTER_PROG_CC_AND_CHECK_C_DIALECT], [
 # Recent Autoconf versions consider AC_PROG_CC_C99 obsolete...
-AC_REQUIRE([AC_JITTER_CHECK_AUTOCONF_VERSION])
+AC_REQUIRE([JITTER_CHECK_AUTOCONF_VERSION])
 AC_REQUIRE([AC_PROG_CC])
 # ...but now AC_PROG_CC also sets ac_prog_cc_stdc , which is very convenient to
 # check that the supported C dialect is recent enough, even before performing
@@ -230,51 +230,51 @@ work])],
         # Default case (for future compatibility).
           [AC_MSG_RESULT(["$ac_prog_cc_stdc", which I assume to be least C11])
            AC_MSG_NOTICE([this C compiler seems modern])])
-]) # AC_JITTER_CHECK_CC_AND_ITS_C_DIALECT
+]) # JITTER_PROG_CC_AND_CHECK_C_DIALECT
 
-# AC_JITTER_WITH_JITTER_COMMAND_LINE_OPTION
-# -----------------------------------------
+# JITTER_WITH_JITTER_COMMAND_LINE_OPTION
+# --------------------------------------
 # Provide a configure-time option --with-jitter="PREFIX", setting a prefix
 # to search for jitter-config and jitter.
 # If the option is not given then the two executables are searched for in
 # $PATH; if the option is given then they are searched for *only* in the
 # "bin" subdirectory of the given prefix.
 #
-# This macro sets the environment variable ac_jitter_path if the option is
+# This macro sets the environment variable jitter_jitter_path if the option is
 # given; it leaves the variable unset otherwise.
 #
 # This option is intended for packages using Jitter as a dependency, rather than
 # as a sub-package; in sub-package mode the executables will be searched for in
 # the appropriately named subdirectories of the super-package source and build
 # directories.
-AC_DEFUN([AC_JITTER_WITH_JITTER_COMMAND_LINE_OPTION], [
+AC_DEFUN([JITTER_WITH_JITTER_COMMAND_LINE_OPTION], [
 # Fail if this is used in sub-package mode.
-if test "x$JITTER_SUBPACKAGE" != 'x'; then \
+if test "x$JITTER_SUBPACKAGE_DIRECTORY" != 'x'; then \
   AC_MSG_ERROR([supporting --with-jitter makes no sense in sub-package mode])
 fi
 
 # Provide an option for the user to explicitly set the prefix to
-# bin/jitter .  ac_jitter_path will be defined as either the given
+# bin/jitter .  jitter_jitter_path will be defined as either the given
 # path with "/bin" appended, or $PATH.
 AC_ARG_WITH([jitter],
             [AS_HELP_STRING([--with-jitter="PREFIX"],
                [use the jitter and jitter-config programs from the "bin"
                 subdirectory of the given prefix instead of searching for
                 them in $PATH])],
-            [ac_jitter_path="$withval/bin"])
+            [jitter_jitter_path="$withval/bin"])
 ])
 
 
-# AC_JITTER_CONFIG
-# ----------------
+# JITTER_PROG_JITTER_CONFIG
+# -------------------------
 # Make sure that the system can compile Jittery VMs; this also tests
 # for a C compiler using AC_PROG_CC.
 # Look for the jitter-config script:
-# * if the shell variable JITTER_SUBPACKAGE is defined as a non-empty
-#   value, in ${JITTER_SUBPACKAGE}/bin relative to the super-package
+# * if the shell variable JITTER_SUBPACKAGE_DIRECTORY is defined as a non-empty
+#   value, in ${JITTER_SUBPACKAGE_DIRECTORY}/bin relative to the super-package
 #   build directory;
-# * if the environment variable ac_jitter_path is set, in
-#   ${ac_jitter_path}/bin (only);
+# * if the environment variable jitter_jitter_path is set, in
+#   ${jitter_jitter_path}/bin (only);
 # * otherwise, in $PATH;
 #
 # Choose the default dispatch, using --with-jitter-dispatch="DISPATCH" or
@@ -331,48 +331,48 @@ AC_ARG_WITH([jitter],
 # * JITTER_READLINE_LIBADD        (LDADD for linking the wrapper (and GNU
 #                                  readline itself, where used) into a
 #                                  library).
-AC_DEFUN([AC_JITTER_CONFIG], [
+AC_DEFUN([JITTER_PROG_JITTER_CONFIG], [
 # I'd like to define Automake conditionals later on, but that only works if
 # the project is actually using Automake.
-AC_REQUIRE([AC_JITTER_USING_AUTOMAKE])
+AC_REQUIRE([JITTER_USING_AUTOMAKE])
 
 # Every test from now on is about C.
 AC_LANG_PUSH([C])
 
 # In order to compile Jittery VMs we need a recent C compiler.
-AC_REQUIRE([AC_JITTER_CHECK_CC_AND_ITS_C_DIALECT])  # This also defines EXEEXT .
+AC_REQUIRE([JITTER_PROG_CC_AND_CHECK_C_DIALECT])  # This also defines EXEEXT .
 
-# Define ac_jitter_path from JITTER_SUBPACKAGE, if Jitter is being
+# Define jitter_jitter_path from JITTER_SUBPACKAGE_DIRECTORY, if Jitter is being
 # used in sub-package mode.  From the point of view of prefixes, this is
 # functionally equivalent to --with-jitter .
-if test "x$JITTER_SUBPACKAGE" != 'x' \
-   && test "x$JITTER_SUBPACKAGE" != 'xno'; then
-  if test "x$ac_jitter_path" != 'x'; then
-    # Using --with-jitter together with JITTER_SUBPACKAGE is a
+if test "x$JITTER_SUBPACKAGE_DIRECTORY" != 'x' \
+   && test "x$JITTER_SUBPACKAGE_DIRECTORY" != 'xno'; then
+  if test "x$jitter_jitter_path" != 'x'; then
+    # Using --with-jitter together with JITTER_SUBPACKAGE_DIRECTORY is a
     # contradiction.
-    AC_MSG_ERROR([Enabling sub-package mode with JITTER_SUBPACKAGE is
+    AC_MSG_ERROR([Enabling sub-package mode with JITTER_SUBPACKAGE_DIRECTORY is
                   incompatible with the --with-jitter option])
   else
     # Using sub-package mode, when --with-jitter was not given.  Set the
     # path variable.
     # REMARK: ac_pwd is undocumented.  Is there a cleaner alternative to
     #         find the build directory at configure time?
-    ac_jitter_path="${ac_pwd}/${JITTER_SUBPACKAGE}/bin"
+    jitter_jitter_path="${ac_pwd}/${JITTER_SUBPACKAGE_DIRECTORY}/bin"
   fi
 fi
 
 # Search for the "jitter-config" script and perform the JITTER_CONFIG
 # substitution.
-if test "x$ac_jitter_path" = 'x'; then
+if test "x$jitter_jitter_path" = 'x'; then
   # Search in $PATH (only).
   AC_PATH_PROG([JITTER_CONFIG],
                [jitter-config])
 else
-  # Search in $ac_jitter_path (only).
+  # Search in $jitter_jitter_path (only).
   AC_PATH_PROG([JITTER_CONFIG],
                [jitter-config],
                ,
-               [$ac_jitter_path])
+               [$jitter_jitter_path])
 fi
 
 # However jitter-config was found, verify that it can be used; if not, unset the
@@ -392,7 +392,7 @@ AS_IF([test "x$JITTER_CONFIG" = "x"],
 # Provide an option for the user to explicitly choose a default dispatching
 # model.  Decide on the default dispatch at this point, either using the option
 # or choosing the best.
-# ac_jitter_default_dispatch will be defined as the dispatching model in lower
+# jitter_default_dispatch will be defined as the dispatching model in lower
 # case with dashes separating words.  Default flag variables will refer to the
 # selected dispatching model.
 # If the requested dispatch is not avaiable the variable will be redefined later
@@ -404,12 +404,12 @@ AC_ARG_WITH([jitter-dispatch],
                 for the default jitter flag variables; if the requested
                 dispatch is not available in the current Jitter
                 configuration warn and use the best])],
-            [ac_jitter_default_dispatch="$withval"],
-            [ac_jitter_default_dispatch="best"])
+            [jitter_default_dispatch="$withval"],
+            [jitter_default_dispatch="best"])
 
 # Define the Automake conditional JITTER_HAVE_JITTER_CONFIG , if we are using
 # Automake.
-if test "x$ac_jitter_using_automake" != "x"; then
+if test "x$jitter_using_automake" != "x"; then
   AM_CONDITIONAL([JITTER_HAVE_JITTER_CONFIG],
                  [test "x$JITTER_CONFIG" != "x"])
 fi
@@ -435,16 +435,16 @@ if test "x$JITTER_CONFIG" != "x"; then
   # Define the default dispatching model.  In case "best" was requested, replace
   # it with the actual name.  If the dispatching model selected as default is
   # not available warn, and use the best available.
-  if test "x$ac_jitter_default_dispatch" = "xbest"; then
-    ac_jitter_default_dispatch="$JITTER_BEST_DISPATCH"
-  elif ! "$JITTER_CONFIG" --has-dispatch="$ac_jitter_default_dispatch"; then
+  if test "x$jitter_default_dispatch" = "xbest"; then
+    jitter_default_dispatch="$JITTER_BEST_DISPATCH"
+  elif ! "$JITTER_CONFIG" --has-dispatch="$jitter_default_dispatch"; then
     AC_MSG_WARN([the requested Jitter dispatch \
-"$ac_jitter_default_dispatch" is not available: choosing the best available \
+"$jitter_default_dispatch" is not available: choosing the best available \
 "$JITTER_BEST_DISPATCH" instead])
-    ac_jitter_default_dispatch="$JITTER_BEST_DISPATCH"
+    jitter_default_dispatch="$JITTER_BEST_DISPATCH"
   fi
   AC_SUBST([JITTER_DEFAULT_DISPATCH],
-           [$ac_jitter_default_dispatch])
+           [$jitter_default_dispatch])
   AC_MSG_NOTICE([the default Jitter dispatching model used here will be \
 "$JITTER_DEFAULT_DISPATCH"])
 
@@ -467,7 +467,7 @@ fi # ...if jitter-config exists and works
 # telling whether it's enabled.  This has to be done even if we couldn't find a
 # usable jitter-config , since Automake conditionals must be always defined:
 # they do not default to false.
-if test "x$ac_jitter_using_automake" != "x"; then
+if test "x$jitter_using_automake" != "x"; then
   jitter_for_dispatch([a_dispatch],
     [AM_CONDITIONAL([JITTER_ENABLE_DISPATCH_]jitter_tocpp(a_dispatch),
                     [   test "x$JITTER_CONFIG" != "x" \
@@ -496,7 +496,7 @@ fi
 
 # Define the Automake conditional for the GNU Libtextstyle wrapper, if we
 # are using Automake and jitter-config was found.
-if    test "x$ac_jitter_using_automake" != "x" \
+if    test "x$jitter_using_automake" != "x" \
    && test "x$JITTER_CONFIG" != 'x'; then
   AM_CONDITIONAL([JITTER_HAVE_LIBTEXTSTYLE],
                  ["$JITTER_CONFIG" --have-libtextstyle])
@@ -504,11 +504,11 @@ fi
 
 # We're done testing C features, for the time being.
 AC_LANG_POP([C])
-]) # AC_JITTER_CONFIG
+]) # JITTER_PROG_JITTER_CONFIG
 
 
-# AC_JITTER_C_GENERATOR
-# ---------------------
+# JITTER_PROG_JITTER
+# ------------------
 # Look for jitter, the C code generator program in $PATH, or if the option
 # --with-jitter="PREFIX" is given in PREFIX/bin (only).
 #
@@ -519,26 +519,26 @@ AC_LANG_POP([C])
 #                                      program comes from)
 #
 # When Automake is used, also define the following Automake conditional:
-# * JITTER_HAVE_JITTER_C_GENERATOR    (true iff jitter has been found).
-AC_DEFUN([AC_JITTER_C_GENERATOR], [
+# * JITTER_HAVE_JITTER_PROG_JITTER    (true iff jitter has been found).
+AC_DEFUN([JITTER_PROG_JITTER], [
 # Check for a C compiler, if it hasn't been done already.  This defines EXEEXT .
-AC_REQUIRE([AC_PROG_CC])
+AC_REQUIRE([JITTER_PROG_CC_AND_CHECK_C_DIALECT])
 
 # I'd like to define an Automake conditional later on, but that only works if
 # the project is actually using Automake.
-AC_REQUIRE([AC_JITTER_USING_AUTOMAKE])
+AC_REQUIRE([JITTER_USING_AUTOMAKE])
 
 # Search for the "jitter" program and perform the JITTER substitution.
-if test "x$ac_jitter_path" = 'x'; then
+if test "x$jitter_jitter_path" = 'x'; then
   # Search in $PATH (only).
   AC_PATH_PROG([JITTER],
                [jitter])
 else
-  # Search in $ac_jitter_path (only).
+  # Search in $jitter_jitter_path (only).
   AC_PATH_PROG([JITTER],
                [jitter],
                ,
-               [$ac_jitter_path])
+               [$jitter_jitter_path])
 fi
 
 # However jitter was found, verify that it can be used; if not, unset the JITTER
@@ -555,10 +555,10 @@ AS_IF([test "x$JITTER" = "x"],
         [AC_MSG_WARN([jitter at $JITTER seems to fail])
          JITTER=""])
 
-# Define the Automake conditional JITTER_HAVE_JITTER_C_GENERATOR , if we are
+# Define the Automake conditional JITTER_HAVE_JITTER_PROG_JITTER , if we are
 # using Automake.
-if test "x$ac_jitter_using_automake" != "x"; then
-  AM_CONDITIONAL([JITTER_HAVE_JITTER_C_GENERATOR],
+if test "x$jitter_using_automake" != "x"; then
+  AM_CONDITIONAL([JITTER_HAVE_JITTER_PROG_JITTER],
                  [test "x$JITTER" != "x"])
 fi
 
@@ -568,7 +568,7 @@ if test "x$JITTER" != "x"; then
   AC_SUBST([JITTER_VERSION],
            [$("$JITTER" --dump-version)])
 fi
-]) # AC_JITTER_C_GENERATOR
+]) # JITTER_PROG_JITTER
 
 
 # Jitter Autoconf macros, intended for the user.
@@ -579,29 +579,29 @@ fi
 # Jitter.
 
 
-# AC_JITTER
-# ---------
-# Check for jitter-config and jitter as by calling both AC_JITTER_CONFIG
-# and AC_JITTER_C_GENERATOR , performing the same substitutions and
-# supporting the same command-line options.
+# JITTER_JITTER
+# -------------
+# Check for jitter-config and jitter as by calling both
+# JITTER_PROG_JITTER_CONFIG and JITTER_PROG_JITTER , performing the same
+# substitutions and supporting the same command-line options.
 #
 # Add the configure option --with-jitter , as per
-# AC_JITTER_WITH_JITTER_COMMAND_LINE_OPTION above.
+# JITTER_WITH_JITTER_COMMAND_LINE_OPTION above.
 #
 # Warn if jitter-config and jitter have different versions.
 #
 # This is the only macro the user needs to call to check for a Jitter
 # installation as a dependency.
-AC_DEFUN([AC_JITTER], [
+AC_DEFUN([JITTER_JITTER], [
 
 # Provide the command-line option --with-jitter.
-AC_REQUIRE([AC_JITTER_WITH_JITTER_COMMAND_LINE_OPTION])
+AC_REQUIRE([JITTER_WITH_JITTER_COMMAND_LINE_OPTION])
 
 # Check for jitter-config .
-AC_REQUIRE([AC_JITTER_CONFIG])
+AC_REQUIRE([JITTER_PROG_JITTER_CONFIG])
 
 # Check for jitter .
-AC_REQUIRE([AC_JITTER_C_GENERATOR])
+AC_REQUIRE([JITTER_PROG_JITTER])
 
 # In case we found both, check that their two versions match.
 if test "x$JITTER_CONFIG" != "x" && test "x$JITTER" != "x"; then
@@ -610,26 +610,26 @@ if test "x$JITTER_CONFIG" != "x" && test "x$JITTER" != "x"; then
 $JITTER_CONFIG_VERSION) and $JITTER (version $JITTER_VERSION)])
   fi
 fi
-]) # AC_JITTER
+]) # JITTER_JITTER
 
 
-# AC_JITTER_SUBPACKAGE([subdirectory])
-# ------------------------------------
+# JITTER_JITTER_SUBPACKAGE([subdirectory])
+# ----------------------------------------
 # Configure Jitter in sub-package mode, using the Jitter source directory
 # from the given subdirectory relative to the super-package source directory.
 #
 # This is the only macro the user needs to call to configure Jitter as a
 # sub-package included in a source directory.  It defines the same entities
-# as AC_JITTER, but differently from it does not rely on, or support, an
+# as JITTER, but differently from it does not rely on, or support, an
 # already installed copy of Jitter as a dependency.
-AC_DEFUN([AC_JITTER_SUBPACKAGE], [
+AC_DEFUN([JITTER_JITTER_SUBPACKAGE], [
 
 # We are going to use sed below.
 AC_REQUIRE([AC_PROG_SED])
 
 # Notice that in this case it makes no sense to support the command-line option
 # --with-jitter , and therefore this macro does not depend on
-# AC_JITTER_WITH_JITTER_COMMAND_LINE_OPTION .
+# JITTER_WITH_JITTER_COMMAND_LINE_OPTION .
 
 # Print one explicit message about what is about to happen.  Even Autoconf
 # experts might be surprised by the unusual configuration order, and it is good
@@ -642,21 +642,21 @@ AC_MSG_NOTICE([configuring Jitter as a sub-package in ./$1])
 # from a super-package configure script.
 # The variable must be set to the Jitter source subdirectory, relative to the
 # super-package source directory.
-JITTER_SUBPACKAGE="$1"
-export JITTER_SUBPACKAGE
+JITTER_SUBPACKAGE_DIRECTORY="$1"
+export JITTER_SUBPACKAGE_DIRECTORY
 
 # Call Jitter's configure script recursively, right now.
-AC_JITTER_CONFIG_SUBDIRS_NOW([$1])
+JITTER_CONFIG_SUBDIRS_NOW([$JITTER_SUBPACKAGE_DIRECTORY])
 
 # Check for jitter-config .  Do not check for the jitter C generator: it will
 # not normally be available at configuration time, but it will be built.
-AC_JITTER_CONFIG
+JITTER_PROG_JITTER_CONFIG
 
 # Fail if we failed to find jitter-config; this should not happen in sub-package
 # mode, after Jitter's subdirectory has been configured with success.
 if test "x$JITTER_CONFIG" = 'x'; then
   AC_MSG_ERROR([could not find jitter-config in Jitter sub-package within
-                $JITTER_CONFIG])
+                $JITTER_SUBPACKAGE_DIRECTORY])
 fi
 
 # The "jitter" C generator may not exist yet, but it can be built and its future
@@ -669,4 +669,4 @@ AC_MSG_NOTICE([jitter will be built at $JITTER])
 JITTER_VERSION="$JITTER_CONFIG_VERSION"
 AC_SUBST([JITTER_VERSION], [$JITTER_VERSION])
 
-]) # AC_JITTER_SUBPACKAGE
+]) # JITTER_JITTER_SUBPACKAGE
