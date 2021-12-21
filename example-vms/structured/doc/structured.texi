@@ -297,9 +297,9 @@ Indices
 
 @section History and purpose
 
-Around 2017 José Marchesi had already started his poke project, which
-is now part of GNU (@pxref{Top,,, poke, The GNU poke Manual}), using
-a Jittery VM.
+Around 2017 José Marchesi had already started his poke project, later
+accepted as part of GNU (@pxref{Top,,, poke, The GNU poke Manual}),
+using a Jittery VM.
 
 @fixme{However...lack of documentation and even lack of experience
 by anybody, even me, using jitter}
