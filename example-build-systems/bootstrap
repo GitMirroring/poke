@@ -74,6 +74,19 @@ fi
 subs='structured-simple structured-with-library'
 
 
+# Cleanup.
+################################################################
+
+# Remove possibly stale directories.
+for sub in $subs; do
+    for d in build-aux autom4te.cache; do
+        path="${sub}/${d}"
+        log "Remove ${path}"
+        rm -rf "${path}"
+    done
+done
+
+
 # Copy files.
 ################################################################
 
