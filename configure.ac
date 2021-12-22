@@ -2972,6 +2972,7 @@ jitter_define_prefixed_macro_string([PACKAGE_URL],       [PACKAGE_URL])
 # Also define substitutions for the few macros also used in Makefile.am , or
 # in generated scripts.
 AC_SUBST([JITTER_PACKAGE_NAME], [$PACKAGE_NAME])
+AC_SUBST([JITTER_PACKAGE_VERSION], [$PACKAGE_VERSION])
 AC_SUBST([JITTER_PACKAGE_BUGREPORT], [$PACKAGE_BUGREPORT])
 AC_SUBST([JITTER_PACKAGE_URL], [$PACKAGE_URL])
 
