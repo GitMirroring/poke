@@ -191,11 +191,14 @@ subdirs="${jitter_subdirs_backup}"
 # from a recent version, without considering this to be a particular problem for
 # the ordinary user installing a tarball.
 AC_DEFUN([JITTER_CHECK_AUTOCONF_VERSION], [
-# We need:
+# Autoconf 2.71 is:
 # - a version sufficiently recent for JITTER_PROG_CC_AND_CHECK_C_DIALECT, which
 #   relies on AC_PROG_CC setting $ac_prog_cc_stdc.  Notice that AC_PROG_CC_C99
-#   is considered obsolete by recent versions or Autoconf.
-AC_PREREQ([2.71])
+#   is considered obsolete by recent versions or Autoconf;
+# - a version supporting AC_PROG_LEX with the noyywrap argument.
+# I would like to require that, but it may be too recent for many people.
+# AC_PREREQ([2.71])
+AC_PREREQ([2.62])
 ]) # JITTER_CHECK_AUTOCONF_VERSION
 
 # JITTER_PROG_CC_AND_CHECK_C_DIALECT
@@ -211,7 +214,8 @@ AC_REQUIRE([AC_PROG_CC])
 # ...but now AC_PROG_CC also sets ac_prog_cc_stdc , which is very convenient to
 # check that the supported C dialect is recent enough, even before performing
 # specific tests.
-AC_MSG_CHECKING([the C dialect supported by "$CC"])
+AC_MSG_CHECKING([the C dialect supported by "$CC" (in an unreliable way unless \
+this script was generated with a recent Autoconf)])
 AS_CASE([$ac_prog_cc_stdc],
         [no],
           [AC_MSG_RESULT([pre-standard C])

@@ -72,7 +72,10 @@ JITTER_JITTER_SUBPACKAGE([jitter])
 ################################################################
 
 # Check for flex.
-AC_PROG_LEX([noyywrap])
+# FIXME: when I require a more recent version of Autoconf (see
+# JITTER_CHECK_AUTOCONF_VERSION in jitter.m4) switch to
+# AC_PROG_LEX([noyywrap])
+AC_PROG_LEX()
 if test "x$LEX" != "xflex"; then
   if test -e "$srcdir/structured-scanner.c"; then
     AC_MSG_WARN([you will need flex (instead of $LEX) if you modify the
