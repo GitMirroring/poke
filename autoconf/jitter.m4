@@ -187,35 +187,84 @@ subdirs="${jitter_subdirs_backup}"
 
 # JITTER_CHECK_AUTOCONF_VERSION
 # -----------------------------
-# Make sure that the Autoconf being used is recent enough.  We rely on features
-# from a recent version, without considering this to be a particular problem for
-# the ordinary user installing a tarball.
+# Define the following M4 macros determining whether Autoconf is recent enough
+# to support a certain fetaure:
+# * jitter_autoconf_version
+#   Define to the Autoconf version number as suitable as an argument for
+#   m4_version_compare.  Define as the three-character string old if Autoconf
+#   is too old to support this feature.
+# * jitter_ac_prog_cc_can_check_c_dialect
+#   Define to a non-empty value if we are sure that AC_PROG_CC sets
+#   ac_prog_cc_stdc.  Empty otherwise;
+# * jitter_ac_prog_lex_with_arguments
+#   Define to a non-empty value if we are sure that AC_LEX supports arguments.
+#   Empty otherwise.
 AC_DEFUN([JITTER_CHECK_AUTOCONF_VERSION], [
 # Autoconf 2.71 is:
-# - a version sufficiently recent for JITTER_PROG_CC_AND_CHECK_C_DIALECT, which
-#   relies on AC_PROG_CC setting $ac_prog_cc_stdc.  Notice that AC_PROG_CC_C99
-#   is considered obsolete by recent versions or Autoconf;
+# - a version sufficiently recent for
+#   JITTER_PROG_CC_AND_CHECK_C_DIALECT_NEW_STYLE, which relies on AC_PROG_CC
+#   setting $ac_prog_cc_stdc.  Notice that AC_PROG_CC_C99 is considered obsolete
+#   by recent versions or Autoconf;
 # - a version supporting AC_PROG_LEX with the noyywrap argument.
 # I would like to require that, but it may be too recent for many people.
 # AC_PREREQ([2.71])
 AC_PREREQ([2.62])
+
+# Conditionalise on Autoconf version and define the feature macros mentioned in
+# the comment above.  First define defaults, then change them if needed.
+m4_define([jitter_autoconf_version], [old])
+m4_define([jitter_ac_prog_cc_can_check_c_dialect], [])
+m4_define([jitter_ac_prog_lex_with_arguments], [])
+m4_ifdef([AC_AUTOCONF_VERSION],
+  [# AC_AUTOCONF_VERSION is defined, so the Autoconf version is >= 2.62.
+   m4_define([jitter_autoconf_version], m4_defn([AC_AUTOCONF_VERSION]))
+   m4_if(m4_version_compare(m4_defn([AC_AUTOCONF_VERSION]), [2.71]), [-1],
+         [AC_MSG_WARN([Autoconf not recent enough for recognising C dialect])],
+         [m4_define([jitter_ac_prog_cc_can_check_c_dialect], [yes])])
+   m4_if(m4_version_compare(m4_defn([AC_AUTOCONF_VERSION]), [2.71]), [-1],
+         [AC_MSG_WARN([Autoconf not recent enough for AC_PROG_LEX with arguments])],
+         [m4_define([jitter_ac_prog_lex_with_arguments], [yes])])
+  ],
+  [# AC_AUTOCONF_VERSION is not defined.  Assume Autoconf to be older than
+   # version 2.62, when the macro was introduced.  Before 2.62
+   # m4_version_compare was also more limited.
+  ])dnl
 ]) # JITTER_CHECK_AUTOCONF_VERSION
 
-# JITTER_PROG_CC_AND_CHECK_C_DIALECT
-# ---------------------------------
-# Use AC_PROG_CC to check for a C compiler, and warn if the supported dialect
-# is not recent enough; try to continue in any case.
-# Also require a recent Autoconf version, which is necessary for checking the
-# C dialect.
-AC_DEFUN([JITTER_PROG_CC_AND_CHECK_C_DIALECT], [
-# Recent Autoconf versions consider AC_PROG_CC_C99 obsolete...
-AC_REQUIRE([JITTER_CHECK_AUTOCONF_VERSION])
+# JITTER_PROG_CC_AND_CHECK_C_DIALECT_OLD_STYLE
+# --------------------------------------------
+# This is one of the two definitions of JITTER_PROG_CC_AND_CHECK_C_DIALECT; it
+# is less precise than JITTER_PROG_CC_AND_CHECK_C_DIALECT_NEW_STYLE but works
+# with older Autoconf versions as well.
+AC_DEFUN([JITTER_PROG_CC_AND_CHECK_C_DIALECT_OLD_STYLE], [
+# Use AC_PROG_CC_C99, which is the best we can do.
+AC_REQUIRE([AC_PROG_CC_C99])
+
+# Report.
+AC_MSG_CHECKING([the C dialect supported by "$CC" (in a somewhat imprecise \
+way due to the Autoconf version which is ]jitter_autoconf_version[)])
+if test "x$ac_cv_prog_cc_c99" = "xno"; then
+  AC_MSG_RESULT([older than C99])
+  AC_MSG_WARN([this compiler is pre-C99: expect trouble (but trying to \
+continue anyway)])
+else
+  AC_MSG_RESULT([at least C99])
+fi
+]) # JITTER_PROG_CC_AND_CHECK_C_DIALECT_OLD_STYLE
+
+# JITTER_PROG_CC_AND_CHECK_C_DIALECT_NEW_STYLE
+# --------------------------------------------
+# This is one of the two definitions of JITTER_PROG_CC_AND_CHECK_C_DIALECT; this
+# requires that the Autoconf macros are recent enough for AC_PROG_CC to set
+# ac_prog_cc_stdc.
+AC_DEFUN([JITTER_PROG_CC_AND_CHECK_C_DIALECT_NEW_STYLE], [
+# Use AC_PROG_CC to check for a C compiler...
 AC_REQUIRE([AC_PROG_CC])
-# ...but now AC_PROG_CC also sets ac_prog_cc_stdc , which is very convenient to
-# check that the supported C dialect is recent enough, even before performing
-# specific tests.
-AC_MSG_CHECKING([the C dialect supported by "$CC" (in an unreliable way unless \
-this script was generated with a recent Autoconf)])
+
+# ...AC_PROG_CC also sets ac_prog_cc_stdc , which is very convenient to check
+# that the supported C dialect is recent enough, even before performing specific
+# tests.
+AC_MSG_CHECKING([the C dialect supported by "$CC"])
 AS_CASE([$ac_prog_cc_stdc],
         [no],
           [AC_MSG_RESULT([pre-standard C])
@@ -234,6 +283,24 @@ work])],
         # Default case (for future compatibility).
           [AC_MSG_RESULT(["$ac_prog_cc_stdc", which I assume to be least C11])
            AC_MSG_NOTICE([this C compiler seems modern])])
+]) # JITTER_PROG_CC_AND_CHECK_C_DIALECT_NEW_STYLE
+
+# JITTER_PROG_CC_AND_CHECK_C_DIALECT
+# ----------------------------------
+# Use AC_PROG_CC and possibly other macros to check for a C compiler, and warn
+# if the supported dialect is not recent enough; try to continue in any case.
+#
+# This is defined conditionally according to the Autoconf version; more recent
+# versions of Autoconf allow for more precise checks.
+AC_DEFUN([JITTER_PROG_CC_AND_CHECK_C_DIALECT], [
+# First make sure we have checked the Autoconf version, and defined feature m4
+# macros.
+AC_REQUIRE([JITTER_CHECK_AUTOCONF_VERSION])
+
+# Require either one macro or the other, according to the Autoconf version.
+m4_if(jitter_ac_prog_cc_can_check_c_dialect, [],
+      [AC_REQUIRE([JITTER_PROG_CC_AND_CHECK_C_DIALECT_OLD_STYLE])],
+      [AC_REQUIRE([JITTER_PROG_CC_AND_CHECK_C_DIALECT_NEW_STYLE])])
 ]) # JITTER_PROG_CC_AND_CHECK_C_DIALECT
 
 # JITTER_WITH_JITTER_COMMAND_LINE_OPTION
@@ -267,7 +334,6 @@ AC_ARG_WITH([jitter],
                 them in $PATH])],
             [jitter_jitter_path="$withval/bin"])
 ])
-
 
 # JITTER_PROG_JITTER_CONFIG
 # -------------------------
@@ -575,6 +641,38 @@ fi
 ]) # JITTER_PROG_JITTER
 
 
+# Internal helpers for public utility macros.
+################################################################
+
+# The common factor of JITTER_PROG_FLEX_OLD_STYLE and
+# JITTER_PROG_FLEX_NEW_STYLE.
+AC_DEFUN([JITTER_PROG_FLEX_COMMON], [
+# This must be called after AC_PROG_LEX, with or without arguments.
+if echo "$LEX" | grep 'flex' > /dev/null; then
+  AC_MSG_NOTICE([flex is installed as "$LEX"])
+else
+  # The program which was found was not flex: undefine it.
+  AC_MSG_WARN([found "$LEX" when looking for flex: that is not adequate])
+  LEX=''
+  ac_cv_prog_LEX=''
+fi
+]) # JITTER_PROG_FLEX_COMMON
+
+# One of the two implementations of JITTER_PROG_FLEX, intended for older
+# Autoconf versions.
+AC_DEFUN([JITTER_PROG_FLEX_OLD_STYLE], [
+AC_PROG_LEX
+JITTER_PROG_FLEX_COMMON
+])
+
+# One of the two implementations of JITTER_PROG_FLEX, intended for recent
+# Autoconf versions.
+AC_DEFUN([JITTER_PROG_FLEX_NEW_STYLE], [
+AC_PROG_LEX([noyywrap])
+JITTER_PROG_FLEX_COMMON
+])
+
+
 # Jitter Autoconf macros, intended for the user.
 ################################################################
 
@@ -650,7 +748,7 @@ JITTER_SUBPACKAGE_DIRECTORY="$1"
 export JITTER_SUBPACKAGE_DIRECTORY
 
 # Call Jitter's configure script recursively, right now.
-JITTER_CONFIG_SUBDIRS_NOW([$JITTER_SUBPACKAGE_DIRECTORY])
+JITTER_CONFIG_SUBDIRS_NOW([$1])
 
 # Check for jitter-config .  Do not check for the jitter C generator: it will
 # not normally be available at configuration time, but it will be built.
@@ -674,3 +772,40 @@ JITTER_VERSION="$JITTER_CONFIG_VERSION"
 AC_SUBST([JITTER_VERSION], [$JITTER_VERSION])
 
 ]) # JITTER_JITTER_SUBPACKAGE
+
+
+# Jitter utility macros, possibly of interest to the user.
+################################################################
+
+# The macros in this section were prepared for internal use, but are
+# sufficiently general to be of interest to external users as well.
+
+# Check for Flex.  Set the output variable LEX and the cache variable
+# ac_cv_prog_LEX to the program name, if found.
+AC_DEFUN([JITTER_PROG_FLEX], [
+# First make sure we have checked the Autoconf version, and defined feature m4
+# macros.
+AC_REQUIRE([JITTER_CHECK_AUTOCONF_VERSION])
+
+# Older Autoconf versions define AC_PROG_LEX with no arguments; newer Autoconf
+# versions strongly prefer an argument, and warn if the macro is called without
+# any.
+# Require either one macro or the other, according to the Autoconf version.
+m4_if(jitter_ac_prog_lex_with_arguments, [],
+      [AC_REQUIRE([JITTER_PROG_FLEX_OLD_STYLE])],
+      [AC_REQUIRE([JITTER_PROG_FLEX_NEW_STYLE])])
+]) # JITTER_PROG_FLEX
+
+# Check for Bison.  Set the output variable YACC and the cache variable
+# ac_cv_prog_YACC to the program name, if found.
+AC_DEFUN([JITTER_PROG_BISON], [
+AC_PROG_YACC
+if echo "$YACC" | grep 'bison' > /dev/null; then
+  AC_MSG_NOTICE([GNU Bison is installed as "$YACC"])
+else
+  # The program which was found was not Bison: undefine it.
+  AC_MSG_WARN([found "$YACC" when looking for GNU Bison: that is not adequate])
+  YACC=''
+  ac_cv_prog_YACC=''
+fi
+]) # JITTER_PROG_BISON

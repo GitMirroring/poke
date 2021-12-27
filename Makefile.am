@@ -1973,6 +1973,9 @@ EXTRA_DIST += \
 # Texinfo documentation.
 # ################################################################
 
+MAKEINFO = $(JITTER_MAKEINFO)
+TEXI2DVI = $(JITTER_TEXI2DVI)
+
 TEXIINFO_OPTIONS = -I $(abs_top_builddir)/doc
 AM_MAKEINFOHTMLFLAGS = $(AM_MAKEINFOFLAGS) --number-sections --fill-column=100
 
@@ -2058,7 +2061,11 @@ web-manuals:
 # does not play well with help2man .
 HELP2MAN_WITH_OPTIONS = \
   ARGP_HELP_FMT='header-col=0'; export ARGP_HELP_FMT; \
-    $(HELP2MAN) --info-page='jitter' --source='Luca Saiu' --section=1
+    $(HELP2MAN) \
+      --info-page='jitter' \
+      --section=1 \
+      --source='Luca Saiu - GNU Project' \
+      --name='@JITTER_PACKAGE_NAME@' --manual='Programming'
 
 # If we have no help2man or we are cross-compiling without an emulator, then we
 # cannot actually rebuild man pages; in this case we will make copies from a

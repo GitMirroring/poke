@@ -624,11 +624,8 @@ else
 fi
 
 # Check for flex.
-# FIXME: when I require a more recent version of Autoconf (see
-# JITTER_CHECK_AUTOCONF_VERSION in jitter.m4) switch to
-# AC_PROG_LEX([noyywrap])
-AC_PROG_LEX()
-if test "x$LEX" != "xflex"; then
+JITTER_PROG_FLEX
+if test "x$LEX" = 'x'; then
   if test -e "$srcdir/jitterc/jitterc-scanner.c"; then
     AC_MSG_WARN([you will need flex (instead of $LEX) if you modify the
                  distributed C scanners])
@@ -639,8 +636,8 @@ if test "x$LEX" != "xflex"; then
 fi
 
 # Check for Bison.
-AC_PROG_YACC
-if ! (echo "x$YACC" | grep bison > /dev/null); then
+JITTER_PROG_BISON
+if test "x$YACC" = 'x'; then
   if test -e "$srcdir/jitterc/jitterc-parser.c"; then
     AC_MSG_WARN([you will need GNU Bison (instead of $YACC) if you modify
                  the distributed C parsers])
@@ -662,14 +659,45 @@ AC_MSG_RESULT([$jitter_enable_hardcopy])
 # Check for Texinfo commands.  In practice makeinfo is more important than
 # texi2dvi, as Info is the default format.
 AC_PATH_PROG([JITTER_MAKEINFO], [makeinfo])
+if test "x$JITTER_MAKEINFO" != 'x'; then
+  # Check that makeinfo understands a sufficiently recent dialect of Texinfo.
+  # I have had prolems on some BSD system shipping with a version of makeinfo
+  # which was too old to recognise @part.
+  # I want to detect such problems and prevent build failures but I will not
+  # make the manuals uglier just to support such systems...
+  AC_MSG_CHECKING([that the available Texinfo is recent enough])
+  mkdir "${jitter_abs_top_builddir}/build-aux" 2> /dev/null || true
+  cat > "${jitter_abs_top_builddir}/build-aux/foo.texi" <<EOF
+@node Top
+@top foo
+@menu
+* bar::.
+@end menu
+@part foo
+@node bar
+@chapter bar
+EOF
+  # ...If makeinfo is too old just disable it and behave as if it were not
+  # present at all.
+  if "$JITTER_MAKEINFO" \
+       --output "${jitter_abs_top_builddir}/build-aux/foo.info" \
+       "${jitter_abs_top_builddir}/build-aux/foo.texi" \
+       > /dev/null 2> /dev/null; then
+    AC_MSG_RESULT([yes])
+  else
+    AC_MSG_RESULT([no: some feature, likely @part, is not supported])
+    AC_MSG_WARN([disabling Texinfo support, ignoring $JITTER_MAKEINFO])
+    JITTER_MAKEINFO=''
+  fi
+fi
 if test "x$JITTER_MAKEINFO" = "x"; then
   if test -e "$srcdir/doc/jitter.info"; then
-    AC_MSG_WARN([you will need GNU Texinfo to regenerate the Info \
-documentation, in case you change the Texinfo source])
+    AC_MSG_WARN([you will need a reasonably recent GNU Texinfo to regenerate \
+the Info documentation, in case you change the Texinfo source])
   else
-    AC_MSG_ERROR([you need GNU Texinfo to generate the Info documentation, if \
-you compile from git; release tarballs contain the documentation \
-pre-generated])
+    AC_MSG_ERROR([you need a reasonably recent GNU Texinfo to generate the \
+Info documentation, if you compile from git; release tarballs contain the \
+documentation pre-generated])
   fi
 fi
 AC_PATH_PROG([JITTER_TEX], [tex])

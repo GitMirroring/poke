@@ -72,29 +72,24 @@ JITTER_JITTER_SUBPACKAGE([jitter])
 ################################################################
 
 # Check for flex.
-# FIXME: when I require a more recent version of Autoconf (see
-# JITTER_CHECK_AUTOCONF_VERSION in jitter.m4) switch to
-# AC_PROG_LEX([noyywrap])
-AC_PROG_LEX()
-if test "x$LEX" != "xflex"; then
+JITTER_PROG_FLEX
+if test "x$LEX" = 'x'; then
   if test -e "$srcdir/structured-scanner.c"; then
-    AC_MSG_WARN([you will need flex (instead of $LEX) if you modify the
-                 distributed C scanners])
+    AC_MSG_WARN([you will need flex if you modify the distributed C scanners])
   else
-    AC_MSG_ERROR([you need flex (instead of $LEX) to generate scanners,
-                  if you compile from git])
+    AC_MSG_ERROR([you need flex to generate scanners, if you compile from git])
   fi
 fi
 
 # Check for Bison.
-AC_PROG_YACC
-if ! (echo "x$YACC" | grep bison > /dev/null); then
+JITTER_PROG_BISON
+if test "x$YACC" = 'x'; then
   if test -e "$srcdir/structured-parser.c"; then
-    AC_MSG_WARN([you will need GNU Bison (instead of $YACC) if you modify
-                 the distributed C parsers])
+    AC_MSG_WARN([you will need GNU Bison if you modify the distributed C \
+parsers])
   else
-    AC_MSG_ERROR([you need GNU Bison (instead of $YACC) to generate parsers,
-                  if you compile from git])
+    AC_MSG_ERROR([you need GNU Bison to generate parsers, if you compile from \
+git])
   fi
 fi
 

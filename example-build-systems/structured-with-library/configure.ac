@@ -77,12 +77,10 @@ JITTER_JITTER_SUBPACKAGE([jitter])
 # Check for frontend C-code-generation tools.
 ################################################################
 
-# Check for flex.
-# FIXME: when I require a more recent version of Autoconf (see
-# JITTER_CHECK_AUTOCONF_VERSION in jitter.m4) switch to
-# AC_PROG_LEX([noyywrap])
-AC_PROG_LEX()
-if test "x$LEX" != "xflex"; then
+# Check for flex.  (JITTER_PROG_FLEX is convenient here, but one could have
+# used the standard AC_PROG_LEX as well).
+JITTER_PROG_FLEX
+if test "x$LEX" = 'x'; then
   if test -e "$srcdir/structured-scanner.c"; then
     AC_MSG_WARN([you will need flex (instead of $LEX) if you modify the
                  distributed C scanners])
@@ -92,9 +90,10 @@ if test "x$LEX" != "xflex"; then
   fi
 fi
 
-# Check for Bison.
-AC_PROG_YACC
-if ! (echo "x$YACC" | grep bison > /dev/null); then
+# Check for Bison.  (JITTER_PROG_BISON is convenient here, but one could have
+# used the standard AC_PROG_YACC as well).
+JITTER_PROG_BISON
+if test "x$YACC" = 'x'; then
   if test -e "$srcdir/structured-parser.c"; then
     AC_MSG_WARN([you will need GNU Bison (instead of $YACC) if you modify
                  the distributed C parsers])
