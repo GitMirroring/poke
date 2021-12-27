@@ -2,6 +2,7 @@
 
 @c This file is part of the Structured manual, which is part of GNU Jitter.
 @c Copyright (C) 2017, 2018, 2019, 2020, 2021  Luca Saiu
+@c Copyright (C) 2021  p≡p Foundation
 @c Written by Luca Saiu
 @c Document skeleton copied from the JitterLisp manual in late 2021.
 
@@ -260,8 +261,7 @@ Internals
 * Architecture::                   How the program is organised.
 * Frontend::                       Structured programs are parsed in a very ordinary way.
 * Stack-based execution::          Structured programs turn into stack-based operations...
-* Register-based execution::       ...or into register-based operations
-
+* Register-based execution::       ...Or into register-based operations
 @ifset includelicenses
 
 Licenses
@@ -295,26 +295,118 @@ Indices
 
 @fixme{}
 
+(@pxref{Top,,, jitter, The GNU Jitter manual})
+
 @section History and purpose
 
+@cindex GNU
+@cindex José Marchesi
+@cindex Marchesi, José
+@cindex poke
+@cindex GNU poke
 Around 2017 José Marchesi had already started his poke project, later
-accepted as part of GNU (@pxref{Top,,, poke, The GNU poke Manual}),
-using a Jittery VM.
+accepted as part of GNU (@pxref{Top,,, poke, The GNU poke Manual}).
+He had decided early on to use a Jittery VM, after an informal demo of
+mine.
 
-@fixme{However...lack of documentation and even lack of experience
-by anybody, even me, using jitter}
+@cindex code generation API, Jitter
+@cindex API, code generation, Jitter
+@cindex JitterLisp
+However at the time nobody, me included, had any real experience with
+Jitter's code generation API; even JitterLisp
+(@pxref{Top,,,jitterlisp, The JitterLisp manual}) did not exist yet.
+In order to figure out how to proceed José asked me for a simple but
+complete example of a Jittery system, at least as a stopgap solution
+before I could prepare proper documentation.
 
-I wrote the first version of @dfn{Structured} very quickly, as a
-minimalistic example of a system using a Jittery VM including a code
-generator.
+And so I decided to spend a weekend writing an implementation of a
+very simple programming language, suitable as a first example.  The VM
+was based on a stack and the code generator worked by recursion on
+abstract syntax trees.  There were no procedures, and variables
+(integer-only) were declared implicitly.
 
-@fixme{at first stack only; then two different code generators; then
-procedure, tail calls.  Manual.  Things get out of hand}
+The resulting language was ``Structured'', an eminently uninteresting
+imperative structured programming language similar to Pascal.  I tried
+to keep the implementation clear and didactic, also accessible to
+relative beginners and not only to experienced programmers like José.
 
+The example served its purpose making the development of poke easier.
+I seem to remember that some Jitter API changes also came from the
+experience of writing Structured, which was expected.
+
+@cindex Autoconf, GNU
+@cindex Automake, GNU
+@cindex build system
+At some point Structured gained an example build system, in two
+versions, showing how to package a Jittery system using GNU Autoconf
+and Automake.
+
+@cindex example
+@cindex micro-benchmark
+@cindex benchmark, micro-
+@cindex test suite, Jitter
+Structured now comes with a few examples of its own, intended as
+micro-benchmarks and also executed as part of the Jitter test suite.
+
+@cindex procedure
+The language has evolved to a moderate degree: 2021 additions include
+procedures, which can be called recursively.  Variables are no longer
+global, and now need to be declared.
+More importantly, the implementation has evolved: there are two
+separate and independent code generators, the original one based on a
+stack and a new one based on VM registers.  The two code generators
+amount in fact to two different tutorial examples: the register-based
+generator is less easy to understand but generates superior code.
+@*
+@cindex tail call
+Tail calls are compiled correctly without leaking stack
+space@footnote{@cindex tail call
+@cindex leak
+@cindex leak, memory
+@cindex leak, memory
+@cindex heap memory leak
+@cindex stack memory leak
+I argue that consuming a finite resource during code
+execution at run time while an alternative exists is not lack of
+an ``optimisation'', but lack of correctness.
+Leaking stack space has been historically perceived as
+more socially acceptable than leaking heap space.  This
+perception is irrational and should change: artificially establishing
+a limit on the depth of dynamically nested calls forces the programmer
+to avoid some perfectly correct solutions and constrains
+expressivity.}.
+@cindex calling convention
+At this time the procedure calling
+conventions are not very efficient, and the implementation could be
+optimised.
+@cindex example
+The balance between clarity in the code and ``realism''
+remains delicate.
+
+@cindex GNU
 Since Jitter became part of the GNU Project in December 2021
 documenting this sub-project, now more visible, has become important.
 
-@fixme{Thank José and Mohammad.  Thanks p≡p Foundation.}
+@c @menu
+@c * Thanks::.
+@c @end menu
+
+@c @@@@@@@@@@@@@@@@@@@
+@node Thanks
+@subsection Thanks
+
+@cindex José Marchesi
+@cindex Marchesi, José
+@cindex Mohammad-Reza Nabipoor
+@cindex Nabipoor, Mohammad-Reza
+I wish to thank José Marchesi for the initial stimulus, and
+Mohammad-Reza Nabipoor for his interest and his many motivating
+questions.
+
+@cindex p≡p Foundation
+@cindex Foundation, p≡p
+As of 2021 my employer p≡p Foundation (@url{https://pep.foundation})
+allows me to partly develop this software on work hours.
 
 @section Obtaining the software
 @cindex obtaining
@@ -333,8 +425,9 @@ readable git repository, is on my web site at the URL
 @cindex branch, git
 @cindex git branch
 @cindex @code{master}, git branch
-As of 2021 Structured development takes place on the
-main git branch named @code{master}.
+As of 2021 Structured development takes place on the public git
+repository for GNU Jitter, in the @code{master} branch:
+@pxref{Working with the Jitter sources,,, jitter, The GNU Jitter Manual}.
 
 @fixme{talk about build system examples using structured: it is in
 fact trivial to generate clean source tarballs for structured.}
