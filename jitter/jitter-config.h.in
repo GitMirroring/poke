@@ -255,10 +255,16 @@
  * ************************************************************************** */
 
 /* What the best dispatch is. */
-#undef JITTER_BEST_DISPATCHING_MODEL_IS_SWITCH
-#undef JITTER_BEST_DISPATCHING_MODEL_IS_DIRECT_THREADING
-#undef JITTER_BEST_DISPATCHING_MODEL_IS_MINIMAL_THREADING
-#undef JITTER_BEST_DISPATCHING_MODEL_IS_NO_THREADING
+#undef JITTER_BEST_DISPATCH_IS_SWITCH
+#undef JITTER_BEST_DISPATCH_IS_DIRECT_THREADING
+#undef JITTER_BEST_DISPATCH_IS_MINIMAL_THREADING
+#undef JITTER_BEST_DISPATCH_IS_NO_THREADING
+
+/* The best dispatch name as a string literal, respectively all-uppercase with
+   underscores separating words and lowercase with dashes separating words.
+   These are always defined. */
+#undef JITTER_BEST_DISPATCH_NAME_LOWER
+#undef JITTER_BEST_DISPATCH_NAME_UPPER
 
 /* Defect replacement debugging.  No more than one of these features can be
    defined -- Jitter's configure script enforces this restriction.  With

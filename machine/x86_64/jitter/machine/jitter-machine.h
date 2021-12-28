@@ -152,7 +152,7 @@
 
 /* Skip the rest of this page if JITTER_MACHINE_SUPPORTS_PATCH_IN has been
    disabled (presumably for testing), or if patch-ins are not used with the
-   current dispatching mode. */
+   current dispatch. */
 #if defined(JITTER_MACHINE_SUPPORTS_PATCH_IN)  \
     && defined(JITTER_DISPATCH_NO_THREADING)
 

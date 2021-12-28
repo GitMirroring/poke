@@ -317,7 +317,7 @@ while test "$#" != "0"; do
             done
             exit 1;;
 
-        # Dispatching model selection:
+        # dispatch selection:
         --dispatch)
             mandatory_option_argument
             known="no"
@@ -327,12 +327,12 @@ while test "$#" != "0"; do
                 fi
             done
             if test "x$known" != "xyes"; then
-                fail_semantic "unknown or disabled dispatching model \"$option_argument\""
+                fail_semantic "unknown or disabled dispatch \"$option_argument\""
             fi
             dispatch="$option_argument"
             ;;
 
-        # Compilation/linking flag options for the best dispatching model:
+        # Compilation/linking flag options for the best dispatch:
         --cflags)
             no_option_argument
             append_to_output cflags;;

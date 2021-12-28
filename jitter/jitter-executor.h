@@ -74,7 +74,7 @@
    enough to prevent tail-merging: GCC sees two identical string literals containing
    "%=" as, indeed, equal.
    This relies on __COUNTER__ , a GNU C preprocessor extension, but the advanced
-   dispatching models requiring this rely on GCC anyway. */
+   dispatches requiring this rely on GCC anyway. */
 #define JITTER_STRING_LITERAL_UNIQUE  \
   " [" JITTER_STRINGIFY(__COUNTER__) "] "
 
@@ -635,7 +635,7 @@ g (const char *foo)
 #endif // defined(JITTER_DISPATCH_SWITCH)
 
 /* How many words are used to encode the current specialized instruction, given
-   its residual arity.  According to the dispatching model there may be a word
+   its residual arity.  According to the dispatch there may be a word
    for the opcode or the thread, or not.
    This relies on JITTER_SPECIALIZED_INSTRUCTION_RESIDUAL_ARITY being defined,
    which is the case when this macro is used as intended, from specialized
@@ -651,7 +651,7 @@ g (const char *foo)
 # define JITTER_SPECIALIZED_INSTRUCTION_WORD_NO    \
     JITTER_SPECIALIZED_INSTRUCTION_RESIDUAL_ARITY
 #else
-# error "unknown dispatching model"
+# error "unknown dispatch"
 #endif
 
 /* Modify the instruction pointer, if any, to skip the appropriate number of
@@ -668,8 +668,8 @@ g (const char *foo)
 # define JITTER_SKIP_RESIDUALS_  \
     /* do nothing. */
 #else
-# error "unknown dispatching model"
-#endif // #if   defined([dispatching model]...
+# error "unknown dispatch"
+#endif // #if   defined([dispatch]...
 
 /* A VM instruction epilog. */
 #if   defined(JITTER_DISPATCH_SWITCH)
@@ -715,7 +715,7 @@ if (jitter_ip != NULL) goto * jitter_ip; \
      JITTER_PRETEND_TO_UPDATE_IP_;                                   \
      goto * jitter_ip;
 #else
-# error "unknown dispatching model"
+# error "unknown dispatch"
 #endif // #if defined(JITTER_DISPATCH_SWITCH)
 
 
@@ -730,7 +730,7 @@ if (jitter_ip != NULL) goto * jitter_ip; \
    not the machine instruction following the *machine* calling instruction.
    This restriction is artificial on machines where VM calls are implemented by
    native branch-and-link or call instructions, but is needed for compatibility
-   with simpler dispatching models where the intuitive semantics is not
+   with simpler dispatches where the intuitive semantics is not
    implementable.
    It's important that GCC does not assume that the code past the
    branch-and-link is *automatically* unreachable, as would be the case if we
@@ -886,8 +886,7 @@ if (jitter_ip != NULL) goto * jitter_ip; \
     JITTER_COMPUTED_GOTO (jitter_ip->thread)
 #endif // #if   defined(...
 
-/* Branch to a given VM label, represented as appropriate for the dispatching
-   model. */
+/* Branch to a given VM label, represented as appropriate for the dispatch. */
 #ifdef JITTER_DISPATCH_NO_THREADING
 # define _JITTER_BRANCH(target)    \
     JITTER_COMPUTED_GOTO(target)
@@ -923,7 +922,7 @@ if (jitter_ip != NULL) goto * jitter_ip; \
 #endif
 
 /* Branch-and-link to a given VM label, represented in a way appropriate for the
-   dispatching model.
+   dispatch.
    A branch-and-link operation unconditionally branches to a VM target, and also
    saves the return address (the beginning of the following VM instruction,
    ignoring any code in the caller instruction past the branch-and-link) in some
@@ -966,7 +965,7 @@ if (jitter_ip != NULL) goto * jitter_ip; \
         }                                                                      \
       while (false)
 #else
-# error "unknown dispatching model"
+# error "unknown dispatch"
 #endif
 
 /* Define the branch-and-link operation, using either the fallback version above

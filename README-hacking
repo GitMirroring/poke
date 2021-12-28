@@ -30,7 +30,7 @@ How to compile from a git copy
 
 You need an Internet connection, git, GNU Autoconf, GNU Automake, GNU Libtool,
 GNU Bison, Flex, GNU Texinfo, GNU help2man, plus the usual build tools.  The GNU
-Binutils are needed for disassembly support, and advanced dispatching modes rely
+Binutils are needed for disassembly support, and advanced dispatches rely
 on GCC; a non-GCC modern C compiler suffices to build VMs, but their performance
 will be suboptimal.
 

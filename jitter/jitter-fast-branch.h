@@ -305,7 +305,7 @@
 
 /* Provide a definition of _JITTER_BRANCH_FAST_AND_LINK . */
 #if ! defined(JITTER_DISPATCH_NO_THREADING)
-  /* With any dispatching model different from no-threading fast branches revert
+  /* With any dispatch different from no-threading fast branches revert
      to generic slow branches; in the same way fast branch-and-link operations
      revert to generic slow branch-and-link operations. */
 # define _JITTER_BRANCH_FAST_AND_LINK(target) \

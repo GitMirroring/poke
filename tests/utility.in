@@ -276,20 +276,20 @@ jitter_run_case_with_and_without_valgrind ()
       "valgrind: $jitter_description" @JITTER_VALGRIND@ -v "$@"
 }
 
-# Run a program-based test on a given executor, with a given dispatching model; skip
-# the case if the dispatching model is disabled.
+# Run a program-based test on a given executor, with a given dispatch; skip
+# the case if the dispatch is disabled.
 # Arguments:
 # - basename of the executor program (VM or high-level), without the
-#   dispatching-model suffix;
+#   dispatch suffix;
 # - options to pass to the executor;
 # - extension of program files for the executor, including the dot if present;
 # - a suffix for the description to print;
 # - basename of the program to interpret, without its extension;
 # - expected output;
-# - the dispatching model name in a form nice to print, and used as a suffix in
+# - the dispatch name in a form nice to print, and used as a suffix in
 #   the executor executable files;
-# - the dispatching model subst name, which expands to an nonempty string iff the
-#   dispatching model is enabled.
+# - the dispatch subst name, which expands to an nonempty string iff the
+#   dispatch is enabled.
 # - "skip" if the test case has to be skipped, an empty string otherwise.
 jitter_run_program_case ()
 {
@@ -299,18 +299,18 @@ jitter_run_program_case ()
     description_suffix="$4"
     program="$5"
     expected_output="$6"
-    dispatching_model_name="$7"
-    dispatching_model_subst="$8"
+    dispatch_name="$7"
+    dispatch_subst="$8"
     skip="$9"
-    description="$program $dispatching_model_name$description_suffix"
-    if    test "x$dispatching_model_subst" = "x" \
+    description="$program $dispatch_name$description_suffix"
+    if    test "x$dispatch_subst" = "x" \
        || test "x$skip" = "xskip"; then
         jitter_skip_case "$description"
     else
         echo "$expected_output" > "$jitter_expected_stdout_file"
         jitter_run_case_checking_output "$description" \
           @JITTER_EMULATOR@ \
-            "@abs_top_builddir@/bin/$executor--$dispatching_model_name@EXEEXT@" \
+            "@abs_top_builddir@/bin/$executor--$dispatch_name@EXEEXT@" \
               $options \
               "@abs_top_srcdir@/tests/$executor/$program$extension"
     fi
@@ -320,7 +320,7 @@ jitter_run_program_case ()
 # skipping the dispatches which were disabled.
 # Arguments:
 # - basename of the executor program (VM or high-level), without the
-#   dispatching-model suffix;
+#   dispatch suffix;
 # - options to pass to the executor;
 # - extension of program files for the executor, including the dot if present;
 # - a suffix for the description to print;

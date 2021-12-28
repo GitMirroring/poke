@@ -27,7 +27,7 @@
  * ************************************************************************** */
 
 /* Include macro definitions about whether we have a machine file, and about the
-   dispatching model. */
+   dispatch. */
 #include <jitter/jitter.h>
 
 #include <jitter/jitter-print.h>

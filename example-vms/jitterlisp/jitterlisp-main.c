@@ -210,7 +210,7 @@ the_argp_program_version_hook (FILE * restrict stream, struct argp_state *s)
 }
 void (*argp_program_version_hook) (FILE * restrict stream, struct argp_state *s)
   = the_argp_program_version_hook;
-const char *argp_program_bug_address = JITTER_PACKAGE_BUGREPORT;
+const char *argp_program_bug_address = "<" JITTER_PACKAGE_BUGREPORT ">";
 
 /* Forward-declaration.  I like having argp defined here, before parse_opt which
    is quite long. */
@@ -224,6 +224,9 @@ static struct argp argp =
     parse_opt,
     "[FILE.lisp|-]...",
     "Run a JitterLisp program and/or a JitterLisp interactive REPL."
+    "\v"
+    JITTER_PACKAGE_NAME " home page: <" JITTER_PACKAGE_URL ">.\n"
+    "General help using GNU software: <https://www.gnu.org/gethelp>."
   };
 
 /* Update our option state with the information from a single command-line

@@ -727,7 +727,7 @@ end
 # # The fixnum argument is untagged.
 instruction check-in-arity--alt (?n 0 1 2 3 4 5 6 7 8 9 10, ?f)
   code
-    // FIXME: this loops forever with no-threading (not with the other dispatching models
+    // FIXME: this loops forever with no-threading (not with the other dispatches
     // including minimal threading) when the callee is compiled.  A Jitter bug.
     /* Here we can assume that the top object is a closure, without checking: we either
        already performed a type check, or the compiler decided it wasn't necessary. */

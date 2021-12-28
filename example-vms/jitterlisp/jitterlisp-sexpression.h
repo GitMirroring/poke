@@ -568,7 +568,7 @@ struct jitterlisp_compiled_closure
      time.
      This is actually a jitterlispvm_program_point object, but we declare it as
      a const void * (which is safe: jitterlispvm_program_point is a constant
-     pointer type on every dispatching model) to avoid cyclical CPP inclusion
+     pointer type on every dispatch) to avoid cyclical CPP inclusion
      problems. */
   const void *first_program_point;
 };

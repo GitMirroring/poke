@@ -56,7 +56,7 @@ bin_structured_SOURCES = \
 
 # The structured executable must be built using the preprocessor, compiler and
 # linker options mandated by Jitter -- in this case we only use the default
-# Jitter dispatching mode as selected at configure time, which is what most
+# Jitter dispatch as selected at configure time, which is what most
 # people will want.
 # The fourth line is not a mistake: Automake provides no AM_LDADD variable.
 bin_structured_CPPFLAGS = \

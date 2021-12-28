@@ -233,7 +233,7 @@ union jitter_word
 
 
 
-/* Definitions depending on the dispatch model.
+/* Definitions depending on the dispatch.
  * ************************************************************************** */
 
 /* Sanity check: make sure that the user passed the correct set of CPP flags.  
@@ -274,9 +274,9 @@ JITTER_CPPFLAGS or one of its variants as intended will prevent subtle \
 problems.  See the source code for more information."
 #endif // no JITTER_CPPFLAGS or -DJITTER_INTERNAL.
 
-/* Check that one dispatching model is defined with a CPP macro, and define
+/* Check that one dispatch is defined with a CPP macro, and define
    JITTER_REPLICATE if needed.  Also define the JITTER_DISPATCH_NAME and
-   JITTER_DISPATCH_NAME_STRING macros as the dispatching model name, to be
+   JITTER_DISPATCH_NAME_STRING macros as the dispatch name, to be
    respectively used as a C identifier and as text for user messages. */
 #if   defined(JITTER_DISPATCH_SWITCH)
 # define JITTER_DISPATCH_NAME        switch
@@ -295,12 +295,12 @@ problems.  See the source code for more information."
   /* No-threading requires code replication. */
 # define JITTER_REPLICATE 1
 #elif ! defined (JITTER_INTERNAL)
-# error "unknown dispatching model.  This should never happen."
+# error "unknown dispatch.  This should never happen."
 #endif // #if defined(JITTER_DISPATCH_...)
 
-/* Sanity check: do not use advanced dispatching models on a system missing
+/* Sanity check: do not use advanced dispatches on a system missing
    prerequisites.  It is friendlier to fail here than with some mysterious
-   compilation error later. 
+   compilation error later.
    It is more helpful to have separate checks, so that the user knows what
    the exact missing requirement is. */
 #if (defined (JITTER_DISPATCH_MINIMAL_THREADING) \
@@ -329,11 +329,11 @@ problems.  See the source code for more information."
 
 
 
-/* The selected dispatching model name as a C identifier.
+/* The selected dispatch name as a C identifier.
  * ************************************************************************** */
 
-/* Compute the name of a C global whose name depends on the dispatching model.
-   Only the one for the selected model is defined, and this serves to prevent
+/* Compute the name of a C global whose name depends on the dispatch.
+   Only the one for the selected dispatch is defined, and this serves to prevent
    mistakes when linking jitterc-generated code to a runtime library; the
    definition is in jitter.c and the code using the global is in vm1.c . */
 #define JITTER_DISPATCH_DEPENDENT_GLOBAL_NAME                \
@@ -349,7 +349,7 @@ problems.  See the source code for more information."
 
 /* The following macros are useful from many places in C code, in particular in
    order to know whether some feature should be enabled, depending on the
-   dispatching mode or the architecture.
+   dispatch or the architecture.
    It is convenient to define them here in a centralized way, rather than in
    individual headers which the user may forget to include before testing
    whether some feature macro is defined.
@@ -358,7 +358,7 @@ problems.  See the source code for more information."
    - Feature macros defining whether a functionality could be used have names
      starting with "JITTER_HAVE_" .
    - Feature macros defining whether a functionality is actually used (in the
-     current dispatching mode, for the program which is being compiled) have
+     current dispatch, for the program which is being compiled) have
      names starting with "JITTER_USE_" .
    Notice that the feature macros defined in jitter/jitter-config.h are also
    visible from here. */

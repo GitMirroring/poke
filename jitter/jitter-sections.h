@@ -28,7 +28,7 @@
 /* Include core headers.
  * ************************************************************************** */
 
-/* Include macro definitions about the dispatching model and about the machine. */
+/* Include macro definitions about the dispatch and about the machine. */
 #include <jitter/jitter.h>
 
 

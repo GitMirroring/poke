@@ -174,7 +174,9 @@ structured_help (void)
   printf ("An \"--\" argument terminates option processing.\n");
 
   printf ("\n");
-  printf ("Report bugs to " JITTER_PACKAGE_BUGREPORT ".\n");
+  printf (JITTER_PACKAGE_NAME " home page: <" JITTER_PACKAGE_URL ">.\n");
+  printf ("\n");
+  printf ("Report bugs to <" JITTER_PACKAGE_BUGREPORT ">.\n");
   printf ("General help using GNU software: <https://www.gnu.org/gethelp/>.\n");
 
   exit (EXIT_SUCCESS);

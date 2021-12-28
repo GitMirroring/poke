@@ -1,6 +1,7 @@
 /* VM library: declarations for machine-specific functionality.
 
    Copyright (C) 2017 Luca Saiu
+   Updated in 2021 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -46,8 +47,8 @@ jitter_invalidate_icache (char *from, size_t byte_no)
 /* Expressions known at compile time.
  * ************************************************************************** */
 
-/* This functionality relies on GNU builtins, and is not used with dispatching
-   models meant to be more portable than GCC. */
+/* This functionality relies on GNU builtins, and is not used with dispatches
+   meant to be more portable than GCC. */
 
 /* Expand to a true value if the given expression is a constant known at compile
    time whose value is zero; expand to a false value otherwise.  The expression

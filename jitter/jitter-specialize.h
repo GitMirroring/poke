@@ -33,7 +33,7 @@
 /* An executable routine is a data structure obtained from a routine, with a
    different internal representation meant for direct execution rather than
    modificaion -- the internal representation is in fact *very* different,
-   particularly in sophisticated dispatching modes involving native code.
+   particularly in sophisticated dispatches involving native code.
 
    Only an executable routine can be run on a VM, and only a non-executable
    routine can be modified by adding instructions and labels.
@@ -72,7 +72,7 @@ struct jitter_executable_routine
   unsigned long reference_count;
 
   /* The following fields, including the ones conditionalized over the
-     dispatching mode, have the same meaning as the fields with the same name
+     dispatch, have the same meaning as the fields with the same name
      from struct jitter_mutable_routine, and are copied from there.  See the comments in
      jitter-routine.h .
      The fields represented as struct jitter_dynamic_buffer in struct
@@ -161,7 +161,7 @@ jitter_unpin_executable_routine (struct jitter_executable_routine *er);
 
 /* The type of a program point at run time in an executable routine.  This is
    the type of object than can be passed to JITTER_BRANCH , and its actual
-   definition depends on the dispatching model.  Notice that however, in every
+   definition depends on the dispatch.  Notice that however, in every
    case, a program point is a pointer-to-constant type and therefore fits in a
    word. */
 #ifdef JITTER_DISPATCH_NO_THREADING
@@ -172,7 +172,7 @@ jitter_unpin_executable_routine (struct jitter_executable_routine *er);
   typedef const void *
   jitter_program_point;
 #else
-  /* On every other dispatching model a program point is a pointer to a word
+  /* On every other dispatch a program point is a pointer to a word
      in the executable routine -- in the case of switch dispatching that word
      will contain a specialized opcode, with threading it will contain the
      address of a machine instruction (see the case above) followed by the

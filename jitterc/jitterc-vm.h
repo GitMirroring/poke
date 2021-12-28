@@ -318,7 +318,7 @@ enum jitterc_hotness
     jitterc_hotness_cold
   };
 
-/* Relocatable instructions are relocated, when using dispatching modes
+/* Relocatable instructions are relocated, when using dispatches
    supporting it.  Non-relocatable instructions are never relocated, which is
    less efficient but yields smaller generated program code, and also allows for
    assembly code relying on the context, which cannot always be avoided on some

@@ -900,15 +900,15 @@ garbage collection library is not available or for performance testing.
 The two possible configuration values are called @dfn{Boehm} or
 @dfn{litter}, respectively.
 
-@cindex dispatching model, Jitter
-@item dispatching model
-there are currently four @dfn{dispatching models} supported by Jitter:
+@cindex dispatch, Jitter
+@item dispatch
+there are currently four @dfn{dispatches} supported by Jitter:
 @dfn{@code{switch}-dispatching},
 @dfn{direct threading},
 @dfn{minimal threading} and
-@dfn{no threading} (@pxref{Dispatch models,,, jitter, The Jitter Manual}),
+@dfn{no threading} (@pxref{Dispatches,,, jitter, The Jitter Manual}),
 each with its own performance and portability profile.
-JitterLisp will run with any dispatching model.
+JitterLisp will run with any dispatch.
 @end table
 
 @cindex build directory (Jitter)
@@ -922,7 +922,7 @@ different executables, recognizable by suffixes in
 their file name.
 The safety suffix may be empty or @samp{--unsafe},
 the garbage collection suffix @samp{--boehm} or empty,
-and the dispatching model suffix one of
+and the dispatch suffix one of
 @samp{--switch},
 @samp{--direct-threading},
 @samp{--minimal-threading} and
@@ -941,8 +941,8 @@ ls bin/jitterlisp*
 @end example
 @noindent will print the full list of available JitterLisp programs.
 
-``Default'' JitterLisp executables, with no dispatching model suffix
-in their name are also built using the best dispatching model
+``Default'' JitterLisp executables, with no dispatch suffix
+in their name are also built using the best dispatch
 available in the current configuration.  In the example above
 @file{bin/jitterlisp--boehm} will have the same functionality as
 @file{bin/jitterlisp--boehm--no-threading}.
@@ -1290,7 +1290,7 @@ By default JitterLisp keeps non-executable routines in memory, and
 garbage-collects them along with executable routines.  By specifying
 this option only executable routines are kept, which saves memory at
 the cost of making debugging output less friendly if not, according to
-the dispatching mode, completely useless.
+the dispatch, completely useless.
 
 @cindex @option{--no-verbose-litter}, command-line option
 @item --no-verbose-litter

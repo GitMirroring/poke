@@ -154,7 +154,7 @@ struct jitter_vm
   const size_t *specialized_instruction_residual_arities;
   const unsigned long *specialized_instruction_label_bitmasks;
 
-  /* This is NULL when using a dispatching model not needing the bitmask. */
+  /* This is NULL when using a dispatch not needing the bitmask. */
   const unsigned long *specialized_instruction_fast_label_bitmasks;
 
 #if defined (JITTER_HAVE_PATCH_IN)

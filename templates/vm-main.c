@@ -517,7 +517,7 @@ the_argp_program_version_hook (FILE * restrict stream, struct argp_state *s)
 }
 void (*argp_program_version_hook) (FILE * restrict stream, struct argp_state *s)
   = the_argp_program_version_hook;
-const char *argp_program_bug_address = JITTER_PACKAGE_BUGREPORT;
+const char *argp_program_bug_address = "<" JITTER_PACKAGE_BUGREPORT ">";
 
 /* The parser main data structure. */
 static struct argp argp =
@@ -527,6 +527,9 @@ static struct argp argp =
     "FILE.vm",
     "Run a routine encoded as a text file on the " VMPREFIX_VM_NAME
     " VM, using " JITTER_DISPATCH_NAME_STRING " dispatch."
+    "\v"
+    JITTER_PACKAGE_NAME " home page: <" JITTER_PACKAGE_URL ">.\n"
+    "General help using GNU software: <https://www.gnu.org/gethelp>."
   };
 
 

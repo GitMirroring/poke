@@ -585,9 +585,9 @@ struct jitter_special_purpose_state_data
      ? 0                                                             \
      : (VMPREFIX_MAX_RESIDUAL_ARITY - JITTER_RESIDUAL_REGISTER_NO))
 #else // Not no-threading.
-  /* No registers are reserved for residuals in this dispatching mode; even if
+  /* No registers are reserved for residuals in this dispatch; even if
      in fact all residuals are memory residuals they don't count here, since
-     residuals are not held in The Array in this dispatching mode. */
+     residuals are not held in The Array in this dispatch. */
 # define VMPREFIX_MAX_MEMORY_RESIDUAL_ARITY  \
   0
 #endif // #ifdef JITTER_DISPATCH_NO_THREADING
@@ -597,7 +597,7 @@ struct jitter_special_purpose_state_data
    given index must be greater than or equal to JITTER_RESIDUAL_REGISTER_NO;
    residuals with indices lower than that number are not stored in The Array
    at all.
-   This is not useful with any of the other dispatching modes, where residuals
+   This is not useful with any of the other dispatches, where residuals
    directly follow each VM instruction opcode or thread.  For good performance i
    should always be a compile-time constant, as it is in machine-generated
    code.
@@ -717,7 +717,7 @@ vmprefix_specialized_instruction_label_bitmasks [];
 /* Like vmprefix_specialized_instruction_label_bitmasks , but for fast labels
    only.
    The actual definition is conditionalized so as to appear only when
-   needed according to the dispatching model. */
+   needed according to the dispatch. */
 extern const unsigned long // FIXME: possibly use a shorter type when possible
 vmprefix_specialized_instruction_fast_label_bitmasks [];
 
@@ -752,7 +752,7 @@ vmprefix_vm;
 
 /* A pointer to a struct containing VM-specific parameters set in part when
    calling jitterc and in part when compiling the generated C code, such as the
-   dispatching model and the number of fast registers.  The data is fully
+   dispatch and the number of fast registers.  The data is fully
    initialized only after a call to vmprefix_initialize . */
 extern const
 struct jitter_vm_configuration * const

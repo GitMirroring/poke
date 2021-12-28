@@ -35,7 +35,7 @@
 # preliminary definitions (always the same) and then evaluating a form using
 # some definition.
 # Run one test case per configuration where a configuration is a triple <safety,
-# gc, dispatching-model>, skipping disabled configurations.
+# gc, dispatch>, skipping disabled configurations.
 # Arguments:
 # - description base
 # - Lisp form, or forms, to evaluate

@@ -123,7 +123,7 @@ cd "${jitter_abs_top_builddir}"
 # Utility functions for configure.
 ################################################################
 
-# Check for tr, using very early.
+# Check for tr, which is used very early.
 AC_PATH_PROG([JITTER_TR], [tr])
 if test "x$JITTER_TR" = "x"; then
   AC_MSG_ERROR([you need the Unix tr utility])
@@ -689,6 +689,9 @@ EOF
     AC_MSG_WARN([disabling Texinfo support, ignoring $JITTER_MAKEINFO])
     JITTER_MAKEINFO=''
   fi
+  rm -f \
+    ${jitter_abs_top_builddir}/build-aux/foo.texi \
+    ${jitter_abs_top_builddir}/build-aux/foo.info
 fi
 if test "x$JITTER_MAKEINFO" = "x"; then
   if test -e "$srcdir/doc/jitter.info"; then
@@ -2052,14 +2055,14 @@ fi
 AC_SUBST([TEST_SUITE_LOG], [$jitter_test_suite_log_value])
 
 
-# Dispatching models to be enabled.
+# Dispatches to be enabled.
 ################################################################
 
-# Check whether each dispatching model is available and enabled, in order of
+# Check whether each dispatch is available and enabled, in order of
 # increasing preference.  The last found to be enabled is also considered the
 # best.
-jitter_enabled_dispatch_models=""
-jitter_best_dispatch_model=""
+jitter_enabled_dispatches=""
+jitter_best_dispatch=""
 
 # Define a disclaimer to be printed to the user when checking which dispatches
 # are enabled, showing that the decision is not final in sub-package mode.
@@ -2079,8 +2082,8 @@ AC_ARG_ENABLE([dispatch-switch],
               jitter_enable_dispatch_switch="$enableval",
               jitter_enable_dispatch_switch="$default")
 if test "x$jitter_enable_dispatch_switch" = "xyes"; then
-  jitter_best_dispatch_model="switch"
-  jitter_enabled_dispatch_models="$jitter_enabled_dispatch_models switch"
+  jitter_best_dispatch="switch"
+  jitter_enabled_dispatches="$jitter_enabled_dispatches switch"
 fi
 AC_MSG_RESULT([$jitter_enable_dispatch_switch$jitter_subpackage_disclaimer])
 
@@ -2096,8 +2099,8 @@ only if the compiler supports GNU C's computed goto]),
               jitter_enable_dispatch_direct_threading="$enableval",
               jitter_enable_dispatch_direct_threading="$default")
 if test "x$jitter_enable_dispatch_direct_threading" = "xyes"; then
-  jitter_best_dispatch_model="direct-threading"
-  jitter_enabled_dispatch_models="$jitter_enabled_dispatch_models direct-threading"
+  jitter_best_dispatch="direct-threading"
+  jitter_enabled_dispatches="$jitter_enabled_dispatches direct-threading"
 fi
 AC_MSG_RESULT([$jitter_enable_dispatch_direct_threading$jitter_subpackage_disclaimer])
 
@@ -2123,8 +2126,8 @@ wrapper prerequisites are satisfied and the binary format is supported]),
               jitter_enable_dispatch_minimal_threading="$enableval",
               jitter_enable_dispatch_minimal_threading="$default")
 if test "x$jitter_enable_dispatch_minimal_threading" = "xyes"; then
-  jitter_best_dispatch_model="minimal-threading"
-  jitter_enabled_dispatch_models="$jitter_enabled_dispatch_models minimal-threading"
+  jitter_best_dispatch="minimal-threading"
+  jitter_enabled_dispatches="$jitter_enabled_dispatches minimal-threading"
 fi
 AC_MSG_RESULT([$jitter_enable_dispatch_minimal_threading$jitter_subpackage_disclaimer])
 
@@ -2155,8 +2158,8 @@ supported]),
               jitter_enable_dispatch_no_threading="$enableval",
               jitter_enable_dispatch_no_threading="$default")
 if test "x$jitter_enable_dispatch_no_threading" = "xyes"; then
-  jitter_best_dispatch_model="no-threading"
-  jitter_enabled_dispatch_models="$jitter_enabled_dispatch_models no-threading"
+  jitter_best_dispatch="no-threading"
+  jitter_enabled_dispatches="$jitter_enabled_dispatches no-threading"
 fi
 AC_MSG_RESULT([$jitter_enable_dispatch_no_threading$jitter_subpackage_disclaimer])
 # Fail if no-threading dispatch was enabled without assembly support.
@@ -2166,7 +2169,7 @@ if test "x$jitter_has_host_assembly" = "xno" \
 fi
 
 # Fail if there is no best dispatch: this means that none was enabled.
-if test "x$jitter_best_dispatch_model" = 'x'; then
+if test "x$jitter_best_dispatch" = 'x'; then
   AC_MSG_ERROR([no dispatch was enabled, but you need at least one])
 fi
 
@@ -2174,15 +2177,15 @@ fi
 # to speed up compilation and testing.
 if test "x$JITTER_SUBPACKAGE_DIRECTORY" != 'x'; then
   AC_MSG_NOTICE([sub-package mode: disabling every dispatch except]
-[$jitter_best_dispatch_model])
+[$jitter_best_dispatch])
   AC_MSG_NOTICE([  (the following dispatches could have been enabled:]
-[ $jitter_enabled_dispatch_models)])
-  jitter_enabled_dispatch_models=" $jitter_best_dispatch_model"
+[ $jitter_enabled_dispatches)])
+  jitter_enabled_dispatches=" $jitter_best_dispatch"
   jitter_enable_dispatch_switch=no
   jitter_enable_dispatch_direct_threading=no
   jitter_enable_dispatch_minimal_threading=no
   jitter_enable_dispatch_no_threading=no
-  case "$jitter_best_dispatch_model" in
+  case "$jitter_best_dispatch" in
     switch)
        jitter_enable_dispatch_switch=yes;;
     direct-threading)
@@ -2231,47 +2234,47 @@ AM_CONDITIONAL([JITTER_ENABLE_DISPATCH_NO_THREADING],
                [test "x$jitter_enable_dispatch_no_threading" = 'xyes'])
 
 
-# AC_SUBST the list of all the enabled dispatching models, and the best one;
+# AC_SUBST the list of all the enabled dispatches, and the best one;
 # these don't use quotes as they are meant for jitter-config and shell scripts,
 # not for C code.
 AC_SUBST([JITTER_ENABLED_DISPATCHES],
-         [$jitter_enabled_dispatch_models])
+         [$jitter_enabled_dispatches])
 AC_SUBST([JITTER_BEST_DISPATCH],
-         [$jitter_best_dispatch_model])
+         [$jitter_best_dispatch])
 
-# Define a substitution holding the best dispatching model name, and a a CPP
-# feature macro named after the best dispatching model.
+# Define a substitution holding the best dispatch name, and a a CPP
+# feature macro named after the best dispatch.
 # We also need an Autoheader template for every possible CPP "best-distpatching"
 # macro name, as the actual name is computed with a shell expansion and
 # autoheader cannot discover every possibility.
-AH_TEMPLATE([JITTER_BEST_DISPATCHING_MODEL_IS_SWITCH],
+AH_TEMPLATE([JITTER_BEST_DISPATCH_IS_SWITCH],
             [Defined if switch is the best enabled dispatch.])
-AH_TEMPLATE([JITTER_BEST_DISPATCHING_MODEL_IS_DIRECT_THREADING],
+AH_TEMPLATE([JITTER_BEST_DISPATCH_IS_DIRECT_THREADING],
             [Defined if direct-threading is the best enabled dispatch.])
-AH_TEMPLATE([JITTER_BEST_DISPATCHING_MODEL_IS_MINIMAL_THREADING],
+AH_TEMPLATE([JITTER_BEST_DISPATCH_IS_MINIMAL_THREADING],
             [Defined if minimal-threading is the best enabled dispatch.])
-AH_TEMPLATE([JITTER_BEST_DISPATCHING_MODEL_IS_NO_THREADING],
+AH_TEMPLATE([JITTER_BEST_DISPATCH_IS_NO_THREADING],
             [Defined if no-threading is the best enabled dispatch.])
-if test "x$jitter_best_dispatch_model" = "x"; then
-  AC_MSG_ERROR([no dispatchnig model is enabled])
+if test "x$jitter_best_dispatch" = "x"; then
+  AC_MSG_ERROR([no dispatch is enabled])
 else
-  AC_MSG_NOTICE([enabled dispatching models are:]
-[ $jitter_enabled_dispatch_models])
-  AC_MSG_NOTICE([the best enabled dispatching model is:]
-[  $jitter_best_dispatch_model])
-  AC_SUBST([JITTER_BEST_DISPATCHING_MODEL], [$jitter_best_dispatch_model])
-  JITTER_BEST_DISPATCH_MODEL=$(echo $jitter_best_dispatch_model | jitter_to_upper)
-  AC_DEFINE_UNQUOTED([JITTER_BEST_DISPATCHING_MODEL_NAME_LOWER],
-                     ["$jitter_best_dispatch_model"],
-                     [The name of the best dispatching model, lower-case.])
-  AC_DEFINE_UNQUOTED([JITTER_BEST_DISPATCHING_MODEL_NAME_UPPER],
-                     ["$JITTER_BEST_DISPATCH_MODEL"],
-                     [The name of the best dispatching model, upper-case with
+  AC_MSG_NOTICE([enabled dispatches are:]
+[ $jitter_enabled_dispatches])
+  AC_MSG_NOTICE([the best enabled dispatch is:]
+[  $jitter_best_dispatch])
+  AC_SUBST([JITTER_BEST_DISPATCH], [$jitter_best_dispatch])
+  JITTER_BEST_DISPATCH_NAME_UPPER=$(echo $jitter_best_dispatch | jitter_to_upper)
+  AC_DEFINE_UNQUOTED([JITTER_BEST_DISPATCH_NAME_LOWER],
+                     ["$jitter_best_dispatch"],
+                     [The name of the best dispatch, lower-case.])
+  AC_DEFINE_UNQUOTED([JITTER_BEST_DISPATCH_NAME_UPPER],
+                     ["$JITTER_BEST_DISPATCH_NAME_UPPER"],
+                     [The name of the best dispatch, upper-case with
                       '-' replaced by '_'.])
-  AC_DEFINE_UNQUOTED([JITTER_BEST_DISPATCHING_MODEL_IS_$JITTER_BEST_DISPATCH_MODEL],
+  AC_DEFINE_UNQUOTED([JITTER_BEST_DISPATCH_IS_$JITTER_BEST_DISPATCH_NAME_UPPER],
                      [1],
-                     [Defined if $jitter_best_dispatch_model is the best
-                      enabled dispatching model.])
+                     [Defined if $jitter_best_dispatch is the best
+                      enabled dispatch.])
 fi
 
 
@@ -2375,16 +2378,16 @@ AC_ARG_ENABLE([disassemble-friendly-cflags],
               jitter_enable_disassemble_friendly_cflags="no")
 AC_MSG_RESULT([$jitter_enable_disassemble_friendly_cflags])
 
-# Generate flag files in $builddir/flags/$dispatch_model , for every enabled
-# dispatch_model .  Cleanup at the beginning, cd back to $builddir at the end.
+# Generate flag files in $builddir/flags/$dispatch , for every enabled
+# dispatch .  Cleanup at the beginning, cd back to $builddir at the end.
 rm -rf flags
 mkdir flags
-for dispatch_model in $jitter_enabled_dispatch_models; do
-  DISPATCH_MODEL="$(echo $dispatch_model | jitter_to_upper)"
+for dispatch in $jitter_enabled_dispatches; do
+  DISPATCH="$(echo $dispatch | jitter_to_upper)"
 
-  # Generate flags for $dispatch_model
-  mkdir "flags/$dispatch_model"
-  AC_MSG_NOTICE([generating flags for dispatching model "$dispatch_model"...])
+  # Generate flags for $dispatch
+  mkdir "flags/$dispatch"
+  AC_MSG_NOTICE([generating flags for dispatch "$dispatch"...])
   JITTER_FLAGS_CFLAGS=""
 
   # We always want these options.  See the comment below about why
@@ -2411,7 +2414,7 @@ for dispatch_model in $jitter_enabled_dispatch_models; do
 
   # Use disassemble-friendly flags for simple dispatches, if the user requested
   # them.
-  case "$dispatch_model" in
+  case "$dispatch" in
     switch|direct-threading)
       if test "x$jitter_enable_disassemble_friendly_cflags" != 'xno'; then
         jitter_check_cc_options JITTER_FLAGS_CFLAGS -fno-reorder-blocks
@@ -2475,7 +2478,7 @@ for dispatch_model in $jitter_enabled_dispatch_models; do
 #  jitter_check_cc_options JITTER_FLAGS_CFLAGS -frename-registers
 #  jitter_check_cc_options JITTER_FLAGS_CFLAGS -fno-plt
 
-  case "$dispatch_model" in
+  case "$dispatch" in
     minimal-threading)
       # As or early 2021 when using GCC 10 with minimal-threading (at least on
       # x86_64 and SPARC) -fno-tree-vrp seems to prevent tail merging, for
@@ -2495,10 +2498,10 @@ for dispatch_model in $jitter_enabled_dispatch_models; do
   # statements); however in my tests -fno-gcse appears to only have a little
   # *negative* effect on performance.
   # Disabling it for the time being.
-  # if test "$dispatch_model" != "switch"; then
+  # if test "$dispatch" != "switch"; then
   #   jitter_check_cc_options JITTER_FLAGS_CFLAGS -fno-gcse
   # fi
-  case "$dispatch_model" in
+  case "$dispatch" in
     minimal-threading|no-threading)
       # The same options which were just disassemble-friendly with switch and
       # direct-threading are important for correctness here.
@@ -2525,13 +2528,13 @@ for dispatch_model in $jitter_enabled_dispatch_models; do
   esac
   case "$host_cpu" in
     x86_64)
-      if    test "$dispatch_model" = "minimal-threading" \
-         || test "$dispatch_model" = "no-threading" ; then
+      if    test "$dispatch" = "minimal-threading" \
+         || test "$dispatch" = "no-threading" ; then
         jitter_check_cc_options JITTER_FLAGS_CFLAGS -mcmodel=large
       fi
       ;;
     *)
-      case "$dispatch_model" in
+      case "$dispatch" in
         minimal-threading|no-threading)
           # GCC generates calls to intrinsics/libc functions such as memcpy to
           # pass parameters.  At least on PowerPC GNU/Linux these resolve to
@@ -2558,14 +2561,14 @@ for dispatch_model in $jitter_enabled_dispatch_models; do
   # hard.
   if test "x$JITTER_HAVE_ACTUAL_GCC" = 'xyes' \
      && test "$JITTER_GCC_MAJOR_VERSION" -le 4; then
-    case "$dispatch_model" in
+    case "$dispatch" in
       minimal-threading|no-threading)
         jitter_check_cc_options JITTER_FLAGS_CFLAGS -fno-optimize-sibling-calls
         ;;
     esac
   fi
 
-  JITTER_FLAGS_CPPFLAGS="-DJITTER_DISPATCH_$DISPATCH_MODEL=1"
+  JITTER_FLAGS_CPPFLAGS="-DJITTER_DISPATCH_$DISPATCH=1"
 
   # In sub-package mode Jitter's C headers are not installed in any particular
   # include path, so I need to let the compiler find them via -I options in the
@@ -2589,16 +2592,16 @@ for dispatch_model in $jitter_enabled_dispatch_models; do
     fi
   fi
 
-  JITTER_FLAGS_LDADD="-ljitter--$dispatch_model"
+  JITTER_FLAGS_LDADD="-ljitter--$dispatch"
 
   if test "x$JITTER_SUBPACKAGE_DIRECTORY" != 'x'; then
-    JITTER_FLAGS_LIBADD="${jitter_abs_top_builddir}/lib/libjitter--$dispatch_model.la"
+    JITTER_FLAGS_LIBADD="${jitter_abs_top_builddir}/lib/libjitter--$dispatch.la"
   else
     # If the library is installed we can avoid specifying an explicit directory
     # for the convenience library (it would be ${libdir}) and instead rely on
     # JITTER_FLAGS_LDFLAGS containing the correct -L option.  This prevents
     # problems with non-installed libararies in non-sub-package mode.
-    JITTER_FLAGS_LIBADD="libjitter--$dispatch_model.la"
+    JITTER_FLAGS_LIBADD="libjitter--$dispatch.la"
   fi
 
   # Search for Jitter runtime libraries in the right place.
@@ -2611,32 +2614,32 @@ for dispatch_model in $jitter_enabled_dispatch_models; do
   fi
   export JITTER_FLAGS_LDFLAGS
 
-  echo "$CC"                    > flags/$dispatch_model/CC
-  echo "$JITTER_FLAGS_CPPFLAGS" > flags/$dispatch_model/CPPFLAGS
-  echo "$JITTER_FLAGS_CFLAGS"   > flags/$dispatch_model/CFLAGS
-  echo "$JITTER_FLAGS_LDADD"    > flags/$dispatch_model/LDADD
-  echo "$JITTER_FLAGS_LDFLAGS"  > flags/$dispatch_model/LDFLAGS
-  echo "$JITTER_FLAGS_LIBADD"   > flags/$dispatch_model/LIBADD
+  echo "$CC"                    > flags/$dispatch/CC
+  echo "$JITTER_FLAGS_CPPFLAGS" > flags/$dispatch/CPPFLAGS
+  echo "$JITTER_FLAGS_CFLAGS"   > flags/$dispatch/CFLAGS
+  echo "$JITTER_FLAGS_LDADD"    > flags/$dispatch/LDADD
+  echo "$JITTER_FLAGS_LDFLAGS"  > flags/$dispatch/LDFLAGS
+  echo "$JITTER_FLAGS_LIBADD"   > flags/$dispatch/LIBADD
 
-  # Also AC_SUBST flag variables for the best dispatching model, if the best
+  # Also AC_SUBST flag variables for the best dispatch, if the best
   # happens to be the one we're handling now.
-  if test "x$jitter_best_dispatch_model" = "x$dispatch_model"; then
+  if test "x$jitter_best_dispatch" = "x$dispatch"; then
     AC_SUBST([JITTER_CFLAGS],
-             [$(cat flags/$dispatch_model/CFLAGS)])
+             [$(cat flags/$dispatch/CFLAGS)])
     AC_SUBST([JITTER_CPPFLAGS],
-             [$(cat flags/$dispatch_model/CPPFLAGS)])
+             [$(cat flags/$dispatch/CPPFLAGS)])
     AC_SUBST([JITTER_LDADD],
-             [$(cat flags/$dispatch_model/LDADD)])
+             [$(cat flags/$dispatch/LDADD)])
     AC_SUBST([JITTER_LDFLAGS],
-             [$(cat flags/$dispatch_model/LDFLAGS)])
+             [$(cat flags/$dispatch/LDFLAGS)])
     AC_SUBST([JITTER_LIBADD],
-             [$(cat flags/$dispatch_model/LIBADD)])
+             [$(cat flags/$dispatch/LIBADD)])
 #    AC_SUBST([JITTER_MAKE_FLAGS],
 #             '$(MAKEFLAGS) CFLAGS="$(AM_CFLAGS) $(JITTER_CFLAGS)" CPPFLAGS="$(AM_CPPFLAGS) $(JITTER_CPPFLAGS)" LDFLAGS="$(AM_LDFLAGS) $(JITTER_LDFLAGS)" LDADD="$(JITTER_LDADD)"') # There is no AM_LDADD
   fi
 done
 
-# AC_SUBST flag variables for every dispatching model.  FIXME: the first
+# AC_SUBST flag variables for every dispatch.  FIXME: the first
 # argument of AC_SUBST must be literal , therefore a shell loop doesn't work
 # here, but it shouldn't be hard with m4 macros.
 if test "x$jitter_enable_dispatch_switch" = "xyes"; then

@@ -43,7 +43,7 @@ The generated C code is heavily conditionalised and can be configured to run
 using different dispatching techniques, of varying sophistication; the most
 efficient dispatching techniques rely on some architecture-specific---but not
 VM-specific---assembly support already included in this software; every
-dispatching model but one also relies on GNU C extensions.
+dispatch but one also relies on GNU C extensions.
 
 As a fallback case, in the interest of portability, one dispatching technique is
 provided, switch dispatching, requiring nothing more than standard C.

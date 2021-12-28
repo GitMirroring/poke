@@ -236,8 +236,8 @@ vmprefix_finalize_special_purpose_data
  * ************************************************************************** */
 
 /* It is possible to make a mistake at link time, and link a VM compiled with
-   some threading model with the Jitter runtime for a different model.  That
-   would cause crashes, that is better to prevent.  This is a way to detect such
+   some dispatch with the Jitter runtime for a different dispatch.  That
+   would cause crashes that is better to prevent.  This is a way to detect such
    mistakes very early, by causing a link-time failure in case of mismatch. */
 extern volatile const bool
 JITTER_DISPATCH_DEPENDENT_GLOBAL_NAME;

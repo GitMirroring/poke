@@ -376,7 +376,7 @@ AC_ARG_WITH([jitter],
 #   - JITTER_$D_LDFLAGS        (LDFLAGS with dispatch $D);
 #   - JITTER_$D_LIBADD         (LIBADD with dispatch $D).
 # When Automake is used, also define the following Automake conditionals
-# for each dispatching model $D (in all caps, with underscores separating
+# for each dispatch $D (in all caps, with underscores separating
 # words):
 # * JITTER_ENABLE_DISPATCH_$D  (true iff $D is enabled).
 #
@@ -459,17 +459,17 @@ AS_IF([test "x$JITTER_CONFIG" = "x"],
         [AC_MSG_WARN([non-working jitter-config at $JITTER_CONFIG])
          JITTER_CONFIG=""])
 
-# Provide an option for the user to explicitly choose a default dispatching
-# model.  Decide on the default dispatch at this point, either using the option
+# Provide an option for the user to explicitly choose a default dispatch.
+# Decide on the default dispatch at this point, either using the option
 # or choosing the best.
-# jitter_default_dispatch will be defined as the dispatching model in lower
+# jitter_default_dispatch will be defined as the dispatch in lower
 # case with dashes separating words.  Default flag variables will refer to the
-# selected dispatching model.
+# selected dispatch.
 # If the requested dispatch is not avaiable the variable will be redefined later
 # to use the best, with a warning.
 AC_ARG_WITH([jitter-dispatch],
             [AS_HELP_STRING([--with-jitter-dispatch="DISPATCH"],
-               [use the given dispatching model (either one given by
+               [use the given dispatch (either one given by
                 jitter-config --dispatches or "best", which is the default)
                 for the default jitter flag variables; if the requested
                 dispatch is not available in the current Jitter
@@ -492,18 +492,18 @@ if test "x$JITTER_CONFIG" != "x"; then
   AC_SUBST([JITTER_CONFIG_VERSION],
            [$("$JITTER_CONFIG" --dump-version)])
 
-  # Define the list of enabled dispatching models.
+  # Define the list of enabled dispatches.
   AC_SUBST([JITTER_DISPATCHES],
            [$("$JITTER_CONFIG" --dispatches)])
   AC_MSG_NOTICE([the available Jitter dispatches are $JITTER_DISPATCHES])
 
-  # Define the best available dispatching model.
+  # Define the best available dispatch.
   AC_SUBST([JITTER_BEST_DISPATCH],
            [$("$JITTER_CONFIG" --best-dispatch)])
   AC_MSG_NOTICE([the best available Jitter dispatch is "$JITTER_BEST_DISPATCH"])
 
-  # Define the default dispatching model.  In case "best" was requested, replace
-  # it with the actual name.  If the dispatching model selected as default is
+  # Define the default dispatch.  In case "best" was requested, replace
+  # it with the actual name.  If the dispatch selected as default is
   # not available warn, and use the best available.
   if test "x$jitter_default_dispatch" = "xbest"; then
     jitter_default_dispatch="$JITTER_BEST_DISPATCH"
@@ -515,10 +515,10 @@ if test "x$JITTER_CONFIG" != "x"; then
   fi
   AC_SUBST([JITTER_DEFAULT_DISPATCH],
            [$jitter_default_dispatch])
-  AC_MSG_NOTICE([the default Jitter dispatching model used here will be \
+  AC_MSG_NOTICE([the default Jitter dispatch used here will be \
 "$JITTER_DEFAULT_DISPATCH"])
 
-  # Define flags for the default dispatching model.
+  # Define flags for the default dispatch.
   jitter_for_flag([a_flag],
     [AC_SUBST([JITTER_]jitter_tocpp(a_flag),
               [$("$JITTER_CONFIG" --dispatch="$JITTER_DEFAULT_DISPATCH" \

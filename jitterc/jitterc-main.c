@@ -184,7 +184,7 @@ const char *argp_program_version
     "file named COPYING.\n"
     "\n"
     "Written by Luca Saiu <http://ageinghacker.net>.";
-const char *argp_program_bug_address = PACKAGE_BUGREPORT;
+const char *argp_program_bug_address = "<" PACKAGE_BUGREPORT ">";
 
 /* Forward-declaration.  I like having argp defined here, before parse_opt which
    is quite long. */
@@ -196,7 +196,11 @@ static struct argp argp =
   { jitterc_option_specification,
     parse_opt,
     "-o OUTPUTDIRECTORY FILE.jitter",
-    "Generate virtual machine C code." };
+    "Generate virtual machine C code."
+    "\v"
+    JITTER_PACKAGE_NAME " home page: <" JITTER_PACKAGE_URL ">.\n"
+    "General help using GNU software: <https://www.gnu.org/gethelp>."
+  };
 
 /* Update our option state with the information from a single command-line
    option. */

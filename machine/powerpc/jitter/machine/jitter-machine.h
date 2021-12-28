@@ -183,7 +183,7 @@
  * ************************************************************************** */
 
 /* Ignore this page if patch-ins have been disabled (for debugging) or the
-   dispatching model does not support them. */
+   dispatch does not support them. */
 #if defined(JITTER_MACHINE_SUPPORTS_PATCH_IN) && defined(JITTER_DISPATCH_NO_THREADING)
 
 /* This factors the common logic of low-level conditional fast branches.

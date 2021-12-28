@@ -527,7 +527,7 @@ jitter_executable_routine_disassemble (jitter_print_context f,
     }
 
   /* The specialized_instructions field has been extracted to the specialized
-     routine, in every dispatching mode except no-threading , which doesn't
+     routine, in every dispatch except no-threading , which doesn't
      need it at all. */
   const union jitter_word *specialized_instructions
 #if   (defined(JITTER_DISPATCH_SWITCH)                 \

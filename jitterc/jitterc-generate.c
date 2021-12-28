@@ -1900,8 +1900,8 @@ jitterc_emit_state_h (const struct jitterc_vm *vm)
   EMIT("struct vmprefix_state_runtime\n");
   EMIT("{\n");
   EMIT("  /* A link register for branch-and-link operations.  This field must *not*\n");
-  EMIT("     be accessed from user code, as it may not exist on all dispatching\n");
-  EMIT("     models.  It is only used internally for JITTER_PROCEDURE_PROLOG .\n");
+  EMIT("     be accessed from user code, as it may not exist on all dispatches.\n");
+  EMIT("     It is only used internally for JITTER_PROCEDURE_PROLOG .\n");
   EMIT("\n");
   EMIT("     With no-threading on arthitectures supporting procedures some\n");
   EMIT("     hardware-dependent resource such as a designed register (general-\n");
@@ -2302,7 +2302,7 @@ jitterc_emit_register_access_macros_h (const struct jitterc_vm *vm)
 {
   FILE *f = jitterc_fopen_a_basename (vm, "vm.h");
 
-  EMIT("/* How many residuals we can have at most.  This, with some dispatching models,\n");
+  EMIT("/* How many residuals we can have at most.  This, with some dispatches,\n");
   EMIT("   is needed to compute a slow register offset from the base. */\n");
   EMIT("#define VMPREFIX_MAX_RESIDUAL_ARITY  %i\n\n", (int)vm->max_residual_arity);
 
@@ -4026,8 +4026,8 @@ jitterc_emit_executor_main_function
   EMIT("       + JITTER_ARRAY_BIAS);\n");
   EMIT("\n");
 
-  EMIT("  /* Declare the instruction pointer from the thread array, unless the dispatching\n");
-  EMIT("     model is no-threading, in which case no thread array even exists. */\n");
+  EMIT("  /* Declare the instruction pointer from the thread array, unless the dispatch\n");
+  EMIT("     is no-threading, in which case no thread array even exists. */\n");
   EMIT("  vmprefix_program_point jitter_ip = NULL; /* Invalidate to catch errors. */\n");
 
   EMIT("#ifdef JITTER_REPLICATE\n");
@@ -4370,7 +4370,7 @@ jitterc_emit_executor_wrappers
    (FILE *f, const struct jitterc_vm *vm)
 {
   /* This function is the most critical to compile with the right GCC options;
-     for any threading model more sophisticated than direct threading this is a
+     for any dispatch more sophisticated than direct threading this is a
      matter of correctness, not just efficiency. */
   EMIT("/* The definition of this is machine-generated in vmprefix-vm2.c , and the\n");
   EMIT("   function is not intended for the user.  If initializing then set\n");
