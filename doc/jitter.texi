@@ -656,7 +656,7 @@ as a @emph{spectacularly} poor fit for server-side web programming, the most
 popular use case for the language: processes are spawned often, live
 for a short time, compute very little and only consist in running local,
 statically compiled bytecode on one physical machine with a known architecture;
-bytecode is hardly ever exchanged over the network or generated at run time.
+bytecode is almost never exchanged over the network or generated at run time.
 
 @cindex Java
 @cindex JavaScript
@@ -712,7 +712,7 @@ Considering that by stacking abstraction layers one on top of
 another their overheads @emph{multiply}, this result is good;
 and I am sure that there exist problem instances where this composed
 multiple machine-translation works even move efficiently.
-Whether such an organization makes sense, of course, is an entirely
+Whether such an organisation makes sense, of course, is an entirely
 different matter.
 
 @cindex C
@@ -1216,7 +1216,7 @@ Jitter
 makes it easy to experiment with unusual runtime data structures,
 for example a Forth-style dual-stack architecture, the
 stack-plus-accumulator
-organization adopted by Caml bytecode, or Appel's ``Compiling with
+organisation adopted by Caml bytecode, or Appel's ``Compiling with
 Continuations'' model
 @bibref{Appel 1992}
 relying on a fixed number of registers and
@@ -1372,7 +1372,7 @@ Happy hacking.
 @cindex Debian
 @cindex test suite
 This chapter explains how to build GNU Jitter from its source code,
-recommending a specific directory organization which will also be
+recommending a specific directory organisation which will also be
 adopted in the following.  It does not cover package systems such as
 the one from the Debian GNU/Linux distribution.  As of early 2021
 Jitter has not yet been packaged by any distribution;
@@ -1476,7 +1476,7 @@ and complain if any is missing.
 @c @@@@@@@@@@@@@@@@@@@@@
 @node Building conventions and tips
 @section Building conventions and tips
-@fixme{directory organization, cross-compiling directories, reversible installation, stow,
+@fixme{directory organisation, cross-compiling directories, reversible installation, stow,
 what a good build machine is, this is for GNU and likely BSD and everything else is untested}
 
 @menu
@@ -1929,6 +1929,12 @@ The recommended way of using Jitter right now is @emph{sub-package mode}:
 @subsection Debugging Jittery programs
 @cindex debug, Jittery program
 
+@fixme{write here, or possible link: simple dispatches
+(@code{switch}-dispatching
+and direct threading) yield C code that can be stepped through
+with gdb.}
+
+@fixme{document the VM code debugging API}
 
 @node Profiling Jittery programs
 @subsection Profiling Jittery programs
@@ -3193,7 +3199,7 @@ jitter_gc_write_barrier_queue_flush_1 (struct jitter_gc_heaplet *a,
 @cindex generator, code
 
 @menu
-* Code generation tips::       Suggestions about how to organize your generator and VM.
+* Code generation tips::       Suggestions about how to organise your generator and VM.
 * Stack code generation::      Generating code for a stack VM is trivial.
 * Register code generation::   Generating code for register VMs can still be easy.
 * Specific language features:: Suggestions for how to compile some language forms.
@@ -4689,7 +4695,7 @@ user much more control over the generated code compared to a compiler,
 and I guess replicated code could count as a reasonable approximation
 of compiler-generated code when evaluating the performance of a
 collector.  With Jitter it is easy to reserve (VM) registers for
-special purposes, and to play with weird stack organizations.
+special purposes, and to play with weird stack organisations.
 
 Polemical references to what scripting languages do, to be softened:
 if your program spends most of the time accessing complicated
@@ -4950,7 +4956,7 @@ specialization time.
 
 @section Machine register use: single @emph{base} [almost done now]
 Use a single @emph{base} to point to memory residuals, slow registers and
-possibly transfer registers as well.  This is how to organize the
+possibly transfer registers as well.  This is how to organise the
 array with multiple data types:
 @itemize
 @item
