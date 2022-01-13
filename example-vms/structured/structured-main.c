@@ -1,6 +1,7 @@
 /* Jittery structured language example: main.
 
    Copyright (C) 2017, 2019, 2020, 2021 Luca Saiu
+   Updated in 2022 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of the Jitter structured-language example, distributed
@@ -195,7 +196,7 @@ structured_version (void)
           instrumentation,
           (strlen (instrumentation) > 0 ? ", " : ""),
           c->dispatch_human_readable);
-  printf ("Copyright (C) 2021 Luca Saiu.\n"
+  printf ("Copyright (C) 2022 Luca Saiu.\n"
           "GNU Jitter comes with ABSOLUTELY NO WARRANTY.\n"
           "You may redistribute copies of GNU Jitter under the terms of the GNU\n"
           "General Public License, version 3 or any later version published\n"

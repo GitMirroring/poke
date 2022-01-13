@@ -1,6 +1,7 @@
 /* JitterLisp: driver.
 
    Copyright (C) 2017, 2018, 2019, 2021 Luca Saiu
+   Updated in 2022 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of the JitterLisp language implementation, distributed as
@@ -199,7 +200,7 @@ the_argp_program_version_hook (FILE * restrict stream, struct argp_state *s)
            c->dispatch_human_readable);
   fprintf
      (stream,
-      "Copyright (C) 2021 Luca Saiu.\n"
+      "Copyright (C) 2022 Luca Saiu.\n"
       "JitterLisp comes with ABSOLUTELY NO WARRANTY.\n"
       "You may redistribute copies of JitterLisp under the terms of the\n"
       "GNU General Public License, version 3 or any later version\n"

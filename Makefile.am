@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in .
-# Copyright (C) 2016, 2017, 2018, 2019, 2020 Luca Saiu
-# Updated in 2021 by Luca Saiu
+# Copyright (C) 2016-2020 Luca Saiu
+# Updated in 2021 and 2022 by Luca Saiu
 # Written by Luca Saiu
 
 # This file is part of GNU Jitter.

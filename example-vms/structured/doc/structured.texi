@@ -1,8 +1,9 @@
 \input texinfo.tex @c This is -*- Texinfo -*-.
 
 @c This file is part of the Structured manual, which is part of GNU Jitter.
-@c Copyright (C) 2017, 2018, 2019, 2020, 2021  Luca Saiu
+@c Copyright (C) 2017-2021  Luca Saiu
 @c Copyright (C) 2021  p≡p Foundation
+@c Updated in 2022 by Luca Saiu
 @c Written by Luca Saiu
 @c Document skeleton copied from the JitterLisp manual in late 2021.
 
@@ -180,8 +181,10 @@ last updated on @value{UPDATED}), a programming language
 implementation using a Jittery VM, conceived as an example for GNU Jitter.
 
 @noindent
-Copyright @copyright{} 2018, 2019, 2020, 2021  Luca Saiu@*
+@c NOTE FOR MYSELF: keep consistent with the legal notice at the top.
+Copyright @copyright{} 2017-2021  Luca Saiu@*
 Copyright @copyright{} 2021 p≡p Foundation@*
+Updated in 2022 by Luca Saiu@*
 Written by Luca Saiu.
 
 @quotation
@@ -339,7 +342,8 @@ experience of writing Structured, which was expected.
 @cindex build system
 At some point Structured gained an example build system, in two
 versions, showing how to package a Jittery system using GNU Autoconf
-and Automake.
+and Automake; I just needed some Jittery program to package as an
+example, and Structured was there.
 
 @cindex example
 @cindex micro-benchmark
@@ -351,7 +355,7 @@ micro-benchmarks and also executed as part of the Jitter test suite.
 @cindex procedure
 The language has evolved to a moderate degree: 2021 additions include
 procedures, which can be called recursively.  Variables are no longer
-global, and now need to be declared.
+all global, and now need to be declared.
 More importantly, the implementation has evolved: there are two
 separate and independent code generators, the original one based on a
 stack and a new one based on VM registers.  The two code generators
@@ -369,7 +373,7 @@ space@footnote{@cindex tail call
 I argue that consuming a finite resource during code
 execution at run time while an alternative exists is not lack of
 an ``optimisation'', but lack of correctness.
-Leaking stack space has been historically perceived as
+Leaking stack space has been historically perceived in a sense as
 more socially acceptable than leaking heap space.  This
 perception is irrational and should change: artificially establishing
 a limit on the depth of dynamically nested calls forces the programmer
@@ -380,8 +384,8 @@ At this time the procedure calling
 conventions are not very efficient, and the implementation could be
 optimised.
 @cindex example
-The balance between clarity in the code and ``realism''
-remains delicate.
+The balance between source code clarity and ``realism'' remains
+delicate.
 
 @cindex GNU
 Since Jitter became part of the GNU Project in December 2021
@@ -405,8 +409,11 @@ questions.
 
 @cindex p≡p Foundation
 @cindex Foundation, p≡p
-As of 2021 my employer p≡p Foundation (@url{https://pep.foundation})
-allows me to partly develop this software on work hours.
+@c Summer 2021...
+Starting in Summer 2021 and as of 2022 my employer p≡p Foundation
+(@url{https://pep.foundation})
+is allowing me to partly develop this software on work hours.  Such
+support is greatly appreciated.
 
 @section Obtaining the software
 @cindex obtaining
@@ -418,15 +425,15 @@ allows me to partly develop this software on work hours.
 @cindex git
 Structured is distributed as an example within GNU Jitter, and can be
 obtained along with the Jitter source code.
-The current web page for Jitter, containing a link to a publicly
-readable git repository, is on my web site at the URL
-@url{https://www.gnu.org/software/jitter} .
+The main web page for Jitter, containing a link to a publicly
+readable git repository, is on the GNU Project web site at
+@url{https://www.gnu.org/software/jitter/}.
 
 @cindex branch, git
 @cindex git branch
 @cindex @code{master}, git branch
 As of 2021 Structured development takes place on the public git
-repository for GNU Jitter, in the @code{master} branch:
+repository for GNU Jitter, normally in the @code{master} branch:
 @pxref{Working with the Jitter sources,,, jitter, The GNU Jitter Manual}.
 
 @fixme{talk about build system examples using structured: it is in

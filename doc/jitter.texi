@@ -1,7 +1,7 @@
 \input texinfo.tex @c This is -*- Texinfo -*-.
 
 @c This file is part of the GNU Jitter manual.
-@c Copyright (C) 2017, 2019, 2020, 2021, 2022  Luca Saiu
+@c Copyright (C) 2017, 2019-2022  Luca Saiu
 @c Written by Luca Saiu
 
 @c Permission is granted to copy, distribute and/or modify this
@@ -204,7 +204,7 @@ This is the manual for GNU Jitter
 last updated on @value{UPDATED}), an efficient virtual machine generator.
 
 @noindent
-Copyright @copyright{} 2017, 2019, 2020, 2021  Luca Saiu.@*
+Copyright @copyright{} 2017, 2019-2022  Luca Saiu.@*
 Written by Luca Saiu.
 
 @quotation

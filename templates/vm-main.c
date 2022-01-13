@@ -1,6 +1,7 @@
 /* VM default frontend for vmprefix VM.
 
    Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021 Luca Saiu
+   Updated in 2022 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -505,7 +506,7 @@ the_argp_program_version_hook (FILE * restrict stream, struct argp_state *s)
            c->dispatch_human_readable);
   fprintf
      (stream,
-      "Copyright (C) 2021 Luca Saiu.\n"
+      "Copyright (C) 2022 Luca Saiu.\n"
       JITTER_PACKAGE_NAME " comes with ABSOLUTELY NO WARRANTY.\n"
       "You may redistribute copies of GNU Jitter under the terms of the GNU\n"
       "General Public License, version 3 or any later version published\n"

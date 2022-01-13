@@ -1,7 +1,8 @@
 \input texinfo.tex @c This is -*- Texinfo -*-.
 
 @c This file is part of the JitterLisp manual, which is part of GNU Jitter.
-@c Copyright (C) 2017, 2018, 2019, 2020, 2021  Luca Saiu
+@c Copyright (C) 2017-2021  Luca Saiu
+@c Updated in 2022 by Luca Saiu
 @c Written by Luca Saiu
 
 @c Permission is granted to copy, distribute and/or modify this
@@ -182,7 +183,9 @@ This is the manual for JitterLisp
 last updated on @value{UPDATED}), an efficient Lisp system using a Jittery VM.
 
 @noindent
-Copyright @copyright{} 2018, 2019, 2020, 2021  Luca Saiu.@*
+@c NOTE FOR MYSELF: keep consistent with the legal notice at the top.
+Copyright @copyright{} 2017-2021  Luca Saiu@*
+Updated in 2022 by Luca Saiu@*
 Written by Luca Saiu.
 
 @quotation
