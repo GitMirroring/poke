@@ -2,7 +2,7 @@
 ## to obtain a configure script.
 
 ## Copyright (C) 2016, 2017, 2021 Luca Saiu
-## Updated in 2019, 2020 by Luca Saiu
+## Updated in 2019, 2020 and 2022 by Luca Saiu
 ## Written by Luca Saiu
 
 ## This file is part of the Jitter structured-language example,
@@ -29,7 +29,7 @@
 # structured-language example.
 AC_INIT([Structured],
         [1.0],
-        [bug-epsilon@gnu.org],
+        [bug-jitter@gnu.org],
         [structured-simple],
         [http://ageinghacker.net/jitter])
 AC_CONFIG_AUX_DIR([build-aux])

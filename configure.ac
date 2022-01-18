@@ -52,7 +52,7 @@ m4_define([jitter_version],
 # below for tests.
 AC_INIT([GNU Jitter],
         jitter_version(),
-        [bug-epsilon@gnu.org],
+        [bug-jitter@gnu.org],
         [jitter],
         [https://www.gnu.org/software/jitter])
 AC_CONFIG_SRCDIR([NO-WARRANTY])

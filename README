@@ -68,8 +68,9 @@ http://git.ageinghacker.net/jitter .
 Discussions about Jitter, which spawned off as a sub-project of GNU epsilon,
 are always considered on topic on the GNU epsilon mailing list.  See
 https://lists.gnu.org/mailman/listinfo/epsilon-devel .
+The mail address bug-jitter@gnu.org is in fact an epsilon-devel alias.
 
-A new mailing list specific to Jitter might be added if needed.
+A new separate mailing list for Jitter will be added if needed.
 
 
 About the author
