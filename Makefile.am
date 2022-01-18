@@ -972,17 +972,14 @@ EXTRA_DIST += \
 # ################################################################
 
 # Add examples conceived to compare performance of a Jittery VM against C.
-# About the conditional see the comment below related to the examples target.
 EXTRA_PROGRAMS += \
   example-vms/structured/examples/count-primes-in-c \
   example-vms/structured/examples/primes-in-c \
   example-vms/jitterlisp/examples/fibo-in-c
-if ! JITTER_SUBPACKAGE
 benchmarking-examples: \
   example-vms/structured/examples/count-primes-in-c$(EXEEXT) \
   example-vms/structured/examples/primes-in-c$(EXEEXT) \
   example-vms/jitterlisp/examples/fibo-in-c$(EXEEXT)
-endif # ! JITTER_SUBPACKAGE
 example_vms_structured_examples_count_primes_in_c_SOURCES = \
   example-vms/structured/examples/count-primes.c
 example_vms_structured_examples_primes_in_c_SOURCES = \
@@ -1457,8 +1454,8 @@ if JITTER_CAN_REBUILD_MAN_PAGES
   # See the comment about doc/jitter.1 and its conditional generation.
   $(srcdir)/example-vms/structured/doc/structured.1: bin/structured$(EXEEXT)
 	$(HELP2MAN_WITH_OPTIONS) --output="$@" \
-          --info-page='structured'\
-	  "$(JITTER_EMULATOR) bin/structured$(EXEEXT)" || true
+          --info-page='structured' \
+          "$(JITTER_EMULATOR) bin/structured$(EXEEXT)" || true
 else # ! JITTER_CAN_REBUILD_MAN_PAGES
   $(srcdir)/example-vms/structured/doc/structured.1: doc/missing-man-page.1
 	cp "$(srcdir)/doc/missing-man-page.1" "$@" || true
@@ -2023,23 +2020,25 @@ pdf: documentationdisabledinsubpackagemode
 endif # JITTER_SUBPACKAGE
 
 
-# Texinfo documentation or lack thereof in sub-package mode.
+# Texinfo documentation or lack thereof.
 # ################################################################
 
-# In sub-package mode it is better not to even bother building Info
-# documentation.  It is a waste of time and a source of incompatibilities with
-# old Texinfo versions, particularly when downloading Jitter from git -- which
-# is in fact the way sub-package mode is used.
-
-if JITTER_SUBPACKAGE
+# The configure script checks carefully whether it is possible to build without
+# usable Texinfo programs; when it is possible, let us build info pages even in
+# subpackage mode.  This will help users of source packages containing Jitter.
+if JITTER_HAVE_TEXINFO
 # Unfortunately it does not seem to be possible to disable TEXINFOS from
 # Automake conditionals, but this workaround is easy.
 doc/jitter.info:
 	$(MKDIR_P) `dirname "$@"` && touch "$@"
 example-vms/jitterlisp/doc/jitterlisp.info:
 	$(MKDIR_P) `dirname "$@"` && touch "$@"
-info: doc/jitter.info example-vms/jitterlisp/doc/jitterlisp.info
-endif # JITTER_SUBPACKAGE
+example-vms/structured/doc/structured.info:
+	$(MKDIR_P) `dirname "$@"` && touch "$@"
+info: doc/jitter.info \
+  example-vms/jitterlisp/doc/jitterlisp.info \
+  example-vms/structured/doc/structured.info
+endif # JITTER_HAVE_TEXINFO
 
 
 # Web site manuals

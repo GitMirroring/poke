@@ -1,7 +1,7 @@
 ## This is an -*- Autoconf -*- file to be processed with autoconf
 ## to obtain a configure script.
 
-## Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021 Luca Saiu
+## Copyright (C) 2016-2022 Luca Saiu
 ## Copyright (C) 2021 pEp foundation (Android port)
 ## Written by Luca Saiu
 
@@ -647,7 +647,21 @@ if test "x$YACC" = 'x'; then
   fi
 fi
 
-AC_MSG_CHECKING([if hardcopy documentation should be generated])
+# Allow the user to disable Texinfo tools from the configure command line.
+AC_MSG_CHECKING([if Texinfo documentation should be generated])
+AC_ARG_ENABLE([texinfo],
+              AS_HELP_STRING([--enable-texinfo],
+                 [Build documentation from Texinfo (default: auto)]),
+              jitter_enable_texinfo="$enableval",
+              jitter_enable_texinfo="auto")
+if test "x$jitter_enable_texinfo" != 'xno' \
+   && test "x$jitter_enable_texinfo" != 'xyes' \
+   && test "x$jitter_enable_texinfo" != 'xauto'; then
+  AC_MSG_RESULT([invalid: $jitter_enable_texinfo])
+  AC_MSG_ERROR([--enable-texinfo: parameter different from yes, no, auto])
+fi
+AC_MSG_RESULT([$jitter_enable_texinfo])
+AC_MSG_CHECKING([if we can build hardcopy documentation])
 AC_ARG_ENABLE([hardcopy],
               AS_HELP_STRING([--enable-hardcopy],
                  [Enable generation of the manual in hardcopy formats (default:
@@ -659,13 +673,15 @@ AC_MSG_RESULT([$jitter_enable_hardcopy])
 # Check for Texinfo commands.  In practice makeinfo is more important than
 # texi2dvi, as Info is the default format.
 AC_PATH_PROG([JITTER_MAKEINFO], [makeinfo])
-if test "x$JITTER_MAKEINFO" != 'x'; then
+if test "x$jitter_enable_texinfo" = 'xno'; then
+  AC_MSG_WARN([Texinfo support was disabled from the command line])
+elif test "x$JITTER_MAKEINFO" != 'x'; then
   # Check that makeinfo understands a sufficiently recent dialect of Texinfo.
   # I have had prolems on some BSD system shipping with a version of makeinfo
   # which was too old to recognise @part.
   # I want to detect such problems and prevent build failures but I will not
   # make the manuals uglier just to support such systems...
-  AC_MSG_CHECKING([that the available Texinfo is recent enough])
+  AC_MSG_CHECKING([that the available Texinfo tools are recent enough])
   mkdir "${jitter_abs_top_builddir}/build-aux" 2> /dev/null || true
   cat > "${jitter_abs_top_builddir}/build-aux/foo.texi" <<EOF
 @node Top
@@ -713,6 +729,12 @@ if test "x$JITTER_TEXI2DVI" = "x"; then
   AC_MSG_WARN([you will need texi2dvi, from GNU Texinfo, if you want to \
 generate DVI, PostScript or PDF documentation])
 fi
+# Define an Automake conditional saying whether it is possible to generate Info
+# documentation.  Notice that (when building from git without a usable makeinfo)
+# we may have alraedy failed fatally before arriving here: the value of this
+# conditionsl is only decided by the command-line option.
+AM_CONDITIONAL([JITTER_HAVE_TEXINFO],
+               [test "x$jitter_enable_texinfo" != 'xno'])
 # Define an Automake conditional saying whether it is possible to generate
 # hardcopy documentation.  This way failures will be cleaner.
 AM_CONDITIONAL([JITTER_HAVE_TEXI2DVI],

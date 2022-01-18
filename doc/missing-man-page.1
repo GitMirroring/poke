@@ -1,7 +1,7 @@
 .\" This is -*- nroff -*-.
 .\" Stub man page for GNU Jitter, to be used when help2man is not usable.
 .\"
-.\" Copyright (C) 2017, 2019, 2021 Luca Saiu
+.\" Copyright (C) 2017, 2019, 2021, 2022  Luca Saiu
 .\" Written by Luca Saiu
 .\"
 .\" About this man page:
@@ -34,18 +34,24 @@
 GNU Jitter \- an efficient Virtual Machine generator
 
 .SH DESCRIPTION
-Alas, there is not much information here.
+Alas, there is not much information here: this is not the actual documentation.
 
 .SH THIS MAN PAGE IS A STUB
-The system on which the GNU Jitter source tarball was built
-lacked the GNU help2man utility or used cross-compilation
-without an emulator available to run the produced file with
-\fB\-\-help\fR ;
-for these reasons this page is just a placeholder.
 
-Anyway, the actual documentation is in Texinfo.  If your Info system
-is well configured and you have installed Jitter then you should be
-able to use the command line
+The system on which this GNU Jitter source tarball was built lacked the GNU
+help2man utility, or used cross-compilation, or used Jitter in sub-package mode;
+. \" (in theory we could use help2man in
+. \" cross-compilation mode, as long as an emulator is available to run the program
+. \" with --help; in practice this turned out to be fragile and not worth the
+. \" trouble)
+for this reason the page you are reading is just a placeholder.
+On a better-equipped configuration this page would have contained a
+machine-generated description of command-line options plus a few links.
+
+In any case man pages are not the actual documentation on GNU, and GNU Jitter is
+no exception: Jitter manuals are written in Texinfo.  If your Info system is
+well configured and you have installed Jitter then you should be able to use the
+command line
 
 \fBinfo\ jitter\fR
 
@@ -65,11 +71,23 @@ with
 
 or equivalently from Emacs.
 
+Structured, a simpler example of Jitter use, also has the beginning of a manual
+of its own, of course written in Texinfo.  As long as everything is installed
+correctly you should be able to see it with
+
+\fBinfo\ structured\fR
+
+or from Emacs.
+
+In case this documentation is missing on your system feel free to check the
+GNU Jitter web page:
+.BR https://www.gnu.org/software/jitter\fR
+
 .SH AUTHOR
 Written by Luca Saiu.
 
 .SH COPYRIGHT FOR JITTER
-Copyright \(co 2016, 2017, 2018, 2019, 2020, 2021  Luca Saiu
+Copyright \(co 2016-2022  Luca Saiu
 .sp 0
 Written by Luca Saiu
 
@@ -79,7 +97,7 @@ Foundation.  For more information see the file named COPYING in the source
 distribution.
 
 .SH COPYRIGHT FOR THIS STUB MAN PAGE
-Copyright \(co 2017, 2019, 2021 Luca Saiu
+Copyright \(co 2017, 2019, 2021, 2022  Luca Saiu
 .sp 0
 Written by Luca Saiu
 
