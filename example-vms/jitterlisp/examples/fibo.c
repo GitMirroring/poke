@@ -1,6 +1,7 @@
 /* Fibonacci example in -*- C -*-, to be compared against JitterLisp.
 
    Copyright (C) 2021 Luca Saiu
+   Updated in 2022 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of the JitterLisp language implementation, distributed as
@@ -45,7 +46,7 @@ fibo (long n)
 static void
 error (char *program_name)
 {
-  printf ("Synopsys: %s NUMBER\n", program_name);
+  printf ("Synopsis: %s NUMBER\n", program_name);
   exit (-1);
 }
 
