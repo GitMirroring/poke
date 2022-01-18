@@ -223,7 +223,7 @@ his contact information.
 @titlepage
 @title Structured
 @subtitle A programming language using a Jittery VM, conceived as an example for GNU Jitter
-@subtitle for GNU Jitter version @value{VERSION}, updated in @value{UPDATED-MONTH}
+@subtitle for Jitter version @value{VERSION}, updated in @value{UPDATED-MONTH}
 @c @author Luca Saiu (@email{positron@@gnu.org}, @url{http://ageinghacker.net})
 @c @author Luca Saiu (@url{http://ageinghacker.net})
 @c @author Luca Saiu (@email{positron@@gnu.org})
@@ -391,9 +391,9 @@ delicate.
 Since Jitter became part of the GNU Project in December 2021
 documenting this sub-project, now more visible, has become important.
 
-@c @menu
-@c * Thanks::.
-@c @end menu
+@menu
+* Thanks::              I am grateful to some people.
+@end menu
 
 @c @@@@@@@@@@@@@@@@@@@
 @node Thanks
@@ -432,7 +432,7 @@ readable git repository, is on the GNU Project web site at
 @cindex branch, git
 @cindex git branch
 @cindex @code{master}, git branch
-As of 2021 Structured development takes place on the public git
+As of 2022 Structured development takes place on the public git
 repository for GNU Jitter, normally in the @code{master} branch:
 @pxref{Working with the Jitter sources,,, jitter, The GNU Jitter Manual}.
 
