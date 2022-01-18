@@ -2007,17 +2007,17 @@ ps: missinghardcopytools
 pdf: missinghardcopytools
 endif # ! JITTER_HAVE_TEXI2DVI
 
-# Completely disable Jitter's documentation building in sub-package mode.
-if JITTER_SUBPACKAGE
-documentationdisabledinsubpackagemode:
-	@echo 'The documentation for Jitter is not built in sub-package mode.'
+# Completely disable Jitter's documentation building on --disable-texinfo.
+if ! JITTER_HAVE_TEXINFO
+documentationdisabledondisabletexinfo:
+	@echo 'Not building Jitter documentation: disabled at configure time.'
 	@exit 0
-info: documentationdisabledinsubpackagemode
-html: documentationdisabledinsubpackagemode
-dvi: documentationdisabledinsubpackagemode
-ps: documentationdisabledinsubpackagemode
-pdf: documentationdisabledinsubpackagemode
-endif # JITTER_SUBPACKAGE
+info: documentationdisabledondisabletexinfo
+html: documentationdisabledondisabletexinfo
+dvi: documentationdisabledondisabletexinfo
+ps: documentationdisabledondisabletexinfo
+pdf: documentationdisabledondisabletexinfo
+endif # ! JITTER_HAVE_TEXINFO
 
 
 # Texinfo documentation or lack thereof.

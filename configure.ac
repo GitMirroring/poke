@@ -665,7 +665,7 @@ AC_MSG_CHECKING([if we can build hardcopy documentation])
 AC_ARG_ENABLE([hardcopy],
               AS_HELP_STRING([--enable-hardcopy],
                  [Enable generation of the manual in hardcopy formats (default:
-                 auto)]),
+                 auto) (ignored on --disable-texinfo)]),
               jitter_enable_hardcopy="$enableval",
               jitter_enable_hardcopy="auto")
 AC_MSG_RESULT([$jitter_enable_hardcopy])
@@ -738,7 +738,8 @@ AM_CONDITIONAL([JITTER_HAVE_TEXINFO],
 # Define an Automake conditional saying whether it is possible to generate
 # hardcopy documentation.  This way failures will be cleaner.
 AM_CONDITIONAL([JITTER_HAVE_TEXI2DVI],
-               [test "x$jitter_enable_hardcopy" != 'x' \
+               [test "x$jitter_enable_texinfo" != 'xno' \
+                && test "x$jitter_enable_hardcopy" != 'x' \
                 && test "x$JITTER_TEX" != 'x' \
                 && test "x$JITTER_TEXI2DVI" != 'x'])
 
