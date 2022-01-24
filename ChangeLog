@@ -1,3 +1,29 @@
+2022-10-14  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-lex.l (integer_literal_width): New function to
+	calculate the width of integer literal.
+	(integer_literal_overflow_handling): New function to handle
+	overflow in integer literals.
+	(build_overflow_error_msg): New function to make integer literal
+	overflow errors.
+	(Alien token rule): Use new functions.
+	(Integer literal rule): Likewise.
+	* libpoke/pkl-tab.y (%union): Add new field `exception_msg'.
+	(INTEGER_OVERFLOW): Remove token.
+	(LEXER_EXCEPTION): New token.
+	(primary): Use LEXER_EXCEPTION instead of INTEGER_OVERFLOW.
+	* testsuite/poke.pkl/array-integ-33.pk: Adapt to new semantics.
+	* testsuite/poke.pkl/cdiv-integers-overflow-1.pk: Likewise.
+	* testsuite/poke.pkl/cdiv-integers-overflow-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/div-integers-overflow-1.pk: Likewise.
+	* testsuite/poke.pkl/div-integers-overflow-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/mod-integers-overflow-1.pk: Likewise.
+	* testsuite/poke.pkl/mod-integers-overflow-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/neg-int-overflow-1.pk: Likewise.
+	* testsuite/poke.pkl/sub-integers-overflow-1.pk: Likewise.
+	* testsuite/poke.pkl/integers-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/int-union-28.pk: Likewise.
+
 2022-10-14  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-ast.h (PKL_AST_ASM_STMT_EXPANDED_TEMPLATE): Likewise.

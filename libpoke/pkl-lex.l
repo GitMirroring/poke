@@ -104,7 +104,7 @@
    ({HEXCST}|{BINCST}|{OCTCST}|{DECCST}) */
 
 int
-pkl_lex_get_base  (const char *str, int *offset)
+pkl_lex_get_base (const char *str, int *offset)
 {
  int base = 10;
  *offset = 0;
@@ -127,8 +127,58 @@ pkl_lex_get_base  (const char *str, int *offset)
       *offset = 2;
     }
   }
+  return base;
+}
 
- return base;
+/* If the width is not already known (e.g., based on the suffix),
+   the type of the integer constant is the smallest signed or unsigned
+   integer capable of holding it, starting with 32 bits, in steps of
+   power of two and up to 64 bits.  But note these are positive values!  */
+static int
+integer_literal_width (uint64_t value, int signed_p)
+{
+  if (value > 0x0000000080000000 && value <= 0x00000000ffffffff)
+    return signed_p ? 64 : 32;
+  else if (value & 0xffffffff00000000)
+    return 64;
+  return 32;
+}
+
+/* Handle overflow for integer literals:
+     - Signed integer: check for overflow (of course only for positives).
+     - Unsigned integers: truncate the VALUE to fit into the WIDTH.
+   If the bit kidth of VALUE is not known, choose a proper width.
+
+   Return 1 on detection of overflow, otherwise 0.  */
+static int
+integer_literal_overflow_handling (uint64_t *value, int signed_p, int width)
+{
+  /* Handle overflow in signed integers.  Note that the lexer only
+     sees positive signed integers.  */
+  if (signed_p && *value >= ((uint64_t)1 << (width - 1)))
+    return 1;
+
+  /* Handle truncation in unsigned integers.  */
+  if (!signed_p && width < 64)
+   *value &= ((uint64_t) 1 << width) - 1;
+
+  return 0;
+}
+
+static char *
+build_overflow_error_msg (uint64_t value, int width)
+{
+  char *msg = NULL;
+  const char *suffix = (width == 64 ? "L"
+                        : width == 8 ? "B"
+                        : width == 16 ? "H"
+                        : width == 4 ? "N"
+                        : "");
+
+  asprintf (&msg,
+            "signed overflow\ntry: %luU%s as int<%d>",
+            value, suffix, width);
+  return msg;
 }
 
 %}
@@ -375,24 +425,13 @@ S ::
             int width = token->value.integer.width;
             pkl_ast_node type;
 
-            /* As with regular integer tokens, the type of the integer
-               constant is the smallest signed or unsigned integer
-               capable of holding it, starting with 32 bits, in steps
-               of power of two and up to 64 bits. */
-
             if (width == 0)
+              width = integer_literal_width (value, signed_p);
+            if (integer_literal_overflow_handling (&value, signed_p, width))
               {
-                if (value > 0x0000000080000000 && value <= 0x00000000ffffffff)
-                  width = signed_p ? 64 : 32;
-                else if (value & 0xffffffff00000000)
-                  width = 64;
-                else
-                  width = 32;
+                yylval->exception_msg = build_overflow_error_msg (value, width);
+                return LEXER_EXCEPTION;
               }
-
-            /* Handle overflow in signed integers. */
-            if (signed_p && value >= 0x8000000000000000)
-              return INTEGER_OVERFLOW;
 
             type = pkl_ast_make_integral_type (yyextra->ast, width, signed_p);
 
@@ -409,24 +448,13 @@ S ::
             int width = token->value.offset.width;
             pkl_ast_node unit, magnitude, magnitude_type, offset_type, unit_type;
 
-            /* As with regular integer tokens, the type of the integer
-               constant is the smallest signed or unsigned integer
-               capable of holding it, starting with 32 bits, in steps
-               of power of two and up to 64 bits. */
-
             if (width == 0)
+              width = integer_literal_width (value, signed_p);
+            if (integer_literal_overflow_handling (&value, signed_p, width))
               {
-                if (value > 0x0000000080000000 && value <= 0x00000000ffffffff)
-                  width = signed_p ? 64 : 32;
-                else if (value & 0xffffffff00000000)
-                  width = 64;
-                else
-                  width = 32;
+                yylval->exception_msg = build_overflow_error_msg (value, width);
+                return LEXER_EXCEPTION;
               }
-
-            /* Handle overflow in signed integers. */
-            if (signed_p && value >= 0x8000000000000000)
-              return INTEGER_OVERFLOW;
 
             /* Build the offset magnitude.  */
             magnitude_type = pkl_ast_make_integral_type (yyextra->ast, width, signed_p);
@@ -536,7 +564,10 @@ S ::
   errno = 0;
   value = strtoull (yytext + offset, &end, base);
   if (value == ULLONG_MAX && errno == ERANGE)
-        return INTEGER_OVERFLOW;
+    {
+      yylval->exception_msg = strdup ("integer literal is too big");
+      return LEXER_EXCEPTION;
+    }
 
   signed_p = 1;
   if (*end == 'u' || *end == 'U'
@@ -557,24 +588,13 @@ S ::
       || ((*end != '\0') && (*(end + 1) == 'n' || *(end + 1) == 'N')))
     width = 4;
 
-  /* If not specified with the 'l' or 'L' suffix, the type of the
-     integer constant is the smallest signed or unsigned integer
-     capable of holding it, starting with 32 bits, in steps of power
-     of two and up to 64 bits.  But note these are positive values! */
-
   if (width == 0)
-  {
-    if (value > 0x0000000080000000 && value <= 0x00000000ffffffff)
-      width = signed_p ? 64 : 32;
-    else if (value & 0xffffffff00000000)
-      width = 64;
-    else
-      width = 32;
-  }
-
-  /* Handle overflow in signed integers. */
-  if (signed_p && value >= 0x8000000000000000)
-    return INTEGER_OVERFLOW;
+    width = integer_literal_width (value, signed_p);
+  if (integer_literal_overflow_handling (&value, signed_p, width))
+    {
+      yylval->exception_msg = build_overflow_error_msg (value, width);
+      return LEXER_EXCEPTION;
+    }
 
   type = pkl_ast_make_integral_type (yyextra->ast, width, signed_p);
 

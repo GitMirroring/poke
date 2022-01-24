@@ -12,7 +12,7 @@ type U = union int
     uint b : b < 10;
   };
 
-var s = S { a=0xabcd, b=0xef12H#b };
+var s = S { a=0xabcd, b=0xef12UH#b };
 var u = U { a = s };
 
 /* { dg-command {.set obase 16} } */

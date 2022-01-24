@@ -1,4 +1,4 @@
 /* { dg-do compile } */
 
 var res
-  = -0x8000_0000; /* { dg-error "overflow" } */
+  = -(0x8000_0000U as int); /* { dg-error "overflow" } */

@@ -380,6 +380,7 @@ load_module (struct pkl_parser *parser,
   } field_const_init;
   enum pkl_ast_op opcode;
   int integer;
+  char *exception_msg;
 }
 
 %destructor {
@@ -409,7 +410,7 @@ load_module (struct pkl_parser *parser,
 /* Primaries.  */
 
 %token <ast> INTEGER     _("integer literal")
-%token INTEGER_OVERFLOW
+%token <exception_msg> LEXER_EXCEPTION
 %token <ast> CHAR        _("character literal")
 %token <ast> STR         _("string")
 %token <ast> IDENTIFIER  _("identifier")
@@ -1118,11 +1119,12 @@ primary:
                   PKL_AST_LOC ($$) = @$;
                   PKL_AST_LOC (PKL_AST_TYPE ($$)) = @$;
                 }
-        | INTEGER_OVERFLOW
+        | LEXER_EXCEPTION
                 {
                   $$ = NULL; /* To avoid bison warning.  */
                   pkl_error (pkl_parser->compiler, pkl_parser->ast, @1,
-                             "integer literal is too big");
+                             $1);
+                  free ($1);
                   YYERROR;
                 }
         | CHAR
