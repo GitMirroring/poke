@@ -771,7 +771,10 @@ if (jitter_ip != NULL) goto * jitter_ip; \
 #define JITTER_COMPUTED_GOTO_FALLBACK(target)  \
   do                                           \
     {                                          \
-      goto * (target);                         \
+      /* FIXME: the cast at the next line is questionable, and can in fact  \
+         hide bugs elsewhere.  I am including it tentatively so as not to   \
+         break GCC 12, which I cannot test yet as of 2022-01-25. */         \
+      goto * (void*) (target);                 \
     }                                          \
   while (false)
 
