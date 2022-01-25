@@ -351,7 +351,7 @@ routines from text files.
 @cindex VM independence
 @cindex architecture-specific assembly
 @cindex conditional compilation
-The generated C code is heavily conditionalized and can be configured
+The generated C code is heavily conditionalised and can be configured
 to run using different dispatching techniques, of varying
 sophistication; the most efficient dispatching techniques rely on some
 architecture-specific---but @emph{not} VM-specific---assembly support
@@ -515,14 +515,14 @@ disappointing.
 
 @cindex dependency, from epsilon (none)
 @cindex patch-in
-@cindex specialization
+@cindex specialisation
 In order to experiment with fast interpreters I started a new
 threaded-code prototype independent from epsilon.  Very soon I had the
-idea of @dfn{specialization} (@pxref{specialization}), one of the
+idea of @dfn{specialisation} (@pxref{specialisation}), one of the
 few true innovations in this project along with patch-ins
 (@pxref{patch-ins}), despite its
 simplicity; the results were promising, but again the simple
-combination of direct threading and specialization was not enough to
+combination of direct threading and specialisation was not enough to
 achieve the speedup I was expecting.  I found myself reading and
 re-reading scientific papers (@pxref{Bibliography}), and adding more
 sophisticated ideas to my prototype to the point where it is now
@@ -798,7 +798,7 @@ The correct way of employing language VMs is not as an alternative to
 compilers, but @emph{as an alternative to interpreters}.  A few cases
 come to mind: programs which are subject to modify themselves often at
 run time, and lightweight utilities where code generation is necessary
-but complex compiler optimizations are too costly to pay off with
+but complex compiler optimisations are too costly to pay off with
 respect to the program expected run time---regular expression matchers
 being an example.
 A program should employ a VM only for the dynamically generated part of
@@ -1033,7 +1033,7 @@ convenient C API and intuitive debugging tools are at the very least
 range of CPUs.
 
 @anchor{compiling-expressions}
-Right now a program relying on a Jittery VM has to generate (unspecialized) VM
+Right now a program relying on a Jittery VM has to generate (unspecialised) VM
 instructions explicitly, in particular taking care or register allocation
 for register-based VMs.  A Jittery VM right now is probably easier to
 use than a simple JIT requiring the same explicit register handling by
@@ -1164,11 +1164,11 @@ code.
 @fixme{JITs: Jitter is more portable and I believe it can generate
 code of similar quality.  Jitter is not yet as easy to use as JITs
 working with high-level expressions and abstracting over register
-allocation: right now some optimization effort has to come from user
+allocation: right now some optimisation effort has to come from user
 code (@pxref{compiling-expressions}).
 One could argue that an in-memory assembler is a form of JIT;
 compared to that alternative a Jittery VM is @emph{way} more convenient
-to use, but the combination of rewriting and specialization will probably
+to use, but the combination of rewriting and specialisation will probably
 always be slower than in-process assembling.  I believe that this last
 point will not cause a bottleneck in the entire application, but this is
 a conjecture to be validated experimentally.}
@@ -1239,7 +1239,7 @@ native machine instruction under user control.
 
 @fixme{I've learned a lot from the GForth people, particularly Anton
 Ertl's publications.}
-@fixme{What's new in Jitter: specialization, including instruction rewriting;
+@fixme{What's new in Jitter: specialisation, including instruction rewriting;
 and I'm particularly proud of my @code{JITTER_BRANCH_FAST} hack
 (@pxref{fast-branch-implementation}).
 I'm unconvinced about Ertl's [et al] proposal about literal patching,
@@ -1250,19 +1250,19 @@ to a wider range of architectures---essentially, @emph{all} register
 machines with a sufficiently wide addressing space.  With the crucial exception
 of fast labels my instruction immediates are slightly less efficient than in
 Ertl's proposal.  In most instances this disadvantage is canceled, if not
-reversed, by specialization on immediates.}
+reversed, by specialisation on immediates.}
 
 When using advanced dispatches @fixme{Jitter} is more strongly
 reliant on GCC, and therefore more fragile, than Vmgen---and similar in this
 respect to @command{gforth-fast}.
 
-@fixme{Understandably, GForth and Vmgen are optimized for stacks and
+@fixme{Understandably, GForth and Vmgen are optimised for stacks and
 nullary VM instructions; Jitter is an attempt to generate efficient VM
 code using registers and VM instructions with arguments.  Jittery VMs
 are also efficient with nullary VM instructions, which are just a
 particularly easy subset of the cases to handle, and with Forth-style
 stacks, which are simple to implement with two registers each when
-using the TOS optimization, and just one each when not.}
+using the TOS optimisation, and just one each when not.}
 
 @fixme{My computers are named after the computer scientists I admire.  I've
 named my most powerful machine @samp{moore} after Chuck Moore, but I
@@ -1982,8 +1982,8 @@ No-threading in a less favourable case, 32-bit MIPS.
 @end smallexample
 
 
-@fixme{Driver: @code{--profile-unspecialized}
-@code{--profile-specialized}}
+@fixme{Driver: @code{--profile-unspecialised}
+@code{--profile-specialised}}
 
 @c The Jitter language
 @c @@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -1994,7 +1994,7 @@ No-threading in a less favourable case, 32-bit MIPS.
 @menu
 * Syntax::                      How to write a VM specification.
 * VM states::                   What data a VM routine run needs.
-* Instruction rewriting::       Specialized instructions should not be too many.
+* Instruction rewriting::       Specialised instructions should not be too many.
 * Emacs major mode for Jitter:: Editing VM specification with Emacs.
 * Performance tips::            Suggestions for making your VMs fast.
 @end menu
@@ -2046,14 +2046,14 @@ friendlier and more explicit when compiling with GCC.
 
 @subsubsection C macros available to VM instructions
 @table @code
-@item JITTER_SPECIALIZED_INSTRUCTION_OPCODE
+@item JITTER_SPECIALISED_INSTRUCTION_OPCODE
 
-@item JITTER_SPECIALIZED_INSTRUCTION_NAME
+@item JITTER_SPECIALISED_INSTRUCTION_NAME
 @fixme{This may be a bad idea.  It is very difficult to use correctly
 with replicated code, out of non-relocatable instructions.  A good use of
 this is for comments in inline assembly.}
 
-@item JITTER_SPECIALIZED_INSTRUCTION_MANGLED_NAME
+@item JITTER_SPECIALISED_INSTRUCTION_MANGLED_NAME
 @end table
 
 @table @code
@@ -2182,7 +2182,7 @@ mentioned above.}
 @cindex rewriting
 @cindex instruction rewriting
 
-@anchor{optimization-rewriting}
+@anchor{optimisation-rewriting}
 
 @c @@@@@@@
 @node Emacs major mode for Jitter
@@ -2208,17 +2208,17 @@ ones non-relocatable, can buy you more fast registers.}
 non-residuals have a cost at compile time, and may make the VM too large
 to compile}
 
-@fixme{optimize for the common case: for example making division
+@fixme{optimise for the common case: for example making division
 non-relocatable will probably not be a problem: the time spent in
 division will hardly ever be significant, in almost any routine.  This
 is probably true for multiplication as well, unless you're doing
-graphics.  You can always optimize the common (and cheaper) cases of
+graphics.  You can always optimise the common (and cheaper) cases of
 multiplying by, dividing and taking the reminder or a power of two
 with rewrites into different, relocatable instructions:
 @math{a@ 2^b} can be rewritten into @samp{a << b},
 @math{a/2^b} into @samp{a >> b} (as long as @math{a} is unsigned)
 and @math{a@ mod@ 2^b} into @samp{a & ((1 << b) - 1)}.  The rewrite
-targets can have one specialized literal.}
+targets can have one specialised literal.}
 
 @fixme{CISC vs RISC: cite the APL argument
 @fixme{my previous deleted text, to reword:
@@ -2226,7 +2226,7 @@ targets can have one specialized literal.}
 complex primitives such as APL, where the interpretation overhead
 becomes proportionally less significant compared to the time spent in
 primitives, each one performing a greater amount of useful work than
-in other designs.  The counter-argument has the merit of recognizing
+in other designs.  The counter-argument has the merit of recognising
 one source of the problem, and that languages like APL are indeed
 easier to deal with than others.  Still, the part of the community
 interested in playing with the fundamental elements of computation,
@@ -2259,10 +2259,10 @@ combinatorial explosion and affording you more fast registers.  It's
 perfectly acceptable to design your VM around your ABI: if you change
 your mind later, you can change the VM easily: it's not silicon.}
 
-@fixme{constants, particularly if big: specialize if known in advance.}
+@fixme{constants, particularly if big: specialise if known in advance.}
 
 @fixme{small but performance-critical constants, such as type or
-garbage-collection tags, or unique objects (@code{nil} in Lisp): specialize, and define a checking instruction
+garbage-collection tags, or unique objects (@code{nil} in Lisp): specialise, and define a checking instruction
 doing only that, so as to keep the other instructions smaller.  It is
 probably better to keep the non-critical path used to handle errors
 slow, for example keeping the error handler address on a stack, rather
@@ -2325,7 +2325,7 @@ experiments to confirm this.}
 * Finalisation::                Cleaning up the global state.
 * VM state::                    Runtime data structures manipulated by routines.
 * VM routines::                 Making and destroying VM routines.
-* Running VM routines::         How to call specialized routines.
+* Running VM routines::         How to call specialised routines.
 * Concurrency::                 Working with multiple threads.
 @end menu
 
@@ -2507,7 +2507,7 @@ where performance is critical: closures are used all the time and
 the type check at the beginning of a call must be fast.}
 
 @fixme{@dfn{type code} (the first header word), name from Gudeman.
-The type code must suffice to recognize the shape of an object, but
+The type code must suffice to recognise the shape of an object, but
 it does not need to be limited to one constant word per shape: it
 can contain other information as well.}
 
@@ -2663,7 +2663,7 @@ or
 yielding inexact results and violating
 algebraic cancellation laws feel hardly suitable to any application.
 
-However the optimization attempt described above succeeds in a
+However the optimisation attempt described above succeeds in a
 different setting, on systems lacking fixnums and where the only
 available numbers are floating-point.  In such a scenario the
 floating-point tag should in fact be chosen as zero, which eliminates
@@ -2700,7 +2700,7 @@ by providing predefined closure wrappers for them: closure wrappers,
 while safe when called, internally use primitives in an unsafe way.
 Compiled VM code or even correctly formed interpreted code based on
 ASTs does not pay for the indirection, thanks to a simple
-optimization.  This way there will be no need to check for primitive
+optimisation.  This way there will be no need to check for primitive
 shape at call time}
 
 @fixme{Primitives may be tagged indices into a global read-only table,
@@ -3390,7 +3390,7 @@ To receive/handle: @code{JITTER_PENDING_SIGNAL_NOTIFICATION(signal_id)}
 @menu
 * Status::                        What is mature and what will change.
 * Internals overview::            An quick look at the sources.
-* Specialization internals::      Making choices at compile time is better than at run time.
+* Specialisation internals::      Making choices at compile time is better than at run time.
 * Patch-ins::                     Patching assembly into copies of compiled C code.
 * Rewriting internals::           How rewriting works.
 * Dispatches::                    How code jumps from one VM instruction to the next.
@@ -3496,10 +3496,10 @@ slowdown.}
 @fixme{whitespace before punctuation}
 
 @c @@@@@@@
-@node Specialization internals
-@section Specialization internals
-@cindex specialization
-@anchor{specialization}
+@node Specialisation internals
+@section Specialisation internals
+@cindex specialisation
+@anchor{specialisation}
 
 @c @@@@@@@
 @node Patch-ins
@@ -3764,7 +3764,7 @@ where all the memory is executable.  I should also learn how to use an AVR emula
 @tab  yes
 @tab  @code{minimal-threading}
 @c --
-@item @code{s390-ibm-linux-gnu}, ?@footnote{I can't convince @command{qemu-s390x} to recognize as valid the executables generated by my cross-toolchain; I guess it only supports 64-bit executables.}
+@item @code{s390-ibm-linux-gnu}, ?@footnote{I can't convince @command{qemu-s390x} to recognise as valid the executables generated by my cross-toolchain; I guess it only supports 64-bit executables.}
 @tab  untested
 @tab  ?
 @c --
@@ -3996,7 +3996,7 @@ PowerPC models as well.
 @cindex POWER
 POWER is currently untested; looking at the documentation I see some
 differences in the required icache invalidation code; however I can
-conditionalize that if I ever decide to support POWER, and keep a
+conditionalise that if I ever decide to support POWER, and keep a
 single port for both variants.
 
 I routinely test on an emulated 750 and occasionally on a real one,
@@ -4272,20 +4272,20 @@ in @emph{Parallel Architecture and Compilation Techniques}, 2004.
 @cindex Fog, Agner
 @cindex Agner Fog
 Agner Fog.
-``Optimizing subroutines in assembly language: An optimization guide
+``Optimising subroutines in assembly language: An optimisation guide
 for x86 platforms'',
 2020 (updated in).
-Available at @url{https://www.agner.org/optimize}.
+Available at @url{https://www.agner.org/optimise}.
 @bibend
 
 @bibbegin{Fog 2020B}
 @cindex Fog, Agner
 @cindex Agner Fog
 Agner Fog.
-``The microarchitecture of Intel, AMD and VIA CPUs: An optimization
+``The microarchitecture of Intel, AMD and VIA CPUs: An optimisation
 guide for assembly programmers and compiler makers'',
 2020 (updated in).
-Available at @url{https://www.agner.org/optimize}.
+Available at @url{https://www.agner.org/optimise}.
 @bibend
 
 
@@ -4435,7 +4435,7 @@ threading'' as
 IP + 2 -> IP  @r{advance @samp{IP} (assuming 2-byte addresses)}
 JP (W)        @r{jump to the address in the @samp{W} register}
 @end smallexample
-@c The reader will immediately recognize the @emph{load, increment, jump}
+@c The reader will immediately recognise the @emph{load, increment, jump}
 @c pattern.
 @ignore
 The Computer Journal unfortunately ceased publication in 1998.  It
@@ -4636,13 +4636,13 @@ actually platform-independent.
 Implementation limits:
 @itemize
 @item
-maximum number of residuals per specialized
+maximum number of residuals per specialised
 instruction equal to the number of bits in a word.  Of course this
 could be lifted, but it would be painful and almost certainly useless.
 This is because of
-@code{vmprefix_specialized_instruction_label_bitmasks}
+@code{vmprefix_specialised_instruction_label_bitmasks}
 and
-@code{vmprefix_specialized_instruction_fast_label_bitmasks}.
+@code{vmprefix_specialised_instruction_fast_label_bitmasks}.
 
 @item
 Depending on how I encode fast jump instruction placeholders in
@@ -4705,7 +4705,7 @@ developed for a reason.  Bignums are nice to have, but should not be
 used for @emph{all} numbers.  Having floating-point numbers
 @emph{only} is stupid for the same reason.  If you have a radical idea
 for a computation model and you want to encode everything in it, make
-sure that you can recognize the optimizable cases and reduce them to
+sure that you can recognise the optimisable cases and reduce them to
 the fast version almost always.
 
 
@@ -4713,8 +4713,8 @@ the fast version almost always.
 @code{mmap}; a lot of @code{malloc} and @code{free} which are
 difficult to do without, because of rewriting.  But custom heap
 allocators might be a good idea for the future, assuming the common
-use case is destroying a routine after it's been specialized, and
-keeping only the specialized version; this is currently not possible
+use case is destroying a routine after it's been specialised, and
+keeping only the specialised version; this is currently not possible
 as both routine versions are kept in the same data structure, but that
 will change.
 
@@ -4723,26 +4723,26 @@ than the alternative of spawning @command{gcc} or even just
 @command{as} plus @command{ld} processes, and then using @code{dlopen}
 to link object code.
 
-Specialization can possibly be made faster (and the generated code
+Specialisation can possibly be made faster (and the generated code
 certainly much smaller) by using simple automata techniques of the
 same family of those of Flex---the problem involves building an
-automaton for specialized instruction prefixes, which I think I can do
+automaton for specialised instruction prefixes, which I think I can do
 directly in DFA form by using a hash at generation time.  I cannot
-really tell how much of a problem specialization performance is at run
+really tell how much of a problem specialisation performance is at run
 time without benchmarking a complete Jittery application.  As for
-compile time, specialization is heavyweight but not the bottleneck:
+compile time, specialisation is heavyweight but not the bottleneck:
 the executor, being essentially one huge function, is more demanding on
 the compiler than a large set of small static functions calling each
 other.  Switching from the current approach based on custom code
-generated for each specialized instruction to a single generated table
+generated for each specialised instruction to a single generated table
 accessed by hand-written code would shift the load from the
 instruction cache to the data cache.  The table-based alternative
 would touch less memory, but possibly with worse spatial locality.
 
-The frontend works in passes: instruction specialization is a separate
-pass, working on every unspecialized instruction one after the other.
-This is probably good.  Will the specializer code and data remain in
-L1i and L1d between a specialization pass and the next?  I doubt it.
+The frontend works in passes: instruction specialisation is a separate
+pass, working on every unspecialised instruction one after the other.
+This is probably good.  Will the specialiser code and data remain in
+L1i and L1d between a specialisation pass and the next?  I doubt it.
 
 
 @c @@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -4807,8 +4807,8 @@ easily modifiable nature of Jittery VMs.
 @section About tracing JITs
 They are very fashionable but I'm skeptical about them.  If we are
 already translating all the code to an intermediate representation
-such as the JVM bytecode or Jitter's unspecialized code we may as well
-accept the small additional linear-time overhead of specialization and
+such as the JVM bytecode or Jitter's unspecialised code we may as well
+accept the small additional linear-time overhead of specialisation and
 compile @emph{everything} to native code.  In a very dynamic
 environment where code is rewritten multiple times at run time (like
 GNU epsilon does, in some execution phases) old native code can be
@@ -4833,10 +4833,10 @@ On the other hand for a very dynamic system a CISC approach might pay
 off in dynamic compilation time, reducing the number of VM
 instructions to work with in exchange for larger, but fewer, blocks to
 copy: this boils down to comparing the performance of @code{memcpy}
-against additional VM code generation and specialization, with its
+against additional VM code generation and specialisation, with its
 complicated branching and memory access patterns---and @code{memcpy}
 is the obvious winner.
-Larger VM instructions will also give GCC ampler opportunities to optimize
+Larger VM instructions will also give GCC ampler opportunities to optimise
 generating good native instruction schedules, allocating
 intra-instruction temporaries in temporary registers, and possibly
 unrolling loops.  Composing RISC-like VM instructions cannot yield
@@ -4849,33 +4849,33 @@ If you have numbers to show, I am interested.
 
 @section What a ``basic block'' is
 Each ``basic block'' whose entry point is marked by a
-@code{!BEGINBASICBLOCK} specialized instructions in some dispatches
+@code{!BEGINBASICBLOCK} specialised instructions in some dispatches
 is actually an @dfn{extended basic block} in the sense of a
-linear sequence of specialized instructions beginning with its one
-@dfn{entry} specialized instruction (any number of predecessors) and
-containing one or more @dfn{exit} specialized instructions (any number
+linear sequence of specialised instructions beginning with its one
+@dfn{entry} specialised instruction (any number of predecessors) and
+containing one or more @dfn{exit} specialised instructions (any number
 of successors, also extended basic blocks) potentially branching out
 of the sequence.  An extended basic block may be entered only through
-its first specialized instruction, but specialized instructions
+its first specialised instruction, but specialised instructions
 exiting the extended basic block may occur at any point within the
 block, not necessarily at the end.
 
-A caller specialized instruction, even if conditional. always ends an
+A caller specialised instruction, even if conditional. always ends an
 extended basic block since returning from the procedure will jump back
-to the specialized instruction immediately following it, which
+to the specialised instruction immediately following it, which
 therefore marks the beginning of a different extended basic block.  A
-callee specialized instruction is also always at the beginning of an
+callee specialised instruction is also always at the beginning of an
 extended basic block, as it can be a branch target---the difference
 between branch and branch-and-link being irrelevant for the purpose of
 basic block identification.
 
 The definition above would allow unconditional branches, unconditional
-procedure returns or @code{!EXITVM} specialized instructions to always
-end a basic block, since the following specialized instruction, if
+procedure returns or @code{!EXITVM} specialised instructions to always
+end a basic block, since the following specialised instruction, if
 any, is not reachable through straight-line code and must be a branch
 target, if reachable at all.  Jitter does not delimit extended basic
 blocks in this way, instead checking (conservatively) which
-unspecialized instructions are possible branch @emph{targets}.  This
+unspecialised instructions are possible branch @emph{targets}.  This
 yields slightly longer extended basic blocks, potentially containing
 dead code at the end.  I argue that this is not a problem in practice.
 The alternative would be having the user annotate meta-instructions to
@@ -4901,7 +4901,7 @@ change in the future.
 @appendix Stuff still to be implemented
 
 @section Emacs mode
-Emacs mode: the empty code block here should be recognized as valid, but it isn't.
+Emacs mode: the empty code block here should be recognised as valid, but it isn't.
 @example
 state-struct-c
   code
@@ -4937,7 +4937,7 @@ not slower to compile) entailing three sets of definitions:
 If I do this it is imperative to do it in a non-invasive way, possibly
 by having @command{jitter} call itself more than once, collecting and
 appending the generated files; this way the code change can be
-localized.
+localised.
 
 @section Non-relocatable instructions
 Locally @emph{un}wrap globals and functions.  This is easy and
@@ -4946,13 +4946,13 @@ independent from the rest.
 Implement transfer registers, likely in memory, as offsets known at
 compile time relative to the @emph{base}.  This is easy.
 
-Second step: generate special specialized instructions (which is to
-say, without unspecialized counterparts) to transfer between ordinary
+Second step: generate special specialised instructions (which is to
+say, without unspecialised counterparts) to transfer between ordinary
 and transfer registers, and to load transfer registers with immediates.
 
-Third step: do not specialize non-relocatable instructions, and insert
+Third step: do not specialise non-relocatable instructions, and insert
 transfer instructions around non-relocatable instructions at
-specialization time.
+specialisation time.
 
 @section Machine register use: single @emph{base} [almost done now]
 Use a single @emph{base} to point to memory residuals, slow registers and
@@ -5003,14 +5003,14 @@ immediates (SH, ARM).
 @section Alias argument class
 Rewriting may make some arguments of the same instruction always equal
 to one another; in this case only @emph{one} of them should be
-residualized.  This might be important with slow registers, but I
+residualised.  This might be important with slow registers, but I
 haven't thought much of how to do it.  It's also important to respect
 modes: if one alias argument has input mode and another input/output
 mode, I @emph{am} allowed to modify the input/output version of it
 within the instruction: after all it's the same register.  Hum.  Maybe
 it's easier than I think.
 @*
-It's important that this optimization is automatic: it's not
+It's important that this optimisation is automatic: it's not
 acceptable to pollute a VM specification with explicit two-argument
 versions of meta-instructions, just as rewrite targets.  Jitter should
 automatically discover that some arguments are redundant, and
@@ -5032,8 +5032,8 @@ This is a lot of work.  An easier compromise might be not to reserve
 the scratch register at all, and instead saving and restoring it from
 the assembly snippets setting it.
 
-@section Frontend optimization
-Optimize the frontend.  In particular, turn checks for impossible
+@section Frontend optimisation
+Optimise the frontend.  In particular, turn checks for impossible
 conditions into @code{assert}s, and add a configure option to disable
 assertions.  Make fast unsafe versions of instruction-appending
 functions, to be used from debugged C code generators -- but not from
@@ -5053,7 +5053,7 @@ Let the user specify data along with instructions in symbolic VM
 files, and a corresponding C API.
 
 Labels preceding instructions and data will need to be different
-because of the difference at specialization time, but it should not be
+because of the difference at specialisation time, but it should not be
 a limitation to have them be even syntactically distinct.
 
 
@@ -5063,7 +5063,7 @@ Slow registers mapped to a stack, to make procedure calls easier?  Can
 I make that general?  I'd say not.
 
 But it would be easy to provide macros accessing the stack slots of a
-given non-TOS-optimized stack as l-values.  In order to be efficient
+given non-TOS-optimised stack as l-values.  In order to be efficient
 they would be provided in two versions, working with indices and
 offsets.
 
@@ -5075,9 +5075,9 @@ This of course would be convenient for the user but suboptimal, so the
 feature would consist in macros to be optionally possibly called in VM
 instruction code.
 
-@section A ridiculous i386/x86_64 optimization
+@section A ridiculous i386/x86_64 optimisation
 Add a different pair of call/prolog macros pushing the return address
-to a non-TOS-optimized stack.  This would be implemented with inline
+to a non-TOS-optimised stack.  This would be implemented with inline
 assembly on x86 by an @code{xchg} on the @code{%rsp} and a VM stack
 pointer, and on the other side as just an xchg; and in normal C for
 every other architectures.
