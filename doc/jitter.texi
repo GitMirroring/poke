@@ -1991,6 +1991,11 @@ No-threading in a less favourable case, 32-bit MIPS.
 @node Writing VM specifications
 @chapter Writing VM specifications
 
+@fixme{somewhere: wrapping: what to wrap.  CPP macros whose definition
+is unknown are very dangerous, since they may expand to function calls
+or to references to unknown globals.  These need to be used through
+wrapped functions explicitly defined by the user}
+
 @menu
 * Syntax::                      How to write a VM specification.
 * VM states::                   What data a VM routine run needs.
