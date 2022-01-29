@@ -56,9 +56,9 @@
        rfe r1                                                          \
      because rfe is not to be supported on very old revisions of       \
      the architecture.                                                 \
-     The immediate argument should fit in 16 bits, so that the         \
-     instruction is also usable in Thumb mode. */                      \
-  "swi 1025"
+     The immediate argument should be small enough to fit in the       \
+     instruction encoding in Thumb mode. */                            \
+  "swi 43"
 
 
 
