@@ -1605,6 +1605,12 @@ else
   jitter_has_host_assembly=yes
 fi
 
+# Temporarily, as of 2022-02, disable minimal-threading by default on every
+# architecture: there is some bug that I have not time to fix now but GNU poke
+# is being released.  It is better to ship with no-threading on but
+# minimal-threading disabled.
+jitter_supports_minimal_threading=no
+
 # Define objdump options unconditionally, even if the user disabled host
 # assembly.  This is harmless enough, as the code is defensive and will
 # revert to a sensible fallback solution when objdump fails.
