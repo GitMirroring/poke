@@ -1605,12 +1605,6 @@ else
   jitter_has_host_assembly=yes
 fi
 
-# Temporarily, as of 2022-02, disable minimal-threading by default on every
-# architecture: there is some bug that I have not time to fix now but GNU poke
-# is being released.  It is better to ship with no-threading on but
-# minimal-threading disabled.
-jitter_supports_minimal_threading=no
-
 # Define objdump options unconditionally, even if the user disabled host
 # assembly.  This is harmless enough, as the code is defensive and will
 # revert to a sensible fallback solution when objdump fails.
@@ -1623,6 +1617,33 @@ if test "x$jitter_has_host_assembly" = "xno"; then
 else
   AC_MSG_RESULT([yes: $JITTER_ASSEMBLY_SUBDIRECTORY])
 fi
+
+# Temporarily, as of 2022-02, disable minimal-threading by default on every
+# architecture: there is some bug that I have not time to fix now but GNU poke
+# is being released.  It is better to ship with no-threading on but
+# minimal-threading disabled.
+AC_MSG_WARN([temporarily disabling minimal-threading by default on every \
+architecture including $default_host_cpu, in order to avoid surprising the \
+GNU poke friends with mysterious errors.  I still have bugs to fix.])
+jitter_supports_minimal_threading=no
+
+# GNU poke, which is currently the main Jitter client, uses far branches which
+# are only well supported on two architectures where the instruction encodings
+# is generous enough.  It is a pity, but I am temporarily disabling this until
+# my code generator suppots indirect branches to cover this case.
+AC_MSG_CHECKING([if this architecture has too narrow branch displacements])
+AS_CASE([$JITTER_ASSEMBLY_SUBDIRECTORY],
+        [''],
+          [AC_MSG_RESULT([irrelevant, no-threading is not supported anyway])],
+        [x86_64|m68k],
+          [AC_MSG_RESULT([no: $JITTER_ASSEMBLY_SUBDIRECTORY allows for 32-bit \
+displacements, which is good])],
+        # Default case
+          [AC_MSG_RESULT([yes, unfortunately: disabling no-threading on \
+$JITTER_ASSEMBLY_SUBDIRECTORY for the time being, to avoid surprising the \
+GNU poke friends.  I need to automatically generate indirect branches where \
+needed])
+          jitter_supports_no_threading=no])
 
 # If the user explicitly requested support for an architecture but that
 # was not found, fail.
