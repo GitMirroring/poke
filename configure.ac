@@ -1635,7 +1635,12 @@ AC_MSG_CHECKING([if this architecture has too narrow branch displacements])
 AS_CASE([$JITTER_ASSEMBLY_SUBDIRECTORY],
         [''],
           [AC_MSG_RESULT([irrelevant, no-threading is not supported anyway])],
-        [x86_64|m68k],
+        [m68k*],
+          [AC_MSG_RESULT([m68k does allow for 32-bit displacements, which \
+would be good; but as of early February 2022 there is a  bug we are still \
+chasing; disabling])
+           jitter_supports_no_threading=no],
+        [x86_64],
           [AC_MSG_RESULT([no: $JITTER_ASSEMBLY_SUBDIRECTORY allows for 32-bit \
 displacements, which is good])],
         # Default case
@@ -1643,7 +1648,7 @@ displacements, which is good])],
 $JITTER_ASSEMBLY_SUBDIRECTORY for the time being, to avoid surprising the \
 GNU poke friends.  I need to automatically generate indirect branches where \
 needed])
-          jitter_supports_no_threading=no])
+           jitter_supports_no_threading=no])
 
 # If the user explicitly requested support for an architecture but that
 # was not found, fail.
