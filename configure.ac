@@ -1627,28 +1627,28 @@ architecture including $default_host_cpu, in order to avoid surprising the \
 GNU poke friends with mysterious errors.  I still have bugs to fix.])
 jitter_supports_minimal_threading=no
 
-# GNU poke, which is currently the main Jitter client, uses far branches which
-# are only well supported on two architectures where the instruction encodings
-# is generous enough.  It is a pity, but I am temporarily disabling this until
-# my code generator suppots indirect branches to cover this case.
-AC_MSG_CHECKING([if this architecture has too narrow branch displacements])
-AS_CASE([$JITTER_ASSEMBLY_SUBDIRECTORY],
-        [''],
-          [AC_MSG_RESULT([irrelevant, no-threading is not supported anyway])],
-        [m68k*],
-          [AC_MSG_RESULT([m68k does allow for 32-bit displacements, which \
-would be good; but as of early February 2022 there is a  bug we are still \
-chasing; disabling])
-           jitter_supports_no_threading=no],
-        [x86_64],
-          [AC_MSG_RESULT([no: $JITTER_ASSEMBLY_SUBDIRECTORY allows for 32-bit \
-displacements, which is good])],
-        # Default case
-          [AC_MSG_RESULT([yes, unfortunately: disabling no-threading on \
-$JITTER_ASSEMBLY_SUBDIRECTORY for the time being, to avoid surprising the \
-GNU poke friends.  I need to automatically generate indirect branches where \
-needed])
-           jitter_supports_no_threading=no])
+dnl # GNU poke, which is currently the main Jitter client, uses far branches which
+dnl # are only well supported on two architectures where the instruction encodings
+dnl # is generous enough.  It is a pity, but I am temporarily disabling this until
+dnl # my code generator suppots indirect branches to cover this case.
+dnl AC_MSG_CHECKING([if this architecture has too narrow branch displacements])
+dnl AS_CASE([$JITTER_ASSEMBLY_SUBDIRECTORY],
+dnl         [''],
+dnl           [AC_MSG_RESULT([irrelevant, no-threading is not supported anyway])],
+dnl         [m68k*],
+dnl           [AC_MSG_RESULT([m68k does allow for 32-bit displacements, which \
+dnl would be good; but as of early February 2022 there is a  bug we are still \
+dnl chasing; disabling])
+dnl            jitter_supports_no_threading=no],
+dnl         [x86_64],
+dnl           [AC_MSG_RESULT([no: $JITTER_ASSEMBLY_SUBDIRECTORY allows for 32-bit \
+dnl displacements, which is good])],
+dnl         # Default case
+dnl           [AC_MSG_RESULT([yes, unfortunately: disabling no-threading on \
+dnl $JITTER_ASSEMBLY_SUBDIRECTORY for the time being, to avoid surprising the \
+dnl GNU poke friends.  I need to automatically generate indirect branches where \
+dnl needed])
+dnl            jitter_supports_no_threading=no])
 
 # If the user explicitly requested support for an architecture but that
 # was not found, fail.
