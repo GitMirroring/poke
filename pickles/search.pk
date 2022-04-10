@@ -1,0 +1,74 @@
+/* search.pk - Search related utilities.  */
+
+/* Copyright (C) 2022 Jose E. Marchsi.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+type Search_Match_Data =
+  struct
+  {
+    offset<uint<64>,b> start;
+    offset<uint<64>,b> end;
+  };
+
+/* Search for a map-able data structure in a given IO space.
+
+   If the given Pk_Type is for a type that is not map-able then this
+   function raises E_elem.  */
+
+fun search_type = (Pk_Type typ, int<32> ios = get_ios,
+                   offset<uint<64>,b> from = 0#B,
+                   offset<uint<64>,b> to = iosize (ios),
+                   offset<uint<64>,b> align = 1#B,
+                   int<64> count = 0) Search_Match_Data[]:
+{
+  var match_data = Search_Match_Data[]();
+
+  fun search_once = Search_Match_Data:
+  {
+    while (from < to)
+    {
+      try
+      {
+        var found = typ.mapper (1 /* strict */,
+                                ios, from'magnitude*from'unit, 0, 0);
+        var end = found'offset + found'size;
+
+        return Search_Match_Data { start = found'offset, end = end };
+      }
+      catch if E_constraint
+      {
+        from += align;
+      };
+    }
+
+    raise E_eof;
+  }
+
+  try
+  {
+   if (count == 1)
+     break;
+
+   var match = search_once;
+   match_data += [match];
+   from = match.end + alignto (match.end, align);
+   if (count != 0)
+     count--;
+  }
+  until E_eof;
+
+  return match_data;
+}

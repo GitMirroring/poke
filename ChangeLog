@@ -1,3 +1,13 @@
+2022-04-10  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* pickles/search.pk: New file.
+	* pickles/Makefile.am (dist_pickles_DATA): Add search.pk.
+
+2022-07-04  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* pickles/search.pk: New file.
+	* pickles/Makefile.am (dist_pickles_DATA): Add search.pk.
+
 2022-07-04  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-insn.def (PKL_INSN_IOLIST): Define.
