@@ -230,8 +230,9 @@ ios_dev_file_pread (void *iod, void *buf, size_t count, ios_dev_off offset)
 
   /* We are using FILE* for buffering, rather than low-level fd, so we
      have to fake low-level pread by using fseeko.  */
-  if (fseeko (fio->file, offset, SEEK_SET) == -1)
-    return IOD_EOF;
+  if (ftello(fio->file) != offset)
+    if (fseeko (fio->file, offset, SEEK_SET) == -1)
+      return IOD_EOF;
   ret = fread (buf, 1, count, fio->file);
 
   if (ferror (fio->file))
