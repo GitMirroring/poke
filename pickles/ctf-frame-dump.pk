@@ -1,0 +1,68 @@
+/* ctf-frame-dump.pk - Utilities for dumping CTF Frame information.  */
+
+/* Copyright (C) 2022 Free Software Foundation.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* This file contains routines for dumping out CTF Frame information.  */
+
+load "ctf-frame.pk";
+
+/* Dump each FDE in the CTF Frame section.  */
+
+fun ctf_frame_dump_fdes = (CTF_Frame_section ctf_frame_arg) void:
+{
+  var i = 0;
+  for (index in ctf_frame_arg.funcidx)
+    printf ("%u32d:   %v \n", i++, index);
+}
+
+/* Dump CTF Frame FREs.  */
+
+fun ctf_frame_dump_fres = (CTF_Frame_section ctf_frame_arg) void:
+{
+  var i = 0;
+
+  for (func in ctf_frame_arg.funcidx)
+    {
+      /* Get the FRE type.  */
+      var fre_type = func.func_info.fre_type;
+      var num_fres = func.func_num_fres;
+      var fre_off = ctf_frame_arg.header'size + ctf_frame_arg.header.cth_freoff;
+
+      if (fre_type == CTF_FRAME_ROW_ENTRY_TYPE_ADDR1)
+	{
+	  var fres = func.get_fres_addr1s (fre_off);
+	  /* print fres.  */
+	  for (fre in fres)
+	    printf ("%u32d:   %v \n", i++, fre);
+	}
+      else if (fre_type == CTF_FRAME_ROW_ENTRY_TYPE_ADDR2)
+	{
+	  var fres = func.get_fres_addr2s (fre_off);
+	  /* print fres.  */
+	  for (fre in fres)
+	    printf ("%u32d:   %v \n", i++, fre);
+	}
+      else if (fre_type == CTF_FRAME_ROW_ENTRY_TYPE_ADDR4)
+	{
+	  var fres = func.get_fres_addr4s (fre_off);
+	  /* print fres.  */
+	  for (fre in fres)
+	    printf ("%u32d:   %v \n", i++, fre);
+	}
+
+    }
+}

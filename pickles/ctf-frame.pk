@@ -1,0 +1,200 @@
+/* ctf-frame.pk - CTF Frame implementation for GNU poke.  */
+
+/* Copyright (C) 2022 Free Software Foundation.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+load elf;
+
+/* Constants for CTF Preamble.  */
+var CTF_FRAME_VERSION_1 = 1;
+var CTF_FRAME_MAGIC = 0xdee2;
+/* Various flags for CTF Frame section.  */
+var CTF_FRAME_F_FDE_SORTED = 0x1;
+var CTF_FRAME_F_FRAME_POINTER = 0x2;
+
+type CTF_Frame_Preamble =
+  struct
+  {
+    uint<16> ctfp_magic : ((ctfp_magic == CTF_FRAME_MAGIC)
+			   || (ctfp_magic == 0xe2de && set_endian (!get_endian)))
+		          = CTF_FRAME_MAGIC;
+
+    byte ctfp_version = CTF_FRAME_VERSION_1;
+    byte ctfp_flags;
+  };
+
+var CTF_FRAME_ROW_ENTRY_TYPE_ADDR1 = 1;
+var CTF_FRAME_ROW_ENTRY_TYPE_ADDR2 = 2;
+var CTF_FRAME_ROW_ENTRY_TYPE_ADDR4 = 3;
+
+/* CTF Frame FDE types.
+   The CTF Frame format has two possible representations for functions.  The
+   choice of which type to use is made according to the instruction patterns
+   in the relevant program stub.  */
+
+/* Unwinders perform a (PC >= FRE_START_ADDR) to look up a matching FRE.  */
+var CTF_FRAME_FUNC_DESC_ENTRY_TYPE_PCINC = 0;
+/* Unwinders perform a (PC & FRE_START_ADDR_AS_MASK >= FRE_START_ADDR_AS_MASK)
+   to look up a matching FRE.  */
+var CTF_FRAME_FUNC_DESC_ENTRY_TYPE_PCMASK = 1;
+
+/* CTF Frame FDE Function Info.  */
+type CTF_Frame_Func_Info =
+  struct
+{
+  uint<3> unused;
+  uint<1> fde_type : fde_type in [CTF_FRAME_FUNC_DESC_ENTRY_TYPE_PCINC,
+				  CTF_FRAME_FUNC_DESC_ENTRY_TYPE_PCMASK];
+  uint<4> fre_type : fre_type in [CTF_FRAME_ROW_ENTRY_TYPE_ADDR1,
+				  CTF_FRAME_ROW_ENTRY_TYPE_ADDR2,
+				  CTF_FRAME_ROW_ENTRY_TYPE_ADDR4];
+};
+
+/* Supported ABIs/Arch.  */
+var CTF_FRAME_ABI_AARCH64_ENDIAN_BIG = 1; /* AARCH64 little endian.  */
+var CTF_FRAME_ABI_AARCH64_ENDIAN_LITTLE = 2; /* AARCH64 big endian.  */
+var CTF_FRAME_ABI_AMD64_ENDIAN_LITTLE = 3; /* AMD64 little endian.  */
+
+var CTF_FRAME_FRE_TYPE_BASIC = 0x0;
+
+type CTF_Frame_Header =
+  struct
+  {
+    CTF_Frame_Preamble cth_frame_preamble;
+    byte cth_frame_abi_arch : cth_frame_abi_arch in [CTF_FRAME_ABI_AARCH64_ENDIAN_BIG,
+						    CTF_FRAME_ABI_AARCH64_ENDIAN_LITTLE,
+					            CTF_FRAME_ABI_AMD64_ENDIAN_LITTLE];
+    int<8> cth_cfa_fixed_bp_offset;
+    int<8> cth_cfa_fixed_ra_offset;
+    uint<32> cth_num_fdes;
+    uint<32> cth_num_fres;
+    offset<uint32,B> cth_frelen;
+
+    offset<uint32,B> cth_fdeoff;
+    offset<uint32,B> cth_freoff;
+  };
+
+var CTF_FRAME_FRE_OFFSET_1B = 0;
+var CTF_FRAME_FRE_OFFSET_2B = 1;
+var CTF_FRAME_FRE_OFFSET_4B = 2;
+/* At this time, a max of 3 distinct offsets are supported.  */
+var CTF_FRAME_FRE_OFFSET_NUM = 3;
+
+/* A CTF FRE can be SP or BP based.  */
+var CTF_FRAME_BASE_REG_BP = 0;
+var CTF_FRAME_BASE_REG_SP = 1;
+
+type CTF_Frame_FRE_Info =
+  struct byte
+  {
+    uint<1> unused;
+    uint<2> offset_size : offset_size in [CTF_FRAME_FRE_OFFSET_1B,
+					  CTF_FRAME_FRE_OFFSET_2B,
+					  CTF_FRAME_FRE_OFFSET_4B];
+    uint<4> offset_num : offset_num <= CTF_FRAME_FRE_OFFSET_NUM;
+    uint<1> base_reg_id : base_reg_id in [CTF_FRAME_BASE_REG_BP,
+					  CTF_FRAME_BASE_REG_SP];
+  };
+
+/* CTF FRE.  */
+type CTF_FRE_addr1 =
+  struct
+  {
+    uint<8> fre_start_address;
+    CTF_Frame_FRE_Info fre_info;
+    union
+    {
+      int<8>[fre_info.offset_num] offsets_1B
+         : fre_info.offset_size == CTF_FRAME_FRE_OFFSET_1B;
+      int<16>[fre_info.offset_num] offsets_2B
+         : fre_info.offset_size == CTF_FRAME_FRE_OFFSET_2B;
+      int<32>[fre_info.offset_num] offsets_4B
+         : fre_info.offset_size == CTF_FRAME_FRE_OFFSET_4B;
+    } offsets;
+  };
+
+type CTF_FRE_addr2 =
+  struct
+  {
+    uint<16> fre_start_address;
+    CTF_Frame_FRE_Info fre_info;
+    union
+    {
+      int<8>[fre_info.offset_num] offsets_1B
+         : fre_info.offset_size == CTF_FRAME_FRE_OFFSET_1B;
+      int<16>[fre_info.offset_num] offsets_2B
+         : fre_info.offset_size == CTF_FRAME_FRE_OFFSET_2B;
+      int<32>[fre_info.offset_num] offsets_4B
+         : fre_info.offset_size == CTF_FRAME_FRE_OFFSET_4B;
+    } offsets;
+  };
+
+type CTF_FRE_addr4=
+  struct
+  {
+    uint<32> fre_start_address;
+    CTF_Frame_FRE_Info fre_info;
+    union
+    {
+      int<8>[fre_info.offset_num] offsets_1B
+         : fre_info.offset_size == CTF_FRAME_FRE_OFFSET_1B;
+      int<16>[fre_info.offset_num] offsets_2B
+         : fre_info.offset_size == CTF_FRAME_FRE_OFFSET_2B;
+      int<32>[fre_info.offset_num] offsets_4B
+         : fre_info.offset_size == CTF_FRAME_FRE_OFFSET_4B;
+    } offsets;
+  };
+
+
+type CTF_Frame_Func_Desc_Entry =
+  struct
+  {
+    uint<32> func_start_address;
+    uint<32> func_size;
+    offset<uint32,B> func_freoff;
+    uint<32> func_num_fres;
+    CTF_Frame_Func_Info func_info;
+
+    method get_fres_addr1s = (offset<uint32,B> hdr_freoff) CTF_FRE_addr1[]:
+      {
+	var off = hdr_freoff + func_freoff;
+	return CTF_FRE_addr1[func_num_fres] @ off;
+      }
+    method get_fres_addr2s = (offset<uint32,B> hdr_freoff) CTF_FRE_addr2[]:
+      {
+	var off = hdr_freoff + func_freoff;
+	return CTF_FRE_addr2[func_num_fres] @ off;
+      }
+    method get_fres_addr4s = (offset<uint32,B> hdr_freoff) CTF_FRE_addr4[]:
+      {
+	var off = hdr_freoff + func_freoff;
+	return CTF_FRE_addr4[func_num_fres] @ off;
+      }
+  };
+
+type CTF_Frame_section =
+  struct
+  {
+    CTF_Frame_Header header;
+
+    var func_index_off = OFFSET + header.cth_fdeoff;
+    var func_index_size = header.cth_freoff - header.cth_fdeoff;
+    var fre_off = OFFSET + header.cth_freoff;
+    var fre_size = header.cth_frelen;
+
+    CTF_Frame_Func_Desc_Entry[func_index_size] funcidx @ func_index_off;
+    byte[fre_size] fres_data_bytes @ fre_off;
+  };
