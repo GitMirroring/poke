@@ -1420,6 +1420,10 @@ EXTRA_DIST = \
   poke.pkl/iobias-1.pk \
   poke.pkl/iobias-2.pk \
   poke.pkl/iohandler-1.pk \
+  poke.pkl/iolist-1.pk \
+  poke.pkl/iolist-2.pk \
+  poke.pkl/iolist-3.pk \
+  poke.pkl/iolist-4.pk \
   poke.pkl/iosetbias-1.pk \
   poke.pkl/iosetbias-2.pk \
   poke.pkl/iosetbias-3.pk \

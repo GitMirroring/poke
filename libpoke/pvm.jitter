@@ -122,6 +122,7 @@ wrapped-functions
   ios_flags
   ios_flush
   ios_get_id
+  ios_map
   ios_handler
   ios_size
   ios_open
@@ -916,6 +917,21 @@ late-c
       PVM_EXCEPTIONS(E)
     };
 #undef E
+
+    struct iolist_ctx
+    {
+      pvm_val arr_ios;
+    };
+
+    static void
+    iolist_callback (ios io, void *data)
+    {
+      struct iolist_ctx *ctx = data;
+      pvm_val arr = ctx->arr_ios;
+
+      (void) pvm_array_insert (arr, PVM_VAL_ARR_NELEM (arr),
+                               PVM_MAKE_INT (ios_get_id (io), 32));
+    }
 
     static int
     pvm_nanosleep (const struct timespec *rqtp, struct timespec *rmtp)
@@ -1759,6 +1775,26 @@ instruction iosize ()
 
     JITTER_PUSH_STACK (pvm_make_offset (PVM_MAKE_ULONG (ios_size (io), 64),
                                         PVM_MAKE_ULONG (8, 64)));
+  end
+end
+
+# Instruction: iolist
+#
+# Push an array of open IO spaces (array of signed integers) on the stack.
+# This array may be empty if no IO space is open.
+#
+# Stack: ( -- ARR )
+
+instruction iolist ()
+  code
+    struct iolist_ctx iolist_ctx;
+    pvm_val arr = pvm_make_array (pvm_make_integral_type (PVM_MAKE_ULONG (32, 64),
+                                                          PVM_MAKE_INT (1, 32)),
+                                  PVM_MAKE_ULONG (0, 64));
+
+    iolist_ctx.arr_ios = arr;
+    ios_map (iolist_callback, &iolist_ctx);
+    JITTER_PUSH_STACK (arr);
   end
 end
 

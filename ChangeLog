@@ -1,3 +1,21 @@
+2022-07-04  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-insn.def (PKL_INSN_IOLIST): Define.
+	* libpoke/pvm.jitter (iolist): New instruction.
+	* libpoke/pkl-lex.l: Recognize token __PKL_BUILTIN_IOLIST__.
+	* libpoke/pkl-tab.y: Likewise.
+	* libpoke/pkl-ast.h (PKL_AST_BUILTIN_IOLIST): Define.
+	* libpoke/pkl-gen.c (pkl_gen_ps_comp_stmt): Handle
+	PKL_AST_BUILTIN_IOLIST.
+	* libpoke/pkl-gen-builtins.pks (builtin_iolist): Define.
+	* libpoke/pkl-rt.pk (iolist): New builtin.
+	* testsuite/poke.pkl/iolist-1.pk: New test.
+	* testsuite/poke.pkl/iolist-2.pk: Likewise.
+	* testsuite/poke.pkl/iolist-3.pk: Likewise.
+	* testsuite/poke.pkl/iolist-4.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+	* doc/poke.texi (iolist): New section.
+
 2022-06-05  apache2  <apache2@ageinghacker.net>
 
 	* libpoke/ios-dev-file.c (ios_dev_file_pread): Avoid slow unneeded

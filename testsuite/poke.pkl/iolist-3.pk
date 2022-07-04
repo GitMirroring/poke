@@ -1,0 +1,7 @@
+/* { dg-do run } */
+
+/* { dg-command { .set obase 10 } } */
+/* { dg-command { var foo = open ("*foo*") } } */
+/* { dg-command { var bar = open ("*bar*") } } */
+/* { dg-command { iolist'length == 2 && foo in iolist && bar in iolist } } */
+/* { dg-output "1" } */

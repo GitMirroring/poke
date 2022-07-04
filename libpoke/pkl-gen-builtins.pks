@@ -183,10 +183,20 @@
         return
         .end
 
+;;; RAS_MACRO_BUILTIN_IOLIST
+;;;
+;;; Body of the `iolist' compiler built-in with prototype
+;;; () int<32>[]
+
+        .macro builtin_iolist
+        iolist
+        return
+        .end
+
 ;;; RAS_MACRO_BUILTIN_IOSETBIAS
 ;;;
 ;;; Body of the `iosetbias' compiler built-in with prototype
-;;; (offset<uint<64>,1> bias = 0#1, int<32>
+;;; (offset<uint<64>,1> bias = 0#1, int<32>) void
 
         .macro builtin_iosetbias
         pushvar 0, 0

@@ -12664,6 +12664,7 @@ memory of some process.
 * flush::			Flushing IO spaces.
 * get_ios::			Getting the current IO space.
 * set_ios::			Setting the current IO space.
+* iolist::                      Getting a list of open IO spaces.
 * openset::                     Opening and setting combined.
 * iosize::			Getting the size of an IO space.
 * iohandler::                   Getting the handler string of an IO space.
@@ -12859,6 +12860,22 @@ space.  If the IO space specified to @code{set_ios} doesn't exist,
 
 Note that @code{set_ios} always returns @code{1}.  This is to ease its
 usage in struct fields constraint expressions.
+
+@node iolist
+@subsubsection @code{iolist}
+@cindex @code{iolist}
+
+At any time there are zero or more open IO spaces.  The @code{iolist}
+builtin returns an array of identifiers of these IO spaces.  It has
+the following prototype:
+
+@example
+fun iolist = int<32>[]
+@end example
+
+@noindent
+If no IO space is currently open then @code{iolist} returns the empty
+array.  The ordering of the IO spaces in the array is arbitrary.
 
 @node openset
 @subsubsection @code{openset}

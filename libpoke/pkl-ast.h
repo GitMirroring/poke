@@ -1579,6 +1579,7 @@ pkl_ast_node pkl_ast_make_incrdecr (pkl_ast ast,
 #define PKL_AST_BUILTIN_VM_SET_OMODE 40
 #define PKL_AST_BUILTIN_UNSAFE_STRING_SET 41
 #define PKL_AST_BUILTIN_IOHANDLER 42
+#define PKL_AST_BUILTIN_IOLIST 43
 
 struct pkl_ast_comp_stmt
 {

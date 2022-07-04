@@ -775,6 +775,9 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_comp_stmt)
         case PKL_AST_BUILTIN_IOGETB:
           RAS_MACRO_BUILTIN_IOBIAS;
           break;
+        case PKL_AST_BUILTIN_IOLIST:
+          RAS_MACRO_BUILTIN_IOLIST;
+          break;
         case PKL_AST_BUILTIN_IOSETB:
           RAS_MACRO_BUILTIN_IOSETBIAS;
           break;

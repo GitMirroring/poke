@@ -42,6 +42,8 @@ immutable fun iobias = (int<32> ios = get_ios) offset<uint<64>,1>:
   __PKL_BUILTIN_IOGETB__;
 immutable fun iosetbias = (offset<uint<64>,1> bias = 0#1, int<32> ios = get_ios) void:
   __PKL_BUILTIN_IOSETB__;
+immutable fun iolist = int<32>[]:
+  __PKL_BUILTIN_IOLIST__;
 immutable fun getenv = (string name) string:
   __PKL_BUILTIN_GETENV__;
 immutable fun flush = (int<32> ios, offset<uint<64>,1> offset) void:

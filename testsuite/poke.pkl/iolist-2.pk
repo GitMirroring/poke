@@ -1,0 +1,6 @@
+/* { dg-do run } */
+
+/* { dg-command { .set obase 10 } } */
+/* { dg-command { var foo = open ("*foo*") } } */
+/* { dg-command { iolist'length == 1 && iolist[0] == foo } } */
+/* { dg-output "1" } */
