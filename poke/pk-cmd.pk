@@ -24,4 +24,3 @@ load "pk-save.pk";
 load "pk-extract.pk";
 load "pk-scrabble.pk";
 load "pk-diff.pk";
-load "pk-search.pk";
