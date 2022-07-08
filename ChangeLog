@@ -1,5 +1,11 @@
 2022-07-08  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
+	* pickles/btf.pk (BTF_Int): Turn `encoding' into a nested integral
+	struct.
+	* pickles/btf-dump.pk (btf_dump_int): Update accordingly.
+
+2022-07-08  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
 	* pickles/btf-dump.pk (btf_dump_var): Use btf_var_linkage_names.
 	(btf_dump_func): New function.
 	(btf_dump_type_vdata): Call btf_dump_func whenever appropriate.
