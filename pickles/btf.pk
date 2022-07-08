@@ -45,6 +45,20 @@ var btf_kind_names =
    "fwd", "typedef", "volatile", "const", "restrict", "func",
    "func_proto", "var", "datasec", "float", "decl_tag", "type_tag"];
 
+var BTF_VAR_STATIC = 0,
+    BTF_VAR_GLOBAL_ALLOCATED = 1,
+    BTF_VAR_GLOBAL_EXTERN = 2;
+
+var btf_var_linkage_names =
+  ["static", "global allocated", "global extern"];
+
+var BTF_FUNC_STATIC = 0,
+    BTF_FUNC_GLOBAL = 1,
+    BTF_FUNC_EXTERN = 2;
+
+var btf_func_linkage_names =
+  ["static", "global", "extern"];
+
 type BTF_Type_Id = uint<32>;
 
 type BTF_Int =
@@ -93,6 +107,11 @@ type BTF_Variable =
   struct
   {
     uint<32> linkage;
+
+    method _print = void:
+    {
+      printf ("#<linkage:%s>", btf_var_linkage_names[linkage]);
+    }
   };
 
 type BTF_Var_SecInfo =
@@ -124,12 +143,16 @@ type BTF_Type =
       uint<2>;
       uint<5> kind;
       uint<8>;
-      uint<16> vlen;
+      uint<16> vlen; /* Note that vlen encodes the linkage of
+                        BTF_KIND_FUNC entries.  (yes, pfff.)  */
 
       method _print = void:
         {
-          printf ("#<%s,kind_flag:%u32d,vlen:%v>",
-                  btf_kind_names[kind], kind_flag, vlen);
+          printf ("#<%s,kind_flag:%u32d,%s>",
+                  btf_kind_names[kind], kind_flag,
+                  kind == BTF_KIND_FUNC
+                  ? format ("linkage:%s", btf_func_linkage_names[vlen])
+                  : format ("vlen:%v", vlen));
         }
     } info;
 

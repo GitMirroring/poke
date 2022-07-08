@@ -62,8 +62,19 @@ fun btf_dump_proto = (BTF_Section btf, BTF_Param[] ps) void:
 fun btf_dump_var = (BTF_Variable v) void:
   {
     printf (" linkage=%u1d (%s)", v.linkage,
-            v.linkage == 0 ? "static" : "global");
+            btf_var_linkage_names[v.linkage]);
   }
+
+/* Dump BTF Function information.  */
+
+fun btf_dump_func = (BTF_Type t) void:
+{
+  /* The linkage info for BTF_KIND_FUNC entries is not
+     encoded in a variable part, like one would expect,
+     but in the `vlen' field of the BTF_Type.  */
+  printf (" linkage=%u1d (%s)",
+          t.info.vlen, btf_func_linkage_names[t.info.vlen]);
+}
 
 /* Dump members of a struct or union. Note that we take a BTF_Type, because
    the BTF_Member type is internal to BTF_Type and not visible here.  */
@@ -99,6 +110,12 @@ fun btf_dump_datasec = (BTF_Var_SecInfo[] entries) void:
 
 fun btf_dump_type_vdata = (BTF_Section btf, BTF_Type t) void:
   {
+    if (t.info.kind == BTF_KIND_FUNC)
+    {
+      btf_dump_func (t);
+      return;
+    }
+
     ({ btf_dump_int (t.data.integer); } ?! E_elem)
       || ({ btf_dump_array (t.data.array); } ?! E_elem)
       || ({ btf_dump_enum (btf, t.data._enum); } ?! E_elem)

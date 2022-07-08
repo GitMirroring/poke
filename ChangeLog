@@ -1,3 +1,19 @@
+2022-07-08  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* pickles/btf-dump.pk (btf_dump_var): Use btf_var_linkage_names.
+	(btf_dump_func): New function.
+	(btf_dump_type_vdata): Call btf_dump_func whenever appropriate.
+	* pickles/btf.pk (BTF_VAR_STATIC): Define.
+	(BTF_VAR_GLOBAL_ALLOCATED): Likewise.
+	(BTF_VAR_GLOBAL_EXTERN): Likewise.
+	(BTF_FUNC_STATIC): Likewise.
+	(BTF_FUNC_GLOBAL): Likewise.
+	(BTF_FUNC_EXTERN): Likewise.
+	(btf_var_linkage_names): Likewise.
+	(btf_func_linkage_names): Likewise.
+	(BTF_Type.info._print): Print linkage whenever appropriate.
+	(BTF_Variable): Add pretty-printer.
+
 2022-04-10  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* pickles/search.pk: New file.
