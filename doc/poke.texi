@@ -13667,7 +13667,7 @@ the @dfn{exception predicate} operator, @code{?!}, that has two forms:
 
 In the first form, the expression @var{exp} is executed.  If the
 execution raises the exception @var{exception} then the result of the
-predicate is @code{0} (false), otherwise it is @code{1} (true).  The
+predicate is @code{1} (true), otherwise it is @code{0} (false).  The
 value of the expression is discarded.
 
 In the second form, the compound statement passed as the first operand
@@ -13682,9 +13682,9 @@ a much more readable way:
 method _print = void:
 @{
   if (simple_value ?! E_elem)
-    print "#<%u32d>", simple_value;
-  else
     print "%v\n", complex_value;
+  else
+    print "#<%u32d>", simple_value;
 @}
 @end example
 
@@ -13695,7 +13695,7 @@ Or, alternatively (and slightly more efficiently):
 method _print = void:
 @{
   (@{ print "<%u32d>", simple_value; @} ?! E_elem)
-    || print "%v\n", complex_value;
+    && print "%v\n", complex_value;
 @}
 @end example
 

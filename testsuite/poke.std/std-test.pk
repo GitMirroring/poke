@@ -210,12 +210,12 @@ var tests = [
         with_temp_ios :handler "*bar*"
                       :endian !end
                       :do lambda void: { a = int<32> @ 0#B; };
-        assert (!(get_ios ?! E_no_ios));
+        assert (get_ios ?! E_no_ios);
         assert (a == 0);
 
         /* No arguments.  */
         with_temp_ios;
-        assert (!(get_ios ?! E_no_ios));
+        assert (get_ios ?! E_no_ios);
 
         /* Now with an already opened IO space.  */
         var ios = open ("*foo*");

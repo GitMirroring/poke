@@ -1,3 +1,20 @@
+2022-07-09  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-gen.c (pkl_gen_pr_op_excond): Invert the logic of excond
+	operator.
+	* doc/poke.texi (exception predicate): Update to new semantics.
+	* libpoke/std.pk (with_temp_ios): Likewise.
+	libpoke/std.pk (with_cur_ios): Likewise.
+	* pickles/asn1-ber.pk (BER_Data_Value.isdefinite): Likewise.
+	* pickles/btf-dump.pk (btf_dump_type_vdata): Likewise.
+	* pickles/ctf-dump.pk (ctf_dump_func): Likewise.
+	* pickles/diff.pk (diff_structured): Likewise.
+	* testsuite/poke.pkl/excond-1.pk: Likewise.
+	* testsuite/poke.pkl/excond-2.pk: Likewise.
+	* testsuite/poke.pkl/excond-3.pk: Likewise.
+	* testsuite/poke.pkl/excond-4.pk: Likewise.
+	* testsuite/poke.std/std-test.pk: Likewise.
+
 2022-07-08  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* pickles/btf.pk (BTF_Int): Turn `encoding' into a nested integral

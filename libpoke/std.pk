@@ -441,7 +441,7 @@ fun with_temp_ios = (string handler = pk_get_unique_mem_ios_handler,
                      Pk_With_Ios_Fn do = lambda void:{},
                      int<32> endian = get_endian) void:
 {
-  var old_ios = get_ios ?! E_no_ios ? get_ios : -1;
+  var old_ios = get_ios ?! E_no_ios ? -1 : get_ios;
   var old_endian = get_endian;
   var new_ios = open (handler, flags);
 
@@ -474,7 +474,7 @@ fun with_cur_ios = (int<32> ios,
                     Pk_With_Ios_Fn do = lambda void:{},
                     int<32> endian = get_endian) void:
 {
-  var old_ios = get_ios ?! E_no_ios ? get_ios : -1;
+  var old_ios = get_ios ?! E_no_ios ? -1 : get_ios;
   var old_endian = get_endian;
 
   set_ios (ios);

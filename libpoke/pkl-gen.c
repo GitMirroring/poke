@@ -4254,8 +4254,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_op_excond)
   pvm_program_label done = pkl_asm_fresh_label (PKL_GEN_ASM);
 
   /* Push the provisional result of the operation, which is
-     `true'.  */
-  pkl_asm_insn (pasm, PKL_INSN_PUSH, pvm_make_int (1, 32));
+     `false'.  */
+  pkl_asm_insn (pasm, PKL_INSN_PUSH, pvm_make_int (0, 32));
 
   /* Install a handler for the exception specified in the second
      operand.  */
@@ -4272,12 +4272,12 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_op_excond)
   pkl_asm_insn (pasm, PKL_INSN_BA, done);
 
   /* The exception handler just drops the raised exception and the
-     provisional result `true' and pushes `false' to reflect the
+     provisional result `false' and pushes `true' to reflect the
      exception was raised. */
   pkl_asm_label (pasm, exception_handler);
   pkl_asm_insn (pasm, PKL_INSN_DROP); /* The exception.  */
   pkl_asm_insn (pasm, PKL_INSN_DROP); /* The provisional result.  */
-  pkl_asm_insn (pasm, PKL_INSN_PUSH, pvm_make_int (0, 32));
+  pkl_asm_insn (pasm, PKL_INSN_PUSH, pvm_make_int (1, 32));
 
   pkl_asm_label (pasm, done);
   PKL_PASS_BREAK;

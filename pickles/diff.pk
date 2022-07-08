@@ -251,15 +251,15 @@ fun diff_structured = (any a, any b,
   {
     for (; idx < val'length; ++idx)
     {
-      if (val'elem (idx) ?! E_inval)
+      if (!(val'elem (idx) ?! E_inval))
       {
         /* Note that recursing into the element may result in E_inval
            in case a non-byte element is found.  In that case, try to
            emit the thunk anyway.  */
         if (elem_simple_p (val, idx)
-            || ! { sdiff_addrem (what, val'elem (idx),
-                                 prefix + format_ename (val'ename (idx)),
-                                 0); } ?! E_inval)
+            || { sdiff_addrem (what, val'elem (idx),
+                               prefix + format_ename (val'ename (idx)),
+                               0); } ?! E_inval)
           thunk.addrem :what what :off val'eoffset (idx) :siz val'esize (idx)
                        :bytes get_elem_bytes (val, idx)
                        :name prefix + format_ename (val'ename (idx))
@@ -275,7 +275,7 @@ fun diff_structured = (any a, any b,
     var idx = 0UL;
     for (; idx < a'length; ++idx)
     {
-      var a_is_present = a'elem (idx) ?! E_inval;
+      var a_is_present = !(a'elem (idx) ?! E_inval);
 
       if (idx >= b'length)
       {
@@ -284,7 +284,7 @@ fun diff_structured = (any a, any b,
       }
       else
       {
-        var b_is_present = b'elem (idx) ?! E_inval;
+        var b_is_present = !(b'elem (idx) ?! E_inval);
 
         if (a_is_present && b_is_present)
         {
@@ -297,8 +297,8 @@ fun diff_structured = (any a, any b,
              non-byte element is found.  In that case, try to emit the
              thunk anyway.  */
           if (elem_simple_p (a, idx)
-              || ! { sdiff_change (a'elem (idx), b'elem (idx),
-                                   a_full_name, b_full_name); } ?! E_inval)
+              || { sdiff_change (a'elem (idx), b'elem (idx),
+                                 a_full_name, b_full_name); } ?! E_inval)
           {
             var a_bytes = get_elem_bytes (a, idx);
             var b_bytes = get_elem_bytes (b, idx);
@@ -330,7 +330,7 @@ fun diff_structured = (any a, any b,
 
   try
   {
-    if (! { sdiff_change (a, b, prefix_a, prefix_b); } ?! E_inval)
+    if ({ sdiff_change (a, b, prefix_a, prefix_b); } ?! E_inval)
     {
       var a_bytes = get_bytes (a);
       var b_bytes = get_bytes (b);

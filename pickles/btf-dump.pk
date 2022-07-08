@@ -117,12 +117,12 @@ fun btf_dump_type_vdata = (BTF_Section btf, BTF_Type t) void:
     }
 
     ({ btf_dump_int (t.data.integer); } ?! E_elem)
-      || ({ btf_dump_array (t.data.array); } ?! E_elem)
-      || ({ btf_dump_enum (btf, t.data._enum); } ?! E_elem)
-      || ({ btf_dump_proto (btf, t.data.func_proto.params); } ?! E_elem)
-      || ({ btf_dump_var (t.data.variable); } ?! E_elem)
-      || ({ btf_dump_sou (btf, t); } ?! E_elem)
-      || ({ btf_dump_datasec (t.data.datasec); } ?! E_elem);
+      && ({ btf_dump_array (t.data.array); } ?! E_elem)
+      && ({ btf_dump_enum (btf, t.data._enum); } ?! E_elem)
+      && ({ btf_dump_proto (btf, t.data.func_proto.params); } ?! E_elem)
+      && ({ btf_dump_var (t.data.variable); } ?! E_elem)
+      && ({ btf_dump_sou (btf, t); } ?! E_elem)
+      && ({ btf_dump_datasec (t.data.datasec); } ?! E_elem);
   }
 
 /* Dump a complete BTF type. Includes lookup and display of any strings

@@ -3,4 +3,4 @@
 var zero = 0;
 
 /* { dg-command { 2/zero ?! E_div_by_zero } } */
-/* { dg-output "0" } */
+/* { dg-output "1" } */
