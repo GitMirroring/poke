@@ -43,26 +43,25 @@ fun ctf_frame_dump_fres = (CTF_Frame_section ctf_frame_arg) void:
       var fre_off = ctf_frame_arg.header'size + ctf_frame_arg.header.cth_freoff;
 
       if (fre_type == CTF_FRAME_ROW_ENTRY_TYPE_ADDR1)
-	{
-	  var fres = func.get_fres_addr1s (fre_off);
-	  /* print fres.  */
-	  for (fre in fres)
-	    printf ("%u32d:   %v \n", i++, fre);
-	}
+        {
+          var fres = func.get_fres_addr1s (fre_off);
+          /* print fres.  */
+          for (fre in fres)
+            printf ("%u32d:   %v \n", i++, fre);
+        }
       else if (fre_type == CTF_FRAME_ROW_ENTRY_TYPE_ADDR2)
-	{
-	  var fres = func.get_fres_addr2s (fre_off);
-	  /* print fres.  */
-	  for (fre in fres)
-	    printf ("%u32d:   %v \n", i++, fre);
-	}
+        {
+          var fres = func.get_fres_addr2s (fre_off);
+          /* print fres.  */
+          for (fre in fres)
+            printf ("%u32d:   %v \n", i++, fre);
+        }
       else if (fre_type == CTF_FRAME_ROW_ENTRY_TYPE_ADDR4)
-	{
-	  var fres = func.get_fres_addr4s (fre_off);
-	  /* print fres.  */
-	  for (fre in fres)
-	    printf ("%u32d:   %v \n", i++, fre);
-	}
-
+        {
+          var fres = func.get_fres_addr4s (fre_off);
+          /* print fres.  */
+          for (fre in fres)
+            printf ("%u32d:   %v \n", i++, fre);
+        }
     }
 }

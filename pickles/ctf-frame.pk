@@ -29,8 +29,8 @@ type CTF_Frame_Preamble =
   struct
   {
     uint<16> ctfp_magic : ((ctfp_magic == CTF_FRAME_MAGIC)
-			   || (ctfp_magic == 0xe2de && set_endian (!get_endian)))
-		          = CTF_FRAME_MAGIC;
+                           || (ctfp_magic == 0xe2de && set_endian (!get_endian)))
+                          = CTF_FRAME_MAGIC;
 
     byte ctfp_version = CTF_FRAME_VERSION_1;
     byte ctfp_flags;
@@ -54,13 +54,13 @@ var CTF_FRAME_FUNC_DESC_ENTRY_TYPE_PCMASK = 1;
 /* CTF Frame FDE Function Info.  */
 type CTF_Frame_Func_Info =
   struct
-{
-  uint<3> unused;
-  uint<1> fde_type : fde_type in [CTF_FRAME_FUNC_DESC_ENTRY_TYPE_PCINC,
-				  CTF_FRAME_FUNC_DESC_ENTRY_TYPE_PCMASK];
-  uint<4> fre_type : fre_type in [CTF_FRAME_ROW_ENTRY_TYPE_ADDR1,
-				  CTF_FRAME_ROW_ENTRY_TYPE_ADDR2,
-				  CTF_FRAME_ROW_ENTRY_TYPE_ADDR4];
+  {
+    uint<3> unused;
+    uint<1> fde_type : fde_type in [CTF_FRAME_FUNC_DESC_ENTRY_TYPE_PCINC,
+                                    CTF_FRAME_FUNC_DESC_ENTRY_TYPE_PCMASK];
+    uint<4> fre_type : fre_type in [CTF_FRAME_ROW_ENTRY_TYPE_ADDR1,
+                                    CTF_FRAME_ROW_ENTRY_TYPE_ADDR2,
+                                    CTF_FRAME_ROW_ENTRY_TYPE_ADDR4];
 };
 
 /* Supported ABIs/Arch.  */
@@ -75,8 +75,8 @@ type CTF_Frame_Header =
   {
     CTF_Frame_Preamble cth_frame_preamble;
     byte cth_frame_abi_arch : cth_frame_abi_arch in [CTF_FRAME_ABI_AARCH64_ENDIAN_BIG,
-						    CTF_FRAME_ABI_AARCH64_ENDIAN_LITTLE,
-					            CTF_FRAME_ABI_AMD64_ENDIAN_LITTLE];
+                                                     CTF_FRAME_ABI_AARCH64_ENDIAN_LITTLE,
+                                                     CTF_FRAME_ABI_AMD64_ENDIAN_LITTLE];
     int<8> cth_cfa_fixed_bp_offset;
     int<8> cth_cfa_fixed_ra_offset;
     uint<32> cth_num_fdes;
@@ -102,11 +102,11 @@ type CTF_Frame_FRE_Info =
   {
     uint<1> unused;
     uint<2> offset_size : offset_size in [CTF_FRAME_FRE_OFFSET_1B,
-					  CTF_FRAME_FRE_OFFSET_2B,
-					  CTF_FRAME_FRE_OFFSET_4B];
+                                          CTF_FRAME_FRE_OFFSET_2B,
+                                          CTF_FRAME_FRE_OFFSET_4B];
     uint<4> offset_num : offset_num <= CTF_FRAME_FRE_OFFSET_NUM;
     uint<1> base_reg_id : base_reg_id in [CTF_FRAME_BASE_REG_BP,
-					  CTF_FRAME_BASE_REG_SP];
+                                          CTF_FRAME_BASE_REG_SP];
   };
 
 /* CTF FRE.  */
@@ -170,18 +170,18 @@ type CTF_Frame_Func_Desc_Entry =
 
     method get_fres_addr1s = (offset<uint32,B> hdr_freoff) CTF_FRE_addr1[]:
       {
-	var off = hdr_freoff + func_freoff;
-	return CTF_FRE_addr1[func_num_fres] @ off;
+        var off = hdr_freoff + func_freoff;
+        return CTF_FRE_addr1[func_num_fres] @ off;
       }
     method get_fres_addr2s = (offset<uint32,B> hdr_freoff) CTF_FRE_addr2[]:
       {
-	var off = hdr_freoff + func_freoff;
-	return CTF_FRE_addr2[func_num_fres] @ off;
+        var off = hdr_freoff + func_freoff;
+        return CTF_FRE_addr2[func_num_fres] @ off;
       }
     method get_fres_addr4s = (offset<uint32,B> hdr_freoff) CTF_FRE_addr4[]:
       {
-	var off = hdr_freoff + func_freoff;
-	return CTF_FRE_addr4[func_num_fres] @ off;
+        var off = hdr_freoff + func_freoff;
+        return CTF_FRE_addr4[func_num_fres] @ off;
       }
   };
 
