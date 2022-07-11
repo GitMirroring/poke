@@ -1,3 +1,8 @@
+2022-07-11  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* pickles/ctf.pk (ctf_get_dict): Raise an assert instead of
+	E_inval.
+
 2022-07-10  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* pickles/ctf-frame.pk: Fix indentation and replace tabs with

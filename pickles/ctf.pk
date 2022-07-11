@@ -339,10 +339,7 @@ fun ctf_get_dict = (Elf64_File elf) CTF_Dictionary:
 {
   var ctf_sections = elf.get_sections_by_name (".ctf");
 
-  /* XXX assert here instead.  */
-  if (ctf_sections'length != 1)
-     raise E_inval;
-
+  assert (ctf_sections'length != 1);
   /* FIXME - handle ctf archives.  */
   return CTF_Dictionary @ ctf_sections[0].sh_offset;
 }
