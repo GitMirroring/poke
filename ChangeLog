@@ -1,5 +1,14 @@
 2022-07-13  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pkl-ast.h (PKL_AST_FUNC_NFRAMES): Remove.
+	(PKL_AST_RETURN_STMT_NFRAMES): Likewise.
+	(struct pkl_ast_func): Remove `nframes` field.
+	(struct pkl_ast_return_stmt): Likewise.
+	* libpoke/pkl-ast.c (pkl_ast_finish_returns_1): Remove `nframes` arg.
+	(pkl_ast_finish_returns): Update.
+
+2022-07-13  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-trans.c (pkl_trans1_pr_decl): Do not pushing current function
 	to the stack of functions here.
 	(pkl_trans1_pr_func): Do it here.

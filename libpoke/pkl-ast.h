@@ -595,12 +595,6 @@ pkl_ast_node pkl_ast_make_enum (pkl_ast ast,
    BODY is a PKL_AST_COMP_STMT node containing the statements that
    conform the function body.
 
-   NFRAMES is a counter used by the parser as an aid in determining
-   the number of lexical frames a RETURN_STMT should pop before
-   returning from the function.  While parsing, this contains the
-   number of frames pushed to the environment at any moment.  After
-   parsing, this field is not used anymore.
-
    NARGS is the number of formal arguments.
 
    NAME is a C string containing the name used to declare the
@@ -613,7 +607,6 @@ pkl_ast_node pkl_ast_make_enum (pkl_ast ast,
 #define PKL_AST_FUNC_ARGS(AST) ((AST)->func.args)
 #define PKL_AST_FUNC_FIRST_OPT_ARG(AST) ((AST)->func.first_opt_arg)
 #define PKL_AST_FUNC_BODY(AST) ((AST)->func.body)
-#define PKL_AST_FUNC_NFRAMES(AST) ((AST)->func.nframes)
 #define PKL_AST_FUNC_NAME(AST) ((AST)->func.name)
 #define PKL_AST_FUNC_NARGS(AST) ((AST)->func.nargs)
 #define PKL_AST_FUNC_METHOD_P(AST) ((AST)->func.method_p)
@@ -629,7 +622,6 @@ struct pkl_ast_func
   union pkl_ast_node *body;
 
   int nargs;
-  int nframes;
   char *name;
   int method_p;
   pvm_program program;
@@ -1735,9 +1727,6 @@ pkl_ast_node pkl_ast_make_loop_stmt_iterator (pkl_ast ast,
 
    EXP is the expression to return to the caller.
 
-   NFRAMES is the number of lexical frames to pop before returning
-   from the function.  This is used by the code generator.
-
    NDROPS is the number of stack elements to drop before returning
    from the function.
 
@@ -1748,7 +1737,6 @@ pkl_ast_node pkl_ast_make_loop_stmt_iterator (pkl_ast ast,
    statement. */
 
 #define PKL_AST_RETURN_STMT_EXP(AST) ((AST)->return_stmt.exp)
-#define PKL_AST_RETURN_STMT_NFRAMES(AST) ((AST)->return_stmt.nframes)
 #define PKL_AST_RETURN_STMT_NDROPS(AST) ((AST)->return_stmt.ndrops)
 #define PKL_AST_RETURN_STMT_NPOPES(AST) ((AST)->return_stmt.npopes)
 #define PKL_AST_RETURN_STMT_FUNCTION(AST) ((AST)->return_stmt.function)
@@ -1759,7 +1747,6 @@ struct pkl_ast_return_stmt
 
   union pkl_ast_node *exp;
   union pkl_ast_node *function;
-  int nframes;
   int ndrops;
   int npopes;
 };
