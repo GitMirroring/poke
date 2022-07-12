@@ -1,3 +1,34 @@
+2022-07-13  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-ast.h (pkl_ast_finish_returns): Remove.
+	* libpoke/pkl-ast.c (pkl_ast_finish_returns): Likewise.
+	(pkl_ast_finish_returns_1): Likewise.
+	* libpoke/pkl-tab.y (function_specifier): Likewise.
+	(declaration): Likewise.
+	* libpoke/pkl-trans.h (struct pkl_trans_payload): Add new fields
+	`function_ndrops` and `function_npopes`.
+	* libpoke/pkl-trans.c (PKL_TRANS_FUNCTION_NDROPS): New macro.
+	(PKL_TRANS_INCR_FUNCTION_NDROPS): Likewise.
+	(PKL_TRANS_DECR_FUNCTION_NDROPS): Likewise.
+	(PKL_TRANS_FUNCTION_NPOPES): Likewise.
+	(PKL_TRANS_INCR_FUNCTION_NPOPES): Likewise.
+	(PKL_TRANS_DECR_FUNCTION_NPOPES): Likewise.
+	(PKL_TRANS_PUSH_FUNCTION): Adapt.
+	(pkl_trans1_pr_comp_stmt): Count ndrops and npopes.
+	(pkl_trans1_ps_comp_stmt): Likewise.
+	(pkl_trans1_pr_loop_stmt): Likewise.
+	(pkl_trans1_ps_loop_stmt): Likewise.
+	(pkl_trans1_ps_return_stmt): New handler.
+	(pkl_trans1_pr_try_stmt_body): Likewise.
+	(pkl_trans1_ps_try_stmt_body): Likewise.
+	(struct pkl_phase_trans1): Register new handlers.
+	* libpoke/pkl-gen.c (pkl_gen_ps_return_stmt): Fix comment.
+	* testsuite/poke.pkl/return-3.pk: New test.
+	* testsuite/poke.pkl/return-4.pk: Likewise.
+	* testsuite/poke.pkl/return-5.pk: Likewise.
+	* testsuite/poke.pkl/return-6.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
 2022-07-13  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-ast.h (enum pkl_ast_code): Define PKL_AST_TRY_STMT

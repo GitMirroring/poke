@@ -35,6 +35,14 @@
    FUNCTION_BACK is a stack of integers, denoting the current lexical
    depth relative to the current function.
 
+   FUNCTION_NDROPS is a stack of integers, denoting the number
+   of PVM stack values that we'd need to drop before returning from
+   current function.
+
+   FUNCTION_NPOPES is a stack of integers, denoting the number
+   of PVM exception stack handlers that we'd need to pope before
+   returning from current function.
+
    NEXT_FUNCTION - 1 is the index for the enclosing function in
    FUNCTIONS.  NEXT_FUNCTION is 0 if not in a function.
 
@@ -53,6 +61,8 @@ struct pkl_trans_payload
   int add_frames;
   pkl_ast_node functions[PKL_TRANS_MAX_FUNCTION_NEST];
   int function_back[PKL_TRANS_MAX_FUNCTION_NEST];
+  int function_ndrops[PKL_TRANS_MAX_FUNCTION_NEST];
+  int function_npopes[PKL_TRANS_MAX_FUNCTION_NEST];
   int next_function;
   enum pkl_ast_endian endian[PKL_TRANS_MAX_ENDIAN];
   int cur_endian;

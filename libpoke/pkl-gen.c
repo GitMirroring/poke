@@ -1380,7 +1380,7 @@ PKL_PHASE_END_HANDLER
 
 PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_return_stmt)
 {
-  /* Return from the function: pop N frames and generate a return
+  /* Return from the function: pop exceptions and generate a return
      instruction.  */
 
   pkl_ast_node return_stmt = PKL_PASS_NODE;

@@ -1872,6 +1872,10 @@ EXTRA_DIST = \
   poke.pkl/reduce-array-2.pk \
   poke.pkl/return-1.pk \
   poke.pkl/return-2.pk \
+  poke.pkl/return-3.pk \
+  poke.pkl/return-4.pk \
+  poke.pkl/return-5.pk \
+  poke.pkl/return-6.pk \
   poke.pkl/return-diag-1.pk \
   poke.pkl/return-diag-2.pk \
   poke.pkl/return-diag-3.pk \

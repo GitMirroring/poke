@@ -1171,10 +1171,6 @@ primary:
                 }
           function_specifier
                 {
-                  /* Annotate the contained RETURN statements with
-                     their function and their lexical nest level
-                     within the function.  */
-                  pkl_ast_finish_returns ($3);
                   $$ = pkl_ast_make_lambda (pkl_parser->ast, $3);
                   PKL_AST_LOC ($$) = @$;
                 }
@@ -2010,11 +2006,6 @@ declaration:
                      to 1, since these references are weak.  */
                   if (PKL_AST_REFCOUNT ($<ast>3) > 1)
                     PKL_AST_REFCOUNT ($<ast>3) = 1;
-
-                  /* Annotate the contained RETURN statements with
-                     their function and their lexical nest level
-                     within the function.  */
-                  pkl_ast_finish_returns ($5);
 
                   /* Annotate the function to be a method whenever
                      appropriate.  */

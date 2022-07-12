@@ -126,11 +126,57 @@ static int pkl_trans_in_functions (pkl_ast_node functions[],
   }                                                                     \
   while (0)
 
+#define PKL_TRANS_FUNCTION_NDROPS                                       \
+  (PKL_TRANS_PAYLOAD->next_function == 0                                \
+   ? 0                                                                  \
+   : PKL_TRANS_PAYLOAD->function_ndrops[PKL_TRANS_PAYLOAD->next_function - 1])
+
+#define PKL_TRANS_INCR_FUNCTION_NDROPS                                  \
+  do                                                                    \
+  {                                                                     \
+    if (PKL_TRANS_PAYLOAD->next_function > 0)                           \
+      PKL_TRANS_PAYLOAD->function_ndrops[PKL_TRANS_PAYLOAD->next_function - 1]++; \
+  }                                                                     \
+  while (0)
+
+#define PKL_TRANS_DECR_FUNCTION_NDROPS                                  \
+  do                                                                    \
+  {                                                                     \
+    if (PKL_TRANS_PAYLOAD->next_function  > 0)                          \
+      PKL_TRANS_PAYLOAD->function_ndrops[PKL_TRANS_PAYLOAD->next_function  - 1]--; \
+  }                                                                     \
+  while (0)
+
+#define PKL_TRANS_FUNCTION_NPOPES                                       \
+  (PKL_TRANS_PAYLOAD->next_function == 0                                \
+   ? 0                                                                  \
+   : PKL_TRANS_PAYLOAD->function_npopes[PKL_TRANS_PAYLOAD->next_function - 1])
+
+#define PKL_TRANS_INCR_FUNCTION_NPOPES                                  \
+  do                                                                    \
+  {                                                                     \
+    if (PKL_TRANS_PAYLOAD->next_function > 0)                           \
+      PKL_TRANS_PAYLOAD->function_npopes[PKL_TRANS_PAYLOAD->next_function - 1]++; \
+  }                                                                     \
+  while (0)
+
+#define PKL_TRANS_DECR_FUNCTION_NPOPES                                  \
+  do                                                                    \
+  {                                                                     \
+    if (PKL_TRANS_PAYLOAD->next_function > 0)                           \
+      PKL_TRANS_PAYLOAD->function_npopes[PKL_TRANS_PAYLOAD->next_function - 1]--; \
+  }                                                                     \
+  while (0)
+
 #define PKL_TRANS_PUSH_FUNCTION(function)                               \
   do                                                                    \
     {                                                                   \
       assert (PKL_TRANS_PAYLOAD->next_function < PKL_TRANS_MAX_FUNCTION_NEST); \
-      PKL_TRANS_PAYLOAD->function_back[PKL_TRANS_PAYLOAD->next_function] \
+      PKL_TRANS_PAYLOAD->function_back[PKL_TRANS_PAYLOAD->next_function]\
+        = 0;                                                            \
+      PKL_TRANS_PAYLOAD->function_ndrops[PKL_TRANS_PAYLOAD->next_function] \
+        = 0;                                                            \
+      PKL_TRANS_PAYLOAD->function_npopes[PKL_TRANS_PAYLOAD->next_function] \
         = 0;                                                            \
       PKL_TRANS_PAYLOAD->functions[PKL_TRANS_PAYLOAD->next_function++]  \
         = (function);                                                   \
@@ -1100,6 +1146,13 @@ PKL_PHASE_END_HANDLER
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_comp_stmt)
 {
   PKL_TRANS_INCR_FUNCTION_BACK;
+
+  if (PKL_PASS_PARENT && PKL_AST_CODE (PKL_PASS_PARENT) == PKL_AST_EXP
+      && PKL_AST_EXP_CODE (PKL_PASS_PARENT) == PKL_AST_OP_EXCOND)
+    {
+      PKL_TRANS_INCR_FUNCTION_NDROPS;
+      PKL_TRANS_INCR_FUNCTION_NPOPES;
+    }
 }
 PKL_PHASE_END_HANDLER
 
@@ -1121,6 +1174,13 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_loop_stmt)
       assert (!PKL_AST_LOOP_STMT_ITERATOR (stmt));
       PKL_TRANS_INCR_FUNCTION_BACK;
     }
+
+  if (PKL_TRANS_FUNCTION && PKL_AST_LOOP_STMT_ITERATOR (stmt))
+    {
+      PKL_TRANS_INCR_FUNCTION_NDROPS;
+      PKL_TRANS_INCR_FUNCTION_NDROPS;
+      PKL_TRANS_INCR_FUNCTION_NDROPS;
+    }
 }
 PKL_PHASE_END_HANDLER
 
@@ -1130,6 +1190,13 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_loop_stmt)
 
   if (PKL_AST_LOOP_STMT_ITERATOR (stmt) || PKL_AST_LOOP_STMT_HEAD (stmt))
     PKL_TRANS_DECR_FUNCTION_BACK;
+
+  if (PKL_TRANS_FUNCTION && PKL_AST_LOOP_STMT_ITERATOR (stmt))
+    {
+      PKL_TRANS_DECR_FUNCTION_NDROPS;
+      PKL_TRANS_DECR_FUNCTION_NDROPS;
+      PKL_TRANS_DECR_FUNCTION_NDROPS;
+    }
 }
 PKL_PHASE_END_HANDLER
 
@@ -1155,6 +1222,13 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_comp_stmt)
 
   PKL_AST_COMP_STMT_NUMVARS (comp_stmt) = numvars;
   PKL_TRANS_DECR_FUNCTION_BACK;
+
+  if (PKL_PASS_PARENT && PKL_AST_CODE (PKL_PASS_PARENT) == PKL_AST_EXP
+      && PKL_AST_EXP_CODE (PKL_PASS_PARENT) == PKL_AST_OP_EXCOND)
+    {
+      PKL_TRANS_DECR_FUNCTION_NDROPS;
+      PKL_TRANS_DECR_FUNCTION_NPOPES;
+    }
 }
 PKL_PHASE_END_HANDLER
 
@@ -1186,6 +1260,33 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_struct_type_field)
 }
 PKL_PHASE_END_HANDLER
 
+/* Annotate return statements with their containing functions.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_return_stmt)
+{
+  pkl_ast_node stmt = PKL_PASS_NODE;
+
+  PKL_AST_RETURN_STMT_FUNCTION (stmt) = PKL_TRANS_FUNCTION; /* Note no ASTREF.  */
+
+  PKL_AST_RETURN_STMT_NDROPS (stmt) = PKL_TRANS_FUNCTION_NDROPS;
+  PKL_AST_RETURN_STMT_NPOPES (stmt) = PKL_TRANS_FUNCTION_NPOPES;
+}
+PKL_PHASE_END_HANDLER
+
+PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_try_stmt_body)
+{
+  if (PKL_TRANS_FUNCTION)
+    PKL_TRANS_INCR_FUNCTION_NPOPES;
+}
+PKL_PHASE_END_HANDLER
+
+PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_try_stmt_body)
+{
+  if (PKL_TRANS_FUNCTION)
+    PKL_TRANS_DECR_FUNCTION_NPOPES;
+}
+PKL_PHASE_END_HANDLER
+
 struct pkl_phase pkl_phase_trans1 =
   {
    PKL_PHASE_PS_HANDLER (PKL_AST_SRC, pkl_trans_ps_src),
@@ -1206,8 +1307,11 @@ struct pkl_phase pkl_phase_trans1 =
    PKL_PHASE_PS_HANDLER (PKL_AST_LOOP_STMT_ITERATOR, pkl_trans1_ps_loop_stmt_iterator),
    PKL_PHASE_PR_HANDLER (PKL_AST_LOOP_STMT, pkl_trans1_pr_loop_stmt),
    PKL_PHASE_PS_HANDLER (PKL_AST_LOOP_STMT, pkl_trans1_ps_loop_stmt),
+   PKL_PHASE_PR_HANDLER (PKL_AST_TRY_STMT_BODY, pkl_trans1_pr_try_stmt_body),
+   PKL_PHASE_PS_HANDLER (PKL_AST_TRY_STMT_BODY, pkl_trans1_ps_try_stmt_body),
    PKL_PHASE_PR_HANDLER (PKL_AST_STRUCT_TYPE_FIELD, pkl_trans1_pr_struct_type_field),
    PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT_TYPE_FIELD, pkl_trans1_ps_struct_type_field),
+   PKL_PHASE_PS_HANDLER (PKL_AST_RETURN_STMT, pkl_trans1_ps_return_stmt),
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_ATTR, pkl_trans1_ps_op_attr),
    PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_STRUCT, pkl_trans1_ps_type_struct),
    PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_FUNCTION, pkl_trans1_ps_type_function),
