@@ -255,23 +255,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_decl)
       && PKL_AST_TYPE_CODE (PKL_PASS_PARENT) == PKL_TYPE_STRUCT)
     /* Annotate this declaration to be in a struct type.  */
     PKL_AST_DECL_IN_STRUCT_P (decl) = 1;
-
-  if (PKL_AST_DECL_KIND (decl) == PKL_AST_DECL_KIND_FUNC)
-    {
-      pkl_ast_node func = PKL_AST_DECL_INITIAL (decl);
-
-      /* Add this function to the pass stack of functions.  */
-      PKL_TRANS_PUSH_FUNCTION (func);
-    }
-}
-PKL_PHASE_END_HANDLER
-
-PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_decl)
-{
-  pkl_ast_node decl = PKL_PASS_NODE;
-
-  if (PKL_AST_DECL_KIND (decl) == PKL_AST_DECL_KIND_FUNC)
-    PKL_TRANS_POP_FUNCTION;
 }
 PKL_PHASE_END_HANDLER
 
@@ -529,6 +512,14 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_op_attr)
 }
 PKL_PHASE_END_HANDLER
 
+/* Push the function in the functions stack.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_func)
+{
+  PKL_TRANS_PUSH_FUNCTION (PKL_PASS_NODE);
+}
+PKL_PHASE_END_HANDLER
+
 /* Set the function's first optional argument and count the number of
    formal arguments.  */
 
@@ -554,6 +545,9 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_func)
           break;
         }
     }
+
+  /* Remove this function from stack of functions.  */
+  PKL_TRANS_POP_FUNCTION;
 }
 PKL_PHASE_END_HANDLER
 
@@ -1201,11 +1195,11 @@ struct pkl_phase pkl_phase_trans1 =
    PKL_PHASE_PS_HANDLER (PKL_AST_FUNCALL, pkl_trans1_ps_funcall),
    PKL_PHASE_PS_HANDLER (PKL_AST_STRING, pkl_trans1_ps_string),
    PKL_PHASE_PS_HANDLER (PKL_AST_VAR, pkl_trans1_ps_var),
+   PKL_PHASE_PR_HANDLER (PKL_AST_FUNC, pkl_trans1_pr_func),
    PKL_PHASE_PS_HANDLER (PKL_AST_FUNC, pkl_trans1_ps_func),
    PKL_PHASE_PS_HANDLER (PKL_AST_TRIMMER, pkl_trans1_ps_trimmer),
    PKL_PHASE_PS_HANDLER (PKL_AST_FORMAT, pkl_trans1_ps_format),
    PKL_PHASE_PR_HANDLER (PKL_AST_DECL, pkl_trans1_pr_decl),
-   PKL_PHASE_PS_HANDLER (PKL_AST_DECL, pkl_trans1_ps_decl),
    PKL_PHASE_PS_HANDLER (PKL_AST_ARRAY, pkl_trans1_ps_array),
    PKL_PHASE_PR_HANDLER (PKL_AST_COMP_STMT, pkl_trans1_pr_comp_stmt),
    PKL_PHASE_PS_HANDLER (PKL_AST_COMP_STMT, pkl_trans1_ps_comp_stmt),

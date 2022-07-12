@@ -1470,6 +1470,7 @@ EXTRA_DIST = \
   poke.pkl/lambda-2.pk \
   poke.pkl/lambda-3.pk \
   poke.pkl/lambda-4.pk \
+  poke.pkl/lambda-5.pk \
   poke.pkl/lambda-diag-1.pk \
   poke.pkl/le-arrays-diag-1.pk \
   poke.pkl/le-functions-diag-1.pk \

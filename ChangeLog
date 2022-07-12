@@ -1,3 +1,13 @@
+2022-07-13  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-trans.c (pkl_trans1_pr_decl): Do not pushing current function
+	to the stack of functions here.
+	(pkl_trans1_pr_func): Do it here.
+	(pkl_trans1_ps_decl): Remove handler.
+	(pkl_phase_trans1): Register new handler.
+	* testsuite/poke.pkl/lambda-5.pk): Add new test.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
 2022-07-11  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* pickles/ctf.pk (ctf_get_dict): Raise an assert instead of
