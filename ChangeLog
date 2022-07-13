@@ -1,3 +1,19 @@
+2022-07-13  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-trans.h (struct pkl_trans_function_ctx): Define.
+	* libpoke/pkl-trans.c (pkl_trans_in_functions): Adapt to new
+	stack.
+	(PKL_TRANS_FUNCTION_BACK): Delete macro.
+	(PKL_TRANS_INCR_FUNCTION_BACK): Likewise.
+	(PKL_TRANS_DECR_FUNCTION_BACK): Likewise.
+	(PKL_TRANS_DECR_FUNCTION_NDROPS): Likewise.
+	(PKL_TRANS_DECR_FUNCTION_NPOPES): Likewise.
+	(PKL_TRANS_FUNCTION_NDROPS): Likewise.
+	(PKL_TRANS_INCR_FUNCTION_NDROPS): Likewise.
+	(PKL_TRANS_FUNCTION_NPOPES): Likewise.
+	(PKL_TRANS_INCR_FUNCTION_NPOPES): Likewise.
+	Update phase handlers accordingly.
+
 2022-07-13  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-ast.h (pkl_ast_finish_returns): Remove.

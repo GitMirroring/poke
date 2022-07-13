@@ -23,6 +23,36 @@
 #include "pkl-pass.h"
 #include "pkl-ast.h"
 
+/* The trans phases keep a stack of function contexts while they
+   operate on the AST.  At any time in the pass, the "current lexical
+   function", and some properties relatives to it, are available to
+   the trans phase handlers on the top of this stack.
+
+   The following struct implements each entry on the function contexts
+   stack.
+
+   NODE is the AST node corresponding to the current lexical function,
+   or NULL if not in a function.
+
+   NDROPS is the number of PVM stack values we'd need to drop before
+   returning from the current function.
+
+   NPOPES is the number of PVM exception stack handlers that we'd need
+   to pope before returning from the current function.
+
+   BACK is the current lexical depth relative to the current
+   function.  */
+
+struct pkl_trans_function_ctx
+{
+  pkl_ast_node node;
+  int ndrops;
+  int npopes;
+  int back;
+
+  struct pkl_trans_function_ctx *next;
+};
+
 /* The following struct defines the payload of the trans phases.
 
    ERRORS is the number of errors detected while running the phase.
@@ -30,18 +60,7 @@
    ADD_FRAMES is the number of frames to add to lexical addresses.
    This is used in transl.
 
-   FUNCTIONS is a stack of PKL_AST_FUNC nodes.
-
-   FUNCTION_BACK is a stack of integers, denoting the current lexical
-   depth relative to the current function.
-
-   FUNCTION_NDROPS is a stack of integers, denoting the number
-   of PVM stack values that we'd need to drop before returning from
-   current function.
-
-   FUNCTION_NPOPES is a stack of integers, denoting the number
-   of PVM exception stack handlers that we'd need to pope before
-   returning from current function.
+   FUNCTIONS is a stack of function contexts.
 
    NEXT_FUNCTION - 1 is the index for the enclosing function in
    FUNCTIONS.  NEXT_FUNCTION is 0 if not in a function.
@@ -59,10 +78,7 @@ struct pkl_trans_payload
 {
   int errors;
   int add_frames;
-  pkl_ast_node functions[PKL_TRANS_MAX_FUNCTION_NEST];
-  int function_back[PKL_TRANS_MAX_FUNCTION_NEST];
-  int function_ndrops[PKL_TRANS_MAX_FUNCTION_NEST];
-  int function_npopes[PKL_TRANS_MAX_FUNCTION_NEST];
+  struct pkl_trans_function_ctx functions[PKL_TRANS_MAX_ENDIAN];
   int next_function;
   enum pkl_ast_endian endian[PKL_TRANS_MAX_ENDIAN];
   int cur_endian;
