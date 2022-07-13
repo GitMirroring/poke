@@ -1,0 +1,11 @@
+/* { dg-do run } */
+
+fun xxx = (int i) int:
+  {
+    var l = lambda int: { if (i == 0) return 0; return i + xxx (i - 1); };
+
+    return l;
+  }
+
+/* { dg-command { xxx (3) } } */
+/* { dg-output "6" } */
