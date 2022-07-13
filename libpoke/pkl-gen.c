@@ -1753,67 +1753,73 @@ PKL_PHASE_END_HANDLER
 
 /*
  * | CODE
- * | EXP
- * TRY_UNTIL_STMT
+ * TRY_STMT_BODY
  */
 
-PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_try_until_stmt)
+PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_try_stmt_body)
 {
-  pkl_ast_node try_until_stmt = PKL_PASS_NODE;
-  pkl_ast_node code = PKL_AST_TRY_UNTIL_STMT_CODE (try_until_stmt);
-  pkl_ast_node exp = PKL_AST_TRY_UNTIL_STMT_EXP (try_until_stmt);
-
-  /* Push the exception to catch.  */
-  PKL_PASS_SUBPASS (exp);
-  pkl_asm_try (PKL_GEN_ASM, NULL);
-  {
-    pkl_asm_loop (PKL_GEN_ASM);
-    PKL_PASS_SUBPASS (code);
-    pkl_asm_endloop (PKL_GEN_ASM);
-  }
-  pkl_asm_catch (PKL_GEN_ASM);
-  {
-  }
-  pkl_asm_endtry (PKL_GEN_ASM);
-
-  PKL_PASS_BREAK;
+  /* Nothing to do here.  */
 }
 PKL_PHASE_END_HANDLER
 
 /*
- * | CODE
- * | HANDLER
+ * | BODY
+ * | [HANDLER]
  * | [ARG]
  * | [EXP]
- * TRY_CATCH_STMT
+ * TRY_STMT
  */
 
-PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_try_catch_stmt)
+PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_try_stmt)
 {
-  pkl_ast_node try_catch_stmt = PKL_PASS_NODE;
-  pkl_ast_node code = PKL_AST_TRY_CATCH_STMT_CODE (try_catch_stmt);
-  pkl_ast_node handler = PKL_AST_TRY_CATCH_STMT_HANDLER (try_catch_stmt);
-  pkl_ast_node catch_arg = PKL_AST_TRY_CATCH_STMT_ARG (try_catch_stmt);
-  pkl_ast_node catch_exp = PKL_AST_TRY_CATCH_STMT_EXP (try_catch_stmt);
+  pkl_ast_node try_stmt = PKL_PASS_NODE;
 
-  /* Push the exception that will be catched by the sentence.  This is
-     EXP if it is defined, or E_generic if it isnt.  */
-  if (catch_exp)
-    PKL_PASS_SUBPASS (catch_exp);
+  if (PKL_AST_TRY_STMT_KIND (try_stmt) == PKL_AST_TRY_STMT_KIND_CATCH)
+    {
+      /* try-catch statement.  */
+      pkl_ast_node body = PKL_AST_TRY_STMT_BODY (try_stmt);
+      pkl_ast_node handler = PKL_AST_TRY_STMT_HANDLER (try_stmt);
+      pkl_ast_node arg = PKL_AST_TRY_STMT_ARG (try_stmt);
+      pkl_ast_node exp = PKL_AST_TRY_STMT_EXP (try_stmt);
+
+      /* Push the exception that will be catched by the sentence.  This is
+         EXP if it is defined, or E_generic if it isnt.  */
+      if (exp)
+        PKL_PASS_SUBPASS (exp);
+      else
+        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                      pvm_make_exception (PVM_E_GENERIC, PVM_E_GENERIC_NAME,
+                                          PVM_E_GENERIC_ESTATUS, NULL, NULL));
+
+      pkl_asm_try (PKL_GEN_ASM, arg);
+      {
+        PKL_PASS_SUBPASS (body);
+      }
+      pkl_asm_catch (PKL_GEN_ASM);
+      {
+        PKL_PASS_SUBPASS (handler);
+      }
+      pkl_asm_endtry (PKL_GEN_ASM);
+    }
   else
-    pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
-                  pvm_make_exception (PVM_E_GENERIC, PVM_E_GENERIC_NAME,
-                                      PVM_E_GENERIC_ESTATUS, NULL, NULL));
+    {
+      /* try-until statement.  */
+      pkl_ast_node body = PKL_AST_TRY_STMT_BODY (try_stmt);
+      pkl_ast_node exp = PKL_AST_TRY_STMT_EXP (try_stmt);
 
-  pkl_asm_try (PKL_GEN_ASM, catch_arg);
-  {
-    PKL_PASS_SUBPASS (code);
-  }
-  pkl_asm_catch (PKL_GEN_ASM);
-  {
-    PKL_PASS_SUBPASS (handler);
-  }
-  pkl_asm_endtry (PKL_GEN_ASM);
+      /* Push the exception to catch.  */
+      PKL_PASS_SUBPASS (exp);
+      pkl_asm_try (PKL_GEN_ASM, NULL);
+      {
+        pkl_asm_loop (PKL_GEN_ASM);
+        PKL_PASS_SUBPASS (body);
+        pkl_asm_endloop (PKL_GEN_ASM);
+      }
+      pkl_asm_catch (PKL_GEN_ASM);
+      {
+      }
+      pkl_asm_endtry (PKL_GEN_ASM);
+    }
 
   PKL_PASS_BREAK;
 }
@@ -4631,8 +4637,8 @@ struct pkl_phase pkl_phase_gen =
    PKL_PHASE_PR_HANDLER (PKL_AST_FORMAT, pkl_gen_pr_format),
    PKL_PHASE_PR_HANDLER (PKL_AST_PRINT_STMT, pkl_gen_pr_print_stmt),
    PKL_PHASE_PS_HANDLER (PKL_AST_RAISE_STMT, pkl_gen_ps_raise_stmt),
-   PKL_PHASE_PR_HANDLER (PKL_AST_TRY_CATCH_STMT, pkl_gen_pr_try_catch_stmt),
-   PKL_PHASE_PR_HANDLER (PKL_AST_TRY_UNTIL_STMT, pkl_gen_pr_try_until_stmt),
+   PKL_PHASE_PR_HANDLER (PKL_AST_TRY_STMT, pkl_gen_pr_try_stmt),
+   PKL_PHASE_PS_HANDLER (PKL_AST_TRY_STMT_BODY, pkl_gen_ps_try_stmt_body),
    PKL_PHASE_PS_HANDLER (PKL_AST_FUNCALL_ARG, pkl_gen_ps_funcall_arg),
    PKL_PHASE_PR_HANDLER (PKL_AST_FUNCALL, pkl_gen_pr_funcall),
    PKL_PHASE_PR_HANDLER (PKL_AST_FUNC, pkl_gen_pr_func),

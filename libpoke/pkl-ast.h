@@ -83,8 +83,8 @@ enum pkl_ast_code
   PKL_AST_LOOP_STMT_ITERATOR,
   PKL_AST_RETURN_STMT,
   PKL_AST_EXP_STMT,
-  PKL_AST_TRY_CATCH_STMT,
-  PKL_AST_TRY_UNTIL_STMT,
+  PKL_AST_TRY_STMT,
+  PKL_AST_TRY_STMT_BODY,
   PKL_AST_PRINT_STMT,
   PKL_AST_BREAK_STMT,
   PKL_AST_CONTINUE_STMT,
@@ -1769,63 +1769,72 @@ struct pkl_ast_exp_stmt
 
 pkl_ast_node pkl_ast_make_exp_stmt (pkl_ast ast, pkl_ast_node exp);
 
-/* PKL_AST_TRY_UNTIL_STMT nodes represent try-until statements.
+/* PKL_AST_TRY_STMT nodes represent try-catch and try-until
+   statements, which are used in order to support exception handlers.
 
-   CODE is a statement.
+   KIND is either PKL_AST_TRY_STMT_KIND_CATCH for try-catch
+   statements, or PKL_AST_TRY_STMT_KIND_UNTIL for try-until
+   statements.
 
-   EXP is an expression that should evaluate to a 32-bit signed
-   integer.  CODE will be executed repeteadly until the given
-   exception type is catched, or some other exception is raised.  */
-
-#define PKL_AST_TRY_UNTIL_STMT_CODE(AST) ((AST)->try_until_stmt.code)
-#define PKL_AST_TRY_UNTIL_STMT_EXP(AST) ((AST)->try_until_stmt.exp)
-
-struct pkl_ast_try_until_stmt
-{
-  struct pkl_ast_common common;
-
-  union pkl_ast_node *code;
-  union pkl_ast_node *exp;
-};
-
-pkl_ast_node pkl_ast_make_try_until_stmt (pkl_ast ast,
-                                          pkl_ast_node code, pkl_ast_node exp);
-
-/* PKL_AST_TRY_CATCH_STMT nodes represent try-catch statements, which
-   are used in order to support exception handlers.
-
-   CODE is a statement that is executed.
+   BODY is the body of the statement, a node of type
+   PKL_AST_TRY_STMT_BODY.
 
    HANDLER is a statement that will be executed in case an exception
-   is raised while executing CODE.
+   is raised while executing the BODY in a try-catch statement.
 
-   TYPE, if specified, is the argument to the catch clause.  The type
-   of the argument must be an Exception.
+   ARG, if specified, is the argument to the catch clause in a
+   try-catch statement.  The type of the argument must be an
+   Exception.
 
-   EXP, if specified, is an expression evaluating to an Exception.
-   Exceptions having any other type won't be catched by the `catch'
-   clause of the statement.
+   EXP is an expression evaluating to an Exception.  In try-catch
+   statements exceptions having any other type won't be catched by the
+   `catch' clause of the statement.  In try-until statements the BODY
+   will be executed repeteadly until this exception gets raised.  In
+   try-catch statements this field is optional.
 
-   Note that TYPE and EXP are mutually exclusive.  */
+   Note that TYPE and EXP are mutually exclusive in try-catch
+   statements.  */
 
-#define PKL_AST_TRY_CATCH_STMT_CODE(AST) ((AST)->try_catch_stmt.code)
-#define PKL_AST_TRY_CATCH_STMT_HANDLER(AST) ((AST)->try_catch_stmt.handler)
-#define PKL_AST_TRY_CATCH_STMT_ARG(AST) ((AST)->try_catch_stmt.arg)
-#define PKL_AST_TRY_CATCH_STMT_EXP(AST) ((AST)->try_catch_stmt.exp)
+#define PKL_AST_TRY_STMT_KIND(AST) ((AST)->try_stmt.kind)
+#define PKL_AST_TRY_STMT_BODY(AST) ((AST)->try_stmt.body)
+#define PKL_AST_TRY_STMT_HANDLER(AST) ((AST)->try_stmt.handler)
+#define PKL_AST_TRY_STMT_ARG(AST) ((AST)->try_stmt.arg)
+#define PKL_AST_TRY_STMT_EXP(AST) ((AST)->try_stmt.exp)
 
-struct pkl_ast_try_catch_stmt
+#define PKL_AST_TRY_STMT_KIND_CATCH 0
+#define PKL_AST_TRY_STMT_KIND_UNTIL 1
+
+struct pkl_ast_try_stmt
 {
   struct pkl_ast_common common;
 
-  union pkl_ast_node *code;
+  int kind;
+  union pkl_ast_node *body;
   union pkl_ast_node *handler;
   union pkl_ast_node *arg;
   union pkl_ast_node *exp;
 };
 
-pkl_ast_node pkl_ast_make_try_catch_stmt (pkl_ast ast,
-                                          pkl_ast_node code, pkl_ast_node handler,
-                                          pkl_ast_node arg, pkl_ast_node exp);
+pkl_ast_node pkl_ast_make_try_stmt (pkl_ast ast,
+                                    int kind,
+                                    pkl_ast_node body, pkl_ast_node handler,
+                                    pkl_ast_node arg, pkl_ast_node exp);
+
+/* PKL_AST_TRY_STMT_BODY nodes represent the body of try-catch and
+   try-until statements.
+
+*/
+
+#define PKL_AST_TRY_STMT_BODY_CODE(AST) ((AST)->try_stmt_body.code)
+
+struct pkl_ast_try_stmt_body
+{
+  struct pkl_ast_common common;
+
+  union pkl_ast_node *code;
+};
+
+pkl_ast_node pkl_ast_make_try_stmt_body (pkl_ast ast, pkl_ast_node code);
 
 /* PKL_AST_PRINT_STMT nodes represent `print' and `printf' statements.
 
@@ -1961,8 +1970,8 @@ union pkl_ast_node
   struct pkl_ast_loop_stmt_iterator loop_stmt_iterator;
   struct pkl_ast_return_stmt return_stmt;
   struct pkl_ast_exp_stmt exp_stmt;
-  struct pkl_ast_try_catch_stmt try_catch_stmt;
-  struct pkl_ast_try_until_stmt try_until_stmt;
+  struct pkl_ast_try_stmt try_stmt;
+  struct pkl_ast_try_stmt_body try_stmt_body;
   struct pkl_ast_break_stmt break_stmt;
   struct pkl_ast_continue_stmt continue_stmt;
   struct pkl_ast_raise_stmt raise_stmt;

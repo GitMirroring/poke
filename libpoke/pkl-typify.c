@@ -2322,74 +2322,62 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_raise_stmt)
 }
 PKL_PHASE_END_HANDLER
 
-/* The expression used in a TRY-UNTIL statement should be an Exception
-   type.  */
-
-PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_try_until_stmt)
-{
-  pkl_ast_node try_until_stmt = PKL_PASS_NODE;
-  pkl_ast_node try_until_stmt_exp = PKL_AST_TRY_UNTIL_STMT_EXP (try_until_stmt);
-  pkl_ast_node exp_type = PKL_AST_TYPE (try_until_stmt_exp);
-
-  if (!pkl_ast_type_is_exception (exp_type))
-    {
-      char *type_str = pkl_type_str (exp_type, 1);
-
-      PKL_ERROR (PKL_AST_LOC (exp_type),
-                 "invalid expression in try-until\n"
-                 "expected Exception, got %s",
-                 type_str);
-      free (type_str);
-      PKL_TYPIFY_PAYLOAD->errors++;
-      PKL_PASS_ERROR;
-    }
-}
-PKL_PHASE_END_HANDLER
-
 /* The argument to a TRY-CATCH statement, if specified, should be an
    Exception.
 
    Also, the exception expression in a CATCH-IF clause should be an
    Exception.  */
 
-PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_try_catch_stmt)
+PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_try_stmt)
 {
-  pkl_ast_node try_catch_stmt = PKL_PASS_NODE;
-  pkl_ast_node try_catch_stmt_arg = PKL_AST_TRY_CATCH_STMT_ARG (try_catch_stmt);
-  pkl_ast_node try_catch_stmt_exp = PKL_AST_TRY_CATCH_STMT_EXP (try_catch_stmt);
+  pkl_ast_node try_stmt = PKL_PASS_NODE;
+  pkl_ast_node try_stmt_exp = PKL_AST_TRY_STMT_EXP (try_stmt);
+  pkl_ast_node exp_type = NULL;
   pkl_ast_loc error_loc = PKL_AST_NOLOC;
-  pkl_ast_node type;
+  pkl_ast_node error_type;
 
-  if (try_catch_stmt_arg)
+  /* If the stament has an EXP it must be an exception.  */
+  if (try_stmt_exp)
     {
-      type = PKL_AST_FUNC_ARG_TYPE (try_catch_stmt_arg);
+      exp_type = PKL_AST_TYPE (try_stmt_exp);
 
-      if (!pkl_ast_type_is_exception (type))
+      if (!pkl_ast_type_is_exception (exp_type))
         {
-          error_loc = PKL_AST_LOC (try_catch_stmt_arg);
-          goto error;
+          error_loc = PKL_AST_LOC (try_stmt_exp);
+          error_type = exp_type;
+          goto expected_exception;
         }
     }
 
-  if (try_catch_stmt_exp)
+  /* try-catch statements may also have an ARG, which also must
+     evaluate to an exception.  */
+  if (PKL_AST_TRY_STMT_KIND (try_stmt) == PKL_AST_TRY_STMT_KIND_CATCH)
     {
-      type = PKL_AST_TYPE (try_catch_stmt_exp);
+      pkl_ast_node try_stmt_arg = PKL_AST_TRY_STMT_ARG (try_stmt);
 
-      if (!pkl_ast_type_is_exception (type))
+      if (try_stmt_arg)
         {
-          error_loc = PKL_AST_LOC (try_catch_stmt_exp);
-          goto error;
+          pkl_ast_node arg_type = PKL_AST_FUNC_ARG_TYPE (try_stmt_arg);
+
+          if (!pkl_ast_type_is_exception (arg_type))
+            {
+              error_loc = PKL_AST_LOC (try_stmt_arg);
+              error_type = arg_type;
+              goto expected_exception;
+            }
         }
     }
 
   PKL_PASS_DONE;
 
- error:
+ expected_exception:
   {
-    char *type_str = pkl_type_str (type, 1);
+    char *type_str = pkl_type_str (error_type, 1);
 
-    PKL_ERROR (error_loc, "invalid expression in try-catch\n"
+    PKL_ERROR (error_loc, "invalid expression in %s\n"
                "expected Exception, got %s",
+               PKL_AST_TRY_STMT_KIND (try_stmt) == PKL_AST_TRY_STMT_KIND_CATCH
+               ? "try-catch" : "try-until",
                type_str);
     free (type_str);
     PKL_TYPIFY_PAYLOAD->errors++;
@@ -3082,8 +3070,7 @@ struct pkl_phase pkl_phase_typify1 =
    PKL_PHASE_PS_HANDLER (PKL_AST_FORMAT, pkl_typify1_ps_format),
    PKL_PHASE_PS_HANDLER (PKL_AST_PRINT_STMT, pkl_typify1_ps_print_stmt),
    PKL_PHASE_PS_HANDLER (PKL_AST_RAISE_STMT, pkl_typify1_ps_raise_stmt),
-   PKL_PHASE_PS_HANDLER (PKL_AST_TRY_CATCH_STMT, pkl_typify1_ps_try_catch_stmt),
-   PKL_PHASE_PS_HANDLER (PKL_AST_TRY_UNTIL_STMT, pkl_typify1_ps_try_until_stmt),
+   PKL_PHASE_PS_HANDLER (PKL_AST_TRY_STMT, pkl_typify1_ps_try_stmt),
    PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT_TYPE_FIELD, pkl_typify1_ps_struct_type_field),
    PKL_PHASE_PS_HANDLER (PKL_AST_DECL, pkl_typify1_ps_decl),
    PKL_PHASE_PS_HANDLER (PKL_AST_RETURN_STMT, pkl_typify1_ps_return_stmt),

@@ -1,3 +1,35 @@
+2022-07-13  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-ast.h (enum pkl_ast_code): Define PKL_AST_TRY_STMT
+	and PKL_AST_TRY_STMT_BODY, and remove PKL_AST_TRY_UNTIL_STMT and
+	PKL_AST_TRY_CATCH_STMT.
+	(PKL_AST_TRY_CATCH_STMT_BODY): Rename from PKL_AST_TRY_CATCH_STMT_CODE.
+	(struct pkl_ast_try_catch_stmt): Field `code' renamed to `body'.
+	(PKL_AST_TRY_STMT_KIND_CATCH): Define.
+	(PKL_AST_TRY_STMT_KIND_UNTIL): Likewise.
+	(struct pkl_ast_try_catch_stmt_body): New type.
+	(PKL_AST_TRY_UNTIL_STMT_CODE): Remove.
+	(PKL_AST_TRY_UNTIL_STMT_EXP): Likewise.
+	(struct pkl_ast_try_until_stmt): Likewise.
+	(PKL_AST_TRY_STMT_BODY_CODE): Define.
+	(PKL_AST_TRY_CATCH_STMT_KIND): Define.
+	* libpoke/pkl-ast.c (pkl_ast_make_try_until_stmt): Remove.
+	(pkl_ast_node_free): Adapt to new AST.
+	(pkl_ast_finish_breaks_1): Likewise.
+	(pkl_ast_print_1): Likewise.
+	(pkl_ast_make_try_stmt_body): Define.
+	(pkl_ast_make_try_stmt): Rename from pkl_ast_make_try_catch_stmt.
+	* libpoke/pkl-pass.c (pkl_do_pass_1): Adapt to new AST.
+	* libpoke/pkl-tab.y (stmt): Adapt to new AST.
+	* libpoke/pkl-typify.c (pkl_typify1_ps_try_stmt): Renamed and
+	adapted from pkl_typify1_ps_try_catch_stmt.
+	* libpoke/pkl-gen.c (pkl_gen_pr_try_stmt): Renamed and adapted
+	from pkl_gen_pr_try_catch_stmt.
+	(pkl_gen_ps_try_stmt_body): New handler.
+	(pkl_phase_gen): Install new handler.
+	* etc/hacking.org (try Statements): New section.
+	* HACKING: Regenerate.
+
 2022-07-13  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-ast.h (PKL_AST_FUNC_NFRAMES): Remove.

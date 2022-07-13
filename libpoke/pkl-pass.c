@@ -545,17 +545,17 @@ pkl_do_pass_1 (pkl_compiler compiler,
     case PKL_AST_EXP_STMT:
       PKL_PASS (PKL_AST_EXP_STMT_EXP (node));
       break;
-    case PKL_AST_TRY_CATCH_STMT:
-      PKL_PASS (PKL_AST_TRY_CATCH_STMT_CODE (node));
-      PKL_PASS (PKL_AST_TRY_CATCH_STMT_HANDLER (node));
-      if (PKL_AST_TRY_CATCH_STMT_ARG (node))
-        PKL_PASS (PKL_AST_TRY_CATCH_STMT_ARG (node));
-      if (PKL_AST_TRY_CATCH_STMT_EXP (node))
-        PKL_PASS (PKL_AST_TRY_CATCH_STMT_EXP (node));
+    case PKL_AST_TRY_STMT_BODY:
+      PKL_PASS (PKL_AST_TRY_STMT_BODY_CODE (node));
       break;
-    case PKL_AST_TRY_UNTIL_STMT:
-      PKL_PASS (PKL_AST_TRY_UNTIL_STMT_CODE (node));
-      PKL_PASS (PKL_AST_TRY_UNTIL_STMT_EXP (node));
+    case PKL_AST_TRY_STMT:
+      PKL_PASS (PKL_AST_TRY_STMT_BODY (node));
+      if (PKL_AST_TRY_STMT_HANDLER (node))
+        PKL_PASS (PKL_AST_TRY_STMT_HANDLER (node));
+      if (PKL_AST_TRY_STMT_ARG (node))
+        PKL_PASS (PKL_AST_TRY_STMT_ARG (node));
+      if (PKL_AST_TRY_STMT_EXP (node))
+        PKL_PASS (PKL_AST_TRY_STMT_EXP (node));
       break;
     case PKL_AST_RAISE_STMT:
       if (PKL_AST_RAISE_STMT_EXP (node))

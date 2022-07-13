@@ -73,6 +73,7 @@ _________________
 .. 2. The bison Parser in pkl-tab.y
 .. 3. The AST
 ..... 1. Loop Statements
+..... 2. try Statements
 .. 4. Compiler Passes and Phases
 ..... 1. Naming Conventions for Phases
 ..... 2. Naming Conventions for Handlers
@@ -1303,6 +1304,37 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   |     +-- condition (SELECTOR)
   |     +-- body
   `----
+
+
+11.3.2 try Statements
+---------------------
+
+  There are several syntactic forms of this statement:
+
+  ,----
+  | try CODE catch HANDLER
+  | try CODE catch if EXP HANDLER
+  | try CODE catch (ARG) HANDLER
+  | try CODE until EXP
+  `----
+
+
+  try statements are represented with trees like:
+
+  ,----
+  | try_stmt
+  | |
+  | +-- try_stmt_body
+  | |   |
+  | |   +-- code
+  | |
+  | +-- [arg]
+  | +-- [exp]
+  | +-- handler
+  `----
+
+
+  where ARG and EXP are exclusive.
 
 
 11.4 Compiler Passes and Phases

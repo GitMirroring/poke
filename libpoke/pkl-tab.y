@@ -2516,20 +2516,35 @@ stmt:
                 }
         | TRY stmt CATCH comp_stmt
                 {
-                  $$ = pkl_ast_make_try_catch_stmt (pkl_parser->ast,
-                                                    $2, $4, NULL, NULL);
+                  pkl_ast_node body = pkl_ast_make_try_stmt_body (pkl_parser->ast,
+                                                                  $2);
+
+                  $$ = pkl_ast_make_try_stmt (pkl_parser->ast,
+                                              PKL_AST_TRY_STMT_KIND_CATCH,
+                                              body, $4, NULL, NULL);
+                  PKL_AST_LOC (body) = @2;
                   PKL_AST_LOC ($$) = @$;
                 }
         | TRY stmt CATCH IF expression comp_stmt
                 {
-                  $$ = pkl_ast_make_try_catch_stmt (pkl_parser->ast,
-                                                    $2, $6, NULL, $5);
+                  pkl_ast_node body = pkl_ast_make_try_stmt_body (pkl_parser->ast,
+                                                                  $2);
+
+                  $$ = pkl_ast_make_try_stmt (pkl_parser->ast,
+                                              PKL_AST_TRY_STMT_KIND_CATCH,
+                                              body, $6, NULL, $5);
+                  PKL_AST_LOC (body) = @2;
                   PKL_AST_LOC ($$) = @$;
                 }
         | TRY stmt CATCH  '(' pushlevel function_arg ')' comp_stmt
                 {
-                  $$ = pkl_ast_make_try_catch_stmt (pkl_parser->ast,
-                                                    $2, $8, $6, NULL);
+                  pkl_ast_node body = pkl_ast_make_try_stmt_body (pkl_parser->ast,
+                                                                  $2);
+
+                  $$ = pkl_ast_make_try_stmt (pkl_parser->ast,
+                                              PKL_AST_TRY_STMT_KIND_CATCH,
+                                              body, $8, $6, NULL);
+                  PKL_AST_LOC (body) = @2;
                   PKL_AST_LOC ($$) = @$;
 
                   /* Pop the frame introduced by `pushlevel'
@@ -2538,8 +2553,14 @@ stmt:
                 }
         | TRY stmt UNTIL expression ';'
                 {
-                  $$ = pkl_ast_make_try_until_stmt (pkl_parser->ast,
-                                                    $2, $4);
+                  pkl_ast_node body = pkl_ast_make_try_stmt_body (pkl_parser->ast,
+                                                                  $2);
+
+                  $$ = pkl_ast_make_try_stmt (pkl_parser->ast,
+                                              PKL_AST_TRY_STMT_KIND_UNTIL,
+                                              body, NULL /* handler */,
+                                              NULL /* arg */, $4);
+                  PKL_AST_LOC (body) = @2;
                   PKL_AST_LOC ($$) = @$;
 
                   /* Annotate the contained BREAK and CONTINUE

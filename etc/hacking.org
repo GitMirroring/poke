@@ -988,6 +988,29 @@ have a testsuite in =testsuite/poke.FOO= with a driver
     :     +-- condition (SELECTOR)
     :     +-- body
 
+*** try Statements
+
+    There are several syntactic forms of this statement:
+
+    : try CODE catch HANDLER
+    : try CODE catch if EXP HANDLER
+    : try CODE catch (ARG) HANDLER
+    : try CODE until EXP
+    
+    try statements are represented with trees like:
+
+    : try_stmt
+    : |
+    : +-- try_stmt_body
+    : |   |
+    : |   +-- code
+    : |
+    : +-- [arg]
+    : +-- [exp]
+    : +-- handler
+    
+    where ARG and EXP are exclusive.
+
 ** Compiler Passes and Phases
 
    These are the phases currently implemented in the poke compiler:

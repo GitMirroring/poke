@@ -2061,44 +2061,43 @@ pkl_ast_make_exp_stmt (pkl_ast ast, pkl_ast_node exp)
   return exp_stmt;
 }
 
-/* Build and return an AST node for a try-until statement.  */
+/* Build and return an AST node for a `try' statement.  */
 
 pkl_ast_node
-pkl_ast_make_try_until_stmt (pkl_ast ast, pkl_ast_node code,
-                             pkl_ast_node exp)
+pkl_ast_make_try_stmt (pkl_ast ast,
+                       int kind,
+                       pkl_ast_node body, pkl_ast_node handler,
+                       pkl_ast_node arg, pkl_ast_node exp)
 {
-  pkl_ast_node try_until_stmt = pkl_ast_make_node (ast,
-                                                   PKL_AST_TRY_UNTIL_STMT);
+  pkl_ast_node try_stmt = pkl_ast_make_node (ast,
+                                             PKL_AST_TRY_STMT);
 
-  assert (code && exp);
+  assert (body);
 
-  PKL_AST_TRY_UNTIL_STMT_CODE (try_until_stmt) = ASTREF (code);
-  PKL_AST_TRY_UNTIL_STMT_EXP (try_until_stmt) = ASTREF (exp);
+  PKL_AST_TRY_STMT_KIND (try_stmt) = kind;
+  PKL_AST_TRY_STMT_BODY (try_stmt) = ASTREF (body);
+  if (handler)
+    PKL_AST_TRY_STMT_HANDLER (try_stmt) = ASTREF (handler);
+  if (arg)
+    PKL_AST_TRY_STMT_ARG (try_stmt) = ASTREF (arg);
+  if (exp)
+    PKL_AST_TRY_STMT_EXP (try_stmt) = ASTREF (exp);
 
-  return try_until_stmt;
+  return try_stmt;
 }
 
-/* Build and return an AST node for a try-catch statement.  */
+/* Build and return an AST node for the body of a `try' statement.  */
 
 pkl_ast_node
-pkl_ast_make_try_catch_stmt (pkl_ast ast, pkl_ast_node code,
-                             pkl_ast_node handler, pkl_ast_node arg,
-                             pkl_ast_node exp)
+pkl_ast_make_try_stmt_body (pkl_ast ast, pkl_ast_node code)
 {
-  pkl_ast_node try_catch_stmt = pkl_ast_make_node (ast,
-                                                   PKL_AST_TRY_CATCH_STMT);
+  pkl_ast_node try_stmt_body = pkl_ast_make_node (ast,
+                                                  PKL_AST_TRY_STMT_BODY);
 
-  assert (code && handler);
-  assert (!arg || !exp);
+  assert (code);
 
-  PKL_AST_TRY_CATCH_STMT_CODE (try_catch_stmt) = ASTREF (code);
-  PKL_AST_TRY_CATCH_STMT_HANDLER (try_catch_stmt) = ASTREF (handler);
-  if (arg)
-    PKL_AST_TRY_CATCH_STMT_ARG (try_catch_stmt) = ASTREF (arg);
-  if (exp)
-    PKL_AST_TRY_CATCH_STMT_EXP (try_catch_stmt) = ASTREF (exp);
-
-  return try_catch_stmt;
+  PKL_AST_TRY_STMT_BODY_CODE (try_stmt_body) = ASTREF (code);
+  return try_stmt_body;
 }
 
 /* Build and return an AST node for a `print' statement.  */
@@ -2515,20 +2514,20 @@ pkl_ast_node_free (pkl_ast_node ast)
       pkl_ast_node_free (PKL_AST_EXP_STMT_EXP (ast));
       break;
 
-    case PKL_AST_TRY_CATCH_STMT:
+    case PKL_AST_TRY_STMT:
 
-      pkl_ast_node_free (PKL_AST_TRY_CATCH_STMT_CODE (ast));
-      pkl_ast_node_free (PKL_AST_TRY_CATCH_STMT_HANDLER (ast));
-      pkl_ast_node_free (PKL_AST_TRY_CATCH_STMT_ARG (ast));
-      pkl_ast_node_free (PKL_AST_TRY_CATCH_STMT_EXP (ast));
+      pkl_ast_node_free (PKL_AST_TRY_STMT_BODY (ast));
+      pkl_ast_node_free (PKL_AST_TRY_STMT_HANDLER (ast));
+      pkl_ast_node_free (PKL_AST_TRY_STMT_ARG (ast));
+      pkl_ast_node_free (PKL_AST_TRY_STMT_EXP (ast));
       break;
 
-    case PKL_AST_TRY_UNTIL_STMT:
+    case PKL_AST_TRY_STMT_BODY:
 
-      pkl_ast_node_free (PKL_AST_TRY_UNTIL_STMT_CODE (ast));
-      pkl_ast_node_free (PKL_AST_TRY_UNTIL_STMT_EXP (ast));
+      pkl_ast_node_free (PKL_AST_TRY_STMT_BODY_CODE (ast));
       break;
 
+      
     case PKL_AST_FORMAT_ARG:
       free (PKL_AST_FORMAT_ARG_SUFFIX (ast));
       free (PKL_AST_FORMAT_ARG_BEGIN_SC (ast));
@@ -2669,22 +2668,26 @@ pkl_ast_finish_breaks_1 (pkl_ast_node entity, pkl_ast_node stmt,
                                  PKL_AST_IF_STMT_ELSE_STMT (stmt),
                                  nframes);
       break;
-    case PKL_AST_TRY_CATCH_STMT:
+    case PKL_AST_TRY_STMT_BODY:
       pkl_ast_finish_breaks_1 (entity,
-                               PKL_AST_TRY_CATCH_STMT_CODE (stmt),
+                               PKL_AST_TRY_STMT_BODY_CODE (stmt),
                                nframes);
-      if (PKL_AST_TRY_CATCH_STMT_ARG (stmt))
-        *nframes += 1;
-      pkl_ast_finish_breaks_1 (entity,
-                               PKL_AST_TRY_CATCH_STMT_HANDLER (stmt),
-                               nframes);
-      if (PKL_AST_TRY_CATCH_STMT_ARG (stmt))
-        *nframes -=1;
       break;
-    case PKL_AST_TRY_UNTIL_STMT:
+    case PKL_AST_TRY_STMT:
       pkl_ast_finish_breaks_1 (entity,
-                               PKL_AST_TRY_CATCH_STMT_CODE (stmt),
+                               PKL_AST_TRY_STMT_BODY (stmt),
                                nframes);
+
+      if (PKL_AST_TRY_STMT_KIND (stmt) == PKL_AST_TRY_STMT_KIND_CATCH)
+        {
+          if (PKL_AST_TRY_STMT_ARG (stmt))
+            *nframes += 1;
+          pkl_ast_finish_breaks_1 (entity,
+                                   PKL_AST_TRY_STMT_HANDLER (stmt),
+                                   nframes);
+          if (PKL_AST_TRY_STMT_ARG (stmt))
+            *nframes -=1;
+        }
       break;
     case PKL_AST_DECL:
     case PKL_AST_RETURN_STMT:
@@ -2791,22 +2794,22 @@ pkl_ast_finish_returns_1 (pkl_ast_node function, pkl_ast_node stmt,
           *ndrops -= 3;
         break;
       }
-    case PKL_AST_TRY_CATCH_STMT:
+    case PKL_AST_TRY_STMT_BODY:
       *npopes += 1;
       pkl_ast_finish_returns_1 (function,
-                                PKL_AST_TRY_CATCH_STMT_CODE (stmt),
+                                PKL_AST_TRY_STMT_BODY_CODE (stmt),
                                 ndrops, npopes);
       *npopes -= 1;
-      pkl_ast_finish_returns_1 (function,
-                                PKL_AST_TRY_CATCH_STMT_HANDLER (stmt),
-                                ndrops, npopes);
       break;
-    case PKL_AST_TRY_UNTIL_STMT:
-      *npopes += 1;
+    case PKL_AST_TRY_STMT:
       pkl_ast_finish_returns_1 (function,
-                                PKL_AST_TRY_UNTIL_STMT_CODE (stmt),
+                                PKL_AST_TRY_STMT_BODY (stmt),
                                 ndrops, npopes);
-      *npopes -= 1;
+
+      if (PKL_AST_TRY_STMT_HANDLER (stmt))
+        pkl_ast_finish_returns_1 (function,
+                                  PKL_AST_TRY_STMT_HANDLER (stmt),
+                                  ndrops, npopes);
       break;
     case PKL_AST_DECL:
     case PKL_AST_EXP_STMT:
@@ -3418,22 +3421,22 @@ pkl_ast_print_1 (FILE *fp, pkl_ast_node ast, int indent)
       PRINT_AST_SUBAST (exp_stmt, EXP_STMT_EXP);
       break;
 
-    case PKL_AST_TRY_CATCH_STMT:
-      IPRINTF ("TRY_CATCH_STMT::\n");
+    case PKL_AST_TRY_STMT_BODY:
+      IPRINTF ("TRY_STMT_BODY::\n");
 
       PRINT_COMMON_FIELDS;
-      PRINT_AST_SUBAST (try_catch_stmt_code, TRY_CATCH_STMT_CODE);
-      PRINT_AST_SUBAST (try_catch_stmt_handler, TRY_CATCH_STMT_HANDLER);
-      PRINT_AST_SUBAST (try_catch_stmt_arg, TRY_CATCH_STMT_ARG);
-      PRINT_AST_SUBAST (try_catch_stmt_exp, TRY_CATCH_STMT_EXP);
+      PRINT_AST_SUBAST (try_stmt_body_code, TRY_STMT_BODY_CODE);
       break;
 
-    case PKL_AST_TRY_UNTIL_STMT:
-      IPRINTF ("TRY_UNTIL_STMT::\n");
+    case PKL_AST_TRY_STMT:
+      IPRINTF ("TRY_STMT::\n");
 
       PRINT_COMMON_FIELDS;
-      PRINT_AST_SUBAST (try_until_stmt_code, TRY_UNTIL_STMT_CODE);
-      PRINT_AST_SUBAST (try_until_stmt_exp, TRY_UNTIL_STMT_EXP);
+      PRINT_AST_IMM (kind, TRY_STMT_KIND, "%d");
+      PRINT_AST_SUBAST (try_stmt_body, TRY_STMT_BODY);
+      PRINT_AST_SUBAST (try_stmt_handler, TRY_STMT_HANDLER);
+      PRINT_AST_SUBAST (try_stmt_arg, TRY_STMT_ARG);
+      PRINT_AST_SUBAST (try_stmt_exp, TRY_STMT_EXP);
       break;
 
     case PKL_AST_PRINT_STMT:
