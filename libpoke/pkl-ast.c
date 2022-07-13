@@ -2527,7 +2527,6 @@ pkl_ast_node_free (pkl_ast_node ast)
       pkl_ast_node_free (PKL_AST_TRY_STMT_BODY_CODE (ast));
       break;
 
-      
     case PKL_AST_FORMAT_ARG:
       free (PKL_AST_FORMAT_ARG_SUFFIX (ast));
       free (PKL_AST_FORMAT_ARG_BEGIN_SC (ast));

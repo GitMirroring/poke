@@ -996,7 +996,7 @@ have a testsuite in =testsuite/poke.FOO= with a driver
     : try CODE catch if EXP HANDLER
     : try CODE catch (ARG) HANDLER
     : try CODE until EXP
-    
+
     try statements are represented with trees like:
 
     : try_stmt
@@ -1008,7 +1008,7 @@ have a testsuite in =testsuite/poke.FOO= with a driver
     : +-- [arg]
     : +-- [exp]
     : +-- handler
-    
+
     where ARG and EXP are exclusive.
 
 ** Compiler Passes and Phases
