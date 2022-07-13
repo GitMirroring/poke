@@ -78,7 +78,7 @@ struct pkl_trans_payload
 {
   int errors;
   int add_frames;
-  struct pkl_trans_function_ctx functions[PKL_TRANS_MAX_ENDIAN];
+  struct pkl_trans_function_ctx functions[PKL_TRANS_MAX_FUNCTION_NEST];
   int next_function;
   enum pkl_ast_endian endian[PKL_TRANS_MAX_ENDIAN];
   int cur_endian;
