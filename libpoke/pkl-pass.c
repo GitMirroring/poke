@@ -548,6 +548,9 @@ pkl_do_pass_1 (pkl_compiler compiler,
     case PKL_AST_TRY_STMT_BODY:
       PKL_PASS (PKL_AST_TRY_STMT_BODY_CODE (node));
       break;
+    case PKL_AST_TRY_STMT_HANDLER:
+      PKL_PASS (PKL_AST_TRY_STMT_HANDLER_CODE (node));
+      break;
     case PKL_AST_TRY_STMT:
       PKL_PASS (PKL_AST_TRY_STMT_BODY (node));
       if (PKL_AST_TRY_STMT_HANDLER (node))

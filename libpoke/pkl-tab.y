@@ -2507,35 +2507,44 @@ stmt:
                 }
         | TRY stmt CATCH comp_stmt
                 {
-                  pkl_ast_node body = pkl_ast_make_try_stmt_body (pkl_parser->ast,
-                                                                  $2);
+                  pkl_ast_node body
+                    = pkl_ast_make_try_stmt_body (pkl_parser->ast, $2);
+                  pkl_ast_node handler
+                    = pkl_ast_make_try_stmt_handler (pkl_parser->ast, $4);
 
                   $$ = pkl_ast_make_try_stmt (pkl_parser->ast,
                                               PKL_AST_TRY_STMT_KIND_CATCH,
-                                              body, $4, NULL, NULL);
+                                              body, handler, NULL, NULL);
                   PKL_AST_LOC (body) = @2;
+                  PKL_AST_LOC (handler) = @4;
                   PKL_AST_LOC ($$) = @$;
                 }
         | TRY stmt CATCH IF expression comp_stmt
                 {
-                  pkl_ast_node body = pkl_ast_make_try_stmt_body (pkl_parser->ast,
-                                                                  $2);
+                  pkl_ast_node body
+                    = pkl_ast_make_try_stmt_body (pkl_parser->ast, $2);
+                  pkl_ast_node handler
+                    = pkl_ast_make_try_stmt_handler (pkl_parser->ast, $6);
 
                   $$ = pkl_ast_make_try_stmt (pkl_parser->ast,
                                               PKL_AST_TRY_STMT_KIND_CATCH,
-                                              body, $6, NULL, $5);
+                                              body, handler, NULL, $5);
                   PKL_AST_LOC (body) = @2;
+                  PKL_AST_LOC (handler) = @6;
                   PKL_AST_LOC ($$) = @$;
                 }
         | TRY stmt CATCH  '(' pushlevel function_arg ')' comp_stmt
                 {
-                  pkl_ast_node body = pkl_ast_make_try_stmt_body (pkl_parser->ast,
-                                                                  $2);
+                  pkl_ast_node body
+                    = pkl_ast_make_try_stmt_body (pkl_parser->ast, $2);
+                  pkl_ast_node handler
+                    = pkl_ast_make_try_stmt_handler (pkl_parser->ast, $8);
 
                   $$ = pkl_ast_make_try_stmt (pkl_parser->ast,
                                               PKL_AST_TRY_STMT_KIND_CATCH,
-                                              body, $8, $6, NULL);
+                                              body, handler, $6, NULL);
                   PKL_AST_LOC (body) = @2;
+                  PKL_AST_LOC (handler) = @8;
                   PKL_AST_LOC ($$) = @$;
 
                   /* Pop the frame introduced by `pushlevel'

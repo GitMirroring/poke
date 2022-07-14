@@ -85,6 +85,7 @@ enum pkl_ast_code
   PKL_AST_EXP_STMT,
   PKL_AST_TRY_STMT,
   PKL_AST_TRY_STMT_BODY,
+  PKL_AST_TRY_STMT_HANDLER,
   PKL_AST_PRINT_STMT,
   PKL_AST_BREAK_STMT,
   PKL_AST_CONTINUE_STMT,
@@ -1846,6 +1847,23 @@ struct pkl_ast_try_stmt_body
 
 pkl_ast_node pkl_ast_make_try_stmt_body (pkl_ast ast, pkl_ast_node code);
 
+/* PKL_AST_TRY_STMT_HANDLER nodes represent the handler part of the
+   try-catch statements.
+
+   CODE is a PKL_AST_COMP_STMT node, or NULL if the node corresponds
+   to a try-until statement.  */
+
+#define PKL_AST_TRY_STMT_HANDLER_CODE(AST) ((AST)->try_stmt_handler.code)
+
+struct pkl_ast_try_stmt_handler
+{
+  struct pkl_ast_common common;
+
+  union pkl_ast_node *code;
+};
+
+pkl_ast_node pkl_ast_make_try_stmt_handler (pkl_ast ast, pkl_ast_node code);
+
 /* PKL_AST_PRINT_STMT nodes represent `print' and `printf' statements.
 
    STR_EXP, if not NULL, is an expression node of type string.  In
@@ -1982,6 +2000,7 @@ union pkl_ast_node
   struct pkl_ast_exp_stmt exp_stmt;
   struct pkl_ast_try_stmt try_stmt;
   struct pkl_ast_try_stmt_body try_stmt_body;
+  struct pkl_ast_try_stmt_body try_stmt_handler;
   struct pkl_ast_break_stmt break_stmt;
   struct pkl_ast_continue_stmt continue_stmt;
   struct pkl_ast_raise_stmt raise_stmt;

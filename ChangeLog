@@ -1,3 +1,23 @@
+2022-07-17  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* etc/hacking.org (try_stmt): Update the topology.
+	* HACKING (try_stmt): Update.
+	* libpoke/pkl-ast.h (enum pkl_ast_code): Add
+	PKL_AST_TRY_STMT_HANDLER.
+	(PKL_AST_TRY_STMT_HANDLER_CODE): New macro.
+	(struct pkl_ast_try_stmt_handler): New struct.
+	(pkl_ast_make_try_stmt_handler): New function.
+	(union pkl_ast_node): Add `try_stmt_handler`.
+	* libpoke/pkl-ast.c (pkl_ast_make_try_stmt_handler): New function.
+	(pkl_ast_node_free): Add case for TRY_STMT_HANDLER.
+	(pkl_ast_print_1): Likewise.
+	(pkl_ast_finish_breaks_1): Likewise.
+	* libpoke/pkl-tab.y (stmt): Adapt to use
+	`pkl_ast_make_try_stmt_handler` in try-catch statements.
+	* libpoke/pkl-pass.c (pkl_do_pass_1): Add case for TRY_STMT_HANDLER.
+	* libpoke/pkl-gen.c (pkl_gen_ps_try_stmt_handler): New handler.
+	(pkl_phase_gen): Register new handler.
+
 2022-07-17  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-ast.h (struct pkl_ast_var): New field is_indexed.

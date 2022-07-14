@@ -1775,6 +1775,17 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_try_stmt_body)
 PKL_PHASE_END_HANDLER
 
 /*
+ * | CODE
+ * TRY_STMT_HANDLER
+ */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_try_stmt_handler)
+{
+  /* Nothing to do here.  */
+}
+PKL_PHASE_END_HANDLER
+
+/*
  * | BODY
  * | [HANDLER]
  * | [ARG]
@@ -4657,6 +4668,7 @@ struct pkl_phase pkl_phase_gen =
    PKL_PHASE_PS_HANDLER (PKL_AST_RAISE_STMT, pkl_gen_ps_raise_stmt),
    PKL_PHASE_PR_HANDLER (PKL_AST_TRY_STMT, pkl_gen_pr_try_stmt),
    PKL_PHASE_PS_HANDLER (PKL_AST_TRY_STMT_BODY, pkl_gen_ps_try_stmt_body),
+   PKL_PHASE_PS_HANDLER (PKL_AST_TRY_STMT_HANDLER, pkl_gen_ps_try_stmt_handler),
    PKL_PHASE_PS_HANDLER (PKL_AST_FUNCALL_ARG, pkl_gen_ps_funcall_arg),
    PKL_PHASE_PR_HANDLER (PKL_AST_FUNCALL, pkl_gen_pr_funcall),
    PKL_PHASE_PR_HANDLER (PKL_AST_FUNC, pkl_gen_pr_func),

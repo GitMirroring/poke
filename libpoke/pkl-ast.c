@@ -2100,6 +2100,20 @@ pkl_ast_make_try_stmt_body (pkl_ast ast, pkl_ast_node code)
   return try_stmt_body;
 }
 
+/* Build and return an AST node for handler of a `try-catch' statement.  */
+
+pkl_ast_node
+pkl_ast_make_try_stmt_handler (pkl_ast ast, pkl_ast_node code)
+{
+  pkl_ast_node try_stmt_handler
+    = pkl_ast_make_node (ast, PKL_AST_TRY_STMT_HANDLER);
+
+  assert (code);
+
+  PKL_AST_TRY_STMT_HANDLER_CODE (try_stmt_handler) = ASTREF (code);
+  return try_stmt_handler;
+}
+
 /* Build and return an AST node for a `print' statement.  */
 
 pkl_ast_node
@@ -2527,6 +2541,11 @@ pkl_ast_node_free (pkl_ast_node ast)
       pkl_ast_node_free (PKL_AST_TRY_STMT_BODY_CODE (ast));
       break;
 
+    case PKL_AST_TRY_STMT_HANDLER:
+
+      pkl_ast_node_free (PKL_AST_TRY_STMT_HANDLER_CODE (ast));
+      break;
+
     case PKL_AST_FORMAT_ARG:
       free (PKL_AST_FORMAT_ARG_SUFFIX (ast));
       free (PKL_AST_FORMAT_ARG_BEGIN_SC (ast));
@@ -2670,6 +2689,11 @@ pkl_ast_finish_breaks_1 (pkl_ast_node entity, pkl_ast_node stmt,
     case PKL_AST_TRY_STMT_BODY:
       pkl_ast_finish_breaks_1 (entity,
                                PKL_AST_TRY_STMT_BODY_CODE (stmt),
+                               nframes);
+      break;
+    case PKL_AST_TRY_STMT_HANDLER:
+      pkl_ast_finish_breaks_1 (entity,
+                               PKL_AST_TRY_STMT_HANDLER_CODE (stmt),
                                nframes);
       break;
     case PKL_AST_TRY_STMT:
@@ -3337,6 +3361,13 @@ pkl_ast_print_1 (FILE *fp, pkl_ast_node ast, int indent)
 
       PRINT_COMMON_FIELDS;
       PRINT_AST_SUBAST (try_stmt_body_code, TRY_STMT_BODY_CODE);
+      break;
+
+    case PKL_AST_TRY_STMT_HANDLER:
+      IPRINTF ("TRY_STMT_HANDLER::\n");
+
+      PRINT_COMMON_FIELDS;
+      PRINT_AST_SUBAST (try_stmt_handler_code, TRY_STMT_HANDLER_CODE);
       break;
 
     case PKL_AST_TRY_STMT:

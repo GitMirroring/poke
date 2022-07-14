@@ -1001,9 +1001,12 @@ have a testsuite in =testsuite/poke.FOO= with a driver
     : |   |
     : |   +-- code
     : |
+    : +-- try_stmt_handler
+    : |   |
+    : |   +-- code
+    : |
     : +-- [arg]
     : +-- [exp]
-    : +-- handler
 
     where ARG and EXP are exclusive.
 
