@@ -861,7 +861,6 @@ have a testsuite in =testsuite/poke.FOO= with a driver
   The command subsystem resides in the =poke= executable.
 
 * The Poke Compiler
-
 ** Compiler Overview
 
    This figure depicts the architecture of the compiler:
@@ -917,9 +916,9 @@ have a testsuite in =testsuite/poke.FOO= with a driver
 
    The compiler operates on an abstract syntax tree that represent the
    program being compiled.  The following subsections discuss some
-   aspects of the structure of the AST.
+   useful aspects of the structure of the AST.
 
-*** Loop Statements
+*** loop_stmt
 
     Loop statements are represented with trees like:
 
@@ -988,7 +987,7 @@ have a testsuite in =testsuite/poke.FOO= with a driver
     :     +-- condition (SELECTOR)
     :     +-- body
 
-*** try Statements
+*** try_stmt
 
     There are several syntactic forms of this statement:
 
@@ -1010,6 +1009,67 @@ have a testsuite in =testsuite/poke.FOO= with a driver
     : +-- handler
 
     where ARG and EXP are exclusive.
+
+*** exp
+
+    Expressions are the application of some *operator* to one or more
+    *operators*.  The Poke language supports unary, binary and ternary
+    operators.
+
+    Expressions are represented with trees like:
+
+    : exp
+    : |
+    : +-- code
+    : +-- attr
+    : +-- flag
+    : +-- numops
+    : +-- operands[3]
+    :     |
+    :     +-- [operand]
+    :     +-- [operand]
+    :     +-- [operand]
+
+    Where =code= identifies the operator of the expression.  Operators
+    are defined in the =libpoke/pkl-ops.def= file.
+
+    If the operator is an attribute, then =attr= identifies the
+    invoked attribute.  Attributes are defined in the
+    =libpoke/pkl-attrs.def= file.  This field =attr= is initialized in
+    the =trans1= phase.
+
+    The =exp= AST node is used for all the Poke unary and binary
+    operators, which only use two of the =operands=.
+
+    Additionally, the application of an attribute to which an argument
+    is passed, like in:
+
+    : foo'elem (1)
+
+    is encoded as an =exp= node with three operands: the first operand
+    holds =foo=, the second operand an identifier for the attribute
+    =elem= and the third operand the expression passed to the
+    attribute (in this case =1=).  A handler in =trans1= transforms
+    this ternary expression node in a binary expression, filling
+    =attr= in the process.
+
+    Note that the Poke ternary conditional operator =? := is *not*
+    implemented using =exp= nodes, but =cond_exp= AST nodes.
+
+*** cond_exp
+
+    This AST node is used to encode Poke's ternary conditional
+    operator, which looks like:
+
+    : cond_exp ? then_exp : else_exp
+
+    It uses trees like this:
+
+    : cond_exp
+    : |
+    : +-- cond
+    : +-- thenexp
+    : +-- elseexp
 
 ** Compiler Passes and Phases
 

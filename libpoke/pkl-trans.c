@@ -35,30 +35,9 @@
 #include "pkl-trans.h"
 
 /* This file implements several transformation compiler phases which,
-   generally speaking, are restartable.
+   generally speaking, are restartable.  */
 
-   `transl' makes adjustments to the compile-time lexical environment,
-            after parsing.  This phase should run on its own pass, and
-            is not restartable.
-
-   `trans1' finishes ARRAY, STRUCT and TYPE_STRUCT nodes by
-            determining its number of elements and characteristics.
-            It also finishes OFFSET nodes by replacing certain unit
-            identifiers with factors and completes/annotates other
-            structures.  It also finishes STRING nodes.
-
-   `trans2' scans the AST and annotates nodes that are literals.
-            Henceforth any other phase relying on this information
-            should be executed after trans2.
-
-   `trans3' handles nodes that can be replaced for something else at
-            compilation-time: SIZEOF for complete types.  This phase
-            is intended to be executed short before code generation.
-
-   `trans4' is executed just before the code generation pass.
-
-   See the handlers below for details.  */
-
+/* Handling of the stack of endianness.  */
 
 #define PKL_TRANS_PAYLOAD ((pkl_trans_payload) PKL_PASS_PAYLOAD)
 
@@ -228,6 +207,9 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_funcall)
   PKL_AST_FUNCALL_NARG (PKL_PASS_NODE) = nargs;
 }
 PKL_PHASE_END_HANDLER
+
+/* Annotate whether declaration nodes are in the body of a struct
+   type, as this implies treating them especially somewhere else.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_decl)
 {
@@ -448,10 +430,13 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_string)
 }
 PKL_PHASE_END_HANDLER
 
-/* Determine the attribute code of attribute expressions, emitting an
-   error if the given attribute name is not defined.  Finally, turn
-   the ternary expression into an either unary or binary expression,
-   depending whether the attribute gets an argument or it doesn't.  */
+/* At this point the second operand of attribute operations is an
+   identifier with the name of the attribute (.i.e. "length" for
+   foo'length).  Determine the corresponding attribute code, emitting
+   an error if the given attribute name is not defined.  Finally, turn
+   the binary or ternary expression into an either unary or binary
+   expression, depending whether the attribute gets an argument or it
+   doesn't.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_op_attr)
 {
@@ -482,8 +467,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_op_attr)
 
   PKL_AST_EXP_ATTR (exp) = attr;
 
-  /* Turn the binary expression into an unary or binary
-     expression.  */
+  /* Turn the expression into an unary or binary expression.  */
   if (PKL_AST_EXP_NUMOPS (exp) == 2)
     {
       PKL_AST_EXP_NUMOPS (exp) = 1;
@@ -498,7 +482,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_op_attr)
 }
 PKL_PHASE_END_HANDLER
 
-/* Push the function in the functions stack.  */
+/* Push the function in the stack of function contexts.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_func)
 {
@@ -506,8 +490,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_func)
 }
 PKL_PHASE_END_HANDLER
 
-/* Set the function's first optional argument and count the number of
-   formal arguments.  */
+/* Annotate the function's first optional argument as such, and count
+   the number of formal arguments the function gets.
+
+   Also, pop the function from the stack of function contexts.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_func)
 {
@@ -537,8 +523,14 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_func)
 }
 PKL_PHASE_END_HANDLER
 
-/* Function types from function type literals don't have the number of
-   elements set.  Do it here.  */
+/* Determine the number of formal arguments taken by functions of this
+   type and annotate it in the function type.
+
+   Determine the first optional formal argument and annotate it in the
+   function type.
+
+   Determine whether the function gets a vararg and annotate it in the
+   function type.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_type_function)
 {
@@ -1080,8 +1072,13 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_array)
 }
 PKL_PHASE_END_HANDLER
 
-/* Compound statements introduce a lexical level.  Update the function
-   back.  */
+/* Compound statements introduce a lexical level.  Update the current
+   function context accordingly.
+
+   If the compound statement is the first operand of an excond
+   operator, then it increases the number of exception handlers that
+   need to be eventually poped.  Update the current function context
+   accordingly */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_comp_stmt)
 {
@@ -1101,7 +1098,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_comp_stmt)
 PKL_PHASE_END_HANDLER
 
 /* FOR-IN statements introduce a lexical level if they use an iterator
-   or have a head of declarations.  Update the function back accordingly.  */
+   or have a head of declarations.  Update the current function
+   context accordingly.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_loop_stmt_iterator)
 {
@@ -1109,6 +1107,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_loop_stmt_iterator)
     PKL_TRANS_FUNCTION->back++;
 }
 PKL_PHASE_END_HANDLER
+
+/* Likewise.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_loop_stmt)
 {
@@ -1125,6 +1125,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_loop_stmt)
     PKL_TRANS_FUNCTION->ndrops += 3;
 }
 PKL_PHASE_END_HANDLER
+
+/* Likewise.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_loop_stmt)
 {
@@ -1143,7 +1145,13 @@ PKL_PHASE_END_HANDLER
 /* Annotate compount statement nodes with the number of variable and
    function declarations occurring in the statement.
 
-   Update the function back.  */
+   Compound statements introduce a lexical level.  Update the current
+   function context accordingly.
+
+   If the compound statement is the first operand of an excond
+   operator, then it increases the number of exception handlers that
+   need to be eventually poped.  Update the current function context
+   accordingly */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_comp_stmt)
 {
@@ -1177,7 +1185,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_comp_stmt)
 }
 PKL_PHASE_END_HANDLER
 
-/* Push current endianness annotation.  */
+/* Push current endianness annotation if necessary.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_struct_type_field)
 {
@@ -1221,12 +1229,20 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_return_stmt)
 }
 PKL_PHASE_END_HANDLER
 
+/* The body of a try statement increases the number of exception
+   handlers that need to be eventually poped.  Update the current
+   function context accordingly.   */
+
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_try_stmt_body)
 {
   if (PKL_TRANS_FUNCTION)
     PKL_TRANS_FUNCTION->npopes++;
 }
 PKL_PHASE_END_HANDLER
+
+/* The body of a try statement increases the number of exception
+   handlers that need to be eventually poped.  Update the current
+   function context accordingly.   */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_try_stmt_body)
 {

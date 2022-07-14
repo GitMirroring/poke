@@ -452,8 +452,8 @@ pkl_ast_node pkl_ast_make_struct_field (pkl_ast ast,
                                         pkl_ast_node name,
                                         pkl_ast_node exp);
 
-/* PKL_AST_EXP nodes represent unary and binary expressions,
-   consisting on an operator and one or two operators, respectively.
+/* PKL_AST_EXP nodes represent expressions consisting on an operator
+   and one or more operators.
 
    The supported operators are specified in pkl-ops.def.
    The supported attributes are defined in pkl-attrs.def.
