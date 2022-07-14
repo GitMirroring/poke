@@ -107,6 +107,32 @@ pkl_trans_in_functions (struct pkl_trans_function_ctx functions[],
     }                                                           \
   while (0)
 
+/* Handling of the stack of escapable constructions.  */
+
+#define PKL_TRANS_ESCAPABLE                                     \
+  (PKL_TRANS_PAYLOAD->next_escapable == 0                       \
+   ? NULL                                                       \
+   : &PKL_TRANS_PAYLOAD->escapables[PKL_TRANS_PAYLOAD->next_escapable - 1])
+
+#define PKL_TRANS_PUSH_ESCAPABLE(b)                             \
+  do                                                            \
+    {                                                           \
+      assert (PKL_TRANS_PAYLOAD->next_escapable < PKL_TRANS_MAX_COMP_STMT_NEST);\
+      PKL_TRANS_PAYLOAD->escapables[PKL_TRANS_PAYLOAD->next_escapable].nframes  \
+        = 0;                                                    \
+      PKL_TRANS_PAYLOAD->escapables[PKL_TRANS_PAYLOAD->next_escapable++].node \
+        = (b);                                                  \
+    }                                                           \
+  while (0)
+
+#define PKL_TRANS_POP_ESCAPABLE                                 \
+  do                                                            \
+    {                                                           \
+      assert (PKL_TRANS_PAYLOAD->next_escapable > 0);           \
+      PKL_TRANS_PAYLOAD->next_escapable--;                      \
+    }                                                           \
+  while (0)
+
 /* The following handler is used in all trans phases and initializes
    the phase payload.  */
 
@@ -1101,6 +1127,9 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_comp_stmt)
           PKL_TRANS_FUNCTION->npopes++;
         }
     }
+
+  if (PKL_TRANS_ESCAPABLE)
+    PKL_TRANS_ESCAPABLE->nframes++;
 }
 PKL_PHASE_END_HANDLER
 
@@ -1115,7 +1144,12 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_loop_stmt_iterator)
 }
 PKL_PHASE_END_HANDLER
 
-/* Likewise.  */
+/* FOR statements introduce a lexical level if they use an iterator
+   or have a head of declarations.  Update the current function
+   context accordingly.
+
+   FOR statements are escapable constructs, push it to current
+   escapables stack.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_loop_stmt)
 {
@@ -1130,10 +1164,12 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_loop_stmt)
 
   if (PKL_TRANS_FUNCTION && PKL_AST_LOOP_STMT_ITERATOR (stmt))
     PKL_TRANS_FUNCTION->ndrops += 3;
+
+  PKL_TRANS_PUSH_ESCAPABLE (stmt);
 }
 PKL_PHASE_END_HANDLER
 
-/* Likewise.  */
+/* Revert what we did in `pkl_trans1_pr_loop_stmt'.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_loop_stmt)
 {
@@ -1146,6 +1182,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_loop_stmt)
   if (PKL_TRANS_FUNCTION
       && (PKL_TRANS_FUNCTION && PKL_AST_LOOP_STMT_ITERATOR (stmt)))
     PKL_TRANS_FUNCTION->ndrops -= 3;
+
+  PKL_TRANS_POP_ESCAPABLE;
 }
 PKL_PHASE_END_HANDLER
 
@@ -1153,7 +1191,7 @@ PKL_PHASE_END_HANDLER
    function declarations occurring in the statement.
 
    Compound statements introduce a lexical level.  Update the current
-   function context accordingly.
+   function context and current escapable context accordingly.
 
    If the compound statement is the first operand of an excond
    operator, then it increases the number of exception handlers that
@@ -1189,6 +1227,9 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_comp_stmt)
           PKL_TRANS_FUNCTION->npopes--;
         }
     }
+
+  if (PKL_TRANS_ESCAPABLE)
+    PKL_TRANS_ESCAPABLE->nframes--;
 }
 PKL_PHASE_END_HANDLER
 
@@ -1238,23 +1279,106 @@ PKL_PHASE_END_HANDLER
 
 /* The body of a try statement increases the number of exception
    handlers that need to be eventually poped.  Update the current
-   function context accordingly.   */
+   function context accordingly.
+
+   try-until statements are escapable constructs.  Update escapables
+   stack accordingly.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_try_stmt_body)
 {
   if (PKL_TRANS_FUNCTION)
     PKL_TRANS_FUNCTION->npopes++;
+
+  if (PKL_AST_TRY_STMT_KIND (PKL_PASS_PARENT) == PKL_AST_TRY_STMT_KIND_UNTIL)
+    PKL_TRANS_PUSH_ESCAPABLE (PKL_PASS_PARENT);
 }
 PKL_PHASE_END_HANDLER
 
 /* The body of a try statement increases the number of exception
    handlers that need to be eventually poped.  Update the current
-   function context accordingly.   */
+   function context accordingly.
+
+   try-until statements are escapable constructs.  Update escapables
+   stack accordingly.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_try_stmt_body)
 {
   if (PKL_TRANS_FUNCTION)
     PKL_TRANS_FUNCTION->npopes--;
+
+  if (PKL_AST_TRY_STMT_KIND (PKL_PASS_PARENT) == PKL_AST_TRY_STMT_KIND_UNTIL)
+    PKL_TRANS_POP_ESCAPABLE;
+}
+PKL_PHASE_END_HANDLER
+
+/* The handler of a try-catch statement introduces a new lexical
+   level for escapable constructs.  Update the current escapable
+   context.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_try_stmt_handler)
+{
+  if (PKL_TRANS_ESCAPABLE)
+    PKL_TRANS_ESCAPABLE->nframes++;
+}
+PKL_PHASE_END_HANDLER
+
+/* Likewise.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_try_stmt_handler)
+{
+  if (PKL_TRANS_ESCAPABLE)
+    PKL_TRANS_ESCAPABLE->nframes--;
+}
+PKL_PHASE_END_HANDLER
+
+/* try-until statements are escapable constructs.  Update escapables
+   stack accordingly.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_try_stmt)
+{
+  if (PKL_AST_TRY_STMT_KIND (PKL_PASS_NODE) == PKL_AST_TRY_STMT_KIND_UNTIL)
+    PKL_TRANS_PUSH_ESCAPABLE (PKL_PASS_NODE);
+}
+PKL_PHASE_END_HANDLER
+
+/* Likewise.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_try_stmt)
+{
+  if (PKL_AST_TRY_STMT_KIND (PKL_PASS_NODE) == PKL_AST_TRY_STMT_KIND_UNTIL)
+    PKL_TRANS_POP_ESCAPABLE;
+}
+PKL_PHASE_END_HANDLER
+
+/* Annotate break statements with enclosing escapable construct, and
+   with their lexical nesting level with respect to the enclosing
+   escapable construct.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_break_stmt)
+{
+  if (PKL_TRANS_ESCAPABLE)
+    {
+      PKL_AST_BREAK_STMT_ENTITY (PKL_PASS_NODE)
+        = PKL_TRANS_ESCAPABLE->node;
+      PKL_AST_BREAK_STMT_NFRAMES (PKL_PASS_NODE)
+        = PKL_TRANS_ESCAPABLE->nframes;
+    }
+}
+PKL_PHASE_END_HANDLER
+
+/* Annotate continue statements with enclosing escapable construct,
+   and with their lexical nesting level with respect to the enclosing
+   escapable construct.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_continue_stmt)
+{
+  if (PKL_TRANS_ESCAPABLE)
+    {
+      PKL_AST_CONTINUE_STMT_ENTITY (PKL_PASS_NODE)
+        = PKL_TRANS_ESCAPABLE->node;
+      PKL_AST_CONTINUE_STMT_NFRAMES (PKL_PASS_NODE)
+        = PKL_TRANS_ESCAPABLE->nframes;
+    }
 }
 PKL_PHASE_END_HANDLER
 
@@ -1292,7 +1416,13 @@ struct pkl_phase pkl_phase_trans1 =
    PKL_PHASE_PS_HANDLER (PKL_AST_LOOP_STMT_ITERATOR, pkl_trans1_ps_loop_stmt_iterator),
    PKL_PHASE_PR_HANDLER (PKL_AST_LOOP_STMT, pkl_trans1_pr_loop_stmt),
    PKL_PHASE_PS_HANDLER (PKL_AST_LOOP_STMT, pkl_trans1_ps_loop_stmt),
+   PKL_PHASE_PS_HANDLER (PKL_AST_BREAK_STMT, pkl_trans1_ps_break_stmt),
+   PKL_PHASE_PS_HANDLER (PKL_AST_CONTINUE_STMT, pkl_trans1_ps_continue_stmt),
+   PKL_PHASE_PR_HANDLER (PKL_AST_TRY_STMT_BODY, pkl_trans1_pr_try_stmt),
+   PKL_PHASE_PS_HANDLER (PKL_AST_TRY_STMT_BODY, pkl_trans1_ps_try_stmt),
    PKL_PHASE_PR_HANDLER (PKL_AST_TRY_STMT_BODY, pkl_trans1_pr_try_stmt_body),
+   PKL_PHASE_PS_HANDLER (PKL_AST_TRY_STMT_HANDLER, pkl_trans1_ps_try_stmt_handler),
+   PKL_PHASE_PR_HANDLER (PKL_AST_TRY_STMT_HANDLER, pkl_trans1_pr_try_stmt_handler),
    PKL_PHASE_PS_HANDLER (PKL_AST_TRY_STMT_BODY, pkl_trans1_ps_try_stmt_body),
    PKL_PHASE_PR_HANDLER (PKL_AST_STRUCT_TYPE_FIELD, pkl_trans1_pr_struct_type_field),
    PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT_TYPE_FIELD, pkl_trans1_ps_struct_type_field),

@@ -2334,11 +2334,6 @@ stmt:
                                                NULL, /* tail */
                                                $5);  /* body */
                   PKL_AST_LOC ($$) = @$;
-
-                  /* Annotate the contained BREAK and CONTINUE
-                     statements with their lexical level within this
-                     loop.  */
-                  pkl_ast_finish_breaks ($$, $5);
                 }
         | FOR '(' pushlevel simple_declaration ';' expression_opt ';' simple_stmt_list ')' stmt
                 {
@@ -2350,11 +2345,6 @@ stmt:
                                                $8,   /* tail */
                                                $10); /* body */
                   PKL_AST_LOC ($$) = @$;
-
-                  /* Annotate the contained BREAK and CONTINUE
-                     statements with their lexical level within this
-                     loop.  */
-                  pkl_ast_finish_breaks ($$, $10);
 
                   /* Pop the frame introduced by `pushlevel'
                      above.  */
@@ -2369,11 +2359,6 @@ stmt:
                                                NULL, /* head */
                                                $6,   /* tail */
                                                $8);  /* body */
-
-                  /* Annotate the contained BREAK and CONTINUE
-                     statements with their lexical level within this
-                     loop.  */
-                  pkl_ast_finish_breaks ($$, $8);
 
                   PKL_AST_LOC ($$) = @$;
                 }
@@ -2420,11 +2405,6 @@ stmt:
 
                   /* Free the identifier.  */
                   $3 = ASTREF ($3); pkl_ast_node_free ($3);
-
-                  /* Annotate the contained BREAK and CONTINUE
-                     statements with their lexical level within this
-                     loop.  */
-                  pkl_ast_finish_breaks ($$, $9);
 
                   /* Pop the frame introduced by `pushlevel'
                      above.  */
@@ -2473,11 +2453,6 @@ stmt:
                                                $11); /* body */
                   PKL_AST_LOC ($3) = @3;
                   PKL_AST_LOC ($$) = @$;
-
-                  /* Annotate the contained BREAK and CONTINUE
-                     statements with their lexical level within this
-                     loop.  */
-                  pkl_ast_finish_breaks ($$, $11);
 
                   /* Pop the frame introduced by `pushlevel'
                      above.  */
@@ -2562,11 +2537,6 @@ stmt:
                                               NULL /* arg */, $4);
                   PKL_AST_LOC (body) = @2;
                   PKL_AST_LOC ($$) = @$;
-
-                  /* Annotate the contained BREAK and CONTINUE
-                     statements with their lexical level within this
-                     loop.  */
-                  pkl_ast_finish_breaks ($$, $2);
                 }
         | RAISE ';'
                 {

@@ -1,3 +1,30 @@
+2022-07-18  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-ast.h (pkl_ast_finish_breaks): Remove.
+	* libpoke/pkl-ast.c (pkl_ast_finish_breaks): Likewise.
+	(pkl_ast_finish_breaks_1): Likewise.
+	* libpoke/pkl-tab.y (stmt): Likewise.
+	* libpoke/pkl-trans.h (struct pkl_trans_escapable_ctx): New struct.
+	(PKL_TRANS_MAX_COMP_STMT_NEST): New macro.
+	(struct pkl_trans_payload): Add new fields.
+	* libpoke/pkl-trans.c (PKL_TRANS_ESCAPABLE): New macro.
+	(PKL_TRANS_PUSH_ESCAPABLE): Likewise.
+	(PKL_TRANS_POP_ESCAPABLE): Likewise.
+	(pkl_trans1_pr_comp_stmt): Add logic to track lexical frames around
+	`break` and `continue` keywords.
+	(pkl_trans1_ps_comp_stmt): Likewise.
+	(pkl_trans1_pr_loop_stmt): Likewise.
+	(pkl_trans1_ps_loop_stmt): Likewise.
+	(pkl_trans1_pr_try_stmt_body): Likewise.
+	(pkl_trans1_ps_try_stmt_body): Likewise.
+	(pkl_trans1_pr_try_stmt): New handler.
+	(pkl_trans1_ps_try_stmt): Likewise.
+	(pkl_trans1_pr_try_stmt_handler): Likewise.
+	(pkl_trans1_ps_try_stmt_handler): Likewise.
+	(pkl_trans1_ps_break_stmt): Likewise.
+	(pkl_trans1_ps_continue_stmt): Likewise.
+	(pkl_phase_trans1): Register new handlers.
+
 2022-07-17  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* etc/hacking.org (try_stmt): Update the topology.

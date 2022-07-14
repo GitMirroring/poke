@@ -53,6 +53,23 @@ struct pkl_trans_function_ctx
   struct pkl_trans_function_ctx *next;
 };
 
+/* The trans phases keep a stack of escapable entities (loops and
+   try-until statements) and the corresponding `break' and `continue'
+   keywords, while they operate on the AST.
+
+   The following struct implements each entry on the breakable/continuable
+   entities stack.
+
+   NODE is the escapable entity (loop or try-until statement).
+
+   NFRAMES is the number of frames in the body of NODE.  */
+
+struct pkl_trans_escapable_ctx
+{
+  pkl_ast_node node;
+  int nframes;
+};
+
 /* The following struct defines the payload of the trans phases.
 
    ERRORS is the number of errors detected while running the phase.
@@ -69,10 +86,16 @@ struct pkl_trans_function_ctx
    when mapping and writing integral types.
 
    CUR_ENDIAN is the index to ENDIAN and marks the top of the stack of
-   endianness.  Initially PKL_AST_ENDIAN_DFL.  */
+   endianness.  Initially PKL_AST_ENDIAN_DFL.
+
+   ESCAPABLES is a stack of escapables.
+
+   NEXT_ESCAPABLE - 1 is the index for the enclosing escapable
+   entity.  */
 
 #define PKL_TRANS_MAX_FUNCTION_NEST 32
 #define PKL_TRANS_MAX_ENDIAN 25
+#define PKL_TRANS_MAX_COMP_STMT_NEST 32
 
 struct pkl_trans_payload
 {
@@ -82,6 +105,8 @@ struct pkl_trans_payload
   int next_function;
   enum pkl_ast_endian endian[PKL_TRANS_MAX_ENDIAN];
   int cur_endian;
+  struct pkl_trans_escapable_ctx escapables[PKL_TRANS_MAX_COMP_STMT_NEST];
+  int next_escapable;
 };
 
 typedef struct pkl_trans_payload *pkl_trans_payload;
