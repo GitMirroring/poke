@@ -41,9 +41,15 @@ cfg.mk
 m4/*
 
 # Source files.
-src/*.h
-src/*.c
-src/*.pk
+poke/*.h
+poke/*.c
+poke/*.pk
+libpoke/*.h
+libpoke/*.c
+libpoke/*.pk
+poked/*.h
+poked/*.c
+poked/*.pk
 run.in
 
 # Pickle files.
