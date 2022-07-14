@@ -947,9 +947,9 @@ have a testsuite in =testsuite/poke.FOO= with a driver
     :     +-- condition
     :     +-- body
 
-    =while= statements without a condition:
+    =for= statements without a condition:
 
-    : while () BODY
+    : for (;;) BODY
 
     are represented as:
 
