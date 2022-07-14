@@ -1086,14 +1086,16 @@ PKL_PHASE_END_HANDLER
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_comp_stmt)
 {
   if (PKL_TRANS_FUNCTION)
-    PKL_TRANS_FUNCTION->back++;
-
-  if (PKL_PASS_PARENT && PKL_AST_CODE (PKL_PASS_PARENT) == PKL_AST_EXP
-      && PKL_AST_EXP_CODE (PKL_PASS_PARENT) == PKL_AST_OP_EXCOND
-      && PKL_TRANS_FUNCTION)
     {
-      PKL_TRANS_FUNCTION->ndrops++;
-      PKL_TRANS_FUNCTION->npopes++;
+      PKL_TRANS_FUNCTION->back++;
+
+      if (PKL_PASS_PARENT
+          && PKL_AST_CODE (PKL_PASS_PARENT) == PKL_AST_EXP
+          && PKL_AST_EXP_CODE (PKL_PASS_PARENT) == PKL_AST_OP_EXCOND)
+        {
+          PKL_TRANS_FUNCTION->ndrops++;
+          PKL_TRANS_FUNCTION->npopes++;
+        }
     }
 }
 PKL_PHASE_END_HANDLER
@@ -1159,15 +1161,18 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_comp_stmt)
     }
 
   PKL_AST_COMP_STMT_NUMVARS (comp_stmt) = numvars;
-  if (PKL_TRANS_FUNCTION)
-    PKL_TRANS_FUNCTION->back--;
 
-  if (PKL_PASS_PARENT && PKL_AST_CODE (PKL_PASS_PARENT) == PKL_AST_EXP
-      && PKL_AST_EXP_CODE (PKL_PASS_PARENT) == PKL_AST_OP_EXCOND
-      && PKL_TRANS_FUNCTION)
+  if (PKL_TRANS_FUNCTION)
     {
-      PKL_TRANS_FUNCTION->ndrops--;
-      PKL_TRANS_FUNCTION->npopes--;
+      PKL_TRANS_FUNCTION->back--;
+
+      if (PKL_PASS_PARENT
+          && PKL_AST_CODE (PKL_PASS_PARENT) == PKL_AST_EXP
+          && PKL_AST_EXP_CODE (PKL_PASS_PARENT) == PKL_AST_OP_EXCOND)
+        {
+          PKL_TRANS_FUNCTION->ndrops--;
+          PKL_TRANS_FUNCTION->npopes--;
+        }
     }
 }
 PKL_PHASE_END_HANDLER
