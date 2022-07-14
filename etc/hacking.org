@@ -41,17 +41,14 @@ along with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
 
    Jose E. Marchesi	<jemarch@gnu.org>
 
-** Global Reviewers
-
-   Jose E. Marchesi	<jemarch@gnu.org>
-
 ** Maintainers
 
    Maintainers are individuals who are responsible for, and have
    permission to check in changes in, certain subsets of the code, and
-   push them to the master branch.  Note that that maintainers still
-   need approval to check in changes outside of the immediate domain
-   that they maintain.
+   push them to the master branch.  They can also approve patches in
+   these areas, sent by other people.  Note that that maintainers
+   still need approval to check in changes outside of the immediate
+   domain that they maintain.
 
    Note also that maintainers are still asked to send [COMMITTED]
    messages to the list with the patches they push.  This helps to
