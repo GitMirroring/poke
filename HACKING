@@ -1247,10 +1247,10 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   `----
 
 
-  `while' statements without a condition:
+  `for' statements without a condition:
 
   ,----
-  | while () BODY
+  | for (;;) BODY
   `----
 
 
