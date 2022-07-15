@@ -12,17 +12,16 @@ _________________
 1. Nomenclature
 2. Maintenance
 .. 1. Global Maintainer
-.. 2. Global Reviewers
-.. 3. Maintainers
-.. 4. Write After Approval
-.. 5. Personal Branches
-.. 6. Building Release Tarballs
-.. 7. Installing Obvious Changes
-.. 8. The poke.rec database
-.. 9. The source for this HACKING file
-.. 10. The Bugzilla
+.. 2. Maintainers
+.. 3. Write After Approval
+.. 4. Personal Branches
+.. 5. Building Release Tarballs
+.. 6. Installing Obvious Changes
+.. 7. The poke.rec database
+.. 8. The source for this HACKING file
+.. 9. The Bugzilla
 ..... 1. Dealing with spam in the Bugzilla
-.. 11. Backporting to maintenance branches
+.. 10. Backporting to maintenance branches
 3. Development Environment
 .. 1. Autotools
 .. 2. Dejagnu
@@ -158,20 +157,15 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   Jose E. Marchesi <jemarch@gnu.org>
 
 
-2.2 Global Reviewers
-~~~~~~~~~~~~~~~~~~~~
-
-  Jose E. Marchesi <jemarch@gnu.org>
-
-
-2.3 Maintainers
+2.2 Maintainers
 ~~~~~~~~~~~~~~~
 
   Maintainers are individuals who are responsible for, and have
   permission to check in changes in, certain subsets of the code, and
-  push them to the master branch.  Note that that maintainers still need
-  approval to check in changes outside of the immediate domain that they
-  maintain.
+  push them to the master branch.  They can also approve patches in
+  these areas, sent by other people.  Note that that maintainers still
+  need approval to check in changes outside of the immediate domain that
+  they maintain.
 
   Note also that maintainers are still asked to send [COMMITTED]
   messages to the list with the patches they push.  This helps to keep
@@ -183,7 +177,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
                                 Mohammad-Reza Nabipoor <mnabipoor@gnu.org>
 
 
-2.4 Write After Approval
+2.3 Write After Approval
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
   The people below have write access to the git repository, and can
@@ -206,7 +200,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
         Indu Bhagat             <indu.bhagat@oracle.com>
 
 
-2.5 Personal Branches
+2.4 Personal Branches
 ~~~~~~~~~~~~~~~~~~~~~
 
   Anyone having write access to the git repository is allowed to push
@@ -230,14 +224,14 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   branch owner.
 
 
-2.6 Building Release Tarballs
+2.5 Building Release Tarballs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   The standard target `make distcheck' builds a distributable sources
   tarball, and tests that it can be built and tested properly.
 
 
-2.7 Installing Obvious Changes
+2.6 Installing Obvious Changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   Anyone having write access to the git repository is allowed to push
@@ -250,7 +244,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   like `[COMMITTED]'.  Also, make sure to include the patch itself.
 
 
-2.8 The poke.rec database
+2.7 The poke.rec database
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
   We maintain a database in `etc/poke.rec', in the form of a recfile.
@@ -262,7 +256,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   See the comment at the top of `poke.rec' for more information.
 
 
-2.9 The source for this HACKING file
+2.8 The source for this HACKING file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   This file (HACKING) is an ASCII export of the org-mode file in
@@ -275,8 +269,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
     will execute Emacs in batch mode and update HACKING.
 
 
-2.10 The Bugzilla
-~~~~~~~~~~~~~~~~~
+2.9 The Bugzilla
+~~~~~~~~~~~~~~~~
 
   We maintain a bugs database in <https://www.sourceware.org/bugzilla>.
   Our product is `poke', which is divided in several components
@@ -293,8 +287,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   `etc/poke.rec'.
 
 
-2.10.1 Dealing with spam in the Bugzilla
-----------------------------------------
+2.9.1 Dealing with spam in the Bugzilla
+---------------------------------------
 
   Sometimes the bugzilla at sourceware gets some spam, in the form of
   bugs containing crap.  If you see one, you can flag is as spam by
@@ -306,7 +300,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
         Status -> Closed as invalid
 
 
-2.11 Backporting to maintenance branches
+2.10 Backporting to maintenance branches
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   At any time we keep several branches open to development in poke:
@@ -2232,6 +2226,15 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   ,----
   | --disable-dispatch-no-threading --disable-dispatch-minimal-threading
   | --disable-dispatch-direct-threading
+  `----
+
+
+  Other than the configure options above, you will probably want to
+  configure the build to generate debugging information, and disable
+  compiler optimizations, using something like:
+
+  ,----
+  | CFLAGS="-O0 -g3" ../configure [...]
   `----
 
 

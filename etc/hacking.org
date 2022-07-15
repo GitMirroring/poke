@@ -1782,6 +1782,12 @@ have a testsuite in =testsuite/poke.FOO= with a driver
    : --disable-dispatch-no-threading --disable-dispatch-minimal-threading
    : --disable-dispatch-direct-threading
 
+   Other than the configure options above, you will probably want to
+   configure the build to generate debugging information, and disable
+   compiler optimizations, using something like:
+
+   : CFLAGS="-O0 -g3" ../configure [...]
+
 ** Invoking GDB to debug an uninstalled poke
 
    Since we are using libtool, =$(builddir)/poke/poke= is a shell
