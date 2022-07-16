@@ -8962,13 +8962,17 @@ memory IO space with the contents of a mapped value.
 This command has the following synopsis.
 
 @example
-extract :val @var{val} :to @var{ios_name}
+extract :val @var{val} [:to @var{ios_name}]
 @end example
 
 @noindent
 Where @code{:val} is a mapped value, and @var{:to} is the name of the
 memory IOS to create (or use).  The contents of @var{value} are copied
 to the beginning of the memory IOS @code{*@var{ios_name}*}.
+
+If no @var{:to} argument is specified, or if it is the empty string,
+then the @command{extract} command will generate a suitable unique
+name and use it.
 
 @node scrabble
 @section @command{scrabble}

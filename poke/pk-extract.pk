@@ -27,7 +27,7 @@ memory IO space that contains them.
 
 Synopsis:
 
-  extract :val VALUE :to IOS_NAME
+  extract :val VALUE [:to IOS_NAME]
 
 Arguments:
 
@@ -36,17 +36,23 @@ Arguments:
 
   :to (string)
          Name of the memory IO space created to hold the value
-         bytes.
+         bytes.  If this argument is not specified, or if it is
+         the empty string, then an unique name is generated.
 
 If the given value is not mapped `extract' raises E_map.
 
 See `.doc extract' for more information."
          };
 
-fun extract = (any val, string to) void:
+fun extract = (any val, string to = "") void:
 {
-  /* XXX make TO optional and generate an unique mem IOS name in that
-     case.  */
+  var notify_p = to == "";
+
+  if (to == "")
+    to = pk_get_unique_mem_ios_handler;
+
   copy :to_ios open ("*" + to + "*") :from val'offset
        :size val'size :to 0#B;
+  if (notify_p)
+    printf "%v extracted to IOS `%s'\n", val'size, to;
 }
