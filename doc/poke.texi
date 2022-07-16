@@ -57,6 +57,7 @@ Using poke
 * Configuration::		Tailoring the tool to your needs.
 
 Pickles
+* IOS::                         Functions to work with IO spaces.
 * Time::			Handling time.
 * Colors::			Editing colors.
 * Audio::			Poking audio files.
@@ -7835,6 +7836,126 @@ time.
 @cindex styled output
 
 XXX
+
+@node IOS
+@chapter IOS
+
+The @file{ios} pickle contains functions that are useful to work with
+IO spaces.
+
+@menu
+* ios_dump_bytes::              Dumping bytes on the terminal.
+* ios_copy_bytes::              Copying bytes between IO spaces.
+* ios_save_bytes::              Saving a range of bytes to a file.
+@end menu
+
+@node ios_dump_bytes
+@section ios_dump_bytes
+
+The @code{ios_dump_bytes} function prints a byte dump of an area in a
+given IO space.
+
+It has the following prototype:
+
+@example
+fun ios_dump_bytes = (int<32> @var{ios},
+                      offset<uint<64>,b> @var{from},
+                      offset<uint<64>,b> @var{size},
+                      offset<uint<64>, b> @var{group_by} = 2#B,
+                      int<32> @var{cluster_by} = 8,
+                      int<32> @var{ruler} = 0,
+                      int<32> @var{ascii} = 0,
+                      string @var{unknown_byte} = "??",
+                      uint<8> @var{nonprintable_char} = '.') void
+@end example
+
+@noindent
+Where @var{ios} is the IO space form which dump bytes.
+
+@var{from} is the offset from which start dumping bytes. This location
+is truncated to bytes.
+
+@var{size} is an offset specifying the amount of bytes to dump.  The
+offset is rounded up to the next byte.
+
+@var{group_by} determines how the bytes are grouped together in the
+output.  Defaults to two bytes.
+
+@var{cluster_by} specifies to display additioanl space after the
+specified number of groups have been displayed.  Defaults to 8.
+
+@var{ruler} is a boolean determining whether to include a ruler line
+in the output.  Defaults to 0.
+
+@var{ascii_p} is a boolean determining whether to include an ASCII
+dump.  Defaults to 0.
+
+@var{unknown_byte} is the string to use to denote bytes that can't be
+read from the IO space.  Defaults to @code{"??"}.  Note this string is
+expected to be of length two characters.
+
+@var{nonprintable_char} is the character code to use to denote
+non-printable characters.  Defaults to @code{'.'}.
+
+This function may raise @code{E_io}, @code{E_perm}, and @code{E_eof}
+on several error conditions.
+
+@node ios_copy_bytes
+@section ios_copy_bytes
+
+The @code{ios_copy_bytes} copies a range of bytes between IO spaces.
+
+It has the following prototype:
+
+@example
+fun ios_copy_bytes = (int<32> @var{from_ios}, int<32> @var{to_ios},
+                      offset<uint<64>,B> from,
+                      offset<uint<64>,B> to,
+                      offset<uint<64>,B> size) void
+@end example
+
+@noindent
+Where @var{from_ios} is the origin IO space, @i{i.e.} the IO space
+from which bytes are to be copied.
+
+@var{to_ios} is the destination IO space, @i{i.e.} the IO space to
+which bytes are to be copied.
+
+@var{from} is a byte offset in @var{from_ios} with the beginning of
+the range to copy.
+
+@var{to} is a byte offset in @var{to_ios} where the bytes will be
+copied.
+
+@var{size} is a byte offset specifying the amount of data to be
+copied.
+
+@node ios_save_bytes
+@section ios_save_bytes
+
+The function @code{ios_save_bytes} saves a range of bytes from an IO
+space to a file.
+
+It has the following prototype:
+
+@example
+fun ios_save_bytes = (int<32> ios, string file,
+                      offset<uint<64>,B> from,
+                      offset<uint<64>,B> size,
+                      int<32> append_p) void
+@end example
+
+@noindent
+Where @var{ios} is the IO space from which save bytes.
+
+@var{file} is the name of the file where to save the bytes.
+
+@var{to} and @var{size} are byte offsets in the IO space determining
+the range of bytes to save.
+
+By default the output file is truncted if it already exists.  If
+@var{append_p} is true, then the data is instead appended at the end
+of the file.
 
 @node Time
 @chapter Time

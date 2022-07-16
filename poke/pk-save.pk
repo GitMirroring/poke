@@ -75,28 +75,9 @@ fun save = (int ios = get_ios,
             int append = pk_save_append,
             int verbose = pk_save_verbose) void:
 {
- if (file == "" || size == 0#B)
-   return;
+  if (file == "" || size == 0#B)
+    return;
 
- /* Determine the proper mode for the output IOS and open it.  */
- var flags = IOS_F_WRITE;
-
- if (append)
-   flags = flags | IOS_F_READ;
- else
-   flags = flags | IOS_F_CREATE;
-
- var file_ios = open (file, flags);
-
- /* Determine the output offset.  */
- var output_offset = 0#B;
- if (append)
-   output_offset = iosize (file_ios);
-
- /* Copy the stuff.  */
- copy :from_ios ios :to_ios file_ios :from from :to output_offset
-      :size size;
-
- /* Cleanup.  */
- close (file_ios);
+  ios_save_bytes :ios ios :file file :from from :size size
+                 :append_p append;
 }

@@ -63,45 +63,11 @@ See `.doc copy' for more information.",
          };
 
 fun copy = (int from_ios = get_ios,
-              int to_ios = get_ios,
-              off64 from = pk_copy_from,
-              off64 to = from,
-              off64 size = pk_copy_size) void:
+            int to_ios = get_ios,
+            off64 from = pk_copy_from,
+            off64 to = from,
+            off64 size = pk_copy_size) void:
 {
- if (size == 0#B
-     || (to == from && to_ios == from_ios))
-   return;
-
- /* Determine the best step size to operate with.  */
- var step = 1#B;
-
- if (size % 8#B == 0#B)
-   step = 8#B;
- else if (size % 4#B == 0#B)
-   step = 4#B;
- else if (size % 2#B == 0#B)
-   step = 2#B;
-
- /* Change the endianness to big endian, so we get the right ordering
-    of the bytes when operating on steps > 1#B.  */
- var endian = get_endian;
- set_endian (ENDIAN_BIG);
-
- /* Copy the stuff.  */
- for (var end = from + size;
-      from < end;
-      from += step, to += step)
-   {
-     if (step == 8#B)
-       uint<64> @ to_ios : to = uint<64> @ from_ios : from;
-     else if (step == 4#B)
-       uint<32> @ to_ios : to = uint<32> @ from_ios : from;
-     else if (step == 2#B)
-       uint<16> @ to_ios : to = uint<16> @ from_ios : from;
-     else
-       byte @ to_ios : to = byte @ from_ios : from;
-   }
-
- /* Cleanup.  */
- set_endian (endian);
+  ios_copy_bytes :from_ios from_ios :to_ios to_ios
+                 :from from :to (to) :size size;
 }

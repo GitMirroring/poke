@@ -1,5 +1,18 @@
 2022-07-16  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* pickles/ios.pk (ios_save_bytes): Adapted from poke/pk-save.pk.
+	(ios_copy_bytes): Adapted from poke/pk-copy.pk.
+	(ios_dump_bytes): Do not use types from std-types.pk.
+
+	* poke/pk-copy.pk (copy): Rewrite in terms of ios_copy_bytes.
+	* poke/pk-save.pk (save): Rewrite in terms of ios_save_bytes.
+	* doc/poke.texi (IOS): New chapter.
+	(ios_dump_bytes): New section.
+	(ios_copy_bytes): Likewise.
+	(ios_save_bytes): Likewise.
+
+2022-07-16  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* poke/pk-extract.pk (extract): Make `to' optional and report the
 	IOS where the value got extracted.
 	* doc/poke.texi (extract): Update accordingly.

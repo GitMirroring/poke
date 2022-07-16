@@ -50,11 +50,13 @@
    This function may raise E_io, E_perm, and E_eof on several error
    conditions.  */
 
-fun ios_dump_bytes = (int<32> ios, off64 from, off64 size,
-                      off64 group_by = 2#B,
-                      int cluster_by = 8,
-                      int ruler = 0,
-                      int ascii = 0,
+fun ios_dump_bytes = (int<32> ios,
+                      offset<uint<64>,b> from,
+                      offset<uint<64>,b> size,
+                      offset<uint<64>,b> group_by = 2#B,
+                      int<32> cluster_by = 8,
+                      int<32> ruler_p = 0,
+                      int<32> ascii_p = 0,
                       string unknown_byte = "??",
                       uint<8> nonprintable_char = '.') void:
 {
@@ -84,7 +86,7 @@ fun ios_dump_bytes = (int<32> ios, off64 from, off64 size,
 	if (o < 16#B && (o % (cluster_by * group_by)) == 0#B)
 	   printf (" ");
       }
-    if (ascii)
+    if (ascii_p)
       {
 	var x = 0 as uint<8>;
 	var s = "";
@@ -161,7 +163,7 @@ fun ios_dump_bytes = (int<32> ios, off64 from, off64 size,
 	    }
 	}
 	catch if E_eof {}
-	if (ascii)
+	if (ascii_p)
 	  {
 	    while (o < step)
 	      {
@@ -186,10 +188,111 @@ fun ios_dump_bytes = (int<32> ios, off64 from, off64 size,
   var offset = from as offset<uint<64>,B>;
   var top = from + size + (size % 1#B);
 
-  if (ruler)
+  if (ruler_p)
     print_ruler (offset);
 
   try print_data :offset offset :top top :step 16#B
                  :group_by group_by :cluster_by cluster_by;
   catch if E_eof { print "\n"; }
+}
+
+/* Copy a range of bytes between IO spaces.
+
+   FROM_IOS is the origin IO space, i.e. the IO space from which bytes
+   are to be copied.
+
+   TO_IOS is the destination IO space, i.e. the IO space to which
+   bytes are to be copied.
+
+   FROM is a byte offset in FROM_IOS with the beginning of the range
+   to copy.
+
+   TO is a byte offset in TO_IOS where the bytes will be copied.
+
+   SIZE is a byte offset specifying the amount of data to be copied.  */
+
+fun ios_copy_bytes = (int<32> from_ios, int<32> to_ios,
+                      offset<uint<64>,B> from,
+                      offset<uint<64>,B> to,
+                      offset<uint<64>,B> size) void:
+{
+ if (size == 0#B
+     || (to == from && to_ios == from_ios))
+   return;
+
+ /* Determine the best step size to operate with.  */
+ var step = 1#B;
+
+ if (size % 8#B == 0#B)
+   step = 8#B;
+ else if (size % 4#B == 0#B)
+   step = 4#B;
+ else if (size % 2#B == 0#B)
+   step = 2#B;
+
+ /* Change the endianness to big endian, so we get the right ordering
+    of the bytes when operating on steps > 1#B.  */
+ var endian = get_endian;
+ set_endian (ENDIAN_BIG);
+
+ /* Copy the stuff.  */
+ for (var end = from + size;
+      from < end;
+      from += step, to += step)
+   {
+     if (step == 8#B)
+       uint<64> @ to_ios : to = uint<64> @ from_ios : from;
+     else if (step == 4#B)
+       uint<32> @ to_ios : to = uint<32> @ from_ios : from;
+     else if (step == 2#B)
+       uint<16> @ to_ios : to = uint<16> @ from_ios : from;
+     else
+       byte @ to_ios : to = byte @ from_ios : from;
+   }
+
+ /* Cleanup.  */
+ set_endian (endian);
+}
+
+/* Save a range of bytes from an IO space to a file.
+
+   IOS is the IO space from which save bytes.
+
+   FILE is the name of the file where to save the bytes.
+
+   TO and SIZE are byte offsets in the IO space determining the range
+   of bytes to save.
+
+   By default the output file is truncted if it already exists.  If
+   APPEND_P is true, then the data is instead appended at the end of
+   the file.  */
+
+fun ios_save_bytes = (int<32> ios, string file,
+                      offset<uint<64>,B> from,
+                      offset<uint<64>,B> size,
+                      int<32> append_p) void:
+{
+  if (size == 0#B)
+    return;
+
+ /* Determine the proper mode for the output IOS and open it.  */
+ var flags = IOS_F_WRITE;
+
+ if (append_p)
+   flags = flags | IOS_F_READ;
+ else
+   flags = flags | IOS_F_CREATE;
+
+ var file_ios = open (file, flags);
+
+ /* Determine the output offset.  */
+ var output_offset = 0#B;
+ if (append_p)
+   output_offset = iosize (file_ios);
+
+  ios_copy_bytes :from_ios ios :to_ios file_ios :from from
+                 :to output_offset :size size;
+
+  /* Cleanup.  */
+  close (file_ios);
 }

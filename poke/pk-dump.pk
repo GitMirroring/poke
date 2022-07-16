@@ -123,7 +123,7 @@ fun dump = (int<32> ios = get_ios,
             int ascii = pk_dump_ascii) void:
 {
   ios_dump_bytes :ios ios :from from :size size :group_by group_by
-                 :cluster_by cluster_by :ruler ruler :ascii ascii
+                 :cluster_by cluster_by :ruler_p ruler :ascii_p ascii
                  :unknown_byte pk_dump_unknown_byte;
   pk_dump_set_offset (ios, from);
 }
