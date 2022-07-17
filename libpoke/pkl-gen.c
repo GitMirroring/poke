@@ -641,9 +641,21 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_var)
           pkl_asm_label (PKL_GEN_ASM, label);
         }
 
-      /* If the value holds a value that could be mapped, then use the
-         REMAP instruction.  */
-      if (PKL_AST_TYPE_CODE (var_type) == PKL_TYPE_ARRAY
+      /* If the value holds a value that could be mapped, and the IO
+         space is volatile, then use have to use REMAP instruction to
+         make sure the value is fresh.
+
+         However, if the value is an array, its type is complete and
+         an array or struct, and it is used as the entity in an
+         indexer, the REMAP is _not_ necessary.  */
+      if ((PKL_AST_TYPE_CODE (var_type) == PKL_TYPE_ARRAY
+           && !(PKL_AST_VAR_IS_INDEXED (var)
+                && (PKL_AST_TYPE_CODE (PKL_AST_TYPE_A_ETYPE (var_type))
+                    == PKL_TYPE_ARRAY
+                    || PKL_AST_TYPE_CODE (PKL_AST_TYPE_A_ETYPE (var_type))
+                    == PKL_TYPE_STRUCT)
+                && (PKL_AST_TYPE_COMPLETE (PKL_AST_TYPE_A_ETYPE (var_type))
+                    == PKL_AST_TYPE_COMPLETE_YES)))
           || PKL_AST_TYPE_CODE (var_type) == PKL_TYPE_STRUCT)
         {
           pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_REMAP);
@@ -2674,8 +2686,15 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_indexer)
           switch (PKL_AST_TYPE_CODE (indexer_type))
             {
             case PKL_TYPE_ARRAY:
+              /* However, if the entity indexed is an array, its type
+                 is complete and an array or struct, and it is used as
+                 the entity in an indexer, the REMAP is _not_
+                 necessary.  */
+              if (PKL_AST_INDEXER_IS_INDEXED (indexer)
+                  && (PKL_AST_TYPE_COMPLETE (indexer_type)
+                      == PKL_AST_TYPE_COMPLETE_YES))
+                break;
             case PKL_TYPE_STRUCT:
-              /* XXX: this is redundant IO for many (most?) cases.  */
               pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_REMAP);
               break;
             default:
@@ -2821,7 +2840,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_struct_ref)
         {
         case PKL_TYPE_ARRAY:
         case PKL_TYPE_STRUCT:
-          /* XXX: this is redundant IO for many (most?) cases.  */
           pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_REMAP);
           break;
         default:
