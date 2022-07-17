@@ -1,3 +1,17 @@
+2022-07-17  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-ast.h (struct pkl_ast_var): New field is_indexed.
+	(struct pkl_ast_indexer): Likewise.
+	(PKL_AST_VAR_IS_INDEXED): Define.
+	(PKL_AST_INDEXER_IS_INDEXED): Likewise.
+	* libpoke/pkl-trans.c (pkl_trans1_ps_var): Annotate is_indexed.
+	(pkl_trans1_ps_indexer): New handler.
+	(pkl_phase_trans1): Register new handler.
+	* libpoke/pkl-gen.c (pkl_gen_ps_var): Avoid remapping arrays when
+	indexing elements when the array type is complete and can be
+	mapped.
+	(pkl_gen_pr_indexer): Ditto for array indexers themselves.
+
 2022-07-16  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* pickles/ios.pk (ios_save_bytes): Adapted from poke/pk-save.pk.

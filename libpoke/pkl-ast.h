@@ -714,16 +714,22 @@ pkl_ast_node pkl_ast_make_trimmer (pkl_ast ast,
    BASE must point to a PKL_AST_ARRAY node.
 
    INDEX must point to an expression whose evaluation is the offset of
-   the element into the field, in units of the field's SIZE.  */
+   the element into the field, in units of the field's SIZE.
+
+   IS_INDEXED is a boolean indicating whether the indexer is
+   immediately indexed with another [] operator.  This is used in the
+   `gen' pass for certain optimizations.  */
 
 #define PKL_AST_INDEXER_ENTITY(AST) ((AST)->indexer.entity)
 #define PKL_AST_INDEXER_INDEX(AST) ((AST)->indexer.index)
+#define PKL_AST_INDEXER_IS_INDEXED(AST) ((AST)->indexer.is_indexed)
 
 struct pkl_ast_indexer
 {
   struct pkl_ast_common common;
   union pkl_ast_node *entity;
   union pkl_ast_node *index;
+  int is_indexed;
 };
 
 pkl_ast_node pkl_ast_make_indexer (pkl_ast ast,
@@ -1429,6 +1435,10 @@ pkl_ast_node pkl_ast_make_format_arg (pkl_ast ast, pkl_ast_node exp);
    variable.  This is used to disable the de-proceduring of function
    values.
 
+   IS_INDEXED is a boolean indicating whether the variable is
+   immediately indexed with a [] operator.  This is used in the `gen'
+   pass for certain optimizations.
+
    FUNCTION is the function immediately enclosing the variable
    reference, or NULL.
 
@@ -1444,6 +1454,7 @@ pkl_ast_node pkl_ast_make_format_arg (pkl_ast ast, pkl_ast_node exp);
 #define PKL_AST_VAR_FUNCTION(AST) ((AST)->var.function)
 #define PKL_AST_VAR_FUNCTION_BACK(AST) ((AST)->var.function_back)
 #define PKL_AST_VAR_IS_PARENTHESIZED(AST) ((AST)->var.is_parenthesized)
+#define PKL_AST_VAR_IS_INDEXED(AST) ((AST)->var.is_indexed)
 
 struct pkl_ast_var
 {
@@ -1455,6 +1466,7 @@ struct pkl_ast_var
   int over;
   int is_recursive;
   int is_parenthesized;
+  int is_indexed;
 
   union pkl_ast_node *function;
   int function_back;

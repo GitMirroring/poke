@@ -234,7 +234,10 @@ PKL_PHASE_END_HANDLER
 
    Variables that refer to parameterless functions are transformed
    into funcalls to these functions, but only if the variables are not
-   part of funcall themselves! :) */
+   part of funcall themselves! :)
+
+   Annotate variables that are immediately indexed by a [] operator.
+   This is used for certain optimizations in `gen'.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_var)
 {
@@ -271,6 +274,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_var)
           PKL_PASS_RESTART = 1;
         }
     }
+
+  if (PKL_PASS_PARENT
+      && PKL_AST_CODE (PKL_PASS_PARENT) == PKL_AST_INDEXER)
+    PKL_AST_VAR_IS_INDEXED (var) = 1;
 }
 PKL_PHASE_END_HANDLER
 
@@ -1251,6 +1258,20 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_try_stmt_body)
 }
 PKL_PHASE_END_HANDLER
 
+/* Annotate indexers that are themselves immediately indexed by
+   another [] operator.  This is used for certain optimizations in
+   `gen'.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_indexer)
+{
+  pkl_ast_node indexer = PKL_PASS_NODE;
+
+  if (PKL_PASS_PARENT
+      && PKL_AST_CODE (PKL_PASS_PARENT) == PKL_AST_INDEXER)
+    PKL_AST_INDEXER_IS_INDEXED (indexer) = 1;
+}
+PKL_PHASE_END_HANDLER
+
 struct pkl_phase pkl_phase_trans1 =
   {
    PKL_PHASE_PS_HANDLER (PKL_AST_SRC, pkl_trans_ps_src),
@@ -1276,6 +1297,7 @@ struct pkl_phase pkl_phase_trans1 =
    PKL_PHASE_PR_HANDLER (PKL_AST_STRUCT_TYPE_FIELD, pkl_trans1_pr_struct_type_field),
    PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT_TYPE_FIELD, pkl_trans1_ps_struct_type_field),
    PKL_PHASE_PS_HANDLER (PKL_AST_RETURN_STMT, pkl_trans1_ps_return_stmt),
+   PKL_PHASE_PS_HANDLER (PKL_AST_INDEXER, pkl_trans1_ps_indexer),
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_ATTR, pkl_trans1_ps_op_attr),
    PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_STRUCT, pkl_trans1_ps_type_struct),
    PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_FUNCTION, pkl_trans1_ps_type_function),
