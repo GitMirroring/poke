@@ -385,7 +385,7 @@
 ;;; AFILL
 ;;; ( ARR VAL -- ARR VAL )
 ;;;
-;;; Given ana array and a a value of the right type, set all the
+;;; Given an array and a a value of the right type, set all the
 ;;; elements of the array to the given value.
 ;;;
 ;;; This is the implementation of the `afill' macro instruction.
