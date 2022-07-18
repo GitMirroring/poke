@@ -50,6 +50,7 @@ struct pkl_parser
   int bootstrapped;
   int in_method_decl_p;
   char *alien_errmsg;
+  pkl_ast_loc prev_loc;
 };
 
 /* Public interface.  */

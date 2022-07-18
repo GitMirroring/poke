@@ -49,6 +49,7 @@ pkl_parser_init (void)
   parser->nchars = 0;
   parser->bootstrapped = 0;
   parser->in_method_decl_p = 0;
+  parser->prev_loc = PKL_AST_NOLOC;
 
   return parser;
 }
