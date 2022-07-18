@@ -1,3 +1,13 @@
+2022-07-19  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-parser.h (struct pkl_parser): New field prev_loc.
+	* libpoke/pkl-parser.c (pkl_parser_init): Initialize
+	parser->prev_loc.
+	* libpoke/pkl-lex.l (YY_USER_ACTION): Save a backup of the current
+	location.
+	(PK_REJECT): Define.
+	(RESTORE_LOC): Define.
+
 2022-07-18  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-ast.h (pkl_ast_finish_breaks): Remove.
