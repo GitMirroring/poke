@@ -2012,10 +2012,6 @@ declaration:
                   if ($1 == IS_METHOD)
                     PKL_AST_FUNC_METHOD_P ($5) = 1;
 
-                  /* XXX: move to trans1.  */
-                  PKL_AST_FUNC_NAME ($5)
-                    = xstrdup (PKL_AST_IDENTIFIER_POINTER ($2));
-
                   pkl_parser->in_method_decl_p = 0;
                 }
         | simple_declaration ';' { $$ = $1; }

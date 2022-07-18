@@ -235,7 +235,12 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_funcall)
 PKL_PHASE_END_HANDLER
 
 /* Annotate whether declaration nodes are in the body of a struct
-   type, as this implies treating them especially somewhere else.  */
+   type, as this implies treating them especially somewhere else.
+
+   In declaration of functions, annotate the name of the declaration
+   in the function as the name it was declared with.  This has to be
+   done in pre-order because other phases for functions require the
+   name.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_decl)
 {
@@ -246,6 +251,15 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_decl)
       && PKL_AST_TYPE_CODE (PKL_PASS_PARENT) == PKL_TYPE_STRUCT)
     /* Annotate this declaration to be in a struct type.  */
     PKL_AST_DECL_IN_STRUCT_P (decl) = 1;
+
+  if (PKL_AST_DECL_KIND (decl) == PKL_AST_DECL_KIND_FUNC)
+    {
+      pkl_ast_node name = PKL_AST_DECL_NAME (decl);
+      pkl_ast_node function = PKL_AST_DECL_INITIAL (decl);
+
+      PKL_AST_FUNC_NAME (function)
+        = xstrdup (PKL_AST_IDENTIFIER_POINTER (name));
+    }
 }
 PKL_PHASE_END_HANDLER
 
