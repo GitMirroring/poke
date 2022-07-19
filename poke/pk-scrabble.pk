@@ -85,13 +85,14 @@ fun scrabble = (off64 from = pk_scrabble_from,
   var ent = Entity {};
   var to = from + size;
   var end = from;
+  var collected = Entity[]();
 
   if (to_pattern == from_pattern)
      return;
 
   while (from < to)
     {
-      var collected = Entity[]();
+      collected = Entity[]();
 
       fun lookup_entity = (char code) Entity:
       {

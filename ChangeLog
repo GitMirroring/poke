@@ -1,5 +1,10 @@
 2022-07-19  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-scrabble.pk (Arguments): Move variable declaration out
+	of loop to avoid extra allocations.
+
+2022-07-19  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* doc/poke.texi (qsort): Add example of a comparator function for
 	qsort and fix comparator prototype.
 
