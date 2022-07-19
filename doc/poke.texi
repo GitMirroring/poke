@@ -14928,8 +14928,27 @@ The comparator function @var{cmp_f} should have the following
 prototype:
 
 @example
-type Comparator = (any,any):int
+type Comparator = (any,any)int<32>;
 @end example
+
+@noindent
+for example:
+
+@example
+fun CompareInts = (any a, any b) int<32>:
+@{
+  var ai = a as int<32>;
+  var bi = b as int<32>;
+
+  if (ai == bi)
+    return 0;
+  else if (ai > bi)
+    return 1;
+  else
+    return -1;
+@}
+@end example
+
 
 @node CRC Functions
 @section CRC Functions
