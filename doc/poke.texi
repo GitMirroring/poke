@@ -945,10 +945,38 @@ We recommend new users to set the following options:
 .set omode tree
 .set oacutoff 5
 .set pretty-print yes
+.set pager yes
 @end example
 
 @noindent
-These options are explained later in this manual.  @xref{set command}.
+@code{.set endian little} will make poke to use little-endian by
+default when accessing IO spaces, such as files or memory buffers.
+@xref{Big and Little Endians}.
+
+@code{.set omode tree} will make poke to format composite data
+structures, such as arrays and struct, in several lines in a nice
+tree-like format.  By default the program will format these values in
+a single line (what we call the ``plain'' output mode) which can be
+difficult to read.
+
+@code{.set oacutoff 5} will make poke to output at most five elements
+in array values, followed by a dieresis @code{...}.
+
+@code{.set pretty-print yes} will make poke to use pretty-printers
+when printing out values of struct types that have a pretty-printer
+defined for them.  You can recognize pretty-printed values because, by
+convention, they are emitted between @code{#<} and @code{>} markers,
+like for example @code{#<leb128:1234>}.  If you see a pretty-printed
+value and you need to look at its internal structure, you can disable
+pretty-printing using a @code{.set pretty-print no} dot-command at any
+time. @xref{Pretty-printers}.
+
+@code{.set pager yes} will make poke to page the output of commands
+that emit output larger than the visible terminal.  This of course
+only has an effect when running poke interactively.
+
+These options are fully explained later in this manual.  @xref{set
+command}.
 
 @node Basic Editing
 @chapter Basic Editing
