@@ -98,10 +98,10 @@ strtotag (const char *str)
 
 %x C_DATA
 
-COMMENT                   ^#[^\n]*\n
+COMMENT            ^#[^\n]*\n
 NEWLINE            \n
 BLANK              [ \t]
-TAGNAME                   %[a-zA-Z_][a-zA-Z0-9_]*
+TAGNAME            %[a-zA-Z_][a-zA-Z0-9_]*
 
 %%
                 if (!yyextra->once) { BEGIN (C_DATA); yyextra->once = 1; }
@@ -113,11 +113,11 @@ TAGNAME                   %[a-zA-Z_][a-zA-Z0-9_]*
 }
 
 {NEWLINE}        { /* Ignore newlines.  */  }
-{BLANK}                { /* Ignore whitespace.  */ }
-{COMMENT}         { /* Comment.  */ }
+{BLANK}          { /* Ignore whitespace.  */ }
+{COMMENT}        { /* Comment.  */ }
 
-"%%"                { return SEP; }
-"%entry"        { return ENTRY; }
+"%%"             { return SEP; }
+"%entry"         { return ENTRY; }
 {TAGNAME}        {
         yylval->integer = strtotag (yytext + 1);
         BEGIN (C_DATA);
