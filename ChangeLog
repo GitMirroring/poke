@@ -1,5 +1,10 @@
 2022-07-19  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* doc/poke.texi (qsort): Add example of a comparator function for
+	qsort and fix comparator prototype.
+
+2022-07-19  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-parser.h (struct pkl_parser): New field prev_loc.
 	* libpoke/pkl-parser.c (pkl_parser_init): Initialize
 	parser->prev_loc.
