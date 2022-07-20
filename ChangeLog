@@ -1,5 +1,9 @@
 2022-07-20  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* pickles/mbr.pk (MBR_CHS): Use unnammed type for the `cs' field.
+
+2022-07-20  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* poke/pk-map-tab.y (make_map_entry): Set condition_loc.
 	(tagged_value): Use location of DATA for the tag's location.
 	* poke/pk-map-parser.h (struct pk_map_parsed_entry): New field

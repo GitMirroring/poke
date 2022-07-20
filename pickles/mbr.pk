@@ -21,14 +21,12 @@
 type MBR_CHS =
   struct
   {
-    type CySec = /* FIXME use unnamed type for `cs` */
-      struct byte
+    byte head;
+    struct byte
       {
         uint<2> cylinder_hi;
         uint<6> sector;
-      };
-    byte head;
-    CySec cs;
+      } cs;
     byte cylinder_lo;
 
     method get_cylinder = uint<10>:
