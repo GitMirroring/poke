@@ -643,8 +643,12 @@ pk_cmd_exec (const char *str)
       if (what == 0)
         {
           /* Declaration.  */
-          if (pk_compile_buffer (poke_compiler, ecmd, &end,
-                                 &exit_exception) != PK_OK)
+          if (pk_compile_buffer_with_loc (poke_compiler, ecmd,
+                                          "<stdin>",
+                                          1 /* line */,
+                                          1 /* column */,
+                                          &end,
+                                          &exit_exception) != PK_OK)
             {
               retval = 0;
               goto cleanup;
@@ -655,8 +659,12 @@ pk_cmd_exec (const char *str)
           /* Statement.  */
           pk_val val;
 
-          if (pk_compile_statement (poke_compiler, ecmd, &end, &val,
-                                    &exit_exception) != PK_OK)
+          if (pk_compile_statement_with_loc (poke_compiler, ecmd,
+                                             "<stdin>",
+                                             1 /* line */,
+                                             1 /* column */,
+                                             &end, &val,
+                                             &exit_exception) != PK_OK)
             {
               retval = 0;
               goto cleanup;

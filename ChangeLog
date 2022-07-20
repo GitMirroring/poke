@@ -1,5 +1,10 @@
 2022-07-20  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-cmd.c (pk_cmd_exec): Use pk_compile_statement_with_loc
+	and pk_compile_buffer_with_loc.
+
+2022-07-20  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-diag.c (pkl_warning): Use <unknown> for unknown
 	source/location.
 	(pkl_error_internal): Likewise.
