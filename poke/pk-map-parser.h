@@ -29,6 +29,9 @@ struct pk_map_parser_loc
   int last_column;
 };
 
+static struct pk_map_parser_loc PK_MAP_NOLOC __attribute__((unused))
+   = { 0, 0, 0, 0 };
+
 /* Maps and map entries.  */
 
 #define PK_MAP_PARSED_ENTRY_NAME(ENTRY) ((ENTRY)->name)
@@ -36,6 +39,7 @@ struct pk_map_parser_loc
 #define PK_MAP_PARSED_ENTRY_TYPE(ENTRY) ((ENTRY)->type)
 #define PK_MAP_PARSED_ENTRY_OFFSET(ENTRY) ((ENTRY)->offset)
 #define PK_MAP_PARSED_ENTRY_CONDITION(ENTRY) ((ENTRY)->condition)
+#define PK_MAP_PARSED_ENTRY_CONDITION_LOC(ENTRY) ((ENTRY)->condition_loc)
 #define PK_MAP_PARSED_ENTRY_CHAIN(ENTRY) ((ENTRY)->chain)
 #define PK_MAP_PARSED_ENTRY_LOC(ENTRY) ((ENTRY)->loc)
 #define PK_MAP_PARSED_ENTRY_SKIPPED_P(ENTRY) ((ENTRY)->skipped_p)
@@ -48,6 +52,7 @@ struct pk_map_parsed_entry
   char *type;
   char *offset;
   char *condition;
+  struct pk_map_parser_loc condition_loc;
   int skipped_p;
   struct pk_map_parsed_entry *chain;
 };

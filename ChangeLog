@@ -1,5 +1,16 @@
 2022-07-20  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-map-tab.y (make_map_entry): Set condition_loc.
+	(tagged_value): Use location of DATA for the tag's location.
+	* poke/pk-map-parser.h (struct pk_map_parsed_entry): New field
+	condition_loc.
+	(PK_MAP_PARSED_ENTRY_CONDITION_LOC): Define.
+	(PK_MAP_NOLOC): Define.
+	* poke/pk-map.c (pk_map_load_parsed_map): Use
+	pk_compile_buffer_with_loc and pk_compile_expression_with_loc.
+
+2022-07-20  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* poke/pk-cmd.c (pk_cmd_exec): Use pk_compile_statement_with_loc
 	and pk_compile_buffer_with_loc.
 

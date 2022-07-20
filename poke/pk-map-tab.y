@@ -54,6 +54,7 @@
 static pk_map_parsed_entry
 make_map_entry (const char *name,
                 const char *condition,
+                struct pk_map_parser_loc condition_loc,
                 const char *type,
                 const char *offset)
 {
@@ -72,6 +73,7 @@ make_map_entry (const char *name,
     PK_MAP_PARSED_ENTRY_CONDITION (entry) = xstrdup (condition);
   else
     PK_MAP_PARSED_ENTRY_CONDITION (entry) = NULL;
+  PK_MAP_PARSED_ENTRY_CONDITION_LOC (entry) = condition_loc;
 
   return entry;
 }
@@ -334,6 +336,7 @@ map_entry:
 
                   $$ = make_map_entry (name->data,
                                        condition ? condition->data : NULL,
+                                       condition ? condition->loc : PK_MAP_NOLOC,
                                        type->data,
                                        offset->data);
                   $$->loc = @$;
@@ -358,7 +361,7 @@ tagged_value:
               }
 
             $$ = make_tagged_value ($1, $2);
-            $$->loc = @$;
+            $$->loc = @2;
           }
         ;
 
