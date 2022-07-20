@@ -1,5 +1,11 @@
 2022-07-20  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-diag.c (pkl_warning): Use <unknown> for unknown
+	source/location.
+	(pkl_error_internal): Likewise.
+
+2022-07-20  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-parser.h: Add location info to pkl_parse_buffer.
 	(struct pkl_parser): Add fields init_line and init_column.
 	* libpoke/pkl-parser.c (pkl_parse_buffer): Likewise.

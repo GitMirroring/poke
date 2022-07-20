@@ -171,7 +171,7 @@ pkl_error_internal (pkl_compiler compiler,
       if (ast->filename)
         pkl_print_filename (ast->filename);
       else
-        pk_puts ("<stdin>:");
+        pk_puts ("<unknown>:");
       pk_term_end_class ("error-filename");
 
       if (PKL_AST_LOC_VALID (loc))
@@ -236,7 +236,7 @@ pkl_warning (pkl_compiler compiler,
   if (ast->filename)
     pkl_print_filename (ast->filename);
   else
-    pk_puts ("<stdin>:");
+    pk_puts ("<unknown>:");
   pk_term_end_class ("error-filename");
 
   if (PKL_AST_LOC_VALID (loc))
