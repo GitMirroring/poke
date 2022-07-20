@@ -1,3 +1,31 @@
+2022-07-20  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-parser.h: Add location info to pkl_parse_buffer.
+	(struct pkl_parser): Add fields init_line and init_column.
+	* libpoke/pkl-parser.c (pkl_parse_buffer): Likewise.
+	(pkl_parse_buffer): Fix initial location to 1:1 instead of 0:0.
+	* libpoke/pkl.h: Add location info to pkl_execute_buffer.
+	Add location info to pkl_execute_expression.
+	Add location info to pkl_execute_statement.
+	* libpoke/pkl.c (pkl_execute_buffer): Likewise.
+	(pkl_execute_statement): Likewise.
+	(pkl_execute_expression): Likewise.
+	* libpoke/libpoke.h: Prototype for pk_compile_buffer_with_loc.
+	Prototype for pk_compile_statement_with_loc.
+	Prototype for pk_compile_expression_with_loc.
+	* libpoke/libpoke.c (pk_compile_buffer_with_loc): New function.
+	(pk_compile_buffer): Reimplement in terms of
+	pk_compile_buffer_with_loc.
+	(pk_compile_statement_with_loc): New function.
+	(pk_compile_statement): Reimplement in terms of
+	pk_compile_statement_with_loc.
+	(pk_compile_expression_with_loc): New function.
+	(pk_compile_expression): Reimplement in terms of
+	pk_compile_expression_with_loc.
+	* libpoke/pkl-tab.y (%initial-action): Use pkl_parser->init_line
+	and pkl_parser->init_column to initialize the location
+	information.
+
 2022-07-19  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* doc/poke.texi (Simple Init File): Add `.set pager yes' to the

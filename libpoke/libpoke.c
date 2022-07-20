@@ -134,11 +134,46 @@ pk_compile_file (pk_compiler pkc, const char *filename,
 }
 
 int
+pk_compile_buffer_with_loc (pk_compiler pkc, const char *buffer,
+                            const char *source,
+                            uint32_t line, uint32_t column,
+                            const char **end, pk_val *exit_exception)
+{
+  PK_RETURN (pkl_execute_buffer (pkc->compiler, buffer,
+                                 source, line, column,
+                                 end, exit_exception) ? PK_OK : PK_ERROR);
+}
+
+int
 pk_compile_buffer (pk_compiler pkc, const char *buffer,
                    const char **end, pk_val *exit_exception)
 {
-  PK_RETURN (pkl_execute_buffer (pkc->compiler, buffer,
-                                 end, exit_exception) ? PK_OK : PK_ERROR);
+  return pk_compile_buffer_with_loc (pkc, buffer,
+                                     NULL /* source */,
+                                     1 /* line */,
+                                     1 /* column */,
+                                     end, exit_exception);
+}
+
+int
+pk_compile_statement_with_loc (pk_compiler pkc, const char *buffer,
+                               const char *source,
+                               uint32_t line, uint32_t column,
+                               const char **end, pk_val *valp,
+                               pk_val *exit_exception)
+{
+  pvm_val val;
+
+  if (!pkl_execute_statement (pkc->compiler, buffer,
+                              source, line, column,
+                              end, &val,
+                              exit_exception))
+    PK_RETURN (PK_ERROR);
+
+  if (valp)
+    *valp = val;
+
+  PK_RETURN (PK_OK);
 }
 
 int
@@ -146,10 +181,26 @@ pk_compile_statement (pk_compiler pkc, const char *buffer,
                       const char **end, pk_val *valp,
                       pk_val *exit_exception)
 {
+  return pk_compile_statement_with_loc (pkc, buffer,
+                                        NULL /* source */,
+                                        1 /* line */,
+                                        1 /* column */,
+                                        end, valp, exit_exception);
+}
+
+int
+pk_compile_expression_with_loc (pk_compiler pkc, const char *buffer,
+                                const char *source,
+                                uint32_t line, uint32_t column,
+                                const char **end, pk_val *valp,
+                                pk_val *exit_exception)
+{
   pvm_val val;
 
-  if (!pkl_execute_statement (pkc->compiler, buffer, end, &val,
-                              exit_exception))
+  if (!pkl_execute_expression (pkc->compiler, buffer,
+                               source, line, column,
+                               end, &val,
+                               exit_exception))
     PK_RETURN (PK_ERROR);
 
   if (valp)
@@ -162,16 +213,12 @@ int
 pk_compile_expression (pk_compiler pkc, const char *buffer,
                        const char **end, pk_val *valp, pk_val *exit_exception)
 {
-  pvm_val val;
-
-  if (!pkl_execute_expression (pkc->compiler, buffer, end, &val,
-                               exit_exception))
-    PK_RETURN (PK_ERROR);
-
-  if (valp)
-    *valp = val;
-
-  PK_RETURN (PK_OK);
+  return pk_compile_expression_with_loc (pkc, buffer,
+                                         NULL /* source */,
+                                         1 /* line */,
+                                         1 /* column */,
+                                         end, valp,
+                                         exit_exception);
 }
 
 int

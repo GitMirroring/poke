@@ -51,6 +51,8 @@ struct pkl_parser
   int in_method_decl_p;
   char *alien_errmsg;
   pkl_ast_loc prev_loc;
+  uint32_t init_line;
+  uint32_t init_column;
 };
 
 /* Public interface.  */
@@ -64,7 +66,10 @@ int pkl_parse_file (pkl_compiler compiler, pkl_env *env, pkl_ast *ast,
                     FILE *fp, const char *fname);
 
 int pkl_parse_buffer (pkl_compiler compiler, pkl_env *env, pkl_ast *ast,
-                      int what, const char *buffer, const char **end);
+                      int what, const char *buffer,
+                      const char *source,
+                      uint32_t line, uint32_t column,
+                      const char **end);
 
 
 

@@ -91,6 +91,8 @@ pkl_parse_file (pkl_compiler compiler, pkl_env *env,
   parser->start_token = START_PROGRAM;
   parser->compiler = compiler;
   parser->bootstrapped = pkl_bootstrapped_p (compiler);
+  parser->init_line = 1;
+  parser->init_column = 1;
 
   parser->env = *env;
   parser->ast->file = fp;
@@ -124,7 +126,10 @@ out_of_memory:
 
 int
 pkl_parse_buffer (pkl_compiler compiler, pkl_env *env,
-                  pkl_ast *ast, int what, const char *buffer, const char **end)
+                  pkl_ast *ast, int what, const char *buffer,
+                  const char *source,
+                  uint32_t line, uint32_t column,
+                  const char **end)
 {
   YY_BUFFER_STATE yybuffer;
   struct pkl_parser *parser;
@@ -138,9 +143,13 @@ pkl_parse_buffer (pkl_compiler compiler, pkl_env *env,
   if (!parser)
     goto out_of_memory;
 
+  parser->filename = source ? strdup (source) : NULL;
+  parser->ast->filename = source ? strdup (source) : NULL;
   parser->interactive = 1;
   parser->compiler = compiler;
   parser->bootstrapped = pkl_bootstrapped_p (compiler);
+  parser->init_line = line;
+  parser->init_column = column;
 
   if (what == PKL_PARSE_PROGRAM)
     parser->start_token = START_PROGRAM;

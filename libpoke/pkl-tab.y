@@ -28,8 +28,8 @@
 
 %initial-action
 {
-    @$.first_line = @$.last_line = 1;
-    @$.first_column = @$.last_column = 1;
+    @$.first_line = @$.last_line = pkl_parser->init_line;
+    @$.first_column = @$.last_column = pkl_parser->init_column;
 };
 
 %{

@@ -100,25 +100,43 @@ int pkl_execute_file (pkl_compiler compiler, const char *fname,
    not NULL, END is set to the first character in BUFFER that is not
    part of the compiled entity.
 
+   SOURCE is a string that denotes the "origin" of the code.  It is
+   usually a file name, or a string like "<stdin>".  It can be NULL.
+
+   LINE and COLUMN specify the relative location of BUFFER in SOURCE.
+   Both lines and columns start numbering at one, i.e. the first
+   column/line is the column/line number 1.
+
    If not NULL, *EXIT_EXCEPTION is set to an exception value if the
    execution of the program gets interrupted by an unhandled exception.
    Otherwise *EXIT_EXCEPTION is set to PK_NULL.  */
 
 int pkl_execute_buffer (pkl_compiler compiler, const char *buffer,
+                        const char *source,
+                        uint32_t line, uint32_t column,
                         const char **end, pvm_val *exit_exception);
 
 /* Like pkl_execute_buffer, but compile and execute a single Poke
    expression, that generates a value in VAL. */
 
 int pkl_execute_expression (pkl_compiler compiler,
-                            const char *buffer, const char **end,
+                            const char *buffer,
+                            const char *source,
+                            uint32_t line,
+                            uint32_t column,
+                            const char **end,
                             pvm_val *val, pvm_val *exit_exception);
 
 /* Like pkl_execute_expression but compile and execute a single Poke statement,
    which may generate a value in VAL if it is an "expression
    statement".  Otherwise VAL is set to PVM_NULL.  */
 
-int pkl_execute_statement (pkl_compiler compiler, const char *buffer, const char **end,
+int pkl_execute_statement (pkl_compiler compiler,
+                           const char *buffer,
+                           const char *source,
+                           uint32_t line,
+                           uint32_t column,
+                           const char **end,
                            pvm_val *val, pvm_val *exit_exception);
 
 /* Compile a single Poke expression and return the resulting PVM

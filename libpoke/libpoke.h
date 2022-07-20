@@ -183,6 +183,21 @@ int pk_compile_file (pk_compiler pkc, const char *filename,
 int pk_compile_buffer (pk_compiler pkc, const char *buffer,
                        const char **end, pk_val *exit_exception) LIBPOKE_API;
 
+/* Like pk_compile_buffer, but gets the following extra arguments.
+
+   SOURCE is a string identifying the source of the code.  This will
+   often be a file name, or a string like "<stdin>".
+
+   LINE and COLUMN specify the relative location of BUFFER in SOURCE.
+   Both lines and columns start numbering at one, i.e. the first
+   column/line is the column/line number 1.  */
+
+int pk_compile_buffer_with_loc (pk_compiler pkc, const char *buffer,
+                                const char *source,
+                                uint32_t line, uint32_t column,
+                                const char **end, pk_val *exit_exception)
+  LIBPOKE_API;
+
 /* Like pk_compile_buffer but compile and execute a single Poke
    statement, which may evaluate to a value if it is an "expression
    statement".
@@ -197,6 +212,21 @@ int pk_compile_buffer (pk_compiler pkc, const char *buffer,
 int pk_compile_statement (pk_compiler pkc, const char *buffer,
                           const char **end, pk_val *val,
                           pk_val *exit_exception) LIBPOKE_API;
+
+/* Like pk_compile_statement, but gets the following extra arguments.
+
+   SOURCE is a string identifying the source of the code.  This will
+   often be a file name, or a string like "<stdin>".
+
+   LINE and COLUMN specify the relative location of BUFFER in SOURCE.
+   Both lines and columns start numbering at one, i.e. the first
+   column/line is the column/line number 1.  */
+
+int pk_compile_statement_with_loc (pk_compiler pkc, const char *buffer,
+                                   const char *source,
+                                   uint32_t line, uint32_t column,
+                                   const char **end, pk_val *val,
+                                   pk_val *exit_exception) LIBPOKE_API;
 
 /* Like pk_compile_buffer but compile and execute a single Poke
    expression, which evaluates to a value.
@@ -213,6 +243,21 @@ int pk_compile_statement (pk_compiler pkc, const char *buffer,
 int pk_compile_expression (pk_compiler pkc, const char *buffer,
                            const char **end, pk_val *val,
                            pk_val *exit_exception) LIBPOKE_API;
+
+/* Like pk_compile_expression, but gets the following extra arguments.
+
+   SOURCE is a string identifying the source of the code.  This will
+   often be a file name, or a string like "<stdin>".
+
+   LINE and COLUMN specify the relative location of BUFFER in SOURCE.
+   Both lines and columns start numbering at one, i.e. the first
+   column/line is the column/line number 1.  */
+
+int pk_compile_expression_with_loc (pk_compiler pkc, const char *buffer,
+                                    const char *source,
+                                    uint32_t line, uint32_t column,
+                                    const char **end, pk_val *val,
+                                    pk_val *exit_exception) LIBPOKE_API;
 
 /* Load a module using the given compiler.
 

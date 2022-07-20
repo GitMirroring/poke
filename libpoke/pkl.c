@@ -304,7 +304,11 @@ rest_of_compilation (pkl_compiler compiler,
 
 int
 pkl_execute_buffer (pkl_compiler compiler,
-                    const char *buffer, const char **end,
+                    const char *buffer,
+                    const char *source,
+                    uint32_t line,
+                    uint32_t column,
+                    const char **end,
                     pvm_val *exit_exception)
 {
   pkl_ast ast = NULL;
@@ -318,8 +322,9 @@ pkl_execute_buffer (pkl_compiler compiler,
 
   /* Parse the input routine into an AST.  */
   ret = pkl_parse_buffer (compiler, &env, &ast,
-                          PKL_PARSE_PROGRAM,
-                          buffer, end);
+                          PKL_PARSE_PROGRAM, buffer,
+                          source, line, column,
+                          end);
   if (ret == 1)
     /* Parse error.  */
     goto error;
@@ -353,7 +358,11 @@ pkl_execute_buffer (pkl_compiler compiler,
 
 int
 pkl_execute_statement (pkl_compiler compiler,
-                       const char *buffer, const char **end,
+                       const char *buffer,
+                       const char *source,
+                       uint32_t line,
+                       uint32_t column,
+                       const char **end,
                        pvm_val *val, pvm_val *exit_exception)
 {
   pkl_ast ast = NULL;
@@ -367,7 +376,11 @@ pkl_execute_statement (pkl_compiler compiler,
   /* Parse the input routine into an AST.  */
   ret = pkl_parse_buffer (compiler, &env, &ast,
                           PKL_PARSE_STATEMENT,
-                          buffer, end);
+                          buffer,
+                          source,
+                          line,
+                          column,
+                          end);
   if (ret == 1)
     /* Parse error.  */
     goto error;
@@ -412,7 +425,11 @@ pkl_compile_expression (pkl_compiler compiler,
    /* Parse the input program into an AST.  */
    ret = pkl_parse_buffer (compiler, &env, &ast,
                            PKL_PARSE_EXPRESSION,
-                           buffer, end);
+                           buffer,
+                           NULL /* source */,
+                           1 /* line */,
+                           1 /* column */,
+                           end);
    if (ret == 1)
      /* Parse error.  */
      goto error;
@@ -437,7 +454,11 @@ pkl_compile_expression (pkl_compiler compiler,
 
 int
 pkl_execute_expression (pkl_compiler compiler,
-                        const char *buffer, const char **end,
+                        const char *buffer,
+                        const char *source,
+                        uint32_t line,
+                        uint32_t column,
+                        const char **end,
                         pvm_val *val, pvm_val *exit_exception)
 {
   pkl_ast ast = NULL;
@@ -451,7 +472,11 @@ pkl_execute_expression (pkl_compiler compiler,
   /* Parse the input routine into an AST.  */
   ret = pkl_parse_buffer (compiler, &env, &ast,
                           PKL_PARSE_EXPRESSION,
-                          buffer, end);
+                          buffer,
+                          source,
+                          line,
+                          column,
+                          end);
   if (ret == 1)
     /* Parse error.  */
     goto error;
