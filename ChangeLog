@@ -1,3 +1,9 @@
+2022-07-25  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* configure.ac: Bump version to 2.4.
+	* doc/gendocs_template: Likewise.
+	* NEWS: Add entries for 2.4.
+
 2022-07-20  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* pickles/mbr.pk (MBR_CHS): Use unnammed type for the `cs' field.

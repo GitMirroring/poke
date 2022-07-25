@@ -7,6 +7,48 @@ See the manual for detailed information.
   are permitted in any medium without royalty provided the copyright
   notice and this notice are preserved.
 
+ Version 2.4 (25 July 2022)
+* Improvements
+
+   - poke now accompanies the E_constraint exceptions raised when it
+     fails to map an union value with an explicative message, such as
+     "no valid alternative found for union Foo".
+
+   - poke now doesn't remap arrays when indexing them if the elements
+     are themselves mapped, and of a type whose size is known at
+     compile-time.  This speeds things up.
+
+   - Struct constructors and array constructors were not considered as
+     syntactic "primaries", for no reason.  This made it necessary to
+     surround them with parentheses before indexing or dot-notating
+     them, like in:
+
+       (Foo {}).foo
+       (int[3]())[2]
+
+     Now it is possible to write this instead:
+
+       Foo {}.foo
+       int[3]()[2]
+
+* Bug fixes
+
+   - Rejecting tokens in the lexer was causing the location
+     information in the compiler to be trashed.  This is now fixed.
+
+   - The CTF pickle was raising an E_inval exception in ctf_get_dict
+     when there wasn't exactly one section named .ctf in the object
+     file.  It now asserts instead.
+
+   - Add missing #include for ctype.h in pk-repl.c.
+
+   - Improve E_no_return diagnostics.
+
+* Documentation updates
+
+   - An example of a comparator function for `qsort' has been added to
+     the poke manual.
+
  Version 2.3 (31 March 2022)
 * Bug fixes
 
