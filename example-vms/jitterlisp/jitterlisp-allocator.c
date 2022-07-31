@@ -1,7 +1,7 @@
 /* JitterLisp: heap allocation.
 
    Copyright (C) 2017, 2018, 2021 Luca Saiu
-   Updated in 2020 by Luca Saiu
+   Updated in 2020 and 2022 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of the JitterLisp language implementation, distributed as
@@ -531,7 +531,7 @@ jitterlisp_gc (void)
    This function is meant to be used with jitter_hash_for_all_bindings . */
 static void
 jitterlisp_add_binding_to_list (const union jitter_word key,
-                                const union jitter_word value,
+                                union jitter_word * value_p,
                                 void *extra_datum)
 {
   jitterlisp_object * list_pointer = extra_datum;
@@ -539,7 +539,7 @@ jitterlisp_add_binding_to_list (const union jitter_word key,
   /* We don't need to do anything with the symbol name here: we only care about
      the value part of the binding.  Encode the symbol, which is stored
      unencoded in the symbol table. */
-  jitterlisp_object symbol = JITTERLISP_SYMBOL_ENCODE(value.pointer);
+  jitterlisp_object symbol = JITTERLISP_SYMBOL_ENCODE(value_p->pointer);
 
   /* Update the pointed list to contain another cons. */
   * list_pointer = jitterlisp_cons (symbol, * list_pointer);

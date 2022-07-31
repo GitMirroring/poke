@@ -1,7 +1,7 @@
 /* Jitter: hash table data structure.
 
    Copyright (C) 2017, 2018 Luca Saiu
-   Updated in 2021 by Luca Saiu
+   Updated in 2021 and 2022 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -433,7 +433,7 @@ jitter_hash_table_remove (struct jitter_hash_table *t,
 
 void
 jitter_hash_for_all_bindings (const struct jitter_hash_table *t,
-                              jitter_hash_for_all_bindings_function f,
+                              jitter_hash_for_all_bindings_function_f f,
                               void *extra_datum)
 {
   /* For each bucket... */
@@ -449,7 +449,7 @@ jitter_hash_for_all_bindings (const struct jitter_hash_table *t,
       struct jitter_hash_binding * const bindings = bucket->bindings;
       for (j = 0; j < bucket->used_binding_no; j ++)
         /* ... Call the function provided by the user. */
-        f (bindings [j].key, bindings [j].value, extra_datum);
+        f (bindings [j].key, & bindings [j].value, extra_datum);
     }
 }
 
