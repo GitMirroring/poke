@@ -1,6 +1,7 @@
 /* Jitter: word set data structure.
 
    Copyright (C) 2020 Luca Saiu
+   Updated in 2022 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -22,7 +23,6 @@
 #ifndef JITTER_WORD_SET_H_
 #define JITTER_WORD_SET_H_
 
-#include <config.h>  // FIXME: I almost certainly do not want this, but now I want to be able to use Gnulib as well, for my tests.
 
 #include <stdbool.h>
 #include <stdlib.h>
