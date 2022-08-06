@@ -1,6 +1,7 @@
 /* Jitter: custom contextual printing.
 
    Copyright (C) 2020 Luca Saiu
+   Updated in 2022 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -545,7 +546,12 @@ jitter_print_ulong_long (jitter_print_context ct, int radix, jitter_ulong_long x
       /* Print the characters from the string, read backwards.  Notice that at
          the beginning i is the index of the leftmost element *out* of the
          string. */
-      int res;
+      int res /* to silence a GCC warning: the initialisation is not actually
+                 needed, since this loop cannot be empty: since x is not zero in
+                 this else branch the string will have at least one digit.  I do
+                 not particularly blame GCC for not being able to prove this
+                 complex property. */
+        = 0;
       for (i --; i >= 0; i --)
         {
           res = jitter_print_char (ct, reversed_digits [i]);
