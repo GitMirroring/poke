@@ -132,8 +132,10 @@ typedef jitter_int jitter_label_as_index;
    value without loss of information, given the appropriate signedness; in this
    project enum values are always non-negative.
 
-   FIXME: is this design a problem on m68k, which has different registers for
-   integers and addresses?  Not very high-priority, but I'm curious. */
+   The m68k architecture is unusual because of its two different classes of
+   registers for integers and addresses.  GCC manages to do a good job even on
+   m68k, not always using only one class of registers for unions of this
+   type. */
 union jitter_word
 {
   /* A signed word-sized integer. */
