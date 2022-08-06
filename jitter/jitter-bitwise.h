@@ -244,7 +244,7 @@
    The the three expressions, which may be evaluated multiple times in the
    expansion, must have the given type.  The then and else expressions should
    be constant expressions for good performance.
-   An important case use for this macro is a VM primitive returning a tagged
+   An important use case for this macro is a VM primitive returning a tagged
    Boolean result, which needs to be materialized.
    Define JITTER_CONDITIONAL_IF_NEGATIVE to use one of the two implementations
    below.  The API is identical and either implementation will work on every
