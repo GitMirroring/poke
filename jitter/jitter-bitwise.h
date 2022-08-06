@@ -1,6 +1,7 @@
 /* Jitter: general-purpose bitwise macro header.
 
    Copyright (C) 2018, 2019, 2020 Luca Saiu
+   Updated in 2022 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -64,7 +65,7 @@
 #define JITTER_ISNT_A_POWER_OF_TWO(x)  \
   (((x) == 0) || JITTER_ISNT_NONZERO_A_POWER_OF_TWO(x))
 
-/* Given a possibly integer x and a power of two p, expand to an expression
+/* Given a possibly signed x and a power of two p, expand to an expression
    evaluating to the maximum integer less than or equal to x which is a multiple
    of p.
    The signed version relies on two's complement representation.
@@ -81,6 +82,9 @@
    This assumes that p is a power of two and may evaluate both arguments
    multiple times.  However, if both arguments are constant expression, the
    expansion is also a constant expression.
+   Notice that if p is a compile-time constant and x is in a register then the
+   result can be computed in just two fast instructions: sum-of-literal,
+   bitwise-and-of-literal.
 
    I learned this technique from from Hacker's Delight, §3-1.
    Let y be the smallest multiple of p greater than or equal to x, where p
@@ -93,9 +97,9 @@
 #define JITTER_NEXT_MULTIPLE_OF_POWER_OF_TWO(x, p)  \
   (((x) + ((p) - 1)) & ~ ((p) - 1))
 
-/* Given a positive integer a and a positive integer b, expand to a constant
-   expression evaluating to the smallest integer greater than or equal to a
-   which is a multiple of b.
+/* Given a positive integer a and a positive integer b, expand to an expression
+   evaluating to the smallest integer greater than or equal to a which is a
+   multiple of b.
    This may evaluate both arguments multiple times.  However, if both arguments
    are constant expression, the expansion is also a constant expression. */
 #define JITTER_NEXT_MULTIPLE_OF_POSITIVE(a, b)  \
