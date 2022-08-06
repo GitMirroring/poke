@@ -344,6 +344,57 @@ problems.  See the source code for more information."
 
 
 
+/* Program points.
+ * ************************************************************************** */
+
+/* The type of a program point at run time in an executable routine.  This is
+   the type of object than can be passed to JITTER_BRANCH , and its actual
+   definition depends on the dispatch.  Notice that however, in every
+   case, a program point is a pointer-to-constant type and therefore fits in a
+   word. */
+#ifdef JITTER_DISPATCH_NO_THREADING
+  /* With no-threading dispatch a program point is the address of a machine
+     instruction -- from C, it's what a goto * statement accepts.  I don't
+     need to worry about non-GCC compilers, since no-threading relies on GCC
+     extensions. */
+  typedef const void *
+  jitter_program_point;
+#else
+  /* On every other dispatch a program point is a pointer to a word
+     in the executable routine -- in the case of switch dispatching that word
+     will contain a specialized opcode, with threading it will contain the
+     address of a machine instruction (see the case above) followed by the
+     VM instruction arguments. */
+  typedef const union jitter_word *
+  jitter_program_point;
+#endif // #ifdef JITTER_DISPATCH_NO_THREADING
+
+/* Expand to an expression evaluating to the program point of the first
+   instruction in the pointed executable routine, as some object which is
+   correct to pass to JITTER_BRANCH.  The expression type will be
+   jitter_program_point.
+
+   This macro is usable from within VM instructions, which might for example
+   perform a jump to the beginning of a different VM routine.  The expansion of
+   this macro is guaranteed not to contain function calls, and is safe to use
+   without extra C function wrappers. */
+#ifdef JITTER_DISPATCH_NO_THREADING
+  /* In this case the executable routine contains a separate pointer to the
+     beginning of the executable region for the native routine.  Of course
+     the first instruction is at the beginning of the region. */
+# define JITTER_EXECUTABLE_ROUTINE_BEGINNING(_jitter_executable_routine_ptr)  \
+    ((_jitter_executable_routine_ptr)->native_code)
+#else
+  /* With switch dispatching or threading the first program point is a pointer
+     to the beginning of the specialized routine array. */
+# define JITTER_EXECUTABLE_ROUTINE_BEGINNING(_jitter_executable_routine_ptr)  \
+    ((jitter_program_point)                                                   \
+     ((_jitter_executable_routine_ptr)->specialized_program))
+#endif // ifdef JITTER_DISPATCH_NO_THREADING
+
+
+
+
 /* Feature macros derived on other macros.
  * ************************************************************************** */
 
