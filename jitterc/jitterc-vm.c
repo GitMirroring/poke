@@ -1,6 +1,6 @@
 /* Jitter: VM generation-time data structures.
 
-   Copyright (C) 2017, 2018, 2019, 2020, 2021 Luca Saiu
+   Copyright (C) 2017, 2018, 2019, 2020, 2021, 2022 Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -525,13 +525,15 @@ jitterc_vm_add_register_class (struct jitterc_vm *vm,
       rc->long_name = jitter_clone_string (long_name);
     }
 
-  /* Set any remaining uninitialised value to a reasonable default. */
+  /* Set any remaining uninitialised value to a reasonable default... */
   if (rc->fast_register_no == -1)
     rc->fast_register_no = 0;
   if (rc->c_type == NULL)
     rc->c_type = "union jitter_word";
   if (rc->use_slow_registers == -1)
     rc->use_slow_registers = 1;
+  /* ...But do not clamp the number of fast register to the global limit yet;
+     this will be done later at the beginning of specialisation. */
 
   /* Set fields which are always uninitalised at this point to a reasonable
      default. */
@@ -1798,6 +1800,27 @@ jitterc_specialize_recursive (struct jitterc_vm *vm,
   gl_list_remove_at (specialized_arguments, next_argument_index);
 }
 
+static void
+clamp_register_class_fast_register_no (struct jitterc_vm *vm)
+{
+  int i;
+  for (i = 0; i < gl_list_size (vm->register_classes); i ++)
+    {
+      struct jitterc_register_class *rc
+        = ((struct jitterc_register_class *)
+           gl_list_get_at (vm->register_classes, i));
+      if (vm->max_fast_register_no_per_class != -1
+          && rc->fast_register_no > vm->max_fast_register_no_per_class)
+        {
+          printf ("Register class '%c': clamping fast register no from %i to %i\n",
+                  rc->letter,
+                  (int) rc->fast_register_no,
+                  (int) vm->max_fast_register_no_per_class);
+          rc->fast_register_no = vm->max_fast_register_no_per_class;
+        }
+    }
+}
+
 void
 jitterc_specialize (struct jitterc_vm *vm,
                     int max_fast_register_no_per_class,
@@ -1808,6 +1831,10 @@ jitterc_specialize (struct jitterc_vm *vm,
      and whether we should use slow registers as well. */
   vm->max_fast_register_no_per_class = max_fast_register_no_per_class;
   vm->max_nonresidual_literal_no = max_nonresidual_literal_no;
+
+  /* An easy way to enforce such limits on register classes is to just change
+     the number of fast registers now, and then forget about the issue. */
+  clamp_register_class_fast_register_no (vm);
 
   /* First generate the special specialized instructions.  Those have to be the
      first ones, and in particular the !INVALID specialized instruction must

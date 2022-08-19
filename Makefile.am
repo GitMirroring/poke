@@ -1045,7 +1045,7 @@ JITTER_GENERATED_FILES += $(GENERATED_C_FILES_FOR_UNINSPIRED)
 # line -- but already built targets must be deleted manually.
 # FIXME: This is mostly for myself, as the jitterc command line interface is
 # going to change.
-UNINSPIRED_MAX_FAST_REGISTER_NO = 1
+UNINSPIRED_MAX_FAST_REGISTER_NO = -1
 UNINSPIRED_MAX_NONRESIDUAL_NO = -1
 
 # PROGRAMS_UNINSPIRED is a list of example programs to build based on the
@@ -1198,7 +1198,7 @@ JITTER_GENERATED_FILES += $(GENERATED_C_FILES_FOR_STRUCTURED_MAIN_INCLUDED)
 # make command line -- but already built targets must be deleted manually.
 # FIXME: This is mostly for myself, as the jitterc command line interface is
 # going to change.
-STRUCTUREDVM_MAX_FAST_REGISTER_NO = 5
+STRUCTUREDVM_MAX_FAST_REGISTER_NO = -1
 STRUCTUREDVM_MAX_NONRESIDUAL_NO = -1
 
 

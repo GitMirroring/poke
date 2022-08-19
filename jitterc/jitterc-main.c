@@ -1,7 +1,7 @@
 /* Jitter: driver.
 
    Copyright (C) 2017 Luca Saiu
-   Updated in 2019 and 2021 by Luca Saiu
+   Updated in 2019, 2021 and 2022 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -104,7 +104,7 @@ static struct argp_option jitterc_option_specification[] =
    {NULL, '\0', NULL, OPTION_DOC, "Frequently used options:", 20},
    {"max-fast-register-no", 'r', "N", 0,
     "Fast registers number limit per class -- any register past the N-th"
-    " will not be fast, in any class (default: no limit)"},
+    " will not be fast, in any class; or -1 for no limit (default: -1)"},
    {"max-nonresidual-no",'n', "N", 0,
     "Maximum nonresidual number per meta-instruction, or -1 for unlimited"},
    {"frontend", 'f', NULL, 0,
@@ -262,11 +262,12 @@ parse_opt (int key, char *arg, struct argp_state *state)
       cl->output_directory = arg;
       break;
     case 'r':
-      /* By convention a value of -1 means no limit, but that is the default: if
-         the user changes it then the new value must set an actual limit. */
       cl->max_fast_register_no_per_class = jitter_string_to_natural (arg);
-      if (cl->max_fast_register_no_per_class < 0)
-        argp_error (state, "the fast register number limit must be a natural.");
+      if (cl->max_fast_register_no_per_class != -1
+          && cl->max_fast_register_no_per_class < 0)
+        argp_error (state,
+                    "the fast register number limit must be a natural, "
+                    "or -1 for no limit.");
       break;
     case 'n':
       {
