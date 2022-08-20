@@ -1810,6 +1810,7 @@ clamp_register_class_fast_register_no (struct jitterc_vm *vm)
         = ((struct jitterc_register_class *)
            gl_list_get_at (vm->register_classes, i));
       if (vm->max_fast_register_no_per_class != -1
+          && rc->use_slow_registers
           && rc->fast_register_no > vm->max_fast_register_no_per_class)
         {
           printf ("Register class '%c': clamping fast register no from %i to %i\n",
