@@ -1,7 +1,6 @@
 /* Jittery structured language example: main.
 
-   Copyright (C) 2017, 2019, 2020, 2021 Luca Saiu
-   Updated in 2022 by Luca Saiu
+   Copyright (C) 2017, 2019, 2020, 2021, 2022 Luca Saiu
    Written by Luca Saiu
 
    This file is part of the Jitter structured-language example, distributed
@@ -115,9 +114,13 @@ structured_help (void)
 
   structured_help_section ("Debugging options");
   printf ("      --disassemble                print hardware machine instructions\n");
+  printf ("      --no-disassemble             do not disassemble (default)\n");
   printf ("      --cross-disassemble          use the cross-disassembler rather than\n");
   printf ("                                   the native disassembler; also enable\n");
   printf ("                                   disassembly as per --disassemble\n");
+  printf ("      --no-cross-disassemble       do not cross-disassemble (default)\n");
+  printf ("                                   but leave disassembly as it was, enabled\n");
+  printf ("                                   or disabled\n");
   printf ("      --print-defects=WHAT         print information about defective\n");
   printf ("                                   specialised instructions and their\n");
   printf ("                                   replacements.  WHAT must be one of:\n");
@@ -341,11 +344,15 @@ structured_parse_command_line (struct structured_command_line *cl,
         structured_version ();
       else if (handle_options && ! strcmp (arg, "--disassemble"))
         cl->disassemble = true;
+      else if (handle_options && ! strcmp (arg, "--no-disassemble"))
+        cl->disassemble = false;
       else if (handle_options && ! strcmp (arg, "--cross-disassemble"))
         {
           cl->cross_disassemble = true;
           cl->disassemble = true;
         }
+      else if (handle_options && ! strcmp (arg, "--no-cross-disassemble"))
+          cl->cross_disassemble = false;
       else if (handle_options && ! strcmp (arg, "--print-defects=summary"))
         cl->print_defects = structured_print_defect_what_summary;
       else if (handle_options && ! strcmp (arg, "--print-defects=list"))
