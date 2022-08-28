@@ -1,6 +1,7 @@
 /* Jitter: VM-independent library.
 
    Copyright (C) 2016, 2017, 2019, 2020, 2021 Luca Saiu
+   Updated in 2022 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -103,7 +104,8 @@
   typedef float jitter_float;
 #elif  (JITTER_SIZEOF_VOID_P == JITTER_SIZEOF_DOUBLE)
   typedef double jitter_float;
-#elif  (JITTER_SIZEOF_VOID_P == JITTER_SIZEOF_LONG_DOUBLE)
+#elif defined (HAVE_LONG_DOUBLE) \
+      && (JITTER_SIZEOF_VOID_P == JITTER_SIZEOF_LONG_DOUBLE)
 /* This should not happen anywhere, I guess -- on PowerPC long double is 64-bit
    but so is double which is checked before.  Anyway, it costs nothing. */
   typedef long double jitter_float;
