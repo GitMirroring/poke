@@ -841,6 +841,15 @@ AM_PATH_LISPDIR
 # Check for C language features.
 ################################################################
 
+# Some of the features being checked for here date back to ISO C99, are supported
+# on every production platform as of 2022 and are in fact used unconditionally
+# in the code.  However it is useful to explicitly check for such features in
+# order to detect flawed configurations using weak or very old compilers (or, I
+# guess, very new) in bug reports.
+#
+# Any non-GCC compiler is at best second-tier for Jitter, but ideally C99
+# compilers should be supported with simple dispatches.
+
 # Check for mixed declarations and statements, which have been standards in C
 # since 1999 and widely supported even earlier.
 AC_CACHE_CHECK([for C99 mixed declarations and statements],
@@ -862,6 +871,116 @@ else
   AC_MSG_WARN([This compiler does not support mixing C declarations and
 statements.  It must be extremely old, and it will probably never be
 supported by Jitter.  Trying to go on anyway, but expect disasters.])
+fi
+
+# Check for non-constant aggregate initialisers.  These are in ISO C 99 and in
+# GNU C even in C90 mode.
+AC_CACHE_CHECK([for C99 non-constant aggregate initialisers],
+  [ac_cv_have_non_constant_aggregate_initializers],
+  [AC_COMPILE_IFELSE(
+     [AC_LANG_PROGRAM(
+        [int
+         foo (int x)
+         {
+           int q @<:@2@:>@ = { x + 1, x - 1 };
+           return q @<:@0@:>@ + q @<:@1@:>@;
+         }],
+        [[return foo (1) - foo (2);]])],
+     [ac_cv_have_non_constant_aggregate_initializers=yes],
+     [ac_cv_have_non_constant_aggregate_initializers=no])])
+if test "x$ac_cv_have_non_constant_aggregate_initializers" = "xyes"; then
+  AC_DEFINE([JITTER_HAVE_NON_CONSTANT_AGGREGATE_INITIALIZERS], [1],
+            [Define if the C compiler supports non-constant aggregate
+initialisers])
+else
+  AC_MSG_WARN([This compiler does not support C non-constant aggregate
+  initialisers.  Trying to go on, but expect major problems.])
+fi
+
+# Check for designated initialisers.  These are in ISO C 99 and in GNU C even in
+# C90 mode.
+AC_CACHE_CHECK([for C99 designated initialisers],
+  [ac_cv_have_designated_initializers],
+  [AC_COMPILE_IFELSE(
+     [AC_LANG_PROGRAM(
+        [struct s
+          {
+            int i;
+            char c;
+            float f;
+          };
+          union u
+          {
+            int i;
+            char c;
+            float f;
+          };],
+        [[struct s si = {.i = 3};
+          struct s sc = {.c = 'a'};
+          struct s sf = {.f = 3.14};
+          union u ui = {.i = 3};
+          union u uc = {.c = 'a'};
+          union u uf = {.f = 3.14};
+          return si.i + sc.c + (int) sf.f + ui.c + uc.i + (int) uf.i;
+        ]])],
+     [ac_cv_have_designated_initializers=yes],
+     [ac_cv_have_designated_initializers=no])])
+if test "x$ac_cv_have_designated_initializers" = "xyes"; then
+  AC_DEFINE([JITTER_HAVE_DESIGNATED_INITIALIZERS], [1],
+            [Define if the C compiler supports designated initialisers])
+else
+  AC_MSG_WARN([This compiler does not support C designated initialisers.  Trying
+to go on, but expect major problems.])
+fi
+
+# Check for compound literals.  These are in ISO C 99 and in GNU C even in
+# C90 mode.
+AC_CACHE_CHECK([for C99 compound literals],
+  [ac_cv_have_compound_literals],
+  [AC_COMPILE_IFELSE(
+     [AC_LANG_PROGRAM(
+        [struct s
+          {
+            int i;
+            char c;
+            float f;
+          };],
+        [[struct s s1;
+          s1 = ((struct s) {3, 'a', 3.14});
+
+          return s1.i + s1.c + (int) s1.f;
+        ]])],
+     [ac_cv_have_compound_literals=yes],
+     [ac_cv_have_compound_literals=no])])
+if test "x$ac_cv_have_compound_literals" = "xyes"; then
+  AC_DEFINE([JITTER_HAVE_COMPOUND_LITERALS], [1],
+            [Define if the C compiler supports compound literals])
+else
+  AC_MSG_WARN([This compiler does not support C compound literals.  Trying
+to go on, but expect major problems.])
+fi
+
+# Check for compound literals as lvalues.  These are in ISO C 99 and in GNU C even in
+# C90 mode.
+AC_CACHE_CHECK([for C99 compound literals as l-values],
+  [ac_cv_have_compound_literals_as_lvalues],
+  [AC_COMPILE_IFELSE(
+     [AC_LANG_PROGRAM(
+        [struct s
+          {
+            int i;
+            char c;
+            float f;
+          };],
+        [[return ++ (((struct s) {3, 'a', 3.14}).i);]])],
+     [ac_cv_have_compound_literals_as_lvalues=yes],
+     [ac_cv_have_compound_literals_as_lvalues=no])])
+if test "x$ac_cv_have_compound_literals_as_lvalues" = "xyes"; then
+  AC_DEFINE([JITTER_HAVE_COMPOUND_LITERALS_AS_LVALUES], [1],
+            [Define if the C compiler supports compound literals as l-values])
+else
+  AC_MSG_WARN([This compiler does not support C compound literals as l-values.
+Trying to go on, but expect major problems.])
 fi
 
 # Check for statement expressions in the style of GNU C.

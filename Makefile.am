@@ -332,6 +332,7 @@ lib_libjitterutility__partial_la_SOURCES = \
   jitter/jitter-parse-int.h jitter/jitter-parse-int.c \
   jitter/jitter-print.h jitter/jitter-print.c \
   jitter/jitter-readline.h \
+  jitter/jitter-reinterpret-cast.h \
   jitter/jitter-string.h jitter/jitter-string.c \
   jitter/jitter-time.h jitter/jitter-time.c \
   jitter/jitter-word-set.h jitter/jitter-word-set.c
@@ -359,19 +360,24 @@ jitterinclude_HEADERS += \
   jitter/jitter-parse-int.h \
   jitter/jitter-print.h \
   jitter/jitter-readline.h \
+  jitter/jitter-reinterpret-cast.h \
   jitter/jitter-string.h \
   jitter/jitter-time.h \
   jitter/jitter-word-set.h
 
 # Unit tests for libjitterutility.
 if JITTER_ENABLE_TEST_SUITE
-  check_PROGRAMS += tests/unit/heap-test
+  check_PROGRAMS += tests/unit/heap-test tests/unit/float-test
 tests_unit_heap_test_SOURCES = tests/unit/heap-test.c
 tests_unit_heap_test_LDADD = \
   lib/libjitterutility--partial.la \
   $(LDADD_FOR_GNULIB)
 tests_unit_heap_test_CPPFLAGS = \
   $(AM_CPPFLAGS) $(CPPFLAGS_FOR_INTERNAL_USE)
+
+tests_unit_float_test_SOURCES = tests/unit/float-test.c
+tests_unit_float_test_LDADD = $(tests_unit_heap_test_LDADD)
+tests_unit_float_test_CPPFLAGS = $(tests_unit_heap_test_CPPFLAGS)
 endif # if JITTER_ENABLE_TEST_SUITE
 
 

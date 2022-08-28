@@ -169,6 +169,41 @@ union jitter_word
 
 
 
+/* Reinterpret-cast conversion.
+ * ************************************************************************** */
+
+/* Include the machinery to be used in the next section. */
+#include <jitter/jitter-reinterpret-cast.h>
+
+
+
+
+/* Reinterpret-cast conversion between floating-point and integer types.
+ * ************************************************************************** */
+
+/* Given a jitter_uint expression expand to an expression evaluating to the same
+   expression and then reinterpret-cast to jitter_float. */
+#define JITTER_REINTERPRET_CAST_UINT_TO_FLOAT(from)            \
+  JITTER_REINTERPRET_CAST (jitter_float, jitter_uint, (from))
+
+/* Given a jitter_int expression expand to an expression evaluating to the same
+   expression and then reinterpret-cast to jitter_float. */
+#define JITTER_REINTERPRET_CAST_INT_TO_FLOAT(from)            \
+  JITTER_REINTERPRET_CAST (jitter_float, jitter_int, (from))
+
+/* Given a jitter_float expression expand to an expression evaluating to the
+   same expression and then reinterpret-cast to jitter_uint. */
+#define JITTER_REINTERPRET_CAST_FLOAT_TO_UINT(from)            \
+  JITTER_REINTERPRET_CAST (jitter_uint, jitter_float, (from))
+
+/* Given a jitter_float expression expand to an expression evaluating to the
+   same expression and then reinterpret-cast to jitter_int. */
+#define JITTER_REINTERPRET_CAST_FLOAT_TO_INT(from)            \
+  JITTER_REINTERPRET_CAST (jitter_int, jitter_float, (from))
+
+
+
+
 /* The long long type or some approximation of it.
  * ************************************************************************** */
 

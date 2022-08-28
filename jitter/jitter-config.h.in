@@ -328,6 +328,18 @@
    This is mostly intended to be checked in bug reports. */
 #undef JITTER_HAVE_MIXED_DECLARATIONS_AND_STATEMENTS
 
+/* Define if the C compiler supports non-constant aggregate initialisers. */
+#undef JITTER_HAVE_NON_CONSTANT_AGGREGATE_INITIALIZERS
+
+/* Define if the C compiler supports designed initialisers. */
+#undef JITTER_HAVE_DESIGNATED_INITIALIZERS
+
+/* Define if the C compiler supports compound literals. */
+#undef JITTER_HAVE_COMPOUND_LITERALS
+
+/* Define if the C compiler supports compound literals as l-values. */
+#undef JITTER_HAVE_COMPOUND_LITERALS_AS_LVALUES
+
 /* Define if the language supports statement expressions in the style of GNU C. */
 #undef JITTER_HAVE_GNU_C_STATEMENT_EXPRESSIONS
 
