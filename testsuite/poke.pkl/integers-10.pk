@@ -1,0 +1,4 @@
+/* { dg-do run } */
+
+/* { dg-command { 9bu } } */
+/* { dg-output 9UB } */

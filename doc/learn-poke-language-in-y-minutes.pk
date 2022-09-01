@@ -103,6 +103,9 @@ var ui64 = 7UL;    /* unsigned long (64-bit) */
 var long_decimal = 100_000_000;
 var long_hexadecimal = 0x1122_aabb_ccdd_eeff;
 
+/* NOTE Integer suffixes are case-insensitive. 1B == 1b, 10UH == 10uh, etc.
+ */
+
 /* Operations on integer values */
 
 /* Arithmetic */
