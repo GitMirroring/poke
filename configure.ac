@@ -1421,6 +1421,27 @@ if test "x$ac_cv_have_section_note_gnu_stack" = "xyes"; then
             [Define if the platform supports a .note.GNU-stack section.])
 fi
 
+# Same in ARM syntax.  Notice that we check this on every architecture, not
+# only ARM: this is the Autoconf way, and may prevent future problems in case
+# other architectures have the same quirk.
+AC_CACHE_CHECK([for .note-GNU-stack section support in ARM syntax],
+  [ac_cv_have_section_note_gnu_stack_in_arm_syntax],
+  [AC_LINK_IFELSE(
+     [AC_LANG_PROGRAM(
+        [[]],
+        [[/* The section prefix character here is '%' instead of '@'. */
+          asm volatile (".section .note.GNU-stack, \"\", %progbits\n"
+                        ".previous");
+        ]])],
+     [ac_cv_have_section_note_gnu_stack_in_arm_syntax=yes],
+     [ac_cv_have_section_note_gnu_stack_in_arm_syntax=no])])
+if test "x$ac_cv_have_section_note_gnu_stack_in_arm_syntax" = "xyes"; then
+  AC_DEFINE([JITTER_HAVE_SECTION_NOTE_GNU_STACK_IN_ARM_SYNTAX], [1],
+            [Define if the platform supports a .note.GNU-stack section using
+             ARM assembly syntax for section prefixes instead of the syntax
+             that works for most architectures.])
+fi
+
 
 # Check for specific functions or "declarations" in the C library.
 ##################################################################

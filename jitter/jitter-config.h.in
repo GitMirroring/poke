@@ -2,6 +2,7 @@
 
    Copyright (C) 2017, 2019, 2020, 2021 Luca Saiu
    Updated in 2021 by pEp foundation (JITTER_HOST_OS_IS_ANDROID)
+   Updated in 2022 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -172,6 +173,7 @@
 #undef JITTER_HOST_OS_IS_COFF
 #undef JITTER_HOST_OS_IS_MACHO
 #undef JITTER_HAVE_SECTION_NOTE_GNU_STACK
+#undef JITTER_HAVE_SECTION_NOTE_GNU_STACK_IN_ARM_SYNTAX
 
 /* Assembler flavour. */
 #undef JITTER_HOST_ASSEMBLER_IS_GNU

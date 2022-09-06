@@ -1,6 +1,6 @@
 /* VM library: macros to be optionally included in architecture-specific asm.
 
-   Copyright (C) 2017, 2019 Luca Saiu
+   Copyright (C) 2017, 2019, 2022 Luca Saiu
    Updated in 2020 by Luca Saiu
    Written by Luca Saiu
 
@@ -48,7 +48,7 @@
 #include <jitter/jitter-cpp.h>
 
 
-/* Expand to nothing if we have no assembly support.
+/* Expand to nothing except stack executability if we have no assembly support.
  * ************************************************************************** */
 
 /* If in this configuration the assembler is not Gas or we do not know its
@@ -85,32 +85,6 @@
 #else
 # error "Weird: this machine's word size is not 8, 4 or 2 bytes"
 #endif // #if JITTER_SIZEOF_VOID_P == ...
-
-
-
-
-/* Stack executability not required.
- * ************************************************************************** */
-
-/* Do not require an executable stack.  Jitter, or a Jittery VM runtime, never
-   directly relies on that.
-
-   Rationale: none of my assembly code relies on executable stacks, even if GCC
-   assumes, by default, that an assembly source file does.  Since this file is
-   included in every assembly source this is a good place to put this.  If some
-   other source linked to the Jitter runtime requires an executable stack then
-   the linked executable will have it, thanks to another
-     .section .note.GNU-stack, "x", @progbits
-   written somewhere else.
-   The Jitter runtime itself, along with every example in the distribution,
-   could easily be compiled and linked with
-     -Wa,--noexecstack -Wl,-z,noexecstack
-   , if there were nothing else. */
-#if defined (JITTER_HOST_OS_IS_ELF) \
-    && defined (JITTER_HAVE_SECTION_NOTE_GNU_STACK)
-.section .note.GNU-stack, "", @progbits
-.previous
-#endif // defined (JITTER_HOST_OS_IS_ELF) && ...
 
 
 
@@ -293,5 +267,46 @@ jitter_asm_exit_section
 .endm
 
 #endif // #if defined (JITTER_HAVE_ASSEMBLY) && defined (JITTER_HAVE_KNOWN_BINARY_FORMAT)
+
+/* The large CPP conditional ends here: the rest is executed even on
+      ! defined (JITTER_HAVE_ASSEMBLY)                \
+      || ! defined (JITTER_HAVE_KNOWN_BINARY_FORMAT)
+   , becasue stack executability is in fact orthogonal to the rest. */
+
+
+
+
+/* Stack executability not required.
+ * ************************************************************************** */
+
+/* See the previous comment: this is included in every architecture, even if
+   complely unsupported. */
+
+
+/* Do not require an executable stack.  Jitter, or a Jittery VM runtime, never
+   directly relies on that.
+
+   Rationale: none of my assembly code relies on executable stacks, even if GCC
+   assumes, by default, that an assembly source file does.  Since this file is
+   included in every assembly source this is a good place to put this.  If some
+   other source linked to the Jitter runtime requires an executable stack then
+   the linked executable will have it, thanks to another
+     .section .note.GNU-stack, "x", @progbits
+   written somewhere else.
+   The Jitter runtime itself, along with every example in the distribution,
+   could easily be compiled and linked with
+     -Wa,--noexecstack -Wl,-z,noexecstack
+   , if there were nothing else. */
+#if defined (JITTER_HAVE_SECTION_NOTE_GNU_STACK)
+.section .note.GNU-stack, "", @progbits
+.text  /* back to the "previous" section.  .previous would be better, but
+          in practice this works and is more portable, since this code is
+          only included from a global context. */
+#elif defined (JITTER_HAVE_SECTION_NOTE_GNU_STACK_IN_ARM_SYNTAX)
+/* ARM uses % as the section-type prefix character, and '@' as a comment. */
+.section .note.GNU-stack, "", %progbits
+.text  /* See the comment about .text in the previous CPP conditional
+          branch. */
+#endif // defined (JITTER_HAVE_SECTION_NOTE_GNU_STACK)
 
 #endif // #ifndef MACHINE_COMMON_S_
