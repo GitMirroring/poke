@@ -2585,9 +2585,21 @@ for dispatch in $jitter_enabled_dispatches; do
   AC_MSG_NOTICE([generating flags for dispatch "$dispatch"...])
   JITTER_FLAGS_CFLAGS=""
 
+  # Clang cannot seem to compile very large generated files with computed goto
+  # using -O2 without looping forever, or maybe terminating after a ridiculously
+  # long time; override -O2 with -O1 in that case.  This is specifically a
+  # problem with direct-threading.  I have seen no similar issue with switch
+  # dispatching.
+  if test "x$JITTER_HAVE_CLANG" = 'xyes' \
+     && test "x$dispatch" = 'xdirect-threading'; then
+     jitter_o_option='-O1'
+  else
+     jitter_o_option='-O2'
+  fi
+
   # We always want these options.  See the comment below about why
   # -fno-reorder-functions is not desirable.
-  jitter_check_cc_options JITTER_FLAGS_CFLAGS -O2 -fomit-frame-pointer
+  jitter_check_cc_options JITTER_FLAGS_CFLAGS $jitter_o_option -fomit-frame-pointer
   jitter_check_cc_options JITTER_FLAGS_CFLAGS -fno-reorder-functions
 
   # In order to force "asm headers" and "asm footers" (see
