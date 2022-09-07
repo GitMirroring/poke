@@ -1,6 +1,6 @@
 /* Jitter: header supplying functions and macros which some systems lack.
    Copyright (C) 2017, 2019, 2020 Luca Saiu
-   Updated in 2021 by Luca Saiu
+   Updated in 2021 and 2022 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -78,7 +78,10 @@
      for very old GCCs, configure tries to add -fno-toplevel-reorder to CFLAGS .
      That is a more brutal, global way of enforcing ordering. */
 #endif /* #if ! defined (JITTER_HAVE_ATTRIBUTE_NO_REORDER) */
-#if ! defined (JITTER_HAVE_ATTRIBUTE_RETURNS_NONNULL)
+#if ! defined (JITTER_HAVE_ATTRIBUTE_RETURNS_NONNULL)                   \
+    && /* Redefining these two macros does not play well with Gnulib's  \
+          workaround definitions for Clang. */                          \
+       ! defined (JITTER_HAVE_CLANG)
 # define returns_nonnull      /* Nothing. */
 # define __returns_nonnull__  /* Nothing. */
 #endif /* #if ! defined (JITTER_HAVE_ATTRIBUTE_RETURNS_NONNULL) */
