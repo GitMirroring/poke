@@ -59,6 +59,7 @@ poked                   Mohammad-Reza Nabipoor <mnabipoor@gnu.org>
 etc/poke-mode.el        Aurélien Aptel <aaptel@suse.com>
 doc/learn-poke-language-in-y-minutes.pk
                         Mohammad-Reza Nabipoor <mnabipoor@gnu.org>
+pickles/riscv.pk        Mohammad-Reza Nabipoor <mnabipoor@gnu.org>
 #+END_VERSE
 
 ** Write After Approval

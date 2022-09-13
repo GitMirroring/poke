@@ -1,0 +1,859 @@
+/* riscv.pk - RISC-V instruction set (RV32I).  */
+
+/* Copyright (C) 2022 The poke authors.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* set_endian (ENDIAN_LITTLE); */
+
+/* Don't use standard types like bit, int, long, ... in order to make
+ * this pickle usable in gdb.
+ */
+
+type RV_Reg    = uint<5>;
+type RV_Funct3 = uint<3>;
+type RV_Funct7 = uint<7>;
+type RV_Opcode = struct uint<7>
+  {
+    uint<5> code;
+    uint<2> _ == 0b11;
+  };
+type RV_Opcode = uint<7>; // FIXME Re-defined to prevent a compiler bug.
+
+var RV32_REGISTER_NAMES = [
+  .[0]  = "zero",
+  .[1]  = "ra", // return address
+  .[2]  = "sp", // stack pointer
+  .[3]  = "gp", // global pointer
+  .[4]  = "tp", // thread pointer
+  .[5]  = "t0", // temporary/alternate link register
+  .[6]  = "t1", // temporary
+  .[7]  = "t2", // temporary
+  .[8]  = "s0", // saved register/frame pointer
+  .[9]  = "s1", // saved register
+  .[10] = "a0", // function argument/return value
+  .[11] = "a1", // function argument/return value
+  .[12] = "a2", // function argument
+  .[13] = "a3", // function argument
+  .[14] = "a4", // function argument
+  .[15] = "a5", // function argument
+  .[16] = "a6", // function argument
+  .[17] = "a7", // function argument
+  .[18] = "s2", // saved register
+  .[19] = "s3", // saved register
+  .[20] = "s4", // saved register
+  .[21] = "s5", // saved register
+  .[22] = "s6", // saved register
+  .[23] = "s7", // saved register
+  .[24] = "s8", // saved register
+  .[25] = "s9", // saved register
+  .[26] = "s10", // saved register
+  .[27] = "s11", // saved register
+  .[28] = "t3", // temporaries
+  .[29] = "t4", // temporaries
+  .[30] = "t5", // temporaries
+  .[31] = "t6", // temporaries
+];
+
+var RV32_OPCODE_BRANCH   = 0b1100011 as RV_Opcode,
+    RV32_OPCODE_LOAD     = 0b0000011 as RV_Opcode,
+    RV32_OPCODE_STORE    = 0b0100011 as RV_Opcode,
+    RV32_OPCODE_SYSTEM   = 0b1110011 as RV_Opcode,
+    RV32_OPCODE_OP_IMM   = 0b0010011 as RV_Opcode,
+    RV32_OPCODE_OP       = 0b0110011 as RV_Opcode,
+    RV32_OPCODE_MISC_MEM = 0b0001111 as RV_Opcode;
+
+var RV32_OPCODE_LUI    = 0b0110111 as RV_Opcode,
+    RV32_OPCODE_AUIPC  = 0b0010111 as RV_Opcode,
+    RV32_OPCODE_JAL    = 0b1101111 as RV_Opcode,
+    RV32_OPCODE_JALR   = 0b1100111 as RV_Opcode,
+    RV32_OPCODE_BEQ    = RV32_OPCODE_BRANCH,
+    RV32_OPCODE_BNE    = RV32_OPCODE_BRANCH,
+    RV32_OPCODE_BLT    = RV32_OPCODE_BRANCH,
+    RV32_OPCODE_BGE    = RV32_OPCODE_BRANCH,
+    RV32_OPCODE_BLTU   = RV32_OPCODE_BRANCH,
+    RV32_OPCODE_BGEU   = RV32_OPCODE_BRANCH,
+    RV32_OPCODE_LB     = RV32_OPCODE_LOAD,
+    RV32_OPCODE_LH     = RV32_OPCODE_LOAD,
+    RV32_OPCODE_LW     = RV32_OPCODE_LOAD,
+    RV32_OPCODE_LBU    = RV32_OPCODE_LOAD,
+    RV32_OPCODE_LHU    = RV32_OPCODE_LOAD,
+    RV32_OPCODE_SB     = RV32_OPCODE_STORE,
+    RV32_OPCODE_SH     = RV32_OPCODE_STORE,
+    RV32_OPCODE_SW     = RV32_OPCODE_STORE,
+    RV32_OPCODE_ADDI   = RV32_OPCODE_OP_IMM,
+    RV32_OPCODE_SLTI   = RV32_OPCODE_OP_IMM,
+    RV32_OPCODE_SLTIU  = RV32_OPCODE_OP_IMM,
+    RV32_OPCODE_XORI   = RV32_OPCODE_OP_IMM,
+    RV32_OPCODE_ORI    = RV32_OPCODE_OP_IMM,
+    RV32_OPCODE_ANDI   = RV32_OPCODE_OP_IMM,
+    RV32_OPCODE_SLLI   = RV32_OPCODE_OP_IMM,
+    RV32_OPCODE_SRLI   = RV32_OPCODE_OP_IMM,
+    RV32_OPCODE_SRAI   = RV32_OPCODE_OP_IMM,
+    RV32_OPCODE_ADD    = RV32_OPCODE_OP,
+    RV32_OPCODE_SUB    = RV32_OPCODE_OP,
+    RV32_OPCODE_SLL    = RV32_OPCODE_OP,
+    RV32_OPCODE_SLT    = RV32_OPCODE_OP,
+    RV32_OPCODE_SLTU   = RV32_OPCODE_OP,
+    RV32_OPCODE_XOR    = RV32_OPCODE_OP,
+    RV32_OPCODE_SRL    = RV32_OPCODE_OP,
+    RV32_OPCODE_SRA    = RV32_OPCODE_OP,
+    RV32_OPCODE_OR     = RV32_OPCODE_OP,
+    RV32_OPCODE_AND    = RV32_OPCODE_OP,
+    RV32_OPCODE_FENCE  = RV32_OPCODE_MISC_MEM,
+    RV32_OPCODE_ECALL  = RV32_OPCODE_SYSTEM,
+    RV32_OPCODE_EBREAK = RV32_OPCODE_SYSTEM;
+
+var RV_OPCODES_R = [
+  RV32_OPCODE_OP,
+];
+var RV_OPCODES_I = [
+  RV32_OPCODE_OP_IMM,
+  RV32_OPCODE_SYSTEM,
+  RV32_OPCODE_FENCE,
+  RV32_OPCODE_JALR,
+  RV32_OPCODE_LOAD,
+];
+var RV_OPCODES_S = [
+  RV32_OPCODE_STORE,
+];
+var RV_OPCODES_B = [
+  RV32_OPCODE_BRANCH,
+];
+var RV_OPCODES_U = [
+  RV32_OPCODE_LUI,
+  RV32_OPCODE_AUIPC,
+];
+var RV_OPCODES_J = [
+  RV32_OPCODE_JAL,
+];
+
+/* R-type for register-register operations.  */
+type RV32_InsnFmt_R = struct uint<32>
+  {
+    RV_Funct7 funct7;
+    RV_Reg    rs2;
+    RV_Reg    rs1;
+    RV_Funct3 funct3;
+    RV_Reg    rd;
+    RV_Opcode opcode : opcode in RV_OPCODES_R;
+
+    var name = [
+      .[0b000] = funct7 ? "sub" : "add",
+      .[0b001] = "sll",
+      .[0b010] = "slt",
+      .[0b011] = "sltu",
+      .[0b100] = "xor",
+      .[0b101] = funct7 ? "sra" : "srl",
+      .[0b110] = "or",
+      .[0b111] = "and",
+    ];
+
+    method get_name = string:
+      { return name[funct3]; }
+    method as_poke = (int cmd_p = 1) string:
+      {
+        return cmd_p ? format ("rv32_%s :rd %u5d :rs1 %u5d :rs2 %u5d",
+                               name[funct3], rd, rs1, rs2)
+                     : format ("rv32_%s (%u5d, %u5d, %u5d)",
+                               name[funct3], rd, rs1, rs2);
+      }
+    method as_asm = string:
+      {
+        return format ("%s %s, %s, %s",
+                       name[funct3],
+                       RV32_REGISTER_NAMES[rd],
+                       RV32_REGISTER_NAMES[rs1],
+                       RV32_REGISTER_NAMES[rs2]);
+      }
+    method _print = void:
+      { print "#<" + as_asm + ">"; }
+  };
+
+type RV32_FenceNibble = struct uint<4>
+  {
+    uint<1> input;
+    uint<1> output;
+    uint<1> read;
+    uint<1> write;
+
+    method as_string = string:
+      {
+        return (input ? "i" : "") + (output ? "o" : "") +
+               (read  ? "r" : "") + (write  ? "w" : "");
+      }
+  };
+
+/* I-type for short immediates and loads.  */
+type RV32_InsnFmt_I = struct uint<32>
+  {
+    int<12>   imm;
+    RV_Reg    rs1;
+    RV_Funct3 funct3;
+    RV_Reg    rd;
+    RV_Opcode opcode : opcode in RV_OPCODES_I &&
+                       (opcode == RV32_OPCODE_JALR => funct3 == 0) &&
+                       (opcode == RV32_OPCODE_FENCE =>
+                         (funct3 == 0 &&
+                         (imm as RV32_FenceNibble) &&
+                         ((imm as uint<8> .>> 4) as RV32_FenceNibble)));
+
+    // arithmetic/logic
+    var names_al = [
+      .[0b000] = "addi",
+      .[0b010] = "slti",
+      .[0b011] = "sltiu",
+      .[0b100] = "xori",
+      .[0b110] = "ori",
+      .[0b111] = "andi",
+      .[0b001] = "slli",
+      .[0b101] = /*arithmetic_p*/ (imm & 0xfe0) == 0x400 ? "srai" : "srli",
+    ];
+    var names_l = [
+      .[0b000] = "lb",
+      .[0b001] = "lh",
+      .[0b010] = "lw",
+      .[0b100] = "lbu",
+      .[0b101] = "lhu",
+    ];
+    var name
+      = opcode == RV32_OPCODE_JALR   ? "jalr"
+      : opcode == RV32_OPCODE_OP_IMM ? names_al[funct3]
+      : opcode == RV32_OPCODE_LOAD   ? names_l[funct3]
+      : "";
+
+    method get_name = string:
+      { return name; }
+    method get_imm = int<32>:
+      { return imm as int<32> <<. 20 .>> 20;  /* Sign-extend.  */ }
+    method as_poke = (int cmd_p = 1) string:
+      {
+        if (name != "")
+          {
+            if (opcode == RV32_OPCODE_LOAD)
+              return cmd_p ? format ("rv32_%s :rd %u5d :rs1 %u5d :imm %i32d",
+                                     name, rd, rs1, imm)
+                           : format ("rv32_%s (%u5d, %u5d, %i32d)",
+                                     name, rd, rs1, imm);
+
+            if (name in ["slli", "srli", "srai"])
+              return cmd_p ? format ("rv32_%s :rd %u5d :rs1 %u5d :shamt %u5d",
+                                      name, rd, rs1, imm & 0x1f)
+                           : format ("rv32_%s (%u5d, %u5d, %u5d)",
+                                      name, rd, rs1, imm & 0x1f);
+            return cmd_p ? format ("rv32_%s :rd %u5d :rs1 %u5d :imm %i32d",
+                                   name, rd, rs1, get_imm)
+                         : format ("rv32_%s (%u5d, %u5d, %i32d)",
+                                   name, rd, rs1, get_imm);
+          }
+        if (opcode == RV32_OPCODE_FENCE)
+          {
+            var l = imm as RV32_FenceNibble,
+                u = (imm as uint<8> .>> 4) as RV32_FenceNibble;
+
+            return cmd_p ?
+                format ("rv32_fence :predecessor \"%s\" :successor \"%s\"",
+                      u.as_string, l.as_string)
+              : format ("rv32_fence (\"%s\", \"%s\")",
+                        u.as_string, l.as_string);
+          }
+        assert (opcode == RV32_OPCODE_SYSTEM);
+        return imm == 0 ? "rv32_ecall ()" : "rv32_ebreak ()";
+      }
+    method as_asm = string:
+      {
+        if (name != "")
+          {
+            if (opcode == RV32_OPCODE_LOAD)
+              return format ("%s %s, %i32d(%s)",
+                             name,
+                             RV32_REGISTER_NAMES[rd],
+                             get_imm,
+                             RV32_REGISTER_NAMES[rs1]);
+
+            var shift_p = name == "slli" || name == "srli" || name == "srai";
+
+            return format ("%s %s, %s, %i32d",
+                           name,
+                           RV32_REGISTER_NAMES[rd],
+                           RV32_REGISTER_NAMES[rs1],
+                           shift_p ? imm & 0x1f : get_imm);
+          }
+        if (opcode == RV32_OPCODE_FENCE)
+          {
+            var l = imm as RV32_FenceNibble,
+                u = (imm as uint<8> .>> 4) as RV32_FenceNibble;
+
+            return format ("fence %s, %s", u.as_string, l.as_string);
+          }
+        assert (opcode == RV32_OPCODE_SYSTEM);
+        return imm == 0 ? "ecall" : "ebreak";
+      }
+    method _print = void:
+      { print "#<" + as_asm + ">"; }
+  };
+
+/* S-type for stores.  */
+type RV32_InsnFmt_S = struct uint<32>
+  {
+    uint<7>   imm11_5;
+    RV_Reg    rs2;
+    RV_Reg    rs1;
+    RV_Funct3 funct3;
+    uint<5>   imm4_0;
+    RV_Opcode opcode : opcode in RV_OPCODES_S;
+
+    var names = [
+      .[0b000] = "sb",
+      .[0b001] = "sh",
+      .[0b010] = "sw",
+    ];
+
+    method get_name = string:
+      { return names[funct3]; }
+    method get_imm = int<32>:
+      {
+        return (imm11_5 ::: imm4_0) as int<32> <<. 20 .>> 20; /* sign-extend */
+      }
+    method as_poke = (int cmd_p = 1) string:
+      {
+        assert (opcode == RV32_OPCODE_STORE);
+        return cmd_p ? format ("rv32_%s :rs1 %u5d :rs2 %u5d :imm %i32d",
+                               names[funct3], rs1, rs2, get_imm)
+                     : format ("rv32_%s (%u5d, %u5d, %i32d)",
+                               names[funct3], rs1, rs2, get_imm);
+      }
+    method as_asm = string:
+      {
+        assert (opcode == RV32_OPCODE_STORE);
+        return format ("%s %s, %i32d(%s)",
+                       names[funct3],
+                       RV32_REGISTER_NAMES[rs2],
+                       get_imm,
+                       RV32_REGISTER_NAMES[rs1]);
+      }
+    method _print = void:
+      { print "#<" + as_asm + ">"; }
+  };
+
+/* B-type for conditional branches.  */
+type RV32_InsnFmt_B = struct uint<32>
+  {
+    uint<1>   imm12;
+    uint<6>   imm10_5;
+    RV_Reg    rs2;
+    RV_Reg    rs1;
+    RV_Funct3 funct3;
+    uint<4>   imm4_1;
+    uint<1>   imm11;
+    RV_Opcode opcode : opcode in RV_OPCODES_B;
+
+    var names = [
+      .[0b000] = "beq",
+      .[0b001] = "bne",
+      .[0b100] = "blt",
+      .[0b101] = "bge",
+      .[0b110] = "bltu",
+      .[0b111] = "bgeu",
+    ];
+
+    method get_name = string:
+      { return names[funct3]; }
+    method get_imm = int<32>:
+      {
+        return (imm12 ::: imm11 ::: imm10_5 ::: imm4_1 ::: (0 as uint<1>)) as
+          int<32> <<. 19 .>> 19;  /* Sign-extend.  */
+      }
+    method as_poke = (int cmd_p = 1) string:
+      {
+        assert (opcode == RV32_OPCODE_BRANCH);
+        return cmd_p ? format("rv32_%s :rs1 %u5d :rs2 %u5d :imm %i32d",
+                              names[funct3], rs1, rs2, get_imm)
+                     : format("rv32_%s (%u5d, %u5d, %i32d)",
+                              names[funct3], rs1, rs2, get_imm);
+      }
+    method as_asm = string:
+      {
+        assert (opcode == RV32_OPCODE_BRANCH);
+        return format("%s %s, %s, . + (%i32d)",
+                      names[funct3],
+                      RV32_REGISTER_NAMES[rs1],
+                      RV32_REGISTER_NAMES[rs2],
+                      get_imm);
+      }
+    method _print = void:
+      { print "#<" + as_asm + ">"; }
+  };
+
+/* U-type for long immediates.  */
+type RV32_InsnFmt_U = struct uint<32>
+  {
+    uint<20>  imm;
+    RV_Reg    rd;
+    RV_Opcode opcode : opcode in RV_OPCODES_U;
+
+    method get_name = string:
+      { return opcode == RV32_OPCODE_LUI ? "lui" : "auipc"; }
+    method get_imm = int<32>:
+      { return ((imm as uint<32>) <<. 12) as int<32>; }
+    method as_poke = (int cmd_p = 1) string:
+      {
+        assert (opcode == RV32_OPCODE_LUI || opcode == RV32_OPCODE_AUIPC);
+
+        var n = get_name;
+
+        return cmd_p ? format ("rv32_%s :rd %u5d :imm %i32d", n, rd, get_imm)
+                     : format ("rv32_%s (%u5d, %i32d)", n, rd, get_imm);
+      }
+    method as_asm = string:
+      {
+        assert (opcode == RV32_OPCODE_LUI || opcode == RV32_OPCODE_AUIPC);
+        return format ("%s %s, 0x%i20x",
+                       opcode == RV32_OPCODE_LUI ? "lui" : "auipc",
+                       RV32_REGISTER_NAMES[rd],
+                       imm);
+      }
+    method _print = void:
+      { print "#<" + as_asm + ">"; }
+  };
+
+/* J-type for unconditional jumps.  */
+type RV32_InsnFmt_J = struct uint<32>
+  {
+    uint<1>   imm20;
+    uint<10>  imm10_1;
+    uint<1>   imm11;
+    uint<8>   imm19_12;
+    RV_Reg    rd;
+    RV_Opcode opcode : opcode in RV_OPCODES_J;
+
+    method get_name = string:
+      { return "jal"; }
+    method get_imm = int<32>:
+      {
+        return (imm20 ::: imm19_12 ::: imm11 ::: imm10_1 ::: (0 as uint<1>)) as
+          int<32> <<. 11 .>> 11;  /* Sign-extend.  */
+      }
+    method as_poke = (int cmd_p = 1) string:
+      {
+        assert (opcode == RV32_OPCODE_JAL);
+        return cmd_p ? format ("rv32_jal :rd %u5d :imm %i32d", rd, get_imm)
+                     : format ("rv32_jal (%u5d, %i32d)", rd, get_imm);
+      }
+    method as_asm = string:
+      {
+        assert (opcode == RV32_OPCODE_JAL);
+        return format ("jal %s, . + (%i32d)", RV32_REGISTER_NAMES[rd], get_imm);
+      }
+    method _print = void:
+      { print "#<" + as_asm + ">"; }
+  };
+
+// risbuj
+type RV32_Insn = union
+  {
+    RV32_InsnFmt_R r;
+    RV32_InsnFmt_I i;
+    RV32_InsnFmt_S s;
+    RV32_InsnFmt_B b;
+    RV32_InsnFmt_U u;
+    RV32_InsnFmt_J j;
+
+    method as_uint = uint<32>:
+      {
+        type I = uint<32>;
+
+        return !(r ?! E_elem) ? r as I
+             : !(i ?! E_elem) ? i as I
+             : !(s ?! E_elem) ? s as I
+             : !(b ?! E_elem) ? b as I
+             : !(u ?! E_elem) ? u as I
+             : !(j ?! E_elem) ? j as I
+             : 0U /* impossible */;
+      }
+    method get_name = string:
+      {
+        return !(r ?! E_elem) ? r.get_name
+             : !(i ?! E_elem) ? i.get_name
+             : !(s ?! E_elem) ? s.get_name
+             : !(b ?! E_elem) ? b.get_name
+             : !(u ?! E_elem) ? u.get_name
+             : !(j ?! E_elem) ? j.get_name
+             : "" /* impossible */;
+      }
+    method as_poke = (int cmd_p = 1) string:
+      {
+        return !(r ?! E_elem) ? r.as_poke (cmd_p)
+             : !(i ?! E_elem) ? i.as_poke (cmd_p)
+             : !(s ?! E_elem) ? s.as_poke (cmd_p)
+             : !(b ?! E_elem) ? b.as_poke (cmd_p)
+             : !(u ?! E_elem) ? u.as_poke (cmd_p)
+             : !(j ?! E_elem) ? j.as_poke (cmd_p)
+             : "" /* impossible */;
+      }
+    method as_asm = string:
+      {
+        return !(r ?! E_elem) ? r.as_asm
+             : !(i ?! E_elem) ? i.as_asm
+             : !(s ?! E_elem) ? s.as_asm
+             : !(b ?! E_elem) ? b.as_asm
+             : !(u ?! E_elem) ? u.as_asm
+             : !(j ?! E_elem) ? j.as_asm
+             : "" /* impossible */;
+      }
+    method _print = void:
+      { print "#<" + as_asm + ">"; }
+  };
+
+// U
+fun _rv32_u = (RV_Reg rd, int<32> imm, RV_Opcode opcode) RV32_Insn:
+  {
+    assert (imm == (imm & ~0xfff), "invalid immediate value");
+    return RV32_Insn {
+      u = RV32_InsnFmt_U {
+        imm = imm as uint<32> .>> 12,
+        rd = rd,
+        opcode = opcode,
+      },
+    };
+  }
+
+// U
+fun rv32_lui = (RV_Reg rd, int<32> imm) RV32_Insn:
+  { return _rv32_u (rd, imm, RV32_OPCODE_LUI); }
+
+// U
+fun rv32_auipc = (RV_Reg rd, int<32> imm) RV32_Insn:
+  { return _rv32_u (rd, imm, RV32_OPCODE_AUIPC); }
+
+type RV32_Imm_J = struct int<32>
+  {
+    uint<1>  bit31;
+    uint<10> bits30_21;
+    uint<1>  bit20;
+    uint<8>  bits19_12;
+    uint<1>  bit11;
+    uint<10> bits10_1;
+    uint<1>  bit0;
+  };
+
+// J
+fun rv32_jal = (RV_Reg rd, int<32> imm) RV32_Insn:
+  {
+    var i = imm as RV32_Imm_J;
+
+    if (i.bit31)
+      assert (i.bits30_21 ::: i.bit20 == 0x7ff, "invalid immediate value");
+    else
+      assert (i.bits30_21 ::: i.bit20 == 0, "invalid immediate value");
+    assert (i.bit0 == 0, "invalid alignment for immediate value");
+
+    return RV32_Insn {
+      j = RV32_InsnFmt_J {
+        imm20    = i.bit20,
+        imm10_1  = i.bits10_1,
+        imm11    = i.bit11,
+        imm19_12 = i.bits19_12,
+        rd = rd,
+        opcode = RV32_OPCODE_JAL,
+      },
+    };
+  }
+
+type RV32_Imm_B = struct int<32>
+  {
+    uint<1>  bit31;
+    uint<18> bits30_13;
+    uint<1>  bit12;
+    uint<1>  bit11;
+    uint<6>  bits10_5;
+    uint<4>  bits4_1;
+    uint<1>  bit0;
+  };
+
+// B
+fun _rv32_branch =
+  (RV_Reg rs1, RV_Reg rs2, int<32> imm, RV_Funct3 funct3) RV32_Insn:
+  {
+    var i = imm as RV32_Imm_B;
+
+    if (i.bit31)
+      assert (i.bits30_13 ::: i.bit12 == 0x7ffff, "invalid immediate value");
+    else
+      assert (i.bits30_13 ::: i.bit12 == 0, "invalid immediate value");
+    assert (i.bit0 == 0, "invalid alignment for immediate value");
+
+    return RV32_Insn {
+      b = RV32_InsnFmt_B {
+        imm12 = i.bit12,
+        imm10_5 = i.bits10_5,
+        rs2 = rs2,
+        rs1 = rs1,
+        funct3 = funct3,
+        imm4_1 = i.bits4_1,
+        imm11 = i.bit11,
+        opcode = RV32_OPCODE_BRANCH,
+      },
+    };
+  }
+
+// B
+fun rv32_beq = (RV_Reg rs1, RV_Reg rs2, int<32> imm) RV32_Insn:
+  { return _rv32_branch (rs1, rs2, imm, 0b000); }
+
+// B
+fun rv32_bne = (RV_Reg rs1, RV_Reg rs2, int<32> imm) RV32_Insn:
+  { return _rv32_branch (rs1, rs2, imm, 0b001); }
+
+// B
+fun rv32_blt = (RV_Reg rs1, RV_Reg rs2, int<32> imm) RV32_Insn:
+  { return _rv32_branch (rs1, rs2, imm, 0b100); }
+
+// B
+fun rv32_bge = (RV_Reg rs1, RV_Reg rs2, int<32> imm) RV32_Insn:
+  { return _rv32_branch (rs1, rs2, imm, 0b101); }
+
+// B
+fun rv32_bltu = (RV_Reg rs1, RV_Reg rs2, int<32> imm) RV32_Insn:
+  { return _rv32_branch (rs1, rs2, imm, 0b110); }
+
+// B
+fun rv32_bgeu = (RV_Reg rs1, RV_Reg rs2, int<32> imm) RV32_Insn:
+  { return _rv32_branch (rs1, rs2, imm, 0b111); }
+
+// I
+fun _rv32_i =
+  (RV_Reg rd, RV_Reg rs1, int<32> imm, RV_Funct3 funct3, RV_Opcode op) RV32_Insn:
+  {
+    assert (imm == ((imm as int<12>) as int<32>),
+            "immediate value is too large");
+    return RV32_Insn {
+      i = RV32_InsnFmt_I {
+        imm = imm,
+        rs1 = rs1,
+        funct3 = funct3,
+        rd = rd,
+        opcode = op,
+      },
+    };
+  }
+
+// I
+fun rv32_jalr = (RV_Reg rd, RV_Reg rs1, int<32> imm) RV32_Insn:
+  { return _rv32_i (rd, rs1, imm, 0b000, RV32_OPCODE_JALR); }
+
+// I
+fun rv32_lb = (RV_Reg rd, RV_Reg rs1, int<32> imm) RV32_Insn:
+  { return _rv32_i (rd, rs1, imm, 0b000, RV32_OPCODE_LOAD); }
+
+// I
+fun rv32_lh = (RV_Reg rd, RV_Reg rs1, int<32> imm) RV32_Insn:
+  { return _rv32_i (rd, rs1, imm, 0b001, RV32_OPCODE_LOAD); }
+
+// I
+fun rv32_lw = (RV_Reg rd, RV_Reg rs1, int<32> imm) RV32_Insn:
+  { return _rv32_i (rd, rs1, imm, 0b010, RV32_OPCODE_LOAD); }
+
+// I
+fun rv32_lbu = (RV_Reg rd, RV_Reg rs1, int<32> imm) RV32_Insn:
+  { return _rv32_i (rd, rs1, imm, 0b100, RV32_OPCODE_LOAD); }
+
+// I
+fun rv32_lhu = (RV_Reg rd, RV_Reg rs1, int<32> imm) RV32_Insn:
+  { return _rv32_i (rd, rs1, imm, 0b101, RV32_OPCODE_LOAD); }
+
+// I
+fun rv32_addi = (RV_Reg rd, RV_Reg rs1, int<32> imm) RV32_Insn:
+  {
+    return _rv32_i (rd, rs1, imm, 0b000,
+                    RV32_OPCODE_OP_IMM);
+  }
+
+// I
+fun rv32_slti = (RV_Reg rd, RV_Reg rs1, int<32> imm) RV32_Insn:
+  {
+    return _rv32_i (rd, rs1, imm, 0b010,
+                    RV32_OPCODE_OP_IMM);
+  }
+
+// I
+fun rv32_sltiu = (RV_Reg rd, RV_Reg rs1, int<32> imm) RV32_Insn:
+  {
+    return _rv32_i (rd, rs1, imm, 0b011,
+                    RV32_OPCODE_OP_IMM);
+  }
+
+// I
+fun rv32_xori = (RV_Reg rd, RV_Reg rs1, int<32> imm) RV32_Insn:
+  {
+    return _rv32_i (rd, rs1, imm, 0b100,
+                    RV32_OPCODE_OP_IMM);
+  }
+
+// I
+fun rv32_ori = (RV_Reg rd, RV_Reg rs1, int<32> imm) RV32_Insn:
+  {
+    return _rv32_i (rd, rs1, imm, 0b110,
+                    RV32_OPCODE_OP_IMM);
+  }
+
+// I
+fun rv32_andi = (RV_Reg rd, RV_Reg rs1, int<32> imm) RV32_Insn:
+  {
+    return _rv32_i (rd, rs1, imm, 0b111,
+                    RV32_OPCODE_OP_IMM);
+  }
+
+// I
+fun rv32_slli = (RV_Reg rd, RV_Reg rs1, uint<5> shamt) RV32_Insn:
+  {
+    return _rv32_i (rd, rs1, shamt, 0b001,
+                    RV32_OPCODE_OP_IMM);
+  }
+
+// I
+fun rv32_srli = (RV_Reg rd, RV_Reg rs1, uint<5> shamt) RV32_Insn:
+  {
+    return _rv32_i (rd, rs1, shamt, 0b101,
+                    RV32_OPCODE_OP_IMM);
+  }
+
+// I
+fun rv32_srai = (RV_Reg rd, RV_Reg rs1, uint<5> shamt) RV32_Insn:
+  {
+    return _rv32_i (rd, rs1, (0b0100000 as RV_Funct7) ::: shamt, 0b101,
+                    RV32_OPCODE_OP_IMM);
+  }
+
+// I
+fun rv32_fence =
+  (string predecessor = "iorw", string successor = "iorw") RV32_Insn:
+  {
+    fun tr = (uint<8> ch) uint<8>:
+      {
+        if (ch == 'i') return 8;
+        if (ch == 'o') return 4;
+        if (ch == 'r') return 2;
+        if (ch == 'w') return 1;
+        assert (0, "invalid predecessor/successor specifier");
+        return 0;
+      }
+    var ps = 0UB;
+
+    for (c in predecessor) ps |= tr (c) <<. 4;
+    for (c in successor)   ps |= tr (c);
+    return _rv32_i (0, 0, ps , 0, RV32_OPCODE_FENCE);
+  }
+
+// I
+fun rv32_ecall = RV32_Insn:
+  { return _rv32_i (0, 0, 0, 0, RV32_OPCODE_SYSTEM); }
+
+// I
+fun rv32_ebreak = RV32_Insn:
+  { return _rv32_i (0, 0, 1, 0, RV32_OPCODE_SYSTEM); }
+
+// R
+fun _rv32_op =
+  (RV_Reg rd, RV_Reg rs1, RV_Reg rs2, RV_Funct7 f7, RV_Funct3 f3) RV32_Insn:
+  {
+    return RV32_Insn {
+      r = RV32_InsnFmt_R {
+        funct7 = f7,
+        rs2 = rs2,
+        rs1 = rs1,
+        funct3 = f3,
+        rd = rd,
+        opcode = RV32_OPCODE_OP,
+      },
+    };
+  }
+
+// R
+fun rv32_add = (RV_Reg rd, RV_Reg rs1, RV_Reg rs2) RV32_Insn:
+  { return _rv32_op (rd, rs1, rs2, 0b0000000, 0b000); }
+
+// R
+fun rv32_sub = (RV_Reg rd, RV_Reg rs1, RV_Reg rs2) RV32_Insn:
+  { return _rv32_op (rd, rs1, rs2, 0b0100000, 0b000); }
+
+// R
+fun rv32_sll = (RV_Reg rd, RV_Reg rs1, RV_Reg rs2) RV32_Insn:
+  { return _rv32_op (rd, rs1, rs2, 0b0000000, 0b001); }
+
+// R
+fun rv32_slt = (RV_Reg rd, RV_Reg rs1, RV_Reg rs2) RV32_Insn:
+  { return _rv32_op (rd, rs1, rs2, 0b0000000, 0b010); }
+
+// R
+fun rv32_sltu = (RV_Reg rd, RV_Reg rs1, RV_Reg rs2) RV32_Insn:
+  { return _rv32_op (rd, rs1, rs2, 0b0000000, 0b011); }
+
+// R
+fun rv32_xor = (RV_Reg rd, RV_Reg rs1, RV_Reg rs2) RV32_Insn:
+  { return _rv32_op (rd, rs1, rs2, 0b0000000, 0b100); }
+
+// R
+fun rv32_srl = (RV_Reg rd, RV_Reg rs1, RV_Reg rs2) RV32_Insn:
+  { return _rv32_op (rd, rs1, rs2, 0b0000000, 0b101); }
+
+// R
+fun rv32_sra = (RV_Reg rd, RV_Reg rs1, RV_Reg rs2) RV32_Insn:
+  { return _rv32_op (rd, rs1, rs2, 0b0100000, 0b101); }
+
+// R
+fun rv32_or = (RV_Reg rd, RV_Reg rs1, RV_Reg rs2) RV32_Insn:
+  { return _rv32_op (rd, rs1, rs2, 0b0000000, 0b110); }
+
+// R
+fun rv32_and = (RV_Reg rd, RV_Reg rs1, RV_Reg rs2) RV32_Insn:
+  { return _rv32_op (rd, rs1, rs2, 0b0000000, 0b111); }
+
+// S
+fun _rv32_s = (RV_Reg rs1, RV_Reg rs2, int<32> imm, RV_Funct3 funct3) RV32_Insn:
+  {
+    assert (imm == ((imm as int<12>) as int<32>),
+            "immediate value is too large");
+
+    var i = imm as uint<12>;
+
+    return RV32_Insn {
+      s = RV32_InsnFmt_S {
+        imm11_5 = i .>> 5,
+        rs2 = rs2,
+        rs1 = rs1,
+        funct3 = funct3,
+        imm4_0 = i as uint<5>,
+        opcode = RV32_OPCODE_STORE,
+      },
+    };
+  }
+
+// S
+fun rv32_sb = (RV_Reg rs1, RV_Reg rs2, int<32> imm) RV32_Insn:
+  { return _rv32_s (rs1, rs2, imm, 0b000); }
+
+// S
+fun rv32_sh = (RV_Reg rs1, RV_Reg rs2, int<32> imm) RV32_Insn:
+  { return _rv32_s (rs1, rs2, imm, 0b001); }
+
+// S
+fun rv32_sw = (RV_Reg rs1, RV_Reg rs2, int<32> imm) RV32_Insn:
+  { return _rv32_s (rs1, rs2, imm, 0b010); }
+
+/* Pseudo-instructions
+ */
+fun rv32_nop = RV32_Insn:
+  { return rv32_addi (0, 0, 0); }

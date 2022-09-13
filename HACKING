@@ -175,6 +175,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
         etc/poke-mode.el        Aurélien Aptel <aaptel@suse.com>
         doc/learn-poke-language-in-y-minutes.pk
                                 Mohammad-Reza Nabipoor <mnabipoor@gnu.org>
+        pickles/riscv.pk        Mohammad-Reza Nabipoor <mnabipoor@gnu.org>
 
 
 2.3 Write After Approval

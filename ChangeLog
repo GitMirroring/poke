@@ -1,3 +1,11 @@
+2022-09-18  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* pickles/riscv.pk: New pickle for RISC-V RV32I instruction set.
+	* pickles/Makefile.am (dist_pickles_DATA): Update.
+	* etc/hacking.org (Maintainers): Add myself as the maintainer of
+	the pickle.
+	* HACKING: Update.
+
 2022-09-17  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* poked/poked.pk (poked_restart): Close all IO spaces before
