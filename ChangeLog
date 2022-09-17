@@ -1,3 +1,9 @@
+2022-09-17  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* poked/poked.pk (poked_chan_send): Force Poke to make a copy of
+	data before putting into the buffer.
+
+
 2022-09-01  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-lex.l (IS): Add lower-case b to `IS' definition.

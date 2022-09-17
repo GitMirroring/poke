@@ -56,7 +56,7 @@ fun poked_chan_send = (uint<7> chan, byte[] data) void:
     assert (0 < chan && chan <= 120);
 
     apush (__poked_chan_send_chan, chan);
-    apush (__poked_chan_send_buf, data);
+    apush (__poked_chan_send_buf, data + byte[0] ()); // Force a copy
     __poked_chan_send_p = 1;
   }
 
