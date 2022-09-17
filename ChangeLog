@@ -1,5 +1,10 @@
 2022-09-17  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* poked/poked.pk (poked_restart): Close all IO spaces before
+	restarting the daemon.
+
+2022-09-17  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* poked/poked.pk (poked_chan_send): Force Poke to make a copy of
 	data before putting into the buffer.
 

@@ -24,7 +24,14 @@ load "pk-dump-minimal.pk";
 var __poked_restart_p = 0;
 var __poked_exit_p = 0;
 
-fun poked_restart = void: { __poked_restart_p = 1; exit; }
+fun poked_restart = void:
+  {
+    for (fd in iolist)
+      try { close (fd); }
+      catch {}
+    __poked_restart_p = 1;
+    exit;
+  }
 fun poked_exit = void: { __poked_exit_p = 1; exit; }
 fun poked_defer = void: {}
 
