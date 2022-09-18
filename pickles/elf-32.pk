@@ -169,4 +169,131 @@ type Elf32_File =
 
     Elf32_Phdr[ehdr.e_phnum] phdr @ ehdr.e_phoff
       if ehdr.e_phnum > 0;
+
+    /* Given an offset into the ELF file's section string table, return
+       the string.  */
+
+    method get_section_name = (offset<Elf_Word,B> offset) string:
+      {
+        var strtab = ehdr.e_shstrndx;
+        return string @ shdr'ios : shdr[strtab].sh_offset + offset;
+      }
+
+    /* Given a symtab and an offset into its associated symbol string
+       table, return the string.  */
+
+    method get_symbol_name = (Elf32_Shdr symtab, offset<Elf_Word,B> offset) string:
+      {
+        var strtab = symtab.sh_link;
+        return string @ shdr'ios : shdr[strtab].sh_offset + offset;
+      }
+
+    /* Given a section name, return an array of section headers in the
+       ELF file having that name.  */
+
+    method get_sections_by_name = (string name) Elf32_Shdr[]:
+      {
+        var sections = Elf32_Shdr[]();
+
+        for (s in shdr where get_section_name (s.sh_name) == name)
+          apush (sections, s);
+
+        return sections;
+      }
+
+    /* Given a section type (SHT_* value) return an array of section
+       headers in the ELF file with that type.  */
+
+    method get_sections_by_type = (Elf_Word stype) Elf32_Shdr[]:
+      {
+        var sections = Elf32_Shdr[]();
+
+        for (s in shdr where s.sh_type == stype)
+          apush (sections, s);
+
+        return sections;
+      }
+
+    /* Given a section name, return whether it exists in this
+       file.  */
+
+    method section_name_p = (string name) int:
+      {
+        var sections = Elf32_Shdr[]();
+
+        try sections = get_sections_by_name (name);
+        catch if E_inval { return 0; }
+
+        return sections'length;
+      }
+
+    /* Given an offset, return the string stored at that offset in the
+       "default" string table of the ELF file.  This is the string table
+       section named ".strtab".  If such a section doesn't exist, or it
+       doesn't contain a string table, then raise E_inval.  */
+    method get_string = (offset<Elf_Word,B> offset) string:
+     {
+       if (!section_name_p (".strtab"))
+          raise E_inval;
+
+       var strtab = get_sections_by_name (".strtab")[0];
+       return string @ strtab'ios : strtab.sh_offset + offset;
+     }
+
+    /* Return the signature corresponding to a given group section.
+       If the given section header doesn't correspond to a group
+       section then raise E_inval.  */
+
+    method get_group_signature = (Elf32_Shdr section) string:
+      {
+        if (section.sh_type != SHT_GROUP)
+          raise E_inval;
+
+        var symtab = shdr[section.sh_link];
+        var symtab_data
+          = Elf32_Sym [symtab.sh_size] @ shdr'ios : symtab.sh_offset;
+        var symbol = symtab_data[section.sh_info];
+        var symbol_name = get_symbol_name (symtab, symbol.st_name);
+
+        return symbol_name;
+      }
+
+    /* Return an array of strings with the signatures of the section
+       groups present in this ELF file.  */
+
+    method get_group_signatures = string[]:
+      {
+        var signatures = string[]();
+
+        for (section in shdr where section.sh_type == SHT_GROUP)
+          apush (signatures, get_group_signature (section));
+
+        return signatures;
+      }
+
+    /* Given the name of a section group, return an array with the
+       section headers corresponding to all the sections in that
+       group.  If the given name doesn't identify a section group in
+       the ELF file then return an empty array.  */
+
+    method get_section_group = (string group_name) Elf32_Shdr[]:
+      {
+        var section_group = Elf32_Shdr[]();
+
+        var group_sections = get_sections_by_type (SHT_GROUP);
+        for (sec in group_sections
+             where get_group_signature (sec) == group_name)
+          {
+            var group_entries
+              = (Elf_Word[sec.sh_size - sizeof (Elf_Word)]
+                 @ sec'ios : sec.sh_offset + sizeof (Elf_Word));
+
+            for (entry in group_entries)
+              apush (section_group, shdr[entry]);
+
+            break;
+         }
+
+       return section_group;
+     }
   };

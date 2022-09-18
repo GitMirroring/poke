@@ -1,5 +1,17 @@
 2022-09-18  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* pickles/elf-32.pk (Elf32_File.get_section_name): New method.
+	(Elf32_File.get_symbol_name): Likewise.
+	(Elf32_File.get_sections_by_name): Likewise.
+	(Elf32_File.get_sections_by_type): Likewise.
+	(Elf32_File.section_name_p): Likewise.
+	(Elf32_File.get_string): Likewise.
+	(Elf32_File.get_group_signature): Likewise.
+	(Elf32_File.get_group_signatures): Likewise.
+	(Elf32_File.get_section_group): Likewise.
+
+2022-09-18  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* pickles/elf-64.pk (Elf64_File.get_sections_by_name): Use `apush'.
 	(Elf64_File.get_sections_by_type): Likewise.
 	(Elf64_File.get_group_signatures): Likewise.
