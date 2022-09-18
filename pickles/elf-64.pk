@@ -241,7 +241,7 @@ type Elf64_File =
         var sections = Elf64_Shdr[]();
 
         for (s in shdr where get_section_name (s.sh_name) == name)
-          sections += [s];
+          apush (sections, s);
 
         return sections;
       }
@@ -254,7 +254,7 @@ type Elf64_File =
         var sections = Elf64_Shdr[]();
 
         for (s in shdr where s.sh_type == stype)
-          sections += [s];
+          apush (sections, s);
 
         return sections;
       }
@@ -311,7 +311,7 @@ type Elf64_File =
         var signatures = string[]();
 
         for (section in shdr where section.sh_type == SHT_GROUP)
-          signatures += [get_group_signature (section)];
+          apush (signatures, get_group_signature (section));
 
         return signatures;
       }
@@ -334,7 +334,7 @@ type Elf64_File =
                  @ sec'ios : sec.sh_offset + sizeof (Elf_Word));
 
             for (entry in group_entries)
-              section_group += [shdr[entry]];
+              apush (section_group, shdr[entry]);
 
             break;
          }
