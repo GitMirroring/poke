@@ -1,0 +1,15 @@
+/* { dg-do compile } */
+
+type Foo =
+  union
+  {
+    int i;
+    computed int[] j;
+
+    method get_j = int[]: { return [i]; }
+    method set_j = (int[] v) void: { i = v[0]; }
+  };
+
+Foo {
+   j = 10; /* { dg-error "" } */
+};

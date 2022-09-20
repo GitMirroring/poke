@@ -977,6 +977,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
   pkl_ast_node lvalue_type = PKL_AST_TYPE (lvalue);
   pkl_ast_node exp = PKL_AST_ASS_STMT_EXP (ass_stmt);
   pvm_program_label done = pkl_asm_fresh_label (PKL_GEN_ASM);
+  int assigning_computed_field_p = 0;
+  const char *computed_field_name = NULL;
 
   PKL_PASS_SUBPASS (exp);
 
@@ -987,12 +989,44 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
   /* At this point the r-value, generated from executing EXP, is in
      the stack.  */
 
+  /* Determine whether we are assigning to a computed field in a
+     struct.  */
+  if (PKL_AST_CODE (lvalue) == PKL_AST_STRUCT_REF)
+    {
+      pkl_ast_node sct = PKL_AST_STRUCT_REF_STRUCT (lvalue);
+      pkl_ast_node struct_type = PKL_AST_TYPE (sct);
+      pkl_ast_node field_name = PKL_AST_STRUCT_REF_IDENTIFIER (lvalue);
+      const char *field_name_str = PKL_AST_IDENTIFIER_POINTER (field_name);
+      pkl_ast_node elem = NULL;
+
+      for (elem = PKL_AST_TYPE_S_ELEMS (struct_type);
+           elem;
+           elem = PKL_AST_CHAIN (elem))
+        {
+          if (PKL_AST_CODE (elem) == PKL_AST_STRUCT_TYPE_FIELD)
+            {
+              pkl_ast_node elem_name = PKL_AST_STRUCT_TYPE_FIELD_NAME (elem);
+
+              if (field_name
+                  && STREQ (PKL_AST_IDENTIFIER_POINTER (elem_name),
+                            field_name_str))
+                {
+                  assigning_computed_field_p
+                    = PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (elem);
+                  if (assigning_computed_field_p)
+                    computed_field_name = field_name_str;
+                }
+            }
+        }
+    }
+
   /* If the base array to the indexer, or the referred struct, are
      mapped, and the assigned value is a complex value, then we have
      to reflect the effect of the assignment in the corresponding IO
      space.  */
-  if ((PKL_AST_CODE (lvalue) == PKL_AST_INDEXER
-       || PKL_AST_CODE (lvalue) == PKL_AST_STRUCT_REF)
+  if (!assigning_computed_field_p
+      && (PKL_AST_CODE (lvalue) == PKL_AST_INDEXER
+          || PKL_AST_CODE (lvalue) == PKL_AST_STRUCT_REF)
       && (PKL_AST_TYPE_CODE (lvalue_type) == PKL_TYPE_ARRAY
           || PKL_AST_TYPE_CODE (lvalue_type) == PKL_TYPE_STRUCT))
     {
@@ -1112,37 +1146,66 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
       }
     case PKL_AST_STRUCT_REF:
       {
-        /* Stack: VAL SCT ID */
+        if (assigning_computed_field_p)
+          {
+            /* Assigning to a computed field.
 
-        pkl_ast_node sct = PKL_AST_INDEXER_ENTITY (lvalue);
-        pkl_ast_node struct_type = PKL_AST_TYPE (sct);
-        pvm_program_label label1 = pkl_asm_fresh_label (PKL_GEN_ASM);
-        pvm_program_label label2 = pkl_asm_fresh_label (PKL_GEN_ASM);
+               We should SREF the method set_FOO from the struct and
+               pass the struct and the r-value to it.  Note that since
+               this is the calling of a method, the struct value
+               should be passed _last_.  */
 
-        assert (PKL_AST_TYPE_S_CONSTRUCTOR (struct_type) != PVM_NULL);
+            /* Stack: VAL SCT ID */
 
-        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_OVER); /* VAL SCT ID SCT */
-        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MGETS); /* VAL SCT ID SCT STRICT_P */
-        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP);  /* VAL SCT ID STRICT_P */
-        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BZI, label1);
+            char *setter = pk_str_concat ("set_",
+                                          computed_field_name,
+                                          NULL);
 
-        /* Strict value: set with integrity.  */
-        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
-        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ROT);
-        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SSETC, struct_type);
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* VAL SCT */
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                          pvm_make_string (setter));   /* VAL SCT SETTER_NAME */
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SREFMNT);
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP);   /* VAL SCT CLS */
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_CALL);  /* NULL */
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);  /* _ */
 
-        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BA, label2);
-        pkl_asm_label (PKL_GEN_ASM, label1);
+            free (setter);
+          }
+        else
+          {
+            /* Assigning to a regular struct field.  */
+            /* Stack: VAL SCT ID */
 
-        /* Non-strict value: set with no integrity.  */
-        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
-        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ROT);
-        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SSET, struct_type);
+            pkl_ast_node sct = PKL_AST_INDEXER_ENTITY (lvalue);
+            pkl_ast_node struct_type = PKL_AST_TYPE (sct);
+            pvm_program_label label1 = pkl_asm_fresh_label (PKL_GEN_ASM);
+            pvm_program_label label2 = pkl_asm_fresh_label (PKL_GEN_ASM);
 
-        pkl_asm_label (PKL_GEN_ASM, label2);
-        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_WRITE);
-        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* The struct
-                                                      value.  */
+            assert (PKL_AST_TYPE_S_CONSTRUCTOR (struct_type) != PVM_NULL);
+
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_OVER); /* VAL SCT ID SCT */
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MGETS); /* VAL SCT ID SCT STRICT_P */
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP);  /* VAL SCT ID STRICT_P */
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BZI, label1);
+
+            /* Strict value: set with integrity.  */
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ROT);
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SSETC, struct_type);
+
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BA, label2);
+            pkl_asm_label (PKL_GEN_ASM, label1);
+
+            /* Non-strict value: set with no integrity.  */
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ROT);
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SSET, struct_type);
+
+            pkl_asm_label (PKL_GEN_ASM, label2);
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_WRITE);
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* The struct
+                                                          value.  */
+          }
         break;
       }
     case PKL_AST_MAP:
@@ -2810,8 +2873,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_struct_ref)
   if (PKL_PASS_PARENT == NULL
       && PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_LVALUE))
     {
-      /* This is a -lvalue in an assignment.  The struct and the
-         identifier are pushed to the stack for the ass_stmt PS
+      /* This is a l-value in an assignment.  The struct and the
+         identifier are pushed to the stack for the ass_stmt PR
          handler.  Nothing else to do here.  */
     }
   else
@@ -2825,6 +2888,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_struct_ref)
       pkl_ast_node struct_ref_struct_type = PKL_AST_TYPE (struct_ref_struct);
       pkl_ast_node elem;
       int is_field_p = 0;
+      int is_computed_p = 0;
+      pkl_ast_node computed_field_name = NULL;
 
       /* Determine whether the referred struct element is a field or a
          declaration.  */
@@ -2842,19 +2907,47 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_struct_ref)
                              PKL_AST_IDENTIFIER_POINTER (struct_ref_identifier)) == 0)
                 {
                   is_field_p = 1;
+                  /* Note that computed fields always have names.  */
+                  is_computed_p = PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (elem);
+                  if (is_computed_p)
+                    computed_field_name = field_name;
                   break;
                 }
             }
         }
 
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SREF);
-      /* If the parent is a funcall and the referred field is a struct
-         method, then leave both the struct and the closure.  */
-      if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_FUNCALL)
-          && !PKL_PASS_PARENT && !is_field_p)
-        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP);
+      if (is_computed_p)
+        {
+          /* This is a computed field.
+
+             We should SREF the get_FOO method of the struct and
+             call it to get the value.  */
+
+          char *getter = pk_str_concat ("get_",
+                                        PKL_AST_IDENTIFIER_POINTER (computed_field_name),
+                                        NULL);
+
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);  /* STRUCT */
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                        pvm_make_string (getter));   /* STRUCT GETTER_NAME */
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SREFMNT); /* STRUCT GETTER_NAME CLS */
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP);  /* STRUCT CLS */
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_CALL); /* VAL */
+
+          free (getter);
+        }
       else
-        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP2);
+        {
+          /* This is either a field or a method.  */
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SREF);
+          /* If the parent is a funcall and the referred field is a struct
+             method, then leave both the struct and the closure.  */
+          if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_FUNCALL)
+              && !PKL_PASS_PARENT && !is_field_p)
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP);
+          else
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP2);
+        }
 
       /* To cover cases where the referenced struct is not mapped, but
          the value stored in it is a mapped value, we issue a
@@ -3869,6 +3962,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_struct_type_field)
   if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_TYPE))
     {
       /* We are generating a PVM struct type.  */
+
+      /* Do not include computed fields.  */
+      if (PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (PKL_PASS_NODE))
+        PKL_PASS_BREAK;
 
       /* If the struct type element doesn't include a name, generate a
          null value as expected by the mktysct instruction.  */

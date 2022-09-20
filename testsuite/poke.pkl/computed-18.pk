@@ -1,0 +1,16 @@
+/* { dg-do run } */
+
+/* The field `nfields' in a Pk_Type should record the number of both
+   regular and computed fields in a type struct.  */
+
+type Foo =
+  struct
+  {
+    int i;
+    computed int j;
+    method get_j = int: { return i; }
+    method set_j = (int v) void: { i = v; }
+  };
+
+/* { dg-command {typeof (Foo).nfields} } */
+/* { dg-output "2" } */

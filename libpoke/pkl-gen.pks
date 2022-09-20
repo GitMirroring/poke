@@ -1019,6 +1019,9 @@
  .c
  .c     continue;
  .c   }
+ .c   /* If this is a computed field, ignore it.  */
+ .c   if (PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (@field))
+ .c     continue;
         .label .alternative_failed
         .label .constraint_in_alternative
         .label .eof_in_alternative
@@ -1182,7 +1185,10 @@
  .c   {
  .c     if (PKL_AST_CODE (@field) != PKL_AST_DECL
  .c         || PKL_AST_DECL_KIND (@field) != PKL_AST_DECL_KIND_TYPE)
- .c       i++;
+ .c     {
+ .c       if (!PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (@field))
+ .c         i++;
+ .c     }
  .c     continue;
  .c   }
         ;; The lexical address of this method is 0,B where B is 6 +
@@ -1236,7 +1242,8 @@
  .c       @field = PKL_AST_CHAIN (@field))
  .c  {
         .label .invalid_alternative
- .c     if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD)
+ .c     if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD
+ .c         || PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (@field))
  .c       continue;
         .let @field_name = PKL_AST_STRUCT_TYPE_FIELD_NAME (@field)
         .let #field_name_str \
@@ -1303,7 +1310,8 @@
  .c       @field = PKL_AST_CHAIN (@field), ++i)
  .c  {
         .let #i = pvm_make_ulong (i, 64)
- .c     if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD)
+ .c     if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD
+ .c         || PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (@field))
  .c       continue;
         ;; Compare the fields of both structs.
         tor                     ; SCT1 [SCT2]
@@ -1474,6 +1482,9 @@
  .c
  .c     continue;
  .c   }
+ .c     /* If this is a computed field, ignore it.  */
+ .c   if (PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (@field))
+ .c     continue;
         ;; If the field is of type array then the field initializer,
         ;; the constraint expression and/or given values for the
         ;; array will need to do array casts.  So field is
@@ -1701,7 +1712,10 @@
  .c   {
  .c     if (PKL_AST_CODE (@field) != PKL_AST_DECL
  .c         || PKL_AST_DECL_KIND (@field) != PKL_AST_DECL_KIND_TYPE)
- .c       i++;
+ .c     {
+ .c       if (!PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (@field))
+ .c         i++;
+ .c     }
  .c     continue;
  .c   }
         ;; The lexical address of this method is 0,B where B is 6 +
@@ -1903,7 +1917,8 @@
  .c      @field = PKL_AST_CHAIN (@field))
  .c {
         .let #i = pvm_make_ulong (i, 64)
- .c     if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD)
+ .c     if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD
+ .c         || PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (@field))
  .c       continue;
         ;; Poke this struct field, but only if it has been modified
         ;; since the last mapping.
@@ -1984,7 +1999,8 @@
  .c      @field;
  .c      @field = PKL_AST_CHAIN (@field))
  .c {
- .c     if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD)
+ .c     if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD
+ .c         || PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (@field))
  .c       continue;
         .label .next_alternative
         .let @field_type = PKL_AST_STRUCT_TYPE_FIELD_TYPE (@field)
@@ -2062,7 +2078,8 @@
  .c      @field = PKL_AST_CHAIN (@field))
  .c {
         .let #i = pvm_make_ulong (i, 64)
- .c     if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD)
+ .c     if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD
+ .c        || PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (@field))
  .c       continue;
         pushvar $sct            ; SCT
         push #i                 ; SCT I
@@ -2170,7 +2187,8 @@
  .c      @field;
  .c      @field = PKL_AST_CHAIN (@field))
  .c {
- .c     if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD)
+ .c     if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD
+ .c         || PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (@field))
  .c       continue;
         .let @field_type = PKL_AST_STRUCT_TYPE_FIELD_TYPE (@field)
  .c     size_t field_type_size
@@ -2222,7 +2240,8 @@
  .c      @field;
  .c      @field = PKL_AST_CHAIN (@field))
  .c {
- .c     if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD)
+ .c     if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD
+ .c         || PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (@field))
  .c       continue;
         .let @field_type = PKL_AST_STRUCT_TYPE_FIELD_TYPE (@field)
  .c       size_t field_type_size
@@ -2697,7 +2716,8 @@
  .c      @field;
  .c      @field = PKL_AST_CHAIN (@field))
  .c   {
- .c     if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD)
+ .c     if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD
+ .c         || PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (@field))
  .c       continue;
         .label .process_struct_field
         .label .process_next_alternative
@@ -3214,7 +3234,8 @@
  .c {
         .label .process_next_field
         .let #i = pvm_make_ulong (i, 64)
- .c     if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD)
+ .c     if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD
+ .c         || PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (@field))
  .c       continue;
         .let @field_name = PKL_AST_STRUCT_TYPE_FIELD_NAME (@field)
         .let @field_type = PKL_AST_STRUCT_TYPE_FIELD_TYPE (@field)
@@ -3732,8 +3753,9 @@
         pec
         sset
   .c }
-        ;; Number of fields.
-        .let #nfields = pvm_make_int (PKL_AST_TYPE_S_NFIELD (@type), 32)
+        ;; Number of fields, both regular and computed
+        .let #nfields = pvm_make_int (PKL_AST_TYPE_S_NFIELD (@type) \
+                                      + PKL_AST_TYPE_S_NCFIELD (@type), 32)
         push "nfields"
         push #nfields
         sset
@@ -3753,6 +3775,24 @@
           = pvm_make_string (@field_name ? PKL_AST_IDENTIFIER_POINTER (@field_name) : "")
         sel                     ; ... ARR SEL
         push #field_name_str    ; ... ARR SEL STR
+        ains                    ; ... ARR
+ .c }
+        drop                    ; SCT(Type) SCT(sct)
+        ;; Field computed flags.
+        push "fcomputed"
+        sref
+        nip                     ; SCT(Type) SCT(sct) ARR
+ .c for (@field = PKL_AST_TYPE_S_ELEMS (@type);
+ .c      @field;
+ .c      @field = PKL_AST_CHAIN (@field))
+ .c {
+ .c     if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD)
+ .c       continue;
+        sel                     ; ... ARR SEL
+ .c   if (PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (@field))
+        push int<32>1           ; ... ARR SEL COMPUTED_P
+ .c   else
+        push int<32>0           ; ... ARR SEL COMPUTED_P
         ains                    ; ... ARR
  .c }
         drop                    ; SCT(Type) SCT(sct)

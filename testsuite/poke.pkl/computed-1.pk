@@ -1,0 +1,15 @@
+/* { dg-do run } */
+
+type Foo =
+  struct
+    {
+      int foo;
+      computed int<64> i;
+
+      method get_i = int<64>: { return foo * 2; }
+      method set_i = (int<64> val) void: { }
+    };
+
+/* { dg-command { .set obase 10 } } */
+/* { dg-command { Foo { foo = 10 }.i + 1 } } */
+/* { dg-output "21" } */

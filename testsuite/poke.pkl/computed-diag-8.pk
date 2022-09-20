@@ -1,0 +1,11 @@
+/* { dg-do compile } */
+
+type Foo =
+  struct
+  {
+    int k;
+    computed int i;
+
+    method get_i = string: { return "wrong"; } /* { dg-error "" } */
+    method set_i = (int v) void: { k = v; }
+  };

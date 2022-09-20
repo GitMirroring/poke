@@ -1696,7 +1696,10 @@ PKL_PHASE_END_HANDLER
    Pinned unions are not allowed.
 
    Labels are not allowed in integral structs, pinned structs and unions.
-   Optional fields are not allowed in integral structs.  */
+   Optional fields are not allowed in integral structs.
+
+   Computed fields should have getter and setter methods defined for
+   them, and they should handle values of the right type.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
 {
@@ -1737,7 +1740,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
            field;
            field = PKL_AST_CHAIN (field))
         {
-          if (PKL_AST_CODE (field) == PKL_AST_STRUCT_TYPE_FIELD)
+          if (PKL_AST_CODE (field) == PKL_AST_STRUCT_TYPE_FIELD
+              && !PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (field))
             {
               pkl_ast_node ftype
                 = PKL_AST_STRUCT_TYPE_FIELD_TYPE (field);
@@ -1819,6 +1823,129 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
               PKL_TYPIFY_PAYLOAD->errors++;
               PKL_PASS_ERROR;
             }
+        }
+    }
+
+  for (field = PKL_AST_TYPE_S_ELEMS (struct_type);
+       field;
+       field = PKL_AST_CHAIN (field))
+    {
+      if (PKL_AST_CODE (field) == PKL_AST_STRUCT_TYPE_FIELD
+          && PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (field))
+        {
+          /* For each computed field named FOO with type TYPE there
+             must be a getter method with name get_FOO and signature
+             ()TYPE and a setter method with name set_FOO and
+             signature (TYPE)void.  */
+
+          pkl_ast_node decl;
+          int found_setter_p = 0, found_getter_p = 0;
+          char *getter_name, *setter_name;
+
+          pkl_ast_node field_name = PKL_AST_STRUCT_TYPE_FIELD_NAME (field);
+          pkl_ast_node field_type = PKL_AST_STRUCT_TYPE_FIELD_TYPE (field);
+
+          /* This is guaranteed as per parser.  */
+          assert (field_name);
+
+          getter_name = pk_str_concat ("get_",
+                                       PKL_AST_IDENTIFIER_POINTER (field_name),
+                                       NULL);
+          setter_name = pk_str_concat ("set_",
+                                       PKL_AST_IDENTIFIER_POINTER (field_name),
+                                       NULL);
+
+          for (decl = PKL_AST_TYPE_S_ELEMS (struct_type);
+               decl;
+               decl = PKL_AST_CHAIN (decl))
+            {
+              if (PKL_AST_CODE (decl) == PKL_AST_DECL
+                  && PKL_AST_FUNC_METHOD_P (PKL_AST_DECL_INITIAL (decl)))
+                {
+                  pkl_ast_node method = PKL_AST_DECL_INITIAL (decl);
+                  pkl_ast_node method_name = PKL_AST_DECL_NAME (decl);
+                  pkl_ast_node method_type = PKL_AST_TYPE (method);
+
+                  if (STREQ (PKL_AST_IDENTIFIER_POINTER (method_name),
+                             getter_name))
+                    {
+                      /* The getter should get no arguments and should
+                         return a value of the same type than the
+                         field.  */
+                      pkl_ast_node rtype = PKL_AST_TYPE_F_RTYPE (method_type);
+
+                      if (PKL_AST_TYPE_F_NARG (method_type) != 0
+                          || !pkl_ast_type_equal_p (rtype, field_type))
+                        {
+                          char *field_type_str = pkl_type_str (field_type, 1);
+                          char *method_type_str
+                            = pk_str_concat ("()", field_type_str, NULL);
+
+                          PKL_ERROR (PKL_AST_LOC (method_name),
+                                     "getter method is of the wrong type\n"
+                                     "expected %s",
+                                     method_type_str);
+                          free (field_type_str);
+                          free (method_type_str);
+                          PKL_TYPIFY_PAYLOAD->errors++;
+                          PKL_PASS_ERROR;
+                        }
+
+                      found_getter_p = 1;
+                    }
+
+                  if (STREQ (PKL_AST_IDENTIFIER_POINTER (method_name),
+                             setter_name))
+                    {
+                      /* The setter should get exactly one argument of
+                         the same type than the computed field, and
+                         return no value.  */
+                      pkl_ast_node rtype = PKL_AST_TYPE_F_RTYPE (method_type);
+                      int narg = PKL_AST_TYPE_F_NARG (method_type);
+
+                      if (narg != 1
+                          || PKL_AST_TYPE_CODE (rtype) != PKL_TYPE_VOID
+                          || !pkl_ast_type_equal_p (field_type,
+                                                    PKL_AST_FUNC_TYPE_ARG_TYPE (PKL_AST_TYPE_F_ARGS (method_type))))
+                        {
+                          char *field_type_str = pkl_type_str (field_type, 1);
+                          char *method_type_str
+                            = pk_str_concat ("(", field_type_str, ")void", NULL);
+
+                          PKL_ERROR (PKL_AST_LOC (method_name),
+                                     "setter method is of the wrong type\n"
+                                     "expected %s",
+                                     method_type_str);
+                          free (field_type_str);
+                          free (method_type_str);
+                          PKL_TYPIFY_PAYLOAD->errors++;
+                          PKL_PASS_ERROR;
+                        }
+
+                      found_setter_p = 1;
+                    }
+                }
+            }
+
+          if (!found_getter_p)
+            {
+              PKL_ERROR (PKL_AST_LOC (field),
+                         "computed field requires a getter method");
+              PKL_TYPIFY_PAYLOAD->errors++;
+            }
+
+          if (!found_setter_p)
+            {
+              PKL_ERROR (PKL_AST_LOC (field),
+                         "computed field requires a setter method");
+              PKL_TYPIFY_PAYLOAD->errors++;
+            }
+
+          if (!found_getter_p || !found_setter_p)
+            PKL_PASS_ERROR;
+
+          free (getter_name);
+          free (setter_name);
         }
     }
 }
@@ -1974,7 +2101,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_cons)
                  type_elem = PKL_AST_CHAIN (type_elem))
               {
                 /* Process only struct type fields.  */
-                if (PKL_AST_CODE (type_elem) == PKL_AST_STRUCT_TYPE_FIELD)
+                if (PKL_AST_CODE (type_elem) == PKL_AST_STRUCT_TYPE_FIELD
+                    && !PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (type_elem))
                   {
                     pkl_ast_node type_elem_name;
 

@@ -1,0 +1,10 @@
+/* { dg-do compile } */
+
+/* Labels are not allowed in computed fields.  */
+
+type Foo =
+  struct
+  {
+    int i;
+    computed int j @ 23#B; /* { dg-error "" } */
+  };

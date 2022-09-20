@@ -1,0 +1,10 @@
+/* { dg-do compile } */
+
+/* Endianness specifiers are not allowed in computed fields.  */
+
+type Foo =
+  struct
+  {
+    int i;
+    big computed int j; /* { dg-error "" } */
+  };

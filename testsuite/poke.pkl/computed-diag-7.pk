@@ -1,0 +1,14 @@
+/* { dg-do compile } */
+
+/* Functions are no methods.  */
+
+type Foo =
+  struct
+  {
+    int i;
+    computed string blah; /* { dg-error "setter" } */
+    int j;
+
+    method get_blah = string: { }
+    fun set_blah = (string s) void: { }
+  };

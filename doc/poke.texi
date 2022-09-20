@@ -10770,6 +10770,7 @@ They contain heterogeneous collections of values.
 * Casting Structs::		Converting structs from one type to another.
 * Declarations in Structs::	Declaring stuff within a struct.
 * Methods::			Declaring struct methods.
+* Computed Fields::             Simulating fields with methods.
 * Struct Attributes::		Accessing properties of struct values.
 @end menu
 
@@ -11887,6 +11888,76 @@ the struct value whose method is being used.
 
 Methods can refer to the fields of the containing struct type that
 have been defined before the method itself, by name.
+
+@node Computed Fields
+@subsection Computed Fields
+@cindex fields, computed
+
+A @dfn{computed field} declaration in a struct or union type has the form:
+
+@example
+computed @var{field_type} @var{field_name};
+@end example
+
+@noindent
+Where @var{field_type} is a type specifier denoting the type of the
+computed field, and @var{field_name} is an identifier.  Note that,
+unlike regular fields, computed fields cannot have endianness
+annotations, constraints defined for them, cannot be optional, nor
+have initialization values.
+
+Computed fields are not really stored in the corresponding struct
+values: their value is computed every time they are referred, by
+invoking a couple of methods that the user should define:
+
+@itemize @minus
+@item
+A @strong{getter} method with name @code{get_@var{field_name}} and
+signature @code{()@var{field_type}}.
+
+This getter is used to compute the value of the computed field when it
+is referenced as a r-value.
+@item
+A @strong{setter} method with name @code{set_@var{field_name}} and
+signature @code{(@var{field_type})void}.
+
+This setter is called when the computed field is assigned to in a
+l-value.
+@end itemize
+
+For example, consider the following struct denoting a RISC-V
+instruction where the immediate is distributed in several chunks:
+
+@example
+type RV32_InsnFmt_J = struct uint<32>
+  @{
+    uint<1>   imm20;
+    uint<10>  imm10_1;
+    uint<1>   imm11;
+    uint<8>   imm19_12;
+    RV_Reg    rd;
+    RV_Opcode opcode : opcode in RV_OPCODES_J;
+
+    computed int<32> imm;
+
+    method get_imm = int<32>:
+    @{
+      return imm20:::imm19_12:::imm11:::imm10_1:::0b as int<20>;
+    @}
+
+    method set_imm = (int<32> imm) void:
+    @{
+      imm20 = (imm .>> 20) & 1;
+      imm10_1 = (imm .>> 19) & 0x3ff;
+      imm11 = (imm .>> 10) & 1;
+      imm19_12 = (imm .>> 19) & 0xff;
+    @}
+ @};
+@end example
+
+@noindent
+When we create a value of type @code{RV32_InsnFmt_J} we can then
+access the computed field @code{imm} like any other normal field.
 
 @node Struct Attributes
 @subsection Struct Attributes

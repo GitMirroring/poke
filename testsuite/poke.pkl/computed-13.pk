@@ -1,0 +1,21 @@
+/* { dg-do run } */
+/* { dg-data {c*} {0x00 0x00 0x00 0x00  0x00 0x00 0x00 0x00   0x00 0x00 0x00 0x00} } */
+
+var x = 1;
+
+type Foo =
+  union
+  {
+    int i : x == 1;
+    computed int k;
+    int j;
+
+    method get_k = int: { return i + j; }
+    method set_k = (int v) void: { j = v; }
+  };
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {.set endian big} } */
+/* { dg-command { Foo @ 1#B = Foo { i = 0xdeadbeef } } } */
+/* { dg-command { int @ 1#B } } */
+/* { dg-output "0xdeadbeef" } */

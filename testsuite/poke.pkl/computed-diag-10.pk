@@ -1,0 +1,11 @@
+/* { dg-do compile } */
+
+type Foo =
+  struct
+  {
+    int k;
+    computed int i;
+
+    method get_i = int: { return k * 2; }
+    method set_i = (int<12> v) void: { k = k / 2; } /* { dg-error "" } */
+  };

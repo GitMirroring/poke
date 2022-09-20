@@ -1,0 +1,22 @@
+/* { dg-do run } */
+
+var x = 1;
+
+type Foo =
+  union
+  {
+    int i : x == 1;
+    computed int k;
+    int j;
+
+    method get_k = int: { return i + j; }
+    method set_k = (int v) void: { j = v; }
+  };
+
+var f1 = Foo { i = 10 };
+var f2 = Foo { i = 20 };
+
+/* { dg-command { f1 == f2 } } */
+/* { dg-output "0" } */
+/* { dg-command { f1 != f2 } } */
+/* { dg-output "\n1" } */

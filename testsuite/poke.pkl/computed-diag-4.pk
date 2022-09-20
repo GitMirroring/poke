@@ -1,0 +1,10 @@
+/* { dg-do compile } */
+
+/* Computed fields cannot be optional.  */
+
+type Foo =
+  struct
+  {
+    int i;
+    computed int j if i > 100; /* { dg-error "" } */
+  };
