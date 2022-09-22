@@ -60,7 +60,7 @@ fun ios_dump_bytes = (int<32> ios,
                       string unknown_byte = "??",
                       uint<8> nonprintable_char = '.') void:
 {
-  fun print_ruler = (off64 offset) void:
+  fun print_ruler = (offset<uint<64>,b> offset) void:
   {
     var o = 0#B;
 
@@ -102,8 +102,11 @@ fun ios_dump_bytes = (int<32> ios,
     print "\n";
   }
 
-  fun print_ascii = (off64 offset, off64 top, off64 step,
-                     off64 group_by, int cluster_by) void:
+  fun print_ascii = (offset<uint<64>,b> offset,
+                     offset<uint<64>,b> top,
+                     offset<uint<64>,b> step,
+                     offset<uint<64>,b> group_by,
+                     int<32> cluster_by) void:
   {
     print("  ");
     var o = 0#B;
@@ -128,8 +131,11 @@ fun ios_dump_bytes = (int<32> ios,
       }
   }
 
-  fun print_data = (off64 offset, off64 top, off64 step,
-                    off64 group_by , int cluster_by) void:
+  fun print_data = (offset<uint<64>,b> offset,
+                    offset<uint<64>,b> top,
+                    offset<uint<64>,b> step,
+                    offset<uint<64>,b> group_by,
+                    int<32> cluster_by) void:
   {
     for (; offset < top; offset += step)
       {

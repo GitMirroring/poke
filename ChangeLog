@@ -1,5 +1,9 @@
 2022-09-22  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* pickles/ios.pk: Do not use standard types.
+
+2022-09-22  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* pickles/pk-table.pk: Do not use standard types.
 
 2022-09-22  Jose E. Marchesi  <jemarch@gnu.org>
