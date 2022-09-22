@@ -83,33 +83,41 @@ type ID3V1_Tag =
 
     /* Setters and getters.  */
 
-    method get_title = string: { return rtrim (catos (title)); }
-    method set_title = (string val) void: { stoca (val, title, ' '); }
-    method get_artist = string: { return rtrim (catos (artist)); }
-    method set_artist = (string val) void: { stoca (val, artist, ' '); }
-    method get_album = string: { return rtrim (catos (album)); }
-    method set_album = (string val) void: { stoca (val, album, ' '); }
-    method get_year = int: { return atoi (catos (year)); }
+    computed string title_str;
+    computed string artist_str;
+    computed string album_str;
+    computed int year_int;
+    computed string comment_str;
+    computed string genre_str;
 
-    method get_comment = string:
+    method get_title_str = string: { return rtrim (catos (title)); }
+    method set_title_str = (string val) void: { stoca (val, title, ' '); }
+    method get_artist_str = string: { return rtrim (catos (artist)); }
+    method set_artist_str = (string val) void: { stoca (val, artist, ' '); }
+    method get_album_str = string: { return rtrim (catos (album)); }
+    method set_album_str = (string val) void: { stoca (val, album, ' '); }
+    method get_year_int = int: { return atoi (catos (year)); }
+    method set_year_int = (int val) void: { stoca (ltos (val), year, ' '); }
+
+    method get_comment_str = string:
       {
         try return rtrim (catos (data.comment));
         catch if E_elem { return rtrim (catos (data.extended.comment)); };
       }
-    method set_comment = (string val) void:
+    method set_comment_str = (string val) void:
       {
         try stoca (val, data.comment, ' ');
         catch if E_elem { stoca (val, data.extended.comment, ' '); }
       }
 
-    method get_genre = string:
+    method get_genre_str = string:
       {
         if (genre == 255)
           raise E_generic;
         return id3v1_genres[genre];
       }
 
-    method set_genre = (string val) void:
+    method set_genre_str = (string val) void:
       {
         genre = id3v1_search_genre (val);
       }
@@ -122,10 +130,10 @@ type ID3V1_Tag =
           printf "  genre: %<integer:%u8d%>\n", genre;
         else
           printf "  genre: %s\n", id3v1_genres[genre];
-        printf "  title: %<string:%s%>\n", catos (title);
-        printf "  artist: %<string:%s%>\n", catos (artist);
-        printf "  album: %<string:%s%>\n", catos (album);
-        printf "  year: %<integer:%s%>\n", catos (year);
+        printf "  title: %<string:%s%>\n", get_title_str;
+        printf "  artist: %<string:%s%>\n", get_artist_str;
+        printf "  album: %<string:%s%>\n", get_album_str;
+        printf "  year: %<integer:%i32d%>\n", get_year_int;
         try printf "  comment:%<string:%s%>\n", catos (data.comment);
         catch if E_elem
         {

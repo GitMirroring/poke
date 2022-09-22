@@ -11942,7 +11942,7 @@ type RV32_InsnFmt_J = struct uint<32>
 
     method get_imm = int<32>:
     @{
-      return imm20:::imm19_12:::imm11:::imm10_1:::0b as int<21>;
+      return imm20:::imm19_12:::imm11:::imm10_1:::(0 as int<1>) as int<21>;
     @}
 
     method set_imm = (int<32> imm) void:
