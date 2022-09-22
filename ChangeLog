@@ -1,5 +1,87 @@
 2022-09-22  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-lex.l: Recognize token COMPUTED.
+	* libpoke/pkl-ast.h (PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P): Define.
+	(struct pkl_ast_struct_type_field): New field computed_p.
+	(struct pkl_ast_type): New field `ncfield' for struct types.
+	(PKL_AST_TYPE_S_NCFIELD): Define.
+	* libpoke/pkl-ast.c (pkl_ast_print_1): Print the computed_p
+	attribute of struct type fields.
+	(pkl_ast_sizeof_type): Do not count computed fields for the size
+	of the struct.
+	(pkl_ast_dup_type): Duplicate computed flag in struct type fields.
+	(pkl_ast_type_mappable_p): Do not include computed fields in
+	determining whether a struct type is mappable.
+	(pkl_ast_type_is_complete): Do not include computed fields in
+	determining whether a struct type is complete.
+	(pkl_ast_type_is_complete): Likewise for union types.
+	(pkl_type_append_to): Append `computed' for computed fields in
+	type descriptors.
+	* libpoke/pkl-tab.y: New token COMPUTED.
+	(struct_type_computed_field): New rule.
+	(struct_type_elem_list): Add struct_type_computed_field as an
+	alternative.
+	* libpoke/pkl-anal.c (pkl_anal2_ps_type_struct): adapt to computed
+	fields.
+	* libpoke/pkl-trans.c (pkl_trans1_ps_type_struct): Do not include
+	computed fields in the nfield count and initialize ncfield.
+	* libpoke/pkl-typify.c (pkl_typify1_ps_type_struct): Check methods
+	for computed fields.
+	(pkl_typify1_ps_cons): Do not allow specifying computed fields in
+	struct constructors.
+	* libpoke/pkl-gen.c (pkl_gen_pr_ass_stmt): Handle computed fields.
+	(pkl_gen_ps_struct_ref): Likewise.
+	(pkl_gen_pr_struct_type_field): Do not include computed fields in
+	PVM struct types.
+	* libpoke/pkl-gen.pks (struct_constructor): Do not construct
+	computed fields.
+	(struct_mapper): Likewise.
+	(struct_writer): Likewise.
+	(struct_integrator): Likewise.
+	(struct_deintegrator): Likewise.
+	(union_comparator): Likewise.
+	(struct_comparator): Likewise.
+	(union_writer): Likewise.
+	(struct_formater): Likewise.
+	(struct_printer): Likewise.
+	(struct_typifier): Likewise.
+	* libpoke/pkl-rt.pk (Pk_Type): New field fcomputed.
+	* poke/pk-info.pk (pk_info_type): Display info on computed fields.
+	* testsuite/poke.pkl/computed-diag-1.pk: New test.
+	* testsuite/poke.pkl/computed-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/computed-diag-3.pk: Likewise.
+	* testsuite/poke.pkl/computed-diag-4.pk: Likewise.
+	* testsuite/poke.pkl/computed-diag-5.pk: Likewise.
+	* testsuite/poke.pkl/computed-diag-6.pk: Likewise.
+	* testsuite/poke.pkl/computed-diag-7.pk: Likewise.
+	* testsuite/poke.pkl/computed-diag-8.pk: Likewise.
+	* testsuite/poke.pkl/computed-diag-9.pk: Likewise.
+	* testsuite/poke.pkl/computed-diag-10.pk: Likewise.
+	* testsuite/poke.pkl/computed-diag-11.pk: Likewise.
+	* testsuite/poke.pkl/computed-1.pk: Likewise.
+	* testsuite/poke.pkl/computed-2.pk: Likewise.
+	* testsuite/poke.pkl/computed-3.pk: Likewise.
+	* testsuite/poke.pkl/computed-4.pk: Likewise.
+	* testsuite/poke.pkl/computed-5.pk: Likewise.
+	* testsuite/poke.pkl/computed-6.pk: Likewise.
+	* testsuite/poke.pkl/computed-7.pk: Likewise.
+	* testsuite/poke.pkl/computed-8.pk: Likewise.
+	* testsuite/poke.pkl/computed-9.pk: Likewise.
+	* testsuite/poke.pkl/computed-10.pk: Likewise.
+	* testsuite/poke.pkl/computed-11.pk: Likewise.
+	* testsuite/poke.pkl/computed-12.pk: Likewise.
+	* testsuite/poke.pkl/computed-13.pk: Likewise.
+	* testsuite/poke.pkl/computed-14.pk: Likewise.
+	* testsuite/poke.pkl/computed-15.pk: Likewise.
+	* testsuite/poke.pkl/computed-16.pk: Likewise.
+	* testsuite/poke.pkl/computed-17.pk: Likewise.
+	* testsuite/poke.pkl/computed-18.pk: Likewise.
+	* testsuite/poke.pkl/typeof-26.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+	* doc/poke.texi (Computed Fields): New section.
+
+2022-09-22  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-ast.h (PKL_AST_DECL_TYPE): Remove.
 
 2022-09-18  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>

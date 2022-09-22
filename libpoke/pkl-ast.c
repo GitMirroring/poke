@@ -614,6 +614,7 @@ pkl_ast_dup_type (pkl_ast_node type)
     case PKL_TYPE_STRUCT:
       PKL_AST_TYPE_S_NELEM (new) = PKL_AST_TYPE_S_NELEM (type);
       PKL_AST_TYPE_S_NFIELD (new) = PKL_AST_TYPE_S_NFIELD (type);
+      PKL_AST_TYPE_S_NCFIELD (new) = PKL_AST_TYPE_S_NCFIELD (type);
       PKL_AST_TYPE_S_NDECL (new) = PKL_AST_TYPE_S_NDECL (type);
       for (t = PKL_AST_TYPE_S_ELEMS (type); t; t = PKL_AST_CHAIN (t))
         {
@@ -627,6 +628,7 @@ pkl_ast_dup_type (pkl_ast_node type)
           pkl_ast_node struct_type_elem;
           pkl_ast_node struct_type_elem_optcond;
           int struct_type_elem_endian;
+          int struct_type_elem_computed_p;
 
           /* Process only struct type fields.  XXX But what about
              declarations?  These should also be duplicated.  */
@@ -641,6 +643,7 @@ pkl_ast_dup_type (pkl_ast_node type)
           struct_type_elem_label = PKL_AST_STRUCT_TYPE_FIELD_LABEL (t);
           struct_type_elem_endian = PKL_AST_STRUCT_TYPE_FIELD_ENDIAN (t);
           struct_type_elem_optcond = PKL_AST_STRUCT_TYPE_FIELD_OPTCOND (t);
+          struct_type_elem_computed_p = PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (t);
 
           new_struct_type_elem_name
             = (struct_type_elem_name
@@ -657,6 +660,8 @@ pkl_ast_dup_type (pkl_ast_node type)
                                               struct_type_elem_endian,
                                               struct_type_elem_optcond);
 
+          PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (struct_type_elem)
+            = struct_type_elem_computed_p;
           PKL_AST_STRUCT_TYPE_FIELD_SIZE (struct_type_elem)
             = ASTREF (struct_type_elem_size);
           PKL_AST_TYPE_S_ELEMS (new)
@@ -1092,7 +1097,8 @@ pkl_ast_sizeof_type (pkl_ast ast, pkl_ast_node type)
             pkl_ast_node field_label;
             pkl_ast_node elem_type_size;
 
-            if (PKL_AST_CODE (t) != PKL_AST_STRUCT_TYPE_FIELD)
+            if (PKL_AST_CODE (t) != PKL_AST_STRUCT_TYPE_FIELD
+                || PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (t))
               continue;
 
             field_label = PKL_AST_STRUCT_TYPE_FIELD_LABEL (t);
@@ -1235,6 +1241,7 @@ pkl_ast_type_mappable_p (pkl_ast_node type)
              elem = PKL_AST_CHAIN (elem))
           {
             if (PKL_AST_CODE (elem) == PKL_AST_STRUCT_TYPE_FIELD
+                && !PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (elem)
                 && !pkl_ast_type_mappable_p (PKL_AST_STRUCT_TYPE_FIELD_TYPE (elem)))
               return 0;
           }
@@ -1289,7 +1296,8 @@ pkl_ast_type_is_complete (pkl_ast_node type)
             pkl_ast_node elem_label;
             pkl_ast_node elem_type;
 
-            if (PKL_AST_CODE (elem) != PKL_AST_STRUCT_TYPE_FIELD)
+            if (PKL_AST_CODE (elem) != PKL_AST_STRUCT_TYPE_FIELD
+                || PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (elem))
               continue;
 
             elem_label = PKL_AST_STRUCT_TYPE_FIELD_LABEL (elem);
@@ -1314,7 +1322,8 @@ pkl_ast_type_is_complete (pkl_ast_node type)
                  elem;
                  elem = PKL_AST_CHAIN (elem))
               {
-                if (PKL_AST_CODE (elem) != PKL_AST_STRUCT_TYPE_FIELD)
+                if (PKL_AST_CODE (elem) != PKL_AST_STRUCT_TYPE_FIELD
+                    || PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (elem))
                   continue;
 
                 size_node = PKL_AST_STRUCT_TYPE_FIELD_SIZE (elem);
@@ -1441,6 +1450,9 @@ pkl_type_append_to (pkl_ast_node type, int use_given_name,
               {
                 pkl_ast_node ename = PKL_AST_STRUCT_TYPE_FIELD_NAME (t);
                 pkl_ast_node etype = PKL_AST_STRUCT_TYPE_FIELD_TYPE (t);
+
+                if (PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (t))
+                  sb_append (buffer, "computed ");
 
                 pkl_type_append_to (etype, 1, buffer);
                 if (ename)
@@ -2987,6 +2999,7 @@ pkl_ast_print_1 (FILE *fp, pkl_ast_node ast, int indent)
               PRINT_AST_IMM (union_p, TYPE_S_UNION_P, "%d");
               PRINT_AST_IMM (nelem, TYPE_S_NELEM, "%zu");
               PRINT_AST_IMM (nfield, TYPE_S_NFIELD, "%zu");
+              PRINT_AST_IMM (nfield, TYPE_S_NCFIELD, "%zu");
               PRINT_AST_IMM (ndecl, TYPE_S_NDECL, "%zu");
               PRINT_AST_SUBAST (itype, TYPE_S_ITYPE);
               IPRINTF ("elems:\n");
@@ -3015,6 +3028,7 @@ pkl_ast_print_1 (FILE *fp, pkl_ast_node ast, int indent)
       PRINT_COMMON_FIELDS;
       PRINT_AST_SUBAST (name, STRUCT_TYPE_FIELD_NAME);
       PRINT_AST_SUBAST (type, STRUCT_TYPE_FIELD_TYPE);
+      PRINT_AST_IMM (computed_p, STRUCT_TYPE_FIELD_COMPUTED_P, "%d");
       PRINT_AST_SUBAST (type, STRUCT_TYPE_FIELD_SIZE);
       PRINT_AST_SUBAST (exp, STRUCT_TYPE_FIELD_CONSTRAINT);
       PRINT_AST_SUBAST (exp, STRUCT_TYPE_FIELD_INITIALIZER);

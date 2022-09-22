@@ -1,0 +1,17 @@
+/* { dg-do run } */
+
+/* Computed fields don't have an influence in determining whether a
+   struct type is complete.  */
+
+type Foo =
+  struct
+  {
+    int i;
+    computed int[] j;
+
+    method get_j = int[]: { return [i]; }
+    method set_j = (int[] v) void: { i = v[0]; }
+  };
+
+/* { dg-command { 1#Foo/#B } } */
+/* { dg-output "4" } */

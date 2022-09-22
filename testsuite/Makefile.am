@@ -1031,9 +1031,38 @@ EXTRA_DIST = \
   poke.pkl/close-2.pk \
   poke.pkl/close-diag-1.pk \
   poke.pkl/compiler-passes-1.pk \
+  poke.pkl/computed-diag-1.pk \
+  poke.pkl/computed-diag-2.pk \
+  poke.pkl/computed-diag-3.pk \
+  poke.pkl/computed-diag-4.pk \
+  poke.pkl/computed-diag-5.pk \
+  poke.pkl/computed-diag-6.pk \
+  poke.pkl/computed-diag-7.pk \
+  poke.pkl/computed-diag-8.pk \
+  poke.pkl/computed-diag-9.pk \
+  poke.pkl/computed-diag-10.pk \
+  poke.pkl/computed-diag-11.pk \
   poke.pkl/cond-exp-1.pk \
   poke.pkl/cond-exp-2.pk \
   poke.pkl/cond-exp-3.pk \
+  poke.pkl/computed-1.pk \
+  poke.pkl/computed-2.pk \
+  poke.pkl/computed-3.pk \
+  poke.pkl/computed-4.pk \
+  poke.pkl/computed-5.pk \
+  poke.pkl/computed-6.pk \
+  poke.pkl/computed-7.pk \
+  poke.pkl/computed-8.pk \
+  poke.pkl/computed-9.pk \
+  poke.pkl/computed-10.pk \
+  poke.pkl/computed-11.pk \
+  poke.pkl/computed-12.pk \
+  poke.pkl/computed-13.pk \
+  poke.pkl/computed-14.pk \
+  poke.pkl/computed-15.pk \
+  poke.pkl/computed-16.pk \
+  poke.pkl/computed-17.pk \
+  poke.pkl/computed-18.pk \
   poke.pkl/cond-exp-diag-1.pk \
   poke.pkl/cond-exp-diag-2.pk \
   poke.pkl/cond-exp-diag-3.pk \
@@ -2267,6 +2296,7 @@ EXTRA_DIST = \
   poke.pkl/typeof-23.pk \
   poke.pkl/typeof-24.pk \
   poke.pkl/typeof-25.pk \
+  poke.pkl/typeof-26.pk \
   poke.pkl/typeof-array-1.pk \
   poke.pkl/typeof-array-2.pk \
   poke.pkl/typeof-int-1.pk \

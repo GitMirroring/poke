@@ -429,6 +429,7 @@ token <integer> UNION    _("keyword `union'")
 %token LOAD              _("keyword `load'")
 %token LAMBDA            _("keyword `lambda'")
 %token FORMAT            _("keyword `format'")
+%token COMPUTED          _("keyword `computed'")
 %token IMMUTABLE
 %token BUILTIN_RAND BUILTIN_GET_ENDIAN BUILTIN_SET_ENDIAN
 %token BUILTIN_GET_IOS BUILTIN_SET_IOS BUILTIN_OPEN BUILTIN_CLOSE
@@ -548,7 +549,7 @@ token <integer> UNION    _("keyword `union'")
 %type <ast> function_type_specifier function_type_arg_list function_type_arg
 %type <ast> struct_type_specifier string_type_specifier
 %type <ast> struct_type_elem_list struct_type_field struct_type_field_identifier
-%type <ast> struct_type_field_label
+%type <ast> struct_type_field_label struct_type_computed_field
 %type <field_const_init> struct_type_field_constraint_and_init
 %type <ast> struct_type_field_optcond
 %type <ast> declaration simple_declaration
@@ -1751,10 +1752,13 @@ integral_struct:
 
 struct_type_elem_list:
           struct_type_field
+        | struct_type_computed_field
         | declaration
         | struct_type_elem_list declaration
                   { $$ = pkl_ast_chainon ($1, $2); }
         | struct_type_elem_list struct_type_field
+                { $$ = pkl_ast_chainon ($1, $2); }
+        | struct_type_elem_list struct_type_computed_field
                 { $$ = pkl_ast_chainon ($1, $2); }
         ;
 
@@ -1763,6 +1767,20 @@ endianness:
         | LITTLE        { $$ = PKL_AST_ENDIAN_LSB; }
         | BIG                { $$ = PKL_AST_ENDIAN_MSB; }
         ;
+
+struct_type_computed_field:
+          COMPUTED type_specifier identifier ';'
+                  {
+                    $$ = pkl_ast_make_struct_type_field (pkl_parser->ast, $3, $2,
+                                                         NULL /* constraint */,
+                                                         NULL /* initializer */,
+                                                         NULL /* label */,
+                                                         PKL_AST_ENDIAN_DFL,
+                                                         NULL /* optcond */);
+                    PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P ($$) = 1;
+                    PKL_AST_LOC ($$) = @$;
+                  }
+          ;
 
 struct_type_field:
           endianness type_specifier struct_type_field_identifier

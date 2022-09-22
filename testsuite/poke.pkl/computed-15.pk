@@ -1,0 +1,15 @@
+/* { dg-do run } */
+
+type Foo =
+  struct
+  {
+    int i;
+    computed int j;
+
+    method get_j = int: { return i; }
+    method set_j = (int v) void: { i = v; }
+  };
+
+/* { dg-command {.set obase 10} } */
+/* { dg-command { printf ("%v\n", Foo {}) } } */
+/* { dg-output "Foo \{i=0\}" } */

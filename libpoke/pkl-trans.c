@@ -180,20 +180,26 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_type_struct)
 {
   pkl_ast_node struct_type = PKL_PASS_NODE;
   pkl_ast_node t;
-  size_t nelem = 0, nfield = 0, ndecl = 0;
+  size_t nelem = 0, nfield = 0, ncfield = 0, ndecl = 0;
 
   for (t = PKL_AST_TYPE_S_ELEMS (struct_type); t;
        t = PKL_AST_CHAIN (t))
     {
       nelem++;
       if (PKL_AST_CODE (t) == PKL_AST_STRUCT_TYPE_FIELD)
-        nfield++;
+        {
+          if (PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (t))
+            ncfield++;
+          else
+            nfield++;
+        }
       else
         ndecl++;
     }
 
   PKL_AST_TYPE_S_NELEM (struct_type) = nelem;
   PKL_AST_TYPE_S_NFIELD (struct_type) = nfield;
+  PKL_AST_TYPE_S_NCFIELD (struct_type) = ncfield;
   PKL_AST_TYPE_S_NDECL (struct_type) = ndecl;
 }
 PKL_PHASE_END_HANDLER

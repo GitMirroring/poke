@@ -1,0 +1,19 @@
+/* { dg-do run } */
+
+/* Computed fields in integral structs may have any type.  */
+
+type Foo =
+  struct uint<32>
+  {
+    int<16> a;
+    computed string s;
+    int<16> b;
+
+    method set_s = (string s) void: { }
+    method get_s = string: { return "foo"; }
+  };
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {.set endian big} } */
+/* { dg-command {0x11223344 as Foo} } */
+/* { dg-output "Foo \{a=0x1122H,b=0x3344H\}" } */

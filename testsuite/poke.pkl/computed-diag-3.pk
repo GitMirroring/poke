@@ -1,0 +1,10 @@
+/* { dg-do compile } */
+
+/* Constraints are not allowed in computed fields.  */
+
+type Foo =
+  struct
+  {
+    int i;
+    computed int j : j != 10; /* { dg-error "" } */
+  };

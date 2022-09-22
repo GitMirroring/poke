@@ -936,8 +936,9 @@ PKL_PHASE_BEGIN_HANDLER (pkl_anal2_ps_type_struct)
 
   for (t = struct_type_elems; t; t = PKL_AST_CHAIN (t))
     {
-      /* Process only struct type fields.  */
-      if (PKL_AST_CODE (t) == PKL_AST_STRUCT_TYPE_FIELD)
+      /* Process only struct type fields that are not computed.  */
+      if (PKL_AST_CODE (t) == PKL_AST_STRUCT_TYPE_FIELD
+          && !PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (t))
         {
           pkl_ast_node constraint = PKL_AST_STRUCT_TYPE_FIELD_CONSTRAINT (t);
           pkl_ast_node optcond = PKL_AST_STRUCT_TYPE_FIELD_OPTCOND (t);

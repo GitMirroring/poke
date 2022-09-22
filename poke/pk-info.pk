@@ -110,6 +110,24 @@ fun pk_info_type = (Pk_Type typ) void:
       table.column ("Type");
       for (var i = 0; i < typ.nfields; ++i)
       {
+        if (typ.fcomputed[i])
+          continue;
+        table.row;
+        table.column (typ.fnames[i]);
+        table.column (typ.ftypes[i]);
+      }
+      table.print_table;
+
+      print "Computed Fields:\n";
+      table = Pk_Table { num_columns = 2, indent = 2, max_column_size = 80 };
+
+      table.row ("table-header");
+      table.column ("Name");
+      table.column ("Type");
+      for (var i = 0; i < typ.nfields; ++i)
+      {
+        if (!typ.fcomputed[i])
+          continue;
         table.row;
         table.column (typ.fnames[i]);
         table.column (typ.ftypes[i]);

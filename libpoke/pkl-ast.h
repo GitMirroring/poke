@@ -780,6 +780,13 @@ pkl_ast_node pkl_ast_make_struct_ref (pkl_ast ast,
    OPTCOND is a boolean expression that, if present, specifies whether
    the field exists in the struct or not.
 
+   COMPUTED_P is a flag that is set when the field is a computed
+   field, i.e. it is a field whose values are computed using a pair of
+   struct methods.  Computed fields are not mapped nor constructed the
+   usual way.  If COMPUTED_P is true then INITIALIZER, CONSTRAINT,
+   LABEL and OPTCOND should be NULL, and also ENDIAN should be
+   PKL_AST_ENDIAN_DFL.
+
    INITIALIZER is an expression, that will be used to derive an
    implicit constraint, and also as the initialization value for this
    field when constructing structs.  If no initializer is provided in
@@ -792,6 +799,7 @@ pkl_ast_node pkl_ast_make_struct_ref (pkl_ast ast,
 #define PKL_AST_STRUCT_TYPE_FIELD_LABEL(AST) ((AST)->sct_type_elem.label)
 #define PKL_AST_STRUCT_TYPE_FIELD_ENDIAN(AST) ((AST)->sct_type_elem.endian)
 #define PKL_AST_STRUCT_TYPE_FIELD_OPTCOND(AST) ((AST)->sct_type_elem.optcond)
+#define PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P(AST) ((AST)->sct_type_elem.computed_p)
 #define PKL_AST_STRUCT_TYPE_FIELD_INITIALIZER(AST) ((AST)->sct_type_elem.initializer)
 
 struct pkl_ast_struct_type_field
@@ -806,6 +814,7 @@ struct pkl_ast_struct_type_field
   union pkl_ast_node *label;
   union pkl_ast_node *optcond;
   int endian;
+  int computed_p;
 };
 
 pkl_ast_node pkl_ast_make_struct_type_field (pkl_ast ast,
@@ -874,14 +883,15 @@ pkl_ast_node pkl_ast_make_func_type_arg (pkl_ast ast,
    is to avoid processing the same type more than once.
 
    In struct types, NELEM is the number of elements in the struct
-   type, NFIELD is the number of fields, and NDECL is the number of
-   declarations.  ELEMS is a chain of elements, which can be
+   type, NFIELD is the number of non-computed fields, NCFIELD is the
+   number of computed fields, and NDECL is the number of declarations.
+   ELEMS is a chain of elements, which can be
    PKL_AST_STRUCT_TYPE_FIELD or PKL_AST_DECL nodes, potentially mixed.
    PINNED_P is 1 if the struct is pinned, 0 otherwise.  MAPPER, WRITER
    CONSTRUCTOR, FORMATER, PRINTER, COMPARATOR, INTEGRATOR and
-   DEINTEGRATOR are used to hold closures, or PVM_NULL.  ITYPE, if
-   not NULL, is an AST node with an integral type, that defines the
-   nature of this struct type as integral.
+   DEINTEGRATOR are used to hold closures, or PVM_NULL.  ITYPE, if not
+   NULL, is an AST node with an integral type, that defines the nature
+   of this struct type as integral.
 
    In offset types, BASE_TYPE is a PKL_AST_TYPE with the base type for
    the offset's magnitude, and UNIT is either a PKL_AST_IDENTIFIER
@@ -918,6 +928,7 @@ pkl_ast_node pkl_ast_make_func_type_arg (pkl_ast ast,
 #define PKL_AST_TYPE_A_FORMATER(AST) ((AST)->type.val.array.closures[5])
 #define PKL_AST_TYPE_A_INTEGRATOR(AST) ((AST)->type.val.array.closures[6])
 #define PKL_AST_TYPE_S_NFIELD(AST) ((AST)->type.val.sct.nfield)
+#define PKL_AST_TYPE_S_NCFIELD(AST) ((AST)->type.val.sct.ncfield)
 #define PKL_AST_TYPE_S_NDECL(AST) ((AST)->type.val.sct.ndecl)
 #define PKL_AST_TYPE_S_NELEM(AST) ((AST)->type.val.sct.nelem)
 #define PKL_AST_TYPE_S_ELEMS(AST) ((AST)->type.val.sct.elems)
@@ -976,6 +987,7 @@ struct pkl_ast_type
     {
       size_t nelem;
       size_t nfield;
+      size_t ncfield;
       size_t ndecl;
       union pkl_ast_node *elems;
       union pkl_ast_node *itype;

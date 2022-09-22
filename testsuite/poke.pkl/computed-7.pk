@@ -1,0 +1,18 @@
+/* { dg-do run } */
+
+type Foo =
+  struct
+    {
+      byte sz;
+      byte[sz] data;
+      computed int<64> i;
+
+      method get_i = int<64>: { return sz * 2; }
+      method set_i = (int<64> val) void: { sz = val / 2; }
+    };
+
+var f = Foo { sz = 10 };
+
+/* { dg-command { .set obase 10 } } */
+/* { dg-command { f'size / #B } } */
+/* { dg-output "11UL" } */

@@ -244,6 +244,7 @@ S ::
 "assert"        { return ASSERT; }
 "format"        { return FORMAT; }
 "enum"          { return ENUM; }
+"computed"      { return COMPUTED; }
 "immutable" {
    if (yyextra->bootstrapped) { RESTORE_LOC; REJECT; } return IMMUTABLE; }
 "__PKL_BUILTIN_RAND__" {
