@@ -28,6 +28,7 @@ type MBR_CHS =
         uint<6> sector;
       } cs;
     byte cylinder_lo;
+    computed uint<10> cylinder;
 
     method get_cylinder = uint<10>:
       {

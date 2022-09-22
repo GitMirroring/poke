@@ -61,15 +61,15 @@ var tests = [
         assert(chs.cs.cylinder_hi == 0);
         assert(chs.cs.sector == 0);
         assert(chs.cylinder_lo == 0);
-        assert(chs.get_cylinder == 0);
+        assert(chs.cylinder == 0);
         assert((byte[chs'size] @ data : chs'offset) == [0UB, 0UB, 0UB]);
 
-        chs.set_cylinder(0x3ff);
+        chs.cylinder = 0x3ff;
         assert(chs.head == 0);
         assert(chs.cs.cylinder_hi == 3);
         assert(chs.cs.sector == 0);
         assert(chs.cylinder_lo == 0xff);
-        assert(chs.get_cylinder == 0x3ff);
+        assert(chs.cylinder == 0x3ff);
         assert((byte[chs'size] @ data : chs'offset) == [0UB, 0xc0UB, 0xffUB]);
 
         chs.cs.cylinder_hi = 1;
@@ -77,7 +77,7 @@ var tests = [
         assert(chs.cs.cylinder_hi == 1);
         assert(chs.cs.sector == 0);
         assert(chs.cylinder_lo == 0xff);
-        assert(chs.get_cylinder == 0x1ff);
+        assert(chs.cylinder == 0x1ff);
         assert((byte[chs'size] @ data : chs'offset) == [0UB, 0x40UB, 0xffUB]);
 
         chs.head = 0xa5;
@@ -85,7 +85,7 @@ var tests = [
         assert(chs.cs.cylinder_hi == 1);
         assert(chs.cs.sector == 0);
         assert(chs.cylinder_lo == 0xff);
-        assert(chs.get_cylinder == 0x1ff);
+        assert(chs.cylinder == 0x1ff);
         assert((byte[chs'size] @ data : chs'offset) ==
                [0xa5UB, 0x40UB, 0xffUB]);
 
@@ -94,7 +94,7 @@ var tests = [
         assert(chs.cs.cylinder_hi == 1);
         assert(chs.cs.sector == 0x3f);
         assert(chs.cylinder_lo == 0xff);
-        assert(chs.get_cylinder == 0x1ff);
+        assert(chs.cylinder == 0x1ff);
         assert((byte[chs'size] @ data : chs'offset) ==
                [0xa5UB, 0x7fUB, 0xffUB]);
 
@@ -103,7 +103,7 @@ var tests = [
         assert(chs.cs.cylinder_hi == 1);
         assert(chs.cs.sector == 0x3f);
         assert(chs.cylinder_lo == 0x81);
-        assert(chs.get_cylinder == 0x181);
+        assert(chs.cylinder == 0x181);
         assert((byte[chs'size] @ data : chs'offset) ==
                [0xa5UB, 0x7fUB, 0x81UB]);
       },

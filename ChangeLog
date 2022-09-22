@@ -1,5 +1,10 @@
 2022-09-22  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* pickles/mbr.pk (MBR_CHS): Add computed field `cylinder'.
+	* testsuite/poke.pickles/mbr-test.pk: Adapt accordingly.
+
+2022-09-22  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* pickles/id3v1.pk: Convert to use computed fields.
 	* testsuite/poke.pickles/id3v1-test.pk: Adapted accordingly.
 
