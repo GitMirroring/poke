@@ -41,11 +41,11 @@ type Pk_Table =
      print (s);
    }
 
-   int num_columns;
-   int next_column_index;
-   int indent;
-   int max_column_size;
-   int[num_columns] column_widths;
+   int<32> num_columns;
+   int<32> next_column_index;
+   int<32> indent;
+   int<32> max_column_size;
+   int<32>[num_columns] column_widths;
    Pk_Table_Row[] rows;
    (string)void printer = pk_table_default_printer;
 
