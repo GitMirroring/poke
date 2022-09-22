@@ -47,12 +47,12 @@ var tests = [
         var tag = ID3V1_Tag @ data : 0#B;
 
         assert (tag.id == ['T','A','G']);
-        assert (tag.get_title == "01 - Eclipse De Mar");
-        assert (tag.get_artist == "Joaquin Sabina");
-        assert (tag.get_album == "Mentiras Piadosas");
-        assert (tag.get_year == 1980);
-        assert (tag.get_genre == "rock");
-        assert (tag.get_comment == "very good song");
+        assert (tag.title_str == "01 - Eclipse De Mar");
+        assert (tag.artist_str == "Joaquin Sabina");
+        assert (tag.album_str == "Mentiras Piadosas");
+        assert (tag.year_int == 1980);
+        assert (tag.genre_str == "rock");
+        assert (tag.comment_str == "very good song");
       },
   },
   PkTest {
@@ -61,19 +61,19 @@ var tests = [
       {
         var tag = ID3V1_Tag @ data : 0#B;
 
-        assert (tag.get_genre == "rock");
-        tag.set_genre ("eurodance");
-        assert (tag.get_genre == "eurodance");
+        assert (tag.genre_str == "rock");
+        tag.genre_str = "eurodance";
+        assert (tag.genre_str == "eurodance");
 
-        assert (tag.get_title == "01 - Eclipse De Mar");
-        tag.set_title ("Pickle");
-        assert (tag.get_title == "Pickle");
+        assert (tag.title_str == "01 - Eclipse De Mar");
+        tag.title_str = "Pickle";
+        assert (tag.title_str == "Pickle");
         assert (tag.title'size == 30#B);
         assert ((uint<8>[tag.title'size] @ data : tag.title'offset) ==
                 [0x50UB, 0x69UB, 0x63UB, 0x6bUB, 0x6cUB, 0x65UB, .[29]=' ']);
 
-        assert (tag.get_artist == "Joaquin Sabina");
-        tag.set_artist ("RMS");
+        assert (tag.artist_str == "Joaquin Sabina");
+        tag.artist_str = "RMS";
         assert (tag.artist'size == 30#B);
         assert ((uint<8>[tag.artist'size] @ data : tag.artist'offset) ==
                 [0x52UB, 0x4dUB, 0x53UB, .[29]=' ']);

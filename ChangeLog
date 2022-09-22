@@ -1,5 +1,10 @@
 2022-09-22  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* pickles/id3v1.pk: Convert to use computed fields.
+	* testsuite/poke.pickles/id3v1-test.pk: Adapted accordingly.
+
+2022-09-22  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-lex.l: Recognize token COMPUTED.
 	* libpoke/pkl-ast.h (PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P): Define.
 	(struct pkl_ast_struct_type_field): New field computed_p.
