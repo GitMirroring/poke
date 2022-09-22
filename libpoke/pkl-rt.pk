@@ -458,10 +458,10 @@ immutable fun _pkl_assert = (uint<64> cond, string msg, string filename,
     };
   }
 
-/* The Type struct below describes the values returned by the `typeof'
-   language construction.  This type is used in the compiler phases,
-   so pretty please do not use `typeof' until the compiler has been
-   bootstrapped.
+/* The Pk_Type struct below describes the values returned by the
+   `typeof' language construction.  This type is used in the compiler
+   phases, so pretty please do not use `typeof' until the compiler has
+   been bootstrapped.
 
    Fun facts:
    1) If you do changes to the struct Pk_Type defined below it is most
