@@ -1097,7 +1097,6 @@ pkl_ast_node pkl_ast_type_incr_step (pkl_ast ast, pkl_ast_node type);
 
 #define PKL_AST_DECL_KIND(AST) ((AST)->decl.kind)
 #define PKL_AST_DECL_NAME(AST) ((AST)->decl.name)
-#define PKL_AST_DECL_TYPE(AST) ((AST)->decl.type)
 #define PKL_AST_DECL_INITIAL(AST) ((AST)->decl.initial)
 #define PKL_AST_DECL_ORDER(AST) ((AST)->decl.order)
 #define PKL_AST_DECL_SOURCE(AST) ((AST)->decl.source)
