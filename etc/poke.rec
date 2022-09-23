@@ -168,14 +168,6 @@ Description:
 + How to express regular expressions?  Using strings for them is
 + cumbersome because of the escaping of special characters.
 
-Summary: with_temp_ios HANDLER { ... }
-Component: Language
-Kind: ENH
-Priority: 2
-Description:
-+ This should be an easy way to create an IOS and switch to is as the
-+ default IOS.
-
 Summary: struct patterns and matching operators
 Component: Language
 Kind: ENH
@@ -325,64 +317,6 @@ Description:
 + upunit (1024#B)
 Target: 2.0
 
-Summary: casts from integral to array and from array to integral
-Component: Language
-Kind: ENH
-Priority: 2
-Description:
-+ 0x1234 as byte[2] --> [0x12UB,0x34UB]
-+ [0x12UB,0x34UB] as int -> 0x1234 (with big endian)
-+
-+ This is a bit redundant with l-value bit-concatenation.
-+
-+ This would involve:
-+
-+      INT as ARRAY
-+
-+ - In typify1, check that the array is an array of integral
-+   elements.
-+
-+ - In promo, it will simplify the codegen to promote the
-+   integer to be signed or unsigned like the lements of the array
-+   and also to be of the exact same size.
-+
-+         10 as uint<16>[2]
-+
-+   promow will promote the 10 to uint<32>
-+
-+         10B as uint<16>[2]
-+
-+   promo will promote the 10 to uint<32>
-+
-+         10B as int<8>[8]
-+
-+   promo will promote the 10B to int<64>
-+
-+         10 as uint<8>[]
-+
-+   promo will promote the 10 to 10U, i.e. uint<32>
-+
-+         10H as uint<8>[]
-+
-+   promo will promote the 10H to 10HU.
-+
-+         10H as uint<24>[]
-+
-+   promo will promote the 10H to uint<24>.
-+
-+ - In gen
-+
-+   First, introduce two macro-instructions:
-+   + atoi
-+   + itoa
-+
-+   Then, add relevant cases to pkl_gen_pr_cast.
-+
-+ OR, implement integrators/deintegrators for array types like
-+ they are implemented for struct types.  Probably this is better
-+ than the macro instructions.
-Target: 2.0
-
 Summary: Support recursive definitions
 Component: Language
 Kind: ENH
@@ -427,6 +361,24 @@ Kind: ENH
 Priority: 2
 Requires: Implement {beginning,end}-of-defun-function functions in poke-mode
 
+Summary: Support for offline method definitions
+Component: Language
+Kind: ENH
+Priority: 2
+Description:
++ type Foo =
++  struct
++  {
++    [...]
++  };
++
++ method Foo.bar = void:
++ {
++   [...]
++ }
++
++ Alternative syntax: Foo::bar
+
 Summary: struct _equal methods
 Component: Language
 Kind: ENH
@@ -438,7 +390,7 @@ Description:
 + This can also return 1 for > and -1 for <, but then the default
 + predicate should return < by convention to mean "not equal".
 +
-+   deftype Exception =
++   type Exception =
 +     struct
 +     {
 +       int<32> code;
@@ -450,6 +402,7 @@ Description:
 +       }
 +     };
 Requires: Support recursive definitions
+Requires: Support for offline method definitions
 
 Summary: Support a pipe IOS
 Component: Language
@@ -1448,6 +1401,19 @@ Version: 1.4
 ReleaseDate: 2021-12-03
 
 Version: 2.0
+ReleaseDate: 2022-01-27
+
+Version: 2.1
+ReleaseDate: 2022-02-07
+
+Version: 2.2
+ReleaseDate: 2022-03-29
+
+Version: 2.3
+ReleaseDate: 2022-03-31
+
+Version: 2.4
+ReleaseDate: 2022-07-25
 
 %rec: Hacker
 %key: Email

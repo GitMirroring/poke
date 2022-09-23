@@ -1,3 +1,10 @@
+2022-09-23  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* etc/poke.rec (with_temp_ios): Removed as DONE.
+	(casts from integral to array and from array to integral):
+	Likewise.
+	(Support for offline method definitions): New enhancement.
+
 2022-09-22  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* pickles/ios.pk: Do not use standard types.
