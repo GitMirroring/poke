@@ -77,7 +77,7 @@
 + GUI           (Everything under gui/)
 + Other         (Kitchen sink)
 + Someday       (One can dream... lalala)
-%mandatory: Component Kind Priority
+%mandatory: Component Kind
 # A task can be related to other tasks in several ways.
 #
 # `Requires' is used for hard requirements, i.e. some task
@@ -99,6 +99,37 @@
 # Whether this task requires discussion in the mailing list.
 %type: RFC bool
 %summary: Kind,Component,Priority,Summary
+
+Summary: Array deintegrators
+Component: PVM
+Component: Compiler
+Priority: 5
+Kind: ENH
+Description:
++ Integrators are already done.  Deintegrators are pending.
+Target: 3.0
+
+Summary: Union integrators and deintegrators
+Component: PVM
+Component: Compiler
+Kind: ENH
+Note: Patches under review
+Target: 3.0
+
+Summary: Documentation for poked
+Component: Documentation
+Kind: ENH
+Description:
++ New chapter in poke.texi explaining how to write interfaces
++ to poke using poked.
+Target: 3.0
+
+Summary: Tests for poked
+Kind: ENH
+Component: Testsuite
+Description:
++ In testsuite/poke.poked.
++ But it needs Tcl machinery.
 
 Summary: Avoid mid-instruction PVM_RAISE
 Component: PVM
@@ -159,6 +190,7 @@ Description:
 + 20:00 <jemarch> c = val & 0xffff;
 + 20:00 <jemarch> you just write:
 + 20:00 <jemarch> a:::b:::c = val;
+Target: 3.0
 
 Summary: STRING ~ REGEXP operator
 Component: Language
@@ -167,6 +199,15 @@ Priority: 2
 Description:
 + How to express regular expressions?  Using strings for them is
 + cumbersome because of the escaping of special characters.
++
++ But this could be a special case of the more general match
++ operator.
++
++   regexp ("...") -> (any)int
++ or
++   /.../ -> (any)int
++ or
++   raw strings.
 
 Summary: struct patterns and matching operators
 Component: Language
@@ -269,6 +310,14 @@ Description:
 + At run-time, sref simulates the flattening, which is not reflected in
 + the structure/union value itself.
 
+Summary: Size attribute in struct types
+Component: Language
+Kind: ENH
+Priority: 3
+Description:
++ Also size (which is also an implicit constraint):
++ type Bar = struct { byte hdr_sz; byte[hdr_sz] hdr; byte sz; byte[sz] data; } size (128#B)
+
 Summary: Alignment attribute in struct types
 Component: Language
 Kind: ENH
@@ -286,22 +335,32 @@ Description:
 +     long b;
 +   }
 +   alignment (8)
-Target: 2.0
 
-Summary: Named constraints in struct types
+Summary: Support for more than one constraint per struct field
+Component: Language
+Kind: ENH
+Description:
++ struct
++ {
++    int i : i > 1,
++            i % 2 == 0;
++ };
+Target: 3.0
+
+Summary: Named annotations in struct types
 Component: Language
 Kind: ENH
 Priority: 2
 Description:
 +   int foo : foo > 10;      /* Error constraint.  */
-+   int foo fail: foo > 10; /* Equivalent to the above.  */
-+   int foo last: foo > 10; /* Last/final constraint.  */
-+   int foo warn: foo > 10; /* Warning.  */
-+   int foo aligned: 8;  /* Alignment.  */
++   int foo :fail foo > 10; /* Equivalent to the above.  */
++   int foo :last foo > 10; /* Last/final constraint.  */
++   int foo :warning foo > 10; /* Warning.  */
++   int foo :aligned 8;  /* Alignment.  */
 +
 + These constraints can be combined:
 +
-+   int foo : foo < 10, warning: foo == 8, final: foo == 5;
++   int foo : foo < 10, :warning foo == 8, :final foo == 5;
 +
 + The warnings are emitted by the struct mapper function with `print',
 + and also registered in the IOS as "problematic" areas, to be displayed
@@ -315,7 +374,7 @@ Description:
 + ^1024#B -> 1#Kb
 + or
 + upunit (1024#B)
-Target: 2.0
+
 
 Summary: Support recursive definitions
 Component: Language
@@ -345,6 +404,7 @@ Description:
 +       BSON_Code_Scope value;
 +     } js_scope;
 +   }
+Target: 3.0
 
 Summary: Implement {beginning,end}-of-defun-function functions in poke-mode
 Component: Emacs
@@ -424,7 +484,7 @@ Description:
 + This should leverage the existing Stream IOD.
 + Modeled after the Tcl open(3tcl)
 RFC: yes
-Target: 2.0
+
 
 Summary: Introduce SELF in methods
 Component: Language
@@ -605,7 +665,6 @@ Description:
 + Interactively: $<*foo*>
 +                $<foo.o>
 RFC: yes
-Target: 2.0
 
 Summary: Support arguments in type constructors
 Component: Language
@@ -623,6 +682,7 @@ Description:
 + The second option is more coherent with the constructors like int<16>.
 + But it will require a lexical trick TYPE<.
 RFC: yes
+Target: 3.0
 
 Summary: Add error recovery support to the compiler
 Component: Compiler
@@ -635,17 +695,19 @@ Description:
 + - Further passes and phases ignore ERROR_MARK nodes.
 + - At some points a pass is invoked that checks for ERROR_MARK nodes
 +   and emit error messages and then abort the compilation.
-Target: 2.0
+
 
 Summary: Constant-fold array trims
 Component: Compiler
 Kind: OPT
 Priority: 3
+Target: 3.0
 
 Summary: Constant-fold array casts
 Component: Compiler
 Kind: OPT
 Priority: 3
+Target: 3.0
 
 Summary: Constant-fold `isa' expressions
 Component: Compiler
@@ -708,7 +770,7 @@ Description:
 +
 + Likewise, there is some code duplication in the assembler which may be
 + optimized: pkl_asm_break_label_1 vs. pkl_asm_continue_label_1.
-Target: 2.0
+
 
 Summary: Do tail recursion optimization in the compiler
 Component: Compiler
@@ -727,7 +789,7 @@ Description:
 + Size annotations will be needed in structs in cases where it is not
 + possible for the compiler to determine the size by:
 +
-+   struct size(24#B) { ... }
++   struct { ... } size(24#B) 
 +
 + Because of data integrity, lazy mapping can only be done when mapping
 + non-strict values.
@@ -824,6 +886,10 @@ Description:
 +
 +  void pkl_asm_while_loop (pkl_asm pasm)
 
+Summary: Adopt GCC's ChangeLog generation machinery
+Component: Build
+Kind: ENH
+
 Summary: Union fields should not refer to other fields
 Component: Compiler
 Kind: BUG
@@ -834,7 +900,7 @@ Description:
 + any case.  This applies to constraints, array bounds, etc.
 +
 + For example: type Foo = union { int i; int j : i != 10; }
-Target: 2.0
+Target: 3.0
 
 Summary: Fix %destructors in parser
 Component: Compiler
@@ -844,7 +910,7 @@ Priority: 3
 Description:
 + A suitable %destructor should be added to the Poke parser, to assure
 + no memory leaks when an error occurs (AST nodes).
-Target: 1.4
+
 
 Summary: Do not leak decl AST nodes in parser
 Component: Compiler
@@ -854,7 +920,7 @@ Priority: 3
 Description:
 + Do not leak decl AST nodes if there is an error condition like an
 + already declared entity.
-Target: 1.4
+
 
 Summary: Remove call to `abort' in pkl-lex.l
 Component: Compiler
@@ -863,7 +929,7 @@ BZ: 26893
 Priority: 3
 Description:
 + Code in libpoke should not call `abort' nor `exit'.
-Target: 1.4
+
 
 Summary: Complete C and Poke printers for function types
 Component: PVM
@@ -875,7 +941,7 @@ Description:
 + including optional arguments, varargs, etc.
 +
 + Ditto for the PVM printer and formatter.
-Target: 1.4
+
 
 Summary: Function types are generated with its arguments reversed
 Component: Compiler
@@ -885,7 +951,7 @@ Priority: 4
 Description:
 + Either mktyc should get its arguments reversed (ugly) or the compiler
 + should reverse them before calling the instruction.
-Target: 1.4
+
 
 Summary: Validate u?int and u?long args in RAS
 Component: RAS
@@ -913,7 +979,7 @@ Description:
 +    push "integer"
 +    sprop ; String propertize  ( STR IDX LENGTH CLASS -- STR )
 RFC: yes
-Target: 2.0
+
 
 Summary: pvm_print_val should emit hyperlinks in collapsed structs
 Component: PVM
@@ -974,6 +1040,21 @@ Description:
 +    ei_nident=0x0UB#B
 +  }
 
+Summary: PVM stack traces
+Component: PVM
+Kind: ENH
+Description:
++ New instruction `rtrace N'
++
++ CALL can put the name of the called closure in the RETURNSTACK.
++ RETURN pops it.
++ RTRACE traverses the returnstack and DTRT.
++
++ The pvm_cls values should be expanded to hold the name of
++ the closure (optional, can be "") and we can also use this
++ name for disassemblying.
+Target: 3.0
+
 Summary: Location tracking in PVM
 Component: PVM
 Kind: ENH
@@ -1017,7 +1098,7 @@ Description:
 +     _pkl_unit_names.  Or mark as invalid.
 +
 +  Run-time option to switch this on and off. ounames -> output unit names.
-Target: 2.0
+
 
 
 Summary: Unbox small strings in the PVM
@@ -1038,7 +1119,7 @@ Description:
 + defun strok = (string s, string sep) char[]:
 + Returns an array of tokens.
 RFC: yes
-Target: 2.0
+
 
 Summary: Support IO transactions
 Component: IO
@@ -1236,7 +1317,7 @@ Description:
 + - Time spent in the compiler.
 + - Time spent in the PVM.
 +  - Total amount of time.
-Target: 2.0
+
 
 Summary: Write IEEE754 pickle
 Component: Pickles
@@ -1287,11 +1368,6 @@ Component: Pickles
 Kind: ENH
 Priority: 2
 
-Summary: Write pickle for openpgp (RFC 4880)
-Component: Pickles
-Kind: ENH
-Priority: 2
-
 Summary: parallelize the dg testsuite
 Component: Testsuite
 Kind: ENH
@@ -1300,43 +1376,17 @@ Description:
 + The dg testsuites are big.  We need to be able to run the tests in
 + parallel.  A good place where to look for inspiration for this task is
 + the GCC testing infrastructure.
-Target: 2.0
 
-Summary: Document language operand promotion rules in the manual
-Component: Documentation
-Kind: ENH
-Priority: 2
-Target: 1.1
 
 Summary: Document poke CSS classes in the manual
 Component: Documentation
 Kind: ENH
 Priority: 2
-Target: 1.1
-
-Summary: document poke maps in the manual
-Component: Documentation
-Kind: ENH
-Priority: 2
-Target: 1.1
-
-Summary: document the libpoke API in the manual
-Component: Documentation
-Kind: ENH
-Priority: 2
-Description: Preferably generating it from libpoke.h
-Target: 1.1
-RFC: yes
 
 Summary: Complete PVM values and PKL nodes support in poke-gdb.scm
 Component: Other
 Kind: ENH
 Priority: 3
-
-Summary: Make boehm-gc.suppressions more generic
-Component: Other
-Kind: ENH
-Priority: 2
 
 Summary: Document "default values" in the poke manual
 Component: Documentation
@@ -1346,7 +1396,7 @@ Description:
 + These are the values generated by the constructors of the several
 + types (integers, offsets, strings, arrays, structs).  Refer to this
 + section from array and struct constructor sections.
-Target: 1.1
+Target: 3.0
 
 Summary: add mutex to avoid concurrency crash with hyperlinks
 Component: POKE
@@ -1367,7 +1417,7 @@ Description:
 +
 + Jitter detects this and gives an error.  We need a mutex to protect
 + the PVM, and make the hserver and the prompt to use it.
-Target: 2.0
+
 
 Summary: support casts from `any' to function types
 Kind: ENH
@@ -1378,7 +1428,7 @@ Description:
 + Right now we are not allowing casting from `any' to a function type.
 + Supporting this requires to tag the PVM closure values with their
 + corresponding type.
-Target: 2.0
+
 
 %rec: Release
 %key: Version
