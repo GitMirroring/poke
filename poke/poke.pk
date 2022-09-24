@@ -32,7 +32,7 @@ var pk_network_endian = ENDIAN_BIG;
 /* Whether the terminal hyperlinks server is running or not.  */
 var pk_hserver_p = 0;
 
-/* Whether auto-maps shall be acknowleged when loading files or
+/* Whether auto-maps shall be acknowledged when loading files or
    not. */
 var pk_auto_map_p = 0;
 
@@ -72,7 +72,7 @@ fun pk_exception_handler = (Exception exception) void:
      }
   }
 
-/* Load some poke subsytems.  */
+/* Load some poke subsystems.  */
 
 load "pk-table.pk";
 load "pk-info.pk";

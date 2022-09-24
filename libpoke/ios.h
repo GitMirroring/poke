@@ -23,7 +23,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-/* The following two functions intialize and shutdown the IO poke
+/* The following two functions initialize and shutdown the IO poke
    subsystem.  */
 
 void ios_init (void);

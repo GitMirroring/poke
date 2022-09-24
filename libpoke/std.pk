@@ -170,7 +170,7 @@ fun reverse = (any[] a) void:
 
 /*** String functions.  */
 
-/* Return the index in the string S of the first occurence of the
+/* Return the index in the string S of the first occurrence of the
    character C.  If C is not in S then return the size of S.  */
 
 fun strchr = (string s, uint<8> c) int<32>:

@@ -96,7 +96,7 @@ char *poke_mapsdir;
 char *poke_docdir;
 
 /* The following global determines whether auto-maps shall be
-   acknowleged when loading files by default.  Defaults to 1, but can
+   acknowledged when loading files by default.  Defaults to 1, but can
    be changed to 0 using the --no-auto-map command-line option.  */
 
 int poke_default_auto_map_p = 1;

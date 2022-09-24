@@ -364,7 +364,7 @@ pkl_ast_node pkl_ast_make_string (pkl_ast ast,
 
 /* PKL_AST_ARRAY nodes represent array literals.  Each array holds a
    sequence of elements, all of them having the same type.  There must
-   be at least one element in the array, i.e. emtpy arrays are not
+   be at least one element in the array, i.e. empty arrays are not
    allowed.  */
 
 #define PKL_AST_ARRAY_NELEM(AST) ((AST)->array.nelem)
@@ -1377,7 +1377,7 @@ pkl_ast_node pkl_ast_make_format (pkl_ast ast, pkl_ast_node fmt,
 
    EXP is an expression node evaluating to the value to format.
 
-   BASE is the numeration base to use when formating this argument.
+   BASE is the numeration base to use when formatting this argument.
 
    BEGIN_SC, if not NULL, marks that this argument is a %<class>
    directive, and is a NULL-terminated string with the name of the
@@ -1391,7 +1391,7 @@ pkl_ast_node pkl_ast_make_format (pkl_ast ast, pkl_ast_node fmt,
    value of EXP, respectively.
 
    VALUE_P indicates whether the argument shall be printed as a PVM
-   value or not (whether this arguement corresponds to a %v or not).
+   value or not (whether this argument corresponds to a %v or not).
 
    FORMAT_MODE and FORMAT_DEPTH specify how the argument shall be
    printed if VALUE_P is true.  FORMAT_MODE can be one of the
@@ -1809,9 +1809,9 @@ pkl_ast_node pkl_ast_make_exp_stmt (pkl_ast ast, pkl_ast_node exp);
    Exception.
 
    EXP is an expression evaluating to an Exception.  In try-catch
-   statements exceptions having any other type won't be catched by the
+   statements exceptions having any other type won't be caught by the
    `catch' clause of the statement.  In try-until statements the BODY
-   will be executed repeteadly until this exception gets raised.  In
+   will be executed repeatedly until this exception gets raised.  In
    try-catch statements this field is optional.
 
    Note that TYPE and EXP are mutually exclusive in try-catch

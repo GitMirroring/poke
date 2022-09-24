@@ -107,7 +107,7 @@
         drop                    ; PIOS IOS
         ;; We also have to call the ios_set hook if opening
         ;; this IO space will result in it being selected
-        ;; as the current space.  That will happend if there
+        ;; as the current space.  That will happen if there
         ;; is no currently an IO space open.
         swap                    ; IOS PIOS
         bnn .done

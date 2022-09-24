@@ -44,7 +44,7 @@ pk_cmd_editor (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
   int des;
   FILE *fp;
 
-  /* Do nothing (succesfully) if not in interactive mode.  */
+  /* Do nothing (successfully) if not in interactive mode.  */
   if (!poke_interactive_p)
     return 1;
 

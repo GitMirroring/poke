@@ -26,7 +26,7 @@ load "dwarf-common.pk";
 type Dwarf_Name_Lookup_Table =
   struct
   {
-    /* Lenght of the set of entries for this CU, not including the
+    /* Length of the set of entries for this CU, not including the
        length field itself.  */
     Dwarf_Initial_Length unit_length;
 

@@ -188,7 +188,7 @@ pk_help_add_topic
       synopsis = ".proc[/mM] PID",
       summary = "open a process' memory",
       description = "\
-Open a proc IO space to edit the memory of the proces with
+Open a proc IO space to edit the memory of the process with
 process id PID.
 
 If the /m flag is used, sub-IOS are opened showing the several

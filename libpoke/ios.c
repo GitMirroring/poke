@@ -370,7 +370,7 @@ ios_read_int_common (ios io, ios_off offset, int flags,
   /* 64 bits might span at most 9 bytes.  */
   uint8_t c[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-  /* Number of signifcant bits in the first byte.  */
+  /* Number of significant bits in the first byte.  */
   int firstbyte_bits = 8 - (offset % 8);
 
   /* (Total number of bytes that need to be read) - 1.  */
@@ -1207,7 +1207,7 @@ ios_write_int_common (ios io, ios_off offset, int flags,
   /* 64 bits might span at most 9 bytes.  */
   uint8_t c[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-  /* Number of signifcant bits in the first byte.  */
+  /* Number of significant bits in the first byte.  */
   int firstbyte_bits = 8 - (offset % 8);
 
   /* (Total number of bytes that need to be read) - 1.  */

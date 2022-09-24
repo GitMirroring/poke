@@ -43,9 +43,10 @@ struct ios_buffer_chunk
   struct ios_buffer_chunk *next;
 };
 
-/* begin_offset is the first offset that's not yet flushed, initilized as 0.
-   end_offset of an instream is the next byte to read to.  end_offset of an
-   outstream is the successor of the greatest offset that is written to.  */
+/* begin_offset is the first offset that's not yet flushed,
+   initialized as 0.  end_offset of an instream is the next byte to
+   read to.  end_offset of an outstream is the successor of the
+   greatest offset that is written to.  */
 
 struct ios_buffer
 {

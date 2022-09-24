@@ -336,7 +336,7 @@
 ;;; and a value, set the value to the referred element.
 ;;;
 ;;; If setting the element causes a problem with the integrity of the
-;;; data stored in the struct (for example, a constraint expresssion
+;;; data stored in the struct (for example, a constraint expression
 ;;; fails) then the operation is aborted and PVM_E_CONSTRAINT is raised.
 
         .macro ssetc @struct_type

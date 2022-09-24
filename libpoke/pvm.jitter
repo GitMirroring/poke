@@ -1143,8 +1143,8 @@ end
 # Instruction: canary
 #
 # This instruction installs a canary to mark the bottom of the stack,
-# which is cheched by the `exit' instruction.  To be most effective this
-# should be executed before the stack is used for the first time.
+# which is checked by the `exit' instruction.  To be most effective
+# this should be executed before the stack is used for the first time.
 #
 # Stack: ( -- )
 
@@ -1999,7 +1999,7 @@ end
 
 # Instruction: pushtopvar OVER
 #
-# Retrive the value of a variable from the top-level frame of the
+# Retrieve the value of a variable from the top-level frame of the
 # lexical environment and put it on the stack.  The OVER part of the
 # lexical address of the variable is specified as an argument to the
 # instruction.
@@ -6556,8 +6556,8 @@ end
 # Given a value, push its length as an unsigned long.
 #
 # The length of an array is the number of values contained in it.
-# The lenght of a struct is the number of fields contained in it.
-# The lenght of a string is the number of characters contained in it.
+# The length of a struct is the number of fields contained in it.
+# The length of a string is the number of characters contained in it.
 # The length of any other value is 1.
 #
 # Stack: ( VAL -- VAL ULONG )

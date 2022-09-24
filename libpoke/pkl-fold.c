@@ -1130,7 +1130,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_fold_ps_cast)
            PKL_AST_INTEGER_VALUE (unit));
 
       /* Calculate the new unit.  It should always be a new node,
-         since otherwise we may be chaning an integer node that is
+         since otherwise we may be chaining an integer node that is
          also part of an unit declaration, or who knows what.  */
       {
         pkl_ast_node unit_type = PKL_AST_TYPE (unit);

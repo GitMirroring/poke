@@ -253,7 +253,7 @@ pvm_array_set (pvm_val arr, pvm_val idx, pvm_val val)
   /* Update the element with the given value.  */
   PVM_VAL_ARR_ELEM_VALUE (arr, index) = val;
 
-  /* Recalculate the bit-offset of all the elemens following the
+  /* Recalculate the bit-offset of all the elements following the
      element just updated.  */
   for (i = index + 1; i < nelem; ++i)
     {

@@ -1130,7 +1130,7 @@ PKL_PHASE_END_HANDLER
 
    If the compound statement is the first operand of an excond
    operator, then it increases the number of exception handlers that
-   need to be eventually poped.  Update the current function context
+   need to be eventually popped.  Update the current function context
    accordingly */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_comp_stmt)
@@ -1207,7 +1207,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_loop_stmt)
 }
 PKL_PHASE_END_HANDLER
 
-/* Annotate compount statement nodes with the number of variable and
+/* Annotate compound statement nodes with the number of variable and
    function declarations occurring in the statement.
 
    Compound statements introduce a lexical level.  Update the current
@@ -1215,7 +1215,7 @@ PKL_PHASE_END_HANDLER
 
    If the compound statement is the first operand of an excond
    operator, then it increases the number of exception handlers that
-   need to be eventually poped.  Update the current function context
+   need to be eventually popped.  Update the current function context
    accordingly */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_comp_stmt)
@@ -1265,7 +1265,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_struct_type_field)
 }
 PKL_PHASE_END_HANDLER
 
-/* Annotate struct type fields with the current endiannes annotation
+/* Annotate struct type fields with the current endianness annotation
    if necessary.  And also pop endianness.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_struct_type_field)
@@ -1298,7 +1298,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_return_stmt)
 PKL_PHASE_END_HANDLER
 
 /* The body of a try statement increases the number of exception
-   handlers that need to be eventually poped.  Update the current
+   handlers that need to be eventually popped.  Update the current
    function context accordingly.
 
    try-until statements are escapable constructs.  Update escapables
@@ -1315,7 +1315,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_try_stmt_body)
 PKL_PHASE_END_HANDLER
 
 /* The body of a try statement increases the number of exception
-   handlers that need to be eventually poped.  Update the current
+   handlers that need to be eventually popped.  Update the current
    function context accordingly.
 
    try-until statements are escapable constructs.  Update escapables

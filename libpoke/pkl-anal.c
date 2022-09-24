@@ -878,7 +878,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_anal2_ps_funcall)
       && PKL_PASS_PARENT
       && PKL_AST_CODE (PKL_PASS_PARENT) != PKL_AST_EXP_STMT)
     {
-      /* Note that this error is catched earlier in
+      /* Note that this error is caught earlier in
          pkl_typify1_ps_funcall */
       PKL_ERROR (PKL_AST_LOC (funcall_function),
                  "call to void function in expression");

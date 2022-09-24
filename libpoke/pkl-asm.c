@@ -830,9 +830,9 @@ pkl_asm_insn_cdivo (pkl_asm pasm,
    Macro-instruction: LE type
    ( VAL VAL -- INT )
 
-   Generate code for perfoming a comparison operation.
-   INSN identifies the operation to perform, and TYPE
-   the type of the operands.  */
+   Generate code for performing a comparison operation.  INSN
+   identifies the operation to perform, and TYPE the type of the
+   operands.  */
 
 static void
 pkl_asm_insn_cmp (pkl_asm pasm,
@@ -961,7 +961,7 @@ pkl_asm_insn_cmp (pkl_asm pasm,
    Given a struct, a string containing the name of a struct element,
    and a value, set the value to the referred element.  If setting the
    element causes a problem with the integrity of the data stored in
-   the struct (for example, a constraint expresssion fails) then the
+   the struct (for example, a constraint expression fails) then the
    operation is aborted and PVM_E_CONSTRAINT is raised.  */
 
 static void

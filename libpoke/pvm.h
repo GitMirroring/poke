@@ -252,7 +252,7 @@ pvm_val pvm_make_array (pvm_val nelem, pvm_val type);
    NFIELDS is an ulong<64> PVM value specifying the number of fields
    in the struct.  This can be ulong<64>0 for an empty struct.
 
-   NMETHODS is an ulong<64> PVM vlaue specifying the number of methods
+   NMETHODS is an ulong<64> PVM value specifying the number of methods
    in the struct.
 
    TYPE is a type PVM value specifying the type of the struct.
@@ -598,8 +598,8 @@ void pvm_shutdown (pvm pvm);
 
 pvm_env pvm_get_env (pvm pvm);
 
-/* Print a profiling summary corresponding to the currrent state of
-   the PVM.  */
+/* Print a profiling summary corresponding to the current state of the
+   PVM.  */
 
 void pvm_print_profile (pvm pvm);
 

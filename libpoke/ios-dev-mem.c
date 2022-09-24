@@ -24,7 +24,7 @@
 #include "ios.h"
 #include "ios-dev.h"
 
-/* State asociated with a memory device.  */
+/* State associated with a memory device.  */
 
 struct ios_dev_mem
 {

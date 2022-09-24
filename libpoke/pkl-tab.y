@@ -120,8 +120,8 @@ pkl_register_arg (struct pkl_parser *parser, pkl_ast_node arg)
   return 1;
 }
 
-/* Assert statement is a syntatic sugar that transforms to invocation of
-   _pkl_assert function with appropriate arguments.
+/* Assert statement is a syntactic sugar that transforms to invocation
+   of _pkl_assert function with appropriate arguments.
 
    This function accepts AST nodes corresponding to the condition and
    optional message of the assert statement, and also the location info

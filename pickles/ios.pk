@@ -269,7 +269,7 @@ fun ios_copy_bytes = (int<32> from_ios, int<32> to_ios,
    TO and SIZE are byte offsets in the IO space determining the range
    of bytes to save.
 
-   By default the output file is truncted if it already exists.  If
+   By default the output file is truncated if it already exists.  If
    APPEND_P is true, then the data is instead appended at the end of
    the file.  */
 

@@ -244,7 +244,7 @@ rest_of_compilation (pkl_compiler compiler,
   };
 
   /* Note that gen does subpasses, so no transformation phases should
-     be invoked in the bakend pass.  */
+     be invoked in the backend pass.  */
   struct pkl_phase *backend_phases[]
     = { &pkl_phase_gen,
         NULL

@@ -185,7 +185,7 @@ var DT_NULL = 0,  /* Tags the end of the dynamic array.  */
     DT_STRSZ = 10,
     /* d_val holds the size, in bytes, of a symbol table entry.  */
     DT_SYMENT = 11,
-    /* d_ptr holds the addresss of the initialization function.  */
+    /* d_ptr holds the address of the initialization function.  */
     DT_INIT = 12,
     /* d_ptr holds the address of the finalization function.  */
     DT_FINI = 13,
@@ -222,7 +222,7 @@ var DT_NULL = 0,  /* Tags the end of the dynamic array.  */
        cause a modification to a non-writable segment, as specified
        by the segment permissions in the program header table.  If
        this tag is present, one or more relocation entries might
-       request modifications to a non-writable segement, and the
+       request modifications to a non-writable segment, and the
        dynamic linker can prepare accordingly.  This entry is at
        level 2.  Its use has been superseded by the DF_TEXTREL
        flag.  */

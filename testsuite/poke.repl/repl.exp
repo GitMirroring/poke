@@ -22,7 +22,7 @@
 #   unequivocally identify them from the FAIL output messages.
 #
 # - Try to keep each test as self-contained as possible.  This means
-#   starting and exitting poke in each test.
+#   starting and exiting poke in each test.
 
 load_lib ${tool}.exp
 

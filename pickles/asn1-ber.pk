@@ -202,7 +202,7 @@ type BER_Variable_Contents =
   };
 
 /* Each BER data value encodes an identifier or header, followed by
-   the lenght of the contents and the bytes conforming the contents.
+   the length of the contents and the bytes conforming the contents.
    The interpretation of these contents depends on the type of data
    value, i.e. on the tag number.  */
 

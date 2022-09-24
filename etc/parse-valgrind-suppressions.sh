@@ -21,8 +21,8 @@
 # discarded.
 
 BEGIN { suppression=0; md5sum = "md5sum" }
-# If the line begins with '{', it's the start of a supression; so
-# set the var and initialise things
+# If the line begins with '{', it's the start of a suppression; so set
+# the var and initialise things
 /^{/  {
        suppression=1;  i=0; next 
    }
@@ -37,7 +37,7 @@ BEGIN { suppression=0; md5sum = "md5sum" }
          delete supparray     # We don't want subsequent suppressions to append to it!
        }
 }
-# Otherwise, it's a normal line. If we're inside a supression, store
+# Otherwise, it's a normal line. If we're inside a suppression, store
 # it, and pipe it to md5sum. Otherwise it's cruft, so ignore it
 { if (suppression)
      { 

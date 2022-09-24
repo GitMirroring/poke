@@ -18,7 +18,7 @@
 
 /* This file implements a compiler phase that promotes the operands of
    expressions following language rules.  This phase expects that
-   every expression operand is anotated with its proper type.  */
+   every expression operand is annotated with its proper type.  */
 
 #include <config.h>
 

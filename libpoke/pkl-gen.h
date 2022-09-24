@@ -33,7 +33,7 @@
 
 /* It would be very unlikely to have more than 24 declarations nested
    in a poke program... if it ever happens, we will just increase
-   this, thats a promise :P (don't worry, there is an assertion that
+   this, that's a promise :P (don't worry, there is an assertion that
    will fire if this limit is surpassed.) */
 
 #define PKL_GEN_MAX_PASM 25
@@ -64,7 +64,7 @@
    to be used.
 
    CONTEXT is an array implementing a stack of contexts.  Each context
-   is a bitmap.  See hte PKL_GEN_CTX_* constants below for the
+   is a bitmap.  See the PKL_GEN_CTX_* constants below for the
    significance of each bit.  The initial context is initialized to 0.
 
    CUR_CONTEXT is the index to CONTEXT and marks the top of the stack

@@ -374,7 +374,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
 ~~~~~~~~~
 
   In order to improve the user's experience, we are using fairly recent
-  versions of bison.  Bison 3.6.0 or later is required to boostrap and
+  versions of bison.  Bison 3.6.0 or later is required to bootstrap and
   build poke from git.
 
 
@@ -386,7 +386,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   <http://git.ageinghacker.net/jitter> and its home page is
   <https://www.gnu.org/software/jitter/>.
 
-  The appropriate version of Jitter is downloaded and boostrapped
+  The appropriate version of Jitter is downloaded and bootstrapped
   automatically by Poke's `bootstrap' script, which frees the user from
   the annoyance of installing Jitter as a dependency.
 
@@ -538,7 +538,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
 ---------------------------
 
   We use the venerable convention of using a suffix `_p' (for predicate)
-  when naming variables and struct fiels that contain booleans.
+  when naming variables and struct fields that contain booleans.
 
   We do not always do this, but it is especially important in cases
   where the name of the variable is not indicative enough.
@@ -672,7 +672,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
 ~~~~~~~~~~~~~~~~~~~~~~
 
   Tests are categorized in different sub-directories. You can run run
-  tests of a signle category by runing
+  tests of a single category by running
   ,----
   | make check RUNTESTFLAGS=CATEGORY.exp
   `----
@@ -2274,7 +2274,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
 
   Valgrind gets easily confused by the GCs tampering with the stack, and
   emits a lot of spurious warnings.  Fortunately it is possible to tell
-  memcheck to omit these warnings: the file etc/boehm-gc.suppresions
+  memcheck to omit these warnings: the file etc/boehm-gc.suppressions
   contains a list of suppressions.
 
   Invoke valgrind with `--suppressions=etc/boehm-gc.suppressions'.

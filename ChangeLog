@@ -1,5 +1,54 @@
 2022-09-24  Jose E. Marchesi  <jemarch@gnu.org>
 
+	BZ 27481
+	* etc/hacking.org: Fix spelling mistakes.
+	* NEWS: Likewise.
+	* ChangeLog: Likewise.
+	* doc/poke.texi: Likewise.
+	* etc/parse-valgrind-suppressions.sh: Likewise.
+	* etc/poke.rec: Likewise.
+	* libpoke/ios.h: Likewise.
+	* libpoke/pkl-gen.pks: Likewise.
+	* libpoke/pkl-trans.c: Likewise.
+	* libpoke/pkl-gen-builtins.pks: Likewise.
+	* libpoke/pkl-promo.c: Likewise.
+	* libpoke/pkl-asm.pks: Likewise.
+	* libpoke/std.pk: Likewise.
+	* libpoke/ios-dev-stream.c: Likewise.
+	* libpoke/ras: Likewise.
+	* libpoke/pvm.h: Likewise.
+	* libpoke/pkl-gen.h: Likewise.
+	* libpoke/pkl-anal.c: Likewise.
+	* libpoke/pkl-typify.c: Likewise.
+	* libpoke/ios-buffer.c: Likewise.
+	* libpoke/pkl-fold.c: Likewise.
+	* libpoke/ios-dev-mem.c: Likewise.
+	* libpoke/pkl-tab.y: Likewise.
+	* libpoke/pkl-ast.h: Likewise.
+	* libpoke/pvm.jitter: Likewise.
+	* libpoke/pkl-gen.c: Likewise.
+	* libpoke/pvm-val.c: Likewise.
+	* libpoke/ios.c: Likewise.
+	* libpoke/pvm-val.h: Likewise.
+	* libpoke/pkl.c: Likewise.
+	* pickles/elf-common.pk: Likewise.
+	* pickles/asn1-ber.pk: Likewise.
+	* pickles/ios.pk: Likewise.
+	* pickles/dwarf-pubnames.pk: Likewise.
+	* pickles/jffs2.pk: Likewise.
+	* poke/pk-cmd-ios.c: Likewise.
+	* poke/pk-settings.pk: Likewise.
+	* poke/poke.pk: Likewise.
+	* poke/pk-map-parser.h: Likewise.
+	* poke/poke.c: Likewise.
+	* poke/pk-cmd-editor.c: Likewise.
+	* poke/pk-help.pk: Likewise.
+	* testsuite/poke.repl/repl.exp: Likewise.
+	* testsuite/poke.std/std.exp: Likewise.
+	* HACKING: Regenerate.
+
+2022-09-24  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-typify.c (pkl_typify1_ps_cast): Do not allow casts
 	to unions.
 	* testsuite/poke.pkl/cast-union-diag-1.pk: New test.
@@ -811,7 +860,7 @@
 2022-03-22  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* poked/poked.c (main): Call `__poked_run_after_eval_hooks` even
-	if the statment is not expression.
+	if the statement is not expression.
 
 2022-03-21  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
@@ -1044,7 +1093,7 @@
 	(poke-ios-open): Likewise.
 	(poke-ios-close): Likewise.
 	(poke): Iniitalize poke-ios-alist.
-	(poke-exit): Ask before exitting if there are open IO spaces.
+	(poke-exit): Ask before exiting if there are open IO spaces.
 
 2022-03-14  Jose E. Marchesi  <jemarch@gnu.org>
 
@@ -1156,7 +1205,7 @@
 2022-03-12  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* emacs/poke.el (poke-styling-faces): Fix faces names.
-	(poke-out-filter): Move proces marker whenever necessary.
+	(poke-out-filter): Move process marker whenever necessary.
 	(poke-open-file): s/E_generic_io/E-io.
 
 2022-03-11  Jose E. Marchesi  <jemarch@gnu.org>
@@ -1327,7 +1376,7 @@
 
 	* libpoke/libpoke.c (my_decl_map_fn): Always return PK_NULL as
 	`value' for type declarations.
-	* libpoke/libpoke.h: Add decription of the arguments got by the
+	* libpoke/libpoke.h: Add description of the arguments got by the
 	pk_map_decl_fn callback.
 	* testsuite/poke.libpoke/decls.c: New file.
 	* testsuite/poke.libpoke/Makefile.am (decls_SOURCES): Define.
@@ -1781,7 +1830,7 @@
 
 	* poke/pk-ios.c (pk_open_proc_maps): Use PRIx64 instead of %lx.
 	* libpoke/pkl-typify.c (pkl_typify1_ps_type_struct): Use PRIu64
-	isntead of %lu.
+	instead of %lu.
 
 2022-02-08  Jose E. Marchesi  <jemarch@gnu.org>
 
@@ -2561,7 +2610,7 @@
 2022-01-23  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-gen.pks (struct_formater): Avoid a segmentation
-	fault when compiling formaters for anonymous fields.
+	fault when compiling formatters for anonymous fields.
 	* testsuite/poke.pkl/format-39.pk: New test.
 	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
 
@@ -2969,7 +3018,7 @@
 2022-01-20  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* etc/hacking.org (Maintenance): Note that jitter's no-threading
-	doesnt work with gcov.
+	doesn't work with gcov.
 
 2022-01-19  Jose E. Marchesi  <jemarch@gnu.org>
 
@@ -3113,7 +3162,7 @@
 2022-01-18  Luca Saiu  <positron@gnu.org>
 
 	* bootstrap.conf (bootstrap_post_import_hook): Use the specified
-	--gnulib-srcdir for boostrapping Jitter as well: redefine
+	--gnulib-srcdir for bootstrapping Jitter as well: redefine
 	GNULIB_SRCDIR to be an absolute path, then cd to the Jitter source
 	directory and pass Gnulib's absolute path to Jitter's bootstrap
 	script; do not rely on a hardwired --gnulib-srcdir=../gnulib .
@@ -4061,9 +4110,9 @@
 	(BTF_KIND_TYPE_TAG): Likewise.
 	(BTF_DECL_TAG_SELF): New.
 	(BTF_Decl_Tag): New type.
-	(BTF_Type): Update `info` bits usage to accomodate new type kinds.
-	BTF_KIND_DATASEC uses `size` variant of `attrs`.
-	Add `decl_tag` variant to `data`.
+	(BTF_Type): Update `info` bits usage to accommodate new type
+	kinds.  BTF_KIND_DATASEC uses `size` variant of `attrs`.  Add
+	`decl_tag` variant to `data`.
 
 2021-12-15  Jose E. Marchesi  <jemarch@gnu.org>
 
@@ -7579,8 +7628,8 @@
 
 	* poke/pk-dump.pk (pk_dump_nonprintable_char): Define.
 	(print_ascii): use pk_dump_nonprintable_char.
-	* doc/poke.texi (Presentation options for @command{dump}): Doument
-	pk_dump_nonprintable_char.
+	* doc/poke.texi (Presentation options for @command{dump}):
+	Document pk_dump_nonprintable_char.
 
 2020-12-13  Jose E. Marchesi  <jemarch@gnu.org>
 
@@ -7978,7 +8027,7 @@
 
 	BZ 26976
 	* libpoke/ios-buffer.c: Include stdlib.h instead of malloc.h
-	* libpoke/ios-dev-stream.c: Do not inlude malloc.h
+	* libpoke/ios-dev-stream.c: Do not include malloc.h
 
 2020-11-29  Jose E. Marchesi  <jemarch@gnu.org>
 
@@ -8739,10 +8788,10 @@
 
 2020-11-20  Jose E. Marchesi  <jemarch@gnu.org>
 
-	* libpoke/ras: Suppor \" in RAS strings.
+	* libpoke/ras: Support \" in RAS strings.
 	* libpoke/pkl-ast.h (PKL_AST_TYPE_A_PRINTER): Define.
 	(array): New field `printer' for arrays.
-	* libpoke/pkl-ast.c (pkl_ast_make_array_type): Initialialize the
+	* libpoke/pkl-ast.c (pkl_ast_make_array_type): Initialize the
 	printer.
 	(pkl_ast_node_free): Remove GC roots for array printers.
 	* libpoke/pkl-gen.c (pkl_gen_pr_type_array): Implement printer.
@@ -8785,7 +8834,7 @@
 2020-11-20  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/ras: Fix .call pseudo-op.
-	* libpoke/pkl-rt.pk (_pkl_unit_str): New funtion.
+	* libpoke/pkl-rt.pk (_pkl_unit_str): New function.
 	(_pkl_base_prefix): Likewise.
 	(_pkl_unit_bit): Define.
 	(_pkl_unit_nibble): Likewise.
@@ -8985,7 +9034,7 @@
 2020-11-18  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-insn.def: Remove spaces before and after arguments
-	to accomodate some weird cpp implementations.
+	to accommodate some weird cpp implementations.
 
 2020-11-18  Mohammad-Reza Nabipoor  <m.nabipoor@yahoo.com>
 
@@ -9228,7 +9277,7 @@
 	(pkl_ast_node_free): Likewise.
 	(pkl_ast_print_1): Likewise.
 	* libpoke/pkl-pass.c (pkl_do_pass_1): Likewise.
-	* libpoke/pkl-tab.y: New toke RANGEA.
+	* libpoke/pkl-tab.y: New token RANGEA.
 	(primary): Rule for array trims based on +:.
 	* libpoke/pkl-lex.l: Handle RANGEA tokens.
 	* libpoke/pkl-gen.c (pkl_gen_pr_trimmer): Renamed from
@@ -11087,7 +11136,7 @@
 	individual files instead.
 	* testsuite/poke.libpoke/Makefile.am (EXTRA_DIST): Add libpoke.exp.
 	* testsuite/poke.mi-json/Makefile.am (EXTRA_DIST): Add mi-json.exp.
-	* HACKING: Mention that test files beed to be listed.
+	* HACKING: Mention that test files need to be listed.
 
 2020-07-17  Jose E. Marchesi  <jemarch@gnu.org>
 
@@ -11890,7 +11939,7 @@
 	last.
 	(pkl_gen_pr_ass_stmt): Likewise.
 	(pkl_gen_pr_func): Adapt to the fact the implicit argument is the
-	last actual passed but the firts formal registered.
+	last actual passed but the first formal registered.
 	* testsuite/poke.pkl/struct-method-15.pk: New test.
 	* testsuite/poke.pkl/struct-method-diag-15.pk: Likewise.
 
@@ -11936,7 +11985,7 @@
 
 2020-05-15  Jose E. Marchesi  <jemarch@gnu.org>
 
-	* pickles/elf.pk (Elf64.get_string): New mehod.
+	* pickles/elf.pk (Elf64.get_string): New method.
 	(Elf64.get_section_by_name): Likewise.
 	(Elf64.get_section_by_type): Likewise.
 	(elf_string): Delete function.
@@ -12287,7 +12336,7 @@
 
 2020-05-09  Jose E. Marchesi  <jemarch@gnu.org>
 
-	* HACKING (PoK Depencencies): Update.
+	* HACKING (PoK Dependencies): Update.
 
 	* poke/pk-mi-msg.h (pk_mi_set_msg_number): Define.
 	* poke/pk-mi-msg.c (pk_mi_set_msg_number): Likewise.
@@ -12363,7 +12412,7 @@
 
 2020-05-07  Tim Rühsen  <tim.ruehsen@gmx.de>
 
-	* libpoke/ios.c (ios_open): Initialize error varaible.
+	* libpoke/ios.c (ios_open): Initialize error variable.
 	* libpoke/ios-dev-file.c (ios_dev_file_handler_normalize):
 	Return NULL on memory allocation error.
 	* libpoke/ios-dev-mem.c (ios_dev_mem_handler_normalize): Likewise.
@@ -12818,7 +12867,7 @@
 
 2020-05-02  John Darrington <john@darrington.wattle.id.au>
 
-	* doc/poke.texi (Conditional Expressions): Add indeces.
+	* doc/poke.texi (Conditional Expressions): Add indices.
 
 2020-05-02  John Darrington <john@darrington.wattle.id.au>
 
@@ -16490,7 +16539,7 @@
 	* src/pvm.h (PVM_E_SIGNAL): Define.
 	* src/pkl-rt.pk (E_signal): Likewise.
 	* src/pvm.jitter (sync): New instruction.
-	(exit): Clear signals before exitting the PVM.
+	(exit): Clear signals before exiting the PVM.
 	(late-c): Define pvm_handle_signal.
 	* HACKING (Signal Handling): New section.
 
@@ -17846,7 +17895,7 @@
 
 	* doc/poke.texi (Standard Integral Types): New chapter.
 	(Standard Offset Types): Likewise.
-	(Coversion Functions): Likewise.
+	(Conversion Functions): Likewise.
 	(catos): New section.
 	(atoi): Likewise.
 	(Sorting Functions): New chapter.
@@ -17937,7 +17986,7 @@
 2019-11-06  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* HACKING (Write After Approval): Add Darshit Shah to the list of
-	commiters.
+	committers.
 
 2019-11-05  Jose E. Marchesi  <jemarch@gnu.org>
 
@@ -18070,7 +18119,7 @@
 2019-11-04  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* src/pkl-asm.pks (ais): Remove unused argument atype.
-	* src/pkl-asm.c (pkl_asm_insn_ais): Adjust accordintly.
+	* src/pkl-asm.c (pkl_asm_insn_ais): Adjust accordingly.
 
 2019-11-04  Jose E. Marchesi  <jemarch@gnu.org>
 
@@ -18279,7 +18328,7 @@
 	(pkl_phase_typify1): Register handler.
 	Likewise.
 	* src/pkl-anal.c: Do not define nor use a pkl_anal_ps_type
-	handler.  It is unneccessary.
+	handler.  It is unnecessary.
 	* src/pkl-trans.c: Set the `compiled' flag of types AST nodes only
 	in trans4.
 
@@ -19153,7 +19202,7 @@
 	(repl): Likewise.
 	(parse_args): Handle --color and -style.
 	(initialize): Get argc and argv as arguments.
-	(initialize): Initialize the pk-term subsytem.
+	(initialize): Initialize the pk-term subsystem.
 	(main): Pass argc and argv to `initialize'.
 	* src/pkl.c (pkl_new): Likewise.
 	(pkl_error): Likewise.
@@ -19430,7 +19479,7 @@
 
 2019-09-07  Jose E. Marchesi  <jemarch@gnu.org>
 
-	* HACKING (Jitter): Documment a set of recommended switches to use
+	* HACKING (Jitter): Document a set of recommended switches to use
 	when configuring jitter.
 
 2019-09-07  Jose E. Marchesi  <jemarch@gnu.org>

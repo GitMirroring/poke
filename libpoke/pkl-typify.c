@@ -81,7 +81,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify_ps_src)
 PKL_PHASE_END_HANDLER
 
 /* The type of a NOT is a boolean encoded as a 32-bit signed integer,
-   and the type of its sole operand sould be suitable to be promoted
+   and the type of its sole operand should be suitable to be promoted
    to a boolean, i.e. it is an integral value.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_op_not)
@@ -126,7 +126,7 @@ PKL_PHASE_END_HANDLER
    op1_type
      AST node with the type of the first operand.
    op2_type
-     AST node witht he type of the second operand.
+     AST node with he type of the second operand.
 */
 
 #define INVALID_OPERAND(OP,EXPECTED_STR)                        \
@@ -943,7 +943,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_op_bconc)
       PKL_PASS_ERROR;
     }
 
-  /* Allright, make the new type.  */
+  /* All right, make the new type.  */
   exp_type = pkl_ast_make_integral_type (PKL_PASS_AST,
                                          PKL_AST_TYPE_I_SIZE (op1_type)
                                          + PKL_AST_TYPE_I_SIZE (op2_type),
@@ -2468,7 +2468,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_try_stmt)
   pkl_ast_loc error_loc = PKL_AST_NOLOC;
   pkl_ast_node error_type;
 
-  /* If the stament has an EXP it must be an exception.  */
+  /* If the statement has an EXP it must be an exception.  */
   if (try_stmt_exp)
     {
       exp_type = PKL_AST_TYPE (try_stmt_exp);

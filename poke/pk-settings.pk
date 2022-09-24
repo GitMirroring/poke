@@ -36,7 +36,7 @@
    multi-line, and preferably showing some usage example.  It is used
    by the help subsystem.
 
-   GETTER is a function that retuns the current value of the global
+   GETTER is a function that returns the current value of the global
    setting.
 
    SETTER is a function that, given a value, tries to set it as the
@@ -383,7 +383,7 @@ pk_settings.add_setting
   :entry Poke_Setting {
     name = "oindent",
     kind = POKE_SETTING_INT,
-    summary = "witdh of each indentation leveel when printing structures",
+    summary = "width of each indentation leveel when printing structures",
     usage = ".set oindent INTEGER",
     description = "\
 This setting determines the width (in blank characters) of each
@@ -446,7 +446,7 @@ The default value of `omode' is `flat'.",
         else if (omode == VM_OMODE_TREE)
           return "tree";
 
-        assert (0, "this point shouln't be reached");
+        assert (0, "this point shouldn't be reached");
       },
     setter = lambda (any val) int:
       {

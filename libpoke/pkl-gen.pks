@@ -49,7 +49,7 @@
 ;;; the total size of the array is exactly SBOUND.  If SBOUND is exceeded,
 ;;; then raise PVM_E_CONSTRAINT.
 ;;;
-;;; Only one of EBOUND or SBOUND simultanously are supported.
+;;; Only one of EBOUND or SBOUND simultaneously are supported.
 ;;; Note that OFF should be of type offset<uint<64>,*>.
 ;;;
 ;;; Macro arguments:
@@ -360,7 +360,7 @@
 .bounds_ready:
         regvar $sbound          ; EBOUND
         regvar $ebound          ; _
-        ;; Initialize the element index and the bit cound, and put them
+        ;; Initialize the element index and the bit count, and put them
         ;; in locals.
         push ulong<64>0         ; 0UL
         dup                     ; 0UL 0UL
@@ -770,7 +770,7 @@
 ;;;
 ;;; Macro-arguments:
 ;;;
-;;; @struct_type is a pkl_ast_node iwth the struct type being mapped.
+;;; @struct_type is a pkl_ast_node with the struct type being mapped.
 ;;;
 ;;; @field is a pkl_ast_node with the struct field being mapped.
 ;;;
@@ -876,7 +876,7 @@
 ;;;
 ;;; Macro-arguments:
 ;;;
-;;; @struct_type is a pkl_ast_node iwth the struct type being mapped.
+;;; @struct_type is a pkl_ast_node with the struct type being mapped.
 ;;;
 ;;; @field is a pkl_ast_node with the struct field being mapped.
 ;;;
@@ -1835,7 +1835,7 @@
         nip
         ba .next
 .omitted_field:
-        ;; Field ommitted => IVAL stays unmodified.
+        ;; Field omitted => IVAL stays unmodified.
         drop                    ; IVAL SCT I
         drop                    ; IVAL SCT
         drop                    ; IVAL
@@ -2484,7 +2484,7 @@
         sel                     ; ARR SEL
         dup
         regvar $sel
-        ;; Find the number of elems that will be formated: NELEM
+        ;; Find the number of elems that will be formatted: NELEM
         pushoac                 ; ARR SEL OACUTOFF
         bzi .no_cut_off
         itolu 64
@@ -2513,7 +2513,7 @@
         push "["
         ains
         swap                    ; SARR ARR
-        ;; Iterate on the values stored in the array, formating them
+        ;; Iterate on the values stored in the array, formatting them
         ;; in turn.
         push ulong<64>0         ; SARR ARR IDX
         dup
@@ -2703,7 +2703,7 @@
         ba .body_done
 .depth_ok:
         drop                    ; SARR SCT
-        ;; Iterate on the elements stored in the struct, formating them
+        ;; Iterate on the elements stored in the struct, formatting them
         ;; in order.
         swap                    ; SCT SARR
         sel
@@ -3189,7 +3189,7 @@
 .no_pretty_print_1:
         drop
                                 ; SCT
-        ;; Allright, print the struct.
+        ;; All right, print the struct.
         push "struct"
         begsc
         ;; Print the struct type name.

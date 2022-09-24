@@ -414,7 +414,7 @@ Description:
 +   var ios = open ("|cmd")
 +
 + This could return an array of two IO descriptors, one read-only stream
-+ connected to the standard ouput of |cmd.  And one write-only stream
++ connected to the standard output of |cmd.  And one write-only stream
 + connected to the standard input of |cmd.
 +
 + That runs CMD in a subprocess.  Reading from IOS results in accessing
@@ -444,7 +444,7 @@ Description:
 +     }
 +   }
 +
-+ The refernce to `v' really means a sref to the struct value implicitly
++ The reference to `v' really means a sref to the struct value implicitly
 + passed as the first argument to the method.  This is useful and
 + convenient.  However, sometimes it is useful to access to the
 + properties of the struct, like its size, and for that it is necessary
@@ -1055,7 +1055,7 @@ Description:
 +
 + (poke*) .rollback
 
-Summary: Generalized endiannes support
+Summary: Generalized endianness support
 Component: IO
 Kind: ENH
 Priority: 2

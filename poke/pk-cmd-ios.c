@@ -135,7 +135,7 @@ pk_cmd_proc (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
     }
   free (handler);
 
-  /* Allright, now open sub spaces for the process' maps, if
+  /* All right, now open sub spaces for the process' maps, if
      requested.  */
   if (uflags & PK_PROC_F_MAPS || uflags & PK_PROC_F_MAPS_ALL)
     pk_open_proc_maps (ios_id, pid, uflags & PK_PROC_F_MAPS_ALL);

@@ -185,7 +185,7 @@ struct
  *
  * Any time a file is written to, a new node is created for that data.
  * If the data overwrites the data that is held by some previous node,
- * that previous node may become obselete, and may be garbage collected.
+ * that previous node may become obsolete, and may be garbage collected.
  *
  */
 type JFFS2_Inode =
@@ -495,7 +495,7 @@ struct
     }
 };
 
-/* Nothing below here is part of the JFFS2 spec. Just utility types and funcitons */
+/* Nothing below here is part of the JFFS2 spec. Just utility types and functions */
 
 type JFFS2_Entry =
 struct

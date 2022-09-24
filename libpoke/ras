@@ -970,7 +970,7 @@ BEGIN {
         saw_return++
 
     # Some instructions have side-effects in the lexical environment.
-    # Proces them.
+    # Process them.
     if (i_id == "PKL_INSN_PUSHF")
         push_frame()
     if (i_id == "PKL_INSN_POPF")

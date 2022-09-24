@@ -87,7 +87,7 @@ pk_map_parsed_map pk_map_parse_file (const char *filename, FILE *fp);
 
 void pk_map_free_parsed_map (pk_map_parsed_map parsed_map);
 
-/* The following type is used internall in pk-map-tab.y.  Needs to be
+/* The following type is used internally in pk-map-tab.y.  Needs to be
    here because the generate dpk-map-tab.h needs access to it, and it
    is included in both the .y and .l files.  */
 

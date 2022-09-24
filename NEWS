@@ -83,7 +83,7 @@ See the manual for detailed information.
      built without hserver support.  Now it is.
    - poke can now be cross-built.
    - Auto-completion now works in subcommands.
-   - Don't panic whan an attribute is not known at compile-time.
+   - Don't panic when an attribute is not known at compile-time.
    - Fix ICE related to completeness of trimmed arrays.
    - Restore proper behavior with -l and unhandled exceptions.
    - Make --disable-gui the default.
@@ -600,8 +600,8 @@ See the manual for detailed information.
     inferior process being debugged.  This is achieved by registering
     callbacks in the foreign IO interface.
 
-  - libpoke now provides an inteface to register "alien tokens".  This
-    is also useful when integrating libpoke in third-party
+  - libpoke now provides an interface to register "alien tokens".
+    This is also useful when integrating libpoke in third-party
     applications.  For example, in the GDB integration this interface
     has been used to allow users to refer to the value of GDB symbols
     in Poke programs using this syntax:
@@ -800,7 +800,7 @@ See the manual for detailed information.
   - Properly print > 2^32 addresses in `dump'
   - Other minor fixes.
 * Other changes
-  - The JSON MI machinery has been rewriten and much improved.
+  - The JSON MI machinery has been rewritten and much improved.
   - More tests in several areas.
 
  Version 1.1 (21 March 2021)

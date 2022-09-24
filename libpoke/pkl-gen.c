@@ -1868,8 +1868,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_try_stmt)
       pkl_ast_node arg = PKL_AST_TRY_STMT_ARG (try_stmt);
       pkl_ast_node exp = PKL_AST_TRY_STMT_EXP (try_stmt);
 
-      /* Push the exception that will be catched by the sentence.  This is
-         EXP if it is defined, or E_generic if it isnt.  */
+      /* Push the exception that will be caught by the sentence.  This
+         is EXP if it is defined, or E_generic if it isn't.  */
       if (exp)
         PKL_PASS_SUBPASS (exp);
       else

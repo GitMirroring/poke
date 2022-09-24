@@ -614,7 +614,7 @@ These are explained in the following sections.
 You can evaluate a Poke statement by typing it at the REPL's prompt.
 Only a single statement, including expression statements
 (@pxref{Expression Statements}) and compound statements
-(@pxref{Compound Statements}), can be evaluted this way.  It needs not
+(@pxref{Compound Statements}), can be evaluated this way.  It needs not
 be terminated by a semicolon.
 
 When an expression is evaluated, the result of the evaluation is
@@ -5883,7 +5883,7 @@ wrong field:
 unhandled invalid element exception
 @end example
 
-We get a run-time exception. This kind of errors cannot be catched at
+We get a run-time exception. This kind of errors cannot be caught at
 compile time, since both @code{integer32} and @code{integer64} are
 potentially valid fields in the union value.
 
@@ -6306,7 +6306,7 @@ programs using the following attributes:
 0
 @end example
 
-Thats it, @code{ehdr} is mapped at offset zero byte in the IO space
+That's it, @code{ehdr} is mapped at offset zero byte in the IO space
 @code{#0}, which corresponds to @code{foo.o}:
 
 @example
@@ -7981,7 +7981,7 @@ Where @var{ios} is the IO space from which save bytes.
 @var{to} and @var{size} are byte offsets in the IO space determining
 the range of bytes to save.
 
-By default the output file is truncted if it already exists.  If
+By default the output file is truncated if it already exists.  If
 @var{append_p} is true, then the data is instead appended at the end
 of the file.
 
@@ -11585,7 +11585,7 @@ No labels are allowed in the fields of integral structs.  This is not
 a fundamental limitation, and may be supported at some point.
 @item
 No integral structs are supported inside other integral structs.  This
-is purely because of lazyness on my part.  This will be eventually
+is purely because of laziness on my part.  This will be eventually
 supported.
 @item
 No optional fields are supported in integral structs.  Support for
@@ -11644,7 +11644,7 @@ violation exception is selected.
 
 It makes little sense to mark union types as pinned, since whatever
 alternative is chosen will always be located at the beginning of the
-union.  To avoid unneccesary confusion, the Poke compiler will emit an
+union.  To avoid unnecesary confusion, the Poke compiler will emit an
 error if you try to tag an union as pinned.
 
 Similarly, labels are not allowed in union alternatives.
@@ -13027,7 +13027,7 @@ is written to the underlying IO device.
 If the IO space specified to @code{close} doesn't exist then an
 @code{E_no_ios} exception is raised.
 
-If errors occured while closing the IO space, then @code{E_ios}
+If errors occurred while closing the IO space, then @code{E_ios}
 exception is raised.
 
 @node flush

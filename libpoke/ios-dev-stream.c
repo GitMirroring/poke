@@ -168,7 +168,7 @@ ios_dev_stream_pread (void *iod, void *buf, size_t count, ios_dev_off offset)
   if (ios_buffer_get_begin_offset (buffer) > offset)
     return IOD_EOF;
 
-  /* If the requsted range is in the buffer, return it. */
+  /* If the requested range is in the buffer, return it. */
   if (ios_buffer_get_end_offset (buffer) >= offset + count)
     return ios_buffer_pread (buffer, buf, count, offset);
 

@@ -235,7 +235,7 @@ Indu Bhagat             <indu.bhagat@oracle.com>
 
    In order to improve the user's experience, we are using fairly
    recent versions of bison.  Bison 3.6.0 or later is required to
-   boostrap and build poke from git.
+   bootstrap and build poke from git.
 
 ** GNU Jitter
 
@@ -244,7 +244,7 @@ Indu Bhagat             <indu.bhagat@oracle.com>
    http://git.ageinghacker.net/jitter and its home page is
    https://www.gnu.org/software/jitter/.
 
-   The appropriate version of Jitter is downloaded and boostrapped
+   The appropriate version of Jitter is downloaded and bootstrapped
    automatically by Poke's =bootstrap= script, which frees the user
    from the annoyance of installing Jitter as a dependency.
 
@@ -364,7 +364,7 @@ Indu Bhagat             <indu.bhagat@oracle.com>
 *** Use _p for Predicates
 
     We use the venerable convention of using a suffix =_p= (for
-    predicate) when naming variables and struct fiels that contain
+    predicate) when naming variables and struct fields that contain
     booleans.
 
     We do not always do this, but it is especially important in cases
@@ -474,7 +474,7 @@ Indu Bhagat             <indu.bhagat@oracle.com>
 ** Run selected tests
 
    Tests are categorized in different sub-directories. You can run
-   run tests of a signle category by runing
+   run tests of a single category by running
      : make check RUNTESTFLAGS=CATEGORY.exp
    For example, to run tests of =pkl= in =poke.pkl= sub-directory, run:
      : make check RUNTESTFLAGS=pkl.exp
@@ -1816,7 +1816,7 @@ have a testsuite in =testsuite/poke.FOO= with a driver
    Valgrind gets easily confused by the GCs tampering with the stack,
    and emits a lot of spurious warnings.  Fortunately it is possible
    to tell memcheck to omit these warnings: the file
-   etc/boehm-gc.suppresions contains a list of suppressions.
+   etc/boehm-gc.suppressions contains a list of suppressions.
 
    Invoke valgrind with =--suppressions=etc/boehm-gc.suppressions=.
 
