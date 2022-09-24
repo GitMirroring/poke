@@ -994,6 +994,8 @@ EXTRA_DIST = \
   poke.pkl/cast-struct-diag-1.pk \
   poke.pkl/cast-struct-diag-2.pk \
   poke.pkl/cast-struct-diag-3.pk \
+  poke.pkl/cast-union-diag-1.pk \
+  poke.pkl/cast-union-diag-2.pk \
   poke.pkl/cast-void-diag-1.pk \
   poke.pkl/cdiv-integers-1.pk \
   poke.pkl/cdiv-integers-2.pk \

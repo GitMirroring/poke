@@ -1,3 +1,13 @@
+2022-09-24  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-typify.c (pkl_typify1_ps_cast): Do not allow casts
+	to unions.
+	* testsuite/poke.pkl/cast-union-diag-1.pk: New test.
+	* testsuite/poke.pkl/cast-union-diag-2.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+	* doc/poke.texi (Casting Structs): Note that casts to unions are
+	not allowed.
+
 2022-09-23  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* etc/poke.rec (with_temp_ios): Removed as DONE.

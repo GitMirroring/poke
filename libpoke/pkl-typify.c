@@ -477,12 +477,16 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_cast)
         INVALID_CAST ("invalid cast to string");
       break;
     case PKL_TYPE_STRUCT:
+      /* We are not supporting casts to unions yet.  */
+      if (PKL_AST_TYPE_S_UNION_P (to_type))
+        INVALID_CAST ("invalid cast to union");
+
       /* Only structs can be casted to regular structs.  Integral
          values can also be casted to integral structs.  */
       if (from_type_code != PKL_TYPE_STRUCT
           && !(PKL_AST_TYPE_S_ITYPE (to_type)
                && from_type_code == PKL_TYPE_INTEGRAL))
-        INVALID_CAST ("invalid cast to struct\n");
+        INVALID_CAST ("invalid cast to struct");
       break;
     case PKL_TYPE_INTEGRAL:
       if (!pkl_ast_type_integrable_p (from_type))

@@ -1,0 +1,5 @@
+/* { dg-do compile } */
+
+type Union = union { int i : i > 10; string s; };
+
+"foo" as Union; /* { dg-error "invalid cast" } */

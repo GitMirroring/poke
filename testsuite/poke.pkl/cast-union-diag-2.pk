@@ -1,0 +1,6 @@
+/* { dg-do compile } */
+
+type U = union { int i : i > 10; string s; };
+type S = struct { int j; };
+
+S {} as U; /* { dg-error "invalid cast" } */

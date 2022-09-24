@@ -11786,7 +11786,7 @@ For obvious reasons, optional fields are not allowed in unions.
 @subsection Casting Structs
 
 It is possible to cast a struct of some particular type into another
-struct type.   Examples:
+struct type (but not to an union.)  Examples:
 
 @example
 (poke) type Foo = struct @{ int i; int j; @};
