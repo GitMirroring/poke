@@ -1,3 +1,8 @@
+2022-09-25  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-rt.pk: Do not set the CWD to load_path here.
+	* poke/poke.pk: Do it here instead.
+
 2022-09-24  Arsen Arsenović   <arsen@aarsen.me>
 
 	* poke/poke.c: Prefer $XDG_CONFIG_HOME to $XDG_CONFIG_DIRS, even
