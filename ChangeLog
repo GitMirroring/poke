@@ -1,3 +1,10 @@
+2022-09-26  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-gen.pks (function struct_constructor): Do not alter
+	items that are already on the stack because `raise' will restore
+	the height of stack and the caller will see garbage on the stack.
+	(function struct_deintegrator): Likewise.
+
 2022-09-25  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-rt.pk: Do not set the CWD to load_path here.

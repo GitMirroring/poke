@@ -1436,6 +1436,7 @@
         .function struct_constructor @type_struct
         prolog
         pushf 5
+        dup                     ; SCT SCT
         regvar $sct             ; SCT
         ;; Initialize $nfield to 0UL
         push ulong<64>0
@@ -1452,8 +1453,10 @@
         push ulong<64>1
         mko
         regvar $OFFSET
-        ;; The struct is not mapped, so set its bit-offset to 0UL.
-        push ulong<64>0          ; 0UL
+        ;; This is the offset of struct (used in mksct instruction at
+        ;; the end of this function), and because the struct is
+        ;; not mapped, set its bit-offset to 0UL.
+        push ulong<64>0         ; SCT 0UL
         ;; Iterate over the fields of the struct type.
  .c size_t vars_registered = 0;
         .let @field
@@ -1737,8 +1740,9 @@
         .c PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPE);
         .c PKL_PASS_SUBPASS (@type_struct);
         .c PKL_GEN_POP_CONTEXT;
-                                ; null [OFF STR VAL]... NMETHOD NFIELD TYP
-        mksct                   ; SCT
+                                ; SCT 0UL [OFF STR VAL]... NMETHOD NFIELD TYP
+        mksct                   ; SCT SCT
+        nip                     ; SCT
         popf 1
         return
         .end
@@ -2174,9 +2178,10 @@
         .let @itype = PKL_AST_TYPE_S_ITYPE (@type_struct)
         .let @uint64_type = pkl_ast_make_integral_type (PKL_PASS_AST, 64, 0)
         .e zero_extend_64 @itype
-        regvar $ival
+        dup                     ; IVAL IVAL
+        regvar $ival            ; IVAL
         ;; This is the offset argument to the mksct instruction below.
-        push ulong<64>0         ; OFF
+        push ulong<64>0         ; IVAL OFF
         ;; Iterate over the struct named fields creating triplets for the
         ;; fields, whose value is extracted from IVAL.  We know that
         ;; IVAL has the same width than the struct fields all combined.
@@ -2207,30 +2212,31 @@
  .c     }
         .let #bit_offset = pvm_make_int (bit_offset, 32)
         ;; Extract the value for this field from IVAL
-        pushvar $ival           ; IVAL
+        pushvar $ival           ; IVAL IVAL
         .e deint_extract_field_value @uint64_type, @itype, @field_type, #bit_offset
         ;; Create the triplet with the converted value.
         .let #field_name = pvm_make_string (PKL_AST_IDENTIFIER_POINTER (@type_field_name))
         .let #field_offset = pvm_make_ulong (bit_offset, 64)
-        push #field_offset      ; CVAL OFFSET
-        push #field_name        ; CVAL OFFSET NAME
-        rot                     ; OFFSET NAME CVAL
+        push #field_offset      ; IVAL CVAL OFFSET
+        push #field_name        ; IVAL CVAL OFFSET NAME
+        rot                     ; IVAL OFFSET NAME CVAL
  .c     bit_offset += field_type_size;
  .c     i++;
  .c }
-                                ; OFF [TRIPLETS...]
+                                ; IVAL OFF [TRIPLETS...]
         .let #nfields = pvm_make_ulong (i, 64)
-        push ulong<64>0         ; OFF [TRIPLETS...] NMETHODS
-        push #nfields           ; OFF [TRIPLETS...] NMETHODS NFIELDS
+        push ulong<64>0         ; IVAL OFF [TRIPLETS...] NMETHODS
+        push #nfields           ; IVAL OFF [TRIPLETS...] NMETHODS NFIELDS
   .c    PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPE);
   .c    PKL_PASS_SUBPASS (@type_struct);
   .c    PKL_GEN_POP_CONTEXT;
-                                ; OFF [TRIPLETS...] NMETHODS NFIELDS TYPE
+                                ; IVAL OFF [TRIPLETS...] NMETHODS NFIELDS TYPE
         mksct
   .c    PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_CONSTRUCTOR);
   .c    PKL_PASS_SUBPASS (@type_struct);
   .c    PKL_GEN_POP_CONTEXT;
-                                ; SCT
+                                ; IVAL SCT
+        nip                     ; SCT
         ;; At this point the anonymous fields in the struct created above are
         ;; all zero.  This is because we coudln't include them in the argument
         ;; to the struct constructor.  So now we have to iterate over the
