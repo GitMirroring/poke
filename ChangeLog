@@ -1,3 +1,8 @@
+2022-09-24  Arsen Arsenović   <arsen@aarsen.me>
+
+	* poke/poke.c: Prefer $XDG_CONFIG_HOME to $XDG_CONFIG_DIRS, even
+	when unset.
+
 2022-09-24  Jose E. Marchesi  <jemarch@gnu.org>
 
 	BZ 27481

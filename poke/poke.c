@@ -698,16 +698,31 @@ initialize_user (void)
      use all the : separated paths in that variable to find
      pokerc.conf.  Else, try to load /etc/xdg/poke/pokerc.conf.  */
   {
-    const char *xdg_config_home = getenv ("XDG_CONFIG_HOME");
+    char *xdg_config_home = getenv ("XDG_CONFIG_HOME");
     const char *xdg_config_dirs = getenv ("XDG_CONFIG_DIRS");
 
     if (xdg_config_home == NULL)
-      xdg_config_home = "";
+      {
+        /* If unset, the default value of $HOME/.config should be preferred to
+           the paths in $XDG_CONFIG_DIRS. From the standard:
+
+           A user-specific version of the configuration file may be created in
+           $XDG_CONFIG_HOME/subdir/filename, taking into account the default
+           value for $XDG_CONFIG_HOME if $XDG_CONFIG_HOME is not set. */
+        xdg_config_home = pk_str_concat (getenv("HOME"), "/.config", NULL);
+        pk_assert_alloc (xdg_config_home);
+      }
+    else
+      {
+        /* strdup() the user-provided value, to free it below. */
+        xdg_config_home = strdup(xdg_config_home);
+        pk_assert_alloc (xdg_config_home);
+      }
 
     if (xdg_config_dirs == NULL)
       xdg_config_dirs = "/etc/xdg";
 
-    char *config_path = pk_str_concat (xdg_config_dirs, ":", xdg_config_home, NULL);
+    char *config_path = pk_str_concat (xdg_config_home, ":", xdg_config_dirs, NULL);
     pk_assert_alloc (config_path);
 
     char *dir = strtok (config_path, ":");
@@ -736,6 +751,7 @@ initialize_user (void)
     while ((dir = strtok (NULL, ":")) != NULL);
 
     free (config_path);
+    free (xdg_config_home);
   }
 }
 
