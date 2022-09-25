@@ -1,0 +1,13 @@
+/* { dg-do run } */
+
+type Foo = struct { uint<16> a; uint<16> b; };
+
+var foo = Foo {};
+
+foo.a:::foo.b = 0xdeadbeefU;
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {foo.a} } */
+/* { dg-output "0xdeadUH" } */
+/* { dg-command {foo.b} } */
+/* { dg-output "\n0xbeefUH" } */

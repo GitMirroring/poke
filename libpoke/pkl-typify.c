@@ -3050,7 +3050,10 @@ PKL_PHASE_END_HANDLER
 
 /* The type of the r-value in an assignment statement should match the
    type of the l-value.
-*/
+
+   Additionally, when assigning to a l-value bconc expression the
+   width of the integral at the r-value should match exactly with the
+   width of the bconc expression at the l-value.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_ass_stmt)
 {
@@ -3074,6 +3077,29 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_ass_stmt)
       free (expected_type);
       PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
+    }
+
+  if (PKL_AST_CODE (lvalue) == PKL_AST_EXP
+      && PKL_AST_EXP_CODE (lvalue) == PKL_AST_OP_BCONC)
+    {
+      size_t lvalue_width, rvalue_width;
+
+      assert (PKL_AST_TYPE_CODE (lvalue_type) == PKL_TYPE_INTEGRAL);
+      assert (PKL_AST_TYPE_CODE (exp_type) == PKL_TYPE_INTEGRAL);
+
+      lvalue_width = PKL_AST_TYPE_I_SIZE (lvalue_type);
+      rvalue_width = PKL_AST_TYPE_I_SIZE (exp_type);
+
+      if (lvalue_width != rvalue_width)
+        {
+          PKL_ERROR (PKL_AST_LOC (exp),
+                     "invalid integral value in r-value\n"
+                     "expected an integral value of exactly %lu bits, got %lu bits",
+                     lvalue_width,
+                     rvalue_width);
+          PKL_TYPIFY_PAYLOAD->errors++;
+          PKL_PASS_ERROR;
+        }
     }
 }
 PKL_PHASE_END_HANDLER

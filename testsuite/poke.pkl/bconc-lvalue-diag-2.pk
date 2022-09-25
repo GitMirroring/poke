@@ -1,0 +1,7 @@
+/* { dg-do compile } */
+
+var a = 0UH;
+var b = 0UN;
+var c = 0UN;
+
+a:::b:::c = 0xdeadbeef; /* { dg-error ".*\n.*bits" } */

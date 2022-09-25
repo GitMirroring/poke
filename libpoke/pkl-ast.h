@@ -501,6 +501,9 @@ pkl_ast_node pkl_ast_make_ternary_exp (pkl_ast ast,
 
 const char *pkl_attr_name (enum pkl_ast_attr attr);
 
+pkl_ast_node pkl_ast_handle_bconc_ass_stmt (pkl_ast ast,
+                                            pkl_ast_node exp);
+
 /* PKL_AST_COND_EXP nodes represent conditional expressions, having
    exactly the same semantics than the C tertiary operator:
 
@@ -1547,11 +1550,15 @@ pkl_ast_node pkl_ast_make_incrdecr (pkl_ast ast,
 
    If BUILTIN is not PKL_AST_BUILTIN_NONE, then this compound
    statement is a compiler builtin, i.e. specific code will be
-   generated for this node.  In this case, STMTS should be NULL.  */
+   generated for this node.  In this case, STMTS should be NULL.
+
+   If FRAMELESS_P is true then the compound statement will not use its
+   own lexical frame.  */
 
 #define PKL_AST_COMP_STMT_STMTS(AST) ((AST)->comp_stmt.stmts)
 #define PKL_AST_COMP_STMT_BUILTIN(AST) ((AST)->comp_stmt.builtin)
 #define PKL_AST_COMP_STMT_NUMVARS(AST) ((AST)->comp_stmt.numvars)
+#define PKL_AST_COMP_STMT_FRAMELESS_P(AST) ((AST)->comp_stmt.frameless_p)
 
 #define PKL_AST_BUILTIN_NONE 0
 #define PKL_AST_BUILTIN_PRINT 1
@@ -1604,6 +1611,7 @@ struct pkl_ast_comp_stmt
   union pkl_ast_node *stmts;
   int builtin;
   int numvars;
+  int frameless_p;
 };
 
 pkl_ast_node pkl_ast_make_comp_stmt (pkl_ast ast, pkl_ast_node stmts);

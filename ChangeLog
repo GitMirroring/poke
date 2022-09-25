@@ -1,3 +1,28 @@
+2022-09-26  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-ast.h (struct pkl_ast_comp_stmt): New field
+	frameless_p.
+	(PKL_AST_COMP_STMT_FRAMELESS_P): Define.
+	* libpoke/pkl-gen.c (pkl_gen_pr_comp_stmt): Do not generate a
+	pushf for frameless compound statements.
+	(pkl_gen_ps_comp_stmt): Likewise for popf.
+	* libpoke/pkl-ast.h: Prototype for pkl_ast_handle_bconc_ass_stmt.
+	* libpoke/pkl-ast.c (pkl_ast_handle_bconc_ass_stmt): New function.
+	* libpoke/pkl-trans.c (pkl_trans2_pr_ass_stmt): New rule.
+	(pkl_phase_trans2): Register new rule.
+	* libpoke/pkl-typify.c (pkl_typify1_ps_ass_stmt): Check the width
+	of r-values assigned to bconc expressions.
+	* testsuite/poke.pkl/bconc-lvalue-diag-1.pk: New test.
+	* testsuite/poke.pkl/bconc-lvalue-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/bconc-lvalue-1.pk: Likewise.
+	* testsuite/poke.pkl/bconc-lvalue-2.pk: Likewise.
+	* testsuite/poke.pkl/bconc-lvalue-3.pk: Likewise.
+	* testsuite/poke.pkl/bconc-lvalue-4.pk: Likewise.
+	* testsuite/poke.pkl/bconc-lvalue-5.pk: Likewise.
+	* testsuite/poke.pkl/bconc-lvalue-6.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+	* doc/poke.texi (Bit Assignments): New section.
+
 2022-09-26  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* pickles/riscv.pk (RV32_InsnFmt_S): Add computed field `imm'

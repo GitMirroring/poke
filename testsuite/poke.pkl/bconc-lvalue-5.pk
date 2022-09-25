@@ -1,0 +1,15 @@
+/* { dg-do run } */
+
+var a = 0UH;
+var b = 0UN;
+var c = 0UN;
+
+a:::b:::c = 0xdeadbeef as uint<24>;
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {a} } */
+/* { dg-output "0xadbeUH" } */
+/* { dg-command {b} } */
+/* { dg-output "\n0xeUN" } */
+/* { dg-command {c} } */
+/* { dg-output "\n0xfUN" } */

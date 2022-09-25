@@ -12188,6 +12188,15 @@ value:
 @node Assignments
 @section Assignments
 @cindex assignment
+
+@menu
+* Simple Assignments::          Changing the value of variables.
+* Bit Assignments::             Bit-concatenation expressions in l-value.
+@end menu
+
+@node Simple Assignments
+@subsection Simple Assignments
+
 The assignment statement has the form:
 
 @example
@@ -12219,6 +12228,55 @@ Examples:
 (poke) string @@ str.offset = "foo"
 (poke) int[2] @@ 23#B = [1,2]
 (poke) Packet @@ 0#B = Packet @{ @dots{} @}
+@end example
+
+@node Bit Assignments
+@subsection Bit Assignments
+
+@dfn{Bit assignment} statements have the form:
+
+@example
+@var{bconc_exp} = @var{exp}
+@end example
+
+@noindent
+Where @var{bconc_exp} is an expression composed by bit-concatenation
+operators and operands that should be valid l-values themselves, and
+@var{exp} is an expression whose type must be integral and whose width
+must correspond exactly to the width of the integral type of
+@var{bconc_exp}.
+
+For example, consider this code:
+
+@example
+var a = 0UH;
+var b = 0UH;
+
+a:::b = 0xbeef;
+@end example
+
+The assignment above updates the value of the variable @code{a} to be
+@code{0xbeUH} and the value of the variable @code{b} to be
+@code{0xefUH}.  Note how the signedness of @var{bconc_exp} and
+@var{exp} may differ.
+
+Any valid l-value can be used as an operand of the bit-concatenation
+operators in @var{bconc_exp}.  For example:
+
+@example
+var a = [0UH,0UH];
+
+a[0]:::a[1] = 0xbeef;
+@end example
+
+@noindent
+or, using struct fields:
+
+@example
+type Foo = struct @{ uint<16> hi; uint<16> lo; @};
+
+var f = Foo @{@};
+f.hi:::f.lo = 0xbeef;
 @end example
 
 @node Compound Statements

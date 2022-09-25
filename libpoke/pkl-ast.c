@@ -2745,6 +2745,104 @@ pkl_ast_format_loc (pkl_ast ast, pkl_ast_loc loc)
   return s;
 }
 
+/* Transform l-value bconc operators from this:
+
+   a:::b:::...:::z = EXP;
+
+   Into this:
+
+   {
+     a = EXP .>> D_A;
+     b = EXP .>> D_B;
+     ...
+     z = EXP;
+   }
+
+   Where a, b, ..., z are valid l-values as per pkl_ast_lvalue_p.
+
+   This function assumes that the total width of a, b, ..., z doesn't
+   exceeds 64-bit.  Both M_ and D_ values can be determined at
+   compile-time.  */
+
+static int
+pkl_ast_handle_bconc_ass_stmt_1 (pkl_ast ast,
+                                 pkl_ast_node comp_stmt,
+                                 pkl_ast_node bconc_exp,
+                                 pkl_ast_node rvalue_exp,
+                                 int shift)
+{
+  int i;
+
+  for (i = 0; i < 2; ++i)
+    {
+      pkl_ast_node operand = PKL_AST_EXP_OPERAND (bconc_exp, i);
+
+      switch (PKL_AST_CODE (operand))
+        {
+        case PKL_AST_EXP:
+          /* This is another bit-concatenation operand.  Recurse.  */
+          shift = pkl_ast_handle_bconc_ass_stmt_1 (ast, comp_stmt,
+                                                   operand, rvalue_exp, shift);
+          break;
+        default:
+          {
+            /* This is an l-value.  Append an assignment of a masked
+               value with the given shift and increase the shift.  */
+            pkl_ast_node ass_stmt;
+            pkl_ast_node rvalue;
+            pkl_ast_node shift_node, shift_node_type;
+            pkl_ast_node operand_type = PKL_AST_TYPE (operand);
+            pkl_ast_node rvalue_exp_type = PKL_AST_TYPE (rvalue_exp);
+
+            /* Decrease shift by the size of the operand.  */
+            assert (PKL_AST_TYPE_CODE (operand_type) == PKL_TYPE_INTEGRAL);
+            shift -= PKL_AST_TYPE_I_SIZE (operand_type);
+
+            shift_node_type = pkl_ast_make_integral_type (ast, 32, 1);
+            shift_node = pkl_ast_make_integer (ast, shift);
+            PKL_AST_TYPE (shift_node) = ASTREF (shift_node_type);
+
+            rvalue = pkl_ast_make_binary_exp (ast,
+                                              PKL_AST_OP_SR,
+                                              rvalue_exp, shift_node);
+            PKL_AST_TYPE (rvalue) = ASTREF (rvalue_exp_type);
+
+            if (!pkl_ast_type_equal_p (operand_type, rvalue_exp_type))
+              {
+                rvalue = pkl_ast_make_cast (ast, operand_type, rvalue);
+                PKL_AST_TYPE (rvalue) = ASTREF (operand_type);
+              }
+
+            ass_stmt = pkl_ast_make_ass_stmt (ast, operand, rvalue);
+
+            PKL_AST_COMP_STMT_STMTS (comp_stmt)
+              = pkl_ast_chainon (PKL_AST_COMP_STMT_STMTS (comp_stmt),
+                                 ass_stmt);
+            break;
+          }
+        }
+    }
+
+  return shift;
+}
+
+pkl_ast_node
+pkl_ast_handle_bconc_ass_stmt (pkl_ast ast, pkl_ast_node ass_stmt)
+{
+  pkl_ast_node comp_stmt = pkl_ast_make_comp_stmt (ast, NULL);
+  pkl_ast_node ass_stmt_exp = PKL_AST_ASS_STMT_EXP (ass_stmt);
+  pkl_ast_node ass_stmt_exp_type = PKL_AST_TYPE (ass_stmt_exp);
+
+  assert (PKL_AST_TYPE_CODE (ass_stmt_exp_type) == PKL_TYPE_INTEGRAL);
+
+  PKL_AST_COMP_STMT_FRAMELESS_P (comp_stmt) = 1;
+  (void) pkl_ast_handle_bconc_ass_stmt_1 (ast, comp_stmt,
+                                          PKL_AST_ASS_STMT_LVALUE (ass_stmt),
+                                          ass_stmt_exp,
+                                          PKL_AST_TYPE_I_SIZE (ass_stmt_exp_type));
+  return comp_stmt;
+}
+
 #ifdef PKL_DEBUG
 
 /* The following macros are commodities to be used to keep the

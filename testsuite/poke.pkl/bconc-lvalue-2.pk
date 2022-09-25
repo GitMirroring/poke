@@ -1,0 +1,11 @@
+/* { dg-do run } */
+
+var a = [0UH,0UH,0UH];
+
+a[0]:::a[2] = 0xdeadbeefU;
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {a[0]} } */
+/* { dg-output "0xdeadUH" } */
+/* { dg-command {a[2]} } */
+/* { dg-output "\n0xbeefUH" } */

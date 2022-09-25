@@ -1,0 +1,13 @@
+/* { dg-do run } */
+
+var a = 0 as int<15>;
+var b = 0 as uint<1>;
+
+a:::b = 0xdeadbeef as uint<16>;
+
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {a} } */
+/* { dg-output ".* 0x5f77" } */
+/* { dg-command {b} } */
+/* { dg-output "\n.* 0x1" } */

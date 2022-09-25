@@ -1768,6 +1768,25 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans2_ps_op_attr)
 }
 PKL_PHASE_END_HANDLER
 
+/* Transform assignment statements to l-value bconc operators into an
+   equivalent sequence of assignments.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_trans2_ps_ass_stmt)
+{
+  pkl_ast_node lvalue = PKL_AST_ASS_STMT_LVALUE (PKL_PASS_NODE);
+
+  if (PKL_AST_CODE (lvalue) == PKL_AST_EXP
+      && PKL_AST_EXP_CODE (lvalue) == PKL_AST_OP_BCONC)
+    {
+      pkl_ast_node repl = pkl_ast_handle_bconc_ass_stmt (PKL_PASS_AST,
+                                                         PKL_PASS_NODE);
+      pkl_ast_node_free (PKL_PASS_NODE);
+      PKL_PASS_NODE = ASTREF (repl);
+      PKL_PASS_RESTART = 1;
+    }
+}
+PKL_PHASE_END_HANDLER
+
 struct pkl_phase pkl_phase_trans2 =
   {
    PKL_PHASE_PS_HANDLER (PKL_AST_SRC, pkl_trans_ps_src),
@@ -1781,6 +1800,7 @@ struct pkl_phase pkl_phase_trans2 =
    PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT_REF, pkl_trans2_ps_struct_ref),
    PKL_PHASE_PS_HANDLER (PKL_AST_CAST, pkl_trans2_ps_cast),
    PKL_PHASE_PS_HANDLER (PKL_AST_INCRDECR, pkl_trans2_ps_incrdecr),
+   PKL_PHASE_PS_HANDLER (PKL_AST_ASS_STMT, pkl_trans2_ps_ass_stmt),
    PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_OFFSET, pkl_trans2_ps_type_offset),
    PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT_TYPE_FIELD, pkl_trans2_ps_struct_type_field),
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_ATTR, pkl_trans2_ps_op_attr),

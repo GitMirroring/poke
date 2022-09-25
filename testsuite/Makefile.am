@@ -913,6 +913,14 @@ EXTRA_DIST = \
   poke.pkl/bconc-int-struct-1.pk \
   poke.pkl/bconc-int-struct-2.pk \
   poke.pkl/bconc-int-struct-3.pk \
+  poke.pkl/bconc-lvalue-1.pk \
+  poke.pkl/bconc-lvalue-2.pk \
+  poke.pkl/bconc-lvalue-3.pk \
+  poke.pkl/bconc-lvalue-4.pk \
+  poke.pkl/bconc-lvalue-5.pk \
+  poke.pkl/bconc-lvalue-6.pk \
+  poke.pkl/bconc-lvalue-diag-1.pk \
+  poke.pkl/bconc-lvalue-diag-2.pk \
   poke.pkl/bnot-diag-1.pk \
   poke.pkl/bnot-integers-1.pk \
   poke.pkl/bnot-integers-2.pk \

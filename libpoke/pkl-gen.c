@@ -739,9 +739,12 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_comp_stmt)
       if (PKL_AST_COMP_STMT_STMTS (comp_stmt) == NULL)
         PKL_PASS_BREAK;
 
-      /* Push a frame into the environment.  */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSHF,
-                    PKL_AST_COMP_STMT_NUMVARS (comp_stmt));
+      if (!PKL_AST_COMP_STMT_FRAMELESS_P (comp_stmt))
+        {
+          /* Push a frame into the environment.  */
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSHF,
+                        PKL_AST_COMP_STMT_NUMVARS (comp_stmt));
+        }
     }
 }
 PKL_PHASE_END_HANDLER
@@ -886,8 +889,14 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_comp_stmt)
         }
     }
   else
-    /* Pop the lexical frame created by the compound statement.  */
-    pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_POPF, 1);
+    {
+      if (!PKL_AST_COMP_STMT_FRAMELESS_P (comp_stmt))
+        {
+          /* Pop the lexical frame created by the compound
+             statement.  */
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_POPF, 1);
+        }
+    }
 }
 PKL_PHASE_END_HANDLER
 
