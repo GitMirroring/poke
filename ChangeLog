@@ -1,5 +1,10 @@
 2022-09-26  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* etc/poke.rec (Support bit-concatenation in l-value): Removed as
+	done.
+
+2022-09-26  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-ast.h (struct pkl_ast_comp_stmt): New field
 	frameless_p.
 	(PKL_AST_COMP_STMT_FRAMELESS_P): Define.

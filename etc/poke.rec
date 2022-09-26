@@ -168,30 +168,6 @@ Description: Generate better code, branching to raise instructions
 +   raise E_ERROR
 + .noerror:
 
-
-Summary: Support bit-concatenation in l-value
-Component: Language
-Kind: ENH
-Priority: 3
-Description:
-+    a::b = c;
-+
-+ Constraints:
-+
-+    c'size == a'size + b'size
-+    c'sign == a'sign
-+
-+ 19:59 <jemarch> defvar a = 0UB;
-+ 19:59 <jemarch> defvar b = 0UB;
-+ 19:59 <jemarch> defvar c = 0UH;
-+ 20:00 <jemarch> instead of writing:
-+ 20:00 <jemarch>  a = (val .>> 24) & 0xff;
-+ 20:00 <jemarch> b = (val .>> 16) & 0xff;
-+ 20:00 <jemarch> c = val & 0xffff;
-+ 20:00 <jemarch> you just write:
-+ 20:00 <jemarch> a:::b:::c = val;
-Target: 3.0
-
 Summary: STRING ~ REGEXP operator
 Component: Language
 Kind: ENH
