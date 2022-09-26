@@ -1,5 +1,18 @@
 2022-09-26  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* pickles/riscv.pk (RV32_InsnFmt_S): Add computed field `imm'
+	(hence add `set_imm' method).
+	(RV32_InsnFmt_B): Likewise.
+	(RV32_InsnFmt_J): Likewise.
+	(RV32_InsnFmt_U): s/imm/imm31_12/. Add computed field `imm'
+	(hence add `set_imm' method).
+	(RV32_InsnFmt_I): s/imm/imm11_0/. Add computed field `imm'
+	(hence add `set_imm' method).
+	(_rv32_i): s/imm/imm11_0/.
+	(_rv32_u): s/imm/imm31_12/.
+
+2022-09-26  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-tab.y (tokens): s/token/%token/.
 	* libpoke/pkl-typify.c (pkl_typify1_ps_cast): Handle integral
 	unions.

@@ -140,6 +140,28 @@ var RV_OPCODES_J = [
   RV32_OPCODE_JAL,
 ];
 
+type RV32_Imm_B = struct int<32>
+  {
+    uint<1>  bit31;
+    uint<18> bits30_13;
+    uint<1>  bit12;
+    uint<1>  bit11;
+    uint<6>  bits10_5;
+    uint<4>  bits4_1;
+    uint<1>  bit0;
+  };
+
+type RV32_Imm_J = struct int<32>
+  {
+    uint<1>  bit31;
+    uint<10> bits30_21;
+    uint<1>  bit20;
+    uint<8>  bits19_12;
+    uint<1>  bit11;
+    uint<10> bits10_1;
+    uint<1>  bit0;
+  };
+
 /* R-type for register-register operations.  */
 type RV32_InsnFmt_R = struct uint<32>
   {
@@ -199,7 +221,7 @@ type RV32_FenceNibble = struct uint<4>
 /* I-type for short immediates and loads.  */
 type RV32_InsnFmt_I = struct uint<32>
   {
-    int<12>   imm;
+    int<12>   imm11_0;
     RV_Reg    rs1;
     RV_Funct3 funct3;
     RV_Reg    rd;
@@ -207,8 +229,15 @@ type RV32_InsnFmt_I = struct uint<32>
                        (opcode == RV32_OPCODE_JALR => funct3 == 0) &&
                        (opcode == RV32_OPCODE_FENCE =>
                          (funct3 == 0 &&
-                         (imm as RV32_FenceNibble) &&
-                         ((imm as uint<8> .>> 4) as RV32_FenceNibble)));
+                         (imm11_0 as RV32_FenceNibble) &&
+                         ((imm11_0 as uint<8> .>> 4) as RV32_FenceNibble)));
+
+    computed int<32> imm;
+
+    method get_imm = int<32>:
+      { return imm11_0; }
+    method set_imm = (int<32> val) void:
+      { imm11_0 = val; }
 
     // arithmetic/logic
     var names_al = [
@@ -219,7 +248,7 @@ type RV32_InsnFmt_I = struct uint<32>
       .[0b110] = "ori",
       .[0b111] = "andi",
       .[0b001] = "slli",
-      .[0b101] = /*arithmetic_p*/ (imm & 0xfe0) == 0x400 ? "srai" : "srli",
+      .[0b101] = /*arithmetic_p*/ (imm11_0 & 0xfe0) == 0x400 ? "srai" : "srli",
     ];
     var names_l = [
       .[0b000] = "lb",
@@ -236,23 +265,21 @@ type RV32_InsnFmt_I = struct uint<32>
 
     method get_name = string:
       { return name; }
-    method get_imm = int<32>:
-      { return imm as int<32> <<. 20 .>> 20;  /* Sign-extend.  */ }
     method as_poke = (int cmd_p = 1) string:
       {
         if (name != "")
           {
             if (opcode == RV32_OPCODE_LOAD)
               return cmd_p ? format ("rv32_%s :rd %u5d :rs1 %u5d :imm %i32d",
-                                     name, rd, rs1, imm)
+                                     name, rd, rs1, get_imm)
                            : format ("rv32_%s (%u5d, %u5d, %i32d)",
-                                     name, rd, rs1, imm);
+                                     name, rd, rs1, get_imm);
 
             if (name in ["slli", "srli", "srai"])
               return cmd_p ? format ("rv32_%s :rd %u5d :rs1 %u5d :shamt %u5d",
-                                      name, rd, rs1, imm & 0x1f)
+                                      name, rd, rs1, imm11_0 & 0x1f)
                            : format ("rv32_%s (%u5d, %u5d, %u5d)",
-                                      name, rd, rs1, imm & 0x1f);
+                                      name, rd, rs1, imm11_0 & 0x1f);
             return cmd_p ? format ("rv32_%s :rd %u5d :rs1 %u5d :imm %i32d",
                                    name, rd, rs1, get_imm)
                          : format ("rv32_%s (%u5d, %u5d, %i32d)",
@@ -260,8 +287,8 @@ type RV32_InsnFmt_I = struct uint<32>
           }
         if (opcode == RV32_OPCODE_FENCE)
           {
-            var l = imm as RV32_FenceNibble,
-                u = (imm as uint<8> .>> 4) as RV32_FenceNibble;
+            var l = imm11_0 as RV32_FenceNibble,
+                u = (imm11_0 as uint<8> .>> 4) as RV32_FenceNibble;
 
             return cmd_p ?
                 format ("rv32_fence :predecessor \"%s\" :successor \"%s\"",
@@ -270,7 +297,7 @@ type RV32_InsnFmt_I = struct uint<32>
                         u.as_string, l.as_string);
           }
         assert (opcode == RV32_OPCODE_SYSTEM);
-        return imm == 0 ? "rv32_ecall ()" : "rv32_ebreak ()";
+        return imm11_0 == 0 ? "rv32_ecall ()" : "rv32_ebreak ()";
       }
     method as_asm = string:
       {
@@ -289,17 +316,17 @@ type RV32_InsnFmt_I = struct uint<32>
                            name,
                            RV32_REGISTER_NAMES[rd],
                            RV32_REGISTER_NAMES[rs1],
-                           shift_p ? imm & 0x1f : get_imm);
+                           shift_p ? imm11_0 & 0x1f : get_imm);
           }
         if (opcode == RV32_OPCODE_FENCE)
           {
-            var l = imm as RV32_FenceNibble,
-                u = (imm as uint<8> .>> 4) as RV32_FenceNibble;
+            var l = imm11_0 as RV32_FenceNibble,
+                u = (imm11_0 as uint<8> .>> 4) as RV32_FenceNibble;
 
             return format ("fence %s, %s", u.as_string, l.as_string);
           }
         assert (opcode == RV32_OPCODE_SYSTEM);
-        return imm == 0 ? "ecall" : "ebreak";
+        return imm11_0 == 0 ? "ecall" : "ebreak";
       }
     method _print = void:
       { print "#<" + as_asm + ">"; }
@@ -315,6 +342,16 @@ type RV32_InsnFmt_S = struct uint<32>
     uint<5>   imm4_0;
     RV_Opcode opcode : opcode in RV_OPCODES_S;
 
+    computed int<32> imm;
+
+    method get_imm = int<32>:
+      { return (imm11_5 ::: imm4_0) as int<12>; }
+    method set_imm = (int<32> val) void:
+      {
+        imm4_0 = val;
+        imm11_5 = val .>> 5;
+      }
+
     var names = [
       .[0b000] = "sb",
       .[0b001] = "sh",
@@ -323,10 +360,6 @@ type RV32_InsnFmt_S = struct uint<32>
 
     method get_name = string:
       { return names[funct3]; }
-    method get_imm = int<32>:
-      {
-        return (imm11_5 ::: imm4_0) as int<32> <<. 20 .>> 20; /* sign-extend */
-      }
     method as_poke = (int cmd_p = 1) string:
       {
         assert (opcode == RV32_OPCODE_STORE);
@@ -360,6 +393,23 @@ type RV32_InsnFmt_B = struct uint<32>
     uint<1>   imm11;
     RV_Opcode opcode : opcode in RV_OPCODES_B;
 
+    computed int<32> imm;
+
+    method get_imm = int<32>:
+      {
+        return (imm12 ::: imm11 ::: imm10_5 ::: imm4_1 ::: (0 as uint<1>)) as
+          int<13>;
+      }
+    method set_imm = (int<32> val) void:
+      {
+        var b = val as RV32_Imm_B;
+
+        imm12   = b.bit12;
+        imm11   = b.bit11;
+        imm10_5 = b.bits10_5;
+        imm4_1  = b.bits4_1;
+      }
+
     var names = [
       .[0b000] = "beq",
       .[0b001] = "bne",
@@ -371,11 +421,6 @@ type RV32_InsnFmt_B = struct uint<32>
 
     method get_name = string:
       { return names[funct3]; }
-    method get_imm = int<32>:
-      {
-        return (imm12 ::: imm11 ::: imm10_5 ::: imm4_1 ::: (0 as uint<1>)) as
-          int<32> <<. 19 .>> 19;  /* Sign-extend.  */
-      }
     method as_poke = (int cmd_p = 1) string:
       {
         assert (opcode == RV32_OPCODE_BRANCH);
@@ -400,14 +445,19 @@ type RV32_InsnFmt_B = struct uint<32>
 /* U-type for long immediates.  */
 type RV32_InsnFmt_U = struct uint<32>
   {
-    uint<20>  imm;
+    uint<20>  imm31_12;
     RV_Reg    rd;
     RV_Opcode opcode : opcode in RV_OPCODES_U;
 
+    computed int<32> imm;
+
+    method get_imm = int<32>:
+      { return (imm31_12 as uint<32>) <<. 12; }
+    method set_imm = (int<32> val) void:
+      { imm31_12 = val .>> 12; }
+
     method get_name = string:
       { return opcode == RV32_OPCODE_LUI ? "lui" : "auipc"; }
-    method get_imm = int<32>:
-      { return ((imm as uint<32>) <<. 12) as int<32>; }
     method as_poke = (int cmd_p = 1) string:
       {
         assert (opcode == RV32_OPCODE_LUI || opcode == RV32_OPCODE_AUIPC);
@@ -423,7 +473,7 @@ type RV32_InsnFmt_U = struct uint<32>
         return format ("%s %s, 0x%i20x",
                        opcode == RV32_OPCODE_LUI ? "lui" : "auipc",
                        RV32_REGISTER_NAMES[rd],
-                       imm);
+                       imm31_12);
       }
     method _print = void:
       { print "#<" + as_asm + ">"; }
@@ -439,13 +489,25 @@ type RV32_InsnFmt_J = struct uint<32>
     RV_Reg    rd;
     RV_Opcode opcode : opcode in RV_OPCODES_J;
 
-    method get_name = string:
-      { return "jal"; }
+    computed int<32> imm;
+
     method get_imm = int<32>:
       {
         return (imm20 ::: imm19_12 ::: imm11 ::: imm10_1 ::: (0 as uint<1>)) as
-          int<32> <<. 11 .>> 11;  /* Sign-extend.  */
+          int<21>;
       }
+    method set_imm = (int<32> val) void:
+      {
+        var j = val as RV32_Imm_J;
+
+        imm20    = j.bit20;
+        imm10_1  = j.bits10_1;
+        imm11    = j.bit11;
+        imm19_12 = j.bits19_12;
+      }
+
+    method get_name = string:
+      { return "jal"; }
     method as_poke = (int cmd_p = 1) string:
       {
         assert (opcode == RV32_OPCODE_JAL);
@@ -523,7 +585,7 @@ fun _rv32_u = (RV_Reg rd, int<32> imm, RV_Opcode opcode) RV32_Insn:
     assert (imm == (imm & ~0xfff), "invalid immediate value");
     return RV32_Insn {
       u = RV32_InsnFmt_U {
-        imm = imm as uint<32> .>> 12,
+        imm31_12 = imm as uint<32> .>> 12,
         rd = rd,
         opcode = opcode,
       },
@@ -537,17 +599,6 @@ fun rv32_lui = (RV_Reg rd, int<32> imm) RV32_Insn:
 // U
 fun rv32_auipc = (RV_Reg rd, int<32> imm) RV32_Insn:
   { return _rv32_u (rd, imm, RV32_OPCODE_AUIPC); }
-
-type RV32_Imm_J = struct int<32>
-  {
-    uint<1>  bit31;
-    uint<10> bits30_21;
-    uint<1>  bit20;
-    uint<8>  bits19_12;
-    uint<1>  bit11;
-    uint<10> bits10_1;
-    uint<1>  bit0;
-  };
 
 // J
 fun rv32_jal = (RV_Reg rd, int<32> imm) RV32_Insn:
@@ -571,17 +622,6 @@ fun rv32_jal = (RV_Reg rd, int<32> imm) RV32_Insn:
       },
     };
   }
-
-type RV32_Imm_B = struct int<32>
-  {
-    uint<1>  bit31;
-    uint<18> bits30_13;
-    uint<1>  bit12;
-    uint<1>  bit11;
-    uint<6>  bits10_5;
-    uint<4>  bits4_1;
-    uint<1>  bit0;
-  };
 
 // B
 fun _rv32_branch =
@@ -641,7 +681,7 @@ fun _rv32_i =
             "immediate value is too large");
     return RV32_Insn {
       i = RV32_InsnFmt_I {
-        imm = imm,
+        imm11_0 = imm,
         rs1 = rs1,
         funct3 = funct3,
         rd = rd,
