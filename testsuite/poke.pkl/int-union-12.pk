@@ -1,0 +1,13 @@
+/* { dg-do run } */
+
+type U = union uint
+  {
+    offset<int,B> a : a < 0#B;
+    uint b : b < 10;
+  };
+
+/* { dg-command {.set obase 10} } */
+/* { dg-command {.set omode flat} } */
+/* { dg-command {var x = -1} } */
+/* { dg-command {x as U} } */
+/* { dg-output "U {a=-1#B}" } */

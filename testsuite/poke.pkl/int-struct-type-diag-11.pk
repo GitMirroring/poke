@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 
-type Foo =  /* { dg-error "integral" } */
-  union int<32>
+type Foo =
+  struct int<32>
   {
+    int a;
+    string s; /* { dg-error "invalid field.*\n.*expected integral, offset, integral struct or union" } */
   };

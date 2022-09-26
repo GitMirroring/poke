@@ -1,0 +1,20 @@
+/* { dg-do run } */
+
+type U = union int
+  {
+    struct int
+    {
+      struct int
+      {
+        uint<16> a : a != 0;
+        uint<16> b;
+      } x;
+    } y;
+  };
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {.set omode flat} } */
+/* { dg-command {.set endian little} } */
+/* { dg-command {var x = 0xdeadbeef} } */
+/* { dg-command {x as U} } */
+/* { dg-output "U {y=struct {x=struct {a=0xdeadUH,b=0xbeefUH}}}" } */

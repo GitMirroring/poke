@@ -390,7 +390,7 @@ load_module (struct pkl_parser *parser,
 %token ENUM              _("keyword `enum'")
 %token <integer> PINNED  _("keyword `pinned'")
 %token STRUCT            _("keyword `struct'")
-token <integer> UNION    _("keyword `union'")
+%token <integer> UNION   _("keyword `union'")
 %token CONST             _("keyword `const'")
 %token CONTINUE          _("keyword `continue'")
 %token ELSE              _("keyword `else'")

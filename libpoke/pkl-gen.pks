@@ -2108,6 +2108,77 @@
         return
         .end
 
+;;; RAS_FUNCTION_UNION_INTEGRATOR @type_struct
+;;; ( VAL -- IVAL )
+;;;
+;;; Assemble a function that, given an integral union, returns
+;;; its integral value.
+;;;
+;;; Macro-arguments:
+;;;
+;;; @type_struct is a pkl_ast_node with the type of the struct
+;;; passed in the stack.
+
+        .function union_integrator @type_struct
+        prolog
+        pushf 0
+        .let @itype = PKL_AST_TYPE_S_ITYPE (@type_struct)
+        .let @field
+  .c for (@field = PKL_AST_TYPE_S_ELEMS (@type_struct);
+  .c      @field;
+  .c      @field = PKL_AST_CHAIN (@field))
+  .c {
+  .c  if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD)
+  .c    continue;
+        .label .alternative_failed
+        .let @field_name = PKL_AST_STRUCT_TYPE_FIELD_NAME (@field)
+        .let #field_name_str \
+          = pvm_make_string (PKL_AST_IDENTIFIER_POINTER (@field_name))
+        push PVM_E_ELEM          ; SCT EXC
+        pushe .alternative_failed ; SCT
+        ;; Note anonymous members are not allowed in unions.
+        push #field_name_str     ; SCT FNAME
+        sref                     ; SCT FNAME VAL
+        pope
+        nip2                     ; VAL
+        .let @field_type = PKL_AST_STRUCT_TYPE_FIELD_TYPE (@field)
+        ;; Create the integral value based on the type of field.
+        ;; Due to simplicity of integration of unions (there's only one
+        ;; active field, no anonymous/absent field, etc.), I'm not
+        ;; re-using any code from struct_integrator to keep things
+        ;; simpler and more efficient.
+  .c  if (PKL_AST_TYPE_CODE (@field_type) == PKL_TYPE_INTEGRAL)
+  .c  {
+        nton @field_type, @itype ; NUM IVAL
+  .c  }
+  .c  else if (PKL_AST_TYPE_CODE (@field_type) == PKL_TYPE_OFFSET)
+  .c  {
+        .let @btype = PKL_AST_TYPE_O_BASE_TYPE (@field_type)
+        ogetm                   ; OFF MAG
+        nton @btype, @itype     ; OFF MAG IVAL
+        nip                     ; OFF IVAL
+  .c  }
+  .c  else if (PKL_AST_TYPE_CODE (@field_type) == PKL_TYPE_STRUCT)
+  .c  {
+  .c    PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_INTEGRATOR);
+  .c    PKL_PASS_SUBPASS (@field);
+  .c    PKL_GEN_POP_CONTEXT;
+        .let @field_itype = PKL_AST_TYPE_S_ITYPE (@field_type)
+        nton @field_itype, @itype ; SCT IVAL
+  .c  }
+                                ; VAL IVAL
+        nip                     ; IVAL
+        ba .done
+.alternative_failed:
+                                ; SCT EXC
+        drop
+  .c }
+        ;; Impossible to reach here!
+.done:
+        popf 1
+        return
+        .end
+
 ;;; RAS_MACRO_DEINT_EXTRACT_FIELD_VALUE @uint64_type @itype @field_type #bit_offset
 ;;; ( IVAL -- EVAL )
 ;;;
@@ -2273,6 +2344,125 @@
  .c     bit_offset += field_type_size;
  .c     i++;
  .c }
+        popf 1
+        return
+        .end
+
+;;; RAS_FUNCTION_UNION_DEINTEGRATOR @type_struct
+;;; ( IVAL -- VAL )
+;;;
+;;; Assemble a function that, given an integral value, transforms it
+;;; into an equivalent integral union with the given type.  The
+;;; integral value in the stack should be the same as the integral
+;;; type of TYPE_STRUCT.
+;;;
+;;; Macro-arguments:
+;;;
+;;; @type_struct is a pkl_ast_node with the type of the union to
+;;; which convert the integer.
+
+        .function union_deintegrator @type_struct
+        prolog
+        pushf 0
+        .let @itype = PKL_AST_TYPE_S_ITYPE (@type_struct)
+        .let @field
+  .c  for (@field = PKL_AST_TYPE_S_ELEMS (@type_struct);
+  .c       @field;
+  .c       @field = PKL_AST_CHAIN (@field))
+  .c  {
+        .label .alternative_failed
+        .label .constraint_failed
+  .c  if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD)
+  .c  {
+  .c    continue;
+  .c  }
+        .let @field_type = PKL_AST_STRUCT_TYPE_FIELD_TYPE (@field)
+        dup                     ; IVAL IVAL
+  .c  if (PKL_AST_TYPE_CODE (@field_type) == PKL_TYPE_INTEGRAL)
+  .c  {
+                                ; IVAL NUM
+        nton @itype, @field_type
+        nip                     ; IVAL NUM
+  .c  }
+  .c  else if (PKL_AST_TYPE_CODE (@field_type) == PKL_TYPE_OFFSET)
+  .c  {
+                                ; IVAL MAG
+        .let @btype = PKL_AST_TYPE_O_BASE_TYPE (@field_type)
+        nton @itype, @btype
+        nip                     ; IVAL NUM
+        .let @ounit = PKL_AST_TYPE_O_UNIT (@field_type)
+        .let #unit = pvm_make_ulong (PKL_AST_INTEGER_VALUE (@ounit), 64)
+        push #unit              ; IVAL MAG UNIT
+        mko                     ; IVAL OFF
+  .c  }
+  .c  else if (PKL_AST_TYPE_CODE (@field_type) == PKL_TYPE_STRUCT)
+  .c  {
+                                ; IVAL IVAL
+        push PVM_E_CONSTRAINT
+        pushe .constraint_failed
+  .c    PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_DEINTEGRATOR);
+  .c    PKL_PASS_SUBPASS (@field_type);
+  .c    PKL_GEN_POP_CONTEXT;
+                                ; IVAL SCT
+        pope
+  .c  }
+        ;; Create a PVM type for field type
+  .c    PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPE);
+  .c    PKL_PASS_SUBPASS (@field_type);
+  .c    PKL_GEN_POP_CONTEXT;
+        tor                    ; IVAL VAL [TYP]
+        tor                    ; IVAL [TYP VAL]
+        ;; Let's create the PVM struct from which final union will be
+        ;; constructed.
+        .let @field_name = PKL_AST_STRUCT_TYPE_FIELD_NAME (@field)
+        .let #field_name_str \
+          = pvm_make_string (PKL_AST_IDENTIFIER_POINTER (@field_name))
+        push null              ; ... OFF
+        push null              ; ... OFF OFF
+        push #field_name_str   ; ... OFF OFF STR
+        fromr                  ; ... OFF OFF STR VAL
+        push ulong<64>0        ; ... OFF OFF STR VAL NMETH
+        push ulong<64>1        ; ... OFF OFF STR VAL NMETH NFIELD
+        ;; Now we have to create the PVM type for struct
+        push #field_name_str   ; ... OFF OFF STR VAL NMETH NFIELD STR
+        fromr                  ; ... OFF OFF STR VAL NMETH NFIELD STR TYP
+        push ulong<64>1        ; ... OFF OFF STR VAL NMETH NFIELD STR TYP NFIELD
+        push null              ; ... OFF OFF STR VAL NMETH NFIELD STR TYP NFIELD SNAME
+        mktysct                ; ... OFF OFF STR VAL NMETH NFIELD TYP
+        mksct                  ; IVAL SCT
+        push PVM_E_CONSTRAINT
+        pushe .constraint_failed
+  .c    PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_CONSTRUCTOR);
+  .c    PKL_PASS_SUBPASS (@type_struct);
+  .c    PKL_GEN_POP_CONTEXT;
+        pope
+        ba .done
+.constraint_failed:
+        nip                     ; IVAL EXC
+.alternative_failed:
+        drop                    ; IVAL
+  .c  }
+                                ; IVAL
+        drop
+        push PVM_E_CONSTRAINT
+        push "msg"
+        .let @uname = PKL_AST_TYPE_NAME (@type_struct)
+  .c if (@uname)
+  .c {
+  .c    char *msg = pk_str_concat ("no valid alternative found for union ", \
+                                   PKL_AST_IDENTIFIER_POINTER (@uname), NULL);
+        .let #msg = pvm_make_string (msg)
+  .c    free (msg);
+        push #msg
+  .c }
+  .c else
+  .c {
+        push "no valid alternative found for union"
+  .c }
+        sset
+        raise
+.done:
+        nip
         popf 1
         return
         .end

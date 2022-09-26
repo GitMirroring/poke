@@ -312,10 +312,14 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
                     pvm_val integrator_closure;
 
                     PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_INTEGRATOR);
-                    RAS_FUNCTION_STRUCT_INTEGRATOR (integrator_closure,
-                                                    type_struct);
-                    PKL_GEN_POP_CONTEXT;
+                    if (PKL_AST_TYPE_S_UNION_P (type_struct))
+                      RAS_FUNCTION_UNION_INTEGRATOR (integrator_closure,
+                                                     type_struct);
+                    else
+                      RAS_FUNCTION_STRUCT_INTEGRATOR (integrator_closure,
+                                                      type_struct);
                     PKL_AST_TYPE_S_INTEGRATOR (type_struct) = integrator_closure;
+                    PKL_GEN_POP_CONTEXT;
                   }
 
                 pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
@@ -328,8 +332,12 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
                     pvm_val deintegrator_closure;
 
                     PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_DEINTEGRATOR);
-                    RAS_FUNCTION_STRUCT_DEINTEGRATOR (deintegrator_closure,
-                                                      type_struct);
+                    if (PKL_AST_TYPE_S_UNION_P (type_struct))
+                      RAS_FUNCTION_UNION_DEINTEGRATOR (deintegrator_closure,
+                                                       type_struct);
+                    else
+                      RAS_FUNCTION_STRUCT_DEINTEGRATOR (deintegrator_closure,
+                                                        type_struct);
                     PKL_GEN_POP_CONTEXT;
                     PKL_AST_TYPE_S_DEINTEGRATOR (type_struct) = deintegrator_closure;
                   }
@@ -2445,6 +2453,13 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_cast)
   else if (PKL_AST_TYPE_CODE (to_type) == PKL_TYPE_STRUCT
            && PKL_AST_TYPE_CODE (from_type) == PKL_TYPE_INTEGRAL)
     {
+      pkl_ast_node itype = PKL_AST_TYPE_S_ITYPE (to_type);
+
+      /* This is guaranteed as per typify.  */
+      assert (itype);
+
+      pkl_asm_insn (pasm, PKL_INSN_NTON, from_type, itype);
+      pkl_asm_insn (pasm, PKL_INSN_NIP);
       PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_DEINTEGRATOR);
       PKL_PASS_SUBPASS (to_type);
       PKL_GEN_POP_CONTEXT;
@@ -3859,7 +3874,12 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_struct)
       pvm_val integrator_closure = PKL_AST_TYPE_S_INTEGRATOR (type_struct);
 
       if (integrator_closure == PVM_NULL)
-        RAS_FUNCTION_STRUCT_INTEGRATOR (integrator_closure, type_struct);
+        {
+          if (PKL_AST_TYPE_S_UNION_P (type_struct))
+            RAS_FUNCTION_UNION_INTEGRATOR (integrator_closure, type_struct);
+          else
+            RAS_FUNCTION_STRUCT_INTEGRATOR (integrator_closure, type_struct);
+        }
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, integrator_closure);
       if (!PKL_AST_TYPE_NAME (type_struct))
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);
@@ -3873,7 +3893,12 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_struct)
       pvm_val deintegrator_closure = PKL_AST_TYPE_S_DEINTEGRATOR (type_struct);
 
       if (deintegrator_closure == PVM_NULL)
-        RAS_FUNCTION_STRUCT_DEINTEGRATOR (deintegrator_closure, type_struct);
+        {
+          if (PKL_AST_TYPE_S_UNION_P (type_struct))
+            RAS_FUNCTION_UNION_DEINTEGRATOR (deintegrator_closure, type_struct);
+          else
+            RAS_FUNCTION_STRUCT_DEINTEGRATOR (deintegrator_closure, type_struct);
+        }
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, deintegrator_closure);
       if (!PKL_AST_TYPE_NAME (type_struct))
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);

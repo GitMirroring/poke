@@ -1,0 +1,21 @@
+/* { dg-do run } */
+
+type T = struct uint
+  {
+    int16 a;
+    int16 b;
+  };
+
+type U = union int
+  {
+    T a : a.a < 0;
+    uint b : b < 10;
+  };
+
+var x = 0xabcdef12;
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {.set omode flat} } */
+/* { dg-command {.set endian little} } */
+/* { dg-command {x as U} } */
+/* { dg-output "U {a=T {a=0xabcdH,b=0xef12H}}" } */

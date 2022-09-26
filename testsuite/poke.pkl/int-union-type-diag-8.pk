@@ -1,0 +1,7 @@
+/* { dg-do compile } */
+
+type Foo =
+  union uint<32>
+  {
+    int<33> a; /* { dg-error "invalid field size.*\n.*expected 32" } */
+  };

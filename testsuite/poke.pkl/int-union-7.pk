@@ -1,0 +1,6 @@
+/* { dg-do compile } */
+
+type Bar = union int<8>
+  { offset<int<8>,b> a : a > 10#B; offset<int<8>,B> b; };
+type Foo = union int<8>
+  { Bar la; struct int<8> { int<6> c; offset<int<2>,KB> d; } e; };

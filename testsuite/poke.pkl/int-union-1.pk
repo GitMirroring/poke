@@ -1,0 +1,13 @@
+/* { dg-do compile } */
+
+type Foo =
+  union uint<32>
+  {
+    int<32> a : a > 0;
+    uint<32> b : b < 128;
+    struct int<32>
+    {
+      uint<16> hi;
+      uint<16> lo;
+    } c;
+  };

@@ -1,0 +1,8 @@
+/* { dg-do compile } */
+
+type Foo =
+  union uint<32>
+  {
+    int<32> a;
+    offset<int<32>,B> b if a == 2; /* { dg-error "optional.*allowed" } */
+  };

@@ -1,0 +1,24 @@
+/* { dg-do run } */
+
+type U = union uint
+  {
+    offset<int,B> a : a < 0#B;
+    uint b : b < 10;
+  };
+
+var s = "bad",
+    x = 10;
+try
+  {
+    x as U;
+    s = "ugly";
+  }
+catch if E_constraint
+  {
+    s = "good";
+  }
+
+/* { dg-command {.set obase 10} } */
+/* { dg-command {.set omode flat} } */
+/* { dg-command {s} } */
+/* { dg-output "good" } */

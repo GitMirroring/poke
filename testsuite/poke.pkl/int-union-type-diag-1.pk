@@ -1,0 +1,6 @@
+/* { dg-do compile } */
+
+type Foo =
+  union int<0> /* { dg-error "" } */
+  {
+  };

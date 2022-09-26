@@ -1,0 +1,23 @@
+/* { dg-do run } */
+
+type S = struct uint
+  {
+    int16 a;
+    int16 b;
+  };
+
+type U = union int
+  {
+    S a : a.a < 0;
+    uint b : b < 10;
+  };
+
+var s = S { a=0xabcd, b=0xef12 };
+var u = U { a = s };
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {.set endian little} } */
+/* { dg-command {+s} } */
+/* { dg-output "0xabcdef12U" } */
+/* { dg-command {+u} } */
+/* { dg-output "\\n0xabcdef12" } */

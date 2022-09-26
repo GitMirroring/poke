@@ -1,0 +1,17 @@
+/* { dg-do run } */
+/* { dg-data {c*} {0x10 0x20 0x30} } */
+
+type U = union uint<16>
+  {
+    int<16> a : a < 0;
+    uint<16> b;
+  };
+
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {.set endian big} } */
+/* { dg-command {.set omode flat} } */
+/* { dg-command {U @ 1#B } } */
+/* { dg-output "U {b=0x2030UH}" } */
+/* { dg-command {+(U @ 1#B)} } */
+/* { dg-output "\\n0x2030UH" } */

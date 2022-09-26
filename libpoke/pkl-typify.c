@@ -477,8 +477,9 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_cast)
         INVALID_CAST ("invalid cast to string");
       break;
     case PKL_TYPE_STRUCT:
-      /* We are not supporting casts to unions yet.  */
-      if (PKL_AST_TYPE_S_UNION_P (to_type))
+      /* We are not supporting casts to non-integral unions yet.  */
+      if (PKL_AST_TYPE_S_UNION_P (to_type)
+          && !PKL_AST_TYPE_S_ITYPE (to_type))
         INVALID_CAST ("invalid cast to union");
 
       /* Only structs can be casted to regular structs.  Integral
@@ -1688,19 +1689,19 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_integral)
 }
 PKL_PHASE_END_HANDLER
 
-/* The type associated with an integral struct shall be integral.
+/* The type associated with an integral struct or union shall be integral.
 
-   The fields in an integral struct type shall be all of integral or
+   The fields in an integral struct or union type shall be all of integral or
    offset types (including other integral structs) and the total int
    size shall match the sum of the sizes of all the fields.
 
-   The total size declared in the integral struct should exactly match
-   the size of all the contained fields.
+   The total size declared in the integral struct or union should exactly
+   match the size of all the contained fields.
 
    Pinned unions are not allowed.
 
-   Labels are not allowed in integral structs, pinned structs and unions.
-   Optional fields are not allowed in integral structs.
+   Labels are not allowed in integral structs or unions, pinned structs and
+   unions.  Optional fields are not allowed in integral structs or unions.
 
    Computed fields should have getter and setter methods defined for
    them, and they should handle values of the right type.  */
@@ -1710,6 +1711,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
   pkl_ast_node struct_type = PKL_PASS_NODE;
   pkl_ast_node struct_type_itype = PKL_AST_TYPE_S_ITYPE (struct_type);
   pkl_ast_node field;
+  int is_union_p = PKL_AST_TYPE_S_UNION_P (struct_type);
 
   if (struct_type_itype)
     {
@@ -1724,18 +1726,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
           char *type_str = pkl_type_str (struct_type_itype, 1);
 
           PKL_ERROR (PKL_AST_LOC (struct_type_itype),
-                     "invalid type specifier in integral struct\n"
+                     "invalid type specifier in integral %s\n"
                      "expected integral, got %s",
-                     type_str);
+                     is_union_p ? "union" : "struct", type_str);
           free (type_str);
-          PKL_TYPIFY_PAYLOAD->errors++;
-          PKL_PASS_ERROR;
-        }
-
-      if (PKL_AST_TYPE_S_UNION_P (struct_type))
-        {
-          PKL_ERROR (PKL_AST_LOC (struct_type),
-                     "unions can't be integral");
           PKL_TYPIFY_PAYLOAD->errors++;
           PKL_PASS_ERROR;
         }
@@ -1758,9 +1752,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
                   char *type_str = pkl_type_str (ftype, 1);
 
                   PKL_ERROR (PKL_AST_LOC (field),
-                             "invalid field in integral struct\n"
-                             "expected integral, offset or integral struct, got %s",
-                             type_str);
+                             "invalid field in integral %s\n"
+                             "expected integral, offset, integral struct or "
+                             "union, got %s",
+                             is_union_p ? "union" : "struct", type_str);
                   free (type_str);
                   PKL_TYPIFY_PAYLOAD->errors++;
                   PKL_PASS_ERROR;
@@ -1769,7 +1764,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
               if (PKL_AST_STRUCT_TYPE_FIELD_LABEL (field))
                 {
                   PKL_ERROR (PKL_AST_LOC (field),
-                             "labels are not allowed in integral structs");
+                             "labels are not allowed in integral %ss",
+                             is_union_p ? "union" : "struct");
                   PKL_TYPIFY_PAYLOAD->errors++;
                   PKL_PASS_ERROR;
                 }
@@ -1777,20 +1773,42 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
               if (PKL_AST_STRUCT_TYPE_FIELD_OPTCOND (field))
                 {
                   PKL_ERROR (PKL_AST_LOC (field),
-                             "optional fields are not allowed in integral structs");
+                             "optional fields are not allowed in integral %ss",
+                             is_union_p ? "union" : "struct");
                   PKL_TYPIFY_PAYLOAD->errors++;
                   PKL_PASS_ERROR;
                 }
 
-              fields_int_size += pkl_ast_sizeof_integral_type (ftype);
+              {
+                int fsize = pkl_ast_sizeof_integral_type (ftype);
+
+                if (is_union_p)
+                  {
+                    if (fsize != PKL_AST_TYPE_I_SIZE (struct_type_itype))
+                      {
+                        PKL_ERROR (PKL_AST_LOC (field),
+                                   "invalid field size in integral union type\n"
+                                   "expected %" PRIu64 " bits, got %" PRId32 " bits",
+                                   (uint64_t) PKL_AST_TYPE_I_SIZE (struct_type_itype),
+                                   fsize);
+                        PKL_TYPIFY_PAYLOAD->errors++;
+                        PKL_PASS_ERROR;
+                      }
+                    if (fields_int_size == 0)
+                      fields_int_size = fsize;
+                  }
+                else
+                  fields_int_size += fsize;
+              }
             }
         }
 
       if (fields_int_size != PKL_AST_TYPE_I_SIZE (struct_type_itype))
         {
           PKL_ERROR (PKL_AST_LOC (struct_type_itype),
-                     "invalid total size in integral struct type\n"
+                     "invalid total size in integral %s type\n"
                      "expected %" PRIu64 " bits, got %" PRId32 " bits",
+                     is_union_p ? "union" : "struct",
                      (uint64_t) PKL_AST_TYPE_I_SIZE (struct_type_itype),
                      fields_int_size);
           PKL_TYPIFY_PAYLOAD->errors++;
@@ -1798,8 +1816,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
         }
     }
 
-  if (PKL_AST_TYPE_S_PINNED_P (struct_type)
-      && PKL_AST_TYPE_S_UNION_P (struct_type))
+  if (PKL_AST_TYPE_S_PINNED_P (struct_type) && is_union_p)
     {
       PKL_ERROR (PKL_AST_LOC (struct_type),
                  "unions are not allowed to be pinned");
@@ -1807,8 +1824,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
       PKL_PASS_ERROR;
     }
 
-  if (PKL_AST_TYPE_S_PINNED_P (struct_type)
-      || PKL_AST_TYPE_S_UNION_P (struct_type))
+  if (PKL_AST_TYPE_S_PINNED_P (struct_type) || is_union_p)
     {
       for (field = PKL_AST_TYPE_S_ELEMS (struct_type);
            field;

@@ -1,0 +1,23 @@
+/* { dg-do run } */
+/* { dg-data {c*} {0x10 0x20 0x30 0x40 0x50} } */
+
+type S = struct uint<32>
+  {
+    bit sign;
+    uint<31> mag;
+  };
+
+type U = union int<32>
+  {
+    S a : a.sign == 1;
+    S b;
+  };
+
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {.set endian big} } */
+/* { dg-command {.set omode flat} } */
+/* { dg-command {U @ 1#B } } */
+/* { dg-output "U {b=S {sign=\\(uint<1>\\) 0x0,mag=\\(uint<31>\\) 0x20304050}}" } */
+/* { dg-command {+(U @ 1#B)} } */
+/* { dg-output "\\n0x20304050" } */

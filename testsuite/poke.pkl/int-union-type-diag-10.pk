@@ -1,0 +1,12 @@
+/* { dg-do compile } */
+
+type Foo =
+  union uint<33>
+  {
+    struct int<33>
+    {
+      int<17> x;
+      int<16> y;
+    } b;
+    int<33> c @ 0#B; /* { dg-error "labels are not allowed" } */
+  };

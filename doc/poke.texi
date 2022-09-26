@@ -10766,6 +10766,7 @@ They contain heterogeneous collections of values.
 * Integral Structs::		Composite data stored in integers.
 * Unions::			Dealing with conditional data.
 * Union Constructors::          Constructing union values.
+* Integral Unions::		Variants of composite data stored in integers.
 * Optional Fields::		Fields that may or may not exist.
 * Casting Structs::		Converting structs from one type to another.
 * Declarations in Structs::	Declaring stuff within a struct.
@@ -11710,6 +11711,50 @@ Packet @{
 @noindent
 Therefore the alternative @code{b} is considered invalid (it has to be
 bigger than 0) and @code{k} is chosen instead.
+
+@node Integral Unions
+@subsection Integral Unions
+@cindex integral unions
+
+Integral unions are useful to cover cases where we have variants of
+data encoded in integers.  One example could be CPU instructions
+encoded as 16-bit or 32-bit numbers.
+
+@example
+type InstructionFormat_1 =
+  struct uint<32>
+  @{
+    uint<20> imm31_12;
+    uint<5>  rd;
+    uint<7>  opcode : valid_opcode_for_format_1 (opcode);
+  @};
+
+type InstructionFormat_2 =
+  struct uint<32>
+  @{
+    uint<7> funct7;
+    uint<5> rs2;
+    uint<5> rs1;
+    uint<3> funct3;
+    uint<5>  rd;
+    uint<7>  opcode : valid_opcode_for_format_2 (opcode);
+  @};
+
+type Instruction =
+  union uint<32>
+  @{
+    InstructionFormat_1 f1;
+    InstructionFomrat_2 f2;
+  @};
+@end example
+
+
+Like integral structs, integral unions can be casted to/from integers;
+e.g., @code{3211411U as Instruction} will create an @code{Instruction}
+union.
+
+Like integral structs, integral unions can have fields of the following
+types: integral, offset, integral struct or union.
 
 @node Optional Fields
 @subsection Optional Fields

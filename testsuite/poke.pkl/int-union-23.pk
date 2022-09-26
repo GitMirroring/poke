@@ -1,0 +1,14 @@
+/* { dg-do run } */
+
+type U = union uint
+  {
+    offset<int,B> a : a < 0#B;
+    uint b : b < 10;
+  };
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {var x = U {a=-20#B}} } */
+/* { dg-command {+x} } */
+/* { dg-output "0xffffffecU" } */
+/* { dg-command {x as ulong} } */
+/* { dg-output "\\n0xffffffecUL" } */

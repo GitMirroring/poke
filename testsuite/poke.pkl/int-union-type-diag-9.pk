@@ -1,0 +1,14 @@
+/* { dg-do compile } */
+
+type Foo =
+  union int<33>
+  {
+    /* FIXME due to a bug in parser, I have to put the dg error thing in
+       previous line.  */
+    uint<33> le;/* { dg-error "invalid field size.*\n.*expected 33" } */
+    struct int<32>
+    {
+      int16 a;
+      int16 b;
+    } la;
+  };

@@ -1,0 +1,8 @@
+/* { dg-do compile } */
+
+type Foo =
+  union uint<32>
+  {
+    int<32> a;
+    offset<int<31>,B> b; /* { dg-error "invalid field size.*\n.*expected 32" } */
+  };

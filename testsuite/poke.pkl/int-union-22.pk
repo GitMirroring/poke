@@ -1,0 +1,14 @@
+/* { dg-do run } */
+
+type U = union uint
+  {
+    offset<int,B> a : a < 0#B;
+    uint b : b < 10;
+  };
+
+/* { dg-command {.set obase 10} } */
+/* { dg-command {var x = U {b=5}} } */
+/* { dg-command {+x} } */
+/* { dg-output "5U" } */
+/* { dg-command {x as int} } */
+/* { dg-output "\\n5" } */

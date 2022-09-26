@@ -1,0 +1,29 @@
+/* { dg-do run } */
+
+type T = struct uint
+  {
+    int16 a;
+    int16 b;
+  };
+
+type U = union int
+  {
+    T a : a.a < 0;
+    uint b : b < 10;
+  };
+
+var s = "bad",
+    x = 10;
+try
+  {
+    x as U;
+    s = "ugly";
+  }
+catch if E_constraint
+  {
+    s = "good";
+  }
+
+/* { dg-command {.set obase 10} } */
+/* { dg-command {s} } */
+/* { dg-output "good" } */

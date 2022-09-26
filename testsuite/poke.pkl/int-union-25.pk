@@ -1,0 +1,23 @@
+/* { dg-do run } */
+
+type S = struct long
+  {
+    int16 x;
+    int32 y : y < 0;
+    int16 z;
+  };
+
+type U = union long
+  {
+    S a;
+    ulong b;
+  };
+
+var s = S{ x=0xdead, y=0x87654321U as int, z=0xbeef };
+var u = U { a=s };
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {+s} } */
+/* { dg-output "0xdead87654321beefL" } */
+/* { dg-command {+u} } */
+/* { dg-output "\\n0xdead87654321beefL" } */

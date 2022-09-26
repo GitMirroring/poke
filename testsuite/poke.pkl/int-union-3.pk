@@ -1,0 +1,4 @@
+/* { dg-do compile } */
+
+type Bar = union int<8> { int<8> a : a > 10; int<8> b; };
+type Foo = union int<8> { Bar la; struct int<8> { int<6> c; int<2> d; } e; };

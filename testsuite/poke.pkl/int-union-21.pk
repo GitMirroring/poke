@@ -1,0 +1,16 @@
+/* { dg-do run } */
+
+type U = union int
+  {
+    int a : a < 0;
+    uint b;
+  };
+
+/* { dg-command {.set obase 10} } */
+/* { dg-command {.set omode flat} } */
+/* { dg-command {var x = 1UL} } */
+/* { dg-command {x as U} } */
+/* { dg-output "U {b=1U}" } */
+/* { dg-command {var x = 0xffff_ffffUL} } */
+/* { dg-command {x as U} } */
+/* { dg-output "\\nU {a=-1}" } */

@@ -285,6 +285,11 @@ EXTRA_DIST = \
   poke.map/maps-int-structs-27.pk \
   poke.map/maps-int-structs-28.pk \
   poke.map/maps-int-structs-29.pk \
+  poke.map/maps-int-union-1.pk \
+  poke.map/maps-int-union-2.pk \
+  poke.map/maps-int-union-4.pk \
+  poke.map/maps-int-union-3.pk \
+  poke.map/maps-int-union-5.pk \
   poke.map/maps-ios-1.pk \
   poke.map/maps-ios-2.pk \
   poke.map/maps-ios-3.pk \
@@ -1434,11 +1439,56 @@ EXTRA_DIST = \
   poke.pkl/int-struct-type-diag-13.pk \
   poke.pkl/int-struct-type-diag-14.pk \
   poke.pkl/int-struct-type-diag-15.pk \
-  poke.pkl/int-struct-type-diag-16.pk \
-  poke.pkl/int-struct-type-diag-17.pk \
   poke.pkl/int-type-diag-1.pk \
   poke.pkl/int-type-diag-2.pk \
   poke.pkl/int-type.pk \
+  poke.pkl/int-union-1.pk \
+  poke.pkl/int-union-2.pk \
+  poke.pkl/int-union-3.pk \
+  poke.pkl/int-union-4.pk \
+  poke.pkl/int-union-5.pk \
+  poke.pkl/int-union-6.pk \
+  poke.pkl/int-union-7.pk \
+  poke.pkl/int-union-8.pk \
+  poke.pkl/int-union-9.pk \
+  poke.pkl/int-union-10.pk \
+  poke.pkl/int-union-11.pk \
+  poke.pkl/int-union-12.pk \
+  poke.pkl/int-union-13.pk \
+  poke.pkl/int-union-14.pk \
+  poke.pkl/int-union-15.pk \
+  poke.pkl/int-union-16.pk \
+  poke.pkl/int-union-17.pk \
+  poke.pkl/int-union-18.pk \
+  poke.pkl/int-union-19.pk \
+  poke.pkl/int-union-20.pk \
+  poke.pkl/int-union-21.pk \
+  poke.pkl/int-union-22.pk \
+  poke.pkl/int-union-23.pk \
+  poke.pkl/int-union-24.pk \
+  poke.pkl/int-union-25.pk \
+  poke.pkl/int-union-26.pk \
+  poke.pkl/int-union-27.pk \
+  poke.pkl/int-union-28.pk \
+  poke.pkl/int-union-29.pk \
+  poke.pkl/int-union-30.pk \
+  poke.pkl/int-union-type-diag-1.pk \
+  poke.pkl/int-union-type-diag-2.pk \
+  poke.pkl/int-union-type-diag-3.pk \
+  poke.pkl/int-union-type-diag-4.pk \
+  poke.pkl/int-union-type-diag-5.pk \
+  poke.pkl/int-union-type-diag-6.pk \
+  poke.pkl/int-union-type-diag-7.pk \
+  poke.pkl/int-union-type-diag-8.pk \
+  poke.pkl/int-union-type-diag-9.pk \
+  poke.pkl/int-union-type-diag-10.pk \
+  poke.pkl/int-union-type-diag-11.pk \
+  poke.pkl/int-union-type-diag-12.pk \
+  poke.pkl/int-union-type-diag-13.pk \
+  poke.pkl/int-union-type-diag-14.pk \
+  poke.pkl/int-union-type-diag-15.pk \
+  poke.pkl/int-union-type-diag-16.pk \
+  poke.pkl/int-union-type-diag-17.pk \
   poke.pkl/integers-1.pk \
   poke.pkl/integers-2.pk \
   poke.pkl/integers-3.pk \

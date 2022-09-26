@@ -1,5 +1,81 @@
 2022-09-26  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pkl-tab.y (tokens): s/token/%token/.
+	* libpoke/pkl-typify.c (pkl_typify1_ps_cast): Handle integral
+	unions.
+	(pkl_typify1_ps_type_struct): Likewise.
+	* libpoke/pkl-gen.c (pkl_gen_pr_type_struct): Likewise.
+	(pkl_gen_pr_decl): Likewise.
+	(pkl_gen_pr_cast): In cast from an integral type to struct type,
+	add a cast to ITYPE of the struct.
+	* libpoke/pkl-gen.pks (RAS_FUNCTION_UNION_INTEGRATOR): New function.
+	(RAS_FUNCTION_UNION_DEINTEGRATOR): Likewise.
+	(RAS_FUNCTION_STRUCT_INTEGRATOR): Add assertion.
+	(RAS_FUNCTION_STRUCT_DEINTEGRATOR): Likewise.
+	* doc/poke.texi (Integral Unions): Add new section.
+	* testsuite/poke.pkl/int-union-1.pk: New test.
+	* testsuite/poke.pkl/int-union-2.pk: Likewise.
+	* testsuite/poke.pkl/int-union-3.pk: Likewise.
+	* testsuite/poke.pkl/int-union-4.pk: Likewise.
+	* testsuite/poke.pkl/int-union-5.pk: Likewise.
+	* testsuite/poke.pkl/int-union-6.pk: Likewise.
+	* testsuite/poke.pkl/int-union-7.pk: Likewise.
+	* testsuite/poke.pkl/int-union-8.pk: Likewise.
+	* testsuite/poke.pkl/int-union-9.pk: Likewise.
+	* testsuite/poke.pkl/int-union-10.pk: Likewise.
+	* testsuite/poke.pkl/int-union-11.pk: Likewise.
+	* testsuite/poke.pkl/int-union-12.pk: Likewise.
+	* testsuite/poke.pkl/int-union-13.pk: Likewise.
+	* testsuite/poke.pkl/int-union-14.pk: Likewise.
+	* testsuite/poke.pkl/int-union-15.pk: Likewise.
+	* testsuite/poke.pkl/int-union-16.pk: Likewise.
+	* testsuite/poke.pkl/int-union-17.pk: Likewise.
+	* testsuite/poke.pkl/int-union-18.pk: Likewise.
+	* testsuite/poke.pkl/int-union-19.pk: Likewise.
+	* testsuite/poke.pkl/int-union-20.pk: Likewise.
+	* testsuite/poke.pkl/int-union-21.pk: Likewise.
+	* testsuite/poke.pkl/int-union-22.pk: Likewise.
+	* testsuite/poke.pkl/int-union-23.pk: Likewise.
+	* testsuite/poke.pkl/int-union-24.pk: Likewise.
+	* testsuite/poke.pkl/int-union-25.pk: Likewise.
+	* testsuite/poke.pkl/int-union-26.pk: Likewise.
+	* testsuite/poke.pkl/int-union-27.pk: Likewise.
+	* testsuite/poke.pkl/int-union-28.pk: Likewise.
+	* testsuite/poke.pkl/int-union-29.pk: Likewise.
+	* testsuite/poke.pkl/int-union-30.pk: Likewise.
+	* testsuite/poke.pkl/int-union-type-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/int-union-type-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/int-union-type-diag-3.pk: Likewise.
+	* testsuite/poke.pkl/int-union-type-diag-4.pk: Likewise.
+	* testsuite/poke.pkl/int-union-type-diag-5.pk: Likewise.
+	* testsuite/poke.pkl/int-union-type-diag-6.pk: Likewise.
+	* testsuite/poke.pkl/int-union-type-diag-7.pk: Likewise.
+	* testsuite/poke.pkl/int-union-type-diag-8.pk: Likewise.
+	* testsuite/poke.pkl/int-union-type-diag-9.pk: Likewise.
+	* testsuite/poke.pkl/int-union-type-diag-10.pk: Likewise.
+	* testsuite/poke.pkl/int-union-type-diag-11.pk: Likewise.
+	* testsuite/poke.pkl/int-union-type-diag-12.pk: Likewise.
+	* testsuite/poke.pkl/int-union-type-diag-13.pk: Likewise.
+	* testsuite/poke.pkl/int-union-type-diag-14.pk: Likewise.
+	* testsuite/poke.pkl/int-union-type-diag-15.pk: Likewise.
+	* testsuite/poke.pkl/int-union-type-diag-16.pk: Likewise.
+	* testsuite/poke.pkl/int-union-type-diag-17.pk: Likewise.
+	* testsuite/poke.pkl/int-union-type-diag-18.pk: Likewise.
+	* testsuite/poke.map/maps-int-union-1.pk: Likewise
+	* testsuite/poke.map/maps-int-union-2.pk: Likewise
+	* testsuite/poke.map/maps-int-union-3.pk: Likewise
+	* testsuite/poke.map/maps-int-union-4.pk: Likewise
+	* testsuite/poke.map/maps-int-union-5.pk: Likewise
+	* testsuite/poke.pkl/int-struct-type-diag-3.pk: Adapted.
+	* testsuite/poke.pkl/int-struct-type-diag-4.pk: Likewise.
+	* testsuite/poke.pkl/int-struct-type-diag-5.pk: Likewise.
+	* testsuite/poke.pkl/int-struct-type-diag-11.pk: Likewise.
+	* testsuite/poke.pkl/int-struct-type-diag-16.pk: Removed.
+	* testsuite/poke.pkl/int-struct-type-diag-17.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
+2022-09-26  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-gen.pks (function struct_constructor): Do not alter
 	items that are already on the stack because `raise' will restore
 	the height of stack and the caller will see garbage on the stack.

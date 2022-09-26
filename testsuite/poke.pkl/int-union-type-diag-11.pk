@@ -1,0 +1,6 @@
+/* { dg-do compile } */
+
+type Foo =
+  union int<32> /* { dg-error "invalid total size.*\n.*expected 32.*got 0" } */
+  {
+  };

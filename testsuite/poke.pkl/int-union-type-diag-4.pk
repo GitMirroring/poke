@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 
 type Foo =
-  struct int<32>
+  union int<32>
   {
     int<32> i;
     int<32>[] je; /* { dg-error "invalid field.*\n.*expected integral, offset, integral struct or union" } */

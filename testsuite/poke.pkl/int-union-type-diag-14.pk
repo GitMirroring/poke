@@ -1,0 +1,6 @@
+/* { dg-do compile } */
+
+type Foo =
+  union string /* { dg-error "invalid type.*\n.*expected integral" } */
+  {
+  };
