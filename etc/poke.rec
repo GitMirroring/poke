@@ -109,13 +109,6 @@ Description:
 + Integrators are already done.  Deintegrators are pending.
 Target: 3.0
 
-Summary: Union integrators and deintegrators
-Component: PVM
-Component: Compiler
-Kind: ENH
-Note: Patches under review
-Target: 3.0
-
 Summary: Documentation for poked
 Component: Documentation
 Kind: ENH
