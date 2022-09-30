@@ -57,9 +57,9 @@ _________________
 .. 10. Using NBD connections in tests
 .. 11. Writing tests that depend on a certain capability
 .. 12. Writing REPL tests
-.. 13. Testing Pickles
 ..... 1. Command REPL tests
 ..... 2. General REPL tests
+.. 13. Testing Pickles
 6. Writing Documentation
 .. 1. Documenting Pickles
 7. Fuzzing poke
@@ -874,7 +874,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
 5.12 Writing REPL tests
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-  Th the `poke.repl' testsuite is intended to test features in the
+  The `poke.repl' testsuite is intended to test features in the
   interactive usage of poke.  Therefore, it is not dg-based.  Instead,
   it uses the services provided by `testsuite/lib/poke.exp'.  In a
   nutshell, these services are:
@@ -897,19 +897,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   and adding some content there.  The following subsections detail how.
 
 
-5.13 Testing Pickles
-~~~~~~~~~~~~~~~~~~~~
-
-  Each pickle in `pickles/FOO.pk' shall have a test file
-  `testsuite/poke.pickles/FOO-test.pk' written using pickle `pktest'.
-
-  If there are some features in the pickle that cannot be tested using
-  `pktest' (e.g., pickle uses `print'), that pickle also shall have a
-  testsuite in `testsuite/poke.FOO' with a driver
-  `testsuite/poke.FOO/FOO.exp'.
-
-
-5.13.1 Command REPL tests
+5.12.1 Command REPL tests
 -------------------------
 
   Some REPL tests need to check whether poke replies properly to some
@@ -938,7 +926,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   `----
 
 
-5.13.2 General REPL tests
+5.12.2 General REPL tests
 -------------------------
 
   Other REPL tests are not about executing commands.  Suppose for
@@ -955,7 +943,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
 
   The test above uses the `poke_send' procedure, defined in
   `testsuite/lib/poke.exp'.  This procedure gets two arguments: the
-  input that is sent to poke, and the expected output.  Note how usign
+  input that is sent to poke, and the expected output.  Note how using
   `poke_send' doesn't require poke to execute any command.
 
   Using `poke_send' is more laborious than using `poke_test_cmd': it is
@@ -963,6 +951,18 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   whenever needed.
 
   Note also how newlines are perceived by expect as the sequence `\r\n'.
+
+
+5.13 Testing Pickles
+~~~~~~~~~~~~~~~~~~~~
+
+  Each pickle in `pickles/FOO.pk' shall have a test file
+  `testsuite/poke.pickles/FOO-test.pk' written using pickle `pktest'.
+
+  If there are some features in the pickle that cannot be tested using
+  `pktest' (e.g., pickle uses `print'), that pickle also shall have a
+  testsuite in `testsuite/poke.FOO' with a driver
+  `testsuite/poke.FOO/FOO.exp'.
 
 
 6 Writing Documentation
@@ -2081,26 +2081,32 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   However, the contained `struct pkl_ast_type' is not.  There is no way
   the GC can find these nodes thru the AST node.
 
-  The solution is to declare the relevant pointers in the containing AST
-  node as GC roots.  The right place to do that is in the corresponding
-  constructor in `pkl-ast.c'.  For example:
+  The solution is to allocate memory for these values as
+  "uncollectable".  This is done with =pvm_alloc_uncollectable.  For
+  example:
 
   ,----
   | pkl_ast_node
   | pkl_ast_make_array_type (pkl_ast ast, pkl_ast_node etype, pkl_ast_node bound)
   | {
   |   ...
-  |   /* The closure slots are GC roots.  */
-  |   pvm_alloc_add_gc_roots (&PKL_AST_TYPE_A_MAPPER (type), 1);
-  |   pvm_alloc_add_gc_roots (&PKL_AST_TYPE_A_WRITER (type), 1);
-  |   pvm_alloc_add_gc_roots (&PKL_AST_TYPE_A_BOUNDER (type), 1);
-  |   ...
+  |   /* Prevent GC to collect these PVM values.  */
+  |   PKL_AST_TYPE_A_CLOSURES (type)
+  |       = pvm_alloc_uncollectable (nclosures * sizeof (pvm_val));
+  |   PKL_AST_TYPE_A_MAPPER (type) = PVM_NULL;
+  |   PKL_AST_TYPE_A_WRITER (type) = PVM_NULL;
+  |   PKL_AST_TYPE_A_BOUNDER (type) = PVM_NULL;
+  |   PKL_AST_TYPE_A_CONSTRUCTOR (type) = PVM_NULL;
+  |   PKL_AST_TYPE_A_INTEGRATOR (type) = PVM_NULL;
+  |   PKL_AST_TYPE_A_FORMATER (type) = PVM_NULL;
+  |   PKL_AST_TYPE_A_PRINTER (type) = PVM_NULL;
+  | 
+  |   return type;
   | }
   `----
 
-  And of course, before the memory of the AST node is freed, these roots
-  should be unregistered from the GC.  The right place to do this is in
-  `pkl_ast_node_free':
+  And of course, before the memory of the AST node is freed, the
+  uncollectable memory shall be explicitly fred in `pkl_ast_node_free':
 
   ,----
   | void
@@ -2112,15 +2118,12 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   |       {
   |       ...
   |       case PKL_TYPE_ARRAY:
-  |         /* Remove GC roots.  */
-  |         pvm_alloc_remove_gc_roots (&PKL_AST_TYPE_A_MAPPER (ast), 1);
-  |         pvm_alloc_remove_gc_roots (&PKL_AST_TYPE_A_WRITER (ast), 1);
-  |         pvm_alloc_remove_gc_roots (&PKL_AST_TYPE_A_BOUNDER (ast), 1);
+  |         pvm_free_uncollectable (PKL_AST_TYPE_A_CLOSURES (ast));
   |       }
   | }
   `----
 
-  So if you add PVM values or PVM environments to an AST node, please
+  If you add PVM values or PVM environments to an AST node, please
   follow the strategy above.
 
 

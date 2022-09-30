@@ -629,7 +629,7 @@ Indu Bhagat             <indu.bhagat@oracle.com>
 
 ** Writing REPL tests
 
-   Th the =poke.repl= testsuite is intended to test features in the
+   The =poke.repl= testsuite is intended to test features in the
    interactive usage of poke.  Therefore, it is not dg-based.
    Instead, it uses the services provided by =testsuite/lib/poke.exp=.
    In a nutshell, these services are:
@@ -647,16 +647,6 @@ Indu Bhagat             <indu.bhagat@oracle.com>
   Adding a new test to =poke.repl= involves editing
   =poke.repl/repl.exp= and adding some content there.  The following
   subsections detail how.
-
-** Testing Pickles
-
-Each pickle in =pickles/FOO.pk= shall have a test file
-=testsuite/poke.pickles/FOO-test.pk= written using pickle =pktest=.
-
-If there are some features in the pickle that cannot be tested
-using =pktest= (e.g., pickle uses =print=), that pickle also shall
-have a testsuite in =testsuite/poke.FOO= with a driver
-=testsuite/poke.FOO/FOO.exp=.
 
 *** Command REPL tests
 
@@ -695,7 +685,7 @@ have a testsuite in =testsuite/poke.FOO= with a driver
     The test above uses the =poke_send= procedure, defined in
     =testsuite/lib/poke.exp=.  This procedure gets two arguments: the
     input that is sent to poke, and the expected output.  Note how
-    usign =poke_send= doesn't require poke to execute any command.
+    using =poke_send= doesn't require poke to execute any command.
 
     Using =poke_send= is more laborious than using =poke_test_cmd=: it
     is necessary to explicitly include the prompt in the expected
@@ -703,6 +693,17 @@ have a testsuite in =testsuite/poke.FOO= with a driver
 
     Note also how newlines are perceived by expect as the sequence
     =\r\n=.
+
+
+** Testing Pickles
+
+Each pickle in =pickles/FOO.pk= shall have a test file
+=testsuite/poke.pickles/FOO-test.pk= written using pickle =pktest=.
+
+If there are some features in the pickle that cannot be tested
+using =pktest= (e.g., pickle uses =print=), that pickle also shall
+have a testsuite in =testsuite/poke.FOO= with a driver
+=testsuite/poke.FOO/FOO.exp=.
 
 * Writing Documentation
 
@@ -1652,26 +1653,33 @@ have a testsuite in =testsuite/poke.FOO= with a driver
   However, the contained =struct pkl_ast_type= is not.  There is no
   way the GC can find these nodes thru the AST node.
 
-  The solution is to declare the relevant pointers in the containing
-  AST node as GC roots.  The right place to do that is in the
-  corresponding constructor in =pkl-ast.c=.  For example:
+  The solution is to allocate memory for these values as
+  "uncollectable".  This is done with =pvm_alloc_uncollectable.  For
+  example:
 
 #+BEGIN_EXAMPLE
-  pkl_ast_node
-  pkl_ast_make_array_type (pkl_ast ast, pkl_ast_node etype, pkl_ast_node bound)
-  {
-    ...
-    /* The closure slots are GC roots.  */
-    pvm_alloc_add_gc_roots (&PKL_AST_TYPE_A_MAPPER (type), 1);
-    pvm_alloc_add_gc_roots (&PKL_AST_TYPE_A_WRITER (type), 1);
-    pvm_alloc_add_gc_roots (&PKL_AST_TYPE_A_BOUNDER (type), 1);
-    ...
-  }
+pkl_ast_node
+pkl_ast_make_array_type (pkl_ast ast, pkl_ast_node etype, pkl_ast_node bound)
+{
+  ...
+  /* Prevent GC to collect these PVM values.  */
+  PKL_AST_TYPE_A_CLOSURES (type)
+      = pvm_alloc_uncollectable (nclosures * sizeof (pvm_val));
+  PKL_AST_TYPE_A_MAPPER (type) = PVM_NULL;
+  PKL_AST_TYPE_A_WRITER (type) = PVM_NULL;
+  PKL_AST_TYPE_A_BOUNDER (type) = PVM_NULL;
+  PKL_AST_TYPE_A_CONSTRUCTOR (type) = PVM_NULL;
+  PKL_AST_TYPE_A_INTEGRATOR (type) = PVM_NULL;
+  PKL_AST_TYPE_A_FORMATER (type) = PVM_NULL;
+  PKL_AST_TYPE_A_PRINTER (type) = PVM_NULL;
+
+  return type;
+}
 #+END_EXAMPLE
 
-  And of course, before the memory of the AST node is freed, these
-  roots should be unregistered from the GC.  The right place to do
-  this is in =pkl_ast_node_free=:
+  And of course, before the memory of the AST node is freed, the
+  uncollectable memory shall be explicitly fred in
+  =pkl_ast_node_free=:
 
 #+BEGIN_EXAMPLE
   void
@@ -1683,19 +1691,15 @@ have a testsuite in =testsuite/poke.FOO= with a driver
         {
         ...
         case PKL_TYPE_ARRAY:
-          /* Remove GC roots.  */
-          pvm_alloc_remove_gc_roots (&PKL_AST_TYPE_A_MAPPER (ast), 1);
-          pvm_alloc_remove_gc_roots (&PKL_AST_TYPE_A_WRITER (ast), 1);
-          pvm_alloc_remove_gc_roots (&PKL_AST_TYPE_A_BOUNDER (ast), 1);
+          pvm_free_uncollectable (PKL_AST_TYPE_A_CLOSURES (ast));
         }
   }
 #+END_EXAMPLE
 
-  So if you add PVM values or PVM environments to an AST node, please
+  If you add PVM values or PVM environments to an AST node, please
   follow the strategy above.
 
 * Terminal Handling
-
 ** pk-term
 
    Writing to the terminal, and getting information from the terminal,
