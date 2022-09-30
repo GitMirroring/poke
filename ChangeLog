@@ -1,5 +1,9 @@
 2022-09-30  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* doc/poke.texi (Field Labels): Expand with an additional example.
+
+2022-09-30  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* etc/hacking.org (Writing REPL tests): Fix typo.
 	(General REPL tests): Fix ordering.
 	(Command REPL tests): Likewise.

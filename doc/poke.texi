@@ -11246,6 +11246,51 @@ struct
 The resulting struct has fields @code{st_info}, @code{st_bind} and
 @code{st_type}, with the last two overlapping the first.
 
+Field labels are also useful in the rare cases where a variable part
+of a struct depends on some data that comes @emph{after} it.  This
+happens for example in the COFF ``line number'' structures, which are
+defined like this in C:
+
+@example
+struct external_lineno
+@{
+  union
+  @{
+    char l_symndx[4]; /* function name symbol index, iff l_lnno == 0*/
+    char l_paddr[4];  /* (physical) address of line number */
+  @} l_addr;
+
+  char l_lnno[L_LNNO_SIZE]; /* line number  */
+@};
+@end example
+
+@noindent
+@i{i.e.} the @code{l_addr} field is to be interpreted as an index in a
+table or as a physical address depending on the value of
+@code{l_lnno}.
+
+This is one way to denote the above data structure using Poke struct
+labels:
+
+@example
+type COFF_LINENO_32 =
+  struct
+  @{
+    uint<32> l_lnno @ 4#B; /* Line number.  */
+
+    union
+    @{
+      uint<32> l_symndx : l_lnno == 0;
+      offset<uint<32>,B> l_paddr;
+    @} l_addr @ 0#B;
+  @};
+@end example
+
+@noindent
+Note how the @code{l_lnno} field is stored after @code{l_addr} even if
+they appear in reverse order in the struct definition.  This allows us
+to refer to @code{l_nno} in the constraints for the union fields.
+
 @node Pinned Structs
 @subsection Pinned Structs
 @cindex pinned structs
