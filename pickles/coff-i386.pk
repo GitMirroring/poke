@@ -1,0 +1,69 @@
+/* coff-i386.pk - COFF implementation for GNU poke, i386.  */
+
+/* Copyright (C) 2022 Jose E. Marchesi.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* File flags.  */
+
+var COFF_I386_F_RELFLG = 0x0001UH,
+    COFF_I386_F_EXEC = 0x0002UH,
+    COFF_I386_F_LNNO = 0x0004UH,
+    COFF_I386_F_LSYMS = 0x0008UH;
+
+/* Magic numbers.  */
+
+var COFF_I386_MAGIC = 0x14cUH,
+    COFF_I386_PTX_MAGIC = 0x154UH,
+    COFF_I386_AIX_MAGIC = 0x175UH,
+    COFF_I386_LYNX_MAGIC = 0o415UH,
+    COFF_I386_APPLE_MAGIC = COFF_I386_MAGIC ^ 0x4644UH,
+    COFF_I386_FREEBSD_MAGIC = COFF_I386_MAGIC ^ 0xadc4UH,
+    COFF_I386_LINUX_MAGIC = COFF_I386_MAGIC ^ 0x7b79UH,
+    COFF_I386_NETBSD_MAGIC = COFF_I386_MAGIC ^ 0x1993UH;
+
+coff_magic_numbers
+  += [COFF_Magic_Numbers { arch = COFF_ARCH_I386,
+                           numbers = [COFF_I386_MAGIC,
+                                      COFF_I386_PTX_MAGIC,
+                                      COFF_I386_AIX_MAGIC] }];
+
+/* i386 COFF relocations.  */
+
+var COFF_I386_R_DIR32 = 6,
+    COFF_I386_R_IMAGEBASE = 7,
+    COFF_I386_R_SECTION = 10,
+    COFF_I386_R_SECREL32 = 11,
+    COFF_I386_R_RELBYTE = 15,
+    COFF_I386_R_RELWORD = 16,
+    COFF_I386_R_RELLONG = 17,
+    COFF_I386_R_PCRBYTE = 18,
+    COFF_I386_R_PCRWORD = 19,
+    COFF_I386_R_PCRLONG = 20;
+
+var coff_i386_relocs =
+  [ COFF_I386_R_DIR32, COFF_I386_R_IMAGEBASE,
+    COFF_I386_R_SECTION, COFF_I386_R_SECREL32,
+    COFF_I386_R_RELBYTE, COFF_I386_R_RELWORD,
+    COFF_I386_R_RELLONG, COFF_I386_R_PCRBYTE,
+    COFF_I386_R_PCRWORD, COFF_I386_R_PCRLONG ];
+
+type COFF_I386_RELOC =
+  struct
+  {
+    offset<uint<32>,B> r_vaddr;
+    uint<32> r_symndx;
+    uint<16> r_type = coff_i386_relocs[0] : r_type in coff_i386_relocs;
+  };

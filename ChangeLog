@@ -1,3 +1,10 @@
+2022-10-01  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* pickles/coff.pk: New file.
+	* pickles/coff-i386.pk: Likewise.
+	* pickles/coff-aarch64.pk: Likewise.
+	* pickles/Makefile.am (dist_pickles_DATA): Add new pickles.
+
 2022-09-30  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* doc/poke.texi (Field Labels): Expand with an additional example.

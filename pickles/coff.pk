@@ -1,0 +1,288 @@
+/* coff.pk - COFF implementation for GNU poke.  */
+
+/* Copyright (C) 2022 Jose E. Marchesi.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+load time; /* For POSIX_Time32 */
+
+/* Architectures supported by this pickle.  Note that in COFF the
+   "architecture" is a combination of hardware architecture, ABI and
+   OS.  */
+
+var COFF_ARCH_I386 = 0,
+    COFF_ARCH_AARCH64 = 1;
+
+/* The variable coff_arch determines which architecture to use when
+   mapping/constructing COFF structures.  */
+
+var coff_arch = COFF_ARCH_I386;
+
+/* The coff_magic_numbers structure maps architectures to arrays of
+   valid magic numbers.  This structure is filled by the
+   architecture-specific pickles coff-ARCH.pk when they are loaded
+   below.  */
+
+type COFF_Magic_Numbers =
+  struct
+  {
+    int arch;
+    uint<16>[] numbers;
+  };
+
+var coff_magic_numbers = COFF_Magic_Numbers[]();
+
+fun coff_arch_magic = uint<16>[]:
+{
+  for (m in coff_magic_numbers)
+    if (m.arch == coff_arch && m.numbers'length > 0)
+      return m.numbers;
+
+  raise Exception { code = EC_inval,
+                    msg = "no magic numbers found for selected COFF architecture" };
+}
+
+fun coff_magic_arch = (uint<16> magic) int:
+{
+  for (m in coff_magic_numbers)
+    if (magic in m.numbers)
+      return m.arch;
+
+  raise E_constraint;
+}
+
+/* Load architecture-specific pickles.  */
+
+load "coff-i386.pk";
+load "coff-aarch64.pk";
+
+var coff_include_comdat_fields_in_auxent = 1;
+
+/* Names of "special" sections.  */
+
+var COFF_TEXT = ".text",
+    COFF_DATA = ".data",
+    COFF_BSS = ".bss",
+    COFF_COMMENT = ".comment",
+    COFF_LIB = ".lib";
+
+/* File header.  */
+
+type COFF_File_Hdr =
+  struct
+  {
+
+    fun set_arch = (int arch) int: { coff_arch = arch; return 1; }
+
+    uint<16>           magic = coff_arch_magic[0] : magic in coff_arch_magic
+                                                    && set_arch (coff_magic_arch (magic));
+    uint<16>           nscns;  /* Number of sections.  */
+    POSIX_Time32       timdat; /* Time and date stamp.  */
+    offset<uint<32>,B> symptr; /* File pointer to symtab.  */
+    uint<32>           nsyms;  /* Number of symtab entries.  */
+    offset<uint<16>,B> opthdr; /* Size of the optional header. */
+    uint<16>           flags;  /* File flags.  */
+  };
+
+/* Optional header.  */
+
+type COFF_Opt_Hdr =
+  struct
+  {
+    uint<16> magic = coff_arch_magic[0] : magic in coff_arch_magic;
+    char[2] vstamp;  /* Version stamp.  */
+    offset<uint<32>,B> tsize; /* Text size, padded to FW boundary. */
+    offset<uint<32>,B> dsize; /* Initialized data size.  */
+    offset<uint<32>,B> bsize; /* Uninitialized data size.  */
+    offset<uint<32>,B> entry; /* Entry pointer.  */
+    offset<uint<32>,B> text_start; /* Base of text.  */
+    offset<uint<32>,B> data_start; /* Base of data.  */
+  };
+
+/* 64-bit optional header.  */
+
+type COFF_Opt_Hdr_64 =
+  struct
+  {
+    uint<16> magic = coff_arch_magic[0] : magic in coff_arch_magic;
+    char[2] vstamp;  /* Version stamp.  */
+    offset<uint<32>,B> tsize; /* Text size, padded to FW boundary. */
+    offset<uint<32>,B> dsize; /* Initialized data size.  */
+    offset<uint<32>,B> bsize; /* Uninitialized data size.  */
+    offset<uint<32>,B> entry; /* Entry pointer.  */
+    offset<uint<32>,B> text_start; /* Base of text.  */
+  };
+
+/* Relocations.  These are arch-specific.  */
+
+type COFF_RELOC =
+  union
+  {
+    COFF_I386_RELOC i386       : coff_arch == COFF_ARCH_I386;
+    COFF_Aarch64_RELOC aarch64 : coff_arch == COFF_ARCH_AARCH64;
+  };
+
+/* Line number entry.  */
+
+type COFF_LINENO_16 =
+  struct
+  {
+    uint<16> l_lnno @ 4#B; /* Line number.  */
+
+    union
+    {
+      uint<32> l_symndx : l_lnno == 0;
+      offset<uint<32>,B> l_paddr;
+    } l_addr @ 0#B;
+  };
+
+type COFF_LINENO_32 =
+  struct
+  {
+    uint<32> l_lnno @ 4#B; /* Line number.  */
+
+    union
+    {
+      uint<32> l_symndx : l_lnno == 0;
+      offset<uint<32>,B> l_paddr;
+    } l_addr @ 0#B;
+  };
+
+/* Names less than eight bytes long are often encoded as arrays of
+   chars in COFF.  Names bigger than eight bytes long are encoded as
+   offsets in the image's string table.  */
+
+type COFF_Name =
+  union
+  {
+    char[8] name : name[0] != 0;
+    struct
+    {
+      uint<32> zeroes = 0;
+      offset<uint<32>,B> offset;
+    } str;
+  };
+
+/* Section flags, used in the section headers below.  */
+
+var COFF_STYP_TEXT = 0x0020UH,
+    COFF_STYP_DATA = 0x0040UH,
+    COFF_STYP_BSS = 0x0080UH;
+
+/* Section header.  */
+
+type COFF_Shdr =
+  struct
+  {
+    COFF_Name s_name;
+
+    offset<uint<32>,B> s_paddr; /* Physical address.  */
+    offset<uint<32>,B> s_vaddr; /* Virtual address.  */
+    offset<uint<32>,B> s_size;  /* Size of section.  */
+
+    offset<uint<32>,B> s_scnptr; /* File offset to section raw data.  */
+    offset<uint<32>,B> s_relptr; /* File offset to relocations.  */
+    offset<uint<32>,B> s_lnnoptr; /* File offset to line numbers.  */
+
+    uint<16> s_nreloc; /* Number of relocation entries.  */
+    uint<16> s_nlnno;  /* Number of line number entries.  */
+
+    uint<32> s_flags : s_flags == COFF_STYP_BSS => s_size == 0#B;
+
+    /* The computed field `relocs' is the relocation table for the
+       section described by this header.  */
+
+    computed COFF_RELOC[] relocs;
+
+    method get_relocs = COFF_RELOC[]:
+    {
+      return COFF_RELOC[s_nreloc] @ s_relptr;
+    }
+
+    method set_relocs = (COFF_RELOC[] val) void:
+    {
+      COFF_RELOC[] @ s_relptr = val;
+    }
+
+    /* The computed field `linenos' is the line number table for the
+       section described by this header.  */
+
+    computed COFF_LINENO_32[] linenos;
+
+    method get_linenos = COFF_LINENO_32[]:
+    {
+      return COFF_LINENO_32[s_nlnno] @ s_lnnoptr;
+    }
+
+    method set_linenos = (COFF_LINENO_32[] val) void:
+    {
+      COFF_LINENO_32[] @ s_lnnoptr = val;
+    }
+  };
+
+/* Symbol entry.  */
+
+var COFF_N_UNDEF = 0, /* Undefined external symbol.  */
+    COFF_N_ABS = 1,   /* Absolute symbol.  */
+    COFF_N_DEBUG = 2; /* Debugging symbol.  */
+
+type COFF_Sym =
+  struct
+  {
+    COFF_Name e_name;
+    uint<32> e_value;
+
+    /* Section to which this symbol belongs.  If this is greater than
+       zero, it refers to a section in the section table (which is
+       one-based).  It can also take one of the COFF_N_* values
+       defined above.  */
+    uint<16> e_scnum;
+
+    uint<16> e_type;
+    uint<8> e_sclass;
+    uint<8> e_numaux;
+  };
+
+/* String table.  */
+
+type COFF_Strtab =
+  struct
+  {
+    offset<uint<32>,B> size;
+    string[size] entries;
+
+    method get_string = (offset<uint<32>,B> offset) string:
+    {
+      /* XXX use indexing by size whenever available, it is
+         better because it is agnostics to mapping.  */
+      return string @ entries'offset + offset;
+    }
+  };
+
+/* COFF image/file.  */
+
+type COFF_File =
+  struct
+  {
+    COFF_File_Hdr hdr;
+    COFF_Opt_Hdr opt_hdr : opt_hdr'size == hdr.opthdr
+      if hdr.opthdr > 0#B;
+
+    COFF_Shdr[hdr.nscns] sections
+      if hdr.nscns > 0;
+    COFF_Sym[hdr.nsyms] symbols @ hdr.symptr
+      if hdr.nsyms > 0;
+    COFF_Strtab strings;
+  };
