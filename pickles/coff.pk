@@ -23,7 +23,8 @@ load time; /* For POSIX_Time32 */
    OS.  */
 
 var COFF_ARCH_I386 = 0,
-    COFF_ARCH_AARCH64 = 1;
+    COFF_ARCH_AARCH64 = 1,
+    COFF_ARCH_PE = 2;
 
 /* The variable coff_arch determines which architecture to use when
    mapping/constructing COFF structures.  */
@@ -67,6 +68,7 @@ fun coff_magic_arch = (uint<16> magic) int:
 
 load "coff-i386.pk";
 load "coff-aarch64.pk";
+load "coff-pe.pk";
 
 var coff_include_comdat_fields_in_auxent = 1;
 
@@ -117,6 +119,7 @@ type COFF_RELOC =
   {
     COFF_I386_RELOC i386       : coff_arch == COFF_ARCH_I386;
     COFF_Aarch64_RELOC aarch64 : coff_arch == COFF_ARCH_AARCH64;
+    COFF_PE_RELOC pe           : coff_arch == COFF_ARCH_PE;
   };
 
 /* Line number entry.  */

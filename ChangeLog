@@ -1,5 +1,12 @@
 2022-10-02  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* pickles/coff-pe.pk: New file.
+	* pickles/Makefile.am (dist_pickles_DATA): Add coff-pe.pk.
+	* pickles/coff.pk (COFF_RELOC): Add alternative for PE/COFF
+	relocations.
+
+2022-10-02  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* Makefile.am: Add missing file header.
 	* pickles/Makefile.am: Likewise.
 	* maps/Makefile.am: Likewise.
