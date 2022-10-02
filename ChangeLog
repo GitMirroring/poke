@@ -1,3 +1,10 @@
+2022-10-02  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* pickles/pe.pk: New file.
+	* pickles/coff.pk: Remove 64-bit optional header, which is
+	actually the PE one.
+	* pickles/Makefile.am (dist_pickles_DATA): Add pe.pk
+
 2022-10-01  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* pickles/coff.pk: New file.

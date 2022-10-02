@@ -1,0 +1,384 @@
+/* pe.pk -- PE COFF implementation for GNU poke.  */
+
+/* Copyright (C) 2022 Jose E. Marchesi.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+load coff;
+
+/* PE magic numbers used in the optional COFF header.  */
+
+var PE_MAGIC_PE32 = 0x10bUH,
+    PE_MAGIC_PE32P = 0x20bUH; /* PE32+ */
+
+/* DLL characteristics flag bits.  */
+
+var PE_DLL_F_HIGH_ENTROPY_VA = 0x0020UH,
+    PE_DLL_F_DYNAMIC_BASE = 0x0040UH,
+    PE_DLL_F_FORCE_INTEGRITY = 0x0080UH,
+    PE_DLL_F_NX_COMPAT = 0x0100UH,
+    PE_DLL_F_NO_ISOLATION = 0x0200UH,
+    PE_DLL_F_NO_SEH = 0x0400UH,
+    PE_DLL_F_NO_BIND = 0x0800UH,
+    PE_DLL_F_APPCONTAINER = 0x1000UH,
+    PE_DLL_F_WDM_DRIVER = 0x2000UH,
+    PE_DLL_F_GUARD_CF = 0x4000UH,
+    PE_DLL_F_TERMINAL_SERVER_AWARE = 0x8000UH;
+
+var pe_dll_characteristics =
+  [ PE_DLL_F_HIGH_ENTROPY_VA, PE_DLL_F_DYNAMIC_BASE,
+    PE_DLL_F_FORCE_INTEGRITY, PE_DLL_F_NX_COMPAT,
+    PE_DLL_F_NO_ISOLATION, PE_DLL_F_NO_SEH,
+    PE_DLL_F_NO_BIND, PE_DLL_F_APPCONTAINER,
+    PE_DLL_F_WDM_DRIVER, PE_DLL_F_GUARD_CF,
+    PE_DLL_F_TERMINAL_SERVER_AWARE ];
+
+/* Section header flags.  */
+
+var PE_IMAGE_SCN_MEM_DISCARDABLE = 0x02000000U,
+    PE_IMAGE_SCN_MEM_EXECUTE     = 0x20000000U,
+    PE_IMAGE_SCN_MEM_READ        = 0x40000000U,
+    PE_IMAGE_SCN_MEM_WRITE       = 0x80000000;
+
+/* Section characteristics.  */
+
+var PE_IMAGE_SCN_TYPE_NO_PAD = 0x00000008U, /* Reserved.  */
+    PE_IMAGE_SCN_CNT_CODE    = 0x00000020U, /* Section contains code.  */
+    PE_IMAGE_SCN_CNT_INITIALIZED_DATA = 0x00000040U, /* Section contains initialized data.  */
+    PE_IMAGE_SCN_CNT_UNINITIALIZED_DATA = 0x00000080U, /* Section contains uninitialized data.  */
+    PE_IMAGE_SCN_LNK_OTHER   = 0x00000100U, /* Reserved.  */
+    PE_IMAGE_SCN_LNK_INFO    = 0x00000200U, /* Section contains comments or some other type of information.  */
+    PE_IMAGE_SCN_LNK_REMOVE  = 0x00000800U, /* Section contents will not become part of image.  */
+    PE_IMAGE_SCN_LNK_COMDAT  = 0x00001000U, /* Section contents comdat.  */
+    PE_IMAGE_SCN_MEM_FARDATA = 0x00008000U,
+    PE_IMAGE_SCN_MEM_PURGEABLE = 0x00020000U,
+    PE_IMAGE_SCN_MEM_16BIT   = 0x00020000U,
+    PE_IMAGE_SCN_MEM_LOCKED  = 0x00040000U,
+    PE_IMAGE_SCN_MEM_PRELOAD = 0x00080000U;
+
+/* COMDAT selection codes.  */
+
+var PE_IMAGE_COMDAT_SELECT_NODUPLICATES = 1, /* Warn if duplicates.  */
+    PE_IMAGE_COMDAT_SELECT_ANY = 2,          /* No warning.  */
+    PE_IMAGE_COMDAT_SELECT_SAME_SIZE = 3,    /* Warn if different size.  */
+    PE_IMAGE_COMDAT_SELECT_EXACT_MATCH = 4,  /* Warn if different.  */
+    PE_IMAGE_COMDAT_SELECT_ASSOCIATIVE = 5;  /* Base on other section.  */
+
+/* Machine numbers.  */
+
+var PE_IMAGE_FILE_MACHINE_UNKNOWN    = 0x0000UH,
+    PE_IMAGE_FILE_MACHINE_ALPHA      = 0x0184UH,
+    PE_IMAGE_FILE_MACHINE_ALPHA64    = 0x0284UH,
+    PE_IMAGE_FILE_MACHINE_AM33       = 0x01d3UH,
+    PE_IMAGE_FILE_MACHINE_AMD64      = 0x8664UH,
+    PE_IMAGE_FILE_MACHINE_ARM        = 0x01c0UH,
+    PE_IMAGE_FILE_MACHINE_ARM64      = 0xaa64UH,
+    PE_IMAGE_FILE_MACHINE_AXP64      = PE_IMAGE_FILE_MACHINE_ALPHA64,
+    PE_IMAGE_FILE_MACHINE_CEE        = 0xc0eeUH,
+    PE_IMAGE_FILE_MACHINE_CEF        = 0x0cefUH,
+    PE_IMAGE_FILE_MACHINE_EBC        = 0x0ebcUH,
+    PE_IMAGE_FILE_MACHINE_I386       = 0x014cUH,
+    PE_IMAGE_FILE_MACHINE_IA64       = 0x0200UH,
+    PE_IMAGE_FILE_MACHINE_M32R       = 0x9041UH,
+    PE_IMAGE_FILE_MACHINE_M68K       = 0x0268UH,
+    PE_IMAGE_FILE_MACHINE_MIPS16     = 0x0266UH,
+    PE_IMAGE_FILE_MACHINE_MIPSFPU    = 0x0366UH,
+    PE_IMAGE_FILE_MACHINE_MIPSFPU16  = 0x0466UH,
+    PE_IMAGE_FILE_MACHINE_POWERPC    = 0x01f0UH,
+    PE_IMAGE_FILE_MACHINE_POWERPCFP  = 0x01f1UH,
+    PE_IMAGE_FILE_MACHINE_R10000     = 0x0168UH,
+    PE_IMAGE_FILE_MACHINE_R3000      = 0x0162UH,
+    PE_IMAGE_FILE_MACHINE_R4000      = 0x0166UH,
+    PE_IMAGE_FILE_MACHINE_SH3        = 0x01a2UH,
+    PE_IMAGE_FILE_MACHINE_SH3DSP     = 0x01a3UH,
+    PE_IMAGE_FILE_MACHINE_SH3E       = 0x01a4UH,
+    PE_IMAGE_FILE_MACHINE_SH4        = 0x01a6UH,
+    PE_IMAGE_FILE_MACHINE_SH5        = 0x01a8UH,
+    PE_IMAGE_FILE_MACHINE_THUMB      = 0x01c2UH,
+    PE_IMAGE_FILE_MACHINE_TRICORE    = 0x0520UH,
+    PE_IMAGE_FILE_MACHINE_WCEMIPSV2  = 0x0169UH,
+    PE_IMAGE_FILE_MACHINE_AMD64      = 0x8664UH;
+
+/* Subsystem types.  */
+
+var PE_SUBSYS_UNKNOWN = 0,
+    PE_SUBSYS_NATIVE = 1,
+    PE_SUBSYS_WINDOWS_GUI = 2,
+    PE_SUBSYS_WINDOWS_CUI = 3,
+    PE_SUBSYS_POSIX_CUI = 7,
+    PE_SUBSYS_WINDOWS_CE_GUI = 9,
+    PE_SUBSYS_EFI_APPLICATION = 10,
+    PE_SUBSYS_EFI_BOOT_SERVICE_DRIVER = 11,
+    PE_SUBSYS_EFI_RUNTIME_DRIVER = 12,
+    PE_SUBSYS_SAL_RUNTIME_DRIVER = 13,
+    PE_SUBSYS_XBOX = 14;
+
+var pe_subsystems =
+  [ PE_SUBSYS_UNKNOWN, PE_SUBSYS_NATIVE, PE_SUBSYS_WINDOWS_GUI,
+    PE_SUBSYS_WINDOWS_CUI, PE_SUBSYS_POSIX_CUI,
+    PE_SUBSYS_WINDOWS_CE_GUI, PE_SUBSYS_EFI_APPLICATION,
+    PE_SUBSYS_EFI_BOOT_SERVICE_DRIVER, PE_SUBSYS_EFI_RUNTIME_DRIVER,
+    PE_SUBSYS_SAL_RUNTIME_DRIVER, PE_SUBSYS_XBOX ];
+
+/* Characteristics of the PE/COFF image, encoded in the `flags' field
+   of the COFF header.  */
+
+var PE_F_RELOCS_STRIPPED = 0x0001UH,
+    PE_F_EXECUTABLE_IMAGE = 0x0002UH,
+    PE_F_LINE_NUMS_STRIPPED = 0x0004UH,
+    PE_F_LOCL_SYMS_STRIPPED = 0x0008UH,
+    PE_F_AGGRESSIVE_WS_TRIM = 0x0010UH,
+    PE_F_LARGE_ADDRESS_AWARE = 0x0020UH,
+    PE_F_BYTES_REVERSED_LO = 0x0080UH;
+
+var pe_characteristics =
+  [PE_F_RELOCS_STRIPPED, PE_F_EXECUTABLE_IMAGE,
+   PE_F_LINE_NUMS_STRIPPED, PE_F_LOCL_SYMS_STRIPPED,
+   PE_F_AGGRESSIVE_WS_TRIM, PE_F_LARGE_ADDRESS_AWARE,
+   PE_F_BYTES_REVERSED_LO];
+
+/* PE section flags.  */
+
+var PE_SEC_F_TYPE_NO_PAD = 0x0008,
+    PE_SEC_F_CNT_CODE = 0x0020,
+    PE_SEC_F_CNT_INITIALIZED_DATA = 0x0040,
+    PE_SEC_F_CNT_UNINITIALIZED_DATA = 0x0080,
+    PE_SEC_F_LNK_OTHER = 0x0100,
+    PE_SEC_F_LNK_INFO = 0x0200,
+    PE_SEC_F_LNK_REMOVE = 0x0800,
+    PE_SEC_F_LNK_COMDAT = 0x1000,
+    PE_SEC_F_GPREL = 0x8000,
+    PE_SEC_F_MEM_PURGEABLE = 0x20000,
+    PE_SEC_F_MEM_16BIT = 0x20000,
+    PE_SEC_F_MEM_LOCKED = 0x40000,
+    PE_SEC_F_MEM_PRELOAD = 0x80000,
+    PE_SEC_F_ALIGN_1BYTES = 0x100000,
+    PE_SEC_F_ALIGN_2BYTES = 0x200000,
+    PE_SEC_F_ALIGN_4BYTES = 0x300000,
+    PE_SEC_F_ALIGN_8BYTES = 0x400000,
+    PE_SEC_F_ALIGN_16BYTES = 0x500000,
+    PE_SEC_F_ALIGN_32BYTES = 0x600000,
+    PE_SEC_F_ALIGN_64BYTES = 0x700000,
+    PE_SEC_F_ALIGN_128BYTES = 0x800000,
+    PE_SEC_F_ALIGN_512BYTES = 0xa00000,
+    PE_SEC_F_ALIGN_1024BYTES = 0xb00000,
+    PE_SEC_F_ALIGN_2048BYTES = 0xc00000,
+    PE_SEC_F_ALIGN_4096BYTES = 0xd00000,
+    PE_SEC_F_ALIGN_8192BYTES = 0xe00000,
+    PE_SEC_F_LNK_NRELOC_OVFL = 0x01000000,
+    PE_SEC_F_MEM_DISCARDABLE = 0x02000000,
+    PE_SEC_F_MEM_NOT_CACHED = 0x04000000,
+    PE_SEC_F_MEM_NOT_PAGED = 0x08000000,
+    PE_SEC_F_MEM_SHARED = 0x10000000,
+    PE_SEC_F_MEM_EXECUTE = 0x20000000,
+    PE_SEC_F_MEM_READ = 0x40000000,
+    PE_SEC_F_MEM_WRITE = 0x80000000;
+
+/* PE names.
+
+   COFF names are sort of ugly (see COFF_Name in coff.pk) but the
+   PE/COFF variant is an atrocity.  */
+
+type PE_Name =
+  struct
+  {
+    /* Array containing a null-padded UTF-8 encoded string. If the
+       string is exactly 8 characters long, there is no terminating
+       null. For longer names, this field contains a slash (/) that is
+       followed by an ASCII representation of a decimal number that is
+       an offset into the string table.  */
+    char[8] chars;
+
+    /* Offset in the COFF string table for this name.  If the length
+       of the name is 8 bytes or shorter, then return 0#B (which is
+       not a valid offset in COFF string tables.)  */
+    computed offset<uint<32>,B> offset;
+
+    method get_offset = offset<uint<32>,B>:
+    {
+      if (chars[0] != '/')
+        return 0#B;
+      return atoi (catos (chars[1:]))#B;
+    }
+
+    method set_offset = (offset<uint<32>,B> offset) void:
+    {
+      stoca ("/" + format ("%i32d", offset'magnitude), chars);
+    }
+
+    method _print = void:
+    {
+      print "#<" + catos (chars) + ">";
+    }
+  };
+
+/* PE section header.  */
+
+type PE_Shdr =
+  struct
+  {
+    PE_Name name;
+
+    offset<uint<32>,B> virtual_size; /* XXX should be zero for objects.  */
+    offset<uint<32>,B> virtual_address;
+    offset<uint<32>,B> size_of_raw_data;
+    offset<uint<32>,B> ptr_to_raw_data;
+    offset<uint<32>,B> ptr_to_relocs;
+    offset<uint<32>,B> ptr_to_linenos;
+
+    uint<16> num_relocs;
+    uint<16> num_linenos; /* XXX should be zero for images.  */
+
+
+    /* PE_SEC_F_LNK_NRELOC_OVFL indicates that the count of
+       relocations for the section exceeds the 16 bits that are
+       reserved for it in the section header. If the bit is set and
+       the NumberOfRelocations field in the section header is 0xffff,
+       the actual relocation count is stored in the 32-bit
+       VirtualAddress field of the first relocation. It is an error if
+       IMAGE_SCN_LNK_NRELOC_OVFL is set and there are fewer than
+       0xffff relocations in the section.  */
+    uint<32> flags;
+  };
+
+/* PE data directory descriptor.  */
+
+type PE_Data_Directory =
+  struct
+  {
+    offset<uint<32>,B> rva;
+    offset<uint<32>,B> size;
+  };
+
+/* PE optional header.  */
+
+type PE_Opt_Hdr =
+  struct
+  {
+    COFF_Opt_Hdr coff_opt_hdr = COFF_Opt_Hdr { magic = PE_MAGIC_PE32 }
+                              : coff_opt_hdr.magic in [PE_MAGIC_PE32,
+                                                       PE_MAGIC_PE32P];
+
+    var pe32p = coff_opt_hdr.magic == PE_MAGIC_PE32P;
+
+    offset<uint<32>,B> data_start if pe32p;
+
+    /* Preferred address of the first byte of image when loaded into
+       memory.  */
+    union
+    {
+      offset<uint<64>,B> a64 : pe32p && a64 % 64#B == 0#B;
+      offset<uint<32>,B> a32 : (a32 & 0xffff#B) == 0#B;
+    } image_base;
+
+    /* Alignment of sections when they are loaded into memory.  */
+    offset<uint<32>,B> section_alignment;
+
+    /* Alignment factor that is used to align the raw data of sections
+       in the image file.  */
+    offset<uint<32>,B> file_alignment : (file_alignment & 0x1#b) == 0#B
+                                        && file_alignment <= section_alignment
+                                        && file_alignment >= 512#B
+                                        && file_alignment <= 64#KB
+                                      = 512#B;
+
+    /* Version numbers for operating system, images etc.  */
+    uint<16> major_os_version;
+    uint<16> minor_os_version;
+    uint<16> major_image_version;
+    uint<16> minor_image_version;
+    uint<16> major_subsystem_version;
+    uint<16> minor_subsystem_version;
+    uint<32> win32_version_value;
+
+    /* The size of the image, including all headers, as the image is
+       loaded in memory.  */
+    offset<uint<32>,B> size_of_image
+                       : section_alignment % size_of_image == 0#B;
+
+    /* The combined size of an MS-DOS stub, PE header, and section
+       headers rounded up to a multiple of FileAlignment.  */
+    offset<uint<32>,B> size_of_headers
+                       : size_of_headers % file_alignment == 0#B;
+
+    /* The image file checksum.  */
+    uint<32> checksum;
+
+    /* The subsystem that is required to run this image.  */
+    uint<16> subsystem : subsystem in pe_subsystems;
+
+    /* DLL characteristics.  */
+    uint<16> dll_characteristics : dll_characteristics in pe_dll_characteristics;
+
+    /* The size of the stack to reserve.  */
+    union
+    {
+      offset<uint<64>,B> s64 : pe32p;
+      offset<uint<32>,B> s32;
+    } size_of_stack_commit;
+
+    /* The size of the local heap space to commit.  */
+    union
+    {
+      offset<uint<64>,B> s64 : pe32p;
+      offset<uint<32>,B> s32;
+    } size_of_heap_commit;
+
+    /* Loader flags.  This is reserved and must be zero.  */
+    uint<32> loader_flags == 0;
+
+    /* Number of data-directory entries in the remainder of the
+       optional header.  */
+    uint<32> num_of_rva_and_sizes;
+
+    /* Data directories.  */
+    struct
+    {
+      PE_Data_Directory export_table;
+      PE_Data_Directory import_table;
+      PE_Data_Directory resource_table;
+      PE_Data_Directory exception_table;
+      PE_Data_Directory certificate_table;
+      PE_Data_Directory base_relocation_table;
+      PE_Data_Directory debug;
+      PE_Data_Directory architecture : architecture.rva == 0#B
+                                       && architecture.size == 0#B;
+      PE_Data_Directory global_ptr : global_ptr.size == 0#B;
+      PE_Data_Directory tls_table;
+      PE_Data_Directory load_config_table;
+      PE_Data_Directory bound_import;
+      PE_Data_Directory iat;
+      PE_Data_Directory clr_runtime_header;
+      PE_Data_Directory reserved : reserved.rva == 0#B
+                                   && reserved.size == 0#B;
+    } data_directories
+        : data_directories'length == num_of_rva_and_sizes;
+  };
+
+/* PE file header.  */
+
+type PE_File =
+  struct
+  {
+    COFF_File_Hdr hdr @ 0x3C#B;
+    PE_Opt_Hdr opt_hdr : opt_hdr'size == hdr.opthdr
+      if hdr.opthdr > 0#B;
+
+    COFF_Shdr[hdr.nscns] sections
+      if hdr.nscns > 0;
+    COFF_Sym[hdr.nsyms] symbols @ hdr.symptr
+      if hdr.nsyms > 0;
+    COFF_Strtab strings;
+  };
