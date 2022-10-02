@@ -16,7 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+load time; /* For POSIX_Time32 */
 load coff;
+
+/* Load architecture-specific stuff.  */
+
+load "pe-amd64.pk";
+load "pe-arm.pk";
+load "pe-arm64.pk";
+load "pe-i386.pk";
+load "pe-ia64.pk";
+load "pe-m32r.pk";
+load "pe-mips.pk";
+load "pe-ppc.pk";
+load "pe-sh3.pk";
 
 /* PE magic numbers used in the optional COFF header.  */
 
@@ -253,6 +266,238 @@ type PE_Shdr =
     uint<32> flags;
   };
 
+
+/* Supported symbol base types, encoded in the least-significative
+   byte of COFF_Sym.e_type.  */
+
+var PE_SYM_TYPE_NULL = 0UB,
+    PE_SYM_TYPE_VOID = 1UB,
+    PE_SYM_TYPE_CHAR = 2UB,
+    PE_SYM_TYPE_SHORT = 3UB,
+    PE_SYM_TYPE_INT = 4UB,
+    PE_SYM_TYPE_LONG = 5UB,
+    PE_SYM_TYPE_FLOAT = 6UB,
+    PE_SYM_TYPE_DOUBLE = 7UB,
+    PE_SYM_TYPE_STRUCT = 8UB,
+    PE_SYM_TYPE_UNION = 9UB,
+    PE_SYM_TYPE_ENUM = 10UB,
+    PE_SYM_TYPE_MOE = 11UB,
+    PE_SYM_TYPE_BYTE = 12UB,
+    PE_SYM_TYPE_WORD = 13UB,
+    PE_SYM_TYPE_UINT = 14UB,
+    PE_SYM_TYPE_DWORD = 15UB;
+
+/* Supported complex sym types, encoded in the most-significative byte
+   of COFF_Sym.e_type.  */
+
+var PE_SYM_DTYPE_NULL = 0UB,
+    PE_SYM_DTYPE_POINTER = 1UB,
+    PE_SYM_DTYPE_FUNCTION = 2UB,
+    PE_SYM_DTYPE_ARRAY = 3UB;
+
+/* Symbol storage classes, to be used in COFF_Sym.e_sclass.  */
+
+var PE_SYM_CLASS_END_OF_FUNCTION = 0xFFUB,
+    PE_SYM_CLASS_NULL = 0UB,
+    PE_SYM_CLASS_AUTOMATIC = 1UB,
+    PE_SYM_CLASS_EXTERNAL = 2UB,
+    PE_SYM_CLASS_STATIC = 3UB,
+    PE_SYM_CLASS_REGISTER = 4UB,
+    PE_SYM_CLASS_EXTERNAL_DEF = 5UB,
+    PE_SYM_CLASS_LABEL = 6UB,
+    PE_SYM_CLASS_UNDEFINED_LABEL = 7UB,
+    PE_SYM_CLASS_MEMBER_OF_STRUCT = 8UB,
+    PE_SYM_CLASS_ARGUMENT = 9UB,
+    PE_SYM_CLASS_STRUCT_TAG = 10UB,
+    PE_SYM_CLASS_MEMBER_OF_UNION = 11UB,
+    PE_SYM_CLASS_UNION_TAG = 12UB,
+    PE_SYM_CLASS_TYPE_DEFINITION = 13UB,
+    PE_SYM_CLASS_UNDEFINED_STATIC = 14UB,
+    PE_SYM_CLASS_ENUM_TAG = 15UB,
+    PE_SYM_CLASS_MEMBER_OF_ENUM = 16UB,
+    PE_SYM_CLASS_REGISTER_PARAM = 17UB,
+    PE_SYM_CLASS_BIT_FIELD = 18UB,
+    PE_SYM_CLASS_BLOCK = 100UB,
+    PE_SYM_CLASS_FUNCTION = 101UB,
+    PE_SYM_CLASS_END_OF_STRUCT = 102UB,
+    PE_SYM_CLASS_FILE = 103UB,
+    PE_SYM_CLASS_SECTION = 104UB,
+    PE_SYM_CLASS_WEAK_EXTERNAL = 105UB,
+    PE_SYM_CLASS_CLR_TOKEN = 107UB;
+
+/* PE auxiliary symbol records.  These follow certain kind of regular
+   symbol records and must be 18 bytes long.  */
+
+type PE_Func_Def =
+  struct
+  {
+    uint<32> tag_index;
+    offset<uint<32>,B> total_size;
+    offset<uint<32>,B> ptr_to_linenos;
+    offset<uint<32>,B> ptr_to_next_func;
+    uint<16>;
+  };
+
+assert (1#PE_Func_Def == 18#B);
+
+type PE_Begin_Function =
+  struct
+  {
+    uint<32>;
+    uint<16> lineno : lineno > 0;
+    uint<48>;
+    offset<uint<32>,B> ptr_to_next_function;
+    uint<16>;
+  };
+
+assert (1#PE_Begin_Function == 18#B, "size must be 18#B");
+
+type PE_End_Function =
+  struct
+  {
+    uint<32>;
+    uint<16> lineno : lineno > 0;
+    uint<48>;
+    uint<32>;
+    uint<16>;
+  };
+
+assert (1#PE_End_Function == 18#B, "size musot be 18#B");
+
+/* XXX I made these values up - jemarch  */
+var PE_WEAK_EXTERN_SEARCH_NOLIBRARY = 0x1U,
+    PE_WEAK_EXTERN_SEARCH_LIBRARY = 0x2U,
+    PE_WEAK_EXTERN_SEARCH_ALIAS = 0x4U;
+
+type PE_Weak_External =
+  struct
+  {
+    uint<32> tag_index;
+    uint<32> flags;
+    uint<64>;
+    uint<16>;
+  };
+
+assert (1#PE_Weak_External == 18#B, "size must be 18#B");
+
+var PE_COMDAT_SELECT_NODUPLICATES = 1UB,
+    PE_COMDAT_SELECT_ANY = 2UB,
+    PE_COMDAT_SELECT_SAME_SIZE = 3UB,
+    PE_COMDAT_SELECT_EXACT_MATCH = 4UB,
+    PE_COMDAT_SELECT_ASSOCIATIVE = 5UB,
+    PE_COMDAT_SELECT_LARGEST = 6UB;
+
+type PE_Section_Definition =
+  struct
+  {
+    offset<uint<32>,B> size; /* Same as PE_Shdr.size_of_raw_data  */
+    uint<16> num_of_relocs;
+    uint<16> num_of_linenos;
+    uint<32> checksum;
+    uint<16> number;
+    uint<8> selection : selection in [0UB, /* When no COMDAT section.  */
+                                      PE_COMDAT_SELECT_NODUPLICATES,
+                                      PE_COMDAT_SELECT_ANY,
+                                      PE_COMDAT_SELECT_SAME_SIZE,
+                                      PE_COMDAT_SELECT_EXACT_MATCH,
+                                      PE_COMDAT_SELECT_ASSOCIATIVE,
+                                      PE_COMDAT_SELECT_LARGEST];
+    uint<24> unused;
+  };
+
+assert (1#PE_Section_Definition == 18#B, "size must be 18#B");
+
+var PE_AUX_SYMBOL_TYPE_TOKEN_DEF = 1UB;
+
+type PE_CLR_Token =
+  struct
+  {
+    uint<8> aux_type == PE_AUX_SYMBOL_TYPE_TOKEN_DEF;
+    uint<8> rsv1 : rsv1 == 0;
+    uint<32> symbol_table_index;
+    uint<64> rsv2 : rsv2 == 0;
+    uint<32> rsv3 : rsv3 == 0;
+  };
+
+assert (1#PE_CLR_Token == 18#B, "size must be 18#B");
+
+/* PE symbol records.  */
+
+type PE_Sym =
+  struct
+  {
+    COFF_Sym sym;
+    union
+    {
+      PE_Func_Def function_definition : sym.e_sclass == PE_SYM_CLASS_EXTERNAL
+                                        && sym.e_type.msb == PE_SYM_DTYPE_FUNCTION
+                                        && sym.e_scnum > 0;
+      PE_Begin_Function bf : sym.e_type.msb == PE_SYM_DTYPE_FUNCTION
+                             && catos (sym.e_name.name) == ".bf";
+      PE_End_Function ef : sym.e_type.msb == PE_SYM_DTYPE_FUNCTION
+                           && catos (sym.e_name.name) == ".ef";
+      PE_Weak_External weak_external : sym.e_sclass == PE_SYM_CLASS_EXTERNAL
+                                       && sym.e_scnum == COFF_N_UNDEF
+                                       && sym.e_value == 0;
+      /* We assume here that any symbol with static storage and whose
+         name starts with a dot character '.' is a section name.  */
+      PE_Section_Definition section_definition : sym.e_sclass == PE_SYM_CLASS_STATIC
+                                                 && (sym.e_name.name ?! E_elem
+                                                     || sym.e_name.name[0] == '.');
+      PE_CLR_Token clr_token : sym.e_sclass == PE_SYM_CLASS_CLR_TOKEN;
+      char[18] file_name : sym.e_sclass == PE_SYM_CLASS_FILE;
+      byte[18] unused;
+    } aux_sym;
+  };
+
+/* PE attribute certificates.  */
+
+var PE_WIN_CERT_REVISION_1_0 = 0x0100UH,
+    PE_WIN_CERT_REVISION_2_0 = 0x0200UH;
+
+var PE_WIN_CERT_TYPE_X509 = 0x0001UH,
+    PE_WIN_CERT_TYPE_PKCS_SIGNED_DATA = 0x0002UH,
+    PE_WIN_CERT_TYPE_RESERVED_1 = 0x0003UH,
+    PE_WIN_CERT_TYPE_TS_STACK_SIGNED = 0x0004UH;
+
+type PE_Attribute_Certificate =
+  struct
+  {
+    offset<uint<32>,B> length;
+    uint<16> revision;
+    uint<16> cert_type;
+
+    /* Note: we use internal padding here so we can map arrays of
+       attribute certificates by total size.  */
+    byte[0] certificate_begin;
+    byte[0] certificate_end @ length + alignto (length, 8#B);
+  };
+
+/* PE delay import descriptors.  */
+
+type PE_Delay_Import =
+  struct
+  {
+    uint<32> attributes == 0;
+    offset<uint<32>,B> name;
+    offset<uint<32>,B> module_handle;
+    offset<uint<32>,B> delay_import_address_table;
+    offset<uint<32>,B> delay_import_name_table;
+    offset<uint<32>,B> bound_delay_import_table;
+    offset<uint<32>,B> unload_delay_import_table;
+    POSIX_Time32 timestamp;
+  };
+
+/* PE relocations.  */
+
+type PE_Reloc =
+  struct
+  {
+    offset<uint<32>,B> r_vaddr;
+    uint<32> r_symndx;
+    uint<16> r_type;
+  };
+
 /* PE data directory descriptor.  */
 
 type PE_Data_Directory =
@@ -360,6 +605,7 @@ type PE_Opt_Hdr =
       PE_Data_Directory load_config_table;
       PE_Data_Directory bound_import;
       PE_Data_Directory iat;
+      PE_Data_Directory delay_import_descriptor;
       PE_Data_Directory clr_runtime_header;
       PE_Data_Directory reserved : reserved.rva == 0#B
                                    && reserved.size == 0#B;
@@ -376,9 +622,21 @@ type PE_File =
     PE_Opt_Hdr opt_hdr : opt_hdr'size == hdr.opthdr
       if hdr.opthdr > 0#B;
 
-    COFF_Shdr[hdr.nscns] sections
+    PE_Shdr[hdr.nscns] sections
       if hdr.nscns > 0;
-    COFF_Sym[hdr.nsyms] symbols @ hdr.symptr
+    PE_Sym[hdr.nsyms] symbols @ hdr.symptr
       if hdr.nsyms > 0;
     COFF_Strtab strings;
+
+    var delay_import_datadir = opt_hdr.data_directories.delay_import_descriptor;
+
+    PE_Delay_Import[delay_import_datadir.size] delay_imports
+      @ delay_import_datadir.rva
+      if delay_import_datadir.size > 0#B;
+
+    var certs_datadir = opt_hdr.data_directories.certificate_table;
+
+    PE_Attribute_Certificate[certs_datadir.size] certificates
+      @ certs_datadir.rva
+      if certs_datadir.size > 0#B;
   };

@@ -24,4 +24,5 @@ dist_pickles_DATA = elf-common.pk elf-64.pk elf-32.pk elf.pk ctf.pk ctf-dump.pk 
                     dwarf-types.pk time.pk argp.pk pktest.pk mbr.pk ustar.pk \
                     mcr.pk dwarf-expr.pk dwarf-info.pk id3v2.pk jffs2.pk asn1-ber.pk \
                     openpgp.pk search.pk riscv.pk coff.pk coff-i386.pk coff-aarch64.pk \
-                    pe.pk coff-pe.pk
+                    pe.pk pe-amd64.pk pe-arm.pk pe-arm64.pk pe-i386.pk pe-ia64.pk \
+                    pe-m32r.pk pe-mips.pk pe-ppc.pk pe-sh3.pk

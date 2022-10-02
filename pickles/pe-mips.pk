@@ -1,0 +1,35 @@
+/* pe-mips.pk -- PE COFF implementation for GNU poke, MIPS.  */
+
+/* Copyright (C) 2022 Jose E. Marchesi.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* MIPS PE relocation.  */
+
+var COFF_PE_MIPS_R_ABSOLUTE = 0x0000UH,
+    COFF_PE_MIPS_R_REFHALF = 0x0001UH,
+    COFF_PE_MIPS_R_REFWORD = 0x0002UH,
+    COFF_PE_MIPS_R_JMPADDR = 0x0003UH,
+    COFF_PE_MIPS_R_REFHI = 0x0004UH,
+    COFF_PE_MIPS_R_REFLO = 0x0005UH,
+    COFF_PE_MIPS_R_GPREL = 0x0006UH,
+    COFF_PE_MIPS_R_LITERAL = 0x0007UH,
+    COFF_PE_MIPS_R_SECTION = 0x000AUH,
+    COFF_PE_MIPS_R_SECREL = 0x000BUH,
+    COFF_PE_MIPS_R_SECRELLO = 0x000CUH,
+    COFF_PE_MIPS_R_SECRELHI = 0x000DUH,
+    COFF_PE_MIPS_R_JMPADDR16 = 0x0010UH,
+    COFF_PE_MIPS_R_REFWORDNB = 0x0022UH,
+    COFF_PE_MIPS_R_PAIR = 0x0025UH;

@@ -1,0 +1,49 @@
+/* pe-i386.pk -- PE COFF implementation for GNU poke, ia64.  */
+
+/* Copyright (C) 2022 Jose E. Marchesi.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* Itanium relocations.  */
+
+var COFF_PE_IA64_R_ABSOLUTE = 0x0000UH,
+    COFF_PE_IA64_R_IMM14 = 0x0001UH,
+    COFF_PE_IA64_R_IMM22 = 0x0002UH,
+    COFF_PE_IA64_R_IMM64 = 0x0003UH,
+    COFF_PE_IA64_R_DIR32 = 0x0004UH,
+    COFF_PE_IA64_R_DIR64 = 0x0005UH,
+    COFF_PE_IA64_R_PCREL21B = 0x0006UH,
+    COFF_PE_IA64_R_PCREL21M = 0x0007UH,
+    COFF_PE_IA64_R_PCREL21F = 0x0008UH,
+    COFF_PE_IA64_R_GPREL22 = 0x0009UH,
+    COFF_PE_IA64_R_LTOFF22 = 0x000AUH,
+    COFF_PE_IA64_R_SECTION = 0x000BUH,
+    COFF_PE_IA64_R_SECREL22 = 0x000CUH,
+    COFF_PE_IA64_R_SECREL64I = 0x000DUH,
+    COFF_PE_IA64_R_SECREL32 = 0x000EUH,
+    COFF_PE_IA64_R_DIR32NB = 0x0010UH,
+    COFF_PE_IA64_R_SREL14 = 0x0011UH,
+    COFF_PE_IA64_R_SREL22 = 0x0012UH,
+    COFF_PE_IA64_R_SREL32 = 0x0013UH,
+    COFF_PE_IA64_R_UREL32 = 0x0014UH,
+    COFF_PE_IA64_R_PCREL60X = 0x0015UH,
+    COFF_PE_IA64_R_PCREL60B = 0x0016UH,
+    COFF_PE_IA64_R_PCREL60F = 0x0017UH,
+    COFF_PE_IA64_R_PCREL60I = 0x0018UH,
+    COFF_PE_IA64_R_PCREL60M = 0x0019UH,
+    COFF_PE_IA64_R_IMMGPREL64 = 0x001aUH,
+    COFF_PE_IA64_R_TOKEN = 0x001bUH,
+    COFF_PE_IA64_R_GPREL32 = 0x001cUH,
+    COFF_PE_IA64_R_ADDEND = 0x001FUH;

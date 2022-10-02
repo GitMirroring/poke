@@ -1,3 +1,23 @@
+2022-10-03  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* pickles/pe.pk: Load architecture-specific PE parts.
+	* pickles/coff.pk (COFF_LINENO): New type.
+	(COFF_Shdr): Use COFF_LINENO instead of COFF_LINENO_16.
+	(COFF_Sym): e_scnum is signed.
+	(COFF_N_ABS): Make negative.
+	(COFF_N_DEBUG): Likewise.
+	* pickles/coff-pe.pk: Remove file.
+	* pickles/pe-i386.pk: New file.
+	* pickles/pe-ia64.pk: Likewise.
+	* pickles/pe-mips.pk: Likewise.
+	* pickles/pe-amd64.pk: Likewise.
+	* pickles/pe-arm.pk: Likewise.
+	* pickles/pe-arm64.pk: Likewise.
+	* pickles/pe-sh3.pk: Likewise.
+	* pickles/pe-ppc.pk: Likewise.
+	* pickles/pe-m32r.pk: Likewise.
+	* pickles/Makefile.am (dist_pickles_DATA): Add new pickles.
+
 2022-10-02  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* pickles/coff-pe.pk: New file.
