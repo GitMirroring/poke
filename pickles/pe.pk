@@ -19,6 +19,22 @@
 load time; /* For POSIX_Time32 */
 load coff;
 
+/* Supported architectures.  */
+
+var PE_ARCH_MIPS = 1,
+    PE_ARCH_ARM = 2,
+    PE_ARCH_ARM64 = 3,
+    PE_ARCH_AMD64 = 4,
+    PE_ARCH_I386 = 5,
+    PE_ARCH_IA64 = 6,
+    PE_ARCH_M32R = 7,
+    PE_ARCH_SH3 = 8,
+    PE_ARCH_PPC = 9;
+
+/* Currently selected architecture.  */
+
+var pe_arch = PE_ARCH_I386;
+
 /* Load architecture-specific stuff.  */
 
 load "pe-amd64.pk";
@@ -231,6 +247,11 @@ type PE_Name =
       stoca ("/" + format ("%i32d", offset'magnitude), chars);
     }
 
+    method match_p = (string s) int:
+    {
+      return catos (chars) == s;
+    }
+
     method _print = void:
     {
       print "#<" + catos (chars) + ">";
@@ -252,18 +273,11 @@ type PE_Shdr =
     offset<uint<32>,B> ptr_to_linenos;
 
     uint<16> num_relocs;
-    uint<16> num_linenos; /* XXX should be zero for images.  */
+    uint<16> num_linenos;
 
-
-    /* PE_SEC_F_LNK_NRELOC_OVFL indicates that the count of
-       relocations for the section exceeds the 16 bits that are
-       reserved for it in the section header. If the bit is set and
-       the NumberOfRelocations field in the section header is 0xffff,
-       the actual relocation count is stored in the 32-bit
-       VirtualAddress field of the first relocation. It is an error if
-       IMAGE_SCN_LNK_NRELOC_OVFL is set and there are fewer than
-       0xffff relocations in the section.  */
-    uint<32> flags;
+    uint<32> flags : ((flags & PE_IMAGE_SCN_LNK_INFO) && name.match_p (".drectve")
+                      => num_relocs == 0 && num_linenos == 0)
+                     && (flags & PE_SEC_F_LNK_NRELOC_OVFL => num_relocs == 0xffff);
   };
 
 
@@ -488,6 +502,195 @@ type PE_Delay_Import =
     POSIX_Time32 timestamp;
   };
 
+/* PE debug directory.
+
+   Each entry in the debug directory describes a form of debug
+   information present in the PE file.  */
+
+var PE_DEBUG_TYPE_UNKNOWN = 0,
+    PE_DEBUG_TYPE_COFF = 1,
+    PE_DEBUG_TYPE_CODEVIEW = 2,
+    PE_DEBUG_TYPE_FPO = 3, /* frame pointer omission info :) */
+    PE_DEBUG_TYPE_MISC = 4,
+    PE_DEBUG_TYPE_EXCEPTION = 5,
+    PE_DEBUG_TYPE_FIXUP = 6,
+    PE_DEBUG_TYPE_OMAP_TO_SRC = 7,
+    PE_DEBUG_TYPE_OMAP_FROM_SRC = 8,
+    PE_DEBUG_TYPE_BORLAND = 9,
+    PE_DEBUG_TYPE_RESERVED10 = 10,
+    PE_DEBUG_TYPE_CLSID = 11,
+    PE_DEBUG_TYPE_REPRO = 16,
+    PE_DEBUG_TYPE_EX_DLLCHARACTERISTICS = 20;
+
+type PE_Debug_Directory_Entry =
+  struct
+  {
+    /* Reserved.  */
+    uint<32> flags == 0;
+
+    /* Date and time that the debug data was created.  */
+    POSIX_Time32 timestamp;
+
+    /* Version number of hte debug data format.  */
+    uint<16> major_version;
+    uint<16> minor_version;
+
+    /* Format of debugging information.  */
+    uint<32> debug_type : debug_type in [ PE_DEBUG_TYPE_UNKNOWN,
+                                          PE_DEBUG_TYPE_COFF,
+                                          PE_DEBUG_TYPE_CODEVIEW,
+                                          PE_DEBUG_TYPE_FPO,
+                                          PE_DEBUG_TYPE_MISC,
+                                          PE_DEBUG_TYPE_EXCEPTION,
+                                          PE_DEBUG_TYPE_FIXUP,
+                                          PE_DEBUG_TYPE_OMAP_TO_SRC,
+                                          PE_DEBUG_TYPE_OMAP_FROM_SRC,
+                                          PE_DEBUG_TYPE_BORLAND,
+                                          PE_DEBUG_TYPE_CLSID,
+                                          PE_DEBUG_TYPE_REPRO,
+                                          PE_DEBUG_TYPE_EX_DLLCHARACTERISTICS ];
+
+    /* Size of the debug data (not including the debug directory.) */
+    offset<uint<32>,B> size_of_data;
+
+    /* The address of the debug data when loaded, relative to the
+       image base.  */
+    offset<uint<32>,B> address_of_raw_data;
+
+    /* File offset to the debug data described by this entry.  */
+    offset<uint<32>,B> ptr_to_raw_data;
+ };
+
+/* Entry for the PE Import Directory Table.  */
+
+type PE_Import_Directory_Entry =
+  struct
+  {
+    offset<uint<32>,B> import_lookup_table_offset;
+    POSIX_Time32 timestamp;
+    uint<32> forwarder_chain;
+    offset<uint<32>,B> dll_name_offset;
+    offset<uint<32>,B> import_address_table_offset;
+  };
+
+/* Import Lookup Table entry.
+
+   The 32-bit variant is used in PE32.
+   The 64-bit variant is used in PE32+.  */
+
+type PE_Import_Lookup_Table_Entry =
+  union uint<32>
+  {
+    struct uint<32>
+    {
+      uint<1> import_by_ordinal_flag : import_by_ordinal_flag == 1;
+      uint<15> zero : zero == 0;
+      uint<16> ordinal_number;
+    } by_ordinal;
+
+    struct uint<32>
+    {
+      uint<1> import_by_ordinal_flag;
+      offset<uint<31>,B> name_table_offset;
+    } by_name;
+  };
+
+type PE_Import_Lookup_Table_Entry_64 =
+  union uint<64>
+  {
+    struct uint<64>
+    {
+      uint<1> import_by_ordinal_flag : import_by_ordinal_flag == 1;
+      uint<47> zero == 0;
+      uint<16> ordinal_number;
+    } by_ordinal;
+
+    struct uint<64>
+    {
+      uint<1> import_by_ordinal_flag : import_by_ordinal_flag == 0;
+      uint<32> zero == 0;
+      offset<uint<31>,B> hint_name_table_offset;
+    } by_name;
+  };
+
+/* Hint/Name Table Entry.  */
+
+type PE_Hint_Name_Table_Entry =
+  struct
+  {
+    uint<16> hint;
+    string name;
+    uint<8> pad if OFFSET % 2#B != 0#B;
+  };
+
+/* Function Table Entry.
+
+   These live in the .pdata section and are used for exception
+   handling.  There are three variants, which are used depending
+   on the target architecture.  */
+
+type PE_Function_Table_Entry_A =
+  struct
+  {
+    offset<uint<32>,B> begin_addr;
+    offset<uint<32>,B> end_addr;
+    offset<uint<32>,B> exception_handler;
+    offset<uint<32>,B> handler_data;
+    offset<uint<32>,B> prolog_end_address;
+  };
+
+type PE_Function_Table_Entry_B =
+  struct
+  {
+    offset<uint<32>,B> begin_addr;
+    uint<8> prolog_length;
+    uint<22> function_length;
+    uint<1> i32bit_flag;
+    uint<1> exception_flag;
+  };
+
+type PE_Function_Table_Entry_C =
+  struct
+  {
+    offset<uint<32>,B> begin_addr;
+    offset<uint<32>,B> end_addr;
+    offset<uint<32>,B> unwind_info;
+  };
+
+type PE_Function_Table_Entry =
+  union
+  {
+    PE_Function_Table_Entry_A a : pe_arch == PE_ARCH_MIPS;
+    PE_Function_Table_Entry_B b : pe_arch in [PE_ARCH_ARM,
+                                              PE_ARCH_PPC,
+                                              PE_ARCH_SH3];
+    PE_Function_Table_Entry_C c : pe_arch in [PE_ARCH_I386,
+                                              PE_ARCH_IA64];
+  };
+
+/* Entry for the PE Export Directory Table.
+
+   This contains information on how to locate all the others export
+   tables in the file.  */
+
+type PE_Export_Directory_Entry =
+  struct
+  {
+    uint<32> flags == 0;
+    POSIX_Time32 timestamp;
+    uint<16> major_version;
+    uint<16> minor_version;
+    offset<uint<32>,B> dll_name_offset;
+    uint<32> ordinal_base;
+    uint<32> num_address_table_entries;
+    uint<32> num_name_pointer_table_entries;
+    /* The offsets below are all relative to the beginning of
+       the PE file.  */
+    offset<uint<32>,B> export_address_table_offset;
+    offset<uint<32>,B> name_pointer_table_offset;
+    offset<uint<32>,B> ordinal_table_offset;
+  };
+
 /* PE relocations.  */
 
 type PE_Reloc =
@@ -496,6 +699,78 @@ type PE_Reloc =
     offset<uint<32>,B> r_vaddr;
     uint<32> r_symndx;
     uint<16> r_type;
+  };
+
+/* PE Base relocations.  */
+
+var PE_R_BASED_ABSOLUTE = 0x00UN,
+    PE_R_BASED_HIGH = 0x01UN,
+    PE_R_BASED_LOW = 0x02UN,
+    PE_R_BASED_HIGHLOW = 0x03UN,
+    PE_R_BASED_HIGHADJ = 0x04UN,
+    PE_R_BASED_DIR64 = 0x0aUN;
+
+type PE_Base_Reloc =
+  struct uint<16>
+  {
+    uint<4> reloc_type;
+    uint<12> offset;
+  };
+
+type PE_Base_Reloc_Block =
+  struct
+  {
+    offset<uint<32>,B> page_rva;
+    offset<uint<32>,B> block_size;
+    PE_Base_Reloc[block_size - OFFSET] relocs;
+  };
+
+/* PE TLS Directory.  */
+
+type PE_TLS_Directory =
+  struct
+  {
+    offset<uint<32>,B> raw_data_start_va;
+    offset<uint<32>,B> raw_data_end_va;
+    offset<uint<32>,B> address_of_index;
+    offset<uint<32>,B> address_of_callbacks;
+    offset<uint<32>,B> size_of_zero_fill;
+    struct uint<32>
+    {
+      uint<9>;
+      uint<4> alignment_info
+        : alignment_info in [ PE_SEC_F_ALIGN_1BYTES, PE_SEC_F_ALIGN_2BYTES,
+                              PE_SEC_F_ALIGN_4BYTES, PE_SEC_F_ALIGN_8BYTES,
+                              PE_SEC_F_ALIGN_16BYTES, PE_SEC_F_ALIGN_32BYTES,
+                              PE_SEC_F_ALIGN_64BYTES, PE_SEC_F_ALIGN_128BYTES,
+                              PE_SEC_F_ALIGN_512BYTES, PE_SEC_F_ALIGN_1024BYTES,
+                              PE_SEC_F_ALIGN_2048BYTES, PE_SEC_F_ALIGN_4096BYTES,
+                              PE_SEC_F_ALIGN_8192BYTES ];
+      uint<19>;
+    } flags;
+  };
+
+type PE_TLS_Directory_64 =
+  struct
+  {
+    offset<uint<64>,B> raw_data_start_va;
+    offset<uint<64>,B> raw_data_end_va;
+    offset<uint<64>,B> address_of_index;
+    offset<uint<64>,B> address_of_callbacks;
+    offset<uint<32>,B> size_of_zero_fill;
+    struct uint<32>
+    {
+      uint<9>;
+      uint<4> alignment_info
+        : alignment_info in [ PE_SEC_F_ALIGN_1BYTES, PE_SEC_F_ALIGN_2BYTES,
+                              PE_SEC_F_ALIGN_4BYTES, PE_SEC_F_ALIGN_8BYTES,
+                              PE_SEC_F_ALIGN_16BYTES, PE_SEC_F_ALIGN_32BYTES,
+                              PE_SEC_F_ALIGN_64BYTES, PE_SEC_F_ALIGN_128BYTES,
+                              PE_SEC_F_ALIGN_512BYTES, PE_SEC_F_ALIGN_1024BYTES,
+                              PE_SEC_F_ALIGN_2048BYTES, PE_SEC_F_ALIGN_4096BYTES,
+                              PE_SEC_F_ALIGN_8192BYTES ];
+      uint<19>;
+    } flags;
   };
 
 /* PE data directory descriptor.  */
@@ -633,6 +908,18 @@ type PE_File =
     PE_Delay_Import[delay_import_datadir.size] delay_imports
       @ delay_import_datadir.rva
       if delay_import_datadir.size > 0#B;
+
+    var base_relocs_datadir = opt_hdr.data_directories.base_relocation_table;
+
+    PE_Base_Reloc_Block[base_relocs_datadir.size] base_relocs
+      @ base_relocs_datadir.rva
+      if base_relocs_datadir.size > 0#B;
+
+    var debug_datadir = opt_hdr.data_directories.debug;
+
+    PE_Debug_Directory_Entry[debug_datadir.size] debug_directory
+      @ debug_datadir.rva
+      if debug_datadir.size > 0#B;
 
     var certs_datadir = opt_hdr.data_directories.certificate_table;
 
