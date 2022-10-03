@@ -1,5 +1,11 @@
 2022-10-04  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-rt.pk: Note that PK_TV_FIELD_MAPPED is generated
+	before constraints are checked.
+	* libpoke/pkl-gen.pks (struct_field_mapper): Adjust accordingly.
+
+2022-10-04  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-gen.pks (struct_field_mapper): Force flat omode when
 	formatting values for PK_TV_FIELD_MAPPED events.
 

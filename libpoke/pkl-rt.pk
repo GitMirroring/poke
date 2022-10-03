@@ -536,8 +536,9 @@ immutable var pk_tracer_p = 0;
    These are the supported tracing events:
 
    A FIELD_MAPPED tracing event is generated every time a struct or
-   union field has been successfully mapped from IO space.  The event
-   dispatch function is passed the following arguments:
+   union field has been successfully mapped from IO space, but before
+   its constraints have been checked.  The event dispatch function is
+   passed the following arguments:
 
      FIELD_VALUE (any)
        The value of the field that has been mapped.
