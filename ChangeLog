@@ -1,5 +1,10 @@
 2022-10-03  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* pickles/pe.pk (PE_Load_Configuration_Layout): New type.
+	(PE_GUARD_*): New variables.
+
+2022-10-03  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-diag.h: Prototype for pkl_loc_to_source.
 	* libpoke/pkl-diag.c (pkl_loc_to_source): New function.
 	* libpoke/pkl-tab.y (pkl_make_assertion): Call pkl_loc_to_source.

@@ -562,6 +562,54 @@ type PE_Debug_Directory_Entry =
     offset<uint<32>,B> ptr_to_raw_data;
  };
 
+/* PE Load Configuration Layout.  */
+
+var PE_GUARD_CF_INSTRUMENTED = 0x00000100U,
+    PE_GUARD_CFW_INSTRUMENTED = 0x00000200U,
+    PE_GUARD_CF_FUNCTION_TABLE_PRESENT = 0x00000400U,
+    PE_GUARD_SECURITY_COOKIE_UNUSED = 0x00000800U,
+    PE_GUARD_PROTECT_DELAYLOAD_IAT = 0x00001000U,
+    PE_GUARD_DELAYLOAD_IAT_IN_ITS_OWN_SECTION = 0x00002000U,
+    PE_GUARD_CF_EXPORT_SUPPRESSION_INFO_PRESENT = 0x00004000U,
+    PE_GUARD_CF_ENABLE_EXPORT_SUPPRESSION = 0x00008000U,
+    PE_GUARD_CF_LONGJUMP_TABLE_PRESENT = 0x00010000U,
+    PE_GUARD_CF_FUNCTION_TABLE_SIZE_MASK = 0xF0000000U;
+
+type PE_Load_Configuration_Layout =
+  struct
+  {
+    uint<32> flags == 0;
+    POSIX_Time32 timestamp;
+    uint<16> major_version;
+    uint<16> minor_version;
+    uint<32> global_flags_clear;
+    uint<32> global_flags_set;
+    uint<32> critical_section_default_timeout;
+    offset<uint<32>,B> de_commit_free_block_threshold;
+    offset<uint<32>,B> de_commit_total_free_threshold;
+    offset<uint<32>,B> lock_prefix_table; /* XXX x86 only */
+    offset<uint<32>,B> maximum_allocation_size;
+    offset<uint<32>,B> virtual_memory_threshold;
+    uint<32> process_affinity_mask;
+    uint<32> process_heap_flags;
+    uint<16> csd_version;
+    uint<16> reserved == 0;
+    uint<32> edit_list;
+    offset<uint<32>,B> security_cookie;
+    offset<uint<32>,B> se_handler_table; /* XXX x86 only */
+    uint<32> se_handler_count; /* XXX x86 only */
+    offset<uint<32>,B> guard_cf_check_function_ptr;
+    offset<uint<32>,B> guard_cf_dispatch_function_ptr;
+    offset<uint<32>,B> guard_cf_function_table;
+    uint<32> guard_cf_function_count;
+    uint<32> guard_flags;
+    byte[12] code_integrity;
+    offset<uint<32>,B> guard_addr_taken_iat_entry_table;
+    uint<32> guard_addr_taken_iat_entry_count;
+    offset<uint<32>,B> guard_long_jump_target_table;
+    uint<32> guard_long_jump_target_count;
+  };
+
 /* Entry for the PE Import Directory Table.  */
 
 type PE_Import_Directory_Entry =
