@@ -886,3 +886,27 @@ pkl_defvar (pkl_compiler compiler,
   pkl_ast_free (ast);
   return 0;
 }
+
+int
+pkl_tracer_p (pkl_compiler compiler)
+{
+  pkl_env compiler_env = compiler->env;
+  pvm_env runtime_env = pvm_get_env (compiler->vm);
+  int back, over;
+  pkl_ast_node decl = pkl_env_lookup (compiler_env,
+                                      PKL_ENV_NS_MAIN,
+                                      "pk_tracer_p",
+                                      &back, &over);
+  pvm_val val = PVM_NULL;
+
+  if (!compiler->bootstrapped)
+    /* For obvious reasons.  ^^ */
+    return 0;
+
+  assert (decl != NULL
+          && PKL_AST_DECL_KIND (decl) == PKL_AST_DECL_KIND_VAR);
+  val = pvm_env_lookup (runtime_env, back, over);
+  assert (PVM_IS_INT (val));
+
+  return PVM_VAL_INT (val);
+}

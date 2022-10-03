@@ -513,6 +513,100 @@ immutable type Pk_Type =
     (any,any)int<32> comparator  if code == PK_TYPE_STRUCT;
   };
 
+/* Tracing.
+
+   If the boolean variable `pk_tracer_p' is set to true the compiler
+   and run-time will collaborate to emit different kind of tracing
+   events.  This is done by invoking a tracing dispatch function that
+   is defined below.  */
+
+immutable var pk_tracer_p = 0;
+
+/* The tracing events themselves are identified by unique signed
+   32-bit values that start with 0 and use consecutive numbers.
+
+   Fun facts:
+   - The PK_TV_* values are used as keys in arrays, so please
+     keep them consecutive, ideally without any gap.
+   - For the same reason, we need PK_TV_NUM_EVENTS always up to
+     date.
+   - The PK_TV_* values are replicated in pkl.h.  Please keep
+     these in sync.
+
+   These are the supported tracing events:
+
+   A FIELD_MAPPED tracing event is generated every time a struct or
+   union field has been successfully mapped from IO space.  The event
+   dispatch function is passed the following arguments:
+
+     FIELD_VALUE (any)
+       The value of the field that has been mapped.
+
+     FIELD_VALUE_PRINTED (string)
+       The printed representation of the field value.  This argument
+       is calculated using formatters.
+
+     FIELD_NAME (string)
+       The name of the field that was mapped.  If the field is
+       anonymous then an empty string is passed.
+
+     FIELD_OFFSET (offset<uint<64>,b>)
+       Offset of the field just mapped.  */
+
+immutable var PK_TV_FIELD_MAPPED = 0;
+immutable var PK_TV_NUM_EVENTS = 1;
+
+/* Tracing events can be handled by "actions".  Each action is
+   implemented by an "event handler, which is a Poke function
+   that gets two arguments:
+
+   The first argument is the tracing event ID, one of the
+   PK_TV_* values defined above.
+
+   The second argument is an array of zero or more `any' valus.  The
+   number and interpretation of these values depend on the particular
+   tracing event being handled.  See the descriptions of the events
+   below.  */
+
+immutable type Pk_Tracer_Action = (int<32>,any[])void;
+
+/* The "tracer dispatch table" is a table that associates event IDs
+   with actions.  When the run-time triggers a tracing event, it looks
+   in the table and invokes the corresponding event handler.  The user
+   can install his own actions.  */
+
+immutable type Pk_Tracer_Dispatch_Table =
+  struct
+  {
+    /* The default action for tracer events is to do nothing.  */
+    fun default_action = (int<32> e, any[] args) void: { }
+
+    Pk_Tracer_Action[] table
+      = Pk_Tracer_Action[PK_TV_NUM_EVENTS] (default_action);
+
+    /* Register an action for a tracing event.  */
+    method set_action = (int<32> e, Pk_Tracer_Action act) void:
+    {
+      table[e] = act;
+    }
+
+    /* Reset the action for a tracing event to the default,
+       which is to do nothing.  */
+    method reset_action = (int<32> e) void:
+    {
+      table[e] = default_action;
+    }
+  };
+
+immutable var pk_tracer_dispatch = Pk_Tracer_Dispatch_Table {};
+
+/* This is to be .called from RAS.  */
+
+immutable fun _pkl_dispatch_tv = (int<32> e, any[] a) void:
+{
+  pk_tracer_dispatch.table[e] (e, a);
+}
+
 /* Hooks for the IO subsystem.
 
    The functions in `ios_open_hook' are invoked once a new IO space

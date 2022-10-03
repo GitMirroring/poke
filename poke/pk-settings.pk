@@ -559,6 +559,31 @@ This setting is `no' by default.",
       }
    };
 
+pk_settings.add_setting
+  :entry Poke_Setting {
+      name = "tracer",
+      kind = POKE_SETTING_BOOL,
+      summary = "whether to activate the Poke tracer",
+      usage = ".set tracer {yes,no}",
+      description = "\
+This setting determines whether the Poke compiler and runtime
+will generate tracing events or not.  This is mainly useful
+for debugging puposes.
+
+Beware that enabling tracer will undoubtly have an impact
+in performance, and that every type compiled when tracing is
+enabled will contain instrumentalization.  This means you
+will most likely want to re-compile the types with tracing
+disabled once the debugging is done.
+
+This setting is `no' by default.",
+      getter = lambda any: { return pk_tracer_p; },
+      setter = lambda (any val) int:
+        {
+          pk_tracer_p = val as int<32>;
+          return 1;
+        }
+    };
 
 /* Create help topics for the global settings defined above.  */
 

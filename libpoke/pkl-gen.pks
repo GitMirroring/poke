@@ -940,6 +940,64 @@
         ;; Evaluate the field's opcond and constraints
         .e handle_struct_field_constraints @struct_type, @field
                                         ; BOFF STR VAL NBOFF
+   .c if (pkl_tracer_p (RAS_COMPILER))
+   .c {
+        ;; Generate a PK_TV_FIELD_MAPPED tracer event.
+        tor                     ; BOF STR VAL [NBOFF]
+        ;; First, create an empty any[] array for the arguments.
+        mktyany                 ; BOF STR VAL ANYT [NBOFF]
+        push null               ; BOF STR VAL ANYT NULL [NBOFF]
+        mktya                   ; BOF STR VAL ATYPE [NBOFF]
+        push ulong<64>6         ; BOF STR VAL ATYPE NELEM [NBOFF]
+        mka                     ; BOF STR VAL ARGS [NBOFF]
+        ;; First any argument: field_value
+        over                    ; BOF STR VAL ARGS VAL [NBOFF]
+        tor                     ; BOF STR VAL ARGS [NBOFF VAL]
+        push ulong<64>0         ; BOF STR VAL ARGS 0UL [NBOFF VAL]
+        rot                     ; BOF STR ARGS 0UL VAL [NBOFF VAL]
+        ains                    ; BOF STR ARGS [NBOFF VAL]
+        ;; Second any argument: field_value_printed
+        fromr
+        dup
+        tor                     ; BOF STR ARGS VAL [NBOFF VAL]
+        push int<32>1           ; BOF STR ARGS VAL DEPTH [NBOFF VAL]
+     .c PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_FORMATER);
+     .c PKL_PASS_SUBPASS (PKL_AST_STRUCT_TYPE_FIELD_TYPE (@field));
+     .c PKL_GEN_POP_CONTEXT;
+                                ; BOF STR ARGS VALSTR [NBOFF VAL]
+        push ulong<64>1         ; BOF STR ARGS VALSTR 1UL [NBOFF VAL]
+        swap                    ; BOF STR ARGS 1UL VALSTR [NBOFF VAL]
+        ains                    ; BOF STR ARGS [NBOFF VAL]
+        ;; Third any argument: field_name
+        over                    ; BOF STR ARGS STR [NBOFF VAL]
+        tor                     ; BOF STR ARGS [NBOFF VAL STR]
+        push ulong<64>2         ; BOF STR ARGS 2UL [NBOFF VAL STR]
+        rot                     ; BOF ARGS 2UL STR [NBOFF VAL STR]
+        ains                    ; BOF ARGS [NBOFF VAL STR]
+        ;; Fourth any argument: field_offset
+        over                    ; BOF ARGS BOF [NBOFF VAL STR]
+        tor                     ; BOF ARGS [NBOFF VAL STR BOF]
+        push ulong<64>3         ; BOF ARGS 2UL [NBOFF VAL STR BOF]
+        rot                     ; ARGS 2UL BOF [NBOFF VAL STR BOF]
+        push ulong<64>1         ; ARGS 2UL BOF 1UL [NBOFF VAL STR BOF]
+        mko                     ; ARGS 2UL OFFSET [NBOFF VAL STR BOF]
+        ains                    ; ARGS [NBOFF VAL STR BOF]
+        ;; Empty the return stack before calling.
+        fromr                   ; ARGS BOF [NBOFF VAL STR]
+        swap                    ; BOF ARGS [NBOFF VAL STR]
+        fromr                   ; BOF ARGS STR [NBOFF VAL]
+        swap                    ; BOF STR ARGS [NBOFF VAL]
+        fromr                   ; BOF STR ARGS VAL [NBOFF]
+        swap                    ; BOF STR VAL ARGS [NBOFF]
+        fromr                   ; BOF STR VAL ARGS NBOFF
+        swap                    ; BOF STR VAL NBOFF ARGS
+        ;; Push the first argument (event number) and call handler
+        push PK_TV_FIELD_MAPPED ; BOF STR VAL NBOFF ARGS TV
+        swap
+        .call _pkl_dispatch_tv  ; BOF STR VAL NBOFF null
+        ;; And back to the initial state!
+        drop                    ; BOF STR VAL NBOFF
+   .c }
         .end
 
 ;;; RAS_FUNCTION_STRUCT_MAPPER @type_struct

@@ -1,5 +1,24 @@
 2022-10-03  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-rt.pk (pk_tracer_p): New variable.
+	(PK_TV_FIELD_MAPPED): Likewise.
+	(PK_TV_NUM_EVENTS): Likewise.
+	(Pk_Tracer_Action): New type.
+	(Pk_Tracer_Dispatch_Table): Likewise.
+	(pk_tracer_dispatch): New variable.
+	* libpoke/pkl.h: Prototype for pkl_tracer_p.
+	(PK_TV_FIELD_MAPPED): Define.
+	* libpoke/pkl.c (pkl_tracer_p): New function.
+	* libpoke/ras: Support referring to tracing events with PK_TV_*.
+	* libpoke/pkl-gen.pks (struct_field_mapper): Generate
+	PK_TV_FIELD_MAPPED.
+	* poke/pk-tracer.pk: New file.
+	* poke/poke.pk: Load pk-tracer.pk.
+	* poke/pk-settings.pk: Add setting for tracer.
+	* poke/Makefile.am (dist_app_DATA): Add pk-tracer.pk.
+
+2022-10-03  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* pickles/pe.pk (PE_Load_Configuration_Layout): New type.
 	(PE_GUARD_*): New variables.
 

@@ -194,6 +194,20 @@ int pkl_error_on_warning (pkl_compiler compiler);
 void pkl_set_error_on_warning (pkl_compiler compiler,
                                int error_on_warning);
 
+/* Get the tracer flag from the compiler.  If this flag is set,
+   generated code will be instrumentalized in order to emit tracing
+   events.
+
+   The flag is set by setting the value of the `pk_tracer_p' Poke
+   variable in the incremental compiler.  */
+
+int pkl_tracer_p (pkl_compiler compiler);
+
+/* Set of constants with tracing event identifiers.  These should be
+   kept in sync with the corresponding variables in pkl-rt.pk.  */
+
+#define PK_TV_FIELD_MAPPED 0
+
 /* Set/get the quiet_p flag in/from the compiler.  If this flag is
    set, the compiler emits as few output as possible.  */
 

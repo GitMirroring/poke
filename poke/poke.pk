@@ -79,6 +79,7 @@ load "pk-info.pk";
 load "pk-help.pk";
 load "pk-map.pk";
 load "pk-settings.pk";
+load "pk-tracer.pk";
 
 /* Add the current working directory to the load path.  */
 load_path = ".:" + load_path;

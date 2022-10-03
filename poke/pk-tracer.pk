@@ -1,0 +1,36 @@
+/* pk-tracer.pk - poke tracing event handling routines.  */
+
+/* Copyright (C) 2022 Jose E. Marchesi */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+/* Action for PK_TV_FIELD_MAPPED tracing events.  */
+
+fun pk_tv_action_field_mapped = (int<32> e, any[] args) void:
+{
+  var field_value = args[0],
+      field_value_printed = args[1] as string,
+      field_name = args[2] as string,
+      field_offset = args[3] as offset<uint<64>,b>;
+
+  term_begin_class ("trace");
+  printf ("tracer: field_mapped: %s = %s @ %v\n",
+          field_name, field_value_printed, field_offset);
+  term_end_class ("trace");
+}
+
+pk_tracer_dispatch.set_action (PK_TV_FIELD_MAPPED,
+                               pk_tv_action_field_mapped);
