@@ -960,11 +960,19 @@
         fromr
         dup
         tor                     ; BOF STR ARGS VAL [NBOFF VAL]
-        push int<32>1           ; BOF STR ARGS VAL DEPTH [NBOFF VAL]
+        ;; Save current omode and set flat
+        pushom                  ; BOF STR ARGS VAL OMODE [NBOFF VAL]
+        tor                     ; BOF STR ARGS VAL [NBOFF VAL OMODE]
+        push int<32>0
+        popom                   ; BOF STR ARGS VAL [NBOFF VAL OMODE]
+        push int<32>1           ; BOF STR ARGS VAL DEPTH [NBOFF VAL OMODE]
      .c PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_FORMATER);
      .c PKL_PASS_SUBPASS (PKL_AST_STRUCT_TYPE_FIELD_TYPE (@field));
      .c PKL_GEN_POP_CONTEXT;
-                                ; BOF STR ARGS VALSTR [NBOFF VAL]
+                                ; BOF STR ARGS VALSTR [NBOFF VAL OMODE]
+        ;; Restore omode
+        fromr
+        popom                   ; BOF STR ARGS VALSTR [NBOFF VAL]
         push ulong<64>1         ; BOF STR ARGS VALSTR 1UL [NBOFF VAL]
         swap                    ; BOF STR ARGS 1UL VALSTR [NBOFF VAL]
         ains                    ; BOF STR ARGS [NBOFF VAL]
