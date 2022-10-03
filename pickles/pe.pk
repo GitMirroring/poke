@@ -19,21 +19,55 @@
 load time; /* For POSIX_Time32 */
 load coff;
 
-/* Supported architectures.  */
+/* Supported architectures/machines.  */
 
-var PE_ARCH_MIPS = 1,
-    PE_ARCH_ARM = 2,
-    PE_ARCH_ARM64 = 3,
-    PE_ARCH_AMD64 = 4,
-    PE_ARCH_I386 = 5,
-    PE_ARCH_IA64 = 6,
-    PE_ARCH_M32R = 7,
-    PE_ARCH_SH3 = 8,
-    PE_ARCH_PPC = 9;
+var PE_FILE_MACHINE_UNKNOWN = 0x0UH,
+    PE_FILE_MACHINE_AM33 = 0x1d3UH,
+    PE_FILE_MACHINE_AMD64 = 0x8664UH,
+    PE_FILE_MACHINE_ARM = 0x1c0UH,
+    PE_FILE_MACHINE_ARM64 = 0xaa64UH,
+    PE_FILE_MACHINE_ARMNT = 0x1c4UH,
+    PE_FILE_MACHINE_EBC = 0xebcUH,
+    PE_FILE_MACHINE_I386 = 0x14cUH,
+    PE_FILE_MACHINE_IA64 = 0x200UH,
+    PE_FILE_MACHINE_LOONGARCH32 = 0x6232UH,
+    PE_FILE_MACHINE_LOONGARCH64 = 0x6264UH,
+    PE_FILE_MACHINE_M32R = 0x9041UH,
+    PE_FILE_MACHINE_MIPS16 = 0x266UH,
+    PE_FILE_MACHINE_MIPSFPU = 0x366UH,
+    PE_FILE_MACHINE_MIPSFPU16 = 0x466UH,
+    PE_FILE_MACHINE_POWERPC = 0x1f0UH,
+    PE_FILE_MACHINE_POWERPCFP = 0x1f1UH,
+    PE_FILE_MACHINE_R4000 = 0x166UH,
+    PE_FILE_MACHINE_RISCV32 = 0x5032UH,
+    PE_FILE_MACHINE_RISCV64 = 0x5064UH,
+    PE_FILE_MACHINE_RISCV128 = 0x5128UH,
+    PE_FILE_MACHINE_SH3 = 0x1a2UH,
+    PE_FILE_MACHINE_SH3DSP = 0x1a3UH,
+    PE_FILE_MACHINE_SH4 = 0x1a6UH,
+    PE_FILE_MACHINE_SH5 = 0x1a8UH,
+    PE_FILE_MACHINE_THUMB = 0x1c2UH,
+    PE_FILE_MACHINE_WCEMIPSV2 = 0x169UH;
 
-/* Currently selected architecture.  */
+var pe_machines =
+  [ PE_FILE_MACHINE_UNKNOWN, PE_FILE_MACHINE_AM33,
+    PE_FILE_MACHINE_AMD64, PE_FILE_MACHINE_ARM,
+    PE_FILE_MACHINE_ARM64, PE_FILE_MACHINE_ARMNT,
+    PE_FILE_MACHINE_EBC, PE_FILE_MACHINE_I386,
+    PE_FILE_MACHINE_IA64, PE_FILE_MACHINE_LOONGARCH32,
+    PE_FILE_MACHINE_LOONGARCH64, PE_FILE_MACHINE_M32R,
+    PE_FILE_MACHINE_MIPS16, PE_FILE_MACHINE_MIPSFPU,
+    PE_FILE_MACHINE_MIPSFPU16, PE_FILE_MACHINE_POWERPC,
+    PE_FILE_MACHINE_POWERPCFP, PE_FILE_MACHINE_R4000,
+    PE_FILE_MACHINE_RISCV32, PE_FILE_MACHINE_RISCV64,
+    PE_FILE_MACHINE_RISCV128, PE_FILE_MACHINE_SH3,
+    PE_FILE_MACHINE_SH3DSP, PE_FILE_MACHINE_SH4,
+    PE_FILE_MACHINE_SH5, PE_FILE_MACHINE_THUMB,
+    PE_FILE_MACHINE_WCEMIPSV2 ];
 
-var pe_arch = PE_ARCH_I386;
+/* Currently selected machine type/architecture.  */
+
+var pe_machine = PE_FILE_MACHINE_UNKNOWN;
 
 /* Load architecture-specific stuff.  */
 
@@ -587,7 +621,8 @@ type PE_Load_Configuration_Layout =
     uint<32> critical_section_default_timeout;
     offset<uint<32>,B> de_commit_free_block_threshold;
     offset<uint<32>,B> de_commit_total_free_threshold;
-    offset<uint<32>,B> lock_prefix_table; /* XXX x86 only */
+    offset<uint<32>,B> lock_prefix_table
+      if pe_machine == PE_FILE_MACHINE_I386;
     offset<uint<32>,B> maximum_allocation_size;
     offset<uint<32>,B> virtual_memory_threshold;
     uint<32> process_affinity_mask;
@@ -596,8 +631,10 @@ type PE_Load_Configuration_Layout =
     uint<16> reserved == 0;
     uint<32> edit_list;
     offset<uint<32>,B> security_cookie;
-    offset<uint<32>,B> se_handler_table; /* XXX x86 only */
-    uint<32> se_handler_count; /* XXX x86 only */
+    offset<uint<32>,B> se_handler_table
+      if pe_machine == PE_FILE_MACHINE_I386;
+    uint<32> se_handler_count
+      if pe_machine == PE_FILE_MACHINE_I386;
     offset<uint<32>,B> guard_cf_check_function_ptr;
     offset<uint<32>,B> guard_cf_dispatch_function_ptr;
     offset<uint<32>,B> guard_cf_function_table;
@@ -709,12 +746,19 @@ type PE_Function_Table_Entry_C =
 type PE_Function_Table_Entry =
   union
   {
-    PE_Function_Table_Entry_A a : pe_arch == PE_ARCH_MIPS;
-    PE_Function_Table_Entry_B b : pe_arch in [PE_ARCH_ARM,
-                                              PE_ARCH_PPC,
-                                              PE_ARCH_SH3];
-    PE_Function_Table_Entry_C c : pe_arch in [PE_ARCH_I386,
-                                              PE_ARCH_IA64];
+    PE_Function_Table_Entry_A a : pe_machine in [PE_FILE_MACHINE_MIPS16,
+                                                 PE_FILE_MACHINE_MIPSFPU,
+                                                 PE_FILE_MACHINE_MIPSFPU16];
+    PE_Function_Table_Entry_B b : pe_machine in [PE_FILE_MACHINE_ARM,
+                                                 PE_FILE_MACHINE_THUMB,
+                                                 PE_FILE_MACHINE_POWERPC,
+                                                 PE_FILE_MACHINE_POWERPCFP,
+                                                 PE_FILE_MACHINE_SH3,
+                                                 PE_FILE_MACHINE_SH3DSP,
+                                                 PE_FILE_MACHINE_SH4,
+                                                 PE_FILE_MACHINE_SH5];
+    PE_Function_Table_Entry_C c : pe_machine in [PE_FILE_MACHINE_I386,
+                                                 PE_FILE_MACHINE_IA64];
   };
 
 /* Entry for the PE Export Directory Table.
@@ -939,10 +983,31 @@ type PE_Opt_Hdr =
 
 /* PE file header.  */
 
+type PE_File_Hdr =
+  struct
+  {
+    fun set_machine = (int mach) int: { pe_machine = mach; return 1; }
+
+    uint<16>           machine = pe_machines[0] : machine in pe_machines
+                                                  && set_machine (machine);
+    uint<16>           nscns;  /* Number of sections.  */
+    POSIX_Time32       timdat; /* Time and date stamp.  */
+    offset<uint<32>,B> symptr; /* File pointer to symtab.  */
+    uint<32>           nsyms;  /* Number of symtab entries.  */
+    offset<uint<16>,B> opthdr; /* Size of the optional header. */
+    uint<16>           flags;  /* File flags.  */
+
+  };
+
+/* PE file.  */
+
 type PE_File =
   struct
   {
-    COFF_File_Hdr hdr @ 0x3C#B;
+    offset<uint<32>,B> pe_offset @ 0x3C#B;
+    byte[4] signature == ['P','E','\0','\0'] @ pe_offset;
+
+    PE_File_Hdr hdr;
     PE_Opt_Hdr opt_hdr : opt_hdr'size == hdr.opthdr
       if hdr.opthdr > 0#B;
 
