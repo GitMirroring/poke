@@ -40,7 +40,7 @@ type PE_FPO_Data =
         uint<1> use_ebp;
         uint<1>;
         uint<2> frame_type;
-      } info;    
+      } info;
   };
 
 /* Hash for reproducible PE files.
