@@ -1,5 +1,12 @@
 2022-10-04  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-gen.pks (struct_field_mapper): Handle anonymous
+	fields in PK_TV_FIELD_MAPPED events.
+	* poke/pk-tracer.pk (pk_tv_action_field_mapped): Print <anonymous>
+	for empty field names.
+
+2022-10-04  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-rt.pk: Note that PK_TV_FIELD_MAPPED is generated
 	before constraints are checked.
 	* libpoke/pkl-gen.pks (struct_field_mapper): Adjust accordingly.

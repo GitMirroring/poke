@@ -28,7 +28,8 @@ fun pk_tv_action_field_mapped = (int<32> e, any[] args) void:
 
   term_begin_class ("trace");
   printf ("tracer: field_mapped: %s = %s @ %v\n",
-          field_name, field_value_printed, field_offset);
+          field_name == "" ? "<anonymous>" : field_name,
+          field_value_printed, field_offset);
   term_end_class ("trace");
 }
 

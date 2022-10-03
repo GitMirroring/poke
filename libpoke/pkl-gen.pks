@@ -977,6 +977,11 @@
         tor                     ; ... BOFF STR ARGS [VAL STR]
         push ulong<64>2         ; ... BOFF STR ARGS 2UL [VAL STR]
         rot                     ; ... BOFF ARGS 2UL STR [VAL STR]
+        ;; ... but beware of anonyous fields
+        bnn .name_ok
+        drop
+        push ""
+.name_ok:
         ains                    ; ... BOFF ARGS [VAL STR]
         ;; Fourth any argument: field_offset
         over                    ; ... BOFF ARGS BOF [VAL STR]
