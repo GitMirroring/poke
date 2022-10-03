@@ -1,3 +1,14 @@
+2022-10-04  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* pickles/pe.pk (PE_Opt_Hdr): Fix the constraint for
+	file_alignment.
+
+2022-10-03  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-rt.pk (PK_TV_FIELD_CONSTRAINT_FAILED): New variable.
+	(PK_TV_NUM_EVENTS): Update.
+	* libpoke/pkl.h (PK_TV_FIELD_CONSTRAINT_FAILED): Define.
+
 2022-10-03  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-rt.pk (pk_tracer_p): New variable.

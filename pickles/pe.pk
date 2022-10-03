@@ -899,9 +899,14 @@ type PE_Opt_Hdr =
     /* Alignment of sections when they are loaded into memory.  */
     offset<uint<32>,B> section_alignment;
 
+    fun is_power_of_two = (offset<uint<32>,B> o) int<32>:
+    {
+      return o != 0#B && (o & (o - 1#B)) == 0#B;
+    }
+
     /* Alignment factor that is used to align the raw data of sections
        in the image file.  */
-    offset<uint<32>,B> file_alignment : (file_alignment & 0x1#b) == 0#B
+    offset<uint<32>,B> file_alignment : is_power_of_two (file_alignment)
                                         && file_alignment <= section_alignment
                                         && file_alignment >= 512#B
                                         && file_alignment <= 64#KB
