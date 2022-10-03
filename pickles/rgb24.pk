@@ -48,5 +48,4 @@ var rgb24_color =
 
 /* Sanity check.  */
 
-assert (rgb24_color'length == color_num_colors,
-        "integrity error in rgb24_color table");
+assert (rgb24_color'length == color_num_colors);

@@ -76,8 +76,7 @@ var MCR_FSOURCE_READ_I_ARG = 0,
     MCR_FSOURCE_C_PDL_BUFFER_POINTER_POP = 20,
     MCR_FSOURCE_C_PDL_BUFFER_POINTER = 21;
 
-assert (mcr_alu_insn_names'length == 64,
-        "invalid mcr_alu_insn_names table");
+assert (mcr_alu_insn_names'length == 64);
 
 var MCR_SHIFT_Q_LEFT = 1,
     MCR_SHIFT_Q_RIGHT = 2;
@@ -89,7 +88,7 @@ var mcr_fsource_names =
      "MICRO-STACK-PNTR-AND-DATA-POP", .[19] = "",
      "C-PDL-BUFFER-POINTER-POP", "C-PDL-BUFFER-POINTER", .[63] = ""];
 
-assert (mcr_fsource_names'length == 64, "invalid mcr_fsource_names table");
+assert (mcr_fsource_names'length == 64);
 
 
 fun mcr_print_fsource = (uint<6> fsource) void:
@@ -129,7 +128,7 @@ var mcr_fdest_names =
      "VMA_WRITE_MAP", .[23] = "", "MD", "MD_START_WRITE", "MD_WRITE_MAP",
      .[31] = ""];
 
-assert (mcr_fdest_names'length == 32, "invalid mcr_fdest_names table");
+assert (mcr_fdest_names'length == 32);
 
 fun mcr_print_fdest = (uint<6> fdest) void:
 {

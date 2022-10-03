@@ -795,6 +795,8 @@ EXTRA_DIST = \
   poke.pkl/assert-3.pk \
   poke.pkl/assert-4.pk \
   poke.pkl/assert-5.pk \
+  poke.pkl/assert-6.pk \
+  poke.pkl/assert-7.pk \
   poke.pkl/assert-diag-1.pk \
   poke.pkl/assert-diag-2.pk \
   poke.pkl/assert-diag-3.pk \

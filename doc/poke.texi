@@ -14086,7 +14086,9 @@ assert (@var{condition}, @var{message})
 @end example
 
 The optional @var{message} will be part of the @code{msg} field of
-raised @code{Exception} to explain the situation.
+raised @code{Exception} to explain the situation.  If no @var{message}
+is explicitly specified, @code{msg} is set to the source code of the
+expression evaluated as the assert condition.
 
 @example
 assert (1 == 1);

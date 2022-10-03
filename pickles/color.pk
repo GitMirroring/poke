@@ -73,8 +73,7 @@ var color_std_names =
 
 /* Sanity check.  */
 
-assert (color_std_names'length == color_num_colors,
-        "integrity error in color_name");
+assert (color_std_names'length == color_num_colors);
 
 /* Return the printable name of the given color code.  */
 

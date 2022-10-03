@@ -335,3 +335,87 @@ pkl_ice (pkl_compiler compiler,
   pk_term_end_hyperlink ();
   pk_puts (".\n");
 }
+
+char *
+pkl_loc_to_source (struct pkl_parser *parser, pkl_ast_loc loc,
+                   size_t max_chars)
+{
+  char *str = malloc (max_chars + 1);
+
+  char *p;
+  size_t nchars = 0;
+  size_t cur_column = 1;
+  off_t cur_line = 1;
+  off_t cur_pos;
+
+  if (parser->ast->filename)
+    {
+      FILE *fp = fopen (parser->ast->filename, "rb");
+      int c;
+      off_t tmp;
+
+      if (!fp)
+        goto do_buffer;
+
+      cur_pos = ftello (fp);
+      tmp = fseeko (fp, 0, SEEK_SET);
+
+      while (nchars <= max_chars
+             && (c = fgetc (fp)) != EOF)
+        {
+          if (cur_line >= loc.first_line
+              && cur_line <= loc.last_line
+              && cur_column >= loc.first_column
+              && cur_column < loc.last_column)
+            {
+              str[nchars++] = (c == '\t' ? ' ' : c);
+            }
+
+          if (c == '\n')
+            {
+              cur_line++;
+              cur_column = 1;
+            }
+          else
+            cur_column++;
+        }
+
+      str[nchars++] = '\0';
+
+      /* Restore the file position so parsing can continue.  */
+      tmp = fseeko (fp, cur_pos, SEEK_SET);
+      assert (tmp == 0);
+      fclose (fp);
+    }
+
+  return str;
+
+ do_buffer:
+
+  assert (parser->ast->buffer);
+  p = parser->ast->buffer;
+
+  while (nchars <= max_chars && *p != '\0')
+    {
+      if (cur_line >= loc.first_line
+          && cur_line <= loc.last_line
+          && cur_column >= loc.first_column
+          && cur_column < loc.last_column)
+        {
+          str[nchars++] = (*p == '\t' ? ' ' : *p);
+        }
+
+      if (*p == '\n')
+        {
+          cur_line++;
+          cur_column = 1;
+        }
+      else
+        cur_column++;
+
+      ++p;
+    }
+
+  str[nchars++] = '\0';
+  return str;
+}

@@ -130,7 +130,7 @@ pkl_register_arg (struct pkl_parser *parser, pkl_ast_node arg)
    Returns NULL on failure, and expression statement AST node on success.  */
 
 static pkl_ast_node
-pkl_make_assertion (struct pkl_parser *p, pkl_ast_node cond, pkl_ast_node msg,
+pkl_make_assertion (struct pkl_parser *parser, pkl_ast_node cond, pkl_ast_node msg,
                     struct pkl_ast_loc stmt_loc)
 {
   pkl_ast_node vfunc, call, call_arg;
@@ -143,57 +143,89 @@ pkl_make_assertion (struct pkl_parser *p, pkl_ast_node cond, pkl_ast_node msg,
     pkl_ast_node vfunc_init;
     int back, over;
 
-    vfunc_init = pkl_env_lookup (p->env, PKL_ENV_NS_MAIN, name, &back, &over);
+    vfunc_init = pkl_env_lookup (parser->env, PKL_ENV_NS_MAIN, name, &back, &over);
     if (!vfunc_init
         || (PKL_AST_DECL_KIND (vfunc_init) != PKL_AST_DECL_KIND_FUNC))
       {
-        pkl_error (p->compiler, p->ast, stmt_loc, "undefined function '%s'",
+        pkl_error (parser->compiler, parser->ast, stmt_loc, "undefined function '%s'",
                    name);
         return NULL;
       }
-    vfunc = pkl_ast_make_var (p->ast, pkl_ast_make_identifier (p->ast, name),
+    vfunc = pkl_ast_make_var (parser->ast,
+                              pkl_ast_make_identifier (parser->ast, name),
                               vfunc_init, back, over);
   }
 
   /* First argument of _pkl_assert: condition */
-  arg_cond = pkl_ast_make_funcall_arg (p->ast, cond, NULL);
+  arg_cond = pkl_ast_make_funcall_arg (parser->ast, cond, NULL);
   PKL_AST_LOC (arg_cond) = PKL_AST_LOC (cond);
 
   /* Second argument of _pkl_assert: user message */
   if (msg == NULL)
     {
-      msg = pkl_ast_make_string (p->ast, "");
-      PKL_AST_TYPE (msg) = ASTREF (pkl_ast_make_string_type (p->ast));
+      /* Use the source code of the condition as the user message.  */
+      struct pkl_ast_loc exp_loc = PKL_AST_LOC (cond);
+      char *loc_source = pkl_loc_to_source (parser, exp_loc, 80);
+      char *escaped_loc_source = NULL;
+
+      /* Escape backslash characters in loc_source, wince we are using
+         it in a Poke string literal.  */
+      {
+        size_t escaped_size = 0, i, j;
+
+        for (i = 0; i < strlen (loc_source); ++i)
+          escaped_size += (loc_source[i] == '\\' ? 2 : 1);
+
+        escaped_loc_source = malloc (escaped_size + 1);
+
+        for (i = 0, j = 0; i < strlen (loc_source); ++i)
+          {
+            if (loc_source[i] == '\\')
+              {
+                escaped_loc_source[j++] = '\\';
+                escaped_loc_source[j++] = '\\';
+              }
+            else
+              escaped_loc_source[j++] = loc_source[i];
+          }
+        escaped_loc_source[j] = '\0';
+      }
+
+      msg = pkl_ast_make_string (parser->ast, escaped_loc_source);
+      free (loc_source);
+      free (escaped_loc_source);
+      PKL_AST_TYPE (msg) = ASTREF (pkl_ast_make_string_type (parser->ast));
     }
-  arg_msg = pkl_ast_make_funcall_arg (p->ast, msg, NULL);
+  arg_msg = pkl_ast_make_funcall_arg (parser->ast, msg, NULL);
   arg_msg = ASTREF (arg_msg);
   PKL_AST_LOC (arg_msg) = PKL_AST_LOC (msg);
 
   /* Third argument of _pkl_assert: file name */
   {
     pkl_ast_node fname
-        = pkl_ast_make_string (p->ast, p->filename ? p->filename : "<stdin>");
+        = pkl_ast_make_string (parser->ast,
+                               parser->filename ? parser->filename : "<stdin>");
 
-    PKL_AST_TYPE (fname) = ASTREF (pkl_ast_make_string_type (p->ast));
-    arg_fname = pkl_ast_make_funcall_arg (p->ast, fname, NULL);
+    PKL_AST_TYPE (fname) = ASTREF (pkl_ast_make_string_type (parser->ast));
+    arg_fname = pkl_ast_make_funcall_arg (parser->ast, fname, NULL);
     arg_fname = ASTREF (arg_fname);
   }
 
   /* Fourth argument of _pkl_assert: line */
   {
-    pkl_ast_node line = pkl_ast_make_integer (p->ast, stmt_loc.first_line);
+    pkl_ast_node line = pkl_ast_make_integer (parser->ast, stmt_loc.first_line);
 
-    PKL_AST_TYPE (line) = ASTREF (pkl_ast_make_integral_type (p->ast, 64, 0));
-    arg_line = pkl_ast_make_funcall_arg (p->ast, line, NULL);
+    PKL_AST_TYPE (line) = ASTREF (pkl_ast_make_integral_type (parser->ast, 64, 0));
+    arg_line = pkl_ast_make_funcall_arg (parser->ast, line, NULL);
     arg_line = ASTREF (arg_line);
   }
 
   /* Fifth argument of _pkl_assert: column */
   {
-    pkl_ast_node col = pkl_ast_make_integer (p->ast, stmt_loc.first_column);
+    pkl_ast_node col = pkl_ast_make_integer (parser->ast, stmt_loc.first_column);
 
-    PKL_AST_TYPE (col) = ASTREF (pkl_ast_make_integral_type (p->ast, 64, 0));
-    arg_col = pkl_ast_make_funcall_arg (p->ast, col, NULL);
+    PKL_AST_TYPE (col) = ASTREF (pkl_ast_make_integral_type (parser->ast, 64, 0));
+    arg_col = pkl_ast_make_funcall_arg (parser->ast, col, NULL);
     arg_col = ASTREF (arg_col);
   }
 
@@ -201,8 +233,8 @@ pkl_make_assertion (struct pkl_parser *p, pkl_ast_node cond, pkl_ast_node msg,
   call_arg = pkl_ast_chainon (arg_fname, call_arg);
   call_arg = pkl_ast_chainon (arg_msg, call_arg);
   call_arg = pkl_ast_chainon (arg_cond, call_arg);
-  call = pkl_ast_make_funcall (p->ast, vfunc, call_arg);
-  return pkl_ast_make_exp_stmt (p->ast, call);
+  call = pkl_ast_make_funcall (parser->ast, vfunc, call_arg);
+  return pkl_ast_make_exp_stmt (parser->ast, call);
 }
 
 #if 0

@@ -63,8 +63,7 @@ var ber_tag_name = [
   "universal string", "character string", "BMP string",
 ];
 
-assert (ber_tag_name'length == 31,
-        "invalid ber_tag_name table");
+assert (ber_tag_name'length == 31);
 
 /* There are several namespaces for tag numbers: universal,
    application, context specific and private.  */

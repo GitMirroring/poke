@@ -23,6 +23,7 @@
 #include <stdarg.h>
 
 #include "pkl-ast.h"
+#include "pkl-parser.h"
 
 void pkl_error (pkl_compiler compiler, pkl_ast ast, pkl_ast_loc loc,
                 const char *fmt, ...);
@@ -32,5 +33,16 @@ void pkl_warning (pkl_compiler compiler, pkl_ast ast,
 
 void pkl_ice (pkl_compiler compiler, pkl_ast ast, pkl_ast_loc loc,
               const char *fmt, ...);
+
+
+/* Given a PKL parser and a location, allocate and return a
+   NULL-terminated string with the source code corresponding to the
+   location.
+
+   MAX_CHARS determines the maximum number of characters to allocate
+   in the string.  */
+
+char *pkl_loc_to_source (struct pkl_parser *parser, pkl_ast_loc loc,
+                         size_t max_chars);
 
 #endif /* ! PKL_DIAG_H */

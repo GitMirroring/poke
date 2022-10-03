@@ -1,4 +1,4 @@
-/* pe.pk -- PE COFF implementation for GNU poke.  */
+/* pe.pk -- PE/COFF implementation for GNU poke.  */
 
 /* Copyright (C) 2022 Jose E. Marchesi.  */
 
@@ -364,7 +364,7 @@ type PE_Begin_Function =
     uint<16>;
   };
 
-assert (1#PE_Begin_Function == 18#B, "size must be 18#B");
+assert (1#PE_Begin_Function == 18#B);
 
 type PE_End_Function =
   struct
@@ -376,7 +376,7 @@ type PE_End_Function =
     uint<16>;
   };
 
-assert (1#PE_End_Function == 18#B, "size musot be 18#B");
+assert (1#PE_End_Function == 18#B);
 
 /* XXX I made these values up - jemarch  */
 var PE_WEAK_EXTERN_SEARCH_NOLIBRARY = 0x1U,
@@ -392,7 +392,7 @@ type PE_Weak_External =
     uint<16>;
   };
 
-assert (1#PE_Weak_External == 18#B, "size must be 18#B");
+assert (1#PE_Weak_External == 18#B);
 
 var PE_COMDAT_SELECT_NODUPLICATES = 1UB,
     PE_COMDAT_SELECT_ANY = 2UB,
@@ -419,7 +419,7 @@ type PE_Section_Definition =
     uint<24> unused;
   };
 
-assert (1#PE_Section_Definition == 18#B, "size must be 18#B");
+assert (1#PE_Section_Definition == 18#B);
 
 var PE_AUX_SYMBOL_TYPE_TOKEN_DEF = 1UB;
 
@@ -433,7 +433,7 @@ type PE_CLR_Token =
     uint<32> rsv3 : rsv3 == 0;
   };
 
-assert (1#PE_CLR_Token == 18#B, "size must be 18#B");
+assert (1#PE_CLR_Token == 18#B);
 
 /* PE symbol records.  */
 
@@ -446,20 +446,21 @@ type PE_Sym =
       PE_Func_Def function_definition : sym.e_sclass == PE_SYM_CLASS_EXTERNAL
                                         && sym.e_type.msb == PE_SYM_DTYPE_FUNCTION
                                         && sym.e_scnum > 0;
-      PE_Begin_Function bf : sym.e_type.msb == PE_SYM_DTYPE_FUNCTION
-                             && catos (sym.e_name.name) == ".bf";
-      PE_End_Function ef : sym.e_type.msb == PE_SYM_DTYPE_FUNCTION
-                           && catos (sym.e_name.name) == ".ef";
-      PE_Weak_External weak_external : sym.e_sclass == PE_SYM_CLASS_EXTERNAL
-                                       && sym.e_scnum == COFF_N_UNDEF
-                                       && sym.e_value == 0;
+      PE_Begin_Function bf            : sym.e_type.msb == PE_SYM_DTYPE_FUNCTION
+                                        && catos (sym.e_name.name) == ".bf";
+      PE_End_Function ef              : sym.e_type.msb == PE_SYM_DTYPE_FUNCTION
+                                        && catos (sym.e_name.name) == ".ef";
+      PE_Weak_External weak_external  : sym.e_sclass == PE_SYM_CLASS_EXTERNAL
+                                        && sym.e_scnum == COFF_N_UNDEF
+                                        && sym.e_value == 0;
       /* We assume here that any symbol with static storage and whose
          name starts with a dot character '.' is a section name.  */
-      PE_Section_Definition section_definition : sym.e_sclass == PE_SYM_CLASS_STATIC
-                                                 && (sym.e_name.name ?! E_elem
-                                                     || sym.e_name.name[0] == '.');
-      PE_CLR_Token clr_token : sym.e_sclass == PE_SYM_CLASS_CLR_TOKEN;
-      char[18] file_name : sym.e_sclass == PE_SYM_CLASS_FILE;
+      PE_Section_Definition section_definition
+                                      : sym.e_sclass == PE_SYM_CLASS_STATIC
+                                        && (sym.e_name.name ?! E_elem
+                                            || sym.e_name.name[0] == '.');
+      PE_CLR_Token clr_token          : sym.e_sclass == PE_SYM_CLASS_CLR_TOKEN;
+      char[18] file_name              : sym.e_sclass == PE_SYM_CLASS_FILE;
       byte[18] unused;
     } aux_sym;
   };
@@ -510,7 +511,7 @@ type PE_Delay_Import =
 var PE_DEBUG_TYPE_UNKNOWN = 0,
     PE_DEBUG_TYPE_COFF = 1,
     PE_DEBUG_TYPE_CODEVIEW = 2,
-    PE_DEBUG_TYPE_FPO = 3, /* frame pointer omission info :) */
+    PE_DEBUG_TYPE_FPO = 3,
     PE_DEBUG_TYPE_MISC = 4,
     PE_DEBUG_TYPE_EXCEPTION = 5,
     PE_DEBUG_TYPE_FIXUP = 6,
