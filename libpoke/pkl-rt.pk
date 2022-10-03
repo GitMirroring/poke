@@ -552,10 +552,19 @@ immutable var pk_tracer_p = 0;
        anonymous then an empty string is passed.
 
      FIELD_OFFSET (offset<uint<64>,b>)
-       Offset of the field just mapped.  */
+       Offset of the field just mapped.
+
+   A FIELD_ABSENT tracing event is generated every time an optional
+   field is found to be absent when mapping or constructing a struct.
+   The event dispatch function is passed the following arguments:
+
+     FIELD_NAME (string)
+       The name of the field that is found to be absent.  Note that
+       optional fields cannot be anonymous.  */
 
 immutable var PK_TV_FIELD_MAPPED = 0;
-immutable var PK_TV_NUM_EVENTS = 1;
+immutable var PK_TV_FIELD_ABSENT = 1;
+immutable var PK_TV_NUM_EVENTS = 2;
 
 /* Tracing events can be handled by "actions".  Each action is
    implemented by an "event handler, which is a Poke function

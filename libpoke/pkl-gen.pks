@@ -710,6 +710,23 @@
         bnzi .optcond_ok
         drop                    ; STRICT BOFF STR VAL
         drop                    ; STRICT BOFF STR
+   .c if (pkl_tracer_p (RAS_COMPILER))
+   .c {
+        ;; Generate a PK_TV_FIELD_ABSENT tracer event.
+        mktyany
+        push null
+        mktya
+        push ulong<64>1
+        mka                     ; ... STR ARGS
+        over                    ; ... STR ARGS STR
+        push ulong<64>0         ; ... STR ARGS STR 0UL
+        swap                    ; ... STR ARGS 0UL STR
+        ains                    ; ... STR ARGS
+        push PK_TV_FIELD_ABSENT
+        swap
+        .call _pkl_dispatch_tv  ; ... STR null
+        drop                    ; ... STR
+   .c }
         drop                    ; STRICT BOFF
         nip                     ; BOFF
         push null               ; BOFF null
@@ -1657,6 +1674,23 @@
         bnzi .optcond_ok
         drop                    ; ENAME EVAL
         drop                    ; ENAME
+   .c if (pkl_tracer_p (RAS_COMPILER))
+   .c {
+        ;; Generate a PK_TV_FIELD_ABSENT tracer event.
+        mktyany
+        push null
+        mktya
+        push ulong<64>1
+        mka                     ; ... ENAME ARGS
+        over                    ; ... ENAME ARGS STR
+        push ulong<64>0         ; ... ENAME ARGS STR 0UL
+        swap                    ; ... ENAME ARGS 0UL STR
+        ains                    ; ... ENAME ARGS
+        push PK_TV_FIELD_ABSENT
+        swap
+        .call _pkl_dispatch_tv  ; ... ENAME null
+        drop                    ; ... ENAME
+   .c }
         drop                    ; _
         pushvar $boff           ; BOFF
         push null               ; BOFF null null

@@ -1,5 +1,15 @@
 2022-10-04  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-rt.pk (PK_TV_FIELD_ABSENT): Define.
+	(PK_TV_NUM_EVENTS): Adjust.
+	* libpoke/pkl.h (PK_TV_FIELD_ABSENT): Define.
+	* libpoke/pkl-gen.pks (handle_struct_field_constraints): Generate
+	a PK_TV_FIELD_ABSENT event whenever necessary.
+	(struct_constructor): Likewise.
+	* poke/pk-tracer.pk (pk_tv_action_field_absent): New function.
+
+2022-10-04  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-gen.pks (struct_field_mapper): Handle anonymous
 	fields in PK_TV_FIELD_MAPPED events.
 	* poke/pk-tracer.pk (pk_tv_action_field_mapped): Print <anonymous>

@@ -207,6 +207,7 @@ int pkl_tracer_p (pkl_compiler compiler);
    kept in sync with the corresponding variables in pkl-rt.pk.  */
 
 #define PK_TV_FIELD_MAPPED 0
+#define PK_TV_FIELD_ABSENT 1
 
 /* Set/get the quiet_p flag in/from the compiler.  If this flag is
    set, the compiler emits as few output as possible.  */

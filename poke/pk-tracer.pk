@@ -35,3 +35,17 @@ fun pk_tv_action_field_mapped = (int<32> e, any[] args) void:
 
 pk_tracer_dispatch.set_action (PK_TV_FIELD_MAPPED,
                                pk_tv_action_field_mapped);
+
+/* Action for PK_TV_FIELD_ABSENT tracing events.  */
+
+fun pk_tv_action_field_absent = (int<32> e, any[] args) void:
+{
+  var field_name = args[0] as string;
+
+  term_begin_class ("trace");
+  printf ("tracer: field_absent: %s\n", field_name);
+  term_end_class ("trace");
+}
+
+pk_tracer_dispatch.set_action (PK_TV_FIELD_ABSENT,
+                               pk_tv_action_field_absent);
