@@ -1352,7 +1352,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_promo_ps_struct_type_field)
   pkl_ast_node elem_type = PKL_AST_STRUCT_TYPE_FIELD_TYPE (elem);
   pkl_ast_node elem_constraint = PKL_AST_STRUCT_TYPE_FIELD_CONSTRAINT (elem);
   pkl_ast_node elem_initializer = PKL_AST_STRUCT_TYPE_FIELD_INITIALIZER (elem);
-  pkl_ast_node elem_optcond = PKL_AST_STRUCT_TYPE_FIELD_OPTCOND (elem);
+  pkl_ast_node elem_optcond_pre = PKL_AST_STRUCT_TYPE_FIELD_OPTCOND_PRE (elem);
+  pkl_ast_node elem_optcond_post = PKL_AST_STRUCT_TYPE_FIELD_OPTCOND_POST (elem);
   pkl_ast_node elem_label = PKL_AST_STRUCT_TYPE_FIELD_LABEL (elem);
 
   if (elem_constraint)
@@ -1401,9 +1402,9 @@ PKL_PHASE_BEGIN_HANDLER (pkl_promo_ps_struct_type_field)
       PKL_PASS_RESTART = PKL_PASS_RESTART || restart;
     }
 
-  if (elem_optcond)
+  if (elem_optcond_pre)
     {
-      pkl_ast_node optcond_type = PKL_AST_TYPE (elem_optcond);
+      pkl_ast_node optcond_type = PKL_AST_TYPE (elem_optcond_pre);
       int restart = 0;
 
       /* Handle integral structure.  */
@@ -1413,17 +1414,46 @@ PKL_PHASE_BEGIN_HANDLER (pkl_promo_ps_struct_type_field)
 
       if (PKL_AST_TYPE_CODE (optcond_type) != PKL_TYPE_INTEGRAL)
         {
-          PKL_ICE (PKL_AST_LOC (elem_optcond),
-                   "non-promoteable struct field optcond at promo time");
+          PKL_ICE (PKL_AST_LOC (elem_optcond_pre),
+                   "non-promoteable struct field pre optcond at promo time");
           PKL_PASS_ERROR;
         }
 
       if (!promote_integral (PKL_PASS_AST, 32, 1,
-                             &PKL_AST_STRUCT_TYPE_FIELD_OPTCOND (elem),
+                             &PKL_AST_STRUCT_TYPE_FIELD_OPTCOND_PRE (elem),
                              &restart))
         {
-          PKL_ICE (PKL_AST_LOC (elem_optcond),
-                   "couldn't promote struct field optcond");
+          PKL_ICE (PKL_AST_LOC (elem_optcond_pre),
+                   "couldn't promote struct field pre optcond");
+          PKL_PASS_ERROR;
+        }
+
+      PKL_PASS_RESTART = PKL_PASS_RESTART || restart;
+    }
+
+  if (elem_optcond_post)
+    {
+      pkl_ast_node optcond_type = PKL_AST_TYPE (elem_optcond_post);
+      int restart = 0;
+
+      /* Handle integral structure.  */
+      if (PKL_AST_TYPE_CODE (optcond_type) == PKL_TYPE_STRUCT
+          && PKL_AST_TYPE_S_ITYPE (optcond_type))
+        optcond_type = PKL_AST_TYPE_S_ITYPE (optcond_type);
+
+      if (PKL_AST_TYPE_CODE (optcond_type) != PKL_TYPE_INTEGRAL)
+        {
+          PKL_ICE (PKL_AST_LOC (elem_optcond_post),
+                   "non-promoteable struct field post optcond at promo time");
+          PKL_PASS_ERROR;
+        }
+
+      if (!promote_integral (PKL_PASS_AST, 32, 1,
+                             &PKL_AST_STRUCT_TYPE_FIELD_OPTCOND_POST (elem),
+                             &restart))
+        {
+          PKL_ICE (PKL_AST_LOC (elem_optcond_post),
+                   "couldn't promote struct field post optcond");
           PKL_PASS_ERROR;
         }
 

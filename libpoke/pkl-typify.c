@@ -1224,7 +1224,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_struct)
                                           NULL /* initializer */,
                                           NULL /* label */,
                                           PKL_AST_ENDIAN_DFL /* endian */,
-                                          NULL /* optcond */);
+                                          NULL /* optcond_pre */,
+                                          NULL /* optcond_post */);
 
       struct_field_types = pkl_ast_chainon (struct_field_types,
                                             struct_type_field);
@@ -1770,7 +1771,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
                   PKL_PASS_ERROR;
                 }
 
-              if (PKL_AST_STRUCT_TYPE_FIELD_OPTCOND (field))
+              if (PKL_AST_STRUCT_TYPE_FIELD_OPTIONAL_P (field))
                 {
                   PKL_ERROR (PKL_AST_LOC (field),
                              "optional fields are not allowed in integral %ss",
@@ -2754,8 +2755,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_struct_type_field)
     = PKL_AST_STRUCT_TYPE_FIELD_CONSTRAINT (elem);
   pkl_ast_node elem_initializer
     = PKL_AST_STRUCT_TYPE_FIELD_INITIALIZER (elem);
-  pkl_ast_node elem_optcond
-    = PKL_AST_STRUCT_TYPE_FIELD_OPTCOND (elem);
+  pkl_ast_node elem_optcond_pre
+    = PKL_AST_STRUCT_TYPE_FIELD_OPTCOND_PRE (elem);
+  pkl_ast_node elem_optcond_post
+    = PKL_AST_STRUCT_TYPE_FIELD_OPTCOND_POST (elem);
   pkl_ast_node elem_label
     = PKL_AST_STRUCT_TYPE_FIELD_LABEL (elem);
 
@@ -2795,20 +2798,45 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_struct_type_field)
       bool_type = ASTREF (bool_type); pkl_ast_node_free (bool_type);
     }
 
-  /* Ditto for the optcond.  */
-  if (elem_optcond)
+  /* Ditto for the optconds.  */
+
+  if (elem_optcond_pre)
     {
       pkl_ast_node bool_type
         = pkl_ast_make_integral_type (PKL_PASS_AST, 32, 1);
       pkl_ast_node optcond_type
-        = PKL_AST_TYPE (elem_optcond);
+        = PKL_AST_TYPE (elem_optcond_pre);
 
       if (!pkl_ast_type_promoteable_p (optcond_type, bool_type,
                                        1 /* promote_array_of_any */))
         {
           char *type_str = pkl_type_str (optcond_type, 1);
 
-          PKL_ERROR (PKL_AST_LOC (elem_optcond),
+          PKL_ERROR (PKL_AST_LOC (elem_optcond_pre),
+                     "invalid optional field expression\n"
+                     "expected boolean, got %s",
+                     type_str);
+          free (type_str);
+          PKL_TYPIFY_PAYLOAD->errors++;
+          PKL_PASS_ERROR;
+        }
+
+      bool_type = ASTREF (bool_type); pkl_ast_node_free (bool_type);
+    }
+
+  if (elem_optcond_post)
+    {
+      pkl_ast_node bool_type
+        = pkl_ast_make_integral_type (PKL_PASS_AST, 32, 1);
+      pkl_ast_node optcond_type
+        = PKL_AST_TYPE (elem_optcond_post);
+
+      if (!pkl_ast_type_promoteable_p (optcond_type, bool_type,
+                                       1 /* promote_array_of_any */))
+        {
+          char *type_str = pkl_type_str (optcond_type, 1);
+
+          PKL_ERROR (PKL_AST_LOC (elem_optcond_post),
                      "invalid optional field expression\n"
                      "expected boolean, got %s",
                      type_str);

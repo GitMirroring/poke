@@ -1,0 +1,10 @@
+/* { dg-do run } */
+
+/* { dg-command { .set endian big } } */
+/* { dg-command { .set obase 16 } } */
+
+var N = 5;
+type Foo = struct { if (N > 10) byte a; if (a == 0x10) byte b; };
+
+/* { dg-command { try Foo {a=0x10UB,b=0x20UB}; catch if E_elem { print "caught\n"; } } } */
+/* { dg-output "caught" } */

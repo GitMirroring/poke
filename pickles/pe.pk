@@ -706,7 +706,8 @@ type PE_Hint_Name_Table_Entry =
   {
     uint<16> hint;
     string name;
-    uint<8> pad if OFFSET % 2#B != 0#B;
+    if (OFFSET % 2#B != 0#B)
+      uint<8> pad;
   };
 
 /* Function Table Entry.
@@ -787,11 +788,15 @@ type PE_Export_Directory_Entry =
 /* PE relocations.  */
 
 type PE_Reloc =
-  struct
+  union
   {
-    offset<uint<32>,B> r_vaddr;
-    uint<32> r_symndx;
-    uint<16> r_type;
+    PE_ARM64_Reloc aarch64 : pe_machine in [PE_IMAGE_FILE_MACHINE_ARM64];
+    struct
+      {
+        offset<uint<32>,B> r_vaddr;
+        uint<32> r_symndx;
+        uint<16> r_type;
+      } pe;
   };
 
 /* PE Base relocations.  */
@@ -814,7 +819,7 @@ type PE_Base_Reloc_Block =
   struct
   {
     offset<uint<32>,B> page_rva;
-    offset<uint<32>,B> block_size;
+    offset<uint<32>,B> block_size : block_size >= OFFSET;
     PE_Base_Reloc[block_size - OFFSET] relocs;
   };
 
@@ -886,7 +891,8 @@ type PE_Opt_Hdr =
 
     var pe32p = coff_opt_hdr.magic == PE_MAGIC_PE32P;
 
-    offset<uint<32>,B> data_start if pe32p;
+    if (!pe32p)
+      offset<uint<32>,B> data_start;
 
     /* Preferred address of the first byte of image when loaded into
        memory.  */
@@ -938,7 +944,7 @@ type PE_Opt_Hdr =
     uint<16> subsystem : subsystem in pe_subsystems;
 
     /* DLL characteristics.  */
-    uint<16> dll_characteristics : dll_characteristics in pe_dll_characteristics;
+    uint<16> dll_characteristics;
 
     /* The size of the stack to reserve.  */
     union
@@ -1013,36 +1019,33 @@ type PE_File =
     byte[4] signature == ['P','E','\0','\0'] @ pe_offset;
 
     PE_File_Hdr hdr;
-    PE_Opt_Hdr opt_hdr : opt_hdr'size == hdr.opthdr
-      if hdr.opthdr > 0#B;
+    if (hdr.opthdr > 0#B)
+      PE_Opt_Hdr opt_hdr;
 
-    PE_Shdr[hdr.nscns] sections
-      if hdr.nscns > 0;
-    PE_Sym[hdr.nsyms] symbols @ hdr.symptr
-      if hdr.nsyms > 0;
-    COFF_Strtab strings;
+    if (hdr.nscns > 0)
+      PE_Shdr[hdr.nscns] sections;
+//    if (hdr.nsyms > 0)
+//      PE_Sym[hdr.nsyms] symbols @ hdr.symptr;
+//    COFF_Strtab strings;
 
-    var delay_import_datadir = opt_hdr.data_directories.delay_import_descriptor;
+    if (hdr.opthdr > 0#B && 0 /* XXX */)
+      struct
+      {
+        var delay_import = opt_hdr.data_directories.delay_import_descriptor;
+        var base_relocs_table = opt_hdr.data_directories.base_relocation_table;
+        var debug_datadir = opt_hdr.data_directories.debug;
+        var certs_datadir = opt_hdr.data_directories.certificate_table;
 
-    PE_Delay_Import[delay_import_datadir.size] delay_imports
-      @ delay_import_datadir.rva
-      if delay_import_datadir.size > 0#B;
+        if (delay_import.size > 0#B)
+          PE_Delay_Import[delay_import.size] delay_imports @ delay_import.rva;
 
-    var base_relocs_datadir = opt_hdr.data_directories.base_relocation_table;
+        if (base_relocs_table.size > 0#B)
+          PE_Base_Reloc_Block[base_relocs_table.size] @ base_relocs_table.rva;
 
-    PE_Base_Reloc_Block[base_relocs_datadir.size] base_relocs
-      @ base_relocs_datadir.rva
-      if base_relocs_datadir.size > 0#B;
+        if (debug_datadir.size > 0#B)
+          PE_Debug_Directory_Entry[debug_datadir.size] @ debug_datadir.rva;
 
-    var debug_datadir = opt_hdr.data_directories.debug;
-
-    PE_Debug_Directory_Entry[debug_datadir.size] debug_directory
-      @ debug_datadir.rva
-      if debug_datadir.size > 0#B;
-
-    var certs_datadir = opt_hdr.data_directories.certificate_table;
-
-    PE_Attribute_Certificate[certs_datadir.size] certificates
-      @ certs_datadir.rva
-      if certs_datadir.size > 0#B;
+        if (certs_datadir.size > 0#B)
+          PE_Attribute_Certificate[certs_datadir.size] certificates @ certs_datadir.rva;
+      } data_directories;
   };

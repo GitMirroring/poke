@@ -116,7 +116,8 @@ type PGP_Packet_Header =
     uint<1> bit_7 == 1;
     uint<1> v4_format; /* 1 if "new" */
     uint<4> old_packet_tag;
-    uint<2> old_length_bits if v4_format;
+    if (v4_format)
+      uint<2> old_length_bits;
 
     union
     {
@@ -329,7 +330,8 @@ type PGP_Packet =
     } payload ; //: payload'size == header.get_length; // TODO commented out because "extraneous" catches it below.
 
     var extraneous = header.get_length - payload'size;
-    byte[extraneous] extra if payload'size'magnitude;
+    if (payload'size'magnitude)
+      byte[extraneous] extra;
   };
 
 type PGP_File =

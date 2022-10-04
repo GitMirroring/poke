@@ -1,3 +1,79 @@
+2022-10-05  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-tab.y: (struct_type_field_opcond_pre): New rule.
+	(struct_type_field_optcond_post): Likewise.
+	* libpoke/pkl-ast.h (PKL_AST_STRUCT_TYPE_FIELD_OPTCOND_PRE): New macro.
+	(PKL_AST_STRUCT_TYPE_FIELD_OPTCOND_POST): Renamed from OPTCOND.
+	(struct pkl_ast_struct_type_field): New field optcond_pre and
+	optcond renamed to optcond_post.
+	* libpoke/pkl-ast.c (pkl_ast_make_struct_type_field): Handle both
+	optcond_pre and optcond_post.
+	(pkl_ast_dup_type): Likewise.
+	(pkl_ast_sizeof_type): Likewise.
+	(pkl_ast_type_is_complete): Likewise.
+	(pkl_ast_node_free): Likewise.
+	(pkl_ast_print_1): Likewise.
+	* libpoke/pkl-anal.c (pkl_anal2_ps_type_struct): Support both
+	optcond_pre and optcond_post.
+	* libpoke/pkl-pass.c (pkl_do_pass_1): Likewise.
+	* libpoke/pkl-promo.c (pkl_promo_ps_struct_type_field): Likewise.
+	* libpoke/pkl-typify.c (pkl_typify1_ps_struct): Likewise.
+	(pkl_typify1_ps_type_struct): Likewise.
+	* libpoke/pvm-val.c (pvm_print_val_1): Do not print offset for
+	absent fields in omaps.
+	* libpoke/pkl-gen.pks (handle_struct_field_constraints): Likewise.
+	(struct_comparator): Likewise.
+	(struct_field_mapper): Likewise.
+	* testsuite/poke.pkl/optcond-pre-diag-1.pk: New test.
+	* testsuite/poke.pkl/optcond-pre-diag-2.pk: Likewise.
+	* testsuite/poke.map/map-optcond-pre-1.pk: Likewise.
+	* testsuite/poke.map/map-optcond-pre-2.pk: Likewise.
+	* testsuite/poke.map/map-optcond-pre-3.pk: Likewise.
+	* testsuite/poke.map/map-optcond-pre-4.pk: Likewise.
+	* testsuite/poke.map/map-optcond-pre-5.pk: Likewise.
+	* testsuite/poke.map/map-optcond-pre-6.pk: Likewise.
+	* testsuite/poke.map/map-optcond-pre-7.pk: Likewise.
+	* testsuite/poke.map/map-optcond-pre-8.pk: Likewise.
+	* testsuite/poke.map/map-optcond-pre-9.pk: Likewise.
+	* testsuite/poke.map/map-optcond-pre-10.pk: Likewise.
+	* testsuite/poke.map/map-optcond-pre-11.pk: Likewise.
+	* testsuite/poke.map/map-optcond-pre-12.pk: Likewise.
+	* testsuite/poke.map/map-optcond-pre-write-1.pk: Likewise.
+	* testsuite/poke.map/map-optcond-pre-write-2.pk: Likewise.
+	* testsuite/poke.pkl/optcond-pre-1.pk: Likewise.
+	* testsuite/poke.pkl/optcond-pre-2.pk: Likewise.
+	* testsuite/poke.pkl/optcond-pre-3.pk: Likewise.
+	* testsuite/poke.pkl/optcond-pre-4.pk: Likewise.
+	* testsuite/poke.pkl/optcond-pre-5.pk: Likewise.
+	* testsuite/poke.pkl/optcond-pre-6.pk: Likewise.
+	* testsuite/poke.pkl/optcond-pre-7.pk: Likewise.
+	* testsuite/poke.pkl/optcond-pre-8.pk: Likewise.
+	* testsuite/poke.pkl/optcond-pre-9.pk: Likewise.
+	* testsuite/poke.pkl/optcond-pre-10.pk: Likewise.
+	* testsuite/poke.pkl/optcond-pre-11.pk: Likewise.
+	* testsuite/poke.pkl/optcond-pre-12.pk: Likewise.
+	* testsuite/poke.map/map-optcond-write-1.pk: Renamed from
+	map-opcond-write-1.pk.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+	* doc/poke.texi (Pretty-printers): Use prefix optional field
+	conditions.
+	(Optional Fields): Rewrite to document both prefix and suffix
+	conditional expressions in optional fields.
+	* pickles/pe.pk: Adapted to use pre conditional expressions.
+	* pickles/elf-64.pk: Likewise.
+	* pickles/elf-32.pk: Likewise.
+	* pickles/btf-ext.pk: Likewise.
+	* pickles/coff.pk: Likewise.
+	* pickles/id3v2.pk: Likewise.
+	* pickles/jffs2.pk: Likewise.
+	* pickles/openpgp.pk: Likewise.
+
+2022-10-04  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* pickles/pe-arm64.pk (PE_ARM64_Reloc): New type.
+	* pickles/pe.pk (PE_Reloc): Use ARM64 relocs.
+	(PE_Opt_Hdr): data_start only exists if not PE32+.
+
 2022-10-04  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-rt.pk (PK_TV_FIELD_ABSENT): Define.

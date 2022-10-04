@@ -575,6 +575,28 @@
         raise
         .end
 
+;;; RAS_MACRO_EMIT_TV_FIELD_ABSENT
+;;; ( STR - STR )
+;;;
+;;; Given the name of a field in the stack, emit a FIELD_ABSENT tracing
+;;; event.
+
+        .macro emit_tv_field_absent
+        mktyany
+        push null
+        mktya
+        push ulong<64>1
+        mka                     ; STR ARGS
+        over                    ; STR ARGS STR
+        push ulong<64>0         ; STR ARGS STR 0UL
+        swap                    ; STR ARGS 0UL STR
+        ains                    ; STR ARGS
+        push PK_TV_FIELD_ABSENT
+        swap
+        .call _pkl_dispatch_tv  ; STR null
+        drop                    ; STR
+        .end
+
 ;;; RAS_MACRO_HANDLE_STRUCT_FIELD_LABEL @field
 ;;; ( BOFF SBOFF - BOFF )
 ;;;
@@ -684,8 +706,9 @@
 ;;; RAS_MACRO_HANDLE_STRUCT_FIELD_CONSTRAINTS @struct_type @field
 ;;; ( STRICT BOFF STR VAL -- BOFF STR VAL NBOFF )
 ;;;
-;;; Given a `field', evaluate its optcond and integrity constraints,
-;;; then calculate the bit-offset of the next struct value.
+;;; Given a `field', evaluate its post optcond and integrity
+;;; constraints, then calculate the bit-offset of the next struct
+;;; value.
 ;;;
 ;;; STRICT determines whether to check for data integrity.
 ;;;
@@ -698,10 +721,10 @@
 
         .macro handle_struct_field_constraints @struct_type @field
                                 ; STRICT BOFF STR VAL
-        ;; If this is an optional field, evaluate the optcond.  If
-        ;; it is false, then add an absent field, i.e. both the field
-        ;; name and the field value are PVM_NULL.
-   .c pkl_ast_node optcond = PKL_AST_STRUCT_TYPE_FIELD_OPTCOND (@field);
+        ;; If there is an optional field post optcond, evaluate it.
+        ;; If it is false, then add an absent field, i.e. both the
+        ;; field name and the field value are PVM_NULL.
+   .c pkl_ast_node optcond = PKL_AST_STRUCT_TYPE_FIELD_OPTCOND_POST (@field);
    .c if (optcond)
         .c {
         .c PKL_GEN_PUSH_CONTEXT;
@@ -713,19 +736,7 @@
    .c if (pkl_tracer_p (RAS_COMPILER))
    .c {
         ;; Generate a PK_TV_FIELD_ABSENT tracer event.
-        mktyany
-        push null
-        mktya
-        push ulong<64>1
-        mka                     ; ... STR ARGS
-        over                    ; ... STR ARGS STR
-        push ulong<64>0         ; ... STR ARGS STR 0UL
-        swap                    ; ... STR ARGS 0UL STR
-        ains                    ; ... STR ARGS
-        push PK_TV_FIELD_ABSENT
-        swap
-        .call _pkl_dispatch_tv  ; ... STR null
-        drop                    ; ... STR
+        .e emit_tv_field_absent
    .c }
         drop                    ; STRICT BOFF
         nip                     ; BOFF
@@ -903,6 +914,45 @@
 ;;; of field-variables registered so far.
 
         .macro struct_field_mapper @struct_type @field
+        ;; If there is an optional field pre optcond, evaluate it.
+        ;; If it is false, then add an absent field, i.e. both the
+        ;; field name and the field value are PVM_NULL.
+   .c pkl_ast_node optcond_pre = PKL_AST_STRUCT_TYPE_FIELD_OPTCOND_PRE (@field);
+   .c if (optcond_pre)
+        .c {
+        .c PKL_GEN_PUSH_CONTEXT;
+        .c PKL_PASS_SUBPASS (optcond_pre);
+        .c PKL_GEN_POP_CONTEXT;
+        bnzi .optcond_ok
+        drop                     ; STRICT IOS BOFF SBOFF
+   .c if (pkl_tracer_p (RAS_COMPILER))
+   .c {
+        .let @field_name = PKL_AST_STRUCT_TYPE_FIELD_NAME (@field)
+        .let #field_name_str \
+          = @field_name ? pvm_make_string (PKL_AST_IDENTIFIER_POINTER (@field_name)) : PVM_NULL
+        push #field_name_str    ; STRICT IOS BOFF SBOFF ENAME
+        ;; Generate a PK_TV_FIELD_ABSENT tracer event.
+        .e emit_tv_field_absent
+        drop                    ; STRICT IOS BOFF SBOFF
+   .c }
+        drop                    ; STRICT IOS BOFF
+        nip                     ; STRICT BOFF
+        nip                     ; BOFF
+        push null               ; BOFF null
+        over                    ; BOFF null BOFF
+        over                    ; BOFF null BOFF null
+        dup                     ; BOFF null BOFF null null
+        regvar $absentval
+        .c vars_registered++;
+        swap                    ; BOFF null null BOFF
+        ba .omitted_field
+   .c }
+   .c else
+   .c {
+        push null               ; STRICT IOS BOFF null
+   .c }
+.optcond_ok:
+        drop                    ; STRICT IOS BOFF SBOFF
         ;; Increase OFF by the label, if the field has one.
         .e handle_struct_field_label @field
                                 ; STRICT IOS BOFF
@@ -942,7 +992,7 @@
         ;; This is to keep the right lexical environment in
         ;; case the subpass above raises an exception.
         push null
-        regvar $val
+        regvar $constrainterrorval
         raise
 .val_ok:
         dup                             ; STRICT BOFF VAL VAL
@@ -1022,9 +1072,10 @@
         ;; And back to the initial state!
         drop                    ; ... BOFF STR VAL
    .c }
-        ;; Evaluate the field's opcond and constraints
+        ;; Evaluate the field's post optcond and constraints
         .e handle_struct_field_constraints @struct_type, @field
                                         ; BOFF STR VAL NBOFF
+.omitted_field:
         .end
 
 ;;; RAS_FUNCTION_STRUCT_MAPPER @type_struct
@@ -1110,6 +1161,7 @@
         .label .alternative_failed
         .label .constraint_in_alternative
         .label .eof_in_alternative
+        .label .omitted_field
  .c   if (PKL_AST_TYPE_S_UNION_P (@type_struct))
  .c   {
         push PVM_E_EOF
@@ -1148,6 +1200,7 @@
         ;; handlers are installed.
         dup                      ; ...[EBOFF ENAME EVAL] [NEBOFF] NEBOFF
  .c     }
+        ;; Attempt the mapping.
         pushvar $strict          ; ...[EBOFF ENAME EVAL] [NEBOFF] NEBOFF STRICT
         swap                     ; ...[EBOFF ENAME EVAL] [NEBOFF] STRICT NEBOFF
         pushvar $ios             ; ...[EBOFF ENAME EVAL] [NEBOFF] STRICT NEBOFF IOS
@@ -1155,6 +1208,7 @@
         pushvar $boff            ; ...[EBOFF ENAME EVAL] [NEBOFF] STRICT IOS NEBOFF OFF
         .e struct_field_mapper @type_struct, @field
                                 ; ...[NEBOFF] [EBOFF ENAME EVAL] NEBOFF
+.omitted_field:
  .c     if (PKL_AST_TYPE_S_UNION_P (@type_struct))
  .c     {
         tor
@@ -1408,7 +1462,7 @@
         srefi                   ; SCT1 VAL1 SCT2 I VAL2
         nip                     ; SCT1 VAL1 SCT2 VAL2
         quake                   ; SCT1 SCT2 VAL1 VAL2
- .c if (PKL_AST_STRUCT_TYPE_FIELD_OPTCOND (@field))
+ .c if (PKL_AST_STRUCT_TYPE_FIELD_OPTIONAL_P (@field))
  .c {
         ;; If the field is optional, both VAL1 and VAL2 can be null.
         ;; In that case the fields are considered equal only if they are
@@ -1552,7 +1606,8 @@
         .label .alternative_failed
         .label .constraint_ok
         .label .constraint_failed
-        .label .optcond_ok
+        .label .optcond_pre_ok
+        .label .optcond_post_ok
         .label .omitted_field
         .label .got_value
         .let @field_initializer = PKL_AST_STRUCT_TYPE_FIELD_INITIALIZER (@field)
@@ -1599,6 +1654,39 @@
         push null               ; ... SCT ENAME
         push null               ; ... SCT ENAME EVAL
  .c   }
+        ;; If there is an optional field pre optcond, evaluate it.  If
+        ;; it is false, then add an absent field, i.e. both the field
+        ;; name and the field value are PVM_NULL.
+   .c pkl_ast_node optcond_pre = PKL_AST_STRUCT_TYPE_FIELD_OPTCOND_PRE (@field);
+   .c if (optcond_pre)
+   .c {
+        .c PKL_GEN_PUSH_CONTEXT;
+        .c PKL_PASS_SUBPASS (optcond_pre);
+        .c PKL_GEN_POP_CONTEXT;
+        bnzi .optcond_pre_ok
+        drop                    ; SCT ENAME EVAL
+        drop                    ; SCT ENAME
+        nip                     ; ENAME
+   .c if (pkl_tracer_p (RAS_COMPILER))
+   .c {
+        ;; Generate a PK_TV_FIELD_ABSENT tracer event.
+        .e emit_tv_field_absent
+   .c }
+        drop                    ; _
+        pushvar $boff           ; BOFF
+        push null               ; BOFF null null
+        push null               ; BOFF null null
+        dup                     ; BOFF null null null
+        regvar $absentval
+        .c vars_registered++;
+        ba .omitted_field
+   .c }
+   .c else
+   .c {
+        push null               ; SCT ENAME EVAL null
+   .c }
+.optcond_pre_ok:
+        drop                    ; SCT ENAME EVAL
         ;; If the value is not-null, use it.  Otherwise, use the value
         ;; obtained by subpassing in the value's type, or the field's
         ;; initializer.
@@ -1662,34 +1750,22 @@
         dup                    ; ... ENAME EVAL EVAL
         regvar $val            ; ... ENAME EVAL
    .c   vars_registered++;
-        ;; If this is an optional field, evaluate the optcond.  If
+        ;; If there is an optional field post optcond, evaluate it.  If
         ;; it is false, then add an absent field, i.e. both the field
         ;; name and the field value are PVM_NULL.
-   .c pkl_ast_node optcond = PKL_AST_STRUCT_TYPE_FIELD_OPTCOND (@field);
-   .c if (optcond)
+   .c pkl_ast_node optcond_post = PKL_AST_STRUCT_TYPE_FIELD_OPTCOND_POST (@field);
+   .c if (optcond_post)
    .c {
         .c PKL_GEN_PUSH_CONTEXT;
-        .c PKL_PASS_SUBPASS (optcond);
+        .c PKL_PASS_SUBPASS (optcond_post);
         .c PKL_GEN_POP_CONTEXT;
-        bnzi .optcond_ok
+        bnzi .optcond_post_ok
         drop                    ; ENAME EVAL
         drop                    ; ENAME
    .c if (pkl_tracer_p (RAS_COMPILER))
    .c {
         ;; Generate a PK_TV_FIELD_ABSENT tracer event.
-        mktyany
-        push null
-        mktya
-        push ulong<64>1
-        mka                     ; ... ENAME ARGS
-        over                    ; ... ENAME ARGS STR
-        push ulong<64>0         ; ... ENAME ARGS STR 0UL
-        swap                    ; ... ENAME ARGS 0UL STR
-        ains                    ; ... ENAME ARGS
-        push PK_TV_FIELD_ABSENT
-        swap
-        .call _pkl_dispatch_tv  ; ... ENAME null
-        drop                    ; ... ENAME
+        .e emit_tv_field_absent
    .c }
         drop                    ; _
         pushvar $boff           ; BOFF
@@ -1704,7 +1780,7 @@
    .c {
         push null               ; ENAME EVAL null
    .c }
-.optcond_ok:
+.optcond_post_ok:
         drop                    ; ENAME EVAL
         ;; Evaluate the constraint expression.
         push PVM_E_CONSTRAINT

@@ -941,10 +941,9 @@ PKL_PHASE_BEGIN_HANDLER (pkl_anal2_ps_type_struct)
           && !PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (t))
         {
           pkl_ast_node constraint = PKL_AST_STRUCT_TYPE_FIELD_CONSTRAINT (t);
-          pkl_ast_node optcond = PKL_AST_STRUCT_TYPE_FIELD_OPTCOND (t);
           pkl_ast_node elem_type = PKL_AST_STRUCT_TYPE_FIELD_TYPE (t);
 
-          if (optcond)
+          if (PKL_AST_STRUCT_TYPE_FIELD_OPTIONAL_P (t))
             {
               PKL_ERROR (PKL_AST_LOC (t),
                          "optional fields are not allowed in unions");

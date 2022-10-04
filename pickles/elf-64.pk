@@ -209,11 +209,11 @@ type Elf64_File =
   {
     Elf64_Ehdr ehdr;
 
-    Elf64_Shdr[ehdr.e_shnum] shdr @ ehdr.e_shoff
-      if ehdr.e_shnum > 0;
+    if (ehdr.e_shnum > 0)
+      Elf64_Shdr[ehdr.e_shnum] shdr @ ehdr.e_shoff;
 
-    Elf64_Phdr[ehdr.e_phnum] phdr @ ehdr.e_phoff
-      if ehdr.e_phnum > 0;
+    if (ehdr.e_phnum > 0)
+      Elf64_Phdr[ehdr.e_phnum] phdr @ ehdr.e_phoff;
 
     /* Given an offset into the ELF file's section string table, return
        the string.  */

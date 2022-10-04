@@ -159,7 +159,6 @@ EXTRA_DIST = \
   poke.map/func-map-3.pk \
   poke.map/func-map-4.pk \
   poke.map/func-map-5.pk \
-  poke.map/map-opcond-write-1.pk \
   poke.map/map-optcond-1.pk \
   poke.map/map-optcond-2.pk \
   poke.map/map-optcond-3.pk \
@@ -174,6 +173,22 @@ EXTRA_DIST = \
   poke.map/map-optcond-12.pk \
   poke.map/map-optcond-int-struct-1.pk \
   poke.map/map-optcond-int-struct-2.pk \
+  poke.map/map-optcond-pre-1.pk \
+  poke.map/map-optcond-pre-10.pk \
+  poke.map/map-optcond-pre-11.pk \
+  poke.map/map-optcond-pre-12.pk \
+  poke.map/map-optcond-pre-13.pk \
+  poke.map/map-optcond-pre-2.pk \
+  poke.map/map-optcond-pre-3.pk \
+  poke.map/map-optcond-pre-4.pk \
+  poke.map/map-optcond-pre-5.pk \
+  poke.map/map-optcond-pre-6.pk \
+  poke.map/map-optcond-pre-7.pk \
+  poke.map/map-optcond-pre-8.pk \
+  poke.map/map-optcond-pre-9.pk \
+  poke.map/map-optcond-pre-write-1.pk \
+  poke.map/map-optcond-pre-write-2.pk \
+  poke.map/map-optcond-write-1.pk \
   poke.map/map-size-1.pk \
   poke.map/map-size-2.pk \
   poke.map/map-size-3.pk \
@@ -1771,6 +1786,18 @@ EXTRA_DIST = \
   poke.pkl/optcond-7.pk \
   poke.pkl/optcond-8.pk \
   poke.pkl/optcond-9.pk \
+  poke.pkl/optcond-pre-1.pk \
+  poke.pkl/optcond-pre-10.pk \
+  poke.pkl/optcond-pre-11.pk \
+  poke.pkl/optcond-pre-12.pk \
+  poke.pkl/optcond-pre-2.pk \
+  poke.pkl/optcond-pre-3.pk \
+  poke.pkl/optcond-pre-4.pk \
+  poke.pkl/optcond-pre-5.pk \
+  poke.pkl/optcond-pre-6.pk \
+  poke.pkl/optcond-pre-7.pk \
+  poke.pkl/optcond-pre-8.pk \
+  poke.pkl/optcond-pre-9.pk \
   poke.pkl/optcond-10.pk \
   poke.pkl/optcond-11.pk \
   poke.pkl/optcond-12.pk \
@@ -1783,6 +1810,8 @@ EXTRA_DIST = \
   poke.pkl/optcond-19.pk \
   poke.pkl/optcond-20.pk \
   poke.pkl/optcond-21.pk \
+  poke.pkl/optcond-pre-diag-1.pk \
+  poke.pkl/optcond-pre-diag-2.pk \
   poke.pkl/or-1.pk \
   poke.pkl/or-2.pk \
   poke.pkl/or-3.pk \

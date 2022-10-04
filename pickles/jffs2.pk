@@ -244,7 +244,8 @@ struct
     offset<uint<16>, B> value_len;
     uint<32> data_crc;
     uint<32> node_crc;
-    char[name_len] name if name_len != 0#B;
+    if (name_len != 0#B)
+      char[name_len] name;
 
     var rel_value_offset = OFFSET;
 

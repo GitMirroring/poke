@@ -1445,15 +1445,15 @@ pvm_print_val_1 (pvm vm, int depth, int mode, int base, int indent,
                   pk_puts ("=");
                 }
               PVM_PRINT_VAL_1 (value, ndepth + 1);
-            }
 
-          if (maps && offset != PVM_NULL)
-            {
-              pk_puts (" @ ");
-              pk_term_class ("offset");
-              PVM_PRINT_VAL_1 (offset, ndepth);
-              pk_puts ("#b");
-              pk_term_end_class ("offset");
+              if (maps && offset != PVM_NULL)
+                {
+                  pk_puts (" @ ");
+                  pk_term_class ("offset");
+                  PVM_PRINT_VAL_1 (offset, ndepth);
+                  pk_puts ("#b");
+                  pk_term_end_class ("offset");
+                }
             }
         }
 

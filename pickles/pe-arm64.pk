@@ -36,3 +36,14 @@ var PE_ARM64_R_ABSOLUTE = 0x0000UH,
     PE_ARM64_R_BRANCH19 = 0x000FUH,
     PE_ARM64_R_BRANCH14 = 0x0010UH,
     PE_ARM64_R_REL32 = 0x0011UH;
+
+/* Relocation struct.  */
+
+type PE_ARM64_Reloc =
+  struct
+  {
+    offset<uint<32>,B> r_vaddr;
+    uint<32> r_symndx;
+    uint<16> r_type;
+    offset<uint<32>,B> r_offset;
+  };

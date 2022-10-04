@@ -174,8 +174,10 @@ type BTF_Ext_Section =
           BTF_Ext_Core_Info_Sec [secsz (header.core_info_len, recsz'size)] sections;
         };
 
-    BTF_Ext_Func_Info func_info @ func_info_off if has_func_info;
-    BTF_Ext_Line_Info line_info @ line_info_off if has_line_info;
-    BTF_Ext_Core_Info core_info @ core_info_off if has_core_info;
-
+    if (has_func_info)
+      BTF_Ext_Func_Info func_info @ func_info_off;
+    if (has_line_info)
+      BTF_Ext_Line_Info line_info @ line_info_off;
+    if (has_core_info)
+      BTF_Ext_Core_Info core_info @ core_info_off;
   };

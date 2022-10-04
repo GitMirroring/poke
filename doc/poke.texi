@@ -6974,7 +6974,8 @@ type Packet =
     byte magic : magic in [MAGIC1,MAGIC2];
     byte n;
     byte[n] payload;
-    PacketTrailer trailer if magic == MAGIC2;
+    if (magic == MAGIC2)
+     PacketTrailer trailer;
   @}
 @end example
 
@@ -7014,7 +7015,8 @@ type Packet =
   @{
     byte magic : magic in [MAGIC1,MAGIC2];
     [...]
-    PacketTrailer trailer if packet_magic2_p (magic);
+    if (packet_magic2_p (magic))
+    PacketTrailer trailer;
 
     method _print = void:
     @{
@@ -7039,7 +7041,8 @@ type Packet =
   @{
     byte magic : magic in [MAGIC1,MAGIC2];
     [...]
-    PacketTrailer trailer if packet_magic2_p (magic);
+    if (packet_magic2_p (magic))
+      PacketTrailer trailer;
 
     method _print = void:
     @{
@@ -11825,7 +11828,7 @@ type ID3V2_Tag =
     ID3V2_Hdr hdr;
     union
     @{
-      ID3V2_Ext_Hdr hdr if hdr.extended_hdr_present;
+      ID3V2_Ext_Hdr hdr : hdr.extended_hdr_present;
       struct @{@};
     @} ext;
     @dots{}
@@ -11833,27 +11836,56 @@ type ID3V2_Tag =
 @end example
 
 That's it, we use an union with an empty alternative.  However, this
-is a bit cumbersome.  Therefore Poke provides a more convenient way to
-denote this:
+approach has two problems.  First, it is a bit cumbersome to write and
+it becomes necessary to introduce an intermediate named field like
+@code{ext} above.  Second, and most importantly, the constraint
+expression in the union alternative is evaluated only once the
+alternative has been already decoded.
+
+Therefore Poke provides a more convenient way to denote this:
 
 @example
 type ID3V2_Tag =
   struct
   @{
      ID3V2_Hdr hdr;
-     IDV2_Ext_Hdr ext_hdr if hdr.extended_hdr_present;
+     if (hdr.extended_hdr_present)
+       IDV2_Ext_Hdr ext_hdr;
      @dots{}
   @}
 @end example
 
-If both a constraint and an optional field expression are specified,
-the second should follow the first.
+@noindent
+In the example above @code{ext_hdr} will be decoded only if
+@code{hdr.extended_hdr_present} is true, which is what we want.
 
-One important characteristic of optional fields to keep in mind is
-that they are always constructed or mapped, even when they are
-omitted.  This is because, generally speaking, the value of an
-optional field may be necessary in order to determine whether the
-optional field is present or not.
+Sometimes, however, we really need to decode a field to decide whether
+it is present or absent in the final struct.  In these cases, we can
+use a suffix syntax:
+
+@example
+type ID3V2_Tag =
+  struct
+  @{
+     ID3V2_Hdr hdr;
+     IDV2_Ext_Hdr ext_hdr if hdr.extended_hdr_present
+                             && ext_hdr.invisible;
+     @dots{}
+  @}
+@end example
+
+@noindent
+Note how in this example the field @code{ext_hdr} can appear itself in
+the conditional expression.
+
+If both a constraint and a suffix optional field expression are
+specified, the second should follow the first.
+
+One important characteristic of optional fields with suffix
+expressions to keep in mind is that they are always constructed or
+mapped, even when they are omitted.  This is because, generally
+speaking, the value of an optional field may be necessary in order to
+determine whether the optional field is present or not.
 
 This may result on unexpected results for the unaware pokist, like in
 the example below:
@@ -11869,6 +11901,9 @@ struct
 @noindent
 where the array index may underflow if @code{hdr.len} is less or equal
 than @code{hdr.padding}.
+
+The obvious solution for this problem is to use a prefix conditional
+expression instead.
 
 For obvious reasons, optional fields are not allowed in unions.
 

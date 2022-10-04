@@ -1,0 +1,9 @@
+/* { dg-do run } */
+
+/* { dg-command { .set endian big } } */
+/* { dg-command { .set obase 16 } } */
+
+type Foo = struct { byte a; if (a == 0x20) byte b; byte c; };
+
+/* { dg-command { Foo { } } } */
+/* { dg-output "Foo {a=0x0UB,c=0x0UB}" } */

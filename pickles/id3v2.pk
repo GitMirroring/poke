@@ -63,7 +63,8 @@ type ID3V2_Ext_Hdr =
     } flags;
 
     uint32 padding_sz;
-    uint32 crc if flags.crc_present;
+    if (flags.crc_present)
+      uint32 crc;
   };
 
 type ID3V2_Frame =
@@ -109,7 +110,8 @@ type ID3V2_Tag =
   struct
   {
     ID3V2_Hdr hdr;
-    ID3V2_Ext_Hdr ext_hdr if hdr.flags.extended_hdr_present;
+    if (hdr.flags.extended_hdr_present)
+      ID3V2_Ext_Hdr ext_hdr;
     ID3V2_Frame[] frames;
 
     /* Padding.  */

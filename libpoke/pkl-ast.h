@@ -780,15 +780,22 @@ pkl_ast_node pkl_ast_make_struct_ref (pkl_ast ast,
    ENDIAN is the endianness to use when reading and writing data
    to/from the field.
 
-   OPTCOND is a boolean expression that, if present, specifies whether
-   the field exists in the struct or not.
+   OPTCOND_PRE is a boolean expression that, if present, specifies
+   whether the field exists in the struct or not.  The expression is
+   evaluated before the field has been mapped or constructed and thus
+   it cannot reference the field itself.
+
+   OPTCOND_POST is a boolean expression that, if present, specifies
+   whether the field exists in the struct or not.  The expression is
+   evaluated after the field has been mapped or constructed and thus
+   it can reference the field itself.
 
    COMPUTED_P is a flag that is set when the field is a computed
    field, i.e. it is a field whose values are computed using a pair of
    struct methods.  Computed fields are not mapped nor constructed the
    usual way.  If COMPUTED_P is true then INITIALIZER, CONSTRAINT,
-   LABEL and OPTCOND should be NULL, and also ENDIAN should be
-   PKL_AST_ENDIAN_DFL.
+   LABEL, OPTCOND_PRE and OPTCOND_POST should be NULL, and also ENDIAN
+   should be PKL_AST_ENDIAN_DFL.
 
    INITIALIZER is an expression, that will be used to derive an
    implicit constraint, and also as the initialization value for this
@@ -801,7 +808,11 @@ pkl_ast_node pkl_ast_make_struct_ref (pkl_ast ast,
 #define PKL_AST_STRUCT_TYPE_FIELD_CONSTRAINT(AST) ((AST)->sct_type_elem.constraint)
 #define PKL_AST_STRUCT_TYPE_FIELD_LABEL(AST) ((AST)->sct_type_elem.label)
 #define PKL_AST_STRUCT_TYPE_FIELD_ENDIAN(AST) ((AST)->sct_type_elem.endian)
-#define PKL_AST_STRUCT_TYPE_FIELD_OPTCOND(AST) ((AST)->sct_type_elem.optcond)
+#define PKL_AST_STRUCT_TYPE_FIELD_OPTCOND_PRE(AST) ((AST)->sct_type_elem.optcond_pre)
+#define PKL_AST_STRUCT_TYPE_FIELD_OPTCOND_POST(AST) ((AST)->sct_type_elem.optcond_post)
+#define PKL_AST_STRUCT_TYPE_FIELD_OPTIONAL_P(AST) \
+  (PKL_AST_STRUCT_TYPE_FIELD_OPTCOND_PRE (AST)    \
+   || PKL_AST_STRUCT_TYPE_FIELD_OPTCOND_POST (AST))
 #define PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P(AST) ((AST)->sct_type_elem.computed_p)
 #define PKL_AST_STRUCT_TYPE_FIELD_INITIALIZER(AST) ((AST)->sct_type_elem.initializer)
 
@@ -815,7 +826,8 @@ struct pkl_ast_struct_type_field
   union pkl_ast_node *constraint;
   union pkl_ast_node *initializer;
   union pkl_ast_node *label;
-  union pkl_ast_node *optcond;
+  union pkl_ast_node *optcond_pre;
+  union pkl_ast_node *optcond_post;
   int endian;
   int computed_p;
 };
@@ -827,7 +839,8 @@ pkl_ast_node pkl_ast_make_struct_type_field (pkl_ast ast,
                                              pkl_ast_node initializer,
                                              pkl_ast_node label,
                                              int endian,
-                                             pkl_ast_node optcond);
+                                             pkl_ast_node optcond_pre,
+                                             pkl_ast_node optcond_post);
 
 /* PKL_AST_FUNC_TYPE_ARG nodes represent the arguments part of a
    function type.

@@ -427,7 +427,7 @@ load_module (struct pkl_parser *parser,
 %token CONTINUE          _("keyword `continue'")
 %token ELSE              _("keyword `else'")
 %token IF                _("keyword `if'")
-%token WHILE             _("keyword `while")
+%token WHILE             _("keyword `while'")
 %token UNTIL             _("keyword `until'")
 %token FOR               _("keyword `for'")
 %token IN                _("keyword `in'")
@@ -583,7 +583,7 @@ load_module (struct pkl_parser *parser,
 %type <ast> struct_type_elem_list struct_type_field struct_type_field_identifier
 %type <ast> struct_type_field_label struct_type_computed_field
 %type <field_const_init> struct_type_field_constraint_and_init
-%type <ast> struct_type_field_optcond
+%type <ast> struct_type_field_optcond_pre struct_type_field_optcond_post
 %type <ast> declaration simple_declaration
 %type <ast> defvar defvar_list deftype deftype_list
 %type <ast> defunit defunit_list
@@ -1808,13 +1808,15 @@ struct_type_computed_field:
                                                          NULL /* initializer */,
                                                          NULL /* label */,
                                                          PKL_AST_ENDIAN_DFL,
-                                                         NULL /* optcond */);
+                                                         NULL /* optcond_pre */,
+                                                         NULL /* optcond_post */);
                     PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P ($$) = 1;
                     PKL_AST_LOC ($$) = @$;
                   }
           ;
 
 struct_type_field:
+          struct_type_field_optcond_pre
           endianness type_specifier struct_type_field_identifier
                   {
                     /* Register a variable in the current environment
@@ -1823,13 +1825,13 @@ struct_type_field:
 
                     pkl_ast_node dummy, decl;
                     pkl_ast_node identifier
-                      = ($3 != NULL
-                         ? $3
+                      = ($4 != NULL
+                         ? $4
                          : pkl_ast_make_identifier (pkl_parser->ast, ""));
 
 
                     dummy = pkl_ast_make_integer (pkl_parser->ast, 0);
-                    PKL_AST_TYPE (dummy) = ASTREF ($2);
+                    PKL_AST_TYPE (dummy) = ASTREF ($3);
                     decl = pkl_ast_make_decl (pkl_parser->ast,
                                               PKL_AST_DECL_KIND_VAR,
                                               identifier, dummy,
@@ -1842,9 +1844,9 @@ struct_type_field:
                                            PKL_AST_IDENTIFIER_POINTER (identifier),
                                            decl))
                       {
-                        pkl_error (pkl_parser->compiler, pkl_parser->ast, @3,
+                        pkl_error (pkl_parser->compiler, pkl_parser->ast, @4,
                                    "duplicated struct element '%s'",
-                                   PKL_AST_IDENTIFIER_POINTER ($3));
+                                   PKL_AST_IDENTIFIER_POINTER ($4));
                         YYERROR;
                       }
 
@@ -1855,11 +1857,11 @@ struct_type_field:
                       }
                   }
           struct_type_field_constraint_and_init struct_type_field_label
-          struct_type_field_optcond ';'
+          struct_type_field_optcond_post ';'
                   {
-                    pkl_ast_node constraint = $5.constraint;
-                    pkl_ast_node initializer = $5.initializer;
-                    int impl_constraint_p = $5.impl_constraint_p;
+                    pkl_ast_node constraint = $6.constraint;
+                    pkl_ast_node initializer = $6.initializer;
+                    int impl_constraint_p = $6.impl_constraint_p;
 
                     if (initializer)
                       {
@@ -1867,7 +1869,7 @@ struct_type_field:
                         int back, over;
 
                         /* We need a field name.  */
-                        if ($3 == NULL)
+                        if ($4 == NULL)
                           {
                             pkl_error (pkl_parser->compiler, pkl_parser->ast, @$,
                                        "no initializer allowed in anonymous field");
@@ -1881,12 +1883,12 @@ struct_type_field:
                           {
                             field_decl = pkl_env_lookup (pkl_parser->env,
                                                          PKL_ENV_NS_MAIN,
-                                                         PKL_AST_IDENTIFIER_POINTER ($3),
+                                                         PKL_AST_IDENTIFIER_POINTER ($4),
                                                          &back, &over);
                             assert (field_decl);
 
                             field_var = pkl_ast_make_var (pkl_parser->ast,
-                                                          $3,
+                                                          $4,
                                                           field_decl,
                                                           back, over);
                             PKL_AST_LOC (field_var) = PKL_AST_LOC (initializer);
@@ -1899,27 +1901,27 @@ struct_type_field:
                           }
                       }
 
-                    $$ = pkl_ast_make_struct_type_field (pkl_parser->ast, $3, $2,
+                    $$ = pkl_ast_make_struct_type_field (pkl_parser->ast, $4, $3,
                                                          constraint, initializer,
-                                                         $6, $1, $7);
+                                                         $7, $2, $1, $8);
                     PKL_AST_LOC ($$) = @$;
 
                     /* If endianness is empty, bison includes the
                        blank characters before the type field as if
                        they were part of this rule.  Therefore the
                        location should be adjusted here.  */
-                    if ($1 == PKL_AST_ENDIAN_DFL)
+                    if ($2 == PKL_AST_ENDIAN_DFL)
                       {
-                        PKL_AST_LOC ($$).first_line = @2.first_line;
-                        PKL_AST_LOC ($$).first_column = @2.first_column;
+                        PKL_AST_LOC ($$).first_line = @3.first_line;
+                        PKL_AST_LOC ($$).first_column = @3.first_column;
                       }
 
-                    if ($3 != NULL)
+                    if ($4 != NULL)
                       {
-                        PKL_AST_LOC ($3) = @3;
-                        PKL_AST_TYPE ($3) = pkl_ast_make_string_type (pkl_parser->ast);
-                        PKL_AST_TYPE ($3) = ASTREF (PKL_AST_TYPE ($3));
-                        PKL_AST_LOC (PKL_AST_TYPE ($3)) = @3;
+                        PKL_AST_LOC ($4) = @4;
+                        PKL_AST_TYPE ($4) = pkl_ast_make_string_type (pkl_parser->ast);
+                        PKL_AST_TYPE ($4) = ASTREF (PKL_AST_TYPE ($4));
+                        PKL_AST_LOC (PKL_AST_TYPE ($4)) = @4;
                       }
                   }
         ;
@@ -1987,7 +1989,19 @@ struct_type_field_constraint_and_init:
                 }
           ;
 
-struct_type_field_optcond:
+struct_type_field_optcond_pre:
+          %empty
+                {
+                  $$ = NULL;
+                }
+        | IF '(' expression ')'
+                {
+                  $$ = $3;
+                  PKL_AST_LOC ($$) = @3;
+                }
+        ;
+
+struct_type_field_optcond_post:
           %empty
                 {
                   $$ = NULL;

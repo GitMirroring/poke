@@ -1,0 +1,3 @@
+/* { dg-do compile } */
+
+type Foo = union { if (1) int i; }; /* { dg-error "not allowed" } */
