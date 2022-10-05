@@ -160,6 +160,18 @@ type COFF_Name =
       uint<32> zeroes = 0;
       offset<uint<32>,B> offset;
     } str;
+
+    method _print = void:
+    {
+      print "#<";
+      try
+        print catos (name);
+      catch if E_elem
+        {
+          print format ("/%u32d", str.offset/#B);
+        }
+      print ">";
+    }
   };
 
 /* Section flags, used in the section headers below.  */

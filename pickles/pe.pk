@@ -469,7 +469,12 @@ type PE_CLR_Token =
 
 assert (1#PE_CLR_Token == 18#B);
 
-/* PE symbol records.  */
+/* PE symbol records.
+
+   Each regular COFF symbol may be followed by an auxiliary "aux
+   symbol".  Note that the number of symbols in the symbol table
+   counts both regular and aux symbols, so when mapping an array of
+   PE_Sym structures, please do it by size.  */
 
 type PE_Sym =
   struct
@@ -495,7 +500,7 @@ type PE_Sym =
                                             || sym.e_name.name[0] == '.');
       PE_CLR_Token clr_token          : sym.e_sclass == PE_SYM_CLASS_CLR_TOKEN;
       char[18] file_name              : sym.e_sclass == PE_SYM_CLASS_FILE;
-      byte[18] unused;
+      struct {} empty;
     } aux_sym;
   };
 
@@ -880,6 +885,25 @@ type PE_Data_Directory =
     offset<uint<32>,B> size;
   };
 
+/* Entries in the optional header data_directories array.  */
+
+var PE_DD_EXPORT_TABLE = 0,
+    PE_DD_IMPORT_TABLE = 1,
+    PE_DD_RESOURCE_TABLE = 2,
+    PE_DD_EXCEPTION_TABLE = 3,
+    PE_DD_CERTIFICATE_TABLE = 4,
+    PE_DD_BASE_RELOCATION_TABLE = 5,
+    PE_DD_DEBUG = 6,
+    PE_DD_ARCHITECTURE = 7,
+    PE_DD_GLOBAL_PTR = 8,
+    PE_DD_TLS_TABLE = 9,
+    PE_DD_LOAD_CONFIG_TABLE = 10,
+    PE_DD_BOUND_IMPORT = 9,
+    PE_DD_IAT = 10,
+    PE_DD_DELAY_IMPORT_DESCRIPTOR = 11,
+    PE_DD_CLR_RUNTIME_HEADER = 12,
+    PE_DD_RESERVED = 13;
+
 /* PE optional header.  */
 
 type PE_Opt_Hdr =
@@ -930,7 +954,7 @@ type PE_Opt_Hdr =
     /* The size of the image, including all headers, as the image is
        loaded in memory.  */
     offset<uint<32>,B> size_of_image
-                       : section_alignment % size_of_image == 0#B;
+                       : size_of_image % section_alignment == 0#B;
 
     /* The combined size of an MS-DOS stub, PE header, and section
        headers rounded up to a multiple of FileAlignment.  */
@@ -953,6 +977,13 @@ type PE_Opt_Hdr =
       offset<uint<32>,B> s32;
     } size_of_stack_commit;
 
+    /* The size of the local heap space to reere.  */
+    union
+    {
+      offset<uint<64>,B> s64 : pe32p;
+      offset<uint<32>,B> s32;
+    } size_of_heap_reserve;
+
     /* The size of the local heap space to commit.  */
     union
     {
@@ -968,28 +999,15 @@ type PE_Opt_Hdr =
     uint<32> num_of_rva_and_sizes;
 
     /* Data directories.  */
-    struct
-    {
-      PE_Data_Directory export_table;
-      PE_Data_Directory import_table;
-      PE_Data_Directory resource_table;
-      PE_Data_Directory exception_table;
-      PE_Data_Directory certificate_table;
-      PE_Data_Directory base_relocation_table;
-      PE_Data_Directory debug;
-      PE_Data_Directory architecture : architecture.rva == 0#B
-                                       && architecture.size == 0#B;
-      PE_Data_Directory global_ptr : global_ptr.size == 0#B;
-      PE_Data_Directory tls_table;
-      PE_Data_Directory load_config_table;
-      PE_Data_Directory bound_import;
-      PE_Data_Directory iat;
-      PE_Data_Directory delay_import_descriptor;
-      PE_Data_Directory clr_runtime_header;
-      PE_Data_Directory reserved : reserved.rva == 0#B
-                                   && reserved.size == 0#B;
-    } data_directories
-        : data_directories'length == num_of_rva_and_sizes;
+    PE_Data_Directory[num_of_rva_and_sizes] data_directories
+      : (num_of_rva_and_sizes > PE_DD_ARCHITECTURE
+          => (data_directories[PE_DD_ARCHITECTURE].rva == 0#B
+              && data_directories[PE_DD_ARCHITECTURE].size == 0#B))
+        && (num_of_rva_and_sizes > PE_DD_GLOBAL_PTR
+            => data_directories[PE_DD_GLOBAL_PTR].size == 0#B)
+        && (num_of_rva_and_sizes > PE_DD_RESERVED
+             => (data_directories[PE_DD_RESERVED].rva == 0#B
+                 && data_directories[PE_DD_RESERVED].size == 0#B));
   };
 
 /* PE file header.  */
@@ -1024,28 +1042,8 @@ type PE_File =
 
     if (hdr.nscns > 0)
       PE_Shdr[hdr.nscns] sections;
-//    if (hdr.nsyms > 0)
-//      PE_Sym[hdr.nsyms] symbols @ hdr.symptr;
-//    COFF_Strtab strings;
-
-    if (hdr.opthdr > 0#B && 0 /* XXX */)
-      struct
-      {
-        var delay_import = opt_hdr.data_directories.delay_import_descriptor;
-        var base_relocs_table = opt_hdr.data_directories.base_relocation_table;
-        var debug_datadir = opt_hdr.data_directories.debug;
-        var certs_datadir = opt_hdr.data_directories.certificate_table;
-
-        if (delay_import.size > 0#B)
-          PE_Delay_Import[delay_import.size] delay_imports @ delay_import.rva;
-
-        if (base_relocs_table.size > 0#B)
-          PE_Base_Reloc_Block[base_relocs_table.size] @ base_relocs_table.rva;
-
-        if (debug_datadir.size > 0#B)
-          PE_Debug_Directory_Entry[debug_datadir.size] @ debug_datadir.rva;
-
-        if (certs_datadir.size > 0#B)
-          PE_Attribute_Certificate[certs_datadir.size] certificates @ certs_datadir.rva;
-      } data_directories;
+    if (hdr.nsyms > 0)
+      /* See PE_Sym above as for why we are mapping by size.  */
+      PE_Sym[hdr.nsyms * 18#B] symbols @ hdr.symptr;
+    COFF_Strtab strings;
   };

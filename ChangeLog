@@ -1,5 +1,11 @@
 2022-10-05  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* pickles/coff.pk (COFF_Name): Add pretty-printer.
+	* pickles/pe.pk (PE_File): Map the symtab by size.
+	(PE_Sym): Fix definition.
+
+2022-10-05  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-gen.pks (struct_formater): Support formatting absent
 	fields in structs.
 	* testsuite/poke.pkl/format-optcond-1.pk: New test.
