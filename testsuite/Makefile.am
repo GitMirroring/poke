@@ -1321,6 +1321,12 @@ EXTRA_DIST = \
   poke.pkl/format-41.pk \
   poke.pkl/format-42.pk \
   poke.pkl/format-diag-1.pk \
+  poke.pkl/format-optcond-1.pk \
+  poke.pkl/format-optcond-2.pk \
+  poke.pkl/format-optcond-3.pk \
+  poke.pkl/format-optcond-4.pk \
+  poke.pkl/format-optcond-5.pk \
+  poke.pkl/format-optcond-6.pk \
   poke.pkl/formfeedchar.pk \
   poke.pkl/fun-no-return-1.pk \
   poke.pkl/fun-no-return-2.pk \

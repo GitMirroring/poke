@@ -1,5 +1,17 @@
 2022-10-05  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-gen.pks (struct_formater): Support formatting absent
+	fields in structs.
+	* testsuite/poke.pkl/format-optcond-1.pk: New test.
+	* testsuite/poke.pkl/format-optcond-2.pk: Likewise.
+	* testsuite/poke.pkl/foramt-optcond-3.pk: Likewise.
+	* testsuite/poke.pkl/format-optcond-4.pk: Likewise.
+	* testsuite/poke.pkl/format-optcond-5.pk: Likewise.
+	* testsuite/poke.pkl/format-optcond-6.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+
+2022-10-05  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-tab.y: (struct_type_field_opcond_pre): New rule.
 	(struct_type_field_optcond_post): Likewise.
 	* libpoke/pkl-ast.h (PKL_AST_STRUCT_TYPE_FIELD_OPTCOND_PRE): New macro.

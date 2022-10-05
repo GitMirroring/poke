@@ -3095,6 +3095,8 @@
  .c       continue;
         .label .process_struct_field
         .label .process_next_alternative
+        .label .process_next_field
+        .label .continue
         .label .l1
         .label .l2
         .label .l3
@@ -3120,6 +3122,12 @@
         drop
         push #i                 ; SARR SCT I
         srefi                   ; SARR SCT I EVAL
+        ;; If the field is absent, skip it.
+        ;; Note there are no absent fields in unions.
+        bnn .continue
+        drop                    ; SARR SCT I
+        ba .process_next_field
+.continue:
         swap                    ; SARR SCT EVAL I
         bzlu .l1
         drop
@@ -3196,6 +3204,7 @@
         ;; Unions only have one field => we are done.
         bnzi .fields_done
 .process_next_alternative:
+.process_next_field:
         drop                    ; SARR SCT
  .c    i = i + 1;
  .c }

@@ -1,0 +1,6 @@
+/* { dg-do run } */
+
+type Foo = struct { int a; if (a != 0) int b; };
+
+/* { dg-command { format ("%v", Foo { a = 2 }) } } */
+/* { dg-output "Foo \{a=2,b=0\}" } */
