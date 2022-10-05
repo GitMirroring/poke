@@ -1037,11 +1037,16 @@ type PE_File =
     byte[4] signature == ['P','E','\0','\0'] @ pe_offset;
 
     PE_File_Hdr hdr;
+    var opt_hdr_offset = OFFSET;
     if (hdr.opthdr > 0#B)
       PE_Opt_Hdr opt_hdr;
 
+    /* Note that the actual size of opt_hdr may not actually match
+       hdr.opthdr.  The Microsoft spec warns about this: "Make sure
+       to use the size of the optional header as specified in the
+       file header.  So we have to use a label here.  */
     if (hdr.nscns > 0)
-      PE_Shdr[hdr.nscns] sections;
+      PE_Shdr[hdr.nscns] sections @ opt_hdr_offset + hdr.opthdr;
     if (hdr.nsyms > 0)
       /* See PE_Sym above as for why we are mapping by size.  */
       PE_Sym[hdr.nsyms * 18#B] symbols @ hdr.symptr;

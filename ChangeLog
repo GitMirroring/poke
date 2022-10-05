@@ -1,3 +1,7 @@
+2022-10-06  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* pickles/pe.pk (PE_File): Fix the location of the sections table.
+
 2022-10-05  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* pickles/coff.pk (COFF_Name): Add pretty-printer.
