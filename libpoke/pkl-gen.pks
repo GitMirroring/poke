@@ -1039,10 +1039,17 @@
         push ulong<64>1         ; ... BOFF STR ARGS VALSTR 1UL [VAL]
         swap                    ; ... BOFF STR ARGS 1UL VALSTR [VAL]
         ains                    ; ... BOFF STR ARGS [VAL]
-        ;; Third any argument: field_name
+        ;; Third any argument: field_type
+        .let @field_type = PKL_AST_STRUCT_TYPE_FIELD_TYPE (@field)
+        .e typeof @field_type
+                                ; ... BOFF STR ARGS PKTYPE [VAL]
+        push ulong<64>2         ; ... BOFF STR ARGS VALSTR 1UL [VAL]
+        swap                    ; ... BOFF STR ARGS 1UL VALSTR [VAL]
+        ains                    ; ... BOFF STR ARGS [VAL]
+        ;; Fourth any argument: field_name
         over                    ; ... BOFF STR ARGS STR [VAL]
         tor                     ; ... BOFF STR ARGS [VAL STR]
-        push ulong<64>2         ; ... BOFF STR ARGS 2UL [VAL STR]
+        push ulong<64>3         ; ... BOFF STR ARGS 2UL [VAL STR]
         rot                     ; ... BOFF ARGS 2UL STR [VAL STR]
         ;; ... but beware of anonyous fields
         bnn .name_ok
@@ -1050,10 +1057,10 @@
         push ""
 .name_ok:
         ains                    ; ... BOFF ARGS [VAL STR]
-        ;; Fourth any argument: field_offset
+        ;; Fifth any argument: field_offset
         over                    ; ... BOFF ARGS BOF [VAL STR]
         tor                     ; ... BOFF ARGS [VAL STR BOFF]
-        push ulong<64>3         ; ... BOFF ARGS 2UL [VAL STR BOFF]
+        push ulong<64>4         ; ... BOFF ARGS 2UL [VAL STR BOFF]
         rot                     ; ... ARGS 2UL BOFF [VAL STR BOFF]
         push ulong<64>1         ; ... ARGS 2UL BOFF 1UL [VAL STR BOFF]
         mko                     ; ... ARGS 2UL OFFSET [VAL STR BOFF]
@@ -3746,7 +3753,7 @@
         push "code"             ; OFF EOFF ENAME
   .c  int pk_type_code;
   .c  int pk_type_unknown = PK_TYPE_CODE ("PK_TYPE_UNKNOWN");
-  .c  switch (PKL_AST_TYPE_CODE (op_type))
+  .c  switch (PKL_AST_TYPE_CODE (@type))
   .c    {
   .c    case PKL_TYPE_INTEGRAL:
   .c      pk_type_code = PK_TYPE_CODE ("PK_TYPE_INTEGRAL");
@@ -3789,7 +3796,7 @@
   .c if (pk_type_code != pk_type_unknown)
   .c {
   .c    PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPIFIER);
-  .c    PKL_PASS_SUBPASS (op_type);
+  .c    PKL_PASS_SUBPASS (@type);
   .c    PKL_GEN_POP_CONTEXT;
   .c
   .c }

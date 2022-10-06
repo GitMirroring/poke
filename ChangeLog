@@ -1,5 +1,12 @@
 2022-10-06  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-tracer.pk (pk_tv_action_field_mapped): Get a Pk_Type as
+	the second argument of the event.
+	* libpoke/pkl-gen.pks (struct_field_mapper): Pass the Pk_Type of
+	the field type to the TV_FIELD_MAPPED event.
+
+2022-10-06  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-gen.c (pkl_gen_pr_op_typeof): Move logic to the
 	typeof RAS macro, and use the macro.
 	* libpoke/pkl-gen.pks (typeof): New macro.

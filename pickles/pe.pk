@@ -1050,5 +1050,5 @@ type PE_File =
     if (hdr.nsyms > 0)
       /* See PE_Sym above as for why we are mapping by size.  */
       PE_Sym[hdr.nsyms * 18#B] symbols @ hdr.symptr;
-//    COFF_Strtab strings;
+    COFF_Strtab strings;
   };
