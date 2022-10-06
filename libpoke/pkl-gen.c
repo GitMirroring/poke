@@ -114,6 +114,16 @@
 #define RAS_POP_ASM PKL_GEN_POP_ASM
 #define RAS_COMPILER (PKL_GEN_PAYLOAD->compiler)
 #define RAS_COMP_ENV (PKL_GEN_PAYLOAD->env)
+
+/* This macro is used in the `typeof' RAS macro in pkl-gen.pkc.  */
+#define PK_TYPE_CODE(TYPE)                                              \
+  ({                                                                    \
+    pkl_ast_node initial = pkl_env_lookup_var (pkl_get_env (PKL_PASS_COMPILER), \
+                                               (TYPE));                 \
+    assert (PKL_AST_CODE (initial) == PKL_AST_INTEGER);                 \
+    PKL_AST_INTEGER_VALUE (initial);                                    \
+  })
+
 #include "pkl-gen.pkc"
 #include "pkl-gen-builtins.pkc"
 #include "pkl-gen-attrs.pkc"
@@ -4458,89 +4468,11 @@ PKL_PHASE_END_HANDLER
 PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_op_typeof)
 {
   pkl_ast_node exp = PKL_PASS_NODE;
-  pkl_ast_node type = PKL_AST_TYPE (exp);
   pkl_ast_node op = PKL_AST_EXP_OPERAND (exp, 0);
   pkl_ast_node op_type = (PKL_AST_CODE (op) == PKL_AST_TYPE
                           ? op : PKL_AST_TYPE (op));
-  pvm_val type_constructor = PKL_AST_TYPE_S_CONSTRUCTOR (type);
-  int pk_type_code = 0;
 
-  /* Create a struct Type on the stack calling its constructor.  We
-     know that the constructor exists in a bootstrapped compiler,
-     because `Type' is a named struct defined in the compiler
-     run-time.  */
-  assert (type_constructor != PVM_NULL);
-
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
-                pvm_make_ulong (0, 64)); /* OFF */
-
-  /* Set the code in the argument to the constructor.  */
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
-                pvm_make_ulong (0, 64)); /* EOFF */
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, pvm_make_string ("code"));
-                                         /* EOFF ENAME */
-
-#define PK_TYPE_CODE(TYPE)                                              \
-  ({                                                                    \
-    pkl_ast_node initial = pkl_env_lookup_var (pkl_get_env (PKL_PASS_COMPILER), \
-                                               (TYPE));                 \
-    assert (PKL_AST_CODE (initial) == PKL_AST_INTEGER);                 \
-    PKL_AST_INTEGER_VALUE (initial);                                    \
-  })
-
-  int pk_type_unknown = PK_TYPE_CODE ("PK_TYPE_UNKNOWN");
-
-  switch (PKL_AST_TYPE_CODE (op_type))
-    {
-    case PKL_TYPE_INTEGRAL:
-      pk_type_code = PK_TYPE_CODE ("PK_TYPE_INTEGRAL");
-      break;
-    case PKL_TYPE_OFFSET:
-      pk_type_code = PK_TYPE_CODE ("PK_TYPE_OFFSET");
-      break;
-    case PKL_TYPE_STRING:
-      pk_type_code = PK_TYPE_CODE ("PK_TYPE_STRING");
-      break;
-    case PKL_TYPE_ARRAY:
-      pk_type_code = PK_TYPE_CODE ("PK_TYPE_ARRAY");
-      break;
-    case PKL_TYPE_STRUCT:
-      pk_type_code = PK_TYPE_CODE ("PK_TYPE_STRUCT");
-      break;
-    case PKL_TYPE_ANY:
-      pk_type_code = PK_TYPE_CODE ("PK_TYPE_ANY");
-      break;
-    case PKL_TYPE_FUNCTION:
-      pk_type_code = PK_TYPE_CODE ("PK_TYPE_FUNCTION");
-      break;
-    default:
-      pk_type_code = pk_type_unknown;
-  }
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, pvm_make_int (pk_type_code, 32));
-                                         /* EOFF ENAME EVAL */
-
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
-                pvm_make_ulong (0, 64)); /* OFF 0UL */
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
-                pvm_make_ulong (1, 64)); /* OFF 0UL 1UL */
-
-  /* Type of the `Type' struct */
-  PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPE);
-  PKL_PASS_SUBPASS (type);
-  PKL_GEN_POP_CONTEXT;                   /* OFF 0UL 0UL TYP */
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MKSCT);
-
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, type_constructor);
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_CALL); /* Type {} */
-
-  if (pk_type_code != pk_type_unknown)
-    {
-      /* Subpass in IN_TYPIFIER context to calculate the values of the
-         Type struct */
-      PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPIFIER);
-      PKL_PASS_SUBPASS (op_type);
-      PKL_GEN_POP_CONTEXT;
-    }
+  RAS_MACRO_TYPEOF (op_type);
   PKL_PASS_BREAK;
 }
 PKL_PHASE_END_HANDLER

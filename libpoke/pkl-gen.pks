@@ -3729,6 +3729,72 @@
         return
         .end
 
+;;; RAS_MACRO_TYPEOF @type
+;;; ( -- Pk_Type )
+;;;
+;;; Given a type, calculate its Pk_Type value and push it on the
+;;; stack
+
+        .macro typeof @type
+        .let @pktype = pkl_env_lookup_type (pkl_get_env (PKL_PASS_COMPILER), \
+                                            "Pk_Type")
+        .let #pktype_constructor = PKL_AST_TYPE_S_CONSTRUCTOR (@pktype)
+        ;; Create a Pk_Type on the stack calling its constructor
+        ;; with a single constructor field `code'.
+        push ulong<64>0         ; OFF
+        push ulong<64>0         ; OFF EOFF
+        push "code"             ; OFF EOFF ENAME
+  .c  int pk_type_code;
+  .c  int pk_type_unknown = PK_TYPE_CODE ("PK_TYPE_UNKNOWN");
+  .c  switch (PKL_AST_TYPE_CODE (op_type))
+  .c    {
+  .c    case PKL_TYPE_INTEGRAL:
+  .c      pk_type_code = PK_TYPE_CODE ("PK_TYPE_INTEGRAL");
+  .c      break;
+  .c    case PKL_TYPE_OFFSET:
+  .c      pk_type_code = PK_TYPE_CODE ("PK_TYPE_OFFSET");
+  .c      break;
+  .c    case PKL_TYPE_STRING:
+  .c      pk_type_code = PK_TYPE_CODE ("PK_TYPE_STRING");
+  .c      break;
+  .c    case PKL_TYPE_ARRAY:
+  .c      pk_type_code = PK_TYPE_CODE ("PK_TYPE_ARRAY");
+  .c      break;
+  .c    case PKL_TYPE_STRUCT:
+  .c      pk_type_code = PK_TYPE_CODE ("PK_TYPE_STRUCT");
+  .c      break;
+  .c  case PKL_TYPE_ANY:
+  .c      pk_type_code = PK_TYPE_CODE ("PK_TYPE_ANY");
+  .c      break;
+  .c  case PKL_TYPE_FUNCTION:
+  .c      pk_type_code = PK_TYPE_CODE ("PK_TYPE_FUNCTION");
+  .c      break;
+  .c  default:
+  .c      pk_type_code = pk_type_unknown;
+  .c }
+        .let #type_code = pvm_make_int (pk_type_code, 32)
+        push #type_code         ; OFF EOFF ENAME EVAL
+        ;; Number of methods
+        push ulong<64>0         ; OFF EOFF ENAME EVAL 0UL
+        ;; Number of fields
+        push ulong<64>1         ; OFF EOFF ENAME EVAL 0UL 1UL
+        ;; Type of the Pk_Type struct
+  .c    PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPE);
+  .c    PKL_PASS_SUBPASS (@pktype);
+  .c    PKL_GEN_POP_CONTEXT;
+                                ; OFF EOFF ENAME EVAL 0UL 1UL TYP
+        mksct
+        push #pktype_constructor
+        call                    ; PkType
+  .c if (pk_type_code != pk_type_unknown)
+  .c {
+  .c    PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPIFIER);
+  .c    PKL_PASS_SUBPASS (op_type);
+  .c    PKL_GEN_POP_CONTEXT;
+  .c
+  .c }
+        .end
+
 ;;; RAS_MACRO_COMMON_TYPIFIER @type
 ;;; ( SCT -- SCT )
 ;;;
