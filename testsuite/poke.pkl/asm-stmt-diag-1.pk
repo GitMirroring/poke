@@ -1,0 +1,5 @@
+/* { dg-do compile } */
+
+asm ("":
+     1 + 2 /* { dg-error "l-value" } */
+    );

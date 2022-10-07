@@ -1004,6 +1004,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_promo_ps_ass_stmt)
   pkl_ast_node lvalue_type = PKL_AST_TYPE (lvalue);
   int restart = 0;
 
+  if (!exp)
+    /* Nothing to promote.  */
+    PKL_PASS_DONE;
+
   /* At this point it is assured that exp_type is promoteable to
      lvalue_type, or typify1 wouldn't have allowed this node to
      pass.  */

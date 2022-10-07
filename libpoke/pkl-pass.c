@@ -513,7 +513,8 @@ pkl_do_pass_1 (pkl_compiler compiler,
         PKL_PASS_CHAIN (PKL_AST_COMP_STMT_STMTS (node));
       break;
     case PKL_AST_ASS_STMT:
-      PKL_PASS (PKL_AST_ASS_STMT_EXP (node));
+      if (PKL_AST_ASS_STMT_EXP (node))
+        PKL_PASS (PKL_AST_ASS_STMT_EXP (node));
       PKL_PASS (PKL_AST_ASS_STMT_LVALUE (node));
       break;
     case PKL_AST_IF_STMT:
@@ -566,6 +567,14 @@ pkl_do_pass_1 (pkl_compiler compiler,
       if (PKL_AST_RAISE_STMT_EXP (node))
         PKL_PASS (PKL_AST_RAISE_STMT_EXP (node));
       break;
+    case PKL_AST_ASM_STMT:
+      if (PKL_AST_ASM_STMT_TEMPLATE (node))
+        PKL_PASS (PKL_AST_ASM_STMT_TEMPLATE (node));
+      if (PKL_AST_ASM_STMT_INPUTS (node))
+        PKL_PASS_CHAIN (PKL_AST_ASM_STMT_INPUTS (node));
+      if (PKL_AST_ASM_STMT_OUTPUTS (node))
+        PKL_PASS_CHAIN (PKL_AST_ASM_STMT_OUTPUTS (node));
+      break;
     case PKL_AST_FORMAT_ARG:
       if (PKL_AST_FORMAT_ARG_EXP (node))
         PKL_PASS (PKL_AST_FORMAT_ARG_EXP (node));
@@ -585,6 +594,12 @@ pkl_do_pass_1 (pkl_compiler compiler,
       break;
     case PKL_AST_LAMBDA:
       PKL_PASS (PKL_AST_LAMBDA_FUNCTION (node));
+      break;
+    case PKL_AST_ASM_EXP:
+      PKL_PASS (PKL_AST_ASM_EXP_TYPE (node));
+      PKL_PASS (PKL_AST_ASM_EXP_TEMPLATE (node));
+      if (PKL_AST_ASM_EXP_INPUTS (node))
+        PKL_PASS_CHAIN (PKL_AST_ASM_EXP_INPUTS (node));
       break;
     case PKL_AST_INCRDECR:
       PKL_PASS (PKL_AST_INCRDECR_EXP (node));

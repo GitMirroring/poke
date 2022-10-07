@@ -1931,6 +1931,24 @@ pkl_ast_make_lambda (pkl_ast ast, pkl_ast_node function)
   return lambda;
 }
 
+/* Build and return an AST node for an `asm' expression.  */
+pkl_ast_node
+pkl_ast_make_asm_exp (pkl_ast ast, pkl_ast_node type,
+                      pkl_ast_node template, pkl_ast_node inputs)
+{
+  pkl_ast_node asm_exp = pkl_ast_make_node (ast, PKL_AST_ASM_EXP);
+
+  assert (type);
+  assert (template);
+
+  PKL_AST_ASM_EXP_TEMPLATE (asm_exp) = ASTREF (template);
+  PKL_AST_ASM_EXP_TYPE (asm_exp) = ASTREF (type);
+  if (inputs)
+    PKL_AST_ASM_EXP_INPUTS (asm_exp) = ASTREF (inputs);
+
+  return asm_exp;
+}
+
 /* Build and return an AST node for a compound statement.  */
 
 pkl_ast_node
@@ -1966,10 +1984,11 @@ pkl_ast_make_ass_stmt (pkl_ast ast, pkl_ast_node lvalue,
   pkl_ast_node ass_stmt = pkl_ast_make_node (ast,
                                              PKL_AST_ASS_STMT);
 
-  assert (lvalue && exp);
+  assert (lvalue);
 
   PKL_AST_ASS_STMT_LVALUE (ass_stmt) = ASTREF (lvalue);
-  PKL_AST_ASS_STMT_EXP (ass_stmt) = ASTREF (exp);
+  if (exp)
+    PKL_AST_ASS_STMT_EXP (ass_stmt) = ASTREF (exp);
 
   return ass_stmt;
 }
@@ -2184,6 +2203,24 @@ pkl_ast_make_raise_stmt (pkl_ast ast, pkl_ast_node exp)
   if (exp)
     PKL_AST_RAISE_STMT_EXP (raise_stmt) = ASTREF (exp);
   return raise_stmt;
+}
+
+/* Build and return an AST node for an `asm' statement.  */
+
+pkl_ast_node
+pkl_ast_make_asm_stmt (pkl_ast ast, pkl_ast_node template,
+                       pkl_ast_node inputs, pkl_ast_node outputs)
+{
+  pkl_ast_node asm_stmt = pkl_ast_make_node (ast,
+                                             PKL_AST_ASM_STMT);
+
+  assert (template);
+  PKL_AST_ASM_STMT_TEMPLATE (asm_stmt) = ASTREF (template);
+  if (inputs)
+    PKL_AST_ASM_STMT_INPUTS (asm_stmt) = ASTREF (inputs);
+  if (outputs)
+    PKL_AST_ASM_STMT_OUTPUTS (asm_stmt) = ASTREF (outputs);
+  return asm_stmt;
 }
 
 /* Build and return an AST node for a PKL program.  */
@@ -2500,6 +2537,20 @@ pkl_ast_node_free (pkl_ast_node ast)
       pkl_ast_node_free (PKL_AST_LAMBDA_FUNCTION (ast));
       break;
 
+    case PKL_AST_ASM_EXP:
+
+      pkl_ast_node_free (PKL_AST_ASM_EXP_TYPE (ast));
+      pkl_ast_node_free (PKL_AST_ASM_EXP_TEMPLATE (ast));
+      free (PKL_AST_ASM_EXP_EXPANDED_TEMPLATE (ast));
+
+      for (t = PKL_AST_ASM_EXP_INPUTS (ast); t; t = n)
+        {
+          n = PKL_AST_CHAIN (t);
+          pkl_ast_node_free (t);
+        }
+
+      break;
+
     case PKL_AST_COMP_STMT:
 
       for (t = PKL_AST_COMP_STMT_STMTS (ast); t; t = n)
@@ -2606,6 +2657,24 @@ pkl_ast_node_free (pkl_ast_node ast)
 
     case PKL_AST_RAISE_STMT:
       pkl_ast_node_free (PKL_AST_RAISE_STMT_EXP (ast));
+      break;
+
+    case PKL_AST_ASM_STMT:
+      pkl_ast_node_free (PKL_AST_ASM_STMT_TEMPLATE (ast));
+      free (PKL_AST_ASM_STMT_EXPANDED_TEMPLATE (ast));
+
+      for (t = PKL_AST_ASM_STMT_INPUTS (ast); t; t = n)
+        {
+          n = PKL_AST_CHAIN (t);
+          pkl_ast_node_free (t);
+        }
+
+      for (t = PKL_AST_ASM_STMT_OUTPUTS (ast); t; t = n)
+        {
+          n = PKL_AST_CHAIN (t);
+          pkl_ast_node_free (t);
+        }
+
       break;
 
     case PKL_AST_NULL_STMT:
@@ -3296,6 +3365,16 @@ pkl_ast_print_1 (FILE *fp, pkl_ast_node ast, int indent)
       PRINT_AST_SUBAST (function, LAMBDA_FUNCTION);
       break;
 
+    case PKL_AST_ASM_EXP:
+      IPRINTF ("ASM_EXP::\n");
+
+      PRINT_COMMON_FIELDS;
+      PRINT_AST_SUBAST (type, ASM_EXP_TYPE);
+      PRINT_AST_SUBAST (template, ASM_EXP_TEMPLATE);
+      PRINT_AST_IMM (expanded_template, ASM_EXP_EXPANDED_TEMPLATE, "%s");
+      PRINT_AST_SUBAST_CHAIN (ASM_EXP_INPUTS);
+      break;
+
     case PKL_AST_FORMAT_ARG:
       IPRINTF ("FORMAT_ARG::\n");
       PRINT_COMMON_FIELDS;
@@ -3437,6 +3516,16 @@ pkl_ast_print_1 (FILE *fp, pkl_ast_node ast, int indent)
 
       PRINT_COMMON_FIELDS;
       PRINT_AST_SUBAST (raise_stmt_exp, RAISE_STMT_EXP);
+      break;
+
+    case PKL_AST_ASM_STMT:
+      IPRINTF ("ASM_STMT::\n");
+
+      PRINT_COMMON_FIELDS;
+      PRINT_AST_IMM (expanded_template, ASM_STMT_EXPANDED_TEMPLATE, "%s");
+      PRINT_AST_SUBAST (asm_stmt_template, ASM_STMT_TEMPLATE);
+      PRINT_AST_SUBAST (asm_stmt_inputs, ASM_STMT_INPUTS);
+      PRINT_AST_SUBAST (asm_stmt_outputs, ASM_STMT_OUTPUTS);
       break;
 
     case PKL_AST_NULL_STMT:

@@ -1,0 +1,6 @@
+/* { dg-do compile } */
+
+asm (
+  10 /* { dg-error "expected string" } */
+  : :
+);

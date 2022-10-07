@@ -21,6 +21,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdio.h> /* For stdout. */
+#include <xalloc.h> /* For xstrdup.  */
 
 #include "jitter/jitter-print.h"
 
@@ -314,6 +315,51 @@ pvm_disassemble_program_nat (pvm_program program)
 {
   pvm_routine_disassemble (jitter_context, program->routine,
                            true, JITTER_OBJDUMP, NULL);
+}
+
+char *
+pvm_program_expand_asm_template (const char *str)
+{
+  /* XXX translate str to handle immediates:
+       "foo"
+       u?int<N>M
+       E_inval, etc.
+     then pass the resulting pointer in the string.
+     but beware of 32-bit: pushlo + push32.  */
+
+  size_t expanded_size = 0, q;
+  const char *p;
+  char *expanded;
+
+  /* First, calculate the size of the expanded string.  */
+  for (p = str; *p != '\0'; ++p)
+    {
+      ++expanded_size;
+    }
+
+  /* Allocate the expanded string.  */
+  expanded = xmalloc (expanded_size + 1);
+
+  /* Now build the expanded string.  */
+  for (p = str, q = 0; *p != '\0'; ++p)
+    {
+      assert (q < expanded_size);
+
+      /* ; -> \n */
+      if (*p == ';')
+        expanded[q++] = '\n';
+      else
+        expanded[q++] = *p;
+    }
+  expanded[expanded_size] = '\0';
+
+  return expanded;
+}
+
+void
+pvm_program_parse_from_string (const char *str, pvm_program program)
+{
+  pvm_parse_mutable_routine_from_string (str, program->routine);
 }
 
 void

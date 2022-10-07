@@ -584,6 +584,10 @@ enum pvm_exit_code
 #define PVM_E_PERM_NAME     "wrong permissions"
 #define PVM_E_PERM_ESTATUS 1
 
+#define PVM_E_STACK        19
+#define PVM_E_STACK_NAME   "invalid stack"
+#define PVM_E_STACK_ESTATUS 1
+
 typedef struct pvm *pvm;
 
 /* Initialize a new Poke Virtual Machine and return it.  */

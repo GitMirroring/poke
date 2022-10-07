@@ -937,7 +937,7 @@ PKL_PHASE_END_HANDLER
 
 /*
  * ASS_STMT
- * | EXP
+ * | [EXP]
  * | LVALUE
  */
 
@@ -1007,7 +1007,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
   int assigning_computed_field_p = 0;
   const char *computed_field_name = NULL;
 
-  PKL_PASS_SUBPASS (exp);
+  if (exp)
+    PKL_PASS_SUBPASS (exp);
 
   PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_LVALUE);
   PKL_PASS_SUBPASS (lvalue);
@@ -4705,6 +4706,128 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_cond_exp)
 }
 PKL_PHASE_END_HANDLER
 
+/*
+ * ASM_STMT
+ * | TEMPLATE
+ * | INPUTS
+ * | OUTPUTS
+ */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_asm_stmt)
+{
+  pkl_ast_node asm_stmt = PKL_PASS_NODE;
+  pkl_ast_node input, output;
+
+  /* Push a canary to the stack.  */
+  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL);
+
+  /* Push the inputs on the stack.  */
+  for (input = PKL_AST_ASM_STMT_INPUTS (asm_stmt);
+       input;
+       input = PKL_AST_CHAIN (input))
+    {
+      PKL_PASS_SUBPASS (input);
+    }
+
+  /* Assembly the expanded asm template.  */
+  pkl_asm_from_string (PKL_GEN_ASM,
+                       PKL_AST_ASM_STMT_EXPANDED_TEMPLATE (asm_stmt));
+
+  /* Generate the output assignments.  */
+  for (output = PKL_AST_ASM_STMT_OUTPUTS (asm_stmt);
+       output;
+       output = PKL_AST_CHAIN (output))
+    {
+      /* If the output on the stack is PVM_NULL then raise
+         E_stack.  */
+      pvm_program_label output_ok_label = pkl_asm_fresh_label (PKL_GEN_ASM);
+
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BNN, output_ok_label);
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                    pvm_make_exception (PVM_E_STACK, PVM_E_STACK_NAME,
+                                        PVM_E_STACK_ESTATUS, NULL,
+                                        "null output in asm statement"));
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_RAISE);
+      pkl_asm_label (PKL_GEN_ASM, output_ok_label);
+
+      PKL_PASS_SUBPASS (output);
+    }
+
+  /* Check and drop the canary.  */
+  {
+    pvm_program_label canary_ok_label = pkl_asm_fresh_label (PKL_GEN_ASM);
+
+    pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BN, canary_ok_label);
+    pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                  pvm_make_exception (PVM_E_STACK, PVM_E_STACK_NAME,
+                                      PVM_E_STACK_ESTATUS, NULL,
+                                      "stack overflow or underflow in asm statement"));
+    pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_RAISE);
+    pkl_asm_label (PKL_GEN_ASM, canary_ok_label);
+    pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
+  }
+
+  PKL_PASS_BREAK;
+}
+PKL_PHASE_END_HANDLER
+
+/*
+ * ASM_EXP
+ * | TYPE
+ * | TEMPLATE
+ * | INPUTS  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_asm_exp)
+{
+  pkl_ast_node asm_exp = PKL_PASS_NODE;
+  pkl_ast_node input;
+
+  /* Push a canary to the stack.  */
+  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL);
+
+  /* Push the inputs on the stack.  */
+  for (input = PKL_AST_ASM_EXP_INPUTS (asm_exp);
+       input;
+       input = PKL_AST_CHAIN (input))
+    {
+      PKL_PASS_SUBPASS (input);
+    }
+
+  /* Assembly the expanded asm template.  */
+  pkl_asm_from_string (PKL_GEN_ASM,
+                       PKL_AST_ASM_EXP_EXPANDED_TEMPLATE (asm_exp));
+
+  /* If the output on the stack is PVM_NULL then raise E_stack.  */
+  pvm_program_label output_ok_label = pkl_asm_fresh_label (PKL_GEN_ASM);
+
+  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BNN, output_ok_label);
+  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                pvm_make_exception (PVM_E_STACK, PVM_E_STACK_NAME,
+                                    PVM_E_STACK_ESTATUS, NULL,
+                                    "null output in asm expression"));
+  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_RAISE);
+  pkl_asm_label (PKL_GEN_ASM, output_ok_label);
+
+  /* Check and drop the canary.  */
+  {
+    pvm_program_label canary_ok_label = pkl_asm_fresh_label (PKL_GEN_ASM);
+
+    pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP);
+    pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BN, canary_ok_label);
+    pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                  pvm_make_exception (PVM_E_STACK, PVM_E_STACK_NAME,
+                                      PVM_E_STACK_ESTATUS, NULL,
+                                      "stack overflow or underflow in asm expression"));
+    pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_RAISE);
+    pkl_asm_label (PKL_GEN_ASM, canary_ok_label);
+    pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
+  }
+
+  /* Now the return value is on the stack.  */
+  PKL_PASS_BREAK;
+}
+PKL_PHASE_END_HANDLER
+
 struct pkl_phase pkl_phase_gen =
   {
    PKL_PHASE_PS_HANDLER (PKL_AST_SRC, pkl_gen_ps_src),
@@ -4759,6 +4882,8 @@ struct pkl_phase pkl_phase_gen =
    PKL_PHASE_PR_HANDLER (PKL_AST_STRUCT_FIELD, pkl_gen_pr_struct_field),
    PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT_REF, pkl_gen_ps_struct_ref),
    PKL_PHASE_PR_HANDLER (PKL_AST_STRUCT_TYPE_FIELD, pkl_gen_pr_struct_type_field),
+   PKL_PHASE_PR_HANDLER (PKL_AST_ASM_STMT, pkl_gen_pr_asm_stmt),
+   PKL_PHASE_PR_HANDLER (PKL_AST_ASM_EXP, pkl_gen_pr_asm_exp),
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_ADD, pkl_gen_ps_op_add),
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_SUB, pkl_gen_ps_op_sub),
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_MUL, pkl_gen_ps_op_mul),

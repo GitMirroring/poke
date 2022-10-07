@@ -61,7 +61,8 @@ enum pkl_ast_code
   PKL_AST_FORMAT_ARG,
   PKL_AST_INCRDECR,
   PKL_AST_GCD,
-  PKL_AST_LAST_EXP = PKL_AST_GCD,
+  PKL_AST_ASM_EXP,
+  PKL_AST_LAST_EXP = PKL_AST_ASM_EXP,
   /* Types.  */
   PKL_AST_TYPE,
   PKL_AST_STRUCT_TYPE_FIELD,
@@ -90,7 +91,8 @@ enum pkl_ast_code
   PKL_AST_BREAK_STMT,
   PKL_AST_CONTINUE_STMT,
   PKL_AST_RAISE_STMT,
-  PKL_AST_LAST_STMT = PKL_AST_RAISE_STMT,
+  PKL_AST_ASM_STMT,
+  PKL_AST_LAST_STMT = PKL_AST_ASM_STMT,
   PKL_AST_LAST
 };
 
@@ -1521,6 +1523,38 @@ struct pkl_ast_lambda
 
 pkl_ast_node pkl_ast_make_lambda (pkl_ast ast, pkl_ast_node function);
 
+/* PKL_AST_ASM nodes represent asm expressions.
+
+   TEMPLATE is a string node contaning assembler instructions.
+
+   TYPE is the type of the element that is left at the top of
+   the stack once the program in TEMPLATE is executed.
+
+   INPUTS is a chain of expressions.  The result of these expressions
+   will be pushed in the stack in the given order before executing
+   TEMPLATE.
+
+   EXPANDED_TEMPLATE contains a processed version of TEMPLATE that is
+   ready to be compiled in the PVM.  */
+
+#define PKL_AST_ASM_EXP_TEMPLATE(AST) ((AST)->asm_exp.template)
+#define PKL_AST_ASM_EXP_TYPE(AST) ((AST)->asm_exp.type)
+#define PKL_AST_ASM_EXP_INPUTS(AST) ((AST)->asm_exp.inputs)
+#define PKL_AST_ASM_EXP_EXPANDED_TEMPLATE(AST) ((AST)->asm_exp.expanded_template)
+
+struct pkl_ast_asm_exp
+{
+  struct pkl_ast_common common;
+
+  union pkl_ast_node *template;
+  union pkl_ast_node *type;
+  union pkl_ast_node *inputs;
+  char *expanded_template;
+};
+
+pkl_ast_node pkl_ast_make_asm_exp (pkl_ast ast, pkl_ast_node type,
+                                   pkl_ast_node template, pkl_ast_node inputs);
+
 /* PKL_AST_INCRDECR nodes represent {pre,post}{increment,decrement}
    expressions.
 
@@ -1645,7 +1679,12 @@ pkl_ast_node pkl_ast_make_null_stmt (pkl_ast ast);
    language.
 
    LVALUE is the l-value of the assignment.
-   EXP is the r-value of the assignment.  */
+   EXP is the r-value of the assignment.
+
+   Note that EXP may be NULL, in which case the assignment statement
+   assumes there is already a r-value on the stack.  This is used to
+   implement the outputs of asm statements.  See
+   pkl_trans1_ps_asm_stmt.  */
 
 #define PKL_AST_ASS_STMT_LVALUE(AST) ((AST)->ass_stmt.lvalue)
 #define PKL_AST_ASS_STMT_EXP(AST) ((AST)->ass_stmt.exp)
@@ -1976,6 +2015,41 @@ struct pkl_ast_raise_stmt
 
 pkl_ast_node pkl_ast_make_raise_stmt (pkl_ast ast, pkl_ast_node exp);
 
+/* PKL_AST_ASM nodes represent `asm' statements, which are used in
+   order to inline PVM assembly in Poke programs.
+
+   TEMPLATE is a string node contaning assembler instructions.
+
+   INPUTS is a chain of expressions.  The result of these expressions
+   will be pushed in the stack in the given order before executing
+   TEMPLATE.
+
+   OUTPUTS is a chain of l-values.  The same number of values on the
+   stack will be assigned to them after executing TEMPLATE, in reverse
+   order.
+
+   EXPANDED_TEMPLATE contains a processed version of TEMPLATE that is
+   ready to be compiled in the PVM.  */
+
+#define PKL_AST_ASM_STMT_TEMPLATE(AST) ((AST)->asm_stmt.template)
+#define PKL_AST_ASM_STMT_INPUTS(AST) ((AST)->asm_stmt.inputs)
+#define PKL_AST_ASM_STMT_OUTPUTS(AST) ((AST)->asm_stmt.outputs)
+#define PKL_AST_ASM_STMT_EXPANDED_TEMPLATE(AST) ((AST)->asm_stmt.expanded_template)
+
+struct pkl_ast_asm_stmt
+{
+  struct pkl_ast_common common;
+
+  union pkl_ast_node *template;
+  union pkl_ast_node *inputs;
+  union pkl_ast_node *outputs;
+
+  char *expanded_template;
+};
+
+pkl_ast_node pkl_ast_make_asm_stmt (pkl_ast ast, pkl_ast_node template,
+                                    pkl_ast_node inputs, pkl_ast_node outputs);
+
 /* Finally, the `pkl_ast_node' type, which represents an AST node of
    any type.  */
 
@@ -2035,6 +2109,8 @@ union pkl_ast_node
   struct pkl_ast_continue_stmt continue_stmt;
   struct pkl_ast_raise_stmt raise_stmt;
   struct pkl_ast_print_stmt print_stmt;
+  struct pkl_ast_asm_stmt asm_stmt;
+  struct pkl_ast_asm_exp asm_exp;
 };
 
 static inline pkl_ast_node __attribute__ ((always_inline, warn_unused_result))

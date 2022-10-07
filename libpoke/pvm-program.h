@@ -34,4 +34,16 @@ pvm_program_program_point pvm_program_beginning (pvm_program program);
 /* Get the jitter routine associated with the program PROGRAM.  */
 pvm_routine pvm_program_routine (pvm_program program);
 
+/* Expand the given PVM assembler template to a form that is
+   acceptable for pvm_program_parse_from_string.
+
+   XXX handle parse errors.  */
+
+char *pvm_program_expand_asm_template (const char *str);
+
+/* Parse PVM instructions from the given string and append them to
+   the given program.  */
+
+void pvm_program_parse_from_string (const char *str, pvm_program program);
+
 #endif /* ! PVM_PROGRAM_H */

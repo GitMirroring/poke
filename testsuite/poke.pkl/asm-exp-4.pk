@@ -1,0 +1,4 @@
+/* { dg-do run } */
+
+/* { dg-command {try asm int: ("addi; nip" : 10, 20); catch if E_stack { printf "caught\n"; } } } */
+/* { dg-output "caught" } */

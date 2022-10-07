@@ -62,6 +62,7 @@ typedef uint64_t pk_val;
 #define PK_EC_ASSERT       16
 #define PK_EC_OVERFLOW     17
 #define PK_EC_PERM         18
+#define PK_EC_STACK        19
 
 struct pk_color
 {

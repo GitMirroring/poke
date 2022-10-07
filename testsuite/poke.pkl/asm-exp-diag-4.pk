@@ -1,0 +1,5 @@
+/* { dg-do compile } */
+
+var a = asm
+void: /* { dg-error "void" } */
+  ("foo" : 10);

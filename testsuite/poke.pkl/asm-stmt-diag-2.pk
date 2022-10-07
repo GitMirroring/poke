@@ -1,0 +1,9 @@
+/* { dg-do compile } */
+
+var a = 10;
+
+asm ("":
+     a,
+     1 + 2 /* { dg-error "l-value" } */
+:
+    );

@@ -419,6 +419,7 @@ load_module (struct pkl_parser *parser,
 
 /* Reserved words.  */
 
+%token ASM               _("keyword `asm'")
 %token ENUM              _("keyword `enum'")
 %token <integer> PINNED  _("keyword `pinned'")
 %token STRUCT            _("keyword `struct'")
@@ -1205,6 +1206,16 @@ primary:
           function_specifier
                 {
                   $$ = pkl_ast_make_lambda (pkl_parser->ast, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | ASM simple_type_specifier ':' '(' expression ')'
+                {
+                  $$ = pkl_ast_make_asm_exp (pkl_parser->ast, $2, $5, NULL);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | ASM simple_type_specifier ':' '(' expression ':' expression_list ')'
+                {
+                  $$ = pkl_ast_make_asm_exp (pkl_parser->ast, $2, $5, $7);
                   PKL_AST_LOC ($$) = @$;
                 }
         | FORMAT '(' STR format_arg_list ')'
@@ -2357,6 +2368,24 @@ simple_stmt:
                 {
                   $$ = pkl_ast_make_exp_stmt (pkl_parser->ast,
                                               $1);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | ASM '(' expression ')'
+                {
+                  $$ = pkl_ast_make_asm_stmt (pkl_parser->ast,
+                                              $3, NULL, NULL);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | ASM '(' expression ':' expression_list ')'
+                {
+                  $$ = pkl_ast_make_asm_stmt (pkl_parser->ast,
+                                              $3, NULL, $5);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | ASM '(' expression ':' expression_list ':' expression_list ')'
+                {
+                  $$ = pkl_ast_make_asm_stmt (pkl_parser->ast,
+                                              $3, $7, $5);
                   PKL_AST_LOC ($$) = @$;
                 }
         ;

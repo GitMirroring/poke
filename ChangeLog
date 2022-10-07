@@ -1,3 +1,73 @@
+2022-10-08  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-tab.y: New token ASM.
+	Rule for ASM statements and expressions.
+	* libpoke/pkl-lex.l: Recognize token ASM.
+	* libpoke/pkl-ast.h (PKL_AST_ASM_STMT_TEMPLATE): Define.
+	(PKL_AST_ASM_STMT_INPUTS): Likewise.
+	(PKL_AST_ASM_STMT_OUTPUTS): Likewise.
+	(PKL_AST_ASM_STMT_EXPANDED_TEMPLATE): Likewise.
+	(PKL_AST_ASM_EXP_TEMPLATE): Likewise.
+	(PKL_AST_ASM_EXP_TYPE): Likewise.
+	(PKL_AST_ASM_EXP_INPUTS): Likewise.
+	(PKL_AST_ASM_EXP_EXPANDED_TEMPLATE): Likewise.
+	(struct pkl_ast_asm_stmt): New struct.
+	(struct pkl_ast_asm_exp): Likewise.
+	(union pkl_ast_node): New fields asm_exp and asm_stmt.
+	* libpoke/pkl-ast.c (pkl_ast_make_asm_stmt): New function.
+	(pkl_ast_make_asm_exp): Likewise.
+	(pkl_ast_node_free): Handle asm statement and expression nodes.
+	(pkl_ast_print_1): Likewise.
+	(pkl_ast_make_ass_stmt): Allow building ass_stmt AST nodes without
+	r-value.
+	* libpoke/pkl-pass.c (pkl_do_pass_1): Traverse asm statement and
+	asm expression nodes.
+	(pkl_do_pass_1): `exp' may be NULL in ass_stmt.
+	* libpoke/pkl-trans.c (pkl_trans1_ps_asm_stmt): New handler.
+	(pkl_trans2_ps_asm_stmt): Likewise.
+	(pkl_trans2_ps_asm_exp): Likewise.
+	(pkl_phase_trans1): Register handler.
+	(pkl_phase_trans2): Register handlers.
+	* libpoke/pkl-typify.c	(pkl_typify1_ps_asm_stmt): New handler.
+	(pkl_typify1_ps_asm_exp): Likewise.
+	(pkl_phase_typify1): Register new handlers.
+	(pkl_typify1_ps_ass_stmt): `exp' may be NULL.
+	* libpoke/pkl-promo.c (pkl_promo_ps_ass_stmt): Do not promote
+	anything if `exp' is NULL.
+	* libpoke/pkl-gen.c (pkl_gen_pr_asm_exp): New handler.
+	(pkl_gen_pr_asm_stmt): Likewise.
+	(pkl_phase_gen): Register handlers.
+	(pkl_gen_pr_ass_stmt): Do not subpass in EXP if it is null.
+	* libpoke/pkl-asm.c (pkl_asm_from_string): New function.
+	* libpoke/pvm-program.h: Prototype for pvm_program_parse_from_string.
+	* libpoke/pvm-program.c (pvm_program_parse_from_string): New function.
+	* libpoke/pkl-rt.pk: New exception E_stack.
+	* libpoke/libpoke.h (PK_EC_STACK): Define.
+	* libpoke/pvm.h (PVM_E_STACK): Likewise.
+	(PVM_E_STACK_NAME): Likewise.
+	(PVM_E_STACK_ESTATUS): Likewise.
+	* testsuite/poke.pkl/asm-stmt-diag-1.pk: New test.
+	* testsuite/poke.pkl/asm-stmt-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/asm-stmt-diag-3.pk: Likewise.
+	* testsuite/poke.pkl/asm-stmt-diag-4.pk: Likewise.
+	* testsuite/poke.pkl/asm-exp-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/asm-exp-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/asm-exp-diag-3.pk: Likewise.
+	* testsuite/poke.pkl/asm-exp-diag-4.pk: Likewise.
+	* testsuite/poke.pkl/asm-exp-1.pk: Likewise.
+	* testsuite/poke.pkl/asm-exp-2.pk: Likewise.
+	* testsuite/poke.pkl/asm-exp-3.pk: Likewise.
+	* testsuite/poke.pkl/asm-exp-4.pk: Likewise.
+	* testsuite/poke.pkl/asm-exp-5.pk: Likewise.
+	* testsuite/poke.pkl/asm-stmt-1.pk: Likewise.
+	* testsuite/poke.pkl/asm-stmt-2.pk: Likewise.
+	* testsuite/poke.pkl/asm-stmt-3.pk: Likewise.
+	* testsuite/poke.pkl/asm-stmt-4.pk: Likewise.
+	* testsuite/poke.pkl/asm-stmt-5.pk: Likewise.
+	* testsuite/poke.pkl/asm-stmt-6.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+	* doc/poke.texi (Assembler): New chapter.
+
 2022-10-06  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* poke/pk-tracer.pk (pk_tv_action_field_mapped): Get a Pk_Type as

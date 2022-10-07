@@ -1,0 +1,12 @@
+/* { dg-do run } */
+
+var a = 10;
+var b = 20;
+
+asm ("" : a, b : a, b);
+
+/* { dg-command {.set obase 10} } */
+/* { dg-command {a} } */
+/* { dg-output "10" } */
+/* { dg-command {b} } */
+/* { dg-output "\n20" } */

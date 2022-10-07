@@ -224,6 +224,7 @@ The Poke Language
 * Loops::			Statements to iterate on conditions.
 * Expression Statements::	Using expressions for their side-effects.
 * Functions::			Procedural abstraction.
+* Assembler::                   Assembler instructions with Poke operands.
 * Endianness::			Byte ordering.
 * Mapping::			Accessing IO spaces.
 * Exception Handling::		Dealing with exceptional conditions.
@@ -9187,6 +9188,7 @@ The IO space to where write the scrabbled data.  Defaults to
 * Loops::			Statements to iterate on conditions.
 * Expression Statements::	Using expressions for their side-effects.
 * Functions::			Procedural abstraction.
+* Assembler::                   Assembler instructions with Poke operands.
 * Endianness::			Byte ordering.
 * Mapping::			Accessing IO spaces.
 * Exception Handling::		Dealing with exceptional conditions.
@@ -12817,6 +12819,78 @@ The following attributes are defined for function values.
 @item size
 Gives an offset @code{0#B}, by convention.
 @end table
+
+@node Assembler
+@section Assembler
+@cindex asm, statement
+@cindex asm, expression
+@cindex assembler
+
+Poke provides two ways to execute PVM assembler instructions: an
+@code{asm} expression and an @code{asm} statement.
+
+@noindent
+@dfn{asm statements} take the following form:
+
+@example
+asm (@var{template} [: @var{outputs} [: @var{inputs}]])
+@end example
+
+@noindent
+where @var{template} is the written form of a PVM assembler program,
+@var{outputs} a comma separated list of l-values ans @var{inputs} a
+comma separated list of expressions.
+
+Before the assembler program in @var{template} is executed, the
+@var{inputs} (if any) are pushed on the stack.  After the assembler
+program is executed, it is expected to have left the same number of
+elements on the stack than @var{outputs} specified.  These values are
+then assigned to the outputs, in reverse order.
+
+Example:
+
+@example
+var result = 0;
+asm ("addi; nip2" : result : 10, 20);
+@end example
+
+@noindent
+After the execution of the @code{asm} statement above, the value 30 is
+stored in the variable @code{result}.
+
+@noindent
+@dfn{asm expressions} take the form:
+
+@example
+asm @var{type}: (@var{template} [: @var{inputs}])
+@end example
+
+@noindent
+where @var{type} is a simple type specifier and @var{template} and
+@var{inputs} have the same meaning than in @code{asm} statements.  A
+single output is always expected to be generated on the stack, of type
+@var{type}.
+
+Example:
+
+@example
+(poke) asm int: ("addi; nip2" : 10, 20) + 2
+32
+@end example
+
+In both @code{asm} statements and expressions the compiler generates
+code that tries to determine whether the execution of the assembler
+code results in the original stack being underflown or overflown.  If
+this is found to happen an exception @code{E_stack} is raised.
+
+@code{E_stack} is also raised in case an @code{asm} statement or
+expression leaves a non-representable PVM value as an output.  This is
+for example the case of @code{PVM_NULL}, which can't be represented in
+Poke.
+
+Note however that the above mentioned tests are not perfect, and it is
+generally possible to crash the system using @code{asm} statements or
+expressions.
 
 @node Endianness
 @section Endianness

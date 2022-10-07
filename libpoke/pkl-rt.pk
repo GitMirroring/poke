@@ -171,6 +171,7 @@ immutable var EC_exit          = 15;
 immutable var EC_assert        = 16;
 immutable var EC_overflow      = 17;
 immutable var EC_perm          = 18;
+immutable var EC_stack         = 19;
 
 /* Standard exceptions.  */
 
@@ -210,6 +211,8 @@ immutable var E_overflow
   = Exception {code = EC_overflow, name = "overflow", exit_status = 1};
 immutable var E_perm
   = Exception {code = EC_perm, name = "wrong permissions", exit_status = 1};
+immutable var E_stack
+  = Exception {code = EC_stack, name = "invalid stack", exit_status = 1};
 
 /* Registration of user-defined exceptions */
 

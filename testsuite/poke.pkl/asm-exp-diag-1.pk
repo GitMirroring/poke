@@ -1,0 +1,5 @@
+/* { dg-do compile } */
+
+var a = asm int<32>:
+  (20 /* { dg-error "expected string" } */
+  );

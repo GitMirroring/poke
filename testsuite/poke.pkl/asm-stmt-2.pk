@@ -1,0 +1,10 @@
+/* { dg-do run } */
+
+var a = 10;
+
+
+asm ("addi;nip2" : a : a, 20);
+
+/* { dg-command {.set obase 10} } */
+/* { dg-command {a} } */
+/* { dg-output "30" } */

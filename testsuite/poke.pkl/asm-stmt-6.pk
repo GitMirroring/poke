@@ -1,0 +1,6 @@
+/* { dg-do run } */
+
+var a = 10;
+
+/* { dg-command {try asm ("addi; nip;" : a : 10, 20); catch if E_stack { printf "caught\n"; } } } */
+/* { dg-output "caught" } */

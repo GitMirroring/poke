@@ -3089,7 +3089,13 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_ass_stmt)
   pkl_ast_node lvalue = PKL_AST_ASS_STMT_LVALUE (ass_stmt);
   pkl_ast_node exp = PKL_AST_ASS_STMT_EXP (ass_stmt);
   pkl_ast_node lvalue_type = PKL_AST_TYPE (lvalue);
-  pkl_ast_node exp_type = PKL_AST_TYPE (exp);
+  pkl_ast_node exp_type;
+
+  if (!exp)
+    /* Nothing to check for.  */
+    PKL_PASS_DONE;
+
+  exp_type = PKL_AST_TYPE (exp);
 
   if (!pkl_ast_type_promoteable_p (exp_type, lvalue_type,
                                    1 /* promote_array_of_any */))
@@ -3246,6 +3252,67 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_op_excond)
 }
 PKL_PHASE_END_HANDLER
 
+/* The template in an asm statement should be of type string.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_asm_stmt)
+{
+  pkl_ast_node asm_stmt = PKL_PASS_NODE;
+  pkl_ast_node template = PKL_AST_ASM_STMT_TEMPLATE (asm_stmt);
+  pkl_ast_node template_type = PKL_AST_TYPE (template);
+
+  if (PKL_AST_TYPE_CODE (template_type) != PKL_TYPE_STRING)
+    {
+      char *template_type_str = pkl_type_str (template_type, 1);
+
+      PKL_ERROR (PKL_AST_LOC (template),
+                 "expected string, got %s",
+                 template_type_str);
+      free (template_type_str);
+      PKL_TYPIFY_PAYLOAD->errors++;
+      PKL_PASS_ERROR;
+    }
+}
+PKL_PHASE_END_HANDLER
+
+/* The type of an asm expression is the type specified by the user in
+   the expression.
+
+   Also, the template in the asm expression should be of type
+   string.
+
+   Also, the returned type cannot be void.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_asm_exp)
+{
+  pkl_ast_node asm_exp = PKL_PASS_NODE;
+  pkl_ast_node template = PKL_AST_ASM_EXP_TEMPLATE (asm_exp);
+  pkl_ast_node template_type = PKL_AST_TYPE (template);
+  pkl_ast_node type = PKL_AST_ASM_EXP_TYPE (asm_exp);
+
+  if (PKL_AST_TYPE_CODE (template_type) != PKL_TYPE_STRING)
+    {
+      char *template_type_str = pkl_type_str (template_type, 1);
+
+      PKL_ERROR (PKL_AST_LOC (template),
+                 "expected string, got %s",
+                 template_type_str);
+      free (template_type_str);
+      PKL_TYPIFY_PAYLOAD->errors++;
+      PKL_PASS_ERROR;
+    }
+
+  if (PKL_AST_TYPE_CODE (type) == PKL_TYPE_VOID)
+    {
+      PKL_ERROR (PKL_AST_LOC (type),
+                 "asm expression cannot return `void'");
+      PKL_TYPIFY_PAYLOAD->errors++;
+      PKL_PASS_ERROR;
+    }
+
+  PKL_AST_TYPE (asm_exp) = ASTREF (type);
+}
+PKL_PHASE_END_HANDLER
+
 struct pkl_phase pkl_phase_typify1 =
   {
    PKL_PHASE_PS_HANDLER (PKL_AST_SRC, pkl_typify_ps_src),
@@ -3279,6 +3346,8 @@ struct pkl_phase pkl_phase_typify1 =
    PKL_PHASE_PS_HANDLER (PKL_AST_IF_STMT, pkl_typify1_ps_if_stmt),
    PKL_PHASE_PS_HANDLER (PKL_AST_COND_EXP, pkl_typify1_ps_cond_exp),
    PKL_PHASE_PS_HANDLER (PKL_AST_ASS_STMT, pkl_typify1_ps_ass_stmt),
+   PKL_PHASE_PS_HANDLER (PKL_AST_ASM_EXP, pkl_typify1_ps_asm_exp),
+   PKL_PHASE_PS_HANDLER (PKL_AST_ASM_STMT, pkl_typify1_ps_asm_stmt),
 
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_SIZEOF, pkl_typify1_ps_op_sizeof),
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_TYPEOF, pkl_typify1_ps_op_typeof),

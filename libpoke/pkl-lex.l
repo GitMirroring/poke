@@ -204,6 +204,7 @@ S ::
   return STR;
  }
 
+"asm"           { return ASM; }
 "pinned"        { return PINNED; }
 "struct"        { return STRUCT; }
 "union"         { return UNION; }

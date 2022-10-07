@@ -254,4 +254,7 @@ pvm_program_label pkl_asm_fresh_label (pkl_asm pasm);
 /* Append a label.  */
 void pkl_asm_label (pkl_asm pasm, pvm_program_label label);
 
+/* Assembly from a buffer containing PVM assembly code.  */
+void pkl_asm_from_string (pkl_asm pasm, const char *str);
+
 #endif /* PKL_ASM_H */
