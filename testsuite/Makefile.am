@@ -1306,6 +1306,9 @@ EXTRA_DIST = \
   poke.pkl/format-7.pk \
   poke.pkl/format-8.pk \
   poke.pkl/format-9.pk \
+  poke.pkl/format-any-1.pk \
+  poke.pkl/format-any-2.pk \
+  poke.pkl/format-any-3.pk \
   poke.pkl/format-10.pk \
   poke.pkl/format-11.pk \
   poke.pkl/format-12.pk \
@@ -1874,6 +1877,9 @@ EXTRA_DIST = \
   poke.pkl/predecr-2.pk \
   poke.pkl/predecr-1.pk \
   poke.pkl/preincr-offset-1.pk \
+  poke.pkl/print-any-1.pk \
+  poke.pkl/print-any-2.pk \
+  poke.pkl/print-any-3.pk \
   poke.pkl/print-diag-1.pk \
   poke.pkl/preincr-field-1.pk \
   poke.pkl/preincr-diag-2.pk \
@@ -1947,7 +1953,6 @@ EXTRA_DIST = \
   poke.pkl/printf-diag-14.pk \
   poke.pkl/printf-diag-15.pk \
   poke.pkl/printf-diag-16.pk \
-  poke.pkl/printf-diag-17.pk \
   poke.pkl/printf-diag-18.pk \
   poke.pkl/printf-value-1.pk \
   poke.pkl/printf-value-2.pk \

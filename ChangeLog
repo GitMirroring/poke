@@ -1,3 +1,34 @@
+2022-10-10  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-insn.def (PKL_INSN_TYISI): Define.
+	(PKL_INSN_TYISIU): Likewise.
+	(PKL_INSN_TYISL): Likewise.
+	(PKL_INSN_TYISLU): Likewise.
+	(PKL_INSN_TYISS): Likewise.
+	(PKL_INSN_TYISO): Likewise.
+	* libpoke/pvm.jitter (tyisi): New instruction.
+	(tyisiu): Likewise.
+	(tyisl): Likewise.
+	(tyislu): Likewise.
+	(tyiso): Likewise.
+	* libpoke/pkl-rt.pk (_Pkl_Print_Format_Ctx): New type.
+	(_pkl_print_format_any): New function.
+	(_pkl_print_any): Likewise.
+	(_pkl_format_any): Likewise.
+	* libpoke/pkl-typify.c (pkl_typify1_ps_format): Allow arguments of
+	type `any' in format.
+	* libpoke/pkl-gen.c (pkl_gen_ps_type_any): Implement printer and
+	formatter for values of type `any'.
+	* libpoke/pkl-gen.pks (any_printer): New macro.
+	(any_formater): Likewise.
+	* testsuite/poke.pkl/printf-diag-17.pk: Remove test.
+	* testsuite/poke.pkl/print-any-1.pk: New test.
+	* testsuite/poke.pkl/print-any-2.pk: Likewise.
+	* testsuite/poke.pkl/print-any-3.pk: Likewise.
+	* testsuite/poke.pkl/format-any-1.pk: Likewise.
+	* testsuite/poke.pkl/format-any-2.pk: Likewise.
+	* testsuite/poke.pkl/format-any-3.pk: Likewise.
+
 2022-10-09  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-ast.h (PKL_AST_BUILTIN_RAND): Remove.

@@ -2721,6 +2721,16 @@
         .call _pkl_format_int_suffix
         .end
 
+;;; RAS_MACRO_ANY_FORMATER
+;;; ( VAL DEPTH -- STR )
+;;;
+;;; Given a value of type `any' and a depth in the stack, push
+;;; the string representation of the value to the stack.
+
+        .macro any_formater
+        .call _pkl_format_any
+        .end
+
 ;;; RAS_MACRO_INTEGRAL_FORMATER @type
 ;;; ( VAL DEPTH -- STR )
 ;;;
@@ -3303,6 +3313,17 @@
         push "L"
         prints
    .c }
+        .end
+
+;;; RAS_MACRO_ANY_PRINTER
+;;; ( VAL DEPTH -- )
+;;;
+;;; Given a value of type `any' and a depth in the stack, print
+;;; out the value.
+
+        .macro any_printer
+        .call _pkl_print_any
+        drop
         .end
 
 ;;; RAS_MACRO_INTEGRAL_PRINTER @type

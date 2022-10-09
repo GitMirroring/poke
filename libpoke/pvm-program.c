@@ -348,6 +348,8 @@ pvm_program_expand_asm_template (const char *str)
       /* ; -> \n */
       if (*p == ';')
         expanded[q++] = '\n';
+      else if (*p == '.')
+        expanded[q++] = '$';
       else
         expanded[q++] = *p;
     }

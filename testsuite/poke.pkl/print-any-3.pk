@@ -1,0 +1,7 @@
+/* { dg-do run } */
+
+fun foo = (any val) void: { printf "%v\n", val; }
+
+/* { dg-command {.set oacutoff 1} } */
+/* { dg-command {foo (["foo","bar","baz"])} } */
+/* { dg-output "\\\[\"foo\"\\.\\.\\.\\\]" } */

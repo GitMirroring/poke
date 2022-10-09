@@ -2920,6 +2920,16 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_type_any)
 {
   if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_TYPIFIER))
     ; /* Do nothing here.  */
+  else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_PRINTER))
+    {
+                              /* VAL DEPTH */
+      RAS_MACRO_ANY_PRINTER;  /* _ */
+    }
+  else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_FORMATER))
+    {
+                              /* VAL DEPTH */
+      RAS_MACRO_ANY_FORMATER; /* STR */
+    }
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_CONSTRUCTOR))
     {
       /* This value is arbitrary... literally `any' value.. :D */

@@ -2389,14 +2389,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_format)
 
       pkl_ast_node arg_type = PKL_AST_TYPE (arg_exp);
 
-      if (PKL_AST_TYPE_CODE (arg_type) == PKL_TYPE_ANY)
-        {
-          PKL_ERROR (PKL_AST_LOC (arg),
-                     "invalid format argument of type `any'");
-          PKL_TYPIFY_PAYLOAD->errors++;
-          PKL_PASS_ERROR;
-        }
-
       if (!pkl_ast_type_promoteable_p (arg_type, type, 0))
         {
           char *found_type = pkl_type_str (arg_type, 1);

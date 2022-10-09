@@ -5679,6 +5679,84 @@ instruction typof ()
   end
 end
 
+# Instruction: tyisi
+#
+# Given a value, push 1 on the stack if it is an integer.
+# Push 0 otherwise.
+#
+# Stack: ( VAL -- VAL INT )
+
+instruction tyisi ()
+  code
+    JITTER_PUSH_STACK (PVM_MAKE_INT (PVM_IS_INT (JITTER_TOP_STACK ()), 32));
+  end
+end
+
+# Instruction: tyisiu
+#
+# Given a value, push 1 on the stack if it is an unsigned integer.
+# Push 0 otherwise.
+#
+# Stack: ( VAL -- VAL INT )
+
+instruction tyisiu ()
+  code
+    JITTER_PUSH_STACK (PVM_MAKE_INT (PVM_IS_UINT (JITTER_TOP_STACK ()), 32));
+  end
+end
+
+# Instruction: tyisl
+#
+# Given a value, push 1 on the stack if it is a long.
+# Push 0 otherwise.
+#
+# Stack: ( VAL -- VAL INT )
+
+instruction tyisl ()
+  code
+    JITTER_PUSH_STACK (PVM_MAKE_INT (PVM_IS_LONG (JITTER_TOP_STACK ()), 32));
+  end
+end
+
+# Instruction: tyislu
+#
+# Given a value, push 1 on the stack if it is an unsigned integer.
+# Push 0 otherwise.
+#
+# Stack: ( VAL -- VAL INT )
+
+instruction tyislu ()
+  code
+    JITTER_PUSH_STACK (PVM_MAKE_INT (PVM_IS_ULONG (JITTER_TOP_STACK ()), 32));
+  end
+end
+
+# Instruction: tyiso
+#
+# Given a value, push 1 on the stack if it is an offset.  Push 0
+# otherwise.
+#
+# Stack: ( VAL -- VAL INT )
+
+instruction tyiso ()
+  code
+    JITTER_PUSH_STACK (PVM_MAKE_INT (PVM_IS_OFF (JITTER_TOP_STACK ()), 32));
+  end
+end
+
+# Instruction: tyiss
+#
+# Given a value, push 1 on the stack if it is a string.  Push 0
+# otherwise.
+#
+# Stack: ( VAL -- VAL INT )
+
+instruction tyiss ()
+  code
+    JITTER_PUSH_STACK (PVM_MAKE_INT (PVM_IS_STR (JITTER_TOP_STACK ()), 32));
+  end
+end
+
 # Instruction: tyisa
 #
 # Given a value, push 1 on the stack if it is an array.  Push 0
