@@ -789,7 +789,7 @@ immutable type _Pkl_Print_Format_Ctx =
 
 immutable fun _pkl_print_format_any = (any val,
                                        _Pkl_Print_Format_Ctx ctx,
-                                       int<32> depth = 0,
+                                       int<32> depth,
                                        int<32> obase = vm_obase) void:
 {
   fun lutos = (uint<64> i, int<32> base) string:
@@ -815,7 +815,7 @@ immutable fun _pkl_print_format_any = (any val,
 
     fun emit_int_prefix = void:
     {
-      if (int_suffix == "")
+      if (bits != 32 && int_suffix == "")
         {
           if (signed_p)
             ctx.emit ("(int<");
@@ -924,15 +924,15 @@ immutable fun _pkl_print_format_any = (any val,
   }
 
   if (asm int<32>: ("tyisi; nip" : val))
-    handle_integral (0, 1);
+    handle_integral :long_p 0 :signed_p 1;
   else if (asm int<32>: ("tyiso; nip" : val))
     handle_offset;
   else if (asm int<32>: ("tyisl; nip" : val))
-    handle_integral (1, 1);
+    handle_integral :long_p 1 :signed_p 1;
   else if (asm int<32>: ("tyisiu; nip" : val))
-    handle_integral (0, 0);
+    handle_integral :long_p 0 :signed_p 0;
   else if (asm int<32>: ("tyislu; nip" : val))
-    handle_integral (1, 0);
+    handle_integral :long_p 1 :signed_p 0;
   else if (asm int<32>: ("tyiss; nip" : val))
     handle_string;
   else if (asm int<32>: ("tyisa; nip" : val))

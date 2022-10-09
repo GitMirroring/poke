@@ -1,5 +1,12 @@
 2022-10-10  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-rt.pk (_pkl_print_format_any): Make argument `depth'
+	non-optional.
+	Use named arguments in calls to handle_integral for sake of
+	clarity.
+
+2022-10-10  Jose E. Marchesi  <jemarch@gnu.org>,
+
 	* libpoke/pkl-insn.def (PKL_INSN_TYISI): Define.
 	(PKL_INSN_TYISIU): Likewise.
 	(PKL_INSN_TYISL): Likewise.
