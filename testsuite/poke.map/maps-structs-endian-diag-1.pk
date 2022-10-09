@@ -9,7 +9,6 @@ type Foo =
 
 type Bar =
   struct
-  {
-    big Foo f; /* { dg-warning "useless" } */
+  { big Foo f; /* { dg-warning "useless" } */
     int c;
   };
