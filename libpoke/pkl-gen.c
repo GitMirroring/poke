@@ -775,18 +775,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_comp_stmt)
     {
       switch (comp_stmt_builtin)
         {
-        case PKL_AST_BUILTIN_RAND:
-          RAS_MACRO_BUILTIN_RAND;
-          break;
-        case PKL_AST_BUILTIN_GET_ENDIAN:
-          RAS_MACRO_BUILTIN_GET_ENDIAN;
-          break;
-        case PKL_AST_BUILTIN_GET_IOS:
-          RAS_MACRO_BUILTIN_GET_IOS;
-          break;
-        case PKL_AST_BUILTIN_SET_ENDIAN:
-          RAS_MACRO_BUILTIN_SET_ENDIAN;
-          break;
         case PKL_AST_BUILTIN_SET_IOS:
           RAS_MACRO_BUILTIN_SET_IOS;
           break;
@@ -795,36 +783,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_comp_stmt)
           break;
         case PKL_AST_BUILTIN_CLOSE:
           RAS_MACRO_BUILTIN_CLOSE;
-          break;
-        case PKL_AST_BUILTIN_IOSIZE:
-          RAS_MACRO_BUILTIN_IOSIZE;
-          break;
-        case PKL_AST_BUILTIN_IOHANDLER:
-          RAS_MACRO_BUILTIN_IOHANDLER;
-          break;
-        case PKL_AST_BUILTIN_IOFLAGS:
-          RAS_MACRO_BUILTIN_IOFLAGS;
-          break;
-        case PKL_AST_BUILTIN_IOGETB:
-          RAS_MACRO_BUILTIN_IOBIAS;
-          break;
-        case PKL_AST_BUILTIN_IOLIST:
-          RAS_MACRO_BUILTIN_IOLIST;
-          break;
-        case PKL_AST_BUILTIN_IOSETB:
-          RAS_MACRO_BUILTIN_IOSETBIAS;
-          break;
-        case PKL_AST_BUILTIN_FORGET:
-          RAS_MACRO_BUILTIN_FLUSH;
-          break;
-        case PKL_AST_BUILTIN_GET_TIME:
-          RAS_MACRO_BUILTIN_GET_TIME;
-          break;
-        case PKL_AST_BUILTIN_SLEEP:
-          RAS_MACRO_BUILTIN_SLEEP;
-          break;
-        case PKL_AST_BUILTIN_STRACE:
-          RAS_MACRO_BUILTIN_STRACE;
           break;
         case PKL_AST_BUILTIN_GETENV:
           RAS_MACRO_BUILTIN_GETENV;
@@ -836,63 +794,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_comp_stmt)
         case PKL_AST_BUILTIN_TERM_SET_COLOR:
         case PKL_AST_BUILTIN_TERM_SET_BGCOLOR:
           RAS_MACRO_BUILTIN_SET_COLOR_BGCOLOR;
-          break;
-        case PKL_AST_BUILTIN_TERM_BEGIN_CLASS:
-          RAS_MACRO_BUILTIN_TERM_BEGIN_CLASS;
-          break;
-        case PKL_AST_BUILTIN_TERM_END_CLASS:
-          RAS_MACRO_BUILTIN_TERM_END_CLASS;
-          break;
-        case PKL_AST_BUILTIN_TERM_BEGIN_HYPERLINK:
-          RAS_MACRO_BUILTIN_TERM_BEGIN_HYPERLINK;
-          break;
-        case PKL_AST_BUILTIN_TERM_END_HYPERLINK:
-          RAS_MACRO_BUILTIN_TERM_END_HYPERLINK;
-          break;
-        case PKL_AST_BUILTIN_VM_OBASE:
-          RAS_MACRO_BUILTIN_VM_OBASE;
-          break;
-        case PKL_AST_BUILTIN_VM_SET_OBASE:
-          RAS_MACRO_BUILTIN_VM_SET_OBASE;
-          break;
-        case PKL_AST_BUILTIN_VM_OPPRINT:
-          RAS_MACRO_BUILTIN_VM_OPPRINT;
-          break;
-        case PKL_AST_BUILTIN_VM_SET_OPPRINT:
-          RAS_MACRO_BUILTIN_VM_SET_OPPRINT;
-          break;
-        case PKL_AST_BUILTIN_VM_OACUTOFF:
-          RAS_MACRO_BUILTIN_VM_OACUTOFF;
-          break;
-        case PKL_AST_BUILTIN_VM_SET_OACUTOFF:
-          RAS_MACRO_BUILTIN_VM_SET_OACUTOFF;
-          break;
-        case PKL_AST_BUILTIN_VM_ODEPTH:
-          RAS_MACRO_BUILTIN_VM_ODEPTH;
-          break;
-        case PKL_AST_BUILTIN_VM_SET_ODEPTH:
-          RAS_MACRO_BUILTIN_VM_SET_ODEPTH;
-          break;
-        case PKL_AST_BUILTIN_VM_OINDENT:
-          RAS_MACRO_BUILTIN_VM_OINDENT;
-          break;
-        case PKL_AST_BUILTIN_VM_SET_OINDENT:
-          RAS_MACRO_BUILTIN_VM_SET_OINDENT;
-          break;
-        case PKL_AST_BUILTIN_VM_OMAPS:
-          RAS_MACRO_BUILTIN_VM_OMAPS;
-          break;
-        case PKL_AST_BUILTIN_VM_SET_OMAPS:
-          RAS_MACRO_BUILTIN_VM_SET_OMAPS;
-          break;
-        case PKL_AST_BUILTIN_VM_OMODE:
-          RAS_MACRO_BUILTIN_VM_OMODE;
-          break;
-        case PKL_AST_BUILTIN_VM_SET_OMODE:
-          RAS_MACRO_BUILTIN_VM_SET_OMODE;
-          break;
-        case PKL_AST_BUILTIN_UNSAFE_STRING_SET:
-          RAS_MACRO_BUILTIN_UNSAFE_STRING_SET;
           break;
         default:
           assert (0);

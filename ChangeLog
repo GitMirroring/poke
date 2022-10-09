@@ -1,3 +1,105 @@
+2022-10-09  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-ast.h (PKL_AST_BUILTIN_RAND): Remove.
+	(PKL_AST_BUILTIN_GET_ENDIAN): Likewise.
+	(PKL_AST_BUILTIN_SET_ENDIAN): Likewise.
+	(PKL_AST_BUILTIN_GET_IOS): Likewise.
+	(PKL_AST_BUILTIN_IOSIZE): Likewise.
+	(PKL_AST_BUILTIN_GET_TIME): Likewise.
+	(PKL_AST_BUILTIN_STRACE): Likewise.
+	(PKL_AST_BUILTIN_TERM_BEGIN_CLASS): Likewise.
+	(PKL_AST_BUILTIN_TERM_END_CLASS): Likewise.
+	(PKL_AST_BUILTIN_TERM_BEGIN_HYPERLINK): Likewise.
+	(PKL_AST_BUILTIN_TERM_END_HYPERLINK): Likewise.
+	(PKL_AST_BUILTIN_IOFLAGS): Likewise.
+	(PKL_AST_BUILTIN_SLEEP): Likewise.
+	(PKL_AST_BUILTIN_VM_OBASE): Likewise.
+	(PKL_AST_BUILTIN_VM_SET_OBASE): Likewise.
+	(PKL_AST_BUILTIN_VM_OPPRINT): Likewise.
+	(PKL_AST_BUILTIN_VM_SET_OPPRINT): Likewise.
+	(PKL_AST_BUILTIN_VM_OACUTOFF): Likewise.
+	(PKL_AST_BUILTIN_VM_SET_OACUTOFF): Likewise.
+	(PKL_AST_BUILTIN_VM_ODEPTH): Likewise.
+	(PKL_AST_BUILTIN_VM_SET_ODEPTH): Likewise.
+	(PKL_AST_BUILTIN_VM_OINDENT): Likewise.
+	(PKL_AST_BUILTIN_VM_SET_OINDENT): Likewise.
+	(PKL_AST_BUILTIN_VM_OMAPS): Likewise.
+	(PKL_AST_BUILTIN_VM_SET_OMAPS): Likewise.
+	(PKL_AST_BUILTIN_VM_OMODE): Likewise.
+	(PKL_AST_BUILTIN_VM_SET_OMODE): Likewise.
+	(PKL_AST_BUILTIN_UNSAFE_STRING_SET): Likewise.
+	(PKL_AST_BUILTIN_IOHANDLER): Likewise.
+	(PKL_AST_BUILTIN_IOLIST): Likewise.
+	* libpoke/pkl-gen-builtins.pks (builtin_rand): Remove.
+	(builtin_get_endian): Likewise.
+	(builtin_set_endian): Likewise.
+	(builtin_get_ios): Likewise.
+	(builtin_iosize): Likewise.
+	(builtin_ioflags): Likewise.
+	(builtin_iobias): Likewise.
+	(builtin_iolist): Likewise.
+	(builtin_iosetbias): Likewise.
+	(builtin_flush): Likewise.
+	(builtin_get_time): Likewise.
+	(builtin_sleep): Likewise.
+	(builtin_strace): Likewise.
+	(builtin_term_begin_class): Likewise.
+	(builtin_term_end_class): Likewise.
+	(builtin_term_begin_hyperlink): Likewise.
+	(builtin_term_end_hyperlink): Likewise.
+	(builtin_vm_obase): Likewise.
+	(builtin_vm_set_obase): Likewise.
+	(builtin_vm_opprint): Likewise.
+	(builtin_vm_set_opprint): Likewise.
+	(builtin_vm_oacutoff): Likewise.
+	(builtin_vm_set_oacutoff): Likewise.
+	(builtin_vm_odepth): Likewise.
+	(builtin_vm_set_odepth): Likewise.
+	(builtin_vm_oindent): Likewise.
+	(builtin_vm_set_oindent): Likewise.
+	(builtin_vm_omaps): Likewise.
+	(builtin_vm_set_omaps): Likewise.
+	(builtin_vm_omode): Likewise.
+	(builtin_vm_set_omode): Likewise.
+	(builtin_unsafe_string_set): Likewise.
+	* libpoke/pkl-rt.pk (rand): Reimplement with inlined asm.
+	(get_endian): Likewise.
+	(set_endian): Likewise.
+	(get_ios): Likewise.
+	(set_ios): Likewise.
+	(iosize): Likewise.
+	(iohandler): Likewise.
+	(ioflags): Likewise.
+	(iobias): Likewise.
+	(iosetbias): Likewise.
+	(flush): Likewise.
+	(get_time): Likewise.
+	(sleep): Likewise.
+	(strace): Likewise.
+	(term_begin_class): Likewise.
+	(term_end_class): Likewise.
+	(term_begin_hyperlink): Likewise.
+	(term_end_hypelink): Likewise.
+	(vm_obase): Likewise.
+	(vm_set_obase): Likewise.
+	(vm_opprint): Likewise.
+	(vm_set_opprint): Likewise.
+	(vm_oacutoff): Likewise.
+	(vm_set_oacutoff): Likewise.
+	(vm_odepth): Likewise.
+	(vm_set_odepth): Likewise.
+	(vm_oindent): Likewise.
+	(vm_set_oindent): Likewise.
+	(vm_omaps): Likewise.
+	(vm_set_omaps): Likewise.
+	(vm_omode): Likewise.
+	(vm_set_omode): Likewise.
+	(__pkl_unsafe_string_set): Likewise.
+	* libpoke/pkl-gen.c (pkl_gen_ps_comp_stmt): Remove builtins now
+	implemented with asm statements.
+	* libpoke/pkl-tab.y (builtin): Adjust rule accordingly.
+	* libpoke/pkl-lex.l: Remove rules for builtins.
+
 2022-10-08  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-tab.y: New token ASM.

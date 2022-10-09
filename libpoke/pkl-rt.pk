@@ -19,41 +19,90 @@
 /* Compiler built-ins. */
 
 immutable fun rand = (uint<32> seed = 0) int<32>:
-  __PKL_BUILTIN_RAND__;
+{
+  return asm int<32>: ("rand" : seed);
+}
+
 immutable fun get_endian = int<32>:
-  __PKL_BUILTIN_GET_ENDIAN__;
+{
+  return asm int<32>: ("pushend");
+}
+
 immutable fun set_endian = (int<32> endian) int<32>:
-  __PKL_BUILTIN_SET_ENDIAN__;
+{
+  asm ("popend" :: endian);
+
+  /* Always return `true' to facilitate using this function in struct
+  constraint expressions.  */
+ return 1;
+}
+
 immutable fun get_ios = int<32>:
-  __PKL_BUILTIN_GET_IOS__;
+{
+  return asm int<32>: ("pushios");
+}
+
 immutable fun set_ios = (int<32> ios) int<32>:
   __PKL_BUILTIN_SET_IOS__;
 immutable fun open = (string handler, uint<64> flags = 0) int<32>:
   __PKL_BUILTIN_OPEN__;
 immutable fun close = (int<32> ios) void:
   __PKL_BUILTIN_CLOSE__;
+
 immutable fun iosize = (int<32> ios = get_ios) offset<uint<64>,8>:
-  __PKL_BUILTIN_IOSIZE__;
+{
+  return asm offset<uint<64>,8>: ("iosize; nip" : ios);
+}
+
 immutable fun iohandler = (int<32> ios = get_ios) string:
-  __PKL_BUILTIN_IOHANDLER__;
+{
+  return asm string: ("iohandler; nip" : ios);
+}
+
 immutable fun ioflags = (int<32> ios = get_ios) uint<64>:
-  __PKL_BUILTIN_IOFLAGS__;
+{
+  return asm uint<64>: ("ioflags; nip" : ios);
+}
+
 immutable fun iobias = (int<32> ios = get_ios) offset<uint<64>,1>:
-  __PKL_BUILTIN_IOGETB__;
-immutable fun iosetbias = (offset<uint<64>,1> bias = 0#1, int<32> ios = get_ios) void:
-  __PKL_BUILTIN_IOSETB__;
+{
+  return asm offset<uint<64>,1>: ("iogetb; nip" : ios);
+}
+
 immutable fun iolist = int<32>[]:
-  __PKL_BUILTIN_IOLIST__;
+{
+  return asm int<32>[]: ("iolist");
+}
+
+immutable fun iosetbias = (offset<uint<64>,1> bias = 0#1, int<32> ios = get_ios) void:
+{
+  asm ("iosetb; drop" :: bias, ios);
+}
+
+
 immutable fun getenv = (string name) string:
   __PKL_BUILTIN_GETENV__;
+
 immutable fun flush = (int<32> ios, offset<uint<64>,1> offset) void:
-  __PKL_BUILTIN_FORGET__;
+{
+  asm ("ogetm; nip; flush" :: ios, offset);
+}
+
 immutable fun get_time = int<64>[2]:
-  __PKL_BUILTIN_GET_TIME__;
+{
+  return asm int<64>[2]: ("time");
+}
+
 immutable fun sleep = (int<64> sec, int<64> nsec = 0) void:
-  __PKL_BUILTIN_SLEEP__;
+{
+  asm ("sleep; drop; drop" :: sec, nsec);
+}
+
 immutable fun strace = void:
-  __PKL_BUILTIN_STRACE__;
+{
+  asm ("strace 0");
+}
+
 immutable fun term_get_color = int<32>[3]:
   __PKL_BUILTIN_TERM_GET_COLOR__;
 immutable fun term_set_color = (int<32>[3] color) void:
@@ -62,47 +111,102 @@ immutable fun term_get_bgcolor = int<32>[3]:
   __PKL_BUILTIN_TERM_GET_BGCOLOR__;
 immutable fun term_set_bgcolor = (int<32>[3] color) void:
   __PKL_BUILTIN_TERM_SET_BGCOLOR__;
+
 immutable fun term_begin_class = (string class) void:
-  __PKL_BUILTIN_TERM_BEGIN_CLASS__;
+{
+  asm ("begsc" :: class);
+}
+
 immutable fun term_end_class = (string class) void:
-  __PKL_BUILTIN_TERM_END_CLASS__;
+{
+  asm ("endsc" :: class);
+}
+
 immutable fun term_begin_hyperlink = (string url, string id = "") void:
-  __PKL_BUILTIN_TERM_BEGIN_HYPERLINK__;
+{
+  asm ("beghl" :: url, id);
+}
+
 immutable fun term_end_hyperlink = void:
-  __PKL_BUILTIN_TERM_END_HYPERLINK__;
+{
+  asm ("endhl");
+}
 
 immutable fun vm_obase = int<32>:
-  __PKL_BUILTIN_VM_OBASE__;
+{
+  return asm int<32>: ("pushob");
+}
+
 immutable fun vm_set_obase = (int<32> obase) void:
-  __PKL_BUILTIN_VM_SET_OBASE__;
+{
+  asm ("popob" :: obase);
+}
+
 immutable fun vm_opprint = int<32>:
-  __PKL_BUILTIN_VM_OPPRINT__;
+{
+  return asm int<32>: ("pushopp");
+}
+
 immutable fun vm_set_opprint = (int<32> pprint_p) void:
-  __PKL_BUILTIN_VM_SET_OPPRINT__;
+{
+  asm ("popopp" :: pprint_p);
+}
+
 immutable fun vm_oacutoff = int<32>:
-  __PKL_BUILTIN_VM_OACUTOFF__;
+{
+  return asm int<32>: ("pushoac");
+}
+
 immutable fun vm_set_oacutoff = (int<32> oacutoff) void:
-  __PKL_BUILTIN_VM_SET_OACUTOFF__;
+{
+  asm ("popoac" :: oacutoff);
+}
+
 immutable fun vm_odepth = int<32>:
-  __PKL_BUILTIN_VM_ODEPTH__;
+{
+  return asm int<32>: ("pushod");
+}
+
 immutable fun vm_set_odepth = (int<32> odepth) void:
-  __PKL_BUILTIN_VM_SET_ODEPTH__;
+{
+  asm ("popod" :: odepth);
+}
+
 immutable fun vm_oindent = int<32>:
-  __PKL_BUILTIN_VM_OINDENT__;
+{
+  return asm int<32>: ("pushoi");
+}
+
 immutable fun vm_set_oindent = (int<32> oindent) void:
-  __PKL_BUILTIN_VM_SET_OINDENT__;
+{
+  asm ("popoi" :: oindent);
+}
+
 immutable fun vm_omaps = int<32>:
-  __PKL_BUILTIN_VM_OMAPS__;
+{
+  return asm int<32>: ("pushoo");
+}
+
 immutable fun vm_set_omaps = (int<32> omaps) void:
-  __PKL_BUILTIN_VM_SET_OMAPS__;
+{
+  asm ("popoo" :: omaps);
+}
+
 immutable fun vm_omode = int<32>:
-  __PKL_BUILTIN_VM_OMODE__;
+{
+  return asm int<32>: ("pushom");
+}
+
 immutable fun vm_set_omode = (int<32> omode) void:
-  __PKL_BUILTIN_VM_SET_OMODE__;
+{
+  asm ("popom" :: omode);
+}
 
 immutable fun __pkl_unsafe_string_set = (string dst, uint<64> index,
                                          string str) void:
-  __PKL_BUILTIN_UNSAFE_STRING_SET__;
+{
+  asm ("strset; drop" :: dst, index, str);
+}
 
 immutable var ENDIAN_LITTLE = 0;
 immutable var ENDIAN_BIG = 1;
