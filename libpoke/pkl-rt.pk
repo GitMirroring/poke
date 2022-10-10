@@ -1023,9 +1023,17 @@ immutable fun _pkl_print_format_any = (any val,
   else if (asm int<32>: ("tyissct; nip" : val))
     handle_struct;
   else if (asm int<32>: ("tyisc; nip" : val))
-    ctx.emit ("#<closure>");
+    {
+      ctx.begin_class ("special");
+      ctx.emit ("#<closure>");
+      ctx.end_class ("special");
+    }
   else
-    ctx.emit ("#<unknown>");
+    {
+      ctx.begin_class ("special");
+      ctx.emit ("#<unknown>");
+      ctx.end_class ("special");
+    }
 }
 
 immutable fun _pkl_print_any = (any val, int<32> depth = 1) void:
