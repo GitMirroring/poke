@@ -914,9 +914,96 @@ immutable fun _pkl_print_format_any = (any val,
 
   fun handle_struct = void:
   {
-    /* XXX writeme.  We need support for value literals in the
-       assembler.  */
-    ctx.emit ("#<struct>");
+    fun indent_if_tree = void:
+    {
+      if (vm_omode == VM_OMODE_TREE)
+        {
+          var istep = asm int<32>: ("pushoi");
+          asm ("indent" :: depth, istep);
+        }
+    }
+
+    var struct_name = asm string: ("
+  typof
+  tysctn
+  nip2
+  bn .done
+  nip
+  ba .done
+.namenull:
+  drop
+.done:
+" : "", val );
+
+    ctx.begin_class ("struct");
+    ctx.begin_class ("struct-type-name");
+    ctx.emit (struct_name);
+    ctx.end_class ("struct-type-name");
+
+    /* Stop here if we are past the maximum depth configured in
+       the VM.  */
+    var odepth = vm_odepth;
+    if (odepth != 0 && depth >= vm_odepth)
+      {
+        ctx.emit (" {...}");
+        return;
+      }
+
+    ctx.emit (" {");
+
+    /* Emit struct fields.  */
+    var num_fields = asm uint<64>: ("sel; nip" : val);
+    for (var n = 0UL; n < num_fields; ++n)
+      {
+        try
+          {
+            var field = val'elem (n);
+            var field_name = val'ename (n);
+
+            if (n != 0)
+              ctx.emit (",");
+
+            indent_if_tree;
+            if (field_name != "")
+              {
+                ctx.begin_class ("struct-field-name");
+                ctx.emit (field_name);
+                ctx.end_class ("struct-field-name");
+                ctx.emit ("=");
+              }
+
+            _pkl_print_format_any (field, ctx, depth + 1);
+
+            /* Print field offset if required.  */
+            if (vm_omaps)
+              {
+                var field_offset = val'eoffset (n);
+
+                ctx.emit (" @ ");
+                if (field_offset % 1#8 == 0#1)
+                  field_offset = field_offset as offset<uint<64>,8>;
+                _pkl_print_format_any (field_offset, ctx, depth);
+              }
+          }
+        catch if E_elem {} /* Absent field.  */
+      }
+
+    indent_if_tree;
+    ctx.emit ("}");
+
+    /* Print struct offset if required.  */
+    if (vm_omaps)
+      {
+        var boff = asm uint<64>: ("mgeto; nip" : val);
+
+        ctx.emit (" @ ");
+        if (boff % 8 == 0)
+          _pkl_print_format_any (boff#8, ctx, depth);
+        else
+          _pkl_print_format_any (boff#1, ctx, depth);
+      }
+
+    ctx.end_class ("struct");
   }
 
   if (asm int<32>: ("tyisi; nip" : val))
@@ -941,7 +1028,7 @@ immutable fun _pkl_print_format_any = (any val,
     ctx.emit ("#<unknown>");
 }
 
-immutable fun _pkl_print_any = (any val, int<32> depth = 0) void:
+immutable fun _pkl_print_any = (any val, int<32> depth = 1) void:
 {
   var ctx
     = _Pkl_Print_Format_Ctx {
@@ -953,7 +1040,7 @@ immutable fun _pkl_print_any = (any val, int<32> depth = 0) void:
   _pkl_print_format_any (val, ctx, depth);
 }
 
-immutable fun _pkl_format_any = (any val, int<32> depth = 0) string:
+immutable fun _pkl_format_any = (any val, int<32> depth = 1) string:
 {
   var result = "";
   var ctx

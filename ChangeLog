@@ -1,5 +1,11 @@
 2022-10-10  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-rt.pk (_pkl_print_any): `depth' defaults to 1.
+	(_pkl_format_any): Likewise.
+	(_pkl_print_format_any): Support for struct types.
+
+2022-10-10  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-rt.pk (_pkl_print_format_any): Simplify
 	handle_integral.
 
