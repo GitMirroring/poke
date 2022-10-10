@@ -832,9 +832,13 @@ immutable fun _pkl_print_format_any = (any val,
         var ival = (long_p ? asm int<64>: ("ltol 64; nip" : val)
                            : asm int<64>: ("itol 64; nip" : val));
 
-        uval = ival < 0 ? -ival as uint<64> : ival as uint<64>;
         if (ival < 0)
-          ctx.emit ("-");
+          {
+            ctx.emit ("-");
+            uval = -ival as uint<64>;
+          }
+        else
+          uval = ival as uint<64>;
       }
     else
       uval = (long_p ? asm uint<64>: ("lutolu 64; nip" : val)
