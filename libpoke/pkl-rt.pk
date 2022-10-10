@@ -812,6 +812,7 @@ immutable fun _pkl_print_format_any = (any val,
   {
     var bits = asm uint<64>: ("siz; nip" : val);
     var int_suffix = _pkl_format_int_suffix (signed_p, bits);
+    var uval = 0UL;
 
     fun emit_int_prefix = void:
     {
@@ -830,26 +831,17 @@ immutable fun _pkl_print_format_any = (any val,
       {
         var ival = (long_p ? asm int<64>: ("ltol 64; nip" : val)
                            : asm int<64>: ("itol 64; nip" : val));
-        var uval = ival < 0 ? -ival as uint<64> : ival as uint<64>;
 
+        uval = ival < 0 ? -ival as uint<64> : ival as uint<64>;
         if (ival < 0)
           ctx.emit ("-");
-
-        emit_int_prefix;
-        ctx.emit (_pkl_base_prefix (obase));
-        ctx.emit (lutos (uval, obase));
       }
     else
-      {
-        var uval = (long_p ? asm uint<64>: ("lutolu 64; nip" : val)
-                           : asm uint<64>: ("iutolu 64; nip" : val));
+      uval = (long_p ? asm uint<64>: ("lutolu 64; nip" : val)
+                     : asm uint<64>: ("iutolu 64; nip" : val));
 
-        emit_int_prefix;
-        ctx.emit (_pkl_base_prefix (obase));
-        ctx.emit (lutos (uval, obase));
-      }
-
-    ctx.emit (int_suffix);
+    emit_int_prefix;
+    ctx.emit (_pkl_base_prefix (obase) + lutos (uval, obase) + int_suffix);
   }
 
   fun handle_offset = void:
