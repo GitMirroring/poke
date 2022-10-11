@@ -921,17 +921,17 @@ immutable fun _pkl_print_format_any = (any val,
         }
     }
 
-    var struct_type_name = asm string: ("
-  typof
-  tysctn
-  nip2
-  bn .namenull
-  nip
-  ba .done
-.namenull:
-  drop
-.done:
-" : "struct", val );
+    var struct_type_name
+      = asm string: ("typof
+                      tysctn
+                      nip2
+                      bn .namenull
+                      nip
+                      ba .done
+                    .namenull:
+                      drop
+                    .done:"
+                     : "struct", val );
 
     ctx.begin_class ("struct");
     ctx.begin_class ("struct-type-name");
