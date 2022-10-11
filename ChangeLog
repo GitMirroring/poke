@@ -1,5 +1,10 @@
 2022-10-12  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-rt.pk (_pkl_print_format_any): Use `integer' styling
+	class.
+
+2022-10-12  Jose E. Marchesi  <jemarch@gnu.org>,
+
 	* libpoke/libpoke.c (pk_print_val): Use _pkl_print_any instead of
 	the C printer.
 	* testsuite/poke.cmd/maps-alien-1.pk: Expect padded digits and

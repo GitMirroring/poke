@@ -846,6 +846,8 @@ immutable fun _pkl_print_format_any = (any val,
         }
     }
 
+    ctx.begin_class ("integer");
+
     if (signed_p)
       {
         var ival = (long_p ? asm int<64>: ("ltol 64; nip" : val)
@@ -877,6 +879,7 @@ immutable fun _pkl_print_format_any = (any val,
     ctx.emit (_pkl_base_prefix (obase));
     ctx.emit (lutos (uval, obase, bits));
     ctx.emit (int_suffix);
+    ctx.end_class ("integer");
   }
 
   fun handle_offset = void:
