@@ -785,6 +785,7 @@ immutable type _Pkl_Print_Format_Ctx =
     (string)void emit;
     (string)void begin_class;
     (string)void end_class;
+    int<32> pretty_print_p;
   };
 
 immutable fun _pkl_print_format_any = (any val,
@@ -921,6 +922,27 @@ immutable fun _pkl_print_format_any = (any val,
         }
     }
 
+    if (ctx.pretty_print_p && vm_opprint)
+    {
+      var struct_has_pp
+        = asm int<32>: ("srefmnt
+                         bn .no_pp
+                         drop3
+                         nip
+                         ba .has_pp
+                       .no_pp:
+                         drop3
+                         drop
+                       .has_pp:"
+                       : 0, 1, val, "_print");
+
+      if (struct_has_pp)
+        {
+          asm ("srefmnt; nip; call; drop" :: val, "_print");
+          return;
+        }
+    }
+
     var struct_type_name
       = asm string: ("typof
                       tysctn
@@ -1041,6 +1063,7 @@ immutable fun _pkl_print_any = (any val, int<32> depth = 1) void:
         emit = lambda (string s) void: { print s; },
         begin_class = lambda (string c) void: { term_begin_class (c); },
         end_class = lambda (string c) void: { term_end_class (c); },
+        pretty_print_p = 1,
       };
 
   _pkl_print_format_any (val, ctx, depth);
