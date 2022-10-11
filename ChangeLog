@@ -1,5 +1,10 @@
 2022-10-11  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-rt.pk (_pkl_print_format_any): Pad digits when
+	printing out integral values for bases other than 10.
+
+2022-10-11  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-rt.pk (_pkl_print_format_any): Handle struct
 	pretty-printers.
 

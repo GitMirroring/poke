@@ -793,26 +793,44 @@ immutable fun _pkl_print_format_any = (any val,
                                        int<32> depth,
                                        int<32> obase = vm_obase) void:
 {
-  fun lutos = (uint<64> i, int<32> base) string:
+  fun lutos = (uint<64> i, int<32> base, int<32> padbits = 0) string:
   {
     var chars = "0123456789abcdef";
     var s = "";
 
     assert (base <= 16);
     if (i == 0)
-      return "0";
+      s = "0";
+
     while (i)
       {
         s = chars[i % base] as string + s;
         i = i / base;
       }
+
+    if (base != 10 && padbits > 0)
+      {
+        var bits_per_digit = (base == 16 ? 4
+                              : base == 8 ? 3
+                              : base == 2 ? 1
+                              : 0);
+        var num_digits = padbits /^ bits_per_digit;
+
+        while (s'length < num_digits)
+          s = "0" + s;
+      }
+
     return s;
   }
 
   fun handle_integral = (int<32> long_p, int<32> signed_p) void:
   {
     var bits = asm uint<64>: ("siz; nip" : val);
-    var int_suffix = _pkl_format_int_suffix (signed_p, bits);
+    var int_suffix = (bits == 4 ? "N"
+                      : bits == 8 ? "B"
+                      : bits == 16 ? "H"
+                      : bits == 64 ? "L"
+                      : "");
     var uval = 0UL;
 
     fun emit_int_prefix = void:
@@ -833,20 +851,32 @@ immutable fun _pkl_print_format_any = (any val,
         var ival = (long_p ? asm int<64>: ("ltol 64; nip" : val)
                            : asm int<64>: ("itol 64; nip" : val));
 
-        if (ival < 0)
+        emit_int_prefix;
+        if (ival < 0 && obase == 10)
           {
             ctx.emit ("-");
             uval = -ival as uint<64>;
           }
         else
-          uval = ival as uint<64>;
+          {
+            uval = ival as uint<64>;
+            if (bits < 64)
+              uval &= (1UL <<. bits) - 1;
+          }
       }
     else
-      uval = (long_p ? asm uint<64>: ("lutolu 64; nip" : val)
-                     : asm uint<64>: ("iutolu 64; nip" : val));
+      {
+        uval = (long_p ? asm uint<64>: ("lutolu 64; nip" : val)
+                       : asm uint<64>: ("iutolu 64; nip" : val));
 
-    emit_int_prefix;
-    ctx.emit (_pkl_base_prefix (obase) + lutos (uval, obase) + int_suffix);
+        emit_int_prefix;
+        if (bits == 32 || int_suffix != "")
+          int_suffix = "U" + int_suffix;
+      }
+
+    ctx.emit (_pkl_base_prefix (obase));
+    ctx.emit (lutos (uval, obase, bits));
+    ctx.emit (int_suffix);
   }
 
   fun handle_offset = void:
@@ -893,6 +923,18 @@ immutable fun _pkl_print_format_any = (any val,
             break;
           }
         _pkl_print_format_any (val'elem (n), ctx, depth);
+
+        /* Print element offset if required.  */
+        if (vm_omaps)
+          {
+            var elem_offset = val'eoffset (n);
+
+            ctx.emit (" @ ");
+            if (elem_offset % 1#8 == 0#1)
+              _pkl_print_format_any (elem_offset as offset<uint<64>,8>, ctx, depth);
+            else
+              _pkl_print_format_any (elem_offset, ctx, depth);
+          }
       }
     ctx.emit ("]");
 
@@ -903,7 +945,7 @@ immutable fun _pkl_print_format_any = (any val,
 
         ctx.emit (" @ ");
         if (boff % 8 == 0)
-          _pkl_print_format_any (boff#8, ctx, depth);
+          _pkl_print_format_any (boff#1 as offset<uint<64>,8>, ctx, depth);
         else
           _pkl_print_format_any (boff#1, ctx, depth);
       }
@@ -980,9 +1022,6 @@ immutable fun _pkl_print_format_any = (any val,
             var field = val'elem (n);
             var field_name = val'ename (n);
 
-            if (n != 0)
-              ctx.emit (",");
-
             indent_if_tree (depth + 1);
             if (field_name != "")
               {
@@ -1001,11 +1040,15 @@ immutable fun _pkl_print_format_any = (any val,
 
                 ctx.emit (" @ ");
                 if (field_offset % 1#8 == 0#1)
-                  field_offset = field_offset as offset<uint<64>,8>;
-                _pkl_print_format_any (field_offset, ctx, depth);
+                  _pkl_print_format_any (field_offset as offset<uint<64>,8>, ctx, depth);
+                else
+                  _pkl_print_format_any (field_offset, ctx, depth);
               }
+
+            if (n != num_fields - 1)
+              ctx.emit (",");
           }
-        catch if E_elem {} /* Absent field.  */
+        catch if E_elem { ++num_fields; } /* Absent field.  */
       }
 
     indent_if_tree (depth);
@@ -1018,7 +1061,7 @@ immutable fun _pkl_print_format_any = (any val,
 
         ctx.emit (" @ ");
         if (boff % 8 == 0)
-          _pkl_print_format_any (boff#8, ctx, depth);
+          _pkl_print_format_any (boff#1 as offset<uint<64>,8>, ctx, depth);
         else
           _pkl_print_format_any (boff#1, ctx, depth);
       }
