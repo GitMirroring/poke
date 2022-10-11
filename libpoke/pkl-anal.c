@@ -996,6 +996,43 @@ PKL_PHASE_BEGIN_HANDLER (pkl_anal2_ps_type_struct)
 }
 PKL_PHASE_END_HANDLER
 
+/* The template in an asm statement shall be a constant string.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_anal2_ps_asm_stmt)
+{
+  pkl_ast_node ass_stmt = PKL_PASS_NODE;
+  pkl_ast_node ass_stmt_template = PKL_AST_ASM_STMT_TEMPLATE (ass_stmt);
+
+  if (!ass_stmt_template
+      || PKL_AST_CODE (ass_stmt_template) != PKL_AST_STRING)
+    {
+      PKL_ERROR (PKL_AST_LOC (ass_stmt_template),
+                 "template argument to asm must be constant");
+      PKL_ANAL_PAYLOAD->errors ++;
+      PKL_PASS_ERROR;
+    }
+}
+PKL_PHASE_END_HANDLER
+
+/* The template in an asm expression shall be a constant string.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_anal2_ps_asm_exp)
+{
+  pkl_ast_node ass_exp = PKL_PASS_NODE;
+  pkl_ast_node ass_exp_template = PKL_AST_ASM_EXP_TEMPLATE (ass_exp);
+
+  if (!ass_exp_template
+      || PKL_AST_CODE (ass_exp_template) != PKL_AST_STRING)
+    {
+      PKL_ERROR (PKL_AST_LOC (ass_exp_template),
+                 "template argument to asm must be constant");
+      PKL_ANAL_PAYLOAD->errors ++;
+      PKL_PASS_ERROR;
+    }
+}
+PKL_PHASE_END_HANDLER
+
+
 struct pkl_phase pkl_phase_anal2 =
   {
    PKL_PHASE_PS_HANDLER (PKL_AST_SRC, pkl_anal_ps_src),
@@ -1008,6 +1045,8 @@ struct pkl_phase pkl_phase_anal2 =
    PKL_PHASE_PS_HANDLER (PKL_AST_RETURN_STMT, pkl_anal2_ps_return_stmt),
    PKL_PHASE_PS_HANDLER (PKL_AST_FUNCALL, pkl_anal2_ps_funcall),
    PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT_TYPE_FIELD, pkl_anal2_ps_struct_type_field),
+   PKL_PHASE_PS_HANDLER (PKL_AST_ASM_STMT, pkl_anal2_ps_asm_stmt),
+   PKL_PHASE_PS_HANDLER (PKL_AST_ASM_EXP, pkl_anal2_ps_asm_exp),
    PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_STRUCT, pkl_anal2_ps_type_struct),
    PKL_PHASE_PS_DEFAULT_HANDLER (pkl_anal_ps_default),
   };

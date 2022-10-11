@@ -1,3 +1,14 @@
+2022-10-11  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-rt.pk (_pkl_print_format_any): Fix assembly template
+	for struct_type_name and avoid calling vm_odepth twice.
+
+2022-10-10  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-anal.c (pkl_anal2_ps_asm_stmt): New handler.
+	(pkl_anal2_ps_asm_exp): Likewise.
+	* libpoke/pkl-anal.c (pkl_phase_anal2): Register new handlers.
+
 2022-10-10  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-rt.pk (_pkl_print_format_any): Use the "special"

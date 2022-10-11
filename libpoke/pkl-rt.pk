@@ -882,17 +882,15 @@ immutable fun _pkl_print_format_any = (any val,
     ctx.emit ("[");
     for (var n = 0; n < sel; ++n)
       {
+        if (n != 0)
+          ctx.emit (",");
+
         /* Note an oacutoff of 0 means no limit.  */
         if (oacutoff != 0 && n >= oacutoff)
           {
             ctx.emit ("...");
             break;
           }
-
-        /* Print the array element, preceded by a comma
-           whenever appropriate.  */
-        if (n != 0)
-          ctx.emit (",");
         _pkl_print_format_any (val'elem (n), ctx, depth);
       }
     ctx.emit ("]");
@@ -914,7 +912,7 @@ immutable fun _pkl_print_format_any = (any val,
 
   fun handle_struct = void:
   {
-    fun indent_if_tree = void:
+    fun indent_if_tree = (int<32> depth) void:
     {
       if (vm_omode == VM_OMODE_TREE)
         {
@@ -923,27 +921,27 @@ immutable fun _pkl_print_format_any = (any val,
         }
     }
 
-    var struct_name = asm string: ("
+    var struct_type_name = asm string: ("
   typof
   tysctn
   nip2
-  bn .done
+  bn .namenull
   nip
   ba .done
 .namenull:
   drop
 .done:
-" : "", val );
+" : "struct", val );
 
     ctx.begin_class ("struct");
     ctx.begin_class ("struct-type-name");
-    ctx.emit (struct_name);
+    ctx.emit (struct_type_name);
     ctx.end_class ("struct-type-name");
 
     /* Stop here if we are past the maximum depth configured in
        the VM.  */
     var odepth = vm_odepth;
-    if (odepth != 0 && depth >= vm_odepth)
+    if (odepth != 0 && depth >= odepth)
       {
         ctx.emit (" {...}");
         return;
@@ -963,7 +961,7 @@ immutable fun _pkl_print_format_any = (any val,
             if (n != 0)
               ctx.emit (",");
 
-            indent_if_tree;
+            indent_if_tree (depth + 1);
             if (field_name != "")
               {
                 ctx.begin_class ("struct-field-name");
@@ -988,7 +986,7 @@ immutable fun _pkl_print_format_any = (any val,
         catch if E_elem {} /* Absent field.  */
       }
 
-    indent_if_tree;
+    indent_if_tree (depth);
     ctx.emit ("}");
 
     /* Print struct offset if required.  */
