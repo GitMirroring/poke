@@ -5,8 +5,8 @@
 var x = 2#B;
 
 /* { dg-command { x ** 10 } } */
-/* { dg-output "0x400#B" } */
+/* { dg-output "0x0+400#B" } */
 
 /* For constant folding:  */
 /* { dg-command { 2#B ** 10 } } */
-/* { dg-output "\n0x400#B" } */
+/* { dg-output "\n0x0+400#B" } */

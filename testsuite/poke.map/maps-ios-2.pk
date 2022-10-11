@@ -6,6 +6,6 @@
 /* { dg-command { var foo = open ("foo.data") } } */
 /* { dg-command { var bar = open ("bar.data") } } */
 /* { dg-command { byte @ foo:1#B } } */
-/* { dg-output "0x2UB" } */
+/* { dg-output "0x02UB" } */
 /* { dg-command { byte @ bar:1#B } }*/
 /* { dg-output "\n0x12UB" } */

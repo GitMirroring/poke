@@ -7,10 +7,10 @@ var s = "He\x1llo \x12\x123, World!";
 /* { dg-command {.set obase 16} } */
 
 /* { dg-command {s'length} } */
-/* { dg-output "0x12UL" } */
+/* { dg-output "0x0+12UL" } */
 
 /* { dg-command {s[2]} } */
-/* { dg-output "\n0x1UB" } */
+/* { dg-output "\n0x01UB" } */
 
 /* { dg-command {s[7]} } */
 /* { dg-output "\n0x12UB" } */

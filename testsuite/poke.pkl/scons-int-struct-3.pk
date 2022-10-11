@@ -12,4 +12,4 @@ type Foo =
 
 /* { dg-command {.set obase 16} } */
 /* { dg-command {Foo {}} } */
-/* { dg-output {Foo {a=struct {a1=0x0UH,a2=0xf00fUH}}} } */
+/* { dg-output {Foo {a=struct {a1=0x0000UH,a2=0xf00fUH}}} } */

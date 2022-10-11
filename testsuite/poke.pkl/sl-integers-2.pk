@@ -5,8 +5,8 @@ var x = 3;
 /* { dg-command { .set obase 16 } } */
 
 /* { dg-command { 1 <<. x } } */
-/* { dg-output "0x8" } */
+/* { dg-output "0x0+8" } */
 
 /* For constant folding:  */
 /* { dg-command { 1 <<. 3 } } */
-/* { dg-output "\n0x8" } */
+/* { dg-output "\n0x0+8" } */

@@ -12,7 +12,7 @@ type Foo = struct { byte[n] i; byte j @ 3#B; byte k @ 2#B; };
 /* { dg-command { f } } */
 /* { dg-output "Foo \\{i=\\\[0x20UB\\\],j=0x50UB,k=0x40UB\\}" } */
 /* { dg-command { f'size } } */
-/* { dg-output "\n0x20UL#b" } */
+/* { dg-output "\n0x0+20UL#b" } */
 
 var n = 1;
 type Bar = struct { byte[n] i; byte j; byte k @ 1#B; };
@@ -21,4 +21,4 @@ type Bar = struct { byte[n] i; byte j; byte k @ 1#B; };
 /* { dg-command { b } } */
 /* { dg-output "\nBar \\{i=\\\[0x20UB\\\],j=0x30UB,k=0x30UB\\}" } */
 /* { dg-command { b'size } } */
-/* { dg-output "\n0x10UL#b" } */
+/* { dg-output "\n0x0+10UL#b" } */

@@ -6,4 +6,4 @@
 /* { dg-command { .map create foo } } */
 /* { dg-command { .map entry add foo, bytes } } */
 /* { dg-command { 3 + $foo::bytes[1] } } */
-/* { dg-output "0x23" } */
+/* { dg-output "0x00000023" } */

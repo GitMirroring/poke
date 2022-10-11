@@ -5,8 +5,8 @@ var x = 0x4#b;
 /* { dg-command { .set obase 16 } } */
 
 /* { dg-command { x .>> 4 } } */
-/* { dg-output "0x0#b" } */
+/* { dg-output "0x0+#b" } */
 
 /* For constant folding:  */
 /* { dg-command { 0x4#b .>> 4 } } */
-/* { dg-output "\n0x0#b" } */
+/* { dg-output "\n0x0+#b" } */

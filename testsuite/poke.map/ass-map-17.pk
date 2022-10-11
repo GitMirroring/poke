@@ -12,6 +12,6 @@ type Packet = struct { byte[2] a; int i; };
 /* { dg-command { Packet @ foo : 1#B } } */
 /* { dg-output {Packet {a=\[0x12UB,0x13UB\],i=0x14151617}} } */
 /* { dg-command { p'ios } } */
-/* { dg-output "\n0x1" } */
+/* { dg-output "\n0x0+1" } */
 /* { dg-command { p'strict } } */
-/* { dg-output "\n0x0" } */
+/* { dg-output "\n0x0+" } */

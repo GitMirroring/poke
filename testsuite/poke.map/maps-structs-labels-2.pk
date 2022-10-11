@@ -6,7 +6,7 @@ type Foo = struct { offset<byte,B> i; byte j @ i + 2#4; };
 /* { dg-command { .set obase 16 } } */
 
 /* { dg-command { Foo @ 0#B } } */
-/* { dg-output "Foo \\{i=0x4UB#B,j=0x50UB\\}" } */
+/* { dg-output "Foo \\{i=0x04UB#B,j=0x50UB\\}" } */
 
 /* { dg-command { Foo @ 1#B } } */
-/* { dg-output "\nFoo \\{i=0x5UB#B,j=0x80UB\\}" } */
+/* { dg-output "\nFoo \\{i=0x05UB#B,j=0x80UB\\}" } */

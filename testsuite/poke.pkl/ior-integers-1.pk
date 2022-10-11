@@ -5,8 +5,8 @@ var x = 0;
 /* { dg-command { .set obase 16 } } */
 
 /* { dg-command { x | 0xeadbeef } } */
-/* { dg-output "0xeadbeef" } */
+/* { dg-output "0x0eadbeef" } */
 
 /* For constant folding: */
 /* { dg-command { 0 | 0x0eadbeef } } */
-/* { dg-output "\n0xeadbeef" } */
+/* { dg-output "\n0x0eadbeef" } */

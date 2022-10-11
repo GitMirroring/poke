@@ -9,7 +9,7 @@ type Foo = struct { int i : i != 0x20; };
 /* { dg-command {try f.i = 0x20; catch if E_constraint { print "caught\n";}} } */
 /* { dg-output "caught" } */
 /* { dg-command {f.i} } */
-/* { dg-output "\n0x40" } */
+/* { dg-output "\n0x0+40" } */
 /* { dg-command {f.i = 0x12} } */
 /* { dg-command {f.i} } */
-/* { dg-output "\n0x12" } */
+/* { dg-output "\n0x0+12" } */

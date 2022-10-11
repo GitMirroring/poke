@@ -6,8 +6,8 @@ var x = Foo { hi = 1, lo = 1 };
 /* { dg-command { .set obase 16 } } */
 
 /* { dg-command {  x + Foo { hi = 1, lo = 1 } } } */
-/* { dg-output "0x20002" } */
+/* { dg-output "0x0+20002" } */
 
 /* For constant folding: */
 /* { dg-command {  Foo { hi = 1, lo = 1 } + Foo { hi = 1, lo = 1 } } } */
-/* { dg-output "\n0x20002" } */
+/* { dg-output "\n0x0+20002" } */

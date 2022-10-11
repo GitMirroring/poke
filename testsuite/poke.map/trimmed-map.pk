@@ -7,9 +7,9 @@
 /* { dg-command { var b = a[1:] } } */
 /* { dg-command { b[0] = 0x0eadbeef } } */
 /* { dg-command { a[1] } } */
-/* { dg-output "0xeadbeef" } */
+/* { dg-output "0x0eadbeef" } */
 /* { dg-command { b[0] } } */
-/* { dg-output "\n0xeadbeef" } */
+/* { dg-output "\n0x0eadbeef" } */
 /* { dg-command { a[2] = 0x12345678 } } */
 /* { dg-command { b[1] } } */
 /* { dg-output "\n0x12345678" } */

@@ -4,6 +4,6 @@ var a = [[[[[[[[0xdeadUH]]],[[[0xbabeUH]]]]]]]];
 
 /* { dg-command {.set obase 16} } */
 /* { dg-command {a as int<33>} } */
-/* { dg-output {\(int<33>\) 0xdeadbabe\n} } */
+/* { dg-output {\(int<33>\) 0x0+deadbabe\n} } */
 /* { dg-command {[[[[[[[[0xdeadUH]]],[[[0xbabeUH]]]]]]]] as int<33>} } */
-/* { dg-output {\(int<33>\) 0xdeadbabe} } */
+/* { dg-output {\(int<33>\) 0x0+deadbabe} } */

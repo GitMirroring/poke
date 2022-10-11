@@ -18,4 +18,4 @@ type Bar =
 /* { dg-command { .set obase 16 } } */
 /* { dg-command { .set endian big } } */
 /* { dg-command { Bar @ 1#B } } */
-/* { dg-output "Bar {a=0x0UH}" } */
+/* { dg-output "Bar {a=0x0000UH}" } */

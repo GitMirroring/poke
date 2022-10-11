@@ -3,4 +3,4 @@
 /* { dg-command { .set obase 10 } } */
 /* { dg-command { vm_set_obase (16) } } */
 /* { dg-command { vm_obase } } */
-/* { dg-output "0x10" } */
+/* { dg-output "0x0+10" } */

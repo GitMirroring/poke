@@ -1063,8 +1063,14 @@ pk_set_pretty_print (pk_compiler pkc, int pretty_print_p)
 void
 pk_print_val (pk_compiler pkc, pk_val val, pk_val *exit_exception)
 {
-  pvm_print_val (pkc->vm, val, exit_exception);
-  pkc->status = PK_OK;
+  pk_val printer = pk_decl_val (pkc, "_pkl_print_any");
+
+  if (printer == PK_NULL
+      || pk_call (pkc, printer, NULL, exit_exception,
+                  2, val, 1 /* depth */) == PK_ERROR)
+    pkc->status = PK_ERROR;
+  else
+    pkc->status = PK_OK;
 }
 
 void

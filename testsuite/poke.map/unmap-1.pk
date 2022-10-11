@@ -4,9 +4,9 @@
 /* { dg-command {.set obase 16} } */
 
 /* { dg-command {unmap 10} } */
-/* { dg-output "0xa" } */
+/* { dg-output "0x0+a" } */
 /* { dg-command {unmap [1,2,3]} } */
-/* { dg-output "\n\\\[0x1,0x2,0x3\\\]" } */
+/* { dg-output "\n\\\[0x0+1,0x0+2,0x0+3\\\]" } */
 
 /* { dg-command {var b = byte[3] @ 0#B} } */
 

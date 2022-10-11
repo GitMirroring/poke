@@ -7,6 +7,6 @@
 /* { dg-command { var b = a[1:2] } } */
 /* { dg-command { b[0] = 0x0eadbeef } } */
 /* { dg-command { a[1] } } */
-/* { dg-output "0xeadbeef" } */
+/* { dg-output "0x0eadbeef" } */
 /* { dg-command { b[0] } } */
-/* { dg-output "\n0xeadbeef" } */
+/* { dg-output "\n0x0eadbeef" } */

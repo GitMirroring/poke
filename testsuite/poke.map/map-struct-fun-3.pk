@@ -9,6 +9,6 @@ type Foo = struct { byte a; Func f;  byte b; };
 /* { dg-command { foo } } */
 /* { dg-output "Foo \{a=0x20UB,f=#<closure>,b=0x30UB\}" } */
 /* { dg-command { foo'size / #B } } */
-/* { dg-output "\n0x2UL" } */
+/* { dg-output "\n0x0+2UL" } */
 /* { dg-command { foo.f (10) } } */
-/* { dg-output "\n0x0" } */
+/* { dg-output "\n0x0+" } */

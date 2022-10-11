@@ -6,4 +6,4 @@
 
 /* { dg-command { uint<9> @ 15#b = 0x145 } } */
 /* { dg-command { uint<16> @ 8#b } } */
-/* { dg-output "0x145" } */
+/* { dg-output "0x0145UH" } */

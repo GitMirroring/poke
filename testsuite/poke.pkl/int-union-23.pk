@@ -11,4 +11,4 @@ type U = union uint
 /* { dg-command {+x} } */
 /* { dg-output "0xffffffecU" } */
 /* { dg-command {x as ulong} } */
-/* { dg-output "\\n0xffffffecUL" } */
+/* { dg-output "\\n0x0+ffffffecUL" } */

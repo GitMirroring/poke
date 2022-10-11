@@ -8,4 +8,4 @@ type Packets = Packet[2];
 /* { dg-command {.set obase 16} } */
 /* { dg-command {Packets @ 0x1#B = [Packet {b = 0xaa}, Packet {a = [1UB,2UB], b = 3}] } } */
 /* { dg-command {Packets @ 0x1#B } } */
-/* { dg-output {\[Packet {a=\[0x0UB,0x0UB\],b=0xaaUB},Packet {a=\[0x1UB,0x2UB\],b=0x3UB}\]} } */
+/* { dg-output {\[Packet {a=\[0x00UB,0x00UB\],b=0xaaUB},Packet {a=\[0x01UB,0x02UB\],b=0x03UB}\]} } */

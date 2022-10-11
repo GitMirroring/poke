@@ -11,7 +11,7 @@ type Foo = struct { byte i : i == MAGIC; byte j; };
 fun foo = Foo: { return Foo @ 4#B; };
 
 /* { dg-command { foo } } */
-/* { dg-output "Foo \\{i=0x50UB,j=0x4UB\\}" } */
+/* { dg-output "Foo \\{i=0x50UB,j=0x04UB\\}" } */
 
 /* { dg-command { var a = byte[(Foo @ 4#B).j][1] @ 0#B} } */
 /* { dg-command { a } } */

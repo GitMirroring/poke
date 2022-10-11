@@ -4,6 +4,6 @@ var a = [1 as bit, 0 as bit, 1 as bit];
 
 /* { dg-command {.set obase 16} } */
 /* { dg-command {a as int<13>} } */
-/* { dg-output {\(int<13>\) 0x5\n} } */
+/* { dg-output {\(int<13>\) 0x0005\n} } */
 /* { dg-command {[1 as bit, 0 as bit, 1 as bit] as int<13>} } */
-/* { dg-output {\(int<13>\) 0x5} } */
+/* { dg-output {\(int<13>\) 0x0005} } */

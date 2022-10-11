@@ -48,6 +48,6 @@ fun t = (Foo foo, uint<16> old1, uint<16> new1,
 /* { dg-command { .set endian little } } */
 /* { dg-command { .set obase 16} } */
 /* { dg-command { t (Foo @ 1#B, 0x6050UH, 0x5060UH, 0x4030UH, 0x3040UH);  } } */
-/* { dg-output {0x0\n} } */
+/* { dg-output {0x0+\n} } */
 /* { dg-command { Foo @ 1#B } } */
 /* { dg-output {Foo {a=0x20UB,b=UI32 {b1=0x6050UH,b2=0x4030UH}}} } */

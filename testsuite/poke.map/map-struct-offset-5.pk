@@ -18,4 +18,4 @@ type Foo =
 
 /* { dg-command {.set obase 16} } */
 /* { dg-command {Foo @ 1#B} } */
-/* { dg-output "Foo \{x=0x6fUB,s=Bar \{a=0xaaUB,b=0x0UB\},c=0x50UB\}" } */
+/* { dg-output "Foo \{x=0x6fUB,s=Bar \{a=0xaaUB,b=0x00UB\},c=0x50UB\}" } */

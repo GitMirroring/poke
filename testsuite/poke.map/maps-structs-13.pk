@@ -11,4 +11,4 @@ type Packet =
 
 /* { dg-command {.set obase 16 } } */
 /* { dg-command {Packet @ 0#B} } */
-/* { dg-output "Packet {a=0x2UB,b=\\\[0x20UB,0x30UB\\\]}" } */
+/* { dg-output "Packet {a=0x02UB,b=\\\[0x20UB,0x30UB\\\]}" } */

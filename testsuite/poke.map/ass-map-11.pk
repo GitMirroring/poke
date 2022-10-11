@@ -9,4 +9,4 @@ type Bar = struct { Foo f; byte l; };
 
 /* { dg-command {Bar @ 4#B = Bar { f = Foo { }, l = 0xff } } } */
 /* { dg-command {Bar @ 4#B} } */
-/* { dg-output {Bar {f=Foo {i=0x0},l=0xffUB}} } */
+/* { dg-output {Bar {f=Foo {i=0x0+},l=0xffUB}} } */

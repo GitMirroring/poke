@@ -13,4 +13,4 @@ type Foo =
 
 /* { dg-command {.set obase 16} } */
 /* { dg-command {Foo { rec_size = 1#B, num_recs = 1 } } } */
-/* { dg-output "Foo \{rec_size=0x1U#B,num_recs=0x1U,recs=\\\[Record \{a=0x0UB\}\\\]\}" } */
+/* { dg-output "Foo \{rec_size=0x00000001U#B,num_recs=0x00000001U,recs=\\\[Record \{a=0x00UB\}\\\]\}" } */

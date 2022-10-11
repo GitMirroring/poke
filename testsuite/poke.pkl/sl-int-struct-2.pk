@@ -5,9 +5,9 @@ var x = Foo { hi = 0, lo = 1 };
 
 /* { dg-command { .set obase 16 } } */
 /* { dg-command { 1 <<. x } } */
-/* { dg-output "0x2" } */
+/* { dg-output "0x0+2" } */
 
 /* For constant folding:  */
 /* { dg-command { .set obase 16 } } */
 /* { dg-command { 1 <<. Foo { hi = 0, lo = 1 } } } */
-/* { dg-output "\n0x2" } */
+/* { dg-output "\n0x0+2" } */

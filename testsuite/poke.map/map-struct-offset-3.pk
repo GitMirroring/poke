@@ -6,4 +6,4 @@ type Foo = struct { uint<16> h; byte b : OFFSET == 2#B; };
 /* { dg-command {.set endian big} } */
 /* { dg-command {.set obase 16} } */
 /* { dg-command {Foo @ 1#B} } */
-/* { dg-output "Foo \{h=0x6faaUH,b=0x0UB\}" } */
+/* { dg-output "Foo \{h=0x6faaUH,b=0x00UB\}" } */

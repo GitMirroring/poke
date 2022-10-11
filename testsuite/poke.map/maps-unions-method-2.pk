@@ -15,4 +15,4 @@ type Foo =
 /* { dg-command { (Foo @ 0#B).foo } } */
 /* { dg-output "0x10203040" } */
 /* { dg-command { (Foo @ 0#B).bar } } */
-/* { dg-output "\n0xbeef" } */
+/* { dg-output "\n0x0000beef" } */

@@ -6,7 +6,7 @@ var x = Foo { hi = 1, lo = 1 };
 /* { dg-command { .set obase 16 } } */
 
 /* { dg-command {  x ::: 0x7FFFFFFF } } */
-/* { dg-output "0x100017fffffffL" } */
+/* { dg-output "0x000100017fffffffL" } */
 
 /* For constant folding: */
 /* { dg-command {  0x7fffffff ::: Foo { hi = 1, lo = 1 } } } */

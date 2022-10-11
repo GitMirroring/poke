@@ -7,7 +7,7 @@ type Packet = struct { Array a; };
 
 /* { dg-command { .set obase 16 } } */
 /* { dg-command { Packet @ 0#B } } */
-/* { dg-output "Packet \{a=\\\[\\\[0x2UB,0x20UB\\\]\\\]\}" } */
+/* { dg-output "Packet \{a=\\\[\\\[0x02UB,0x20UB\\\]\\\]\}" } */
 /* { dg-command { n = 2 } } */
 /* { dg-command { Packet @ 0#B } } */
-/* { dg-output "\nPacket \{a=\\\[\\\[0x2UB,0x20UB,0x30UB\\\],\\\[0x40UB,0x66UB,0x6fUB\\\]\\\]\}" } */
+/* { dg-output "\nPacket \{a=\\\[\\\[0x02UB,0x20UB,0x30UB\\\],\\\[0x40UB,0x66UB,0x6fUB\\\]\\\]\}" } */

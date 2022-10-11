@@ -8,7 +8,7 @@ type Foo = struct { char c; };
 /* { dg-command { .set endian big } } */
 /* { dg-command { var f = Foo @ 0#B } } */
 /* { dg-command { f } } */
-/* { dg-output "Foo \{c=0x1UB\}" } */
+/* { dg-output "Foo \{c=0x01UB\}" } */
 /* { dg-command { .file bar.data } } */
 /* { dg-command {  f } } */
-/* { dg-output "\nFoo \{c=0x1UB\}" } */
+/* { dg-output "\nFoo \{c=0x01UB\}" } */

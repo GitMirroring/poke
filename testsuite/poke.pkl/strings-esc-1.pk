@@ -7,19 +7,19 @@ var s = "\1\12\1234;\12==\n";
 /* { dg-command { .set obase 8 } } */
 
 /* { dg-command { s'length } } */
-/* { dg-output "0o11UL" } */
+/* { dg-output "0o0+11UL" } */
 
 /* { dg-command {s[0]} } */
-/* { dg-output "\n0o1UB" } */
+/* { dg-output "\n0o001UB" } */
 
 /* { dg-command {s[1]} } */
-/* { dg-output "\n0o12UB" } */
+/* { dg-output "\n0o012UB" } */
 
 /* { dg-command {s[2]} } */
 /* { dg-output "\n0o123UB" } */
 
 /* { dg-command {s[3]} } */
-/* { dg-output "\n0o64UB" } */
+/* { dg-output "\n0o064UB" } */
 
 /* { dg-command {s[4:]} } */
 /* { dg-output "\n\";\\\\n==\\\\n\"" } */

@@ -2,4 +2,4 @@
 
 /* { dg-command  { .set obase 8 } } */
 /* { dg-command { 16 } } */
-/* { dg-output "0o20" } */
+/* { dg-output "0o00000000020" } */

@@ -19,8 +19,8 @@ var x = 0xdeadbeef;
 /* { dg-command {.set obase 16} } */
 /* { dg-command {.set endian little} } */
 /* { dg-command {+U{}} } */
-/* { dg-output "0x0" } */
+/* { dg-output "0x0+" } */
 /* { dg-command {x as U} } */
-/* { dg-output "\\nU {y=struct {a=0xdeadUH,b=0xbeefH#KB}}" } */
+/* { dg-output "\nU {y=struct {a=0xdeadUH,b=0xbeefH#KB}}" } */
 /* { dg-command {+(x as U)} } */
-/* { dg-output "\\n0xdeadbeef" } */
+/* { dg-output "\n0xdeadbeef" } */

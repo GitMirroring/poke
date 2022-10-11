@@ -6,6 +6,6 @@ type Foo = struct int<32> { struct int<16> { byte a; byte b; } la; uint<16> le; 
 /* { dg-command { var f = Foo { le = 0xffff } } } */
 /* { dg-command { f.la.b = 0x11 } } */
 /* { dg-command { +f } } */
-/* { dg-output "0x11ffff" } */
+/* { dg-output "0x0011ffff" } */
 /* { dg-command { f - 1 } } */
-/* { dg-output "\n0x11fffe" } */
+/* { dg-output "\n0x0011fffe" } */

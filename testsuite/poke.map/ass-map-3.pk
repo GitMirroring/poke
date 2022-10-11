@@ -11,4 +11,4 @@
 /* { dg-command {byte @ 4#B} } */
 /* { dg-output "\n0x6fUB" } */
 /* { dg-command {byte @ 5#B} } */
-/* { dg-output "\n0x0UB" } */
+/* { dg-output "\n0x00UB" } */

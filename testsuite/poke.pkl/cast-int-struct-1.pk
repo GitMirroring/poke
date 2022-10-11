@@ -9,4 +9,4 @@ type Foo =
 
 /* { dg-command { .set obase 16 } } */
 /* { dg-command { Foo { f1 = 1, f2 = 1 } as uint<64> + 2} } */
-/* { dg-output "0x100000003UL" } */
+/* { dg-output "0x0000000100000003UL" } */

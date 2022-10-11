@@ -2,4 +2,4 @@
 
 /* { dg-command { vm_set_omaps (1) } } */
 /* { dg-command {[1,2]} } */
-/* { dg-output "\\\[1 @ 0UL#b,2 @ 32UL#b\\\]" } */
+/* { dg-output "\\\[1 @ 0UL#B,2 @ 4UL#B\\\]" } */

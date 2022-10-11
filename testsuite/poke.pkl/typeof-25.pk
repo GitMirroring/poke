@@ -2,4 +2,4 @@
 
 /* { dg-command {.set obase 16} } */
 /* { dg-command {typeof (6)'length} } */
-/* { dg-output {0x5UL} } */
+/* { dg-output {0x0+5UL} } */

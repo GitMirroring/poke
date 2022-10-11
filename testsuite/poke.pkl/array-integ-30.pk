@@ -15,4 +15,4 @@ var a = [T {a=0xdead,b=0xbeef}];
 /* { dg-command {a as int<17>} } */
 /* { dg-output {\(int<17>\) 0x1beef\n} } */
 /* { dg-command {a as int<64>} } */
-/* { dg-output {0xdeadbeefL\n} } */
+/* { dg-output {0x00000000deadbeefL\n} } */

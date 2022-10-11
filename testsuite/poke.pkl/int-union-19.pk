@@ -17,4 +17,4 @@ type U = union int
 /* { dg-command {.set endian little} } */
 /* { dg-command {var x = 0xdead} } */
 /* { dg-command {x as U} } */
-/* { dg-output "U {y=struct {x=struct {a=0x0UH,b=0xdeadH#KB}}}" } */
+/* { dg-output "U {y=struct {x=struct {a=0x0000UH,b=0xdeadH#KB}}}" } */

@@ -5,8 +5,8 @@ var x = 0xabUH;
 /* { dg-command { .set obase 16 } } */
 
 /* { dg-command { 0xcdUH:::x } } */
-/* { dg-output "0xcd00abU" } */
+/* { dg-output "0x00cd00abU" } */
 
 /* For constant folding:  */
 /* { dg-command { 0xcdUH:::0xabUH } } */
-/* { dg-output "\n0xcd00abU" } */
+/* { dg-output "\n0x00cd00abU" } */

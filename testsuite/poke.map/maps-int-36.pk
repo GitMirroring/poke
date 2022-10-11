@@ -4,4 +4,4 @@
 /* { dg-command { .set endian little } } */
 /* { dg-command { .set obase 10 } } */
 /* { dg-command { int<38> @ 15#b } } */
-/* { dg-output "-26478333022" } */
+/* { dg-output ".int<38>. -26478333022" } */
