@@ -1,5 +1,10 @@
 2022-10-13  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-insn.def: Remove PKL_INSN_INDENT.
+	* libpoke/pvm.jitter (indent): Remove instruction.
+
+2022-10-13  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-gen.pks (integral_printer): Remove.
 	(integral_formater): Likewise.
 	(format_int_suffix): Likewise.
