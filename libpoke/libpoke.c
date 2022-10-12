@@ -1067,7 +1067,7 @@ pk_print_val (pk_compiler pkc, pk_val val, pk_val *exit_exception)
 
   if (printer == PK_NULL
       || pk_call (pkc, printer, NULL, exit_exception,
-                  2, val, 1 /* depth */) == PK_ERROR)
+                  2, val, PVM_NULL /* depth (use default value) */) == PK_ERROR)
     pkc->status = PK_ERROR;
   else
     pkc->status = PK_OK;

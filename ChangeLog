@@ -1,3 +1,7 @@
+2022-10-12  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/libpoke.c (pk_print_val): Use `pk_call' properly.
+
 2022-10-12  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-gen.c (pkl_gen_pr_type_array): Use
