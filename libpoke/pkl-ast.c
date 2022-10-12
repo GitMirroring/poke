@@ -400,8 +400,7 @@ pkl_ast_make_array_type (pkl_ast ast, pkl_ast_node etype, pkl_ast_node bound)
 {
   pkl_ast_node type = pkl_ast_make_type (ast);
   const int nclosures
-      = 7; /* mapper, writer, bounder, constructor, integrator, printer,
-              formater. */
+    = 5; /* mapper, writer, bounder, constructor, integrator  */
 
   assert (etype);
 
@@ -472,9 +471,8 @@ pkl_ast_make_struct_type (pkl_ast ast,
                           int pinned_p, int union_p)
 {
   pkl_ast_node type = pkl_ast_make_type (ast);
-  const int nclosures = 9; /* writer, mapper, constructor, comparator,
-                              integrator, deintegrator, printer,
-                              formater, typifier.  */
+  const int nclosures = 7; /* writer, mapper, constructor, comparator,
+                              integrator, deintegrator, typifier.  */
 
   PKL_AST_TYPE_CODE (type) = PKL_TYPE_STRUCT;
   PKL_AST_TYPE_S_NELEM (type) = nelem;
@@ -495,8 +493,6 @@ pkl_ast_make_struct_type (pkl_ast ast,
   PKL_AST_TYPE_S_CONSTRUCTOR (type) = PVM_NULL;
   PKL_AST_TYPE_S_COMPARATOR (type) = PVM_NULL;
   PKL_AST_TYPE_S_INTEGRATOR (type) = PVM_NULL;
-  PKL_AST_TYPE_S_FORMATER (type) = PVM_NULL;
-  PKL_AST_TYPE_S_PRINTER (type) = PVM_NULL;
   PKL_AST_TYPE_S_DEINTEGRATOR (type) = PVM_NULL;
   PKL_AST_TYPE_S_TYPIFIER (type) = PVM_NULL;
 

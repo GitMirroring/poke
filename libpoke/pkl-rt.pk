@@ -369,21 +369,6 @@ immutable fun _pkl_strcat3 = (string a, string b, string c) string:
     return s;
   }
 
-/* Given a DEPTH, indentation step ISTEP and OMODE, returns a string for
-   indentation.  */
-
-immutable fun _pkl_indentation = (int<32> depth, int<32> istep,
-                                  int<32> omode) string:
-  {
-    if (omode != VM_OMODE_TREE)
-      return "";
-
-    var s = " " * (1 + istep * depth);
-
-    __pkl_unsafe_string_set (s, 0, "\n");
-    return s;
-  }
-
 /* Return the suffix corresponding to the integral type with signedness
    SIGNED_P and size SIZE.  */
 
@@ -613,8 +598,6 @@ immutable type Pk_Type =
 
     Mapper_Fn mapper             if code in [PK_TYPE_ARRAY, PK_TYPE_STRUCT];
     (any)void writer             if code in [PK_TYPE_ARRAY, PK_TYPE_STRUCT];
-    (any,int<32>)string formater if code in [PK_TYPE_ARRAY, PK_TYPE_STRUCT];
-    (any)any printer             if code in [PK_TYPE_ARRAY, PK_TYPE_STRUCT];
     (any)any integrator          if code in [PK_TYPE_ARRAY, PK_TYPE_STRUCT];
     (any)any deintegrator        if code == PK_TYPE_STRUCT;
     (any,any)int<32> comparator  if code == PK_TYPE_STRUCT;

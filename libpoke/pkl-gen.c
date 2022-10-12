@@ -283,38 +283,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);               /* CLS */
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);              /* _ */
 
-            if (PKL_AST_TYPE_S_FORMATER (type_struct) == PVM_NULL)
-              {
-                pvm_val formater_closure;
-
-                PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_FORMATER);
-                RAS_FUNCTION_STRUCT_FORMATER (formater_closure,
-                                              type_struct);
-                PKL_GEN_POP_CONTEXT;
-                PKL_AST_TYPE_S_FORMATER (type_struct) = formater_closure;
-              }
-
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
-                          PKL_AST_TYPE_S_FORMATER (type_struct)); /* CLS */
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);             /* CLS */
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);            /* _ */
-
-            if (PKL_AST_TYPE_S_PRINTER (type_struct) == PVM_NULL)
-              {
-                pvm_val printer_closure;
-
-                PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_PRINTER);
-                RAS_FUNCTION_STRUCT_PRINTER (printer_closure,
-                                             type_struct);
-                PKL_GEN_POP_CONTEXT;
-                PKL_AST_TYPE_S_PRINTER (type_struct) = printer_closure;
-              }
-
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
-                          PKL_AST_TYPE_S_PRINTER (type_struct)); /* CLS */
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);            /* CLS */
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);           /* _ */
-
             if (PKL_AST_TYPE_S_ITYPE (type_struct))
               {
                 if (PKL_AST_TYPE_S_INTEGRATOR (type_struct) == PVM_NULL)
@@ -3705,43 +3673,13 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_struct)
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_PRINTER))
     {
       /* Stack: SCT DEPTH */
-
-      pkl_ast_node struct_type = PKL_PASS_NODE;
-      pvm_val printer_closure = PKL_AST_TYPE_S_PRINTER (struct_type);
-
-      /* If the struct type doesn't have a printer, compile one.  */
-      if (printer_closure == PVM_NULL)
-        {
-          RAS_FUNCTION_STRUCT_PRINTER (printer_closure, struct_type);
-          PKL_AST_TYPE_S_PRINTER (struct_type) = printer_closure;
-        }
-
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, printer_closure);
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);
-
-      /* Invoke the printer.  */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_CALL); /* _ */
+      RAS_MACRO_ANY_PRINTER;
       PKL_PASS_BREAK;
     }
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_FORMATER))
     {
       /* Stack: SCT DEPTH */
-
-      pkl_ast_node struct_type = PKL_PASS_NODE;
-      pvm_val formater_closure = PKL_AST_TYPE_S_FORMATER (struct_type);
-
-      /* If the struct type doesn't have a formater, compile one.  */
-      if (formater_closure == PVM_NULL)
-        {
-          RAS_FUNCTION_STRUCT_FORMATER (formater_closure, struct_type);
-          PKL_AST_TYPE_S_FORMATER (struct_type) = formater_closure;
-        }
-
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, formater_closure);
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);
-
-      /* Invoke the formater.  */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_CALL); /* _ */
+      RAS_MACRO_ANY_FORMATER;
       PKL_PASS_BREAK;
     }
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_INTEGRATOR))

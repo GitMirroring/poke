@@ -1,3 +1,31 @@
+2022-10-12  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-ast.h (PKL_AST_TYPE_S_PRINTER): Remove.
+	(PKL_AST_TYPE_S_FORMATER): Likewise.
+	* libpoke/pkl-ast.c (pkl_ast_make_struct_type): Remove struct
+	printers and formatters.
+	* libpoke/pkl-gen.c (pkl_gen_pr_decl): Do not compile closures for
+	struct printers and formatters.
+	(pkl_gen_pr_type_struct): Use the `any' printer/formater for
+	struct values.
+	* libpoke/pkl-gen.pks (struct_printer): Remove.
+	(struct_formater): Likewise.
+	(typifier_formater_wrapper): Likewise.
+	(struct_typifier): Do not fill in struct formatters/printers.
+	* libpoke/pkl-rt.pk: Remove fields `printer' and `formater'.
+	(_pkl_indentation): Remove function.
+	* testsuite/poke.pkl/format-19.pk: Adapt test.
+	* testsuite/poke.pkl/printf-value-15.pk: Likewise.
+	* testsuite/poke.pkl/printf-value-12.pk: Likewise.
+	* testsuite/poke.pkl/printf-value-11.pk: Likewise.
+	* testsuite/poke.pkl/format-28.pk: Likewise.
+	* testsuite/poke.pkl/format-20.pk: Likewise.
+	* testsuite/poke.pkl/typeof-13.pk: Remove test.
+	* testsuite/poke.pkl/typeof-14.pk: Likewise.
+	* testsuite/poke.pkl/typeof-15.pk: Likewise.
+	* testsuite/poke.pkl/typeof-16.pk: Likewise.
+	* testsuite/poke.pkl/typeof-21.pk: Likewise.
+
 2022-10-12  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-rt.pk (_pkl_print_format_any): Fix indentation

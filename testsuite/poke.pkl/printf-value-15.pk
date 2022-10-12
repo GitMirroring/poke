@@ -5,4 +5,4 @@ type Entity = struct { char code; bit[ent_size] value; };
 var collected = [Entity { code = 'x', value = [1 as bit] } ];
 
 /* { dg-command { printf ("%v\n", collected) } } */
-/* { dg-output "\\\[Entity \{code=120UB,value=\\\[1U\\\]\}\\\]" } */
+/* { dg-output "\\\[Entity \{code=120UB,value=\\\[\\(uint<1>\\) 1\\\]\}\\\]" } */

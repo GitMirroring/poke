@@ -2,6 +2,7 @@
 
 var a = [1,2,3];
 
+/* { dg-command {.set obase 10} } */
 /* { dg-command {.set omaps yes} } */
 /* { dg-command { printf "%v\n", a } } */
-/* { dg-output "\\\[1 @ 0x0+#b,2 @ 0x0+20#b,3 @ 0x0+40#b\\\] @ 0x0+#b" } */
+/* { dg-output "\\\[1 @ 0UL#B,2 @ 4UL#B,3 @ 8UL#B\\\] @ 0UL#B" } */

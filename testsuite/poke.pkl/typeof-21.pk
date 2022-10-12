@@ -1,6 +1,0 @@
-/* { dg-do run } */
-
-type Foo = int[][];
-
-/* { dg-command { try (typeof (Foo)).printer ("foo"); catch if E_conv { print "caught\n"; } } } */
-/* { dg-output "caught" } */
