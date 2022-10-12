@@ -963,7 +963,10 @@ immutable fun _pkl_print_format_any = (any val,
       if (vm_omode == VM_OMODE_TREE)
         {
           var istep = asm int<32>: ("pushoi");
-          asm ("indent" :: depth, istep);
+          var s = " " * (1 + istep * depth);
+
+          __pkl_unsafe_string_set (s, 0, "\n");
+          ctx.emit (s);
         }
     }
 
