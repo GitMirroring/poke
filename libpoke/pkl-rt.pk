@@ -1029,9 +1029,9 @@ immutable fun _pkl_print_format_any = (any val,
 
                 ctx.emit (" @ ");
                 if (field_offset % 1#8 == 0#1)
-                  _pkl_print_format_any (field_offset as offset<uint<64>,8>, ctx, depth);
+                  _pkl_print_format_any (field_offset as offset<uint<64>,8>, ctx, depth + 1);
                 else
-                  _pkl_print_format_any (field_offset, ctx, depth);
+                  _pkl_print_format_any (field_offset, ctx, depth + 1);
               }
 
             if (n != num_fields - 1)
@@ -1088,7 +1088,7 @@ immutable fun _pkl_print_format_any = (any val,
     }
 }
 
-immutable fun _pkl_print_any = (any val, int<32> depth = 1) void:
+immutable fun _pkl_print_any = (any val, int<32> depth = 0) void:
 {
   var ctx
     = _Pkl_Print_Format_Ctx {
@@ -1101,7 +1101,7 @@ immutable fun _pkl_print_any = (any val, int<32> depth = 1) void:
   _pkl_print_format_any (val, ctx, depth);
 }
 
-immutable fun _pkl_format_any = (any val, int<32> depth = 1) string:
+immutable fun _pkl_format_any = (any val, int<32> depth = 0) string:
 {
   var result = "";
   var ctx
