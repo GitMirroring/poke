@@ -2857,175 +2857,15 @@
         sprops                  ; STR
         .end
 
-;;; RAS_FUNCTION_ARRAY_FORMATER @array_type
+;;; RAS_MACRO_ARRAY_FORMATER
 ;;; ( ARR DEPTH -- STR )
 ;;;
-;;; Assemble a function that gets an array value and a depth
+;;; Assemble a macro that gets an array value and a depth
 ;;; level in the stack and formats the array and push it to
 ;;; the stack.
-;;;
-;;; Macro-arguments:
-;;; @array_type
-;;;   pkl_ast_node with the type of the array value to print.
 
-        .function array_formater @array_type
-        prolog
-        pushf 1
-        regvar $depth           ; ARR
-        sel                     ; ARR SEL
-        dup
-        regvar $sel
-        ;; Find the number of elems that will be formatted: NELEM
-        pushoac                 ; ARR SEL OACUTOFF
-        bzi .no_cut_off
-        itolu 64
-        nip                     ; ARR SEL OACUTOFFL
-        ltlu                    ; ARR SEL OACUTOFFL (SEL<OACUTOFFL)
-        bzi .sel_gte_cutoff
-        nrot                    ; ARR (SEL<OACUTOFFL) SEL OACUTOFFL
-.sel_gte_cutoff:
-        drop
-        nip                     ; ARR NELEM
-        push null
-.no_cut_off:
-        drop                    ; ARR NELEM
-        dup
-        regvar $nelem           ; ARR NELEM
-        pushvar $sel
-        eqlu
-        nip2                    ; ARR (NELEM==SEL)
-        regvar $no_ellip        ; ARR
-        mktys
-        push null
-        mktya                   ; ARR TYPA
-        push ulong<64>0
-        mka                     ; ARR SARR
-        push ulong<64>0
-        push "["
-        ains
-        swap                    ; SARR ARR
-        ;; Iterate on the values stored in the array, formatting them
-        ;; in turn.
-        push ulong<64>0         ; SARR ARR IDX
-        dup
-        ;; Temporary variable.
-        regvar $idx
-     .while
-        pushvar $nelem          ; SARR ARR IDX NELEM
-        over                    ; SARR ARR IDX NELEM IDX
-        swap                    ; SARR ARR IDX IDX NELEM
-        ltlu                    ; SARR ARR IDX IDX NELEM (IDX<NELEM)
-        nip2                    ; SARR ARR IDX (IDX<NELEM)
-     .loop
-        ;; Insert a comma if this is not the first element of the
-        ;; array.
-        push ulong<64>0         ; SARR ARR IDX 0UL
-        eql
-        nip                     ; SARR ARR IDX (IDX==0UL)
-        bnzi .l1
-        drop                    ; SARR ARR IDX
-        rot                     ; ARR IDX SARR
-        sel
-        push ","
-        ains                    ; ARR IDX SARR
-        nrot                    ; SARR ARR IDX
-        push null
-.l1:
-        drop                    ; SARR ARR IDX
-        ;; Now format the array element.
-        .let @array_elem_type = PKL_AST_TYPE_A_ETYPE (@array_type)
-        aref                    ; SARR ARR IDX EVAL
-        pushvar $depth          ; SARR ARR IDX EVAL DEPTH
-        .c PKL_PASS_SUBPASS (@array_elem_type);
-                                ; SARR ARR IDX STR
-        swap
-        popvar $idx             ; SARR ARR STR
-        rot                     ; ARR STR SARR
-        sel
-        rot                     ; ARR SARR SEL STR
-        ains
-        swap                    ; SARR ARR
-        pushvar $idx
-        ;; Format the element offset if required.
-        pushoo                  ; SARR ARR IDX OMAPS
-        bzi .l3
-        drop
-        rot                     ; ARR IDX SARR
-        sel                     ; ARR IDX SARR SLEN
-        push " @ "
-        ains                    ; ARR IDX SARR
-        nrot                    ; SARR ARR IDX
-        arefo                   ; SARR ARR IDX BOFF
-        .e format_boffset       ; SARR ARR IDX STR
-        swap
-        popvar $idx             ; SARR ARR STR
-        rot                     ; ARR STR SARR
-        sel                     ; ARR STR SARR SLEN
-        rot                     ; ARR SARR SLEN STR
-        ains                    ; ARR SARR
-        swap                    ; SARR ARR
-        pushvar $idx            ; SARR ARR IDX
-        push null
-.l3:
-        drop
-        ;; Increase index to process next element.
-        push ulong<64>1
-        addlu
-        nip2                    ; SARR ARR (IDX+1)
-     .endloop
-        drop
-        ;; Honor oacutoff.
-        pushvar $no_ellip       ; SARR ARR NOELLIP
-        bnzi .push_ket
-        drop
-        push "..."
-        push ulong<64>0
-        push ulong<64>3
-        push "ellipsis"
-        sprops                  ; SARR ARR ...
-        rot
-        sel                     ; ARR ... SARR SLEN
-        rot                     ; ARR SARR SLEN ...
-        ains
-        swap
-        push null
-.push_ket:
-        drop                    ; SARR ARR
-        swap
-        sel
-        push "]"
-        ains                    ; ARR SARR
-        ;; Format the array offset if required.
-        pushoo                  ; ARR SARR OMAPS
-        bzi .done
-        drop
-        sel
-        push " @ "
-        ains
-        swap                    ; SARR ARR
-        mgeto                   ; SARR ARR BOFF
-        .e format_boffset       ; SARR ARR STR
-        rot                     ; ARR STR SARR
-        sel                     ; ARR STR SARR SLEN
-        rot                     ; ARR SARR SLEN STR
-        ains                    ; ARR SARR
-        push null
-.done:
-        ;; We are done.  Cleanup and bye bye.
-        drop
-        nip                     ; SARR
-        sel                     ; SARR SLEN
-        push ulong<64>0         ; SARR SLEN IDX
-        swap                    ; SARR IDX SLEN
-        .call _pkl_reduce_string_array
-                                ; STR
-        sel                     ; STR LEN
-        push ulong<64>0         ; STR LEN IDX
-        swap                    ; STR IDX LEN
-        push "array"            ; STR IDX LEN CLASS
-        sprops                  ; STR
-        popf 1
-        return
+        .macro array_formater
+        .call _pkl_format_any
         .end
 
 ;;; RAS_FUNCTION_STRUCT_FORMATER @struct_type
@@ -3445,109 +3285,15 @@
         endsc
         .end
 
-;;; RAS_FUNCTION_ARRAY_PRINTER @array_type
+;;; RAS_MACRO_ARRAY_PRINTER
 ;;; ( ARR DEPTH -- )
 ;;;
-;;; Assemble a function that gets an array value and a depth
+;;; Assemble a macro that gets an array value and a depth
 ;;; level in the stack and prints out the array.
-;;;
-;;; Macro-arguments:
-;;; @array_type
-;;;   pkl_ast_node with the type of the array value to print.
 
-        .function array_printer @array_type
-        prolog
-        pushf 1
-        regvar $depth           ; ARR
-        push "array"
-        begsc
-        push "["
-        prints
-        ;; Iterate on the values stored in the array, printing them
-        ;; in turn.
-        sel                     ; ARR SEL
-        regvar $sel             ; ARR
-        push ulong<64>0         ; ARR IDX
-     .while
-        pushvar $sel            ; ARR IDX SEL
-        over                    ; ARR IDX SEL IDX
-        swap                    ; ARR IDX IDX SEL
-        ltlu                    ; ARR IDX IDX SEL (IDX<SEL)
-        nip2                    ; ARR IDX (IDX<SEL)
-     .loop
-        ;; Honor oacutoff.
-        ;; An oacutoff of 0 means no limit.
-        pushoac                 ; ARR IDX OACUTOFF
-        bzi .l2
-        itolu 64
-        nip                     ; ARR IDX OACUTOFFL
-        ltlu
-        nip                     ; ARR IDX (IDX<OACUTOFF)
-        bnzi .l2
-        drop
-        push "ellipsis"
-        begsc
-        push "..."
-        push "ellipsis"
-        endsc
-        prints
-        ba .elems_done
-.l2:
-        drop
-        ;; Print a comma if this is not the first element of the
-        ;; array.
-        push ulong<64>0         ; ARR IDX 0UL
-        eql
-        nip                     ; ARR IDX (IDX==0UL)
-        bnzi .l1
-        push ","
-        prints
-.l1:
-        drop                    ; ARR IDX
-        ;; Now print the array element.
-        .let @array_elem_type = PKL_AST_TYPE_A_ETYPE (@array_type)
-        aref                    ; ARR IDX EVAL
-        pushvar $depth          ; ARR IDX EVAL DEPTH
-        .c PKL_PASS_SUBPASS (@array_elem_type);
-                                ; ARR IDX
-        ;; Print the element offset if required.
-        pushoo                  ; ARR IDX OMAPS
-        bzi .l3
-        push " @ "
-        prints
-        nrot                    ; OMAPS ARR IDX
-        arefo                   ; OMAPS ARR IDX BOFF
-        .e print_boffset        ; OMAPS ARR IDX
-        rot                     ; ARR IDX OMAPS
-.l3:
-        drop
-        ;; Increase index to process next element.
-        push ulong<64>1
-        addlu
-        nip2                    ; ARR (IDX+1)
-     .endloop
-.elems_done:
-        drop                    ; ARR
-        push "]"
-        prints
-        ;; Print the array offset if required.
-        pushoo                  ; ARR OMAPS
-        bzi .l4
-        swap                    ; OMAPS ARR
-        mgeto
-        nip                     ; OMAPS BOFF
-        push " @ "
-        prints
-        .e print_boffset        ; OMAPS
-        push null
-.l4:
-        push "array"
-        endsc
-        ;; We are done.  Cleanup and bye bye.
-        drop
-        drop
-        popf 1
-        return
+        .macro array_printer
+        .call _pkl_print_any
+        drop                    ; the null
         .end
 
 ;;; RAS_MACRO_INDENT_IF_TREE
@@ -3934,9 +3680,7 @@
         drop
         swap
         ;; Call the formater.
-        .let #formater = PKL_AST_TYPE_CODE (@type) == PKL_TYPE_ARRAY \
-                       ? PKL_AST_TYPE_A_FORMATER (@type) \
-	               : PKL_AST_TYPE_S_FORMATER (@type)
+        .let #formater = PKL_AST_TYPE_S_FORMATER (@type)
         push #formater
         call
         return
@@ -4079,28 +3823,6 @@
         .let #writer = writer_closure
         push "writer"
         push #writer
-        pec
-        sset
-  .c }
-  .c if (PKL_AST_TYPE_A_FORMATER (@type) != PVM_NULL)
-  .c {
-  .c    pvm_val formater_closure;
-  .c    RAS_FUNCTION_TYPIFIER_FORMATER_WRAPPER (formater_closure, @type);
-        .let #formater = formater_closure
-        push "formater"
-        push #formater
-        pec
-        sset
-  .c }
-  .c if (PKL_AST_TYPE_A_PRINTER (@type) != PVM_NULL)
-  .c {
-  .c    pvm_val printer_closure;
-        .let #function = PKL_AST_TYPE_A_PRINTER (@type)
-  .c    RAS_FUNCTION_TYPIFIER_ANY_ANY_WRAPPER (printer_closure,
-  .c                                           @type, #function);
-        .let #printer = printer_closure
-        push "printer"
-        push #printer
         pec
         sset
   .c }

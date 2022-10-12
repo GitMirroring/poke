@@ -467,37 +467,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
                 pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);             /* _ */
               }
 
-            if (PKL_AST_TYPE_A_FORMATER (array_type) == PVM_NULL)
-              {
-                pvm_val formater_closure;
-
-                PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_FORMATER);
-                RAS_FUNCTION_ARRAY_FORMATER (formater_closure,
-                                             array_type);
-                PKL_GEN_POP_CONTEXT;
-                PKL_AST_TYPE_A_FORMATER (array_type) = formater_closure;
-              }
-
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
-                          PKL_AST_TYPE_A_FORMATER (array_type)); /* CLS */
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);            /* CLS */
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);           /* _ */
-
-            if (PKL_AST_TYPE_A_PRINTER (array_type) == PVM_NULL)
-              {
-                pvm_val printer_closure;
-
-                PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_PRINTER);
-                RAS_FUNCTION_ARRAY_PRINTER (printer_closure,
-                                            array_type);
-                PKL_GEN_POP_CONTEXT;
-                PKL_AST_TYPE_A_PRINTER (array_type) = printer_closure;
-              }
-
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
-                          PKL_AST_TYPE_A_PRINTER (array_type)); /* CLS */
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);           /* CLS */
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);          /* _ */
             PKL_PASS_BREAK;
             break;
           }
@@ -3343,37 +3312,13 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_array)
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_PRINTER))
     {
       /* Stack: ARR DEPTH */
-
-      pkl_ast_node array_type = PKL_PASS_NODE;
-      pvm_val printer_closure = PKL_AST_TYPE_A_PRINTER (array_type);
-
-      /* If the array type doesn't have a printer, compile one.  */
-      if (printer_closure == PVM_NULL)
-        RAS_FUNCTION_ARRAY_PRINTER (printer_closure, array_type);
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, printer_closure);
-      if (!PKL_AST_TYPE_NAME (array_type))
-        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);
-
-      /* Invoke the printer.  */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_CALL); /* _ */
+      RAS_MACRO_ARRAY_PRINTER;
       PKL_PASS_BREAK;
     }
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_FORMATER))
     {
       /* Stack: ARR DEPTH */
-
-      pkl_ast_node array_type = PKL_PASS_NODE;
-      pvm_val formater_closure = PKL_AST_TYPE_A_FORMATER (array_type);
-
-      /* If the array type doesn't have a formater, compile one.  */
-      if (formater_closure == PVM_NULL)
-        RAS_FUNCTION_ARRAY_FORMATER (formater_closure, array_type);
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, formater_closure);
-      if (!PKL_AST_TYPE_NAME (array_type))
-        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);
-
-      /* Invoke the formater.  */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_CALL); /* _ */
+      RAS_MACRO_ARRAY_FORMATER;
       PKL_PASS_BREAK;
     }
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_INTEGRATOR))

@@ -942,8 +942,6 @@ pkl_ast_node pkl_ast_make_func_type_arg (pkl_ast ast,
 #define PKL_AST_TYPE_A_WRITER(AST) ((AST)->type.val.array.closures[1])
 #define PKL_AST_TYPE_A_BOUNDER(AST) ((AST)->type.val.array.closures[2])
 #define PKL_AST_TYPE_A_CONSTRUCTOR(AST) ((AST)->type.val.array.closures[3])
-#define PKL_AST_TYPE_A_PRINTER(AST) ((AST)->type.val.array.closures[4])
-#define PKL_AST_TYPE_A_FORMATER(AST) ((AST)->type.val.array.closures[5])
 #define PKL_AST_TYPE_A_INTEGRATOR(AST) ((AST)->type.val.array.closures[6])
 #define PKL_AST_TYPE_S_NFIELD(AST) ((AST)->type.val.sct.nfield)
 #define PKL_AST_TYPE_S_NCFIELD(AST) ((AST)->type.val.sct.ncfield)

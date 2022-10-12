@@ -418,8 +418,6 @@ pkl_ast_make_array_type (pkl_ast ast, pkl_ast_node etype, pkl_ast_node bound)
   PKL_AST_TYPE_A_BOUNDER (type) = PVM_NULL;
   PKL_AST_TYPE_A_CONSTRUCTOR (type) = PVM_NULL;
   PKL_AST_TYPE_A_INTEGRATOR (type) = PVM_NULL;
-  PKL_AST_TYPE_A_FORMATER (type) = PVM_NULL;
-  PKL_AST_TYPE_A_PRINTER (type) = PVM_NULL;
 
   return type;
 }
