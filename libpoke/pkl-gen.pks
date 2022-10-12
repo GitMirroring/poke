@@ -2703,24 +2703,6 @@
         drop                    ; _
         .end
 
-;;; RAS_MACRO_FORMAT_INT_SUFFIX @type
-;;; ( -- STR )
-;;;
-;;; Push the suffix corresponding to the specified integral type
-;;; to the stack.
-;;;
-;;; Macro-arguments:
-;;; @type
-;;;   pkl_ast_node with an integral type.
-
-        .macro format_int_suffix @type
-        .let #signed_p = pvm_make_int (PKL_AST_TYPE_I_SIGNED_P (@type), 32)
-        .let #size = pvm_make_ulong (PKL_AST_TYPE_I_SIZE (@type), 64)
-        push #signed_p
-        push #size
-        .call _pkl_format_int_suffix
-        .end
-
 ;;; RAS_MACRO_ANY_FORMATER
 ;;; ( VAL DEPTH -- STR )
 ;;;
@@ -2729,74 +2711,6 @@
 
         .macro any_formater
         .call _pkl_format_any
-        .end
-
-;;; RAS_MACRO_INTEGRAL_FORMATER @type
-;;; ( VAL DEPTH -- STR )
-;;;
-;;; Given an integral value and a depth in the stack, push the
-;;; string representation to the stack.
-;;;
-;;; Macro-arguments:
-;;; @type
-;;;   pkl_ast_node with the type of the value in the stack.
-
-        .macro integral_formater @type
-        drop                    ; VAL
-        pushob                  ; VAL OBASE
-        ;; Calculate and format the prefix.
-        dup                     ; VAL OBASE OBASE
-        .call _pkl_base_prefix  ; VAL OBASE PREFIX
-        nrot                    ; PREFIX VAL OBASE
-        ;; Format the value.
-        format @type            ; PREFIX STR
-        ;; Push the suffix
-        .e format_int_suffix @type ; PREFIX STR SUFFIX
-        .call _pkl_strcat3      ; STR
-        sel                     ; STR LEN
-        push ulong<64>0         ; STR LEN IDX
-        swap                    ; STR IDX LEN
-        push "integer"          ; STR IDX LEN CLASS
-        sprops                  ; STR
-        .end
-
-;;; RAS_MACRO_PRINT_INT_SUFFIX @type
-;;; ( -- )
-;;;
-;;; Print the suffix corresponding to the specified integral type.
-;;;
-;;; Macro-arguments:
-;;; @type
-;;;   pkl_ast_node with an integral type.
-
-        .macro print_int_suffix @type
-        ;; First signed/unsigned suffix.
-   .c if (!PKL_AST_TYPE_I_SIGNED_P (@type))
-   .c {
-        push "U"
-        prints
-   .c }
-        ;; Then certain kinds based on size
-   .c if (PKL_AST_TYPE_I_SIZE (@type) == 4)
-   .c {
-        push "N"
-        prints
-   .c }
-   .c if (PKL_AST_TYPE_I_SIZE (@type) == 8)
-   .c {
-        push "B"
-        prints
-   .c }
-   .c if (PKL_AST_TYPE_I_SIZE (@type) == 16)
-   .c {
-        push "H"
-        prints
-   .c }
-   .c if (PKL_AST_TYPE_I_SIZE (@type) == 64)
-   .c {
-        push "L"
-        prints
-   .c }
         .end
 
 ;;; RAS_MACRO_ANY_PRINTER
@@ -2808,52 +2722,6 @@
         .macro any_printer
         .call _pkl_print_any
         drop
-        .end
-
-;;; RAS_MACRO_INTEGRAL_PRINTER @type
-;;; ( VAL DEPTH -- )
-;;;
-;;; Given an integral value and a depth in the stack, print the
-;;; integral value.
-;;;
-;;; Macro-arguments:
-;;; @type
-;;;   pkl_ast_node with the type of the value in the stack.
-
-        .macro integral_printer @type
-        drop                    ; VAL
-        push "integer"
-        begsc
-        pushob                  ; VAL OBASE
-        ;; Calculate and print the prefix.
-        dup                     ; VAL OBASE OBASE
-        .call _pkl_base_prefix  ; VAL OBASE STR
-        prints                  ; VAL OBASE
-        ;; Print the value.
-        print @type             ; _
-        ;; Print the suffix
-        .e print_int_suffix @type
-        push "integer"
-        endsc
-        .end
-
-;;; RAS_MACRO_INDENT_IF_TREE
-;;; ( DEPTH ISTEP -- )
-;;;
-;;; Given a depth and an indentation step, indent if the VM
-;;; is configured to print in tree-mode.  Otherwise do nothing.
-
-        .macro indent_if_tree
-        pushom                  ; DEPTH ISTEP OMODE
-        bnzi .do_indent
-        drop
-        drop
-        drop                    ; _
-        ba .done
-.do_indent:
-        drop                    ; DEPTH ISTEP
-        indent                  ; _
-.done:
         .end
 
 ;;; RAS_MACRO_TYPEOF @type

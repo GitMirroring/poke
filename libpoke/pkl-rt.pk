@@ -369,19 +369,6 @@ immutable fun _pkl_strcat3 = (string a, string b, string c) string:
     return s;
   }
 
-/* Return the suffix corresponding to the integral type with signedness
-   SIGNED_P and size SIZE.  */
-
-immutable fun _pkl_format_int_suffix = (int<32> signed_p,
-                                        uint<64> size) string:
-  {
-    return (signed_p ? "" : "U") +
-           (size == 4 ? "N" :
-            size == 8 ? "B" :
-            size == 16 ? "H" :
-            size == 64 ? "L" : "");
-  }
-
 /* Reduces an array of string to a single string by concatenting the
    NELEM elements of ARR starting from specified INDEX.  */
 

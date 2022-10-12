@@ -1,3 +1,14 @@
+2022-10-13  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-gen.pks (integral_printer): Remove.
+	(integral_formater): Likewise.
+	(format_int_suffix): Likewise.
+	(print_int_suffix): Likewise.
+	(indent_if_tree): Likewise.
+	* libpoke/pkl-gen.c (pkl_gen_ps_type_integral): Use the any
+	printer and formater for integral values.
+	* libpoke/pkl-rt.pk (_pkl_format_int_suffix): Remove.
+
 2022-10-12  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-gen.pks (offset_printer): Remove.
