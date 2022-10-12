@@ -2149,13 +2149,13 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_offset)
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_PRINTER))
     {
                                                 /* VAL DEPTH */
-      RAS_MACRO_OFFSET_PRINTER (PKL_PASS_NODE); /* _ */
+      RAS_MACRO_ANY_PRINTER;                    /* _ */
       PKL_PASS_BREAK;
     }
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_FORMATER))
     {
                                                 /* VAL DEPTH */
-      RAS_MACRO_OFFSET_FORMATER (PKL_PASS_NODE); /* _ */
+      RAS_MACRO_ANY_FORMATER;                   /* STR */
       PKL_PASS_BREAK;
     }
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_TYPIFIER))
@@ -3443,12 +3443,12 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_type_string)
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_PRINTER))
     {
       /* Stack: VAL DEPTH */
-      RAS_MACRO_STRING_PRINTER; /* _ */
+      RAS_MACRO_ANY_PRINTER; /* _ */
     }
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_FORMATER))
     {
       /* Stack: VAL DEPTH */
-      RAS_MACRO_STRING_FORMATER; /* _ */
+      RAS_MACRO_ANY_FORMATER; /* _ */
     }
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_TYPIFIER))
     {

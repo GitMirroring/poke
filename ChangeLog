@@ -1,5 +1,17 @@
 2022-10-12  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-gen.pks (offset_printer): Remove.
+	(offset_formater): Likewise.
+	(format_boffset): Likewise.
+	(print_boffset): Likewise.
+	(string_printer): Likewise.
+	(string_formater): Likewise.
+	* libpoke/pkl-gen.c (pkl_gen_pr_type_offset): Use the any printer
+	and formatter for offset values.
+	(pkl_gen_ps_type_string): Likewise.
+
+2022-10-12  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-rt.pk (_pkl_print_format_any): Fix handling of
 	odepth and of depth.
 	(_pkl_print_any): Set default value of depth to 0.
