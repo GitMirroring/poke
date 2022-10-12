@@ -1,7 +1,6 @@
 /* Jitter: custom contextual printing.
 
-   Copyright (C) 2020 Luca Saiu
-   Updated in 2022 by Luca Saiu
+   Copyright (C) 2020, 2022 Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -40,22 +39,6 @@
 /* Internal functionality.
  * ************************************************************************** */
 
-/* What a context consists of in memory.  This type should be treated as
-   opaque by the final user, and even by users defining new context kinds. */
-struct jitter_print_context_private
-{
-  /* The stack of currently active decorations, the most current on the top.
-     The stack is empty at initialisation.  Items are all of type
-     struct jitter_print_decoration. */
-  struct jitter_dynamic_buffer stack;
-
-  /* The context kind.  This is a pointer. */
-  jitter_print_context_kind kind;
-
-  /* The context data, as appropriate for its kind.  This is a pointer. */
-  jitter_print_context_data data;
-};
-
 /* A decoration <name, type, value> tuple.  This is what the stack within
    each context structs contains. */
 struct jitter_print_decoration
@@ -86,7 +69,7 @@ jitter_print_decoration_finalize (struct jitter_print_decoration *d)
 }
 
 /* Initialise the pointed decoration stack, meant to be the field stack of
-   a struct jitter_print_context_private object. */
+   a struct jitter_print_context_struct object. */
 static void
 jitter_print_decoration_stack_initialize (struct jitter_dynamic_buffer *s)
 {
@@ -94,7 +77,7 @@ jitter_print_decoration_stack_initialize (struct jitter_dynamic_buffer *s)
 }
 
 /* Free the resources associated to the pointed decoration stack, meant to be
-   the field stack of a struct jitter_print_context_private object. */
+   the field stack of a struct jitter_print_context_struct object. */
 static void
 jitter_print_decoration_stack_finalize (struct jitter_dynamic_buffer *s)
 {
@@ -113,7 +96,7 @@ jitter_print_decoration_stack_finalize (struct jitter_dynamic_buffer *s)
 /* Return a pointer to the bottom of the decoration stack in the pointed
    context.  The bottom may contain a valid decoration, or not. */
 static struct jitter_print_decoration *
-jitter_print_decoration_stack_bottom (struct jitter_print_context_private *ct)
+jitter_print_decoration_stack_bottom (struct jitter_print_context_struct *ct)
 {
   return ((struct jitter_print_decoration *)
           JITTER_DYNAMIC_BUFFER_TO_CONST_POINTER (& ct->stack));
@@ -122,7 +105,7 @@ jitter_print_decoration_stack_bottom (struct jitter_print_context_private *ct)
 /* Return a pointer to the top decoration of the pointed context, or NULL
    if the stack is currently empty. */
 static struct jitter_print_decoration *
-jitter_print_decoration_stack_top (struct jitter_print_context_private *ct)
+jitter_print_decoration_stack_top (struct jitter_print_context_struct *ct)
 {
   struct jitter_print_decoration *bottom
     = jitter_print_decoration_stack_bottom (ct);
@@ -668,7 +651,7 @@ jitter_print_context
 jitter_print_context_make (jitter_print_context_kind k, jitter_print_context_data d)
 {
   jitter_print_context res
-    = jitter_xmalloc (sizeof (struct jitter_print_context_private));
+    = jitter_xmalloc (sizeof (struct jitter_print_context_struct));
 
   jitter_print_decoration_stack_initialize (& res->stack);
   res->kind = k;

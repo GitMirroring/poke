@@ -1,6 +1,6 @@
 /* Jitter: custom contextual printing.
 
-   Copyright (C) 2020 Luca Saiu
+   Copyright (C) 2020, 2022 Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -90,8 +90,9 @@
    subject to failure. */
 
 
-/* A print context is a pointer to an opaque structure. */
-typedef struct jitter_print_context_private *
+/* A print context is a pointer to a struct that can usually be treated as
+   opaque. */
+typedef struct jitter_print_context_struct *
 jitter_print_context;
 
 
@@ -713,5 +714,27 @@ struct jitter_print_context_kind_struct
    matching finalisation.  Not for the user. */
 void
 jitter_print_initialize (void);
+
+
+
+
+/* Internal functionality: struct definitions.
+ * ************************************************************************** */
+
+/* What a context consists of in memory.  This type can be treated as opaque by
+   the final user, and even by users defining new context kinds. */
+struct jitter_print_context_struct
+{
+  /* The stack of currently active decorations, the most current on the top.
+     The stack is empty at initialisation.  Items are all of type
+     struct jitter_print_decoration. */
+  struct jitter_dynamic_buffer stack;
+
+  /* The context kind.  This is a pointer. */
+  jitter_print_context_kind kind;
+
+  /* The context data, as appropriate for its kind.  This is a pointer. */
+  jitter_print_context_data data;
+};
 
 #endif // #ifndef JITTER_PRINT_H_
