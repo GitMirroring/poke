@@ -2857,17 +2857,6 @@
         sprops                  ; STR
         .end
 
-;;; RAS_MACRO_ARRAY_FORMATER
-;;; ( ARR DEPTH -- STR )
-;;;
-;;; Assemble a macro that gets an array value and a depth
-;;; level in the stack and formats the array and push it to
-;;; the stack.
-
-        .macro array_formater
-        .call _pkl_format_any
-        .end
-
 ;;; RAS_FUNCTION_STRUCT_FORMATER @struct_type
 ;;; ( SCT DEPTH -- STR )
 ;;;
@@ -3283,17 +3272,6 @@
         prints
         push "offset"
         endsc
-        .end
-
-;;; RAS_MACRO_ARRAY_PRINTER
-;;; ( ARR DEPTH -- )
-;;;
-;;; Assemble a macro that gets an array value and a depth
-;;; level in the stack and prints out the array.
-
-        .macro array_printer
-        .call _pkl_print_any
-        drop                    ; the null
         .end
 
 ;;; RAS_MACRO_INDENT_IF_TREE

@@ -1,5 +1,12 @@
 2022-10-12  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-gen.c (pkl_gen_pr_type_array): Use
+	any_printer/formatter instead of array_printer/formatter macros.
+	* libpoke/pkl-gen.pks (array_printer): Remove.
+	(array_formater): Likewise.
+
+2022-10-12  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-gen.pks (array_formater): Turn into a macro.
 	(array_printer): Likewise.
 	(array_typifier): Do not fill in `printer' and `formatter' fields.

@@ -3312,13 +3312,13 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_array)
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_PRINTER))
     {
       /* Stack: ARR DEPTH */
-      RAS_MACRO_ARRAY_PRINTER;
+      RAS_MACRO_ANY_PRINTER;
       PKL_PASS_BREAK;
     }
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_FORMATER))
     {
       /* Stack: ARR DEPTH */
-      RAS_MACRO_ARRAY_FORMATER;
+      RAS_MACRO_ANY_FORMATER;
       PKL_PASS_BREAK;
     }
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_INTEGRATOR))
