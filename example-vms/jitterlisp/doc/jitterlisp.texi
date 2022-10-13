@@ -4145,7 +4145,7 @@ Print the names of all defective specialised instructions.  Notice
 that the set of defective specialised instructions may be different
 from the set of replaced specialised instructions: when
 @emph{any} call-related specialised instruction is defective then
-@emph{every} call-related specialized will be replaced.
+@emph{every} call-related specialised instruction will be replaced.
 @*
 The output is meant for the user.
 @end deffn
