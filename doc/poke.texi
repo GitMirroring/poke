@@ -13126,6 +13126,7 @@ values.  Mapping is perhaps the most important concept in Poke.
 * Mapping Arrays::		Mapping sequences of things.
 * Mapping Functions::           Orthogonality is important.
 * Non-strict Mapping::          Working with incorrect data.
+* Auto-Remapping::              Switching to explicit remaps.
 * Unmapping::			From mapped values to regular values.
 @end menu
 
@@ -13896,6 +13897,64 @@ The attribute @code{'strict} can be used to query whether a given
 value is strict or non-strict.  Non-mapped values are strict by
 definition.
 
+@node Auto-Remapping
+@subsection Auto-Remapping
+@cindex remap
+
+By default poke always tries to handle mapped values in a transparent
+way, @i{i.e.} in the same way than if the values weren't mapped.  To
+guarantee that the contents of mapped values are always up to date, it
+issues @dfn{remaps} every time the value gets referenced.
+
+@noindent
+For example, consider the following Poke program:
+
+@example
+var arr = X86_Insn[1024];
+@end example
+
+@noindent
+There, an array of 1024 x86 instructions @code{arr} is mapped.  Every
+time the array value is referenced it is re-mapped from the
+corresponding IO space.  For example:
+
+@example
+arr[2].opcode = 0x0b;
+@end example
+
+@noindent
+In the reference above, the whole array should be re-mapped from IO
+space, because x86 instructions are variable-length, so it is
+necessary to re-read all the previous values before accessing the
+element in position 2.
+
+This re-mapping 100% guarantees that the mapped values are up to date.
+However, this can get very slow, depending on the data structures we
+are poking at.
+
+@noindent
+poke offers a way to turn this auto re-mapping off.  In Poke code:
+
+@example
+vm_set_autoremap (0)
+@end example
+
+@noindent
+Or using the poke application CLI:
+
+@example
+(poke) .set autoremap no
+@end example
+
+@noindent
+When auto-remap is switched off, mapped values are used as-is.  It is
+then the responsibility of the user to explicitly re-map values using
+the @code{remap} operator.  Like:
+
+@example
+(poke) remap arr
+@end example
+
 @node Unmapping
 @subsection Unmapping
 @cindex unmap
@@ -14614,6 +14673,8 @@ running the Poke programs.
 * @code{vm_set_omaps}::     Set whether output maps get printed.
 * @code{vm_omode}::         Get the current output mode.
 * @code{vm_set_omode}::     Set the current output mode.
+* @code{vm_autoremap}::     Get whether re-mapping is on.
+* @code{vm_set_autoremap}:: Set whether re-mapping is on.
 @end menu
 
 @node @code{vm_obase}
@@ -14796,6 +14857,28 @@ fun vm_set_omode = (int<32> @var{omode}) void:
 @noindent
 Where @var{omode} is one of the @code{VM_OMODE_*} values documented
 above.
+
+@node @code{vm_autoremap}
+@subsection @code{vm_autoremap}
+
+The pre-defined function @code{vm_autoremap} returns a boolean
+indicating whether auto-remapping of mapped values is switched on.  It
+has the following prototype:
+
+@example
+fun vm_autoremap = int<32>:
+@end example
+
+@node @code{vm_set_autoremap}
+@subsection @code{vm_set_autoremap}
+
+The pre-defined function @code{vm_set_autoremap} sets whether
+auto-remapping of mapped values is switched on.  It has the following
+protoype:
+
+@example
+fun vm_set_autoremap = (int<32)void:
+@end example
 
 @node Debugging
 @section Debugging

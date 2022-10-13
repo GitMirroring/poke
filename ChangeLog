@@ -1,5 +1,11 @@
 2022-10-13  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* doc/poke.texi (Auto-Remapping): New section.
+	(@code{vm_autoremap}): Likewise.
+	(@code{vm_set_autoremap}): Likewise.
+
+2022-10-13  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-ops.def: Define PKL_AST_OP_REMAP.
 	* libpoke/pkl-lex.l: Recognize token `remap'.
 	* libpoke/pkl-tab.y: New token REMAP.
