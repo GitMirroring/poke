@@ -713,6 +713,11 @@ void pvm_set_odepth (pvm vm, unsigned int odepth);
 unsigned int pvm_oacutoff (pvm vm);
 void pvm_set_oacutoff (pvm vm, unsigned int cutoff);
 
+/* Get/set the `autoremap' flag in the virtual machine.  */
+
+int pvm_autoremap (pvm vm);
+void pvm_set_autoremap (pvm vm, int autoremap);
+
 /* Get/set the compiler associated to a virtual machine.
 
    This compiler is used when the VM needs to build programs and

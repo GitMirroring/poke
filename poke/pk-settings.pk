@@ -585,6 +585,31 @@ This setting is `no' by default.",
         }
     };
 
+pk_settings.add_setting
+  :entry Poke_Setting {
+      name = "autoremap",
+      kind = POKE_SETTING_BOOL,
+      summary = "whether to activate auto-remap mode",
+      usage = ".set autoremap {yes,no}",
+      description = "\
+This setting determines whether poke will remap mapped values
+automatically when they are referred to.  This assures that the values
+are always up to date with respect the contents of the IO space.
+
+Turning auto-remap off may be useful in situations where it is very
+slow to keep all the data structures up to date.  In these case, you
+can `.set autoremap off' and then use the `remap' Poke operator to
+force the re-mapping of any given value, explicitly.
+
+This setting is `yes' by default.",
+      getter = lambda any: { return vm_autoremap; },
+      setter = lambda (any val) int:
+        {
+          vm_set_autoremap (val as int<32>);
+          return 1;
+        }
+    };
+
 /* Create help topics for the global settings defined above.  */
 
 for (setting in pk_settings.entries)

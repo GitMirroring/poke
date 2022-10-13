@@ -1,5 +1,28 @@
 2022-10-13  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/libpoke.h: Prototypes for pk_autoremap and
+	pk_set_autoremap.
+	* libpoke/libpoke.c (pk_autoremap): New function.
+	(pk_set_autoremap): Likewise.
+	* libpoke/pvm.h: Prototypes for pvm_autoremap and
+	pvm_set_autoremap.
+	* libpoke/pvm.c (pvm_autoremap): New function.
+	(pvm_set_autoremap): Likewise.
+	* libpoke/pvm.jitter (state-struct-runtime-c): Add field
+	`autoremap' to the VM.
+	(state-initialization-c): Initialize `autoremap' to the default
+	value 0.
+	(pusharem): New instruction.
+	(poparem): Likewise.
+	* libpoke/pkl-rt.pk (vm_autoremap): New function.
+	(vm_set_autoremap): Likewise.
+	* poke/pk-settings.pk: Add new setting `autoremap'.
+	* libpoke/pkl-asm.pks (remap): Acknowledge autoremap.
+	* testsuite/poke.cmd/set-autoremap-1.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
+
+2022-10-13  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* testsuite/Makefile.am (EXTRA_DIST): Update.
 
 2022-10-13  Jose E. Marchesi  <jemarch@gnu.org>

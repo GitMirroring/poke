@@ -491,6 +491,9 @@ PKL_DEF_INSN(PKL_INSN_POPOC,"","popoc")
 PKL_DEF_INSN(PKL_INSN_PUSHOBC,"","pushobc")
 PKL_DEF_INSN(PKL_INSN_POPOBC,"","popobc")
 
+PKL_DEF_INSN(PKL_INSN_PUSHAREM,"","pusharem")
+PKL_DEF_INSN(PKL_INSN_POPAREM,"","poparem")
+
 /* The only purpose of PKL_INSN_MACRO is to mark the beginning of
    macro instructions.  It should _not_ be passed to
    `pkl_asm_insn'.  */

@@ -936,6 +936,20 @@ pk_set_omaps (pk_compiler pkc, int omaps_p)
   pkc->status = PK_OK;
 }
 
+int
+pk_autoremap (pk_compiler pkc)
+{
+  pkc->status = PK_OK;
+  return pvm_autoremap (pkc->vm);
+}
+
+void
+pk_set_autoremap (pk_compiler pkc, int autoremap)
+{
+  pvm_set_autoremap (pkc->vm, autoremap);
+  pkc->status = PK_OK;
+}
+
 enum pk_omode
 pk_omode (pk_compiler pkc)
 {

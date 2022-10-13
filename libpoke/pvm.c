@@ -60,6 +60,8 @@
   (PVM_STATE_RUNTIME_FIELD (& (PVM)->pvm_state, oindent))
 #define PVM_STATE_OACUTOFF(PVM)                         \
   (PVM_STATE_RUNTIME_FIELD (& (PVM)->pvm_state, oacutoff))
+#define PVM_STATE_AUTOREMAP(PVM)                        \
+  (PVM_STATE_RUNTIME_FIELD (& (PVM)->pvm_state, autoremap))
 
 struct pvm
 {
@@ -357,6 +359,18 @@ void
 pvm_set_oacutoff (pvm apvm, unsigned int cutoff)
 {
   PVM_STATE_OACUTOFF (apvm) = cutoff;
+}
+
+int
+pvm_autoremap (pvm apvm)
+{
+  return PVM_STATE_AUTOREMAP (apvm);
+}
+
+void
+pvm_set_autoremap (pvm apvm, int autoremap)
+{
+  PVM_STATE_AUTOREMAP (apvm) = autoremap;
 }
 
 pkl_compiler

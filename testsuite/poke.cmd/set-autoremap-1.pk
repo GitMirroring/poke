@@ -1,0 +1,9 @@
+/* { dg-do run } */
+
+/* { dg-command {.set obase 10} } */
+/* { dg-command {.set autoremap yes} } */
+/* { dg-command {vm_autoremap} } */
+/* { dg-output "1" } */
+/* { dg-command {.set autoremap no} } */
+/* { dg-command {vm_autoremap} } */
+/* { dg-output "\n0" } */

@@ -1102,6 +1102,7 @@ state-struct-runtime-c
       uint32_t odepth;
       uint32_t oindent;
       uint32_t oacutoff;
+      uint32_t autoremap;
   end
 end
 
@@ -1122,6 +1123,7 @@ state-initialization-c
       jitter_state_runtime->odepth = 0;
       jitter_state_runtime->oindent = 2;
       jitter_state_runtime->oacutoff = 0;
+      jitter_state_runtime->autoremap = 1;
   end
 end
 
@@ -1596,6 +1598,39 @@ instruction sync ()
        pass the mask of signals to the signal handler.  */
     if (JITTER_PENDING_NOTIFICATIONS)
       PVM_RAISE_DFL (PVM_E_SIGNAL);
+  end
+end
+
+# Instruction: pusharem
+#
+# Push autoremap flag.
+#
+# This instruction pushes a signed integer indicating whether the
+# VM is in `autoremap' mode.
+#
+# Stack: ( -- INT )
+
+instruction pusharem ()
+  code
+    int autoremap = PVM_STATE_RUNTIME_FIELD (autoremap);
+    JITTER_PUSH_STACK (PVM_MAKE_INT (autoremap, 32));
+  end
+end
+
+# Instruction: poparem
+#
+# Pop and set the autoremap flag.
+#
+# This instruction pops a signed integer from the stack and sets
+# it as the new value of the `autoremap' flag.
+#
+# Stack: ( INT -- )
+
+instruction poparem ()
+  code
+    int autoremap = PVM_VAL_INT (JITTER_TOP_STACK ());
+    PVM_STATE_RUNTIME_FIELD (autoremap) = autoremap;
+    JITTER_DROP_STACK ();
   end
 end
 

@@ -614,6 +614,9 @@ void pk_set_oindent (pk_compiler pkc, unsigned int oindent) LIBPOKE_API;
 int pk_omaps (pk_compiler pkc) LIBPOKE_API;
 void pk_set_omaps (pk_compiler pkc, int omaps_p) LIBPOKE_API;
 
+int pk_autoremap (pk_compiler pkc) LIBPOKE_API;
+void pk_set_autoremap (pk_compiler pkc, int autoremap_p) LIBPOKE_API;
+
 enum pk_omode
   {
     PK_PRINT_FLAT,

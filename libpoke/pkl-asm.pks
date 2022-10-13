@@ -42,6 +42,10 @@
         ;; The re-map should be done only if the value is mapped.
         mm                      ; VAL MAPPED_P
         bzi .label              ; VAL MAPPED_P
+        drop
+        ;; And only if autoremap is on.
+        pusharem                ; VAL AUTOREMAP_P
+        bzi .label
         drop                    ; VAL
         ;; XXX do not re-map if the object is up to date (cached
         ;; value.)

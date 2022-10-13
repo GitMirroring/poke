@@ -208,6 +208,16 @@ immutable fun __pkl_unsafe_string_set = (string dst, uint<64> index,
   asm ("strset; drop" :: dst, index, str);
 }
 
+immutable fun vm_autoremap = int<32>:
+{
+  return asm int<32>: ("pusharem");
+}
+
+immutable fun vm_set_autoremap = (int<32> autoremap) void:
+{
+  asm ("poparem" :: autoremap);
+}
+
 immutable var ENDIAN_LITTLE = 0;
 immutable var ENDIAN_BIG = 1;
 
