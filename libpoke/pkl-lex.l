@@ -238,6 +238,7 @@ S ::
 "printf"        { return PRINTF; }
 "isa"           { return ISA; }
 "unmap"         { return UNMAP; }
+"remap"         { return REMAP; }
 "big"           { return BIG; }
 "little"        { return LITTLE; }
 "load"          { return LOAD; }

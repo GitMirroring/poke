@@ -356,6 +356,18 @@ pkl_asm_insn_remap (pkl_asm pasm)
   RAS_MACRO_REMAP;
 }
 
+/* Macro-instruction: AREMAP
+   ( VAL -- VAL )
+
+   Given a mapeable PVM value on the TOS, remap it if auto-remap
+   is enabled.  */
+
+static void
+pkl_asm_insn_aremap (pkl_asm pasm)
+{
+  RAS_MACRO_AREMAP;
+}
+
 /* Macro-instruction: WRITE
    ( VAL -- VAL )
 
@@ -1623,6 +1635,9 @@ pkl_asm_insn (pkl_asm pasm, enum pkl_asm_insn insn, ...)
           }
         case PKL_INSN_REMAP:
           pkl_asm_insn_remap (pasm);
+          break;
+        case PKL_INSN_AREMAP:
+          pkl_asm_insn_aremap (pasm);
           break;
         case PKL_INSN_WRITE:
           pkl_asm_insn_write (pasm);

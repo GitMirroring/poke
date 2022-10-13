@@ -32,6 +32,23 @@
         nip2                    ; OFF (OGETU*OGETM
         .end
 
+;;; RAS_MACRO_AREMAP
+;;; ( VAL -- VAL )
+;;;
+;;; Given a map-able PVM value on the TOS, remap it if auto-remap
+;;; is enabled in the PVM.  This is the implementation of the
+;;; PKL_INSN_AREMAP macro.
+
+        .macro aremap
+        pusharem                ; VAL AREM_P
+        bzi .label
+        drop
+        remap
+        push null               ; NVAL null
+.label:
+        drop                    ; NVAL
+        .end
+
 ;;; RAS_MACRO_REMAP
 ;;; ( VAL -- VAL )
 ;;;
@@ -42,10 +59,6 @@
         ;; The re-map should be done only if the value is mapped.
         mm                      ; VAL MAPPED_P
         bzi .label              ; VAL MAPPED_P
-        drop
-        ;; And only if autoremap is on.
-        pusharem                ; VAL AUTOREMAP_P
-        bzi .label
         drop                    ; VAL
         ;; XXX do not re-map if the object is up to date (cached
         ;; value.)
@@ -592,7 +605,7 @@
         ;; Mark the new array as mapped.
         map                     ; TARR
         ;; Remap!!
-        remap
+        aremap
         push null
         push null
 .notmapped:

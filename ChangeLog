@@ -1,5 +1,25 @@
 2022-10-13  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-ops.def: Define PKL_AST_OP_REMAP.
+	* libpoke/pkl-lex.l: Recognize token `remap'.
+	* libpoke/pkl-tab.y: New token REMAP.
+	(unary_operator): Syntax for the `remap' operator.
+	* libpoke/pkl-typify.c (pkl_typify1_ps_op_remap): New handler.
+	(pkl_phase_typify1): Register new handler.
+	* libpoke/pkl-gen.c (pkl_gen_ps_op_remap): New handler.
+	(pkl_phase_gen): Register new handler.
+	(pkl_gen_ps_var): Use AREMAP instead of REMAP.
+	(pkl_gen_pr_indexer): Likewise.
+	(pkl_gen_ps_struct_ref): Likewise.
+	* libpoke/pkl-insn.def: New macro-instruction AREMAP.
+	* libpoke/pkl-asm.c (pkl_asm_insn_aremap): New function.
+	(pkl_asm_insn): Hanlde PKL_INSN_AREMAP.
+	* libpoke/pkl-asm.pks (atrim): Use aremap intead of remap.
+	* testsuite/poke.map/remap-1.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
+
+2022-10-13  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/libpoke.h: Prototypes for pk_autoremap and
 	pk_set_autoremap.
 	* libpoke/libpoke.c (pk_autoremap): New function.

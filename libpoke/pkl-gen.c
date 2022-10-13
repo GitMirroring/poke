@@ -597,12 +597,12 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_var)
         }
 
       /* If the value holds a value that could be mapped, and the IO
-         space is volatile, then use have to use REMAP instruction to
+         space is volatile, then use have to use AREMAP instruction to
          make sure the value is fresh.
 
          However, if the value is an array, its type is complete and
          an array or struct, and it is used as the entity in an
-         indexer, the REMAP is _not_ necessary.  */
+         indexer, the AREMAP is _not_ necessary.  */
       if ((PKL_AST_TYPE_CODE (var_type) == PKL_TYPE_ARRAY
            && !(PKL_AST_VAR_IS_INDEXED (var)
                 && (PKL_AST_TYPE_CODE (PKL_AST_TYPE_A_ETYPE (var_type))
@@ -613,7 +613,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_var)
                     == PKL_AST_TYPE_COMPLETE_YES)))
           || PKL_AST_TYPE_CODE (var_type) == PKL_TYPE_STRUCT)
         {
-          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_REMAP);
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_AREMAP);
         }
     }
 }
@@ -2654,7 +2654,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_indexer)
                       == PKL_AST_TYPE_COMPLETE_YES))
                 break;
             case PKL_TYPE_STRUCT:
-              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_REMAP);
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_AREMAP);
               break;
             default:
               break;
@@ -2829,7 +2829,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_struct_ref)
         {
         case PKL_TYPE_ARRAY:
         case PKL_TYPE_STRUCT:
-          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_REMAP);
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_AREMAP);
           break;
         default:
           break;
@@ -4423,6 +4423,17 @@ PKL_PHASE_END_HANDLER
 
 /*
  * | OPERAND1
+ * EXP
+ */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_op_remap)
+{
+  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_REMAP);
+}
+PKL_PHASE_END_HANDLER
+
+/*
+ * | OPERAND1
  * | OPERAND2
  * EXP
  */
@@ -4706,6 +4717,7 @@ struct pkl_phase pkl_phase_gen =
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_ATTR, pkl_gen_ps_op_attr),
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_BCONC, pkl_gen_ps_op_bconc),
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_UNMAP, pkl_gen_ps_op_unmap),
+   PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_REMAP, pkl_gen_ps_op_remap),
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_IN, pkl_gen_ps_op_in),
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_APUSH, pkl_gen_ps_op_apush),
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_APOP, pkl_gen_ps_op_apop),

@@ -366,6 +366,22 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_op_unmap)
 }
 PKL_PHASE_END_HANDLER
 
+/* The type of the unary REMAP operator is the type of its single
+   operand.  It is only valid for values that are suitable to be
+   mapped.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_op_remap)
+{
+  pkl_ast_node exp = PKL_PASS_NODE;
+  pkl_ast_node op1 = PKL_AST_EXP_OPERAND (exp, 0);
+  pkl_ast_node op1_type = PKL_AST_TYPE (op1);
+
+  if (!pkl_ast_type_mappable_p (op1_type))
+    INVALID_OPERAND (op1, "expected a mappable value");
+  PKL_AST_TYPE (exp) = ASTREF (op1_type);
+}
+PKL_PHASE_END_HANDLER
+
 /* The type of an ISA operation is a boolean.  Also, many ISA can be
    determined at compile-time.  */
 
@@ -3370,6 +3386,7 @@ struct pkl_phase pkl_phase_typify1 =
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_POS, pkl_typify1_ps_neg_pos_bnot),
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_BNOT, pkl_typify1_ps_neg_pos_bnot),
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_UNMAP, pkl_typify1_ps_op_unmap),
+   PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_REMAP, pkl_typify1_ps_op_remap),
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_BCONC, pkl_typify1_ps_op_bconc),
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_IN, pkl_typify1_ps_op_in),
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_EXCOND, pkl_typify1_ps_op_excond),

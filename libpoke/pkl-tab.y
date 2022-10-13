@@ -531,6 +531,7 @@ load_module (struct pkl_parser *parser,
 %token '.'              _("dot operator")
 %token <ast> ATTR       _("attribute")
 %token UNMAP            _("unmap operator")
+%token REMAP            _("remap operator")
 %token EXCOND           _("conditional on exception operator")
 
 %token BIG              _("keyword `big'")
@@ -1077,7 +1078,8 @@ unary_operator:
         | '+'                { $$ = PKL_AST_OP_POS; }
         | '~'                { $$ = PKL_AST_OP_BNOT; }
         | '!'                { $$ = PKL_AST_OP_NOT; }
-        | UNMAP                { $$ = PKL_AST_OP_UNMAP; }
+        | UNMAP              { $$ = PKL_AST_OP_UNMAP; }
+        | REMAP              { $$ = PKL_AST_OP_REMAP; }
         ;
 
 primary:
