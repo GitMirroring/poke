@@ -545,6 +545,9 @@ structured_work (struct structured_command_line *cl)
                                        ? JITTER_CROSS_OBJDUMP
                                        : JITTER_OBJDUMP),
                                       NULL);
+  /* Just to make sure that the output is visible before the program's actual
+     prints, which do not use the print context logic, flush. */
+  jitter_print_flush (ctx);
 
   /* Run the Jittery routine in a temporary state, unless this is a dry run. */
   if (! cl->dry_run)
