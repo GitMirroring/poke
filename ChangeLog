@@ -1,5 +1,9 @@
 2022-10-14  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* doc/gen-pvm-insns.sh: s/egrep/grep -E/g.
+
+2022-10-14  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-lex.l (integer_literal_width): New function to
 	calculate the width of integer literal.
 	(integer_literal_overflow_handling): New function to handle

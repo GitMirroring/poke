@@ -13,11 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-CONTENTS=$(egrep '^#.*$' < $1 \
+CONTENTS=$(grep -E '^#.*$' < $1 \
            | sed -e '1,/^### Begin of instructions/d' \
            | sed -n -e '1,/^### End of instructions/p')
 
-SUBSECTIONS=$(echo "$CONTENTS" | egrep '^## .*' \
+SUBSECTIONS=$(echo "$CONTENTS" | grep -E '^## .*' \
               | sed -e 's/## \(.*\)/\1/')
 
 # Menu of subsections.
@@ -46,7 +46,7 @@ do
     # Instructions menu
     echo "@menu"
     echo "$SUBCONTENTS" \
-        | egrep '^# Instruction: ' \
+        | grep -E '^# Instruction: ' \
         | sed -e 's/# Instruction: \([^ ][^ ]*\)\(.*\)/* Instruction \1::/g'
     echo "@end menu"
 
