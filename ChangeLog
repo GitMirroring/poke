@@ -1,3 +1,11 @@
+2022-10-14  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-rt.pk: Change documentation of TV_FIELD_MAPPED.
+	* libpoke/pkl-gen.pks (struct_field_mapper): Do not pass a
+	formatted_value to the TV_FIELD_MAPPED tracing event.
+	* poke/pk-tracer.pk (pk_tv_action_field_mapped): Do not get a
+	formatted_value argument and format the value instead.
+
 2022-10-13  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* doc/poke.texi (Auto-Remapping): New section.

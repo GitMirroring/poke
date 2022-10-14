@@ -22,15 +22,14 @@
 fun pk_tv_action_field_mapped = (int<32> e, any[] args) void:
 {
   var field_value = args[0],
-      field_value_printed = args[1] as string,
-      field_type = args[2] as Pk_Type,
-      field_name = args[3] as string,
-      field_offset = args[4] as offset<uint<64>,b>;
+      field_type = args[1] as Pk_Type,
+      field_name = args[2] as string,
+      field_offset = args[3] as offset<uint<64>,b>;
 
   term_begin_class ("trace");
-  printf ("tracer: field_mapped: %s = %s @ %v\n",
+  printf ("tracer: field_mapped: %<struct-field-name:%s%> = %v @ %v\n",
           field_name == "" ? "<anonymous>" : field_name,
-          field_value_printed, field_offset);
+          field_value, field_offset);
   term_end_class ("trace");
 }
 

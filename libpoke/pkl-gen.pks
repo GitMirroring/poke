@@ -1019,37 +1019,17 @@
         push ulong<64>0         ; ... BOFF STR VAL ARGS 0UL [VAL]
         rot                     ; ... BOFF STR ARGS 0UL VAL [VAL]
         ains                    ; ... BOFF STR ARGS [VAL]
-        ;; Second any argument: field_value_printed
-        fromr
-        dup
-        tor                     ; ... BOFF STR ARGS VAL [VAL]
-        ;; Save current omode and set flat
-        pushom                  ; ... BOFF STR ARGS VAL OMODE [VAL]
-        tor                     ; ... BOFF STR ARGS VAL [VAL OMODE]
-        push int<32>0
-        popom                   ; ... BOFF STR ARGS VAL [VAL OMODE]
-        push int<32>1           ; ... BOFF STR ARGS VAL DEPTH [VAL OMODE]
-     .c PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_FORMATER);
-     .c PKL_PASS_SUBPASS (PKL_AST_STRUCT_TYPE_FIELD_TYPE (@field));
-     .c PKL_GEN_POP_CONTEXT;
-                                ; ... BOFF STR ARGS VALSTR [VAL OMODE]
-        ;; Restore omode
-        fromr
-        popom                   ; ... BOFF STR ARGS VALSTR [VAL]
-        push ulong<64>1         ; ... BOFF STR ARGS VALSTR 1UL [VAL]
-        swap                    ; ... BOFF STR ARGS 1UL VALSTR [VAL]
-        ains                    ; ... BOFF STR ARGS [VAL]
-        ;; Third any argument: field_type
+        ;; Second any argument: field_type
         .let @field_type = PKL_AST_STRUCT_TYPE_FIELD_TYPE (@field)
         .e typeof @field_type
                                 ; ... BOFF STR ARGS PKTYPE [VAL]
-        push ulong<64>2         ; ... BOFF STR ARGS VALSTR 1UL [VAL]
-        swap                    ; ... BOFF STR ARGS 1UL VALSTR [VAL]
+        push ulong<64>1         ; ... BOFF STR ARGS PKTYPE 1UL [VAL]
+        swap                    ; ... BOFF STR ARGS 1UL PKTYPE [VAL]
         ains                    ; ... BOFF STR ARGS [VAL]
-        ;; Fourth any argument: field_name
+        ;; Third any argument: field_name
         over                    ; ... BOFF STR ARGS STR [VAL]
         tor                     ; ... BOFF STR ARGS [VAL STR]
-        push ulong<64>3         ; ... BOFF STR ARGS 2UL [VAL STR]
+        push ulong<64>2         ; ... BOFF STR ARGS 2UL [VAL STR]
         rot                     ; ... BOFF ARGS 2UL STR [VAL STR]
         ;; ... but beware of anonyous fields
         bnn .name_ok
@@ -1057,10 +1037,10 @@
         push ""
 .name_ok:
         ains                    ; ... BOFF ARGS [VAL STR]
-        ;; Fifth any argument: field_offset
+        ;; Fourth any argument: field_offset
         over                    ; ... BOFF ARGS BOF [VAL STR]
         tor                     ; ... BOFF ARGS [VAL STR BOFF]
-        push ulong<64>4         ; ... BOFF ARGS 2UL [VAL STR BOFF]
+        push ulong<64>3         ; ... BOFF ARGS 2UL [VAL STR BOFF]
         rot                     ; ... ARGS 2UL BOFF [VAL STR BOFF]
         push ulong<64>1         ; ... ARGS 2UL BOFF 1UL [VAL STR BOFF]
         mko                     ; ... ARGS 2UL OFFSET [VAL STR BOFF]

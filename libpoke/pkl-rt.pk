@@ -630,12 +630,8 @@ immutable var pk_tracer_p = 0;
      FIELD_VALUE (any)
        The value of the field that has been mapped.
 
-     FIELD_VALUE_PRINTED (string)
-       The printed representation of the field value.  This argument
-
      FIELD_Type (Pk_Type)
-       A Pk_Type describing the type of the field value.  This argument
-       is calculated using formatters.
+       A Pk_Type describing the type of the field value.
 
      FIELD_NAME (string)
        The name of the field that was mapped.  If the field is
