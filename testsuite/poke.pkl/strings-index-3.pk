@@ -1,0 +1,5 @@
+/* { dg-do run } */
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {"foo"[0#KB]} } */
+/* { dg-output "0x66UB" } */

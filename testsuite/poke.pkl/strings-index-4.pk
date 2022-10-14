@@ -1,0 +1,5 @@
+/* { dg-do run } */
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {"foo"[2#N]} } */
+/* { dg-output "0x6fUB" } */

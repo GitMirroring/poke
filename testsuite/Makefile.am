@@ -756,6 +756,17 @@ EXTRA_DIST = \
   poke.pkl/arrays-index-1.pk \
   poke.pkl/arrays-index-2.pk \
   poke.pkl/arrays-index-3.pk \
+  poke.pkl/arrays-index-4.pk \
+  poke.pkl/arrays-index-5.pk \
+  poke.pkl/arrays-index-6.pk \
+  poke.pkl/arrays-index-7.pk \
+  poke.pkl/arrays-index-8.pk \
+  poke.pkl/arrays-index-9.pk \
+  poke.pkl/arrays-index-10.pk \
+  poke.pkl/arrays-index-11.pk \
+  poke.pkl/arrays-index-12.pk \
+  poke.pkl/arrays-index-13.pk \
+  poke.pkl/arrays-index-14.pk \
   poke.pkl/arrays-index-diag-1.pk \
   poke.pkl/arrays-index-diag-2.pk \
   poke.pkl/arrays-index-diag-3.pk \
@@ -2262,6 +2273,9 @@ EXTRA_DIST = \
   poke.pkl/strings-esc-diag-4.pk \
   poke.pkl/strings-index-1.pk \
   poke.pkl/strings-index-2.pk \
+  poke.pkl/strings-index-3.pk \
+  poke.pkl/strings-index-4.pk \
+  poke.pkl/strings-index-5.pk \
   poke.pkl/strings-index-diag-1.pk \
   poke.pkl/strings-index-diag-2.pk \
   poke.pkl/strings-index-diag-3.pk \

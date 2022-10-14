@@ -1161,7 +1161,10 @@ PKL_PHASE_END_HANDLER
 
 /* The type of an INDEXER is the type of the elements of the array
    it references.  If the referenced container is a string, the type
-   of the INDEXER is uint<8>.  */
+   of the INDEXER is uint<8>.
+
+   Also, the type of the index should be either integral or
+   offset.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_indexer)
 {
@@ -1201,13 +1204,14 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_indexer)
       }
     }
 
-  if (PKL_AST_TYPE_CODE (index_type) != PKL_TYPE_INTEGRAL)
+  if (PKL_AST_TYPE_CODE (index_type) != PKL_TYPE_INTEGRAL
+      && PKL_AST_TYPE_CODE (index_type) != PKL_TYPE_OFFSET)
     {
       char *type_str = pkl_type_str (index_type, 1);
 
       PKL_ERROR (PKL_AST_LOC (index),
                  "invalid index in array indexer\n"
-                 "expected integral, got %s",
+                 "expected integral or offset, got %s",
                  type_str);
       free (type_str);
       PKL_TYPIFY_PAYLOAD->errors++;

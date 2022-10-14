@@ -552,6 +552,61 @@ immutable fun _pkl_assert = (uint<64> cond, string msg, string filename,
     };
   }
 
+/* The following function implements the fast path of the aoref macro
+   in pkl-gen.pks.  Given an array whose elements have all the same
+   size, which is known at compile-time, and an offset, return the
+   element stored in the array at that exact offset.  If no such
+   element exists in the array then raise E_out_of_bounds.  */
+
+fun _pkl_aoref_complete = (any[] array, offset<uint<64>,1> idx,
+                           uint<64> elem_bsize) any:
+{
+  var len = array'length;
+
+  /* Corner case to avoid division by zero below.  */
+  if (elem_bsize == 0 && idx == 0#1 && len > 0)
+    return array'elem (0);
+
+  if (idx'magnitude % elem_bsize == 0)
+    return array'elem (idx'magnitude / elem_bsize);
+  raise E_out_of_bounds;
+}
+
+/* The following function implements the slow path of the aoref macro
+   in pkl-gen.pks.  Given an array and an offset, return the element
+   stored in the array at that exact offset.  If no such element exists
+   in the array then raise E_out_of_bounds.  */
+
+fun _pkl_aoref = (any[] array, offset<uint<64>,1> idx) any:
+{
+  var len = array'length;
+
+  for (var i = 0UL; i < len; ++i)
+    {
+      if (array'eoffset (i) > idx)
+        break;
+
+      if (array'eoffset (i) == idx)
+        return array'elem (i);
+    }
+
+  raise E_out_of_bounds;
+}
+
+/* The following function implements the stroref macro in pkl-gen.pks.
+   Given a string and an offset, return the character occupying the
+   position at the given offset in the string.  If the given offset is
+   past the end of the string or the offset is not byte-aligned then
+   raise E_out_of_bounds.  */
+
+fun _pkl_stroref = (string str, offset<uint<64>,1> idx) uint<8>:
+{
+  if (idx'magnitude % 8 != 0 || idx >= str'size)
+    raise E_out_of_bounds;
+
+  return str[idx'magnitude / 8];
+}
+
 /* The Pk_Type struct below describes the values returned by the
    `typeof' language construction.  This type is used in the compiler
    phases, so pretty please do not use `typeof' until the compiler has

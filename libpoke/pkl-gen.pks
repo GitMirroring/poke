@@ -3195,3 +3195,59 @@
         sset
         return
         .end
+
+;;; RAS_MACRO_AOREF @array_type @index_type
+;;; ( ARR IDX -- ARR IDX VAL )
+;;;
+;;; Generate code for indexing the array ARR by offset IDX.
+;;;
+;;; The offset in IDX should be of type offset<ulong<64>,1>.
+;;;
+;;; If there is not an element in ARR whose offset is _exactly_
+;;; IDX then the E_out_of_bounds exception is raised.
+;;;
+;;; Macro arguments:
+;;; @array_type
+;;;   AST node with the type of the array being indexed.
+;;; @index_type
+;;;   AST node with the type of the index, which must be
+;;;   an integer or an offset.
+
+        .macro aoref @array_type @index_type
+        .let @etype = PKL_AST_TYPE_A_ETYPE (@array_type)
+  .c if (PKL_AST_TYPE_COMPLETE (@etype) == PKL_AST_TYPE_COMPLETE_YES)
+  .c {
+        ;; If the size all the array elements is constant and known
+        ;; at compile-time, then we can just calculate the index
+        ;; corresponding to the given offset.
+        .let @esize = pkl_ast_sizeof_type (PKL_PASS_AST, @etype)
+  .c    assert (PKL_AST_CODE (@esize) == PKL_AST_INTEGER);
+        .let #esizeval = pvm_make_ulong (PKL_AST_INTEGER_VALUE (@esize), 64);
+        push #esizeval            ; ARR IDX ESIZE
+        .call _pkl_aoref_complete ; VAL
+  .c }
+  .c else
+  .c {
+        ;; Otherwise, slow path.
+        .call _pkl_aoref        ; VAL
+  .c }
+        .end
+
+;;; RAS_MACRO_STROREF @indexer_type
+;;; ( STR IDX -- STR IDX VAL )
+;;;
+;;; Generate code for indexing the array ARR by offset IDX.
+;;;
+;;; The offset in IDX should be of type offset<ulong<64>,1>.
+;;;
+;;; If the given offset is past the end of the string then the
+;;; E_out_of_bound exception is raised.
+;;;
+;;; Macro arguments:
+;;; @index_type
+;;;   AST node with the type of the index, which must be
+;;;   an integer or an offset.
+
+        .macro stroref @index_type
+        .call _pkl_stroref
+        .end

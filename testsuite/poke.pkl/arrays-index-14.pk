@@ -1,0 +1,7 @@
+/* { dg-do run } */
+
+type Empty = struct {};
+
+/* { dg-command {.set obase 10} } */
+/* { dg-command {[Empty{},Empty{},Empty{}][0#N]} } */
+/* { dg-output {Empty \{\}} } */

@@ -833,20 +833,41 @@ PKL_PHASE_BEGIN_HANDLER (pkl_promo_ps_op_unary)
 }
 PKL_PHASE_END_HANDLER
 
-/* Handler for promoting indexes in indexers to unsigned 64 bit
-   values.  */
+/* Handler for promoting integral indexes in indexers:
+
+   - Integral indexes are promoted to uint<64>.
+   - Offset indexes are promoted to offset<uint<64>,1>.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_promo_ps_indexer)
 {
   int restart;
   pkl_ast_node node = PKL_PASS_NODE;
+  pkl_ast_node index = PKL_AST_INDEXER_INDEX (node);
+  pkl_ast_node index_type = PKL_AST_TYPE (index);
 
-  if (!promote_integral (PKL_PASS_AST, 64, 0,
-                         &PKL_AST_INDEXER_INDEX (node), &restart))
+  if (PKL_AST_TYPE_CODE (index_type) == PKL_TYPE_INTEGRAL
+      && !promote_integral (PKL_PASS_AST, 64, 0,
+                            &PKL_AST_INDEXER_INDEX (node), &restart))
     {
       PKL_ICE (PKL_AST_LOC (node),
-               "couldn't promote indexer subscript");
+               "couldn't promote integral indexer subscript");
       PKL_PASS_ERROR;
+    }
+
+  if (PKL_AST_TYPE_CODE (index_type) == PKL_TYPE_OFFSET)
+    {
+      pkl_ast_node unit_bit = pkl_ast_make_integer (PKL_PASS_AST, 1);
+      unit_bit = ASTREF (unit_bit);
+
+      if (!promote_offset (PKL_PASS_AST, 64, 0, unit_bit,
+                           &PKL_AST_INDEXER_INDEX (node), &restart))
+        {
+          PKL_ICE (PKL_AST_LOC (node),
+                   "couldn't promote offset indexer subscript");
+          PKL_PASS_ERROR;
+        }
+
+      pkl_ast_node_free (unit_bit);
     }
 
   PKL_PASS_RESTART = restart;

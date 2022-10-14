@@ -1,3 +1,32 @@
+2022-10-31  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-typify.c (pkl_typify1_ps_indexer): Allow offsets as
+	indexes in indexers.
+	* libpoke/pkl-promo.c (pkl_promo_ps_indexer): Promote offset
+	indexes.
+	* libpoke/pkl-gen.c (pkl_gen_pr_indexer): Handle offset indexes.
+	* libpoke/pkl-gen.pks (aoref): New macro.
+	(stroref): Likewise.
+	* libpoke/pkl-rt.pk (_pkl_aoref): New function.
+	(_pkl_aoref_complete): Likewise.
+	* testsuite/poke.pkl/arrays-index-4.pk: New test.
+	* testsuite/poke.pkl/arrays-index-5.pk: Likewise.
+	* testsuite/poke.pkl/arrays-index-6.pk: Likewise.
+	* testsuite/poke.pkl/arrays-index-7.pk: Likewise.
+	* testsuite/poke.pkl/arrays-index-8.pk: Likewise.
+	* testsuite/poke.pkl/arrays-index-9.pk: Likewise.
+	* testsuite/poke.pkl/arrays-index-10.pk: Likewise.
+	* testsuite/poke.pkl/arrays-index-11.pk: Likewise.
+	* testsuite/poke.pkl/arrays-index-12.pk: Likewise.
+	* testsuite/poke.pkl/arrays-index-13.pk: Likewise.
+	* testsuite/poke.pkl/arrays-index-14.pk: Likewise.
+	* testsuite/poke.pkl/strings-index-3.pk: Likewise.
+	* testsuite/poke.pkl/strings-index-4.pk: likewise.
+	* testsuite/poke.pkl/strings-index-5.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+	* doc/poke.texi (Array Indexing): Document indexing by offset.
+	(String Indexing): Likewise.
+
 2022-10-30  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-tab.y: Make unary operators take precedence over AS

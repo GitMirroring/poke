@@ -718,8 +718,10 @@ pkl_ast_node pkl_ast_make_trimmer (pkl_ast ast,
 
    BASE must point to a PKL_AST_ARRAY node.
 
-   INDEX must point to an expression whose evaluation is the offset of
-   the element into the field, in units of the field's SIZE.
+   INDEX must point to an expression whose evaluation is either an
+   integer with the 0 base index of the indexed element, or an offset
+   indicating the exact offset from the beginning of the array to the
+   indexed element.
 
    IS_INDEXED is a boolean indicating whether the indexer is
    immediately indexed with another [] operator.  This is used in the

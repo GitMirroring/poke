@@ -10058,6 +10058,14 @@ unhandled out of bounds exception
 unhandled out of bounds exception
 @end example
 
+@noindent
+Poke also provides a way to refer to a character in a string by the
+offset the character occupies in the string.  This is done by using as
+index an expression that evaluates to an offset value.  This value is
+then implicitly promoted to have an unsigned 64-bit magnitude and unit
+bits whenever needed.  If no character starts @emph{exactly} at the
+provided offset then an @code{E_out_of_bounds} exception is raised.
+
 @node String Concatenation
 @subsection String Concatenation
 @cindex concatenation, strings
@@ -10544,12 +10552,15 @@ enclosed between square brackets with @code{[} and @code{]}:
 @example
 (poke) [1,2,3][0]
 1
-(poke) [1,2,3][1]
+(poke) [1,2,3][8#B]
 2
 @end example
 
-The index should be an expression that evaluates to an integer value,
-and it is promoted to an unsigned 64-bit integer when needed.
+@subsubsection Indexing an array by number of element
+
+Indexing by number of element is performed by providing as index an
+expression that evaluates to an integral value.  This value is then
+implicitly promoted to an unsigned 64-bit integer when needed.
 
 @cindex exceptions
 The valid range for the index is @code{[0,@var{n}]} where @var{n} is
@@ -10563,6 +10574,18 @@ unhandled out of bounds exception
 (poke) [1,2,3][3]
 unhandled out of bounds exception
 @end example
+
+@subsubsection Indexing an array by offset of element
+
+Poke also provides a way to refer to the element of an array by the
+offset where the element appears inside the array.  This is done by
+providing as index an expression that evaluates to an offset value.
+This value is then implicitly promoted to an offset with magnitude
+unsigned 64-bit integer and bit unit when needed.
+
+If there is not element in the indexed array that starts
+@emph{exactly} at the given offset then an @code{E_out_of_bounds}
+exception is raised.
 
 @node Array Trimming
 @subsection Array Trimming

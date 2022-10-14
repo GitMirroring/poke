@@ -1,0 +1,5 @@
+/* { dg-do run } */
+
+/* { dg-command {.set obase 10} } */
+/* { dg-command {try [1,2,3][16UB#N + 2#B]; catch if E_out_of_bounds { print "caught\n"; } } } */
+/* { dg-output "caught" } */

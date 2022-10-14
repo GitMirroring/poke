@@ -2661,12 +2661,19 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_indexer)
       pkl_ast_node indexer_type = PKL_AST_TYPE (indexer);
       pkl_ast_node container = PKL_AST_INDEXER_ENTITY (indexer);
       pkl_ast_node container_type = PKL_AST_TYPE (container);
+      pkl_ast_node index = PKL_AST_INDEXER_INDEX (indexer);
+      pkl_ast_node index_type = PKL_AST_TYPE (index);
 
       switch (PKL_AST_TYPE_CODE (container_type))
         {
         case PKL_TYPE_ARRAY:
-          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_AREF);
-          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP2);
+          if (PKL_AST_TYPE_CODE (index_type) == PKL_TYPE_INTEGRAL)
+            {
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_AREF);
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP2);
+            }
+          else
+            RAS_MACRO_AOREF (container_type, index_type);
 
           /* To cover cases where the referenced array is not mapped, but
              the value stored in it is a mapped value, we issue a
@@ -2690,8 +2697,13 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_indexer)
             }
           break;
         case PKL_TYPE_STRING:
-          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_STRREF);
-          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP2);
+          if (PKL_AST_TYPE_CODE (index_type) == PKL_TYPE_INTEGRAL)
+            {
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_STRREF);
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP2);
+            }
+          else
+            RAS_MACRO_STROREF (index_type);
           break;
         default:
           assert (0);
