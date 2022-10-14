@@ -2204,5 +2204,9 @@ pkl_asm_label (pkl_asm pasm, pvm_program_label label)
 void
 pkl_asm_from_string (pkl_asm pasm, const char *str)
 {
-  pvm_program_parse_from_string (str, pasm->program);
+  char *expanded_template
+    = pvm_program_expand_asm_template (str);
+
+  pvm_program_parse_from_string (expanded_template, pasm->program);
+  free (expanded_template);
 }

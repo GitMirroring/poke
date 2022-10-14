@@ -4534,9 +4534,9 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_asm_stmt)
       PKL_PASS_SUBPASS (input);
     }
 
-  /* Assembly the expanded asm template.  */
+  /* Assembly the sm template.  */
   pkl_asm_from_string (PKL_GEN_ASM,
-                       PKL_AST_ASM_STMT_EXPANDED_TEMPLATE (asm_stmt));
+                       PKL_AST_IDENTIFIER_POINTER (PKL_AST_ASM_STMT_TEMPLATE (asm_stmt)));
 
   /* Generate the output assignments.  */
   for (output = PKL_AST_ASM_STMT_OUTPUTS (asm_stmt);
@@ -4598,9 +4598,9 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_asm_exp)
       PKL_PASS_SUBPASS (input);
     }
 
-  /* Assembly the expanded asm template.  */
+  /* Assembly the asm template.  */
   pkl_asm_from_string (PKL_GEN_ASM,
-                       PKL_AST_ASM_EXP_EXPANDED_TEMPLATE (asm_exp));
+                       PKL_AST_IDENTIFIER_POINTER (PKL_AST_ASM_EXP_TEMPLATE (asm_exp)));
 
   /* If the output on the stack is PVM_NULL then raise E_stack.  */
   pvm_program_label output_ok_label = pkl_asm_fresh_label (PKL_GEN_ASM);

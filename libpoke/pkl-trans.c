@@ -1827,36 +1827,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans2_ps_ass_stmt)
 }
 PKL_PHASE_END_HANDLER
 
-/* Expand the assembler template in an asm statement.  */
-
-PKL_PHASE_BEGIN_HANDLER (pkl_trans2_ps_asm_stmt)
-{
-  pkl_ast_node asm_stmt = PKL_PASS_NODE;
-  pkl_ast_node asm_stmt_template = PKL_AST_ASM_STMT_TEMPLATE (asm_stmt);
-
-  if (PKL_AST_ASM_STMT_EXPANDED_TEMPLATE (asm_stmt) != NULL)
-    PKL_PASS_DONE;
-
-  PKL_AST_ASM_STMT_EXPANDED_TEMPLATE (asm_stmt)
-    = pvm_program_expand_asm_template (PKL_AST_IDENTIFIER_POINTER (asm_stmt_template));
-}
-PKL_PHASE_END_HANDLER
-
-/* Expand the assembler template in an asm expression.  */
-
-PKL_PHASE_BEGIN_HANDLER (pkl_trans2_ps_asm_exp)
-{
-  pkl_ast_node asm_exp = PKL_PASS_NODE;
-  pkl_ast_node asm_exp_template = PKL_AST_ASM_EXP_TEMPLATE (asm_exp);
-
-  if (PKL_AST_ASM_EXP_EXPANDED_TEMPLATE (asm_exp) != NULL)
-    PKL_PASS_DONE;
-
-  PKL_AST_ASM_EXP_EXPANDED_TEMPLATE (asm_exp)
-    = pvm_program_expand_asm_template (PKL_AST_IDENTIFIER_POINTER (asm_exp_template));
-}
-PKL_PHASE_END_HANDLER
-
 struct pkl_phase pkl_phase_trans2 =
   {
    PKL_PHASE_PS_HANDLER (PKL_AST_SRC, pkl_trans_ps_src),
@@ -1871,8 +1841,6 @@ struct pkl_phase pkl_phase_trans2 =
    PKL_PHASE_PS_HANDLER (PKL_AST_CAST, pkl_trans2_ps_cast),
    PKL_PHASE_PS_HANDLER (PKL_AST_INCRDECR, pkl_trans2_ps_incrdecr),
    PKL_PHASE_PS_HANDLER (PKL_AST_ASS_STMT, pkl_trans2_ps_ass_stmt),
-   PKL_PHASE_PS_HANDLER (PKL_AST_ASM_STMT, pkl_trans2_ps_asm_stmt),
-   PKL_PHASE_PS_HANDLER (PKL_AST_ASM_EXP, pkl_trans2_ps_asm_exp),
    PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_OFFSET, pkl_trans2_ps_type_offset),
    PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT_TYPE_FIELD, pkl_trans2_ps_struct_type_field),
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_ATTR, pkl_trans2_ps_op_attr),

@@ -1,0 +1,5 @@
+/* { dg-do compile } */
+
+var s = "foo";
+
+asm int<32>: (s + "bar"); /* { dg-error "constant" } */

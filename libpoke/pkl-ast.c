@@ -2535,7 +2535,6 @@ pkl_ast_node_free (pkl_ast_node ast)
 
       pkl_ast_node_free (PKL_AST_ASM_EXP_TYPE (ast));
       pkl_ast_node_free (PKL_AST_ASM_EXP_TEMPLATE (ast));
-      free (PKL_AST_ASM_EXP_EXPANDED_TEMPLATE (ast));
 
       for (t = PKL_AST_ASM_EXP_INPUTS (ast); t; t = n)
         {
@@ -2655,7 +2654,6 @@ pkl_ast_node_free (pkl_ast_node ast)
 
     case PKL_AST_ASM_STMT:
       pkl_ast_node_free (PKL_AST_ASM_STMT_TEMPLATE (ast));
-      free (PKL_AST_ASM_STMT_EXPANDED_TEMPLATE (ast));
 
       for (t = PKL_AST_ASM_STMT_INPUTS (ast); t; t = n)
         {
@@ -3365,7 +3363,6 @@ pkl_ast_print_1 (FILE *fp, pkl_ast_node ast, int indent)
       PRINT_COMMON_FIELDS;
       PRINT_AST_SUBAST (type, ASM_EXP_TYPE);
       PRINT_AST_SUBAST (template, ASM_EXP_TEMPLATE);
-      PRINT_AST_IMM (expanded_template, ASM_EXP_EXPANDED_TEMPLATE, "%s");
       PRINT_AST_SUBAST_CHAIN (ASM_EXP_INPUTS);
       break;
 
@@ -3516,7 +3513,6 @@ pkl_ast_print_1 (FILE *fp, pkl_ast_node ast, int indent)
       IPRINTF ("ASM_STMT::\n");
 
       PRINT_COMMON_FIELDS;
-      PRINT_AST_IMM (expanded_template, ASM_STMT_EXPANDED_TEMPLATE, "%s");
       PRINT_AST_SUBAST (asm_stmt_template, ASM_STMT_TEMPLATE);
       PRINT_AST_SUBAST (asm_stmt_inputs, ASM_STMT_INPUTS);
       PRINT_AST_SUBAST (asm_stmt_outputs, ASM_STMT_OUTPUTS);

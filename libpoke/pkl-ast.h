@@ -1528,15 +1528,11 @@ pkl_ast_node pkl_ast_make_lambda (pkl_ast ast, pkl_ast_node function);
 
    INPUTS is a chain of expressions.  The result of these expressions
    will be pushed in the stack in the given order before executing
-   TEMPLATE.
-
-   EXPANDED_TEMPLATE contains a processed version of TEMPLATE that is
-   ready to be compiled in the PVM.  */
+   TEMPLATE.  */
 
 #define PKL_AST_ASM_EXP_TEMPLATE(AST) ((AST)->asm_exp.template)
 #define PKL_AST_ASM_EXP_TYPE(AST) ((AST)->asm_exp.type)
 #define PKL_AST_ASM_EXP_INPUTS(AST) ((AST)->asm_exp.inputs)
-#define PKL_AST_ASM_EXP_EXPANDED_TEMPLATE(AST) ((AST)->asm_exp.expanded_template)
 
 struct pkl_ast_asm_exp
 {
@@ -1545,7 +1541,6 @@ struct pkl_ast_asm_exp
   union pkl_ast_node *template;
   union pkl_ast_node *type;
   union pkl_ast_node *inputs;
-  char *expanded_template;
 };
 
 pkl_ast_node pkl_ast_make_asm_exp (pkl_ast ast, pkl_ast_node type,
@@ -1990,15 +1985,11 @@ pkl_ast_node pkl_ast_make_raise_stmt (pkl_ast ast, pkl_ast_node exp);
 
    OUTPUTS is a chain of l-values.  The same number of values on the
    stack will be assigned to them after executing TEMPLATE, in reverse
-   order.
-
-   EXPANDED_TEMPLATE contains a processed version of TEMPLATE that is
-   ready to be compiled in the PVM.  */
+   order.  */
 
 #define PKL_AST_ASM_STMT_TEMPLATE(AST) ((AST)->asm_stmt.template)
 #define PKL_AST_ASM_STMT_INPUTS(AST) ((AST)->asm_stmt.inputs)
 #define PKL_AST_ASM_STMT_OUTPUTS(AST) ((AST)->asm_stmt.outputs)
-#define PKL_AST_ASM_STMT_EXPANDED_TEMPLATE(AST) ((AST)->asm_stmt.expanded_template)
 
 struct pkl_ast_asm_stmt
 {
@@ -2007,8 +1998,6 @@ struct pkl_ast_asm_stmt
   union pkl_ast_node *template;
   union pkl_ast_node *inputs;
   union pkl_ast_node *outputs;
-
-  char *expanded_template;
 };
 
 pkl_ast_node pkl_ast_make_asm_stmt (pkl_ast ast, pkl_ast_node template,

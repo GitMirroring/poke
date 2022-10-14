@@ -1,5 +1,18 @@
 2022-10-14  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-ast.h (PKL_AST_ASM_STMT_EXPANDED_TEMPLATE): Likewise.
+	(PKL_AST_ASM_EXP_EXPANDED_TEMPLATE): Remove.
+	* libpoke/pkl-ast.c: Remove expanded_template.
+	* libpoke/pkl-trans.c (pkl_trans2_ps_asm_stmt): Remove handler.
+	(pkl_trans2_ps_asm_exp): Likewise.
+	* libpoke/pkl-asm.c (pkl_asm_from_string): Expand the given
+	template before assembling.
+	* testsuite/poke.pkl/asm-exp-diag-5.pk: New test.
+	* testsuite/poke.pkl/asm-stmt-diag-5.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+
+2022-10-14  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/libpoke.h (PK_PRINT_F_MAPS): Remove.
 	(PK_PRINT_F_PPRINT): Likewise.
 	(pk_print_val_with_params): Remove function prototype.

@@ -748,6 +748,7 @@ EXTRA_DIST = \
   poke.pkl/asm-exp-diag-2.pk \
   poke.pkl/asm-exp-diag-3.pk \
   poke.pkl/asm-exp-diag-4.pk \
+  poke.pkl/asm-exp-diag-5.pk \
   poke.pkl/asm-stmt-1.pk \
   poke.pkl/asm-stmt-2.pk \
   poke.pkl/asm-stmt-3.pk \
@@ -758,6 +759,7 @@ EXTRA_DIST = \
   poke.pkl/asm-stmt-diag-2.pk \
   poke.pkl/asm-stmt-diag-3.pk \
   poke.pkl/asm-stmt-diag-4.pk \
+  poke.pkl/asm-stmt-diag-5.pk \
   poke.pkl/array-integ-1.pk \
   poke.pkl/array-integ-2.pk \
   poke.pkl/array-integ-3.pk \
