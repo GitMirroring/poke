@@ -83,6 +83,9 @@ COMMENT          "#".*(\n|\r)
 "BYTESPERWORD"            { return BYTESPERWORD; }
 "LGBYTESPERWORD"          { return LGBYTESPERWORD; }
 "BITSPERWORD"             { return BITSPERWORD; }
+"JITTER_INT_MIN"          { return JITTER_INT_MIN_; }
+"JITTER_INT_MAX"          { return JITTER_INT_MAX_; }
+"JITTER_UINT_MAX"         { return JITTER_UINT_MAX_; }
 {IDENTIFIER}              { return INSTRUCTION_NAME; }
 {LABEL_PREFIX}{IDENTIFIER}    { return LABEL_LITERAL; }
 {LABEL_PREFIX}{IDENTIFIER}":" { return LABEL; }

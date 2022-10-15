@@ -245,6 +245,7 @@
 %token UNSIGNED_BINARY_LITERAL UNSIGNED_OCTAL_LITERAL UNSIGNED_DECIMAL_LITERAL
 %token UNSIGNED_HEXADECIMAL_LITERAL
 %token BYTESPERWORD LGBYTESPERWORD BITSPERWORD
+%token JITTER_INT_MIN_ JITTER_INT_MAX_ JITTER_UINT_MAX_
 %token PLUS MINUS TIMES DIV MOD
 %token UNSIGNED_PLUS UNSIGNED_MINUS UNSIGNED_TIMES UNSIGNED_DIV UNSIGNED_MOD
 
@@ -322,6 +323,9 @@ int_expression :
 | BYTESPERWORD                { $$.ufixnum = JITTER_SIZEOF_VOID_P; }
 | LGBYTESPERWORD              { $$.ufixnum = JITTER_LG_BYTES_PER_WORD; }
 | BITSPERWORD                 { $$.ufixnum = JITTER_SIZEOF_VOID_P * CHAR_BIT; }
+| JITTER_INT_MIN_             { $$.fixnum = JITTER_INT_MIN; }
+| JITTER_INT_MAX_             { $$.fixnum = JITTER_INT_MAX; }
+| JITTER_UINT_MAX_            { $$.ufixnum = JITTER_UINT_MAX; }
 | OPEN_PARENS int_expression CLOSE_PARENS { $$ = $2; }
 | int_expression PLUS int_expression
      { JITTER_SET_OPERATION(fixnum, $$, $1, +, $3); }
