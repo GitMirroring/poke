@@ -1,3 +1,15 @@
+2022-10-15  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-gen.pks (array_mapper): Install the sbound in the
+	new array type as an offset and not a bit-offset.
+	(array_constructor): Likewise, and do not traverse the array type
+	IN_TYPE to actually get a bounder.
+	* testsuite/poke.pkl/array-bound-1.pk: New test.
+	* testsuite/poke.pkl/array-bound-4.pk: Likewise.
+	* testsuite/poke.pkl/array-bound-3.pk: Likewise.
+	* testsuite/poke.pkl/array-bound-2.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+
 2022-10-14  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* doc/gen-pvm-insns.sh: s/egrep/grep -E/g.
