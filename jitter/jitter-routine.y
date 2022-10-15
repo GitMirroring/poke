@@ -150,6 +150,25 @@
     }                                                                      \
   while (false)
 
+
+static jitter_int
+jitter_power (jitter_int base, jitter_int exponent)
+{
+  if (exponent < 0)
+    return 1;
+  jitter_int res = 1;
+  for (; exponent > 0; exponent --)
+    res *= base;
+  return res;
+}
+static jitter_uint
+jitter_upower (jitter_uint base, jitter_uint exponent)
+{
+  jitter_uint res = 1;
+  for (; exponent > 0; exponent --)
+    res *= base;
+  return res;
+}
 %}
 
 /* We need a recent enough version of GNU Bison. */
@@ -246,8 +265,13 @@
 %token UNSIGNED_HEXADECIMAL_LITERAL
 %token BYTESPERWORD LGBYTESPERWORD BITSPERWORD
 %token JITTER_INT_MIN_ JITTER_INT_MAX_ JITTER_UINT_MAX_
-%token PLUS MINUS TIMES DIV MOD
-%token UNSIGNED_PLUS UNSIGNED_MINUS UNSIGNED_TIMES UNSIGNED_DIV UNSIGNED_MOD
+
+/* Lowest precedence... */
+%left UNSIGNED_MINUS UNSIGNED_NOT UNSIGNED_PLUS UNSIGNED_OR UNSIGNED_XOR
+%left UNSIGNED_AND TIMES UNSIGNED_TIMES DIV UNSIGNED_DIV MOD UNSIGNED_MOD
+%precedence PREFIX_NEGATION
+%right POWER UNSIGNED_POWER
+/* ...Highest precedence */
 
 /* This of course never occurs in the grammar and therefore causes a parse error
    when encountered; the token is returned by the scanner when if fails to
@@ -255,9 +279,7 @@
    errors. */
 %token INVALID_TOKEN
 
-%expect 100 /* FIXME: handle precedence and associativity.  Those shift/reduce
-               conflicts should only come from expressions, unless something
-               quite big escaped my attention. */
+%expect 0
 %type <literal> int_expression
 
 %%
@@ -327,10 +349,9 @@ int_expression :
 | JITTER_INT_MAX_             { $$.fixnum = JITTER_INT_MAX; }
 | JITTER_UINT_MAX_            { $$.ufixnum = JITTER_UINT_MAX; }
 | OPEN_PARENS int_expression CLOSE_PARENS { $$ = $2; }
-| int_expression PLUS int_expression
-     { JITTER_SET_OPERATION(fixnum, $$, $1, +, $3); }
-| int_expression MINUS int_expression
-     { JITTER_SET_OPERATION(fixnum, $$, $1, -, $3); }
+| UNSIGNED_MINUS int_expression %prec PREFIX_NEGATION
+     { union jitter_word zero = {.ufixnum = 0};
+       JITTER_SET_OPERATION(ufixnum, $$, zero, -, $2); }
 | int_expression TIMES int_expression
      { JITTER_SET_OPERATION(fixnum, $$, $1, *, $3); }
 | int_expression DIV int_expression
@@ -347,6 +368,19 @@ int_expression :
      { JITTER_SET_OPERATION(fixnum, $$, $1, /, $3); }
 | int_expression UNSIGNED_MOD int_expression
      { JITTER_SET_OPERATION(fixnum, $$, $1, %, $3); }
+| UNSIGNED_NOT int_expression %prec PREFIX_NEGATION
+     { union jitter_word minus_one = {.fixnum = -1L};
+       JITTER_SET_OPERATION(ufixnum, $$, $2, ^, minus_one); }
+| int_expression UNSIGNED_AND int_expression
+     { JITTER_SET_OPERATION(ufixnum, $$, $1, &, $3); }
+| int_expression UNSIGNED_OR int_expression
+     { JITTER_SET_OPERATION(ufixnum, $$, $1, |, $3); }
+| int_expression UNSIGNED_XOR int_expression
+     { JITTER_SET_OPERATION(ufixnum, $$, $1, ^, $3); }
+| int_expression POWER int_expression
+     { $$.fixnum = jitter_power ($1.fixnum, $3.fixnum); }
+| int_expression UNSIGNED_POWER int_expression
+     { $$.ufixnum = jitter_upower ($1.ufixnum, $3.ufixnum); }
 ;
 
 argument :

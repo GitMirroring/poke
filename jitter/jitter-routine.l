@@ -1,7 +1,7 @@
 /* VM-independent routine code frontend: flex scanner.
 
    Copyright (C) 2016, 2017 Luca Saiu
-   Updated in 2019 and 2020 by Luca Saiu
+   Updated in 2019, 2020 and 2022 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -68,16 +68,20 @@ COMMENT          "#".*(\n|\r)
 {DECIMAL_INTEGER}[uU]     { return UNSIGNED_DECIMAL_LITERAL; }
 {HEXADECIMAL_INTEGER}[uU] { return UNSIGNED_HEXADECIMAL_LITERAL; }
 {REGISTER}                { return REGISTER; }
-"+"                       { return PLUS; }
-"-"                       { return MINUS; }
+"**"                      { return POWER; }
 "*"                       { return TIMES; }
 "/"                       { return DIV; }
 "%"                       { return MOD; }
-"+"[uU]                   { return UNSIGNED_PLUS; }
-"-"[uU]                   { return UNSIGNED_MINUS; }
+"**"[uU]                  { return UNSIGNED_POWER; }
+"+"[uU]?                  { return UNSIGNED_PLUS; }
+"-"[uU]?                  { return UNSIGNED_MINUS; }
 "*"[uU]                   { return UNSIGNED_TIMES; }
 "/"[uU]                   { return UNSIGNED_DIV; }
 "%"[uU]                   { return UNSIGNED_MOD; }
+"~"[uU]?                  { return UNSIGNED_NOT; }
+"&"[uU]?                  { return UNSIGNED_AND; }
+"|"[uU]?                  { return UNSIGNED_OR; }
+"^"[uU]?                  { return UNSIGNED_XOR; }
 "("                       { return OPEN_PARENS; }
 ")"                       { return CLOSE_PARENS; }
 "BYTESPERWORD"            { return BYTESPERWORD; }
