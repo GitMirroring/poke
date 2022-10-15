@@ -1,7 +1,6 @@
 /* Jitter: VM-independent library.
 
-   Copyright (C) 2016, 2017, 2019, 2020, 2021 Luca Saiu
-   Updated in 2022 by Luca Saiu
+   Copyright (C) 2016, 2017, 2019, 2020, 2021, 2022 Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -68,29 +67,49 @@
    signed and unsigned; also define the format strings, JITTER_PRIi ,
    JITTER_PRIu , JITTER_PRIo and JITTER_PRIx to be used with printf and scanf
    for those types, in the style of PRIi64 , PRIu64 , PRIo64 and PRIx64 . */
-#if JITTER_WORD_BIT_NO == 16
+#if JITTER_WORD_CHAR_NO == JITTER_SIZEOF_SHORT
   /* This will not happen on GNU, but one check costs almost nothing. */
-  typedef int16_t  jitter_int;
-  typedef uint16_t jitter_uint;
-# define JITTER_PRIi PRIi16
-# define JITTER_PRIu PRIu16
-# define JITTER_PRIo PRIo16
-# define JITTER_PRIx PRIx16
-#elif JITTER_WORD_BIT_NO == 32
-  typedef int32_t  jitter_int;
-  typedef uint32_t jitter_uint;
-# define JITTER_PRIi PRIi32
-# define JITTER_PRIu PRIu32
-# define JITTER_PRIo PRIo32
-# define JITTER_PRIx PRIx32
-#elif JITTER_WORD_BIT_NO == 64
-  typedef int64_t  jitter_int;
-  typedef uint64_t jitter_uint;
-# define JITTER_PRIi PRIi64
-# define JITTER_PRIu PRIu64
-# define JITTER_PRIo PRIo64
-# define JITTER_PRIx PRIx64
+  typedef short  jitter_int;
+  typedef unsigned short  jitter_uint;
+# define JITTER_PRIi     "hi"
+# define JITTER_PRIu     "hu"
+# define JITTER_PRIo     "ho"
+# define JITTER_PRIx     "hx"
+# define JITTER_INT_MIN  SHRT_MIN
+# define JITTER_INT_MAX  SHRT_MAX
+# define JITTER_UINT_MAX USHRT_MAX
+#elif JITTER_WORD_CHAR_NO == JITTER_SIZEOF_INT
+  typedef int  jitter_int;
+  typedef unsigned int  jitter_uint;
+# define JITTER_PRIi     "i"
+# define JITTER_PRIu     "u"
+# define JITTER_PRIo     "o"
+# define JITTER_PRIx     "x"
+# define JITTER_INT_MIN  INT_MIN
+# define JITTER_INT_MAX  INT_MAX
+# define JITTER_UINT_MAX UINT_MAX
+#elif JITTER_WORD_CHAR_NO == JITTER_SIZEOF_LONG
+  typedef long  jitter_int;
+  typedef unsigned long  jitter_uint;
+# define JITTER_PRIi     "li"
+# define JITTER_PRIu     "lu"
+# define JITTER_PRIo     "lo"
+# define JITTER_PRIx     "lx"
+# define JITTER_INT_MIN  LONG_MIN
+# define JITTER_INT_MAX  LONG_MAX
+# define JITTER_UINT_MAX ULONG_MAX
+#elif defined (JITTER_HAVE_LONG_LONG_INT)                  \
+      && (JITTER_WORD_CHAR_NO == JITTER_SIZEOF_LONG_LONG)
+  typedef long long  jitter_int;
+  typedef unsigned long long  jitter_uint;
 #else
+# define JITTER_PRIi     "lli"
+# define JITTER_PRIu     "llu"
+# define JITTER_PRIo     "llo"
+# define JITTER_PRIx     "llx"
+# define JITTER_INT_MIN  LLONG_MIN
+# define JITTER_INT_MAX  LLONG_MAX
+# define JITTER_UINT_MAX ULLONG_MAX
 # error "can't find a word-sized integer type."
 #endif // #if    (JITTER_SIZEOF_VOID_P == ...)
 
