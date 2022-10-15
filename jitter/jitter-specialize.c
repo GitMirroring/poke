@@ -1,6 +1,6 @@
 /* VM library: specializer.
 
-   Copyright (C) 2016, 2017, 2018, 2019, 2020 Luca Saiu
+   Copyright (C) 2016, 2017, 2018, 2019, 2020, 2022 Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -84,7 +84,7 @@ jitter_destroy_executable_routine (struct jitter_executable_routine *er)
   /* Destroy heap-allocated fields reachable from the compiled routine. */
 #if   (defined(JITTER_DISPATCH_SWITCH)                \
        || defined(JITTER_DISPATCH_DIRECT_THREADING))
-  free (er->specialized_program);
+  free (er->specialized_routine);
 #elif (defined(JITTER_DISPATCH_MINIMAL_THREADING)  \
        || defined(JITTER_DISPATCH_NO_THREADING))
   jitter_executable_deallocate (er->native_code);
@@ -147,9 +147,9 @@ jitter_add_specialized_instruction_opcode
     jitter_uint specialized_opcode)
 {
   // FIXME: this comment is probably obsolete.
-  /* Without replication p->specialized_program holds direct-threaded code (each
+  /* Without replication p->specialized_routine holds direct-threaded code (each
      VM thread followed by its zero or more residual arguments); without
-     replication p->specialized_program does *not* hold threads, but only
+     replication p->specialized_routine does *not* hold threads, but only
      residual arguments.
 
      In either case we push a new element onto p->replicated_blocks , which is
@@ -167,7 +167,7 @@ jitter_add_specialized_instruction_opcode
 # else
 #   error "replication enabled, but not switch nor direct-threading"
 # endif// #if defined(JITTER_DISPATCH_SWITCH)...
-  jitter_dynamic_buffer_push (& p->specialized_program, & w, sizeof (w));
+  jitter_dynamic_buffer_push (& p->specialized_routine, & w, sizeof (w));
 #endif // #ifndef JITTER_REPLICATE
 }
 
@@ -178,7 +178,7 @@ jitter_add_specialized_instruction_literal (struct jitter_mutable_routine *p,
   // fprintf (stderr, "Adding specialized instruction literal %i\n", (int)literal);
   // FIXME: this will need generalization once more literal kinds are supported.
   union jitter_word w = {.ufixnum = literal};
-  jitter_dynamic_buffer_push (& p->specialized_program, & w, sizeof (w));
+  jitter_dynamic_buffer_push (& p->specialized_routine, & w, sizeof (w));
 }
 
 void
@@ -188,11 +188,11 @@ jitter_add_specialized_instruction_label_index (struct jitter_mutable_routine *p
 {
   // fprintf (stderr, "Adding specialized instruction label_index %i\n", (int)unspecialized_instruction_index);
   jitter_int next_word_index
-    = jitter_dynamic_buffer_size (& p->specialized_program)
+    = jitter_dynamic_buffer_size (& p->specialized_routine)
       / sizeof (jitter_int);
   union jitter_word w
     = {.ufixnum  = unspecialized_instruction_index};
-  jitter_dynamic_buffer_push (& p->specialized_program, & w, sizeof (w));
+  jitter_dynamic_buffer_push (& p->specialized_routine, & w, sizeof (w));
   jitter_dynamic_buffer_push (& p->specialized_label_indices,
                               & next_word_index, sizeof (jitter_int));
 }
@@ -200,8 +200,8 @@ jitter_add_specialized_instruction_label_index (struct jitter_mutable_routine *p
 static void
 jitter_backpatch_labels_in_specialized_routine (struct jitter_mutable_routine *p)
 {
-  union jitter_word *specialized_program
-    = jitter_dynamic_buffer_to_pointer (& p->specialized_program);
+  union jitter_word *specialized_routine
+    = jitter_dynamic_buffer_to_pointer (& p->specialized_routine);
   const jitter_int *specialized_label_indices
     = jitter_dynamic_buffer_to_pointer (& p->specialized_label_indices);
   const jitter_int * const instruction_index_to_specialized_instruction_offset
@@ -214,10 +214,10 @@ jitter_backpatch_labels_in_specialized_routine (struct jitter_mutable_routine *p
   for (i = 0; i < specialized_label_indices_no; i ++)
     {
       union jitter_word *argument
-        = specialized_program + specialized_label_indices[i];
+        = specialized_routine + specialized_label_indices[i];
       argument->pointer
         = (union jitter_word *)
-          ((char*)specialized_program
+          ((char*)specialized_routine
            + instruction_index_to_specialized_instruction_offset
              [argument->ufixnum]);
     }
@@ -323,7 +323,7 @@ jitter_make_executable_routine (struct jitter_mutable_routine *p)
          superinstructions.  Also notice that the next generated native instructions
          might belong to a translation of BEGINBASICBLOCK . */
       p->instruction_index_to_specialized_instruction_offset [instruction_index]
-        = jitter_dynamic_buffer_size (& p->specialized_program);
+        = jitter_dynamic_buffer_size (& p->specialized_routine);
 
 #ifdef JITTER_REPLICATE
       /* See the comment above about BEGINBASICBLOCK . */
@@ -334,7 +334,7 @@ jitter_make_executable_routine (struct jitter_mutable_routine *p)
       /* Specialize the next instruction, obtaining as result the number of
          unspecialized instructions covered by the one specialized instruction
          they are translated into.  This adds as many words as needed to
-         p->specialized_program . */
+         p->specialized_routine . */
       instruction_index += specialize_instruction (p, next_instruction);
     }
 
@@ -365,12 +365,12 @@ jitter_make_executable_routine (struct jitter_mutable_routine *p)
   /* Transfer the relevant fields from the non-executable routine to the
      executable routine, invalidating the originals to avoid double freeing. */
 
-  /* Set the specialized_program field, where it exists. */
+  /* Set the specialized_routine field, where it exists. */
 #if (defined(JITTER_DISPATCH_SWITCH)                 \
      || defined(JITTER_DISPATCH_DIRECT_THREADING)    \
      || defined(JITTER_DISPATCH_MINIMAL_THREADING))
-  res->specialized_program
-    = jitter_dynamic_buffer_extract (& p->specialized_program);
+  res->specialized_routine
+    = jitter_dynamic_buffer_extract (& p->specialized_routine);
 #elif defined(JITTER_DISPATCH_NO_THREADING)
   /* Nothing. */
 #else

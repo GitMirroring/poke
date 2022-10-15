@@ -1,7 +1,7 @@
 /* Jitter: VM-independent instruction implementation.
 
    Copyright (C) 2016, 2017 Luca Saiu
-   Updated in 2020 by Luca Saiu
+   Updated in 2020 and 2022 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -36,12 +36,12 @@
 
 const struct jitter_meta_instruction*
 jitter_lookup_meta_instruction (const struct jitter_hash_table *hash,
-                                  const char *name)
+                                const char *name)
 {
-  if (! jitter_string_hash_table_has (hash, name))
-    jitter_fatal ("invalid instruction name \"%s\"", name);
-
-  return jitter_string_hash_table_get (hash, name).pointer_to_void;
+  if (jitter_string_hash_table_has (hash, name))
+    return jitter_string_hash_table_get (hash, name).pointer_to_void;
+  else
+    return NULL;
 }
 
 void
@@ -119,7 +119,9 @@ jitter_make_instruction_parameter (void)
   /* Initialize the whole memory to a fixed pattern, before setting fields.
      This may be important, since we compare parameters with memcmp and
      therefore the memory content must be entirely deterministic, including
-     any unused part of the union. */
+     any unused part of the union.  We also want to be able to clone routines
+     including their instructions, so "uninitialised" just means one special
+     pattern. */
   memset (res, 0, sizeof (struct jitter_parameter));
 
   /* Try and prevent distraction mistakes by making the type field invalid. */

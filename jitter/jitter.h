@@ -428,7 +428,7 @@ problems.  See the source code for more information."
      to the beginning of the specialized routine array. */
 # define JITTER_EXECUTABLE_ROUTINE_BEGINNING(_jitter_executable_routine_ptr)  \
     ((jitter_program_point)                                                   \
-     ((_jitter_executable_routine_ptr)->specialized_program))
+     ((_jitter_executable_routine_ptr)->specialized_routine))
 #endif // ifdef JITTER_DISPATCH_NO_THREADING
 
 

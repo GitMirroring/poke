@@ -1,6 +1,7 @@
 /* VM library: native code disassembler.
 
    Copyright (C) 2017, 2019, 2020, 2021 Luca Saiu
+   Updated in 2022 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -533,9 +534,9 @@ jitter_executable_routine_disassemble (jitter_print_context f,
 #if   (defined(JITTER_DISPATCH_SWITCH)                 \
        || defined(JITTER_DISPATCH_DIRECT_THREADING)    \
        || defined(JITTER_DISPATCH_MINIMAL_THREADING))
-    = (const union jitter_word *) er->specialized_program;
+    = (const union jitter_word *) er->specialized_routine;
 #elif defined(JITTER_DISPATCH_NO_THREADING)
-    = jitter_dynamic_buffer_to_const_pointer (& p->specialized_program);
+    = jitter_dynamic_buffer_to_const_pointer (& p->specialized_routine);
 #else
 # error "unknown dispatch: this should not happen"
 #endif /* dispatch */

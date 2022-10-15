@@ -85,7 +85,7 @@ struct jitter_executable_routine
 #if   (defined(JITTER_DISPATCH_SWITCH)                 \
        || defined(JITTER_DISPATCH_DIRECT_THREADING)    \
        || defined(JITTER_DISPATCH_MINIMAL_THREADING))
-  union jitter_specialized_word *specialized_program;
+  union jitter_specialized_word *specialized_routine;
 #elif defined(JITTER_DISPATCH_NO_THREADING)
   /* Nothing. */
 #elif ! defined (JITTER_INTERNAL)
@@ -176,7 +176,7 @@ enum jitter_specialized_instruction_opcode
     jitter_specialized_instruction_opcode_PRETENDTOJUMPANYWHERE = 7,
   };
 
-/* Add an opcode to the specialized program which is being built.  This is an
+/* Add an opcode to the specialised routine which is being built.  This is an
    auxiliary function used by vmprefix_specialize_instruction .  The opcode type
    should actually be the VM-dependent enum
    vmprefix_specialized_instruction_opcode , but it's safe to use a sufficiently
@@ -188,13 +188,13 @@ jitter_add_specialized_instruction_opcode
        the type is VM-dependent. */
     jitter_uint opcode);
 
-/* Add a fixnum literal to the specialized program which is being built.  This
+/* Add a fixnum literal to the specialised routine which is being built.  This
    is an auxiliary function used by vmprefix_specialize_instruction . */
 void
 jitter_add_specialized_instruction_literal (struct jitter_mutable_routine *p,
                                             jitter_uint literal);
 
-/* Add a label literal (as an instruction index) to the specialized program
+/* Add a label literal (as an instruction index) to the specialised routine
    which is being built.  This is an auxiliary function used by
    vmprefix_specialize_instruction . */
 void

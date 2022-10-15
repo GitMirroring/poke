@@ -1,6 +1,6 @@
 /* Jitter: VM-independent mutable routine data structures.
 
-   Copyright (C) 2016, 2017, 2018, 2019, 2020 Luca Saiu
+   Copyright (C) 2016, 2017, 2018, 2019, 2020, 2022 Luca Saiu
    Updated in 2021 by Luca Saiu
    Written by Luca Saiu
 
@@ -135,7 +135,7 @@ jitter_initialize_routine (struct jitter_mutable_routine *p)
   p->jump_targets = NULL;
   p->instruction_index_to_specialized_instruction_offset = NULL;
 
-  jitter_dynamic_buffer_initialize (& p->specialized_program);
+  jitter_dynamic_buffer_initialize (& p->specialized_routine);
   jitter_dynamic_buffer_initialize (& p->replicated_blocks);
   p->native_code = NULL;
   jitter_dynamic_buffer_initialize (& p->specialized_label_indices);
@@ -168,9 +168,9 @@ jitter_finalize_routine (struct jitter_mutable_routine *p)
   if (p->instruction_index_to_specialized_instruction_offset != NULL)
     free (p->instruction_index_to_specialized_instruction_offset);
 
-  /* The specialized_program field may have been extracted, if this routine has
+  /* The specialized_routine field may have been extracted, if this routine has
      been made executable; in any case, this finalization will be valid. */
-  jitter_dynamic_buffer_finalize (& p->specialized_program);
+  jitter_dynamic_buffer_finalize (& p->specialized_routine);
 
   jitter_dynamic_buffer_finalize (& p->replicated_blocks);
 
@@ -288,17 +288,36 @@ jitter_set_label_instruction_index (struct jitter_mutable_routine *p,
 
 
 
-/* Routine construction API.
+/* Mutable routine construction API: functions which cannot fail.
  * ************************************************************************** */
 
-void
-jitter_mutable_routine_append_label (struct jitter_mutable_routine *p, jitter_label label)
+
+
+
+/* Mutable routine construction API: safe functions.
+ * ************************************************************************** */
+
+/* Forward-declarations. */
+static void
+jitter_close_current_instruction (struct jitter_mutable_routine *p);
+static struct jitter_parameter *
+jitter_mutable_routine_append_uninitialized_parameter
+   (struct jitter_mutable_routine *p,
+    enum jitter_parameter_type actual_type,
+    const struct jitter_register_class *register_class);
+static void
+jitter_close_instruction_when_no_more_parameters (struct jitter_mutable_routine *p);
+
+  enum jitter_routine_edit_status
+jitter_mutable_routine_append_label_safe (struct jitter_mutable_routine *p,
+                                          jitter_label label)
 {
   if (p->stage != jitter_routine_stage_unspecialized)
     jitter_fatal ("appending label in non non-unspecialized routine");
   if (p->expected_parameter_no != 0)
-    jitter_fatal ("appending label %li with previous instruction "
-                  "incomplete", (long) label);
+    return jitter_routine_edit_status_last_instruction_incomplete;
+  if (jitter_get_label_instruction_index (p, label) != -1)
+    return jitter_routine_edit_status_label_defined_twice;
   jitter_routine_make_options_unchangeable (p);
 
   jitter_int instruction_index = jitter_mutable_routine_instruction_no (p);
@@ -306,14 +325,357 @@ jitter_mutable_routine_append_label (struct jitter_mutable_routine *p, jitter_la
 
   /* We added a label.  Everything before it can no longer be rewritten. */
   p->rewritable_instruction_no = 0;
+  return jitter_routine_edit_status_success;
+}
+
+enum jitter_routine_edit_status
+jitter_mutable_routine_append_symbolic_label_safe
+   (jitter_label *result, /* This is allowed to be NULL. */
+    struct jitter_mutable_routine *p,
+    const char *label_name)
+{
+  jitter_label label = jitter_symbolic_label (p, label_name);
+  if (result != NULL)
+    * result = label;
+  return jitter_mutable_routine_append_label_safe (p, label);
+}
+
+enum jitter_routine_edit_status
+jitter_mutable_routine_append_instruction_name_safe
+   (struct jitter_mutable_routine *p,
+    const char *instruction_name)
+{
+  const struct jitter_meta_instruction * const mi
+    = jitter_lookup_meta_instruction (p->vm->meta_instruction_string_hash,
+                                      instruction_name);
+  if (mi == NULL)
+    return jitter_routine_edit_status_invalid_instruction;
+  else
+    return jitter_mutable_routine_append_meta_instruction_safe (p, mi);
+}
+
+enum jitter_routine_edit_status
+jitter_mutable_routine_append_instruction_id_safe
+   (struct jitter_mutable_routine *p,
+    const struct jitter_meta_instruction * const mis,
+    size_t meta_instruction_no,
+    unsigned unspecialized_opcode)
+{
+  /* Sanity check. */
+  if (unspecialized_opcode >= meta_instruction_no)
+    return jitter_routine_edit_status_invalid_instruction;
+
+  /* Find the address of the appropriate meta-instruction in the array. */
+  const struct jitter_meta_instruction * const mi
+    = mis + unspecialized_opcode;
+
+  /* Append the meta-instruction. */
+  return jitter_mutable_routine_append_meta_instruction_safe (p, mi);
+}
+
+enum jitter_routine_edit_status
+jitter_mutable_routine_append_meta_instruction_safe
+   (struct jitter_mutable_routine *p,
+    const struct jitter_meta_instruction * const mi)
+{
+  if (p->stage != jitter_routine_stage_unspecialized)
+    jitter_fatal ("appending instruction %s in non-unspecialized routine",
+                  mi->name);
+  if (p->expected_parameter_no != 0)
+    return jitter_routine_edit_status_last_instruction_incomplete;
+  jitter_routine_make_options_unchangeable (p);
+
+  /* Make the instruction. */
+  struct jitter_instruction *i
+    = p->current_instruction
+    = jitter_make_instruction (mi);
+
+  /* Add a pointer to it to the dynamic buffer for instructions within the
+     routine. */
+  jitter_dynamic_buffer_push (& p->instructions,
+                              & i,
+                              sizeof (struct jitter_meta_instruction *));
+
+  /* If this instruction has zero parameters then we're already done with it,
+     and we can close it immediately.  Otherwise set parameter pointers to the
+     first parameter to be appended. */
+  if ((p->expected_parameter_no = mi->parameter_no) == 0)
+    jitter_close_current_instruction (p);
+  else
+    {
+      p->next_uninitialized_parameter = i->parameters [0];
+      p->next_expected_parameter_type = mi->parameter_types;
+    }
+
+  return jitter_routine_edit_status_success;
+}
+
+/* Return the status that we would get after adding a parameter of the given
+   kind (and, if register, register class) to the pointed mutable routine, but
+   do not modify the routine.  Fail fatally if the routine is not
+   unspecialised. */
+static enum jitter_routine_edit_status
+jitter_mutable_routine_check_next_parameter_safe
+   (struct jitter_mutable_routine *p,
+    enum jitter_parameter_type actual_type,
+    const struct jitter_register_class *register_class)
+{
+  if (p->stage != jitter_routine_stage_unspecialized)
+    jitter_fatal ("appending parameter in non-unspecialized routine");
+  if (p->expected_parameter_no == 0)
+    return jitter_routine_edit_status_too_many_parameters;
+  if (p->next_expected_parameter_type == NULL)
+    jitter_fatal ("impossible if we passed the previous check");
+
+  /* Check that the parameter type is compatible with what we expect. */
+  const struct jitter_meta_instruction_parameter_type * expected_type =
+    p->next_expected_parameter_type;
+  enum jitter_meta_instruction_parameter_kind expected_kind
+    = expected_type->kind;
+  /* FIXME: this logic is quite ugly: in jitterc, which I wrote later, expected
+     parameter kinds are a bitmask.  That is much more flexible.  I should unify
+     those types. */
+  switch (actual_type)
+    {
+    case jitter_parameter_type_register_id:
+      if (   expected_kind
+             != jitter_meta_instruction_parameter_kind_register
+          && expected_kind
+             != jitter_meta_instruction_parameter_kind_register_or_literal_fixnum
+          && expected_kind
+             != jitter_meta_instruction_parameter_kind_register_or_literal_label
+          && expected_kind
+             != jitter_meta_instruction_parameter_kind_register_or_literal_fixnum_or_literal_label)
+        return jitter_routine_edit_status_invalid_parameter_kind;
+      if (expected_type->register_class != register_class)
+        return jitter_routine_edit_status_register_class_mismatch;
+      else
+        return jitter_routine_edit_status_success;
+    case jitter_parameter_type_literal:
+      if (   expected_kind
+             != jitter_meta_instruction_parameter_kind_literal_fixnum
+          && expected_kind
+             != jitter_meta_instruction_parameter_kind_literal_fixnum_or_literal_label
+          && expected_kind
+             != jitter_meta_instruction_parameter_kind_register_or_literal_fixnum
+          && expected_kind
+             != jitter_meta_instruction_parameter_kind_register_or_literal_fixnum_or_literal_label)
+        return jitter_routine_edit_status_invalid_parameter_kind;
+      else
+        return jitter_routine_edit_status_success;
+    case jitter_parameter_type_label:
+      if (   expected_kind
+             != jitter_meta_instruction_parameter_kind_literal_label
+          && expected_kind
+             != jitter_meta_instruction_parameter_kind_literal_fixnum_or_literal_label
+          && expected_kind
+             != jitter_meta_instruction_parameter_kind_register_or_literal_label
+          && expected_kind
+             != jitter_meta_instruction_parameter_kind_register_or_literal_fixnum_or_literal_label)
+        return jitter_routine_edit_status_invalid_parameter_kind;
+      else
+        return jitter_routine_edit_status_success;
+    default:
+      jitter_fatal ("jitter_mutable_routine_check_next_parameter_safe: "
+                    "invalid actual argument type %lu",
+                    (unsigned long) actual_type);
+    }
+}
+
+enum jitter_routine_edit_status
+jitter_mutable_routine_append_literal_parameter_safe
+   (struct jitter_mutable_routine *p,
+    union jitter_word immediate)
+{
+  /* Check if the parameter is compatible; if not return failure. */
+  enum jitter_routine_edit_status res
+    = jitter_mutable_routine_check_next_parameter_safe
+         (p, jitter_parameter_type_literal, NULL);
+  if (res != jitter_routine_edit_status_success)
+    return res;
+
+  /* Now it is safe to use unsafe functions: no failure is possible. */
+  struct jitter_parameter * const pa
+    = jitter_mutable_routine_append_uninitialized_parameter
+         (p, jitter_parameter_type_literal, NULL);
+  pa->type = jitter_parameter_type_literal;
+  pa->literal = immediate;
+  jitter_close_instruction_when_no_more_parameters (p);
+
+  return jitter_routine_edit_status_success;
+}
+
+/* These are just convenience wrappers. */
+enum jitter_routine_edit_status
+jitter_mutable_routine_append_signed_literal_parameter_safe
+   (struct jitter_mutable_routine *p,
+    jitter_int immediate)
+{
+  union jitter_word u = {.fixnum = immediate};
+  return jitter_mutable_routine_append_literal_parameter_safe (p, u);
+}
+enum jitter_routine_edit_status
+jitter_mutable_routine_append_unsigned_literal_parameter_safe
+   (struct jitter_mutable_routine *p,
+    jitter_uint immediate)
+{
+  union jitter_word u = {.ufixnum = immediate};
+  return jitter_mutable_routine_append_literal_parameter_safe (p, u);
+}
+enum jitter_routine_edit_status
+jitter_mutable_routine_append_pointer_literal_parameter_safe
+   (struct jitter_mutable_routine *p,
+    void *immediate)
+{
+  union jitter_word u = {.pointer = immediate};
+  return jitter_mutable_routine_append_literal_parameter_safe (p, u);
+}
+
+enum jitter_routine_edit_status
+jitter_mutable_routine_append_register_parameter_safe
+   (struct jitter_mutable_routine *p,
+    const struct jitter_register_class *c,
+    jitter_register_index register_index)
+{
+  /* Check if the parameter is compatible; if not return failure. */
+  enum jitter_routine_edit_status res
+    = jitter_mutable_routine_check_next_parameter_safe
+         (p, jitter_parameter_type_register_id, c);
+  if (res != jitter_routine_edit_status_success)
+    return res;
+
+  /* Now it is safe to use unsafe functions: no failure is possible. */
+
+  /* If we have to always residualize registers, then increment this register
+     index by the number of fast registers in the class.  This way it is
+     guaranteed that the actual register used in execution will be slow.  (When
+     printing out the routine the register index will be shown *decremented* by
+     the number of fast registers in the class to compensate for this.) */
+  if (p->options.slow_registers_only)
+    register_index += c->fast_register_no;
+
+  /* Append the register parameter. */
+  struct jitter_parameter * const pa
+    = jitter_mutable_routine_append_uninitialized_parameter
+         (p, jitter_parameter_type_register_id, c);
+  pa->type = jitter_parameter_type_register_id;
+  pa->register_index = register_index;
+  pa->register_class = c;
+
+  /* If this register is slow and its slow index is the highest up to this
+     point, record it: it will be needed to know how many slow registers to
+     allocate.  Notice that a negative slow_index (indicating a fast register)
+     will never satisfy the if condition, as p->slow_register_per_class_no is
+     initialized to zero and non-decreasing. */
+  jitter_int slow_index = register_index - c->fast_register_no;
+  jitter_int slow_register_no = slow_index + 1;
+  if (slow_register_no > p->slow_register_per_class_no)
+    p->slow_register_per_class_no = slow_register_no;
+  jitter_close_instruction_when_no_more_parameters (p);
+
+  return jitter_routine_edit_status_success;
+}
+
+enum jitter_routine_edit_status
+jitter_mutable_routine_append_symbolic_register_parameter_safe
+   (struct jitter_mutable_routine *p,
+    char register_class_as_char,
+    jitter_register_index register_index)
+{
+  const struct jitter_register_class *register_class
+    = p->vm->register_class_character_to_register_class (register_class_as_char);
+  if (register_class == NULL)
+    return jitter_routine_edit_status_nonexisting_register_class;
+  return jitter_mutable_routine_append_register_parameter_safe (p,
+                                                                register_class,
+                                                                register_index);
+}
+
+enum jitter_routine_edit_status
+jitter_mutable_routine_append_label_parameter_safe
+   (struct jitter_mutable_routine *p,
+    jitter_label label)
+{
+  /* Check if the parameter is compatible; if not return failure. */
+  enum jitter_routine_edit_status res
+    = jitter_mutable_routine_check_next_parameter_safe
+         (p, jitter_parameter_type_label, NULL);
+  if (res != jitter_routine_edit_status_success)
+    return res;
+
+  /* Do the actual work. */
+  struct jitter_parameter * const pa
+    = jitter_mutable_routine_append_uninitialized_parameter
+         (p, jitter_parameter_type_label, NULL);
+  pa->type = jitter_parameter_type_label;
+  pa->label = label;
+  jitter_close_instruction_when_no_more_parameters (p);
+  return jitter_routine_edit_status_success;
+}
+
+enum jitter_routine_edit_status
+jitter_mutable_routine_append_symbolic_label_parameter_safe
+   (jitter_label *label_pointer,
+    struct jitter_mutable_routine *p,
+    const char *label_name)
+{
+  /* It would be tempting to just call jitter_symbolic_label, and then defer
+     the work to jitter_mutable_routine_append_label_parameter_safe .  That does
+     not work unfortunately, because in case of errors we would stull add a
+     new label: it is necessary to first check that there is no error... */
+  enum jitter_routine_edit_status res
+    = jitter_mutable_routine_check_next_parameter_safe
+         (p, jitter_parameter_type_label, NULL);
+  if (res != jitter_routine_edit_status_success)
+    return res;
+
+  /* ...And now we can in fact use the non-symbolic variant. */
+  jitter_label label = jitter_symbolic_label (p, label_name);
+  return jitter_mutable_routine_append_label_parameter_safe (p, label);
+}
+
+
+
+
+/* Mutable routine construction API: unsafe functions.
+ * ************************************************************************** */
+
+void
+jitter_mutable_routine_append_label (struct jitter_mutable_routine *p, jitter_label label)
+{
+  enum jitter_routine_edit_status s
+    = jitter_mutable_routine_append_label_safe (p, label);
+  switch (s)
+    {
+    case jitter_routine_edit_status_label_defined_twice:
+      jitter_fatal ("appending label %li which had been defined already",
+                    (long) label);
+    case jitter_routine_edit_status_last_instruction_incomplete:
+      jitter_fatal ("appending label %li with previous instruction "
+                    "incomplete", (long) label);
+    case jitter_routine_edit_status_success:  break;
+    default:  jitter_fatal ("this should not happen MA1");
+    }
 }
 
 jitter_label
 jitter_mutable_routine_append_symbolic_label (struct jitter_mutable_routine *p, const char *label_name)
 {
-  jitter_label res = jitter_symbolic_label (p, label_name);
-  jitter_mutable_routine_append_label (p, res);
-  return res;
+  jitter_label label;
+  enum jitter_routine_edit_status s
+    = jitter_mutable_routine_append_symbolic_label_safe (& label, p, label_name);
+  switch (s)
+    {
+    case jitter_routine_edit_status_label_defined_twice:
+      jitter_fatal ("appending label %s which had been defined already",
+                    label_name);
+    case jitter_routine_edit_status_last_instruction_incomplete:
+      jitter_fatal ("appending label %s with previous instruction "
+                    "incomplete", label_name);
+    case jitter_routine_edit_status_success:
+      return label;
+    default:  jitter_fatal ("this should not happen MA1");
+    }
 }
 
 /* Close the current instruction which must have all of its parameters already
@@ -344,11 +706,12 @@ jitter_close_current_instruction (struct jitter_mutable_routine *p)
     p->vm->rewrite (p);
 }
 
-/* Check that the pointed routine's last instruction is incomplete, and that the next
-   parameter it expects is compatible with the given actual type and, in case it's a
-   register, register class.  Fail fatally if that's not the case. */
+/* Check that the pointed routine's last instruction is incomplete, and that the
+   next parameter it expects is compatible with the given actual type and, in
+   case it's a register, register class.  Fail fatally if that's not the
+   case. */
 static void
-jitter_check_paremater_compatibility
+jitter_check_parameter_compatibility
    (struct jitter_mutable_routine *p,
     enum jitter_parameter_type actual_type,
     const struct jitter_register_class *register_class)
@@ -357,63 +720,34 @@ jitter_check_paremater_compatibility
      actually expecting a parameter. */
   if (p->stage != jitter_routine_stage_unspecialized)
     jitter_fatal ("appending parameter in non-unspecialized routine");
-  if (p->expected_parameter_no == 0)
-    jitter_fatal ("appending parameter with previous instruction complete");
-  if (p->next_expected_parameter_type == NULL)
-    jitter_fatal ("impossible if we passed the previous check");
 
-  /* Check that the parameter type is compatible with what we expect. */
-  const struct jitter_meta_instruction_parameter_type * expected_type =
-    p->next_expected_parameter_type;
-  enum jitter_meta_instruction_parameter_kind expected_kind =
-    expected_type->kind;
-  switch (actual_type)
+  /* Throw a fatal error on any failure. */
+  enum jitter_routine_edit_status s
+    = jitter_mutable_routine_check_next_parameter_safe (p, actual_type,
+                                                        register_class);
+  switch (s)
     {
-    case jitter_parameter_type_register_id:
-      if (   expected_kind
-             != jitter_meta_instruction_parameter_kind_register
-          && expected_kind
-             != jitter_meta_instruction_parameter_kind_register_or_literal_fixnum
-          && expected_kind
-             != jitter_meta_instruction_parameter_kind_register_or_literal_label
-          && expected_kind
-             != jitter_meta_instruction_parameter_kind_register_or_literal_fixnum_or_literal_label)
-        jitter_fatal ("appending register argument not admitted by instruction");
-      if (expected_type->register_class != register_class)
-        jitter_fatal ("invalid register class for register argument");
-      break;
-    case jitter_parameter_type_literal:
-      if (   expected_kind
-             != jitter_meta_instruction_parameter_kind_literal_fixnum
-          && expected_kind
-             != jitter_meta_instruction_parameter_kind_literal_fixnum_or_literal_label
-          && expected_kind
-             != jitter_meta_instruction_parameter_kind_register_or_literal_fixnum
-          && expected_kind
-             != jitter_meta_instruction_parameter_kind_register_or_literal_fixnum_or_literal_label)
-        jitter_fatal ("appending immediate argument not admitted by instruction");
-      break;
-    case jitter_parameter_type_label:
-      if (   expected_kind
-             != jitter_meta_instruction_parameter_kind_literal_label
-          && expected_kind
-             != jitter_meta_instruction_parameter_kind_literal_fixnum_or_literal_label
-          && expected_kind
-             != jitter_meta_instruction_parameter_kind_register_or_literal_label
-          && expected_kind
-             != jitter_meta_instruction_parameter_kind_register_or_literal_fixnum_or_literal_label)
-        jitter_fatal ("appending label argument not admitted by instruction");
-      break;
+    case jitter_routine_edit_status_success:
+      /* No errors: nothing to do. */
+      return;
+    case jitter_routine_edit_status_invalid_register:
+      jitter_fatal ("invalid register parameter");
+    case jitter_routine_edit_status_register_class_mismatch:
+      jitter_fatal ("register class mismatch adding parameter");
+    case jitter_routine_edit_status_nonexisting_register_class:
+      jitter_fatal ("nonexisting register class adding parameter");
+    case jitter_routine_edit_status_invalid_parameter_kind:
+      jitter_fatal ("invalid parameter kind");
+    case jitter_routine_edit_status_too_many_parameters:
+      jitter_fatal ("too many parameters");
     default:
-      jitter_fatal ("jitter_mutable_routine_append_uninitialized_paremater: "
-                    "invalid actual argument type %lu",
-                    (unsigned long) actual_type);
+      jitter_fatal ("this should not happen MA10");
     }
 }
 
 /* Make the current instruction, which must be incomplete, have the next
    expected parameter as its own and start a new instruction if that parameter
-   was the last, but *don't* close the old instruction.  Don't make checks. */
+   was the last, but *don't* close the old instruction.  Don't do checks. */
 static void
 jitter_advance_past_next_parameter (struct jitter_mutable_routine *p)
 {
@@ -443,17 +777,18 @@ jitter_advance_past_next_parameter (struct jitter_mutable_routine *p)
    the caller.  In any case, do *not* close the instruction, even if the appended
    parameter was the last; doing that would interfere badly with rewriting, which
    has to see every parameter correctly initialized.
-   This is used by jitter_mutable_routine_append_literal_parameter ,
-   jitter_mutable_routine_append_register_parameter and
-   jitter_mutable_routine_append_label_parameter . */
+   This is used by jitter_mutable_routine_append_literal_parameter_safe ,
+   jitter_mutable_routine_append_register_parameter_safe and
+   jitter_mutable_routine_append_label_parameter_safe -- after
+   checking that what we are doing here is indeed correct. */
 static struct jitter_parameter *
-jitter_mutable_routine_append_uninitialized_paremater
+jitter_mutable_routine_append_uninitialized_parameter
    (struct jitter_mutable_routine *p,
     enum jitter_parameter_type actual_type,
     const struct jitter_register_class *register_class)
 {
   /* Check that the parameter is compatbile; fail fatally if it isn't. */
-  jitter_check_paremater_compatibility (p, actual_type, register_class);
+  jitter_check_parameter_compatibility (p, actual_type, register_class);
 
   /* Keep a pointer to the next uninitialized parameter to be returned; it will
      no longer be the next at the end of this function. */
@@ -470,50 +805,54 @@ jitter_mutable_routine_append_uninitialized_paremater
 /* Close the current instruction if the last appended parameter was the last
    one.  See the comment before as to why this is not done there. */
 static void
-jitter_close_instruction_when_no_more_parameters (struct jitter_mutable_routine *p)
+jitter_close_instruction_when_no_more_parameters (struct jitter_mutable_routine
+                                                  *p)
 {
   if (p->expected_parameter_no == 0)
     jitter_close_current_instruction (p);
 }
 
 void
-jitter_mutable_routine_append_literal_parameter (struct jitter_mutable_routine *p,
-                                 union jitter_word immediate)
+jitter_mutable_routine_append_literal_parameter
+   (struct jitter_mutable_routine *p,
+    union jitter_word immediate)
 {
-  struct jitter_parameter * const pa
-    = jitter_mutable_routine_append_uninitialized_paremater (p, jitter_parameter_type_literal,
-                                             NULL);
-
-  pa->type = jitter_parameter_type_literal;
-  pa->literal = immediate;
-  jitter_close_instruction_when_no_more_parameters (p);
+  enum jitter_routine_edit_status s
+    = jitter_mutable_routine_append_literal_parameter_safe (p, immediate);
+  switch (s)
+    {
+    case jitter_routine_edit_status_too_many_parameters:
+      jitter_fatal ("excess (literal) parameter");
+    case jitter_routine_edit_status_invalid_parameter_kind:
+      jitter_fatal ("invalid parameter kind (literal)");
+    case jitter_routine_edit_status_success:
+      return;
+    default:  jitter_fatal ("this should not happen MA6");
+    }
 }
 
-/* This is just a convenience wrapper around jitter_mutable_routine_append_literal_parameter
-   . */
+/* These are just convenience wrappers around
+   jitter_mutable_routine_append_literal_parameter . */
 void
-jitter_mutable_routine_append_signed_literal_parameter (struct jitter_mutable_routine *p,
-                                        jitter_int immediate)
+jitter_mutable_routine_append_signed_literal_parameter
+   (struct jitter_mutable_routine *p,
+    jitter_int immediate)
 {
   union jitter_word immediate_union = {.fixnum = immediate};
   jitter_mutable_routine_append_literal_parameter (p, immediate_union);
 }
-
-/* This is just a convenience wrapper around jitter_mutable_routine_append_literal_parameter
-   . */
 void
-jitter_mutable_routine_append_unsigned_literal_parameter (struct jitter_mutable_routine *p,
-                                          jitter_uint immediate)
+jitter_mutable_routine_append_unsigned_literal_parameter
+   (struct jitter_mutable_routine *p,
+    jitter_uint immediate)
 {
   union jitter_word immediate_union = {.ufixnum = immediate};
   jitter_mutable_routine_append_literal_parameter (p, immediate_union);
 }
-
-/* This is just a convenience wrapper around jitter_mutable_routine_append_literal_parameter
-   . */
 void
-jitter_mutable_routine_append_pointer_literal_parameter (struct jitter_mutable_routine *p,
-                                         void *immediate)
+jitter_mutable_routine_append_pointer_literal_parameter
+   (struct jitter_mutable_routine *p,
+    void *immediate)
 {
   union jitter_word immediate_union = {.pointer = immediate};
   jitter_mutable_routine_append_literal_parameter (p, immediate_union);
@@ -525,86 +864,113 @@ jitter_mutable_routine_append_register_parameter
     const struct jitter_register_class *register_class,
     jitter_register_index register_index)
 {
-  /* If we have to always residualize registers, then increment this register
-     index by the number of fast registers in the class.  This way it is
-     guaranteed that the actual register used in execution will be slow.  (When
-     printing out the routine the register index will be shown *decremented* by
-     the number of fast registers in the class to compensate for this.) */
-  if (p->options.slow_registers_only)
-    register_index += register_class->fast_register_no;
+  enum jitter_routine_edit_status s
+    = jitter_mutable_routine_append_register_parameter_safe (p, register_class,
+                                                             register_index);
+  switch (s)
+    {
+    case jitter_routine_edit_status_too_many_parameters:
+      jitter_fatal ("excess (register) parameter");
+    case jitter_routine_edit_status_invalid_parameter_kind:
+      jitter_fatal ("invalid parameter kind (register)");
+    case jitter_routine_edit_status_invalid_register:
+      jitter_fatal ("invalid register parameter %%%c%i",
+                    register_class->character, (int) register_index);
+    case jitter_routine_edit_status_register_class_mismatch:
+      jitter_fatal ("mismatching register class \'%c\' in parameter",
+                    register_class->character);
+    case jitter_routine_edit_status_success:
+      return;
+    default:  jitter_fatal ("this should not happen MA7");
+    }
+}
 
-  /* Append the register parameter. */
-  struct jitter_parameter * const pa
-    = jitter_mutable_routine_append_uninitialized_paremater
-         (p, jitter_parameter_type_register_id, register_class);
-  pa->type = jitter_parameter_type_register_id;
-  pa->register_index = register_index;
-  pa->register_class = register_class;
-  jitter_close_instruction_when_no_more_parameters (p);
-
-  /* If this register is slow and its slow index is the highest up to this
-     point, record it: it will be needed to know how many slow registers to
-     allocate.  Notice that a negative slow_index (indicating a fast register)
-     will never satisfy the if condition, as p->slow_register_per_class_no is
-     initialized to zero and non-decreasing. */
-  jitter_int slow_index = register_index - register_class->fast_register_no;
-  jitter_int slow_register_no = slow_index + 1;
-  if (slow_register_no > p->slow_register_per_class_no)
-    p->slow_register_per_class_no = slow_register_no;
+void
+jitter_mutable_routine_append_symbolic_register_parameter
+   (struct jitter_mutable_routine *p,
+    char register_class_as_char,
+    jitter_register_index register_index)
+{
+  enum jitter_routine_edit_status s
+    = jitter_mutable_routine_append_symbolic_register_parameter_safe
+         (p, register_class_as_char, register_index);
+  switch (s)
+    {
+    case jitter_routine_edit_status_too_many_parameters:
+      jitter_fatal ("excess (register) parameter");
+    case jitter_routine_edit_status_invalid_parameter_kind:
+      jitter_fatal ("invalid parameter kind (register)");
+    case jitter_routine_edit_status_invalid_register:
+      jitter_fatal ("invalid register parameter %%%c%i",
+                    register_class_as_char, (int) register_index);
+    case jitter_routine_edit_status_register_class_mismatch:
+      jitter_fatal ("mismatching register class \'%c\' in parameter",
+                    register_class_as_char);
+    case jitter_routine_edit_status_nonexisting_register_class:
+      jitter_fatal ("nonexisting register class \'%c\' in parameter",
+                    register_class_as_char);
+    case jitter_routine_edit_status_success:
+      return;
+    default:  jitter_fatal ("this should not happen MA8");
+    }
 }
 
 jitter_label
-jitter_mutable_routine_append_symbolic_label_parameter (struct jitter_mutable_routine *p,
-                                        const char *label_name)
+jitter_mutable_routine_append_symbolic_label_parameter
+   (struct jitter_mutable_routine *p, const char *label_name)
 {
-  jitter_label res = jitter_symbolic_label (p, label_name);
-  jitter_mutable_routine_append_label_parameter (p, res);
-  return res;
+  jitter_label label;
+  enum jitter_routine_edit_status s
+    = jitter_mutable_routine_append_symbolic_label_parameter_safe (& label,
+                                                                   p,
+                                                                   label_name);
+  switch (s)
+    {
+    case jitter_routine_edit_status_too_many_parameters:
+      jitter_fatal ("excess (register) parameter");
+    case jitter_routine_edit_status_invalid_parameter_kind:
+      jitter_fatal ("invalid parameter kind (register)");
+    case jitter_routine_edit_status_success:
+      return label;
+    default:  jitter_fatal ("this should not happen MA9");
+    }
 }
 void
 jitter_mutable_routine_append_label_parameter (struct jitter_mutable_routine *p,
-                               jitter_label label)
+                                               jitter_label label)
 {
-  struct jitter_parameter * const pa
-    = jitter_mutable_routine_append_uninitialized_paremater
-         (p, jitter_parameter_type_label, NULL);
-  pa->type = jitter_parameter_type_label;
-  pa->label = label;
-  jitter_close_instruction_when_no_more_parameters (p);
+  enum jitter_routine_edit_status s
+    = jitter_mutable_routine_append_label_parameter_safe (p, label);
+  switch (s)
+    {
+    case jitter_routine_edit_status_too_many_parameters:
+      jitter_fatal ("excess (label) parameter");
+    case jitter_routine_edit_status_invalid_parameter_kind:
+      jitter_fatal ("invalid parameter kind (label)");
+    case jitter_routine_edit_status_success:
+      return;
+    default:  jitter_fatal ("this should not happen MA9");
+    }
 }
 
 void
-jitter_mutable_routine_append_meta_instruction (struct jitter_mutable_routine *p,
-                                const struct jitter_meta_instruction * const mi)
+jitter_mutable_routine_append_meta_instruction
+   (struct jitter_mutable_routine *p,
+    const struct jitter_meta_instruction * const mi)
 {
-  if (p->stage != jitter_routine_stage_unspecialized)
-    jitter_fatal ("appending instruction %s in non-unspecialized routine",
-                  mi->name);
-  if (p->expected_parameter_no != 0)
-    jitter_fatal ("appending instruction %s with previous instruction"
-                  " incomplete", mi->name);
-  jitter_routine_make_options_unchangeable (p);
-
-  /* Make the instruction. */
-  struct jitter_instruction *i
-    = p->current_instruction
-    = jitter_make_instruction (mi);
-
-  /* Add a pointer to it to the dynamic buffer for instructions within the
-     routine. */
-  jitter_dynamic_buffer_push (& p->instructions,
-                              & i,
-                              sizeof (struct jitter_meta_instruction *));
-
-  /* If this instruction has zero parameters then we're already done with it, and
-     we can close it immediately.  Otherwise set parameter pointers to the frist
-     parameter to be appended. */
-  if ((p->expected_parameter_no = mi->parameter_no) == 0)
-    jitter_close_current_instruction (p);
-  else
+  enum jitter_routine_edit_status s
+    = jitter_mutable_routine_append_meta_instruction_safe (p, mi);
+  switch (s)
     {
-      p->next_uninitialized_parameter = i->parameters [0];
-      p->next_expected_parameter_type = mi->parameter_types;
+    case jitter_routine_edit_status_invalid_instruction:
+      jitter_fatal ("appending invalid instruction %s", mi->name);
+    case jitter_routine_edit_status_last_instruction_incomplete:
+      jitter_fatal ("appending instruction %s with previous instruction "
+                    "incomplete", mi->name);
+    case jitter_routine_edit_status_success:
+      break;
+    default:
+      jitter_fatal ("this should not happen MA5");
     }
 }
 
@@ -614,27 +980,41 @@ jitter_mutable_routine_append_instruction_id (struct jitter_mutable_routine *p,
                               size_t meta_instruction_no,
                               unsigned unspecialized_opcode)
 {
-  /* Sanity check. */
-  if (unspecialized_opcode >= meta_instruction_no)
-    jitter_fatal ("jitter_mutable_routine_append_instruction_id: invalid id %u",
-                  unspecialized_opcode);
-
-  /* Find the address of the appropriate meta-instruction in the array. */
-  const struct jitter_meta_instruction * const mi
-    = mis + unspecialized_opcode;
-
-  /* Append the meta-instruction. */
-  jitter_mutable_routine_append_meta_instruction (p, mi);
+  enum jitter_routine_edit_status s
+    = jitter_mutable_routine_append_instruction_id_safe (p, mis,
+                                                         meta_instruction_no,
+                                                         unspecialized_opcode);
+  switch (s)
+    {
+    case jitter_routine_edit_status_invalid_instruction:
+      jitter_fatal ("appending instruction with invalid id %u",
+                    unspecialized_opcode);
+    case jitter_routine_edit_status_last_instruction_incomplete:
+      jitter_fatal ("appending instruction with previous instruction "
+                    "incomplete");
+    case jitter_routine_edit_status_success:
+      return;
+    default:  jitter_fatal ("this should not happen MA4");
+    }
 }
 
 void
 jitter_mutable_routine_append_instruction_name (struct jitter_mutable_routine *p,
-                                const char *instruction_name)
+                                                const char *instruction_name)
 {
-  const struct jitter_meta_instruction * const mi
-    = jitter_lookup_meta_instruction (p->vm->meta_instruction_string_hash,
-                                      instruction_name);
-  jitter_mutable_routine_append_meta_instruction (p, mi);
+  enum jitter_routine_edit_status s
+    = jitter_mutable_routine_append_instruction_name_safe (p, instruction_name);
+  switch (s)
+    {
+    case jitter_routine_edit_status_invalid_instruction:
+      jitter_fatal ("appending invalid instruction %s", instruction_name);
+    case jitter_routine_edit_status_last_instruction_incomplete:
+      jitter_fatal ("appending instruction %s with previous instruction "
+                    "incomplete", instruction_name);
+    case jitter_routine_edit_status_success:
+      break;
+    default:  jitter_fatal ("this should not happen MA2");
+    }
 }
 
 
@@ -669,11 +1049,11 @@ jitter_mutable_routine_append_instruction (struct jitter_mutable_routine *p,
 
 void
 jitter_mutable_routine_append_parameter_copy (struct jitter_mutable_routine *p,
-                              const struct jitter_parameter *pp)
+                                              const struct jitter_parameter *pp)
 {
   /* Check that the parameter is compatbile with what we are expecting; fail
      fatally if it isn't. */
-  jitter_check_paremater_compatibility (p, pp->type, pp->register_class);
+  jitter_check_parameter_compatibility (p, pp->type, pp->register_class);
 
   /* The next parameter is pre-allocated.  Copy the pointed one into it. */
   jitter_copy_instruction_parameter (p->next_uninitialized_parameter, pp);

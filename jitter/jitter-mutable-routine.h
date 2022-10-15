@@ -1,6 +1,6 @@
 /* Jitter: VM-independent mutable routine data structures: header.
 
-   Copyright (C) 2016, 2017, 2018, 2019 Luca Saiu
+   Copyright (C) 2016, 2017, 2018, 2019, 2022 Luca Saiu
    Updated in 2020 by Luca Saiu
    Written by Luca Saiu
 
@@ -117,17 +117,17 @@ struct jitter_mutable_routine_options
    idea. */
 struct jitter_executable_routine;
 
-/* The internal representation of a program being edited by the user.  This
+/* The internal representation of a routine being edited by the user.  This
    should be considered an abstract type, as the internal structure is subject
    to change. */
 struct jitter_mutable_routine
 {
-  /* The program stage at the present time. */
+  /* The mutable routine stage at the present time. */
   enum jitter_mutable_routine_stage stage;
 
-  /* The options applying to this program.  This field is initialized to default
-     values at program initialization, and should only be updated indirectly
-     thru the functions declared in the "Program options" section below. */
+  /* The options applying to this routine.  This field is initialized to default
+     values at routine initialization, and should only be updated indirectly
+     thru the functions declared in the "Mutable routine options" section below. */
   struct jitter_mutable_routine_options options;
 
   /* A dynamic array containing struct jitter_instruction * elements.  This is
@@ -177,19 +177,19 @@ struct jitter_mutable_routine
      incomplete, including right after initialization, the field is zero. */
   int expected_parameter_no;
 
-  /* How many complete instructions at the end of the program are candidate for
+  /* How many complete instructions at the end of the routine are candidate for
      rewriting.  This starts at zero, and gets reset every time a label is
      added. */
   size_t rewritable_instruction_no;
 
   /* A pointer to a malloced array of booleans, having the same size as the
-     number of instructions in the program.  Each element of the array is true
-     if and only if the corresponding program instruction is a jump target.
+     number of instructions in the routine.  Each element of the array is true
+     if and only if the corresponding routine instruction is a jump target.
      This is allocated at specialization time, and NULL before. */
   bool *jump_targets;
 
   /* We need to map unspecialized instruction indices into specialized
-     instruction offsets within specialized_program, in chars from the
+     instruction offsets within specialized_routine, in chars from the
      beginning.  This is needed because specialized instructions have variable
      sizes, and label arguments need to be backpatched in to point to
      instruction beginning addresses rather than indices.
@@ -200,7 +200,7 @@ struct jitter_mutable_routine
      superinstruction. */
   jitter_int *instruction_index_to_specialized_instruction_offset;
 
-  /* The sequence of replicated blocks in the specialized program, in order.
+  /* The sequence of replicated blocks in the specialized routine, in order.
      Each element is a struct jitter_replicated_block .  This is only used with
      replication, and for disassembly. */
   struct jitter_dynamic_buffer replicated_blocks;
@@ -211,8 +211,8 @@ struct jitter_mutable_routine
   char *native_code;
   size_t native_code_size;
 
-  /* The specialized program.  Each element is a union jitter_specialized_word . */
-  struct jitter_dynamic_buffer specialized_program;
+  /* The specialized routine.  Each element is a union jitter_specialized_word . */
+  struct jitter_dynamic_buffer specialized_routine;
 
   /* The indices of label parameters within specialized_instructions as
      jitter_int's, to be patched at the end of specialization.  While
@@ -222,8 +222,8 @@ struct jitter_mutable_routine
   struct jitter_dynamic_buffer specialized_label_indices;
 
   /* The number of slow registers needed *per class* in order to run this
-     program; or, alternatively, the maximum number of slow registers needed to
-     run this program in any class.  Slow registers are always added in the same
+     routine; or, alternatively, the maximum number of slow registers needed to
+     run this routine in any class.  Slow registers are always added in the same
      number for all classes, even if each class may have a different number of
      fast registers. */
   jitter_int slow_register_per_class_no;
@@ -232,7 +232,7 @@ struct jitter_mutable_routine
      executable routine is made. */
   struct jitter_executable_routine *executable_routine;
 
-  /* A pointer to the VM-specific definitions of the VM for this program. */
+  /* A pointer to the VM-specific definitions of the VM for this routine. */
   const struct jitter_vm *vm;
 };
 
@@ -324,8 +324,12 @@ jitter_symbolic_label (struct jitter_mutable_routine *p,
 
 
 
-/* Mutable routine construction API.
+/* Mutable routine construction API: unsafe functions.
  * ************************************************************************** */
+
+/* The functions declared in this section are unsafe, in the sense that they
+   fail fatally in case of syntax errors: for example, appending a label when an
+   instruction being emitted is not complete yet. */
 
 /* Update the pointed mutable routine, adding the given label before the
    instruction which is coming next.
@@ -356,7 +360,8 @@ jitter_mutable_routine_append_symbolic_label (struct jitter_mutable_routine *p,
    the recommended way to use it. */
 void
 jitter_mutable_routine_append_instruction_name (struct jitter_mutable_routine *p,
-                                                const char *instruction_name);
+                                                const char *instruction_name)
+  __attribute__ ((nonnull (1, 2)));
 
 /* Update the pointed mutable routine, beginning a new instruction with the
    given unspecialized opcode, from the given array of meta-instructions.  When
@@ -380,7 +385,8 @@ jitter_mutable_routine_append_instruction_id
    (struct jitter_mutable_routine *p,
     const struct jitter_meta_instruction * const mis,
     size_t meta_instruction_no,
-    unsigned unspecialized_opcode);
+    unsigned unspecialized_opcode)
+  __attribute__ ((nonnull (1, 2)));
 
 /* Update the pointed mutable routine, beginning a new instruction which is an
    instance of the pointed meta-instruction; the instruction parameters, if any,
@@ -395,7 +401,8 @@ jitter_mutable_routine_append_instruction_id
 void
 jitter_mutable_routine_append_meta_instruction
    (struct jitter_mutable_routine *p,
-    const struct jitter_meta_instruction * const mi);
+    const struct jitter_meta_instruction * const mi)
+  __attribute__ ((nonnull (1, 2)));
 
 /* Update the given program, adding one more parameter (left-to-right) to the
    unspecialized instruction currently being described.  Fail fatally if there
@@ -430,6 +437,12 @@ jitter_mutable_routine_append_register_parameter
     const struct jitter_register_class *c,
     jitter_register_index register_index)
   __attribute__((nonnull (1, 2)));
+void
+jitter_mutable_routine_append_symbolic_register_parameter
+   (struct jitter_mutable_routine *p,
+    char register_class_as_char,
+    jitter_register_index register_index)
+  __attribute__((nonnull (1)));
 jitter_label
 jitter_mutable_routine_append_symbolic_label_parameter
    (struct jitter_mutable_routine *p,
@@ -437,6 +450,178 @@ jitter_mutable_routine_append_symbolic_label_parameter
   __attribute__((nonnull (1, 2)));
 void
 jitter_mutable_routine_append_label_parameter
+   (struct jitter_mutable_routine *p,
+    jitter_label label)
+  __attribute__((nonnull (1)));
+
+
+
+
+/* Mutable routine parsing and construction result.
+ * ************************************************************************** */
+
+/* The status returned by safe routine parsing and editing functions.  When
+   different from success (zero) the routine is not modified. */
+enum jitter_routine_edit_status
+  {
+    /* Editing succeeded. */
+    jitter_routine_edit_status_success = 0,
+
+    /* A label is being defined more than once. */
+    jitter_routine_edit_status_label_defined_twice,
+
+    /* An instruction name or id is invalid. */
+    jitter_routine_edit_status_invalid_instruction,
+
+    /* A register cited as a parameter is invalid, because of either its class
+       or its index. */
+    jitter_routine_edit_status_invalid_register,
+
+    /* A register cited as a parameter does not have the expected class. */
+    jitter_routine_edit_status_register_class_mismatch,
+
+    /* A register cited as a has a non-existing class. */
+    jitter_routine_edit_status_nonexisting_register_class,
+
+    /* A parameter of one kind was given when another was expected: for example
+       a label was given when the parameter needed to be a register. */
+    jitter_routine_edit_status_invalid_parameter_kind,
+
+    /* An instruction was given more parameters than it takes. */
+    jitter_routine_edit_status_too_many_parameters,
+
+    /* An instruction was left incomplete at the end. */
+    jitter_routine_edit_status_last_instruction_incomplete,
+
+    /* Some other parse error happened.  This status is not returned by the
+       functions in this section but it can happen when parsing s routine in
+       textual form, for example because of mismatched parentheses. */
+    jitter_routine_edit_status_other_parse_error
+  };
+
+/* Routine parsing functions return a pointer to this function, or NULL in
+   case of success.  It is the user's responsiblity to destroy such returned
+   structs with a call to jitter_routine_parse_error_destroy. */
+struct jitter_routine_parse_error
+{
+  /* The parser status to return.  Notice that in case of error this status
+     represents the first problem encountered: parsing stops at the first
+     error. */
+  enum jitter_routine_edit_status status;
+
+  /* The input file name, or some textual representation of it if the input is
+     not an actual file or if its name is unknown.  This is malloc-allocated
+     but the user should not rely on this, and instead just use
+     jitter_routine_parse_error_destroy to destroy the entire struct and its
+     contents. */
+  char *file_name;
+
+  /* Line number of the error expressed in status, or -1 in case of
+     success. */
+  int error_line_no;
+
+  /* The text of the problematic token, malloc-allocated, in case of error
+     (but the user should not rely on this, and rely on
+     jitter_routine_parse_error_destroy to destroy the entire struct and its
+     contents). */
+  char *error_token_text;
+};
+
+/* See the comment before struct jitter_routine_parse_error . */
+void jitter_routine_parse_error_destroy (struct jitter_routine_parse_error *e)
+  __attribute__ ((nonnull (1)));
+
+/* Given a mutable-routine edit status return its text representation. */
+const char*
+jitter_routine_edit_status_to_string (enum jitter_routine_edit_status s);
+
+
+
+
+/* Mutable routine construction API: safe functions.
+ * ************************************************************************** */
+
+/* The functions declared in this section are safe, in the sense that in case of
+   parse error they return a non-zero result and do not alter the routine.
+   Otherwise each function declared here behaves identically to its counterpart
+   declared in the "unsafe" section above.
+   Of course the functions in this section are much less convenient to use;
+   notice that the VM routine parser needs to use these internally, in order
+   to handle some errors without failing fatally.
+
+   These function still fail fatally when an attempt is made to edit an
+   already-specialised routine: that is a programmer error, always
+   preventable. */
+
+/* Each function declared here behaves identically to its counterpart declared
+   in the "unsafe" section above. */
+enum jitter_routine_edit_status
+jitter_mutable_routine_append_label_safe (struct jitter_mutable_routine *p,
+                                          jitter_label label)
+  __attribute__ ((nonnull (1)));
+enum jitter_routine_edit_status
+jitter_mutable_routine_append_symbolic_label_safe
+   (jitter_label *result, /* This is allowed to be NULL. */
+    struct jitter_mutable_routine *p,
+    const char *label_name)
+  __attribute__ ((nonnull (2, 3)));
+enum jitter_routine_edit_status
+jitter_mutable_routine_append_instruction_name_safe
+   (struct jitter_mutable_routine *p,
+    const char *instruction_name)
+  __attribute__ ((nonnull (1, 2)));
+enum jitter_routine_edit_status
+jitter_mutable_routine_append_instruction_id_safe
+   (struct jitter_mutable_routine *p,
+    const struct jitter_meta_instruction * const mis,
+    size_t meta_instruction_no,
+    unsigned unspecialized_opcode)
+  __attribute__ ((nonnull (1, 2)));
+enum jitter_routine_edit_status
+jitter_mutable_routine_append_meta_instruction_safe
+   (struct jitter_mutable_routine *p,
+    const struct jitter_meta_instruction * const mi)
+  __attribute__ ((nonnull (1, 2)));
+enum jitter_routine_edit_status
+jitter_mutable_routine_append_literal_parameter_safe
+   (struct jitter_mutable_routine *p,
+    union jitter_word immediate)
+  __attribute__((nonnull (1)));
+enum jitter_routine_edit_status
+jitter_mutable_routine_append_signed_literal_parameter_safe
+   (struct jitter_mutable_routine *p,
+    jitter_int immediate)
+  __attribute__((nonnull (1)));
+enum jitter_routine_edit_status
+jitter_mutable_routine_append_unsigned_literal_parameter_safe
+   (struct jitter_mutable_routine *p,
+    jitter_uint immediate)
+  __attribute__((nonnull (1)));
+enum jitter_routine_edit_status
+jitter_mutable_routine_append_pointer_literal_parameter_safe
+   (struct jitter_mutable_routine *p,
+    void *immediate)
+  __attribute__((nonnull (1)));
+enum jitter_routine_edit_status
+jitter_mutable_routine_append_register_parameter_safe
+   (struct jitter_mutable_routine *p,
+    const struct jitter_register_class *c,
+    jitter_register_index register_index)
+  __attribute__((nonnull (1, 2)));
+enum jitter_routine_edit_status
+jitter_mutable_routine_append_symbolic_register_parameter_safe
+   (struct jitter_mutable_routine *p,
+    char register_class_as_char,
+    jitter_register_index register_index)
+  __attribute__((nonnull (1)));
+enum jitter_routine_edit_status
+jitter_mutable_routine_append_symbolic_label_parameter_safe
+   (jitter_label *result_or_NULL,
+    struct jitter_mutable_routine *p,
+    const char *label_name)
+  __attribute__((nonnull (2, 3)));
+enum jitter_routine_edit_status
+jitter_mutable_routine_append_label_parameter_safe
    (struct jitter_mutable_routine *p,
     jitter_label label)
   __attribute__((nonnull (1)));

@@ -1,6 +1,6 @@
 /* VM-independent routine code frontend: Bison parser.
 
-   Copyright (C) 2016, 2017, 2019, 2020 Luca Saiu
+   Copyright (C) 2016, 2017, 2019, 2020, 2022 Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -29,20 +29,75 @@
 
   #include <jitter/jitter-routine-parser.h>
   #include <jitter/jitter-routine-scanner.h>
+  #include <jitter/jitter-malloc.h>
+  #include <jitter/jitter-string.h>
   #include <jitter/jitter-fatal.h>
 
-  /* This is currently a fatal error.  I could longjmp away instead. */
-  static void
+  /* This is required for Bison parsers, called in case of parse errors for
+     "reporting"; instead of reporting I use it to record the error position. */
+  static void // FIXME: I think that this is required for Bison parsers.
   jitter_error (YYLTYPE *locp,
-                struct parser_arg *parser_arg, /*struct jitter_mutable_routine *routine,*/
-                yyscan_t scanner, const char *message)
-    __attribute__ ((noreturn));
+                struct parser_arg *parser_arg,
+                yyscan_t scanner, const char *message);
 
-  /* Just a forward-declaration.  FIXME: the error-reporting code in the jitterc
-     parser is derived from this, but more advanced; I should integrate it. */
-  static void
-  jitter_simple_error (void *jitter_scanner, const char *message)
-    __attribute__ ((noreturn));
+/* JITTER_HANDLE_STATUS: expand to a statement that, according to the
+   status (of type enum jitter_routine_edit_status) either does nothing or
+   registers the current parse error details in parser_arg->parse_status .  This
+   can be called from both actions and the jitter_error function.  In the case
+   of actions we would need to execute YYABORT right after this, but that would
+   not work in jitter_error ; hence the need for
+   JITTER_HANDLE_STATUS_WITHOUT_YYABORT. */
+#define JITTER_HANDLE_STATUS_WITHOUT_YYABORT(the_status)                        \
+  do                                                                            \
+    {                                                                           \
+      /* jitter_scanner is visible from this, since the expansion is in         \
+         actions. */                                                            \
+      enum jitter_routine_edit_status                                           \
+        _jitter_handle_edit_status_status = (the_status);                       \
+      switch (_jitter_handle_edit_status_status)                                \
+        {                                                                       \
+        case jitter_routine_edit_status_success:                                \
+          /* Do nothing: there is no error and parsing should continue. */      \
+          break;                                                                \
+        case jitter_routine_edit_status_label_defined_twice:                    \
+        case jitter_routine_edit_status_too_many_parameters:                    \
+        case jitter_routine_edit_status_last_instruction_incomplete:            \
+        case jitter_routine_edit_status_invalid_instruction:                    \
+        case jitter_routine_edit_status_invalid_register:                       \
+        case jitter_routine_edit_status_register_class_mismatch:                \
+        case jitter_routine_edit_status_nonexisting_register_class:             \
+        case jitter_routine_edit_status_invalid_parameter_kind:                 \
+        case jitter_routine_edit_status_other_parse_error:                      \
+          /* Update the parse status and location so that at parser exit the    \
+             caller will find precise information. */                           \
+          parser_arg->parse_status.status = _jitter_handle_edit_status_status;  \
+          parser_arg->parse_status.error_line_no                                \
+            = jitter_get_lineno (jitter_scanner);                               \
+          parser_arg->parse_status.error_token_text                             \
+            = jitter_clone_string (jitter_get_text (jitter_scanner));           \
+          /* Here we would call YYABORT. */                                     \
+          break;                                                                \
+        default:                                                                \
+          jitter_fatal ("unimplemented or invalid case %i",                     \
+                        _jitter_handle_edit_status_status);                     \
+        };                                                                      \
+    }                                                                           \
+  while (false)
+#define JITTER_HANDLE_STATUS(the_status)                     \
+  do                                                         \
+    {                                                        \
+      /* First do what JITTER_HANDLE_STATUS_WITHOUT_YYABORT  \
+         does... */                                          \
+      enum jitter_routine_edit_status                        \
+        _jitter_handle_edit_status_status_y = (the_status);  \
+      JITTER_HANDLE_STATUS_WITHOUT_YYABORT                   \
+         (_jitter_handle_edit_status_status_y);              \
+      /* ...Then use YYABORT in case of error. */            \
+      if (_jitter_handle_edit_status_status_y                \
+          != jitter_routine_edit_status_success)             \
+        YYABORT;                                             \
+    }                                                        \
+  while (false)
 
 /* Set the given lvalue, with the %type whose definition is union
    jitter_literal, converting jitter_get_text (jitter_scanner) using the given
@@ -111,9 +166,7 @@
 %defines
 
 /* This is a reentrant parser. */
-/*%define api.pure full*/ /* FIXME: I'd need to %require "3.0" for this.  Do I
-                             care about the difference?  Probably not. */
-%define api.pure
+%define api.pure full
 
 /* We need to receive location information from the scanner, Bison-style. */
 %locations
@@ -136,43 +189,44 @@
   #include <jitter/jitter-mutable-routine.h>
   #include <jitter/jitter-vm.h>
 
-  /* The structure whose pointer is passed to the parser function.  FIXME:
-     revert to having just the routine as a parser argument: the VM is reachable
-     from the routine. */
+  /* A structure whose pointer is passed to the parser function. */
   struct parser_arg
   {
-    /* The routine to be parsed, allowed but not required to be empty on
-       input. */
-    struct jitter_mutable_routine *routine;
+    /* In case of parse error we will need to return a pointer to a copy of this
+       to the user; this is useful to store error details. */
+    struct jitter_routine_parse_error parse_status;
 
-    /* VM-dependent data.  Not modified. */
+    /* VM-dependent data for the routine's VM.  Not modified. */
     const struct jitter_vm *vm;
+
+    /* The routine which is being parsed, allowed to contain no instructions at
+       the beginning of parsing. */
+// FIXME: in case of parse errors restore the routine to its initial state. /////////////////////////////
+    struct jitter_mutable_routine *routine;
   };
 
-  /* Simplified error-reporting facilities calling vmprefix_error, suitable to be
-     called from the scanner and the parser without the complicated and
-     irrelevant parameters needed by vmprefix_error . */
-  void
-  jitter_scan_error (void *jitter_scanner) __attribute__ ((noreturn));
-  void
-  jitter_parse_error (void *jitter_scanner) __attribute__ ((noreturn));
-
-  /* Parse a routine for the pointed VM from a file or a string in memory, adding
-     code to the pointed VM routine.
+  /* Parse a routine for the pointed VM from a file or a string in memory,
+     adding code to the pointed VM routine.
      These functions work of course on any VM, but are slightly inconvenient for
      the user to call directly.  For this reason they are wrapped in the vm1.c
-     template into VM-specific functions not requiring a VM struct pointer. */
-  void
+     template into VM-specific functions not requiring a VM struct pointer.
+
+     The result is NULL on success, and on error a pointer to a fresh struct of
+     type struct jitter_routine_parse_error containing details about the error,
+     to be destroyed by the user via jitter_routine_parse_error_destroy .
+
+     In case of parse error the routine is *not* modified. */
+  struct jitter_routine_parse_error*
   jitter_parse_mutable_routine_from_file_star (FILE *input_file,
                                                struct jitter_mutable_routine *p,
                                                const struct jitter_vm *vm)
     __attribute__ ((nonnull (1, 2, 3)));
-  void
+  struct jitter_routine_parse_error*
   jitter_parse_mutable_routine_from_file (const char *input_file_name,
                                           struct jitter_mutable_routine *p,
                                           const struct jitter_vm *vm)
     __attribute__ ((nonnull (1, 2, 3)));
-  void
+  struct jitter_routine_parse_error*
   jitter_parse_mutable_routine_from_string (const char *string,
                                             struct jitter_mutable_routine *p,
                                             const struct jitter_vm *vm)
@@ -193,6 +247,13 @@
 %token BYTESPERWORD LGBYTESPERWORD BITSPERWORD
 %token PLUS MINUS TIMES DIV MOD
 %token UNSIGNED_PLUS UNSIGNED_MINUS UNSIGNED_TIMES UNSIGNED_DIV UNSIGNED_MOD
+
+/* This of course never occurs in the grammar and therefore causes a parse error
+   when encountered; the token is returned by the scanner when if fails to
+   recognise a token.  This trick allows me to unify scan errors and parse
+   errors. */
+%token INVALID_TOKEN
+
 %expect 100 /* FIXME: handle precedence and associativity.  Those shift/reduce
                conflicts should only come from expressions, unless something
                quite big escaped my attention. */
@@ -217,15 +278,18 @@ instruction :
 label :
   LABEL { char *label = jitter_get_text (jitter_scanner);
           label [strlen (label) - 1] = '\0';  /* Remove the trailing colon. */
-          /* Add one to skip the prefix. */
-          jitter_mutable_routine_append_symbolic_label (parser_arg->routine,
-                                                        label + 1); }
+          JITTER_HANDLE_STATUS
+             (jitter_mutable_routine_append_symbolic_label_safe
+                 (NULL,
+                  parser_arg->routine,
+                  label)); }
 ;
 
 instruction_name :
   INSTRUCTION_NAME { char *name = jitter_get_text (jitter_scanner);
-                     jitter_mutable_routine_append_instruction_name
-                        (parser_arg->routine, name); }
+                     JITTER_HANDLE_STATUS
+                        (jitter_mutable_routine_append_instruction_name_safe
+                            (parser_arg->routine, name)); }
 ;
 
 arguments :
@@ -282,57 +346,82 @@ int_expression :
 ;
 
 argument :
-  int_expression { jitter_mutable_routine_append_literal_parameter
-                      (parser_arg->routine, $1); }
-| LABEL_LITERAL  { char *text = jitter_get_text (jitter_scanner) + 1; /* Skip the prefix. */
-                   jitter_mutable_routine_append_symbolic_label_parameter
-                      (parser_arg->routine, text); }
+  int_expression { JITTER_HANDLE_STATUS
+                      (jitter_mutable_routine_append_literal_parameter_safe
+                         (parser_arg->routine, $1)); }
+| LABEL_LITERAL  { char *text = jitter_get_text (jitter_scanner);
+                   JITTER_HANDLE_STATUS
+                      (jitter_mutable_routine_append_symbolic_label_parameter_safe
+                         (NULL, parser_arg->routine, text)); }
 | REGISTER       { char *text = jitter_get_text (jitter_scanner);
                    char register_class_character = text [1];
-                   const struct jitter_register_class *register_class
-                     = parser_arg->routine->vm->register_class_character_to_register_class
-                          (register_class_character);
-                   if (register_class == NULL)
-                     jitter_simple_error (jitter_scanner, "invalid register class");
                    int register_id = strtol (text + 2, NULL, 10);
-                   jitter_mutable_routine_append_register_parameter
-                      (parser_arg->routine, register_class, register_id); }
+                   JITTER_HANDLE_STATUS
+                      (jitter_mutable_routine_append_symbolic_register_parameter_safe
+                         (parser_arg->routine, register_class_character,
+                          register_id)); }
 ;
 
 %%
 
-/* FIXME: the error-reporting facility in generator/generator.y is derived
-   from this, but improved. */
-void
+static void
 jitter_error (YYLTYPE *locp,
               struct parser_arg *parser_arg,
               yyscan_t jitter_scanner, const char *message)
 {
-  printf ("<INPUT>:%i: %s near \"%s\".\n",
-          jitter_get_lineno (jitter_scanner), message,
-          jitter_get_text (jitter_scanner));
-  exit (EXIT_FAILURE);
+  JITTER_HANDLE_STATUS_WITHOUT_YYABORT
+     (jitter_routine_edit_status_other_parse_error);
 }
 
-__attribute__ ((noreturn)) static void
-jitter_simple_error (void *jitter_scanner, const char *message)
+/* This function could be implemented elsewhere, but in practice I suppose it is
+   only used when the parser is also used: therefore having it in this
+   compilation unit will make the code a littel smaller. */
+const char*
+jitter_routine_edit_status_to_string (enum jitter_routine_edit_status s)
 {
-  jitter_error (jitter_get_lloc (jitter_scanner),
-            NULL, /* We have no routine here, but it's not important. */
-            jitter_scanner,
-            message);
+  switch (s)
+    {
+    case jitter_routine_edit_status_success:
+      return "success";
+    case jitter_routine_edit_status_label_defined_twice:
+      return "label defined twice";
+    case jitter_routine_edit_status_too_many_parameters:
+      return "too many parameters";
+    case jitter_routine_edit_status_last_instruction_incomplete:
+      return "last instruction incomplete";
+    case jitter_routine_edit_status_invalid_instruction:
+      return "invalid instruction";
+    case jitter_routine_edit_status_register_class_mismatch:
+      return "register class mismatch";
+    case jitter_routine_edit_status_nonexisting_register_class:
+      return "nonexisting register class";
+    case jitter_routine_edit_status_invalid_register:
+      return "invalid register";
+    case jitter_routine_edit_status_invalid_parameter_kind:
+      return "invalid parameter kind";
+    case jitter_routine_edit_status_other_parse_error:
+      return "parse error";
+    default:
+      jitter_fatal ("jitter_routine_edit_status_to_string: invalid argument %i",
+                    (int) s);
+    };
+}
+
+/* The comment about code size before jitter_routine_edit_status_to_string
+   applies here as well. */
+__attribute__ ((nonnull (1)))
+static void
+jitter_routine_parse_error_finalize (struct jitter_routine_parse_error *e)
+{
+  free (e->file_name);
+  free (e->error_token_text);
 }
 
 void
-jitter_scan_error (void *jitter_scanner)
+jitter_routine_parse_error_destroy (struct jitter_routine_parse_error *e)
 {
-  jitter_simple_error (jitter_scanner, "scan error");
-}
-
-void
-jitter_parse_error (void *jitter_scanner)
-{
-  jitter_simple_error (jitter_scanner, "parse error");
+  jitter_routine_parse_error_finalize (e);
+  free (e);
 }
 
 /* This is the main parser function doing all the work.  The other parsing
@@ -340,55 +429,92 @@ jitter_parse_error (void *jitter_scanner)
    this.
    The pointed scanner must be already initialized when this is called, and
    it's the caller's responsibility to finalize it. */
-static void
-jitter_parse_core (yyscan_t scanner, struct jitter_mutable_routine *p,
+static struct jitter_routine_parse_error *
+jitter_parse_core (const char *file_name_to_print,
+                   yyscan_t scanner, struct jitter_mutable_routine *p,
                    const struct jitter_vm *vm)
 {
   struct parser_arg pa;
-  pa.vm = (struct jitter_vm *) vm;
+  /* Initialise the parse status to a no-error value. */
+  pa.parse_status.status = jitter_routine_edit_status_success;
+  pa.parse_status.file_name = jitter_clone_string (file_name_to_print);
+  pa.parse_status.error_line_no = -1;
+  pa.parse_status.error_token_text = NULL;
+
+  /* Use pa to let the parser access the mutable routine it needs to add to, and
+     its VM. */
   pa.routine = p;
-  /* FIXME: if I ever make parsing errors non-fatal, call jitter_lex_destroy before
-     returning. */
+  pa.vm = (struct jitter_vm *) vm;
+
+  /* Notice that the lexer state will need to be destroyed, in case of both
+     success and failure; but it will be destroyed by the caller, not here. */
   if (jitter_parse (& pa, scanner))
-    jitter_error (jitter_get_lloc (scanner),
-                  & pa,
-                  scanner, "parse error");
+    {
+      /* Parse error.  Make a copy of the parse status, a pointer of which will
+         be returned to the user.  The user will have to destroy it with
+         jitter_routine_parse_error_destroy .  It simply works by keeping each
+         string field in the struct, and the struct itself, malloc-allocated. */
+      struct jitter_routine_parse_error *res
+        = jitter_xmalloc (sizeof (struct jitter_routine_parse_error));
+      * res = pa.parse_status;
+      return res;
+    }
+  else
+    {
+      /* Parse success.  Destroy the parse status malloc-allocated part, and we
+         are done. */
+      jitter_routine_parse_error_finalize (& pa.parse_status);
+      return NULL;
+    }
 }
 
-void
-jitter_parse_mutable_routine_from_file_star (FILE *input_file,
-                                             struct jitter_mutable_routine *p,
-                                             const struct jitter_vm *vm)
+static struct jitter_routine_parse_error *
+jitter_parse_mutable_routine_from_named_file_star (const char *input_file_name,
+                                                   FILE *input_file,
+                                                   struct jitter_mutable_routine
+                                                   *p,
+                                                   const struct jitter_vm *vm)
 {
   yyscan_t scanner;
   jitter_lex_init (& scanner);
   jitter_set_in (input_file, scanner);
 
-  jitter_parse_core (scanner, p, vm);
+  struct jitter_routine_parse_error *res
+    = jitter_parse_core (input_file_name, scanner, p, vm);
 
   jitter_set_in (NULL, scanner);
   jitter_lex_destroy (scanner);
+  return res;
 }
 
-void
+struct jitter_routine_parse_error *
+jitter_parse_mutable_routine_from_file_star (FILE *input_file,
+                                             struct jitter_mutable_routine *p,
+                                             const struct jitter_vm *vm)
+{
+  return jitter_parse_mutable_routine_from_named_file_star ("<input>",
+                                                            input_file,
+                                                            p,
+                                                            vm);
+}
+
+struct jitter_routine_parse_error *
 jitter_parse_mutable_routine_from_file (const char *input_file_name,
                                         struct jitter_mutable_routine *p,
                                         const struct jitter_vm *vm)
 {
   FILE *f;
   if ((f = fopen (input_file_name, "r")) == NULL)
-    {
-      printf ("failed opening file");
-      exit (EXIT_FAILURE);
-    }
+    jitter_fatal ("could not open %s for reading", input_file_name);
 
-  /* FIXME: if I ever make parse errors non-fatal, I'll need to close the file
-     before returning. */
-  jitter_parse_mutable_routine_from_file_star (f, p, vm);
+  struct jitter_routine_parse_error *res
+    = jitter_parse_mutable_routine_from_named_file_star (input_file_name,
+                                                         f, p, vm);
   fclose (f);
+  return res;
 }
 
-void
+struct jitter_routine_parse_error *
 jitter_parse_mutable_routine_from_string (const char *string,
                                           struct jitter_mutable_routine *p,
                                           const struct jitter_vm *vm)
@@ -396,6 +522,8 @@ jitter_parse_mutable_routine_from_string (const char *string,
   yyscan_t scanner;
   jitter_lex_init (& scanner);
   jitter__scan_string (string, scanner);
-  jitter_parse_core (scanner, p, vm);
+  struct jitter_routine_parse_error *res
+    = jitter_parse_core ("<string>", scanner, p, vm);
   jitter_lex_destroy (scanner);
+  return res;
 }

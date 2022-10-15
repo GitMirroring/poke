@@ -87,6 +87,6 @@ COMMENT          "#".*(\n|\r)
 {LABEL_PREFIX}{IDENTIFIER}    { return LABEL_LITERAL; }
 {LABEL_PREFIX}{IDENTIFIER}":" { return LABEL; }
 ,                         { return COMMA; }
-.                         { jitter_scan_error (yyscanner); }
+.                         { return INVALID_TOKEN; }
 
 %%

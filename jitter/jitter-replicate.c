@@ -1,6 +1,7 @@
 /* Jitter: replication functionality.
 
    Copyright (C) 2016, 2017, 2018, 2019, 2021 Luca Saiu
+   Updated in 2022 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -148,7 +149,7 @@ jitter_replicate_program (struct jitter_mutable_routine *p)
   struct jitter_replicated_block * const replicated_blocks
     = jitter_dynamic_buffer_to_pointer (& p->replicated_blocks);
   char *specialized_instructions
-    = jitter_dynamic_buffer_to_pointer (& p->specialized_program);
+    = jitter_dynamic_buffer_to_pointer (& p->specialized_routine);
   //printf ("specialized_instructions is %p\n", specialized_instructions);
   char *free_code = code;
   //printf ("specialized_instructions are %i\n", specialized_instruction_no);

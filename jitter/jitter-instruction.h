@@ -1,7 +1,7 @@
 /* Jitter: VM-independent instruction header.
 
    Copyright (C) 2016, 2017, 2019, 2020 Luca Saiu
-   Updated in 2021 by Luca Saiu
+   Updated in 2021 and 2022 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -329,7 +329,7 @@ jitter_finalize_meta_instructions (struct jitter_hash_table *
 
 /* Given a pointer to the meta-instruction hash table and a meta-instruction
    name return a pointer to the meta-instruction statically-allocated
-   descriptor.  Undefined behavior if no such meta-instruction exists. */
+   descriptor.  Return NULL if no such meta-instruction exists. */
 const struct jitter_meta_instruction*
 jitter_lookup_meta_instruction (const struct jitter_hash_table *mi_hash,
                                   const char *name);

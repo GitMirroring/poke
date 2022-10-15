@@ -646,10 +646,23 @@ main (int argc, char **argv)
 
   if (cl.debug)
     fprintf (progress, "Parsing...\n");
+  struct vmprefix_routine_parse_error *parse_error_p;
   if (! strcmp (cl.input_file, "-"))
-    vmprefix_parse_mutable_routine_from_file_star (stdin, r);
+    parse_error_p = vmprefix_parse_mutable_routine_from_file_star (stdin, r);
   else
-    vmprefix_parse_mutable_routine_from_file (cl.input_file, r);
+    parse_error_p = vmprefix_parse_mutable_routine_from_file (cl.input_file, r);
+  if (parse_error_p != NULL)
+    {
+      /* Parse error: print an error message.  In order to test the code and
+         avoid memory leaks in any circumstance, which helps debugging with
+         valgrind, we do not exit immediately. */
+      printf ("%s:%i near \"%s\": %s\n",
+              parse_error_p->file_name, parse_error_p->error_line_no,
+              parse_error_p->error_token_text,
+              vmprefix_routine_edit_status_to_string (parse_error_p->status));
+      vmprefix_routine_parse_error_destroy (parse_error_p);
+    }
+
   if (cl.debug)
     fprintf (progress, "The requried slow register number is %li per class.\n",
              (long) r->slow_register_per_class_no);
@@ -657,8 +670,9 @@ main (int argc, char **argv)
   /* Make an executable jittery routine. */
   if (cl.debug)
     fprintf (progress, "Making executable...\n");
-  struct vmprefix_executable_routine *er
-    = vmprefix_make_executable_routine (r);
+  struct vmprefix_executable_routine *er = NULL;
+  if (parse_error_p == NULL)
+    er = vmprefix_make_executable_routine (r);
 
   /* Print defect information. */
   switch (cl.print_defects)
@@ -683,21 +697,21 @@ main (int argc, char **argv)
                     "happen");
     }
 
-  if (cl.print_routine)
+  if (parse_error_p == NULL && cl.print_routine)
     {
       if (cl.debug)
         fprintf (progress, "Printing back the routine...\n");
       vmprefix_mutable_routine_print (ctx, r);
     }
 
-  if (cl.print_locations)
+  if (parse_error_p == NULL && cl.print_locations)
     {
       if (cl.debug)
         fprintf (progress, "Printing data location information...\n");
       vmprefix_dump_data_locations (ctx);
     }
 
-  if (cl.disassemble_routine)
+  if (parse_error_p == NULL && cl.disassemble_routine)
     {
       if (cl.debug)
         fprintf (progress, "Disassembling...\n");
@@ -716,7 +730,7 @@ main (int argc, char **argv)
       fflush (stderr);
     }
 
-  if (cl.run_routine)
+  if (parse_error_p == NULL && cl.run_routine)
     {
       if (cl.debug)
         fprintf (progress, "Initializing VM state...\n");
@@ -754,7 +768,8 @@ main (int argc, char **argv)
     fprintf (progress, "Destroying the routine data structure...\n");
   /* Destroy the Jittery routine in both its versions, executable and
      non-executable. */
-  vmprefix_destroy_executable_routine (er);
+  if (parse_error_p == NULL)
+    vmprefix_destroy_executable_routine (er);
   vmprefix_destroy_mutable_routine (r);
 
   if (cl.debug)
@@ -771,6 +786,7 @@ main (int argc, char **argv)
 #endif // #ifdef JITTER_WITH_LIBTEXTSTYLE
 
   if (cl.debug)
-    fprintf (progress, "Still alive at exit.\n");
-  return 0;
+    fprintf (progress, "Still alive at exit%s\n",
+             ((parse_error_p != NULL) ? ": parse error" : ""));
+  return parse_error_p != NULL;
 }

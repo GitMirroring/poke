@@ -618,18 +618,57 @@ struct jitter_special_purpose_state_data
 /* Mutable routine text frontend.
  * ************************************************************************** */
 
+/* An enum type. */
+#define vmprefix_routine_edit_status  \
+  jitter_routine_edit_status
+/* Cases for an enum type. */
+#define vmprefix_routine_edit_status_success  \
+  jitter_routine_edit_status_success
+#define vmprefix_routine_edit_status_label_defined_twice  \
+  jitter_routine_edit_status_label_defined_twice
+#define vmprefix_routine_edit_status_invalid_instruction  \
+  jitter_routine_edit_status_invalid_instruction
+#define vmprefix_routine_edit_status_invalid_register  \
+  jitter_routine_edit_status_invalid_register
+#define vmprefix_routine_edit_status_register_class_mismatch  \
+  jitter_routine_edit_status_register_class_mismatch
+#define vmprefix_routine_edit_status_nonexisting_register_class  \
+  jitter_routine_edit_status_nonexisting_register_class
+#define vmprefix_routine_edit_status_invalid_parameter_kind  \
+  jitter_routine_edit_status_invalid_parameter_kind
+#define vmprefix_routine_edit_status_too_many_parameters  \
+  jitter_routine_edit_status_too_many_parameters
+#define vmprefix_routine_edit_status_last_instruction_incomplete  \
+  jitter_routine_edit_status_last_instruction_incomplete
+#define vmprefix_routine_edit_status_other_parse_error  \
+  jitter_routine_edit_status_other_parse_error
+
+/* Given a parse status of type enum jitter_routine_edit_status return its
+   written C representation. */
+#define vmprefix_routine_edit_status_to_string  \
+  jitter_routine_edit_status_to_string
+
+/* The name of the struct returned by parsers. */
+#define vmprefix_routine_parse_error  \
+  jitter_routine_parse_error
+
+/* The name of the function destroying a pointer to vmprefix_routine_parse_error
+   , returned by routine parsers in case of error. */
+#define vmprefix_routine_parse_error_destroy  \
+  jitter_routine_parse_error_destroy
+
 /* Parse VM code from the given file or string into the pointed VM routine,
    which is allowed but not required to be empty.
    These are simple wrappers around functions implemented in the Bison file. */
-void
+struct vmprefix_routine_parse_error *
 vmprefix_parse_mutable_routine_from_file_star (FILE *input_file,
                                                struct jitter_mutable_routine *p)
   __attribute__ ((nonnull (1, 2)));
-void
+struct vmprefix_routine_parse_error *
 vmprefix_parse_mutable_routine_from_file (const char *input_file_name,
                                           struct jitter_mutable_routine *p)
   __attribute__ ((nonnull (1, 2)));
-void
+struct vmprefix_routine_parse_error *
 vmprefix_parse_mutable_routine_from_string (const char *string,
                                             struct jitter_mutable_routine *p)
   __attribute__ ((nonnull (1, 2)));
@@ -818,7 +857,7 @@ vmprefix_vm_configuration;
 #define vmprefix_executable_routine_disassemble \
   jitter_executable_routine_disassemble
 
-/* Mutable routine construction API. */
+/* Mutable routine construction API: unsafe API */
 #define vmprefix_mutable_routine_append_instruction_name \
   jitter_mutable_routine_append_instruction_name
 #define vmprefix_mutable_routine_append_meta_instruction \
@@ -829,6 +868,8 @@ vmprefix_vm_configuration;
   jitter_mutable_routine_append_symbolic_label
 #define vmprefix_mutable_routine_append_register_parameter \
   jitter_mutable_routine_append_register_parameter
+#define vmprefix_mutable_routine_append_symbolic_register_parameter \
+  jitter_mutable_routine_append_symbolic_register_parameter
 #define vmprefix_mutable_routine_append_literal_parameter \
   jitter_mutable_routine_append_literal_parameter
 #define vmprefix_mutable_routine_append_signed_literal_parameter \
@@ -841,6 +882,34 @@ vmprefix_vm_configuration;
   jitter_mutable_routine_append_label_parameter
 #define vmprefix_mutable_routine_append_symbolic_label_parameter \
   jitter_mutable_routine_append_symbolic_label_parameter
+
+/* Mutable routine construction API: safe API */
+#define vmprefix_mutable_routine_append_label_safe  \
+  jitter_mutable_routine_append_label_safe
+#define vmprefix_mutable_routine_append_symbolic_label_safe  \
+  jitter_mutable_routine_append_symbolic_label_safe
+#define vmprefix_mutable_routine_append_instruction_name_safe  \
+  jitter_mutable_routine_append_instruction_name_safe
+#define vmprefix_mutable_routine_append_instruction_id_safe  \
+  jitter_mutable_routine_append_instruction_id_safe
+#define vmprefix_mutable_routine_append_meta_instruction_safe  \
+  jitter_mutable_routine_append_meta_instruction_safe
+#define vmprefix_mutable_routine_append_literal_parameter_safe  \
+  jitter_mutable_routine_append_literal_parameter_safe
+#define vmprefix_mutable_routine_append_signed_literal_parameter_safe  \
+  jitter_mutable_routine_append_signed_literal_parameter_safe
+#define vmprefix_mutable_routine_append_unsigned_literal_parameter_safe  \
+  jitter_mutable_routine_append_unsigned_literal_parameter_safe
+#define vmprefix_mutable_routine_append_pointer_literal_parameter_safe  \
+  jitter_mutable_routine_append_pointer_literal_parameter_safe
+#define vmprefix_mutable_routine_append_register_parameter_safe  \
+  jitter_mutable_routine_append_register_parameter_safe
+#define vmprefix_mutable_routine_append_symbolic_register_parameter_safe  \
+  jitter_mutable_routine_append_symbolic_register_parameter_safe
+#define vmprefix_mutable_routine_append_symbolic_label_parameter_safe  \
+  jitter_mutable_routine_append_symbolic_label_parameter_safe
+#define vmprefix_mutable_routine_append_label_parameter_safe  \
+  jitter_mutable_routine_append_label_parameter_safe
 
 /* Mutable routine destruction. */
 #define vmprefix_destroy_executable_routine \

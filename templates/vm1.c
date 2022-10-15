@@ -897,25 +897,27 @@ vmprefix_ensure_enough_slow_registers_for_executable_routine
 /* Program text frontend.
  * ************************************************************************** */
 
-void
+struct vmprefix_routine_parse_error *
 vmprefix_parse_mutable_routine_from_file_star (FILE *input_file,
                                                struct jitter_mutable_routine *p)
 {
-  jitter_parse_mutable_routine_from_file_star (input_file, p, vmprefix_vm);
+  return jitter_parse_mutable_routine_from_file_star (input_file, p,
+                                                      vmprefix_vm);
 }
 
-void
+struct vmprefix_routine_parse_error *
 vmprefix_parse_mutable_routine_from_file (const char *input_file_name,
                                           struct jitter_mutable_routine *p)
 {
-  jitter_parse_mutable_routine_from_file (input_file_name, p, vmprefix_vm);
+  return jitter_parse_mutable_routine_from_file (input_file_name, p,
+                                                 vmprefix_vm);
 }
 
-void
+struct vmprefix_routine_parse_error *
 vmprefix_parse_mutable_routine_from_string (const char *string,
                                             struct jitter_mutable_routine *p)
 {
-  jitter_parse_mutable_routine_from_string (string, p, vmprefix_vm);
+  return jitter_parse_mutable_routine_from_string (string, p, vmprefix_vm);
 }
 
 
