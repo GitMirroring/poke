@@ -1,0 +1,39 @@
+# This is an -*- asm -*- file, so to speak.
+
+# Increment a register 2 ** 31 times, each time checking for overflow.
+
+# Copyright (C) 2022 Luca Saiu
+# Written by Luca Saiu
+
+# This file is part of GNU Jitter.
+
+# GNU Jitter is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# GNU Jitter is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with GNU Jitter.  If not, see <http://www.gnu.org/licenses/>.
+
+
+        # The initial value loaded in %r1 is the number of outer-loop iterations.
+        mov 1, %r1
+        b $condition
+$reinit:
+        # We want to iterate 2**31 times on both 32-bit and 64-bit
+        # archictectures: so let us initialise the register so that it is 2**31
+        # units away from overflow.
+        mov JITTER_INT_MAX - (2 **u 31 - 1), %r0
+$inner-loop:
+        addo %r0, 1, %r0, $end-of-outer-loop
+        b $inner-loop
+$end-of-outer-loop:
+        printfixnum %r1
+        sub %r1, 1, %r1
+$condition:
+        bnz %r1, $reinit

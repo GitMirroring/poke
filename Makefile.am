@@ -1155,6 +1155,7 @@ endif # JITTER_ENABLE_DISPATCH_NO_THREADING
 
 # Examples VM routines for the Uninspired VM example, to be distributed.
 EXTRA_DIST += \
+  example-vms/uninspired/examples/count-till-overflow.vm \
   example-vms/uninspired/examples/euclid.vm \
   example-vms/uninspired/examples/euclid-faster.vm \
   example-vms/uninspired/examples/euclid-super.vm \
