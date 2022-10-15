@@ -1,7 +1,7 @@
 ## An uninspired and unoriginal Jitter VM, useful as an example.
 
 legal-notice
-  Copyright (C) 2016, 2017, 2019, 2020, 2021 Luca Saiu
+  Copyright (C) 2016, 2017, 2019, 2020, 2021, 2022 Luca Saiu
   Written by Luca Saiu
 
   This file is part of GNU Jitter.
@@ -178,6 +178,11 @@ late-c
     vmprefix_printfixnum_format_string
       __attribute__ ((unused))
       = "%" JITTER_PRIi "\n";
+
+static const char * const
+    vmprefix_printufixnum_format_string
+      __attribute__ ((unused))
+      = "%" JITTER_PRIu "\n";
 
     static const char * const
     vmprefix_printdouble_format_string
@@ -1383,6 +1388,20 @@ instruction printfixnum (?Rn)
   non-relocatable
   code
     printf (vmprefix_printfixnum_format_string, (jitter_int) JITTER_ARGN0);
+/*
+    printf (vmprefix_printfixnum_decimal_hex_format_string,
+            (jitter_int) JITTER_ARGN0,
+            (jitter_int) JITTER_ARGN0);
+*/
+    fflush (NULL);
+  end
+end
+
+instruction printufixnum (?Rn)
+  cold
+  non-relocatable
+  code
+    printf (vmprefix_printufixnum_format_string, (jitter_int) JITTER_ARGN0);
 /*
     printf (vmprefix_printfixnum_decimal_hex_format_string,
             (jitter_int) JITTER_ARGN0,
