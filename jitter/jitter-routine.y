@@ -413,7 +413,7 @@ jitter_error (YYLTYPE *locp,
 
 /* This function could be implemented elsewhere, but in practice I suppose it is
    only used when the parser is also used: therefore having it in this
-   compilation unit will make the code a littel smaller. */
+   compilation unit will make the code a little smaller. */
 const char*
 jitter_routine_edit_status_to_string (enum jitter_routine_edit_status s)
 {
