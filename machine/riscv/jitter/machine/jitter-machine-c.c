@@ -1,6 +1,7 @@
 /* VM library: native code patching for RISC-V .
 
    Copyright (C) 2017, 2019, 2020 Luca Saiu
+   Updated in 2022 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -22,6 +23,8 @@
 #include <stdint.h>
 #include <assert.h>
 #include <string.h>
+
+#include <sys/cachectl.h>  /* for __riscv_flush_icache */
 
 #include <jitter/jitter-fatal.h>
 
@@ -122,8 +125,7 @@ struct jitter_riscv_b_type_instruction
 void
 jitter_invalidate_icache (char *from, size_t byte_no)
 {
-  /* I am assuming that this does not need to do anything on RISC-V.  Not
-     tested on real hardware yet. */
+  __riscv_flush_icache (from, from + byte_no, 0);
 }
 
 /* Return the distance in bytes, from the pointed instruction, to be patched,
