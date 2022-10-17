@@ -1,3 +1,12 @@
+2022-10-17  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-gen.c (pkl_gen_pr_asm_stmt): Do not check the result
+	of the asm statement for null.
+	(pkl_gen_pr_asm_exp): Likewise.
+	* testsuite/poke.pkl/asm-exp-5.pk: Remove.
+	* testsuite/poke.pkl/asm-stmt-5.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Update accordingly.
+
 2022-10-15  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-gen.pks (array_mapper): Install the sbound in the

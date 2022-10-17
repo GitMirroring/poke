@@ -4543,18 +4543,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_asm_stmt)
        output;
        output = PKL_AST_CHAIN (output))
     {
-      /* If the output on the stack is PVM_NULL then raise
-         E_stack.  */
-      pvm_program_label output_ok_label = pkl_asm_fresh_label (PKL_GEN_ASM);
-
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BNN, output_ok_label);
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
-                    pvm_make_exception (PVM_E_STACK, PVM_E_STACK_NAME,
-                                        PVM_E_STACK_ESTATUS, NULL,
-                                        "null output in asm statement"));
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_RAISE);
-      pkl_asm_label (PKL_GEN_ASM, output_ok_label);
-
       PKL_PASS_SUBPASS (output);
     }
 
@@ -4601,17 +4589,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_asm_exp)
   /* Assembly the asm template.  */
   pkl_asm_from_string (PKL_GEN_ASM,
                        PKL_AST_IDENTIFIER_POINTER (PKL_AST_ASM_EXP_TEMPLATE (asm_exp)));
-
-  /* If the output on the stack is PVM_NULL then raise E_stack.  */
-  pvm_program_label output_ok_label = pkl_asm_fresh_label (PKL_GEN_ASM);
-
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BNN, output_ok_label);
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
-                pvm_make_exception (PVM_E_STACK, PVM_E_STACK_NAME,
-                                    PVM_E_STACK_ESTATUS, NULL,
-                                    "null output in asm expression"));
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_RAISE);
-  pkl_asm_label (PKL_GEN_ASM, output_ok_label);
 
   /* Check and drop the canary.  */
   {
