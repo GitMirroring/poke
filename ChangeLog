@@ -1,3 +1,30 @@
+2022-10-20  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-asm.pks (asetc): New macro.
+	* libpoke/pkl-gen.c (pkl_gen_pr_type_array): Require a bounder in
+	IN_TYPE context.
+	(pkl_gen_pr_array): Generate bounder of the type of array
+	literals.
+	(pkl_gen_pr_ass_stmt): Use ASETC instead of ASET.
+	* libpoke/pkl-asm.pks (array_conv_sel): Set closures as array type
+	bounders.
+	(array_conv_siz): Likewise.
+	* libpoke/pkl-fold.c (OP_BINARY_AAA_ADD): Add missing ASTREF.
+	* libpoke/pkl-gen.pks (array_mapper): Use IN_TYPE context to get
+	the type of the mapped array.
+	(array_constructor): Likewise for constructed arrays.
+	* libpoke/pkl-insn.def: New macro-instruction PKL_INSN_ASETC.
+	* libpoke/pkl-asm.c (pkl_asm_insn_asetc): New function.
+	(pkl_asm_insn): Handle PKL_INSN_ASETC.
+	* testsuite/poke.pkl/array-bound-1.pk: Update test.
+	* testsuite/poke.pkl/array-bound-2.pk: Likewise.
+	* testsuite/poke.pkl/array-bound-3.pk: Likewise.
+	* testsuite/poke.pkl/array-bound-4.pk: Likewise.
+	* testsuite/poke.pkl/array-bound-5.pk: New test.
+	* testsuite/poke.pkl/array-bound-6.pk: Likewise.
+	* testsuite/poke.pkl/array-bound-7.pk: Likewise.
+	* testsuite/poke.map/ass-map-27.pk: Likewise.
+
 2022-10-17  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-gen.c (pkl_gen_pr_asm_stmt): Do not check the result

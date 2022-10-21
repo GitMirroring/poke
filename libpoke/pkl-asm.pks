@@ -344,6 +344,73 @@
         popf 1
         .end
 
+;;; ASETC @array_type
+;;; ( ARR ULONG VAL -- ARR )
+;;;
+;;; Checked ASET with data integrity.
+;;;
+;;; Given an array, an index and a value, set the element at the
+;;; specified position to VAL.
+;;;
+;;; If the specified index is out of range, then PVM_E_OUT_OF_BOUNDS
+;;; is raised.
+;;;
+;;; If the array type is bounded by size and the new value makes
+;;; the total size of the array to change, then PVM_E_CONV is raised.
+
+        .macro asetc @array_type
+        tor                     ; ARR IDX [VAL]
+        swap                    ; IDX ARR [VAL]
+        sel                     ; IDX ARR NELEM [VAL]
+        rot                     ; ARR NELEM IDX [VAL]
+        lelu                    ; ARR NELEM IDX (NELEM<=IDX) [VAL]
+        bzi .bounds_ok
+        push PVM_E_OUT_OF_BOUNDS
+        raise
+.bounds_ok:
+        drop                    ; ARR NELEM IDX [VAL]
+        nip                     ; ARR IDX [VAL]
+        ;; Get a copy of the current element at IDX, since
+        ;; we may need it later.
+        aref                    ; ARR IDX OVAL [VAL]
+        rot                     ; IDX OVAL ARR [VAL]
+        quake                   ; OVAL IDX ARR [VAL]
+        over                    ; OVAL IDX ARR IDX [VAL]
+        fromr                   ; ... ARR IDX VAL
+        aset                    ; ... ARR
+        .let @array_bound =  PKL_AST_TYPE_A_BOUND (@array_type)
+  .c if (@array_bound
+  .c     && PKL_AST_TYPE_CODE (PKL_AST_TYPE (@array_bound)) == PKL_TYPE_OFFSET)
+  .c {
+        .let #array_bounder = PKL_AST_TYPE_A_BOUNDER (@array_type)
+        push #array_bounder
+        call                    ; ... ARR OFF
+        .e ogetmn
+        nip                     ; ... ARR ASIZ
+        swap                    ; ... ASIZ ARR
+        siz                     ; ... ASIZ ARR NSIZ
+        rot                     ; ... ARR NSIZ ASIZ
+        eqlu
+        nip2                    ; ... ARR (NSIZ==ASIZ)
+        bnzi .size_ok
+        drop                    ; OVAL IDX ARR
+        ;; Restore the old value and raise E_conv
+        nrot                    ; ARR OVAL IDX
+        swap                    ; ARR IDX OVAL
+        aset                    ; ARR
+        push PVM_E_CONV
+        raise
+.size_ok:
+        drop
+        nip2
+  .c }
+  .c else
+  .c {
+        ;; Get rid of the OVAL and IDX
+        nip2                   ; ARR
+  .c }
+        .end
+        
 ;;; SSETC @struct_type
 ;;; ( SCT STR VAL -- SCT )
 ;;;
@@ -635,8 +702,8 @@
         push PVM_E_CONV
         raise
 .bound_ok:
-        drop                    ; ARR SEL BOUND
-        nip                     ; ARR BOUND
+        drop3                   ; ARR
+        push #bounder           ; ARR BOUNDER
         asettb                  ; ARR
         .end
 
@@ -664,7 +731,8 @@
         push PVM_E_CONV
         raise
 .bound_ok:
-        drop                    ; ARR BOUND
+        drop2                   ; ARR
+        push #bounder           ; ARR BOUNDER
         asettb                  ; ARR
         .end
 

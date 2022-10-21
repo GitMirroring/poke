@@ -968,6 +968,25 @@ pkl_asm_insn_cmp (pkl_asm pasm,
     assert (0);
 }
 
+/* Macro-instruction: ASETC array_type
+   ( ARR ULONG VAL -- ARR )
+
+   Given an array, an index in the array and a value, set the array
+   element at at that index to the given element.
+
+   This is a checked operation:
+   - If the specified index is out of range in the array, then
+     PVM_E_OUT_OF_BOUNDS is raised.
+   - If the array type is bounded by size and the new value makes the
+     total size of the array to change, then PVM_E_CONV is raised.
+*/
+
+static void
+pkl_asm_insn_asetc (pkl_asm pasm, pkl_ast_node array_type)
+{
+  RAS_MACRO_ASETC (array_type);
+}
+
 /* Macro-instruction: SSETC struct_type
    ( SCT STR VAL -- SCT )
 
@@ -1648,6 +1667,17 @@ pkl_asm_insn (pkl_asm pasm, enum pkl_asm_insn insn, ...)
         case PKL_INSN_AFILL:
           pkl_asm_insn_afill (pasm);
           break;
+        case PKL_INSN_ASETC:
+          {
+            pkl_ast_node array_type;
+
+            va_start (valist, insn);
+            array_type = va_arg (valist, pkl_ast_node);
+            va_end (valist);
+
+            pkl_asm_insn_asetc (pasm, array_type);
+            break;
+          }
         case PKL_INSN_SSETC:
           {
             pkl_ast_node struct_type;

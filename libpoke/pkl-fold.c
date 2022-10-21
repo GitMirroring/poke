@@ -760,7 +760,7 @@ EMUL_UU (bnoto) { return ~op; }
                                                                               \
           bound = pkl_ast_make_binary_exp (PKL_PASS_AST, PKL_AST_OP_ADD,      \
                                            bound1, bound2);                   \
-          PKL_AST_TYPE (bound) = btype1;                                      \
+          PKL_AST_TYPE (bound) = ASTREF (btype1);                             \
           PKL_AST_TYPE (new) = ASTREF (pkl_ast_make_array_type (              \
               PKL_PASS_AST, PKL_AST_TYPE_A_ETYPE (op1_type), bound));         \
           PKL_AST_TYPE_COMPLETE (PKL_AST_TYPE (new))                          \

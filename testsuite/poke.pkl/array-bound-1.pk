@@ -2,4 +2,6 @@
 
 /* { dg-command {.set obase 10} } */
 /* { dg-command {asm any: ("typof; nip; tyagetb; nip" : int[2]())} } */
-/* { dg-output "2UL" } */
+/* { dg-output "#<closure>" } */
+/* { dg-command {asm any: ("typof; nip; tyagetb; nip; call" : int[2]())} } */
+/* { dg-output "\n2UL" } */

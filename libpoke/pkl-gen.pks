@@ -71,25 +71,11 @@
         ;; in a local.
         push ulong<64>0         ; 0UL
         regvar $eidx            ; _
-        ;; Build the type of the new mapped array.  Note that we use
-        ;; the bounds passed to the mapper instead of just subpassing
-        ;; in array_type.  This is because this mapper should work for
-        ;; both bounded and unbounded array types.  Also, this avoids
-        ;; evaluating the boundary expression in the array type
-        ;; twice.
+        ;; Build the type of the new mapped array.
         .c PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPE);
-        .c PKL_PASS_SUBPASS (PKL_AST_TYPE_A_ETYPE (@array_type));
+        .c PKL_PASS_SUBPASS (@array_type);
         .c PKL_GEN_POP_CONTEXT;
-                                ; ETYPE
-        pushvar $ebound         ; ETYPE EBOUND
-        bnn .atype_bound_done
-        drop                    ; ETYPE
-        pushvar $sbound         ; ETYPE (SBOUND|NULL)
-        bn .atype_bound_done
-        push ulong<64>1
-        mko
-.atype_bound_done:
-        mktya                   ; ATYPE
+                                ; ATYPE
         ;; In general we don't know how many elements the mapped array
         ;; will contain.
         push ulong<64>0         ; ATYPE 0UL
@@ -369,25 +355,11 @@
         dup                     ; 0UL 0UL
         regvar $eidx            ; BOFF
         regvar $eboff           ; _
-        ;; Build the type of the new mapped array.  Note that we use
-        ;; the bounds passed to the mapper instead of just subpassing
-        ;; in array_type.  This is because this mapper should work for
-        ;; both bounded and unbounded array types.  Also, this avoids
-        ;; evaluating the boundary expression in the array type
-        ;; twice.
+        ;; Build the type of the new constructed array.
         .c PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPE);
-        .c PKL_PASS_SUBPASS (PKL_AST_TYPE_A_ETYPE (@array_type));
+        .c PKL_PASS_SUBPASS (@array_type);
         .c PKL_GEN_POP_CONTEXT;
-                                ; ETYPE
-        pushvar $ebound         ; ETYPE EBOUND
-        bnn .atype_bound_done
-        drop                    ; ETYPE
-        pushvar $sbound         ; ETYPE (SBOUND|NULL)
-        bn .atype_bound_done
-        push ulong<64>1
-        mko
-.atype_bound_done:
-        mktya                   ; ATYPE
+                                ; ATYPE
         push ulong<64>0         ; ATYPE 0UL
         mka                     ; ARR
         ;; Ok, loop to add elements to the constructed array.

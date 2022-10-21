@@ -1004,7 +1004,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
           }
 
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ROT);   /* ARRAY INDEX VAL */
-        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ASET);  /* ARRAY */
+        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ASETC, array_type); /* ARRAY */
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_WRITE); /* ARRAY */
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);  /* The array
                                                        value.  */
@@ -2524,7 +2524,15 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_array)
   pvm_val array_type_writer = PVM_NULL;
 
   /* Create a new empty array of the right type, having the right
-     number of elements.  */
+     number of elements.  Note that the have to compute the array
+     type's bounder here. */
+
+  if (PKL_AST_TYPE_A_BOUNDER (array_type) == PVM_NULL)
+    {
+      PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_ARRAY_BOUNDER);
+      PKL_PASS_SUBPASS (array_type);
+      PKL_GEN_POP_CONTEXT;
+    }
 
   PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPE);
   PKL_PASS_SUBPASS (array_type);             /* TYP */
@@ -3395,18 +3403,21 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_array)
     {
       /* Generating a PVM array type.  */
 
-      pkl_ast_node etype = PKL_AST_TYPE_A_ETYPE (PKL_PASS_NODE);
+      pkl_ast_node array_type = PKL_PASS_NODE;
+      pkl_ast_node etype = PKL_AST_TYPE_A_ETYPE (array_type);
+      pvm_val array_bounder = PKL_AST_TYPE_A_BOUNDER (array_type);
 
       PKL_PASS_SUBPASS (etype);
-
-      /* XXX at the moment the run-time bound in array types is unused
-         so we just push null here.  If it is ever used, this will be
-         problematic because due to the additional lexical level
-         introduced by array mappers subpassing on bound here will
-         result on invalid variable accesses.  */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL);
+      //XXXe      assert (array_bounder != PVM_NULL);
+      //      if (array_bounder == PVM_NULL)
+      //        {
+      //          printf ("MEEC\n");
+      //          pkl_ast_print (stdout, PKL_PASS_PARENT);
+      //        }
+      // type Fn = (int[3])void
+      // Fn[3]() -> MEEC
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, array_bounder);
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MKTYA);
-
       PKL_PASS_BREAK;
     }
 
