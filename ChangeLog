@@ -1,5 +1,11 @@
 2022-10-21  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-gen.c (pkl_gen_pr_cast): In casts from any, make
+	sure that the target type has a bounder if it is an array type.
+	(pkl_gen_ps_isa): Likewise for `isa' operations.
+
+2022-10-21  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-gen.c (pkl_gen_pr_decl): Install array bounders in
 	function types that may need them.
 	(pkl_gen_pr_func_type_arg): Install bounders in function type
