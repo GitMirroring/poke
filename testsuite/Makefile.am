@@ -154,6 +154,7 @@ EXTRA_DIST = \
   poke.map/ass-map-24.pk \
   poke.map/ass-map-25.pk \
   poke.map/ass-map-26.pk \
+  poke.map/ass-map-27.pk \
   poke.map/ass-map-struct-int-1.pk \
   poke.map/func-map-1.pk \
   poke.map/func-map-2.pk \
@@ -707,6 +708,9 @@ EXTRA_DIST = \
   poke.pkl/array-bound-2.pk \
   poke.pkl/array-bound-3.pk \
   poke.pkl/array-bound-4.pk \
+  poke.pkl/array-bound-5.pk \
+  poke.pkl/array-bound-6.pk \
+  poke.pkl/array-bound-7.pk \
   poke.pkl/array-bound-diag-1.pk \
   poke.pkl/array-diag-1.pk \
   poke.pkl/array-diag-3.pk \

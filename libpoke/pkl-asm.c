@@ -972,7 +972,7 @@ pkl_asm_insn_cmp (pkl_asm pasm,
    ( ARR ULONG VAL -- ARR )
 
    Given an array, an index in the array and a value, set the array
-   element at at that index to the given element.
+   element at that index to the given element.
 
    This is a checked operation:
    - If the specified index is out of range in the array, then

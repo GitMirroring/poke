@@ -410,7 +410,7 @@
         nip2                   ; ARR
   .c }
         .end
-        
+
 ;;; SSETC @struct_type
 ;;; ( SCT STR VAL -- SCT )
 ;;;
