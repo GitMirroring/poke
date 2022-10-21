@@ -4,6 +4,27 @@
         * etc/hacking.org (Write After Approval): Likewise.
         * HACKING: Regenerate.
 
+2022-10-22  Arsen Arsenović  <arsen@aarsen.me>
+
+        * libpoke/pkl-typify.c (pkl_typify1_ps_op_in): Don't allow
+        different types between LHS and element of RHS.
+        * libpoke/pkl-rt.pk: More strictly specify PK_TYPE_... constants,
+        to adhere to new `in' promotion rules.
+        * pickles/btf.pk: More strictly specify BTF_KIND_... constants, to
+        adhere to new `in' promotion rules.
+        * doc/poke.texi (Array Elements): Update documentation to match
+        new promotion behavior.
+        (Struct Attributes): Update `magic' field constraint to not fail
+        due to new promotion rules.
+        * testsuite/poke.pkl/in-3.pk: Refactor test to work with new `in'
+        promotion rules.
+        * testsuite/poke.pkl/in-2.pk: Likewise.
+        * testsuite/poke.pkl/in-1.pk: Likewise.
+        * testsuite/poke.pkl/field-init-9.pk: Likewise.
+        * testsuite/poke.pkl/field-init-12.pk: Likewise.
+        * testsuite/poke.pkl/field-init-11.pk: Likewise.
+        * testsuite/poke.pkl/field-init-10.pk: Likewise.
+
 2022-10-21  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pvm.jitter (aset): Do not check for ebounds nor sbounds.

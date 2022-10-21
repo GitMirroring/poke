@@ -894,9 +894,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_op_in)
   if (PKL_AST_TYPE_CODE (op2_type) != PKL_TYPE_ARRAY)
     INVALID_OPERAND (op2, "expected array");
 
-  if (!pkl_ast_type_promoteable_p (op1_type,
-                                   PKL_AST_TYPE_A_ETYPE (op2_type),
-                                   0 /* promote_array_of_any */))
+  if (!pkl_ast_type_equal_p (op1_type, PKL_AST_TYPE_A_ETYPE (op2_type)))
     {
       char *t1_str = pkl_type_str (op1_type, 1);
       char *t2_str = pkl_type_str (PKL_AST_TYPE_A_ETYPE (op2_type), 1);

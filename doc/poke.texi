@@ -10618,10 +10618,11 @@ element is stored in an array.  Examples:
 @example
 (poke) 2 in [1,2,3]
 1
-(poke) 10#B in [2#b,10*8#b,3#b]
-1
-(poke) 30#B in [2#b,10*8#b,3#b]
+(poke) 2 in [4,5,6]
 0
+(poke) 10#b in [1#B] #! Promotion doesn't happen. !#
+<stdin>:1:1: error: invalid operand in expression
+<stdin>:1:1: error: expected offset<int<32>,8>, got offset<int<32>,1>
 @end example
 
 @node Array Concatenation
@@ -12114,7 +12115,7 @@ For example, for the following struct type:
 type Packet =
   struct
   @{
-    byte magic: magic in [0xff,0xfe];
+    byte magic: magic in [0xffUB,0xfeUB];
     byte control if magic == 0xfe;
     byte[128] payload;
   @};

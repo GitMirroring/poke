@@ -561,14 +561,14 @@ immutable fun _pkl_assert = (uint<64> cond, string msg, string filename,
       is ok.
 */
 
-immutable var PK_TYPE_UNKNOWN =  0;
-immutable var PK_TYPE_INTEGRAL = 1;
-immutable var PK_TYPE_OFFSET   = 2;
-immutable var PK_TYPE_STRING   = 3;
-immutable var PK_TYPE_ARRAY    = 4;
-immutable var PK_TYPE_STRUCT   = 5;
-immutable var PK_TYPE_FUNCTION = 6;
-immutable var PK_TYPE_ANY      = 7;
+immutable var PK_TYPE_UNKNOWN  = 0U;
+immutable var PK_TYPE_INTEGRAL = 1U;
+immutable var PK_TYPE_OFFSET   = 2U;
+immutable var PK_TYPE_STRING   = 3U;
+immutable var PK_TYPE_ARRAY    = 4U;
+immutable var PK_TYPE_STRUCT   = 5U;
+immutable var PK_TYPE_FUNCTION = 6U;
+immutable var PK_TYPE_ANY      = 7U;
 
 immutable type Pk_Type =
   struct
