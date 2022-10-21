@@ -1,3 +1,11 @@
+2022-10-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-gen.c (pkl_gen_pr_decl): Install array bounders in
+	function types that may need them.
+	(pkl_gen_pr_func_type_arg): Install bounders in function type
+	argument if necessary.
+	(pkl_gen_ps_type_function): Likewise for the return type.
+
 2022-10-20  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-asm.pks (asetc): New macro.

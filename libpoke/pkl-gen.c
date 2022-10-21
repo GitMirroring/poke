@@ -206,6 +206,19 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
     case PKL_AST_DECL_KIND_TYPE:
       switch (PKL_AST_TYPE_CODE (initial))
         {
+        case PKL_TYPE_FUNCTION:
+          {
+            /* Install bounders in the array types that may appear in
+               the function type, be it as the type of an argument, or
+               the return type.  */
+
+            pkl_ast_node type_function = initial;
+
+            PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_ARRAY_BOUNDER);
+            PKL_PASS_SUBPASS (type_function);
+            PKL_GEN_POP_CONTEXT;
+            break;
+          }
         case PKL_TYPE_STRUCT:
           {
             pkl_ast_node type_struct = initial;
@@ -2997,6 +3010,18 @@ PKL_PHASE_END_HANDLER
 
 PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_func_type_arg)
 {
+  if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_ARRAY_BOUNDER))
+    {
+      pkl_ast_node func_type_arg = PKL_PASS_NODE;
+      pkl_ast_node arg_type = PKL_AST_FUNC_TYPE_ARG_TYPE (func_type_arg);
+
+      if (PKL_AST_TYPE_CODE (arg_type) == PKL_TYPE_ARRAY
+          && PKL_AST_TYPE_A_BOUNDER (arg_type) == PVM_NULL)
+        PKL_PASS_SUBPASS (arg_type);
+
+      PKL_PASS_BREAK;
+    }
+
   /* Nothing to do.  */
 }
 PKL_PHASE_END_HANDLER
@@ -3120,6 +3145,14 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_type_function)
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
                     pvm_make_ulong (PKL_AST_TYPE_F_NARG (ftype), 64));
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MKTYC);
+    }
+  else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_ARRAY_BOUNDER))
+    {
+      pkl_ast_node rtype = PKL_AST_TYPE_F_RTYPE (ftype);
+
+      if (PKL_AST_TYPE_CODE (rtype) == PKL_TYPE_ARRAY
+          && PKL_AST_TYPE_A_BOUNDER (rtype) == PVM_NULL)
+        PKL_PASS_SUBPASS (rtype);
     }
 }
 PKL_PHASE_END_HANDLER
@@ -3408,14 +3441,12 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_array)
       pvm_val array_bounder = PKL_AST_TYPE_A_BOUNDER (array_type);
 
       PKL_PASS_SUBPASS (etype);
-      //XXXe      assert (array_bounder != PVM_NULL);
-      //      if (array_bounder == PVM_NULL)
-      //        {
-      //          printf ("MEEC\n");
-      //          pkl_ast_print (stdout, PKL_PASS_PARENT);
-      //        }
-      // type Fn = (int[3])void
-      // Fn[3]() -> MEEC
+      if (array_bounder == PVM_NULL)
+        {
+          printf ("MEEC\n");
+          pkl_ast_print (stdout, PKL_PASS_PARENT);
+        }
+      //      assert (array_bounder != PVM_NULL);
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, array_bounder);
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MKTYA);
       PKL_PASS_BREAK;
