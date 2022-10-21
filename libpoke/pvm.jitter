@@ -4810,23 +4810,16 @@ end
 # Instruction: aset
 #
 # Set the value with index ULONG in the array ARR to have the value
-# VAL.
-#
-# If the specified index exceeds the capability of the array, then
-# PVM_E_OUT_OF_BOUNDS is raised.  If the array is bounded by size and
-# the new value makes the total size of the array to change, then
-# PVM_E_CONV is raised.
+# VAL.  The index in ULONG should be in range, since this instruction
+# is not checked.
 #
 # Stack: ( ARR ULONG VAL -- ARR )
-# Exceptions: PVM_E_CONV, PVM_E_OUT_OF_BOUNDS
 
 instruction aset ()
-  branching # because of PVM_RAISE_DIRECT
   code
     pvm_val idx;
     pvm_val val;
     pvm_val arr;
-    pvm_val array_type, bound;
     size_t index;
 
     val= JITTER_TOP_STACK ();
@@ -4837,39 +4830,11 @@ instruction aset ()
 
     arr = JITTER_TOP_STACK ();
 
-    if (index >= PVM_VAL_INTEGRAL (PVM_VAL_ARR_NELEM (arr)))
-      PVM_RAISE_DFL (PVM_E_OUT_OF_BOUNDS);
+    PVM_ASSERT (index < PVM_VAL_INTEGRAL (PVM_VAL_ARR_NELEM (arr)));
 
-    /* If the array is bounded by size, check whether the new value
-       results in a different size.  */
-    array_type = PVM_VAL_ARR_TYPE (arr);
-    bound = PVM_VAL_TYP_A_BOUND (array_type);
-
-    if (PVM_IS_OFF (bound))
-      {
-        pvm_val oval = PVM_VAL_ARR_ELEM_VALUE (arr, index);
-        uint64_t old_size_bits;
-        uint64_t new_size_bits;
-
-        PVM_VAL_ARR_ELEM_VALUE (arr, index) = val;
-
-        old_size_bits = (PVM_VAL_INTEGRAL (PVM_VAL_OFF_MAGNITUDE (bound))
-                         * PVM_VAL_INTEGRAL (PVM_VAL_OFF_UNIT (bound)));
-        new_size_bits = pvm_sizeof (arr);
-
-        if (new_size_bits != old_size_bits)
-         {
-           PVM_VAL_ARR_ELEM_VALUE (arr, index) = oval;
-           PVM_RAISE_DFL (PVM_E_CONV);
-         }
-      }
-   else
-      {
-        /* Note that pvm_aray_set cannot fail here, due to the check
-           on index above.  This is done like this in order to avoid
-           checking the bound by size if the index is out of bounds.  */
-         pvm_array_set (arr, idx, val);
-      }
+    /* Note that pvm_aray_set cannot fail here, due to the check
+       on index above.  */
+    pvm_array_set (arr, idx, val);
   end
 end
 
