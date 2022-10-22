@@ -4,6 +4,7 @@
 @include version.texi
 @settitle GNU poke Manual
 @afourpaper
+@defcodeindex pv
 @comment %**end of header
 
 @copying
@@ -15682,10 +15683,23 @@ It returns an offset that is the result of aligning the given
 
 @include fdl.texi
 
+@node Indicies
+@appendix Indicies
+
+@menu
+* Concept Index::               General concept index
+* PVM Instruction Index::       Index of all PVM instructions
+@end menu
+
 @node Concept Index
-@unnumbered Concept Index
+@appendixsec Concept Index
 
 @printindex cp
+
+@node PVM Instruction Index
+@appendixsec PVM Instruction Index
+
+@printindex pv
 
 @bye
 

@@ -56,7 +56,7 @@ do
         | sed -e 's/# Stack: \(.*\)/\nStack: @code{\1}/' \
         | sed -e 's/# Exceptions Stack: \(.*\)/\nException Stack: @code{\1}/' \
         | sed -e 's/# Exceptions: \(.*\)/\nExceptions: @code{\1}/' \
-        | sed -e 's/# Instruction: \([^ ][^ ]*\)\(.*\)/\n@node Instruction \1\n@subsubsection Instruction \1\n\nSynopsys:\n\n@example\n\1\2\n@end example\n\n/' \
+        | sed -e 's/# Instruction: \([^ ][^ ]*\)\(.*\)/\n@node Instruction \1\n@subsubsection Instruction \1\n@pvindex \1\n\nSynopsys:\n\n@example\n\1\2\n@end example\n\n/' \
         | sed -e 's/^# //' \
         | sed -e 's/^#//' \
         | uniq
