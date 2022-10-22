@@ -1,9 +1,9 @@
-		       __________________________
+                       __________________________
 
-			GNU POKE - HACKING NOTES
+                        GNU POKE - HACKING NOTES
 
-			    The poke hackers
-		       __________________________
+                            The poke hackers
+                       __________________________
 
 
 Table of Contents
@@ -199,6 +199,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
         Mohammad-Reza Nabipoor	<mnabipoor@gnu.org>
         David Faust             <david.faust@oracle.com>
         Indu Bhagat             <indu.bhagat@oracle.com>
+        Arsen Arsenović		<arsen@aarsen.me>
 
 
 2.4 Personal Branches

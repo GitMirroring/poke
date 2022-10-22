@@ -83,6 +83,7 @@ Aurélien Aptel		<aaptel@suse.com>
 Mohammad-Reza Nabipoor	<mnabipoor@gnu.org>
 David Faust             <david.faust@oracle.com>
 Indu Bhagat             <indu.bhagat@oracle.com>
+Arsen Arsenović		<arsen@aarsen.me>
 #+END_VERSE
 
 ** Personal Branches
