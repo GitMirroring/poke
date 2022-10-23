@@ -581,11 +581,27 @@ EXTRA_DIST = \
   poke.map/write-structs-1.pk \
   poke.pickles/pickles.exp \
   poke.pickles/argp-test.pk \
+  poke.pickles/asn1-ber-test.pk \
+  poke.pickles/bmp-test.pk \
+  poke.pickles/bpf-test.pk \
+  poke.pickles/btf-ext-test.pk \
   poke.pickles/btf-test.pk \
+  poke.pickles/coff-test.pk \
+  poke.pickles/ctf-test.pk \
+  poke.pickles/dwarf-test.pk \
+  poke.pickles/id3v2-test.pk \
+  poke.pickles/jffs-test.pk \
+  poke.pickles/leb128-test.pk \
+  poke.pickles/mcr-test.pk \
+  poke.pickles/openpgp-test.pk \
+  poke.pickles/pe-test.pk \
+  poke.pickles/riscv-test.pk \
+  poke.pickles/ustar-test.pk \
   poke.pickles/color-test.pk \
   poke.pickles/mbr-test.pk \
   poke.pickles/id3v1-test.pk \
   poke.pickles/rgb24-test.pk \
+  poke.pickles/elf-test.pk \
   poke.pkl/pkl.exp \
   poke.pkl/postincr-1.pk \
   poke.pkl/postincr-2.pk \

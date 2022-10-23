@@ -96,14 +96,14 @@ type ID3V2_Frame =
         {
           char id_asciiz_str = 0;
           char[size - 1] frame_data;
-        } : size > 1;
+        } fd : size > 1;
 
         char[size] frame_data;
-      } : id[0] == 'T';
+      } fd : id[0] == 'T';
 
       /* Frame contains other data.  */
       char[size] frame_data;
-    };
+    } fd;
   };
 
 type ID3V2_Tag =

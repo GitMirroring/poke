@@ -1,3 +1,39 @@
+2022-10-23  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* testsuite/poke.pickles/ustar-test.pk: Likewise.
+
+	* testsuite/poke.pickles/riscv-test.pk: Likewise.
+
+	* testsuite/poke.pickles/pe-test.pk: Likewise.
+
+	* testsuite/poke.pickles/openpgp-test.pk: Likewise.
+
+	* testsuite/poke.pickles/mcr-test.pk: Likewise.
+
+	* testsuite/poke.pickles/leb128-test.pk: Likewise.
+
+	* testsuite/poke.pickles/jffs-test.pk: Likewise.
+
+	* testsuite/poke.pickles/id3v2-test.pk: Likewise.
+
+	* testsuite/poke.pickles/dwarf-test.pk: Likewise.
+
+	* testsuite/poke.pickles/ctf-test.pk: Likewise.
+
+	* testsuite/poke.pickles/coff-test.pk: Likewise.
+
+	* testsuite/poke.pickles/bpf-ext-test.pk: Likewise.
+
+	* testsuite/poke.pickles/bpf-test.pk: Likewise.
+
+	* testsuite/poke.pickles/bmp-test.pk: Likewise.
+
+	* testsuite/poke.pickles/asn1-ber-test.pk: Likewise.
+
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+
+	* testsuite/poke.pickles/elf-test.pk: New file.
+
 2022-10-23  Arsen Arsenović  <arsen@aarsen.me>
 
         * AUTHORS: Add myself.
