@@ -176,17 +176,17 @@ var PE_IMAGE_FILE_MACHINE_UNKNOWN    = 0x0000UH,
 
 /* Subsystem types.  */
 
-var PE_SUBSYS_UNKNOWN = 0,
-    PE_SUBSYS_NATIVE = 1,
-    PE_SUBSYS_WINDOWS_GUI = 2,
-    PE_SUBSYS_WINDOWS_CUI = 3,
-    PE_SUBSYS_POSIX_CUI = 7,
-    PE_SUBSYS_WINDOWS_CE_GUI = 9,
-    PE_SUBSYS_EFI_APPLICATION = 10,
-    PE_SUBSYS_EFI_BOOT_SERVICE_DRIVER = 11,
-    PE_SUBSYS_EFI_RUNTIME_DRIVER = 12,
-    PE_SUBSYS_SAL_RUNTIME_DRIVER = 13,
-    PE_SUBSYS_XBOX = 14;
+var PE_SUBSYS_UNKNOWN                 = 0UH,
+    PE_SUBSYS_NATIVE                  = 1UH,
+    PE_SUBSYS_WINDOWS_GUI             = 2UH,
+    PE_SUBSYS_WINDOWS_CUI             = 3UH,
+    PE_SUBSYS_POSIX_CUI               = 7UH,
+    PE_SUBSYS_WINDOWS_CE_GUI          = 9UH,
+    PE_SUBSYS_EFI_APPLICATION         = 10UH,
+    PE_SUBSYS_EFI_BOOT_SERVICE_DRIVER = 11UH,
+    PE_SUBSYS_EFI_RUNTIME_DRIVER      = 12UH,
+    PE_SUBSYS_SAL_RUNTIME_DRIVER      = 13UH,
+    PE_SUBSYS_XBOX                    = 14UH;
 
 var pe_subsystems =
   [ PE_SUBSYS_UNKNOWN, PE_SUBSYS_NATIVE, PE_SUBSYS_WINDOWS_GUI,
@@ -547,20 +547,20 @@ type PE_Delay_Import =
    Each entry in the debug directory describes a form of debug
    information present in the PE file.  */
 
-var PE_DEBUG_TYPE_UNKNOWN = 0,
-    PE_DEBUG_TYPE_COFF = 1,
-    PE_DEBUG_TYPE_CODEVIEW = 2,
-    PE_DEBUG_TYPE_FPO = 3,
-    PE_DEBUG_TYPE_MISC = 4,
-    PE_DEBUG_TYPE_EXCEPTION = 5,
-    PE_DEBUG_TYPE_FIXUP = 6,
-    PE_DEBUG_TYPE_OMAP_TO_SRC = 7,
-    PE_DEBUG_TYPE_OMAP_FROM_SRC = 8,
-    PE_DEBUG_TYPE_BORLAND = 9,
-    PE_DEBUG_TYPE_RESERVED10 = 10,
-    PE_DEBUG_TYPE_CLSID = 11,
-    PE_DEBUG_TYPE_REPRO = 16,
-    PE_DEBUG_TYPE_EX_DLLCHARACTERISTICS = 20;
+var PE_DEBUG_TYPE_UNKNOWN               = 0U,
+    PE_DEBUG_TYPE_COFF                  = 1U,
+    PE_DEBUG_TYPE_CODEVIEW              = 2U,
+    PE_DEBUG_TYPE_FPO                   = 3U,
+    PE_DEBUG_TYPE_MISC                  = 4U,
+    PE_DEBUG_TYPE_EXCEPTION             = 5U,
+    PE_DEBUG_TYPE_FIXUP                 = 6U,
+    PE_DEBUG_TYPE_OMAP_TO_SRC           = 7U,
+    PE_DEBUG_TYPE_OMAP_FROM_SRC         = 8U,
+    PE_DEBUG_TYPE_BORLAND               = 9U,
+    PE_DEBUG_TYPE_RESERVED10            = 10U,
+    PE_DEBUG_TYPE_CLSID                 = 11U,
+    PE_DEBUG_TYPE_REPRO                 = 16U,
+    PE_DEBUG_TYPE_EX_DLLCHARACTERISTICS = 20U;
 
 type PE_Debug_Directory_Entry =
   struct
@@ -842,13 +842,19 @@ type PE_TLS_Directory =
     {
       uint<9>;
       uint<4> alignment_info
-        : alignment_info in [ PE_SEC_F_ALIGN_1BYTES, PE_SEC_F_ALIGN_2BYTES,
-                              PE_SEC_F_ALIGN_4BYTES, PE_SEC_F_ALIGN_8BYTES,
-                              PE_SEC_F_ALIGN_16BYTES, PE_SEC_F_ALIGN_32BYTES,
-                              PE_SEC_F_ALIGN_64BYTES, PE_SEC_F_ALIGN_128BYTES,
-                              PE_SEC_F_ALIGN_512BYTES, PE_SEC_F_ALIGN_1024BYTES,
-                              PE_SEC_F_ALIGN_2048BYTES, PE_SEC_F_ALIGN_4096BYTES,
-                              PE_SEC_F_ALIGN_8192BYTES ];
+        : alignment_info as uint<32> in [ PE_SEC_F_ALIGN_1BYTES,
+                                          PE_SEC_F_ALIGN_2BYTES,
+                                          PE_SEC_F_ALIGN_4BYTES,
+                                          PE_SEC_F_ALIGN_8BYTES,
+                                          PE_SEC_F_ALIGN_16BYTES,
+                                          PE_SEC_F_ALIGN_32BYTES,
+                                          PE_SEC_F_ALIGN_64BYTES,
+                                          PE_SEC_F_ALIGN_128BYTES,
+                                          PE_SEC_F_ALIGN_512BYTES,
+                                          PE_SEC_F_ALIGN_1024BYTES,
+                                          PE_SEC_F_ALIGN_2048BYTES,
+                                          PE_SEC_F_ALIGN_4096BYTES,
+                                          PE_SEC_F_ALIGN_8192BYTES ];
       uint<19>;
     } flags;
   };
@@ -865,13 +871,19 @@ type PE_TLS_Directory_64 =
     {
       uint<9>;
       uint<4> alignment_info
-        : alignment_info in [ PE_SEC_F_ALIGN_1BYTES, PE_SEC_F_ALIGN_2BYTES,
-                              PE_SEC_F_ALIGN_4BYTES, PE_SEC_F_ALIGN_8BYTES,
-                              PE_SEC_F_ALIGN_16BYTES, PE_SEC_F_ALIGN_32BYTES,
-                              PE_SEC_F_ALIGN_64BYTES, PE_SEC_F_ALIGN_128BYTES,
-                              PE_SEC_F_ALIGN_512BYTES, PE_SEC_F_ALIGN_1024BYTES,
-                              PE_SEC_F_ALIGN_2048BYTES, PE_SEC_F_ALIGN_4096BYTES,
-                              PE_SEC_F_ALIGN_8192BYTES ];
+        : alignment_info as uint<32> in [ PE_SEC_F_ALIGN_1BYTES,
+                                          PE_SEC_F_ALIGN_2BYTES,
+                                          PE_SEC_F_ALIGN_4BYTES,
+                                          PE_SEC_F_ALIGN_8BYTES,
+                                          PE_SEC_F_ALIGN_16BYTES,
+                                          PE_SEC_F_ALIGN_32BYTES,
+                                          PE_SEC_F_ALIGN_64BYTES,
+                                          PE_SEC_F_ALIGN_128BYTES,
+                                          PE_SEC_F_ALIGN_512BYTES,
+                                          PE_SEC_F_ALIGN_1024BYTES,
+                                          PE_SEC_F_ALIGN_2048BYTES,
+                                          PE_SEC_F_ALIGN_4096BYTES,
+                                          PE_SEC_F_ALIGN_8192BYTES ];
       uint<19>;
     } flags;
   };

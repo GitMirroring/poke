@@ -1,3 +1,29 @@
+2022-10-25  Arsen Arsenović  <arsen@aarsen.me>
+
+	* pickles/dwarf-frame.pk: Set CFA constants to `uint<6>'
+	explicitly, to avoid `in' type errors.
+	* pickles/pe.pk: Set PE_DEBUG_TYPE constants to uint<32>,
+	PE_SUBSYS uint<16>, and cast alignemnt_info to uint<32> explicitly
+	to avoid `in' type errors.
+	* pickles/jffs2.pk: Se various constants to their right type
+	explicitly, to avoid `in' type errors.
+	* pickles/asn1-ber.pk: Explicitly set BER tags as uint<5>, to
+	avoid `in' type errors.
+	* pickles/dwarf-expr.pk: Explicitly set `DW_OP' constants to
+	uint<8>, to avoid `in' type errors.
+	* pickles/ctf.pk: Explicitly set kinds to uint<6>, to avoid `in'
+	type errors.
+	* pickles/coff-i386.pk: Explicitly set i386 relocation types to
+	uint<16>, to avoid `in' type error.
+	* pickles/dwarf-info.pk: Explicitly specify type in version
+	`constraint', to avoid `in' type error.
+	* pickles/elf-64.pk: Cast d_tag to int<32>, to avoid `in' type
+	errors.
+	* pickles/bpf.pk: Explicitly make instruction classes three-bit
+	uints.
+	* pickles/bmp.pk: Use unsigned offsets explicitly, to match header
+	type.
+
 2022-10-24  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-insn.def (PKL_INSN_TYSCTN): Removed.

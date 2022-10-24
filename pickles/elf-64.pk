@@ -107,9 +107,9 @@ type Elf64_Dyn =
          data: even entries use d_ptr while odd entries use d_val.  */
 
         Elf64_Addr d_ptr
-          : (d_tag in [DT_PLTGOT, DT_HASH, DT_STRTAB, DT_SYMTAB, DT_RELA,
-                       DT_SYMENT, DT_INIT, DT_FINI, DT_REL, DT_JMPREL,
-                       DT_INIT_ARRAY, DT_FINI_ARRAY]
+          : (d_tag as int<32> in [DT_PLTGOT, DT_HASH, DT_STRTAB, DT_SYMTAB,
+                                  DT_RELA, DT_SYMENT, DT_INIT, DT_FINI, DT_REL,
+                                  DT_JMPREL, DT_INIT_ARRAY, DT_FINI_ARRAY]
              || (d_tag >= DT_ENCODING && d_tag %2 != 0));
 
         Elf64_Xword d_val;

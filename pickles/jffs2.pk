@@ -24,8 +24,8 @@
  * Note: This was tested with file systems created by mkfs.jffs2 and sumtool
  */
 
-var JFFS2_MAGIC = 0x1985;
-var JFFS2_MAGIC_OLD = 0x1984;
+var JFFS2_MAGIC = 0x1985UH;
+var JFFS2_MAGIC_OLD = 0x1984UH;
 
 var JFFS2_NODE_ACCURATE = 0x2000;
 
@@ -61,14 +61,14 @@ var jffs2_nodetypes = [
 ];
 
 // inode compression types
-var JFFS2_COMPR_NONE = 0x00;
-var JFFS2_COMPR_ZERO = 0x01;
-var JFFS2_COMPR_RTIME = 0x02;
-var JFFS2_COMPR_RUBINMIPS = 0x03;
-var JFFS2_COMPR_COPY = 0x04;
-var JFFS2_COMPR_DYNRUBIN = 0x05;
-var JFFS2_COMPR_ZLIB = 0x06;
-var JFFS2_COMPR_LZO = 0x07;
+var JFFS2_COMPR_NONE      = 0x00UB;
+var JFFS2_COMPR_ZERO      = 0x01UB;
+var JFFS2_COMPR_RTIME     = 0x02UB;
+var JFFS2_COMPR_RUBINMIPS = 0x03UB;
+var JFFS2_COMPR_COPY      = 0x04UB;
+var JFFS2_COMPR_DYNRUBIN  = 0x05UB;
+var JFFS2_COMPR_ZLIB      = 0x06UB;
+var JFFS2_COMPR_LZO       = 0x07UB;
 
 var jffs2_inode_comp_types = [
     JFFS2_COMPR_NONE,
@@ -84,15 +84,15 @@ var jffs2_inode_comp_types = [
 // dirent types
 // These are the same as the linux dirent values and could
 // probably be moved to a dirent pickle someday
-var JFFS2_DT_UNKNOWN = 0x0;
-var JFFS2_DT_FIFO = 0x1;
-var JFFS2_DT_CHR = 0x2;
-var JFFS2_DT_DIR = 0x4;
-var JFFS2_DT_BLK = 0x6;
-var JFFS2_DT_REG = 0x8;
-var JFFS2_DT_LNK = 0xa;
-var JFFS2_DT_SOCK = 0xc;
-var JFFS2_DT_WHT = 0xe;
+var JFFS2_DT_UNKNOWN = 0x0UB;
+var JFFS2_DT_FIFO    = 0x1UB;
+var JFFS2_DT_CHR     = 0x2UB;
+var JFFS2_DT_DIR     = 0x4UB;
+var JFFS2_DT_BLK     = 0x6UB;
+var JFFS2_DT_REG     = 0x8UB;
+var JFFS2_DT_LNK     = 0xaUB;
+var JFFS2_DT_SOCK    = 0xcUB;
+var JFFS2_DT_WHT     = 0xeUB;
 
 var jffs2_dirent_types = [
     JFFS2_DT_UNKNOWN,

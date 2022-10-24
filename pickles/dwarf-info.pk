@@ -374,7 +374,7 @@ type Dwarf_CU_Header =
     Dwarf_Initial_Length unit_length;
 
     /* Version of the DWARF information for the compilation unit.  */
-    uint<16> version : (version in [2, 3, 4, 5]
+    uint<16> version : (version in [2UH, 3UH, 4UH, 5UH]
                         && dwarf_set_version (version));
 
     /* Offset into the .debug_abbrev section that associates the

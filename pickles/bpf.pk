@@ -23,13 +23,13 @@
 
 type BPF_Insn_Class = uint<3>;
 
-var BPF_INSN_CLASS_LD  = 0b000,
-    BPF_INSN_CLASS_LDX = 0b001,
-    BPF_INSN_CLASS_ST  = 0b010,
-    BPF_INSN_CLASS_STX = 0b011,
-    BPF_INSN_CLASS_ALU = 0b100,
-    BPF_INSN_CLASS_JMP = 0b101,
-    BPF_INSN_CLASS_ALU64 = 0b111;
+var BPF_INSN_CLASS_LD    = 0b000 as uint<3>,
+    BPF_INSN_CLASS_LDX   = 0b001 as uint<3>,
+    BPF_INSN_CLASS_ST    = 0b010 as uint<3>,
+    BPF_INSN_CLASS_STX   = 0b011 as uint<3>,
+    BPF_INSN_CLASS_ALU   = 0b100 as uint<3>,
+    BPF_INSN_CLASS_JMP   = 0b101 as uint<3>,
+    BPF_INSN_CLASS_ALU64 = 0b111 as uint<3>;
 
 fun bpf_class_is_alujmp = (uint<3> class) int:
   {

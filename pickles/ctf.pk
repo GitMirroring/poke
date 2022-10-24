@@ -48,21 +48,21 @@ var CTF_K_UNKNOWN  = 0U,
 var CTF_STRTAB_0 = 0; /* Name is in the in-CTF string table.  */
 var CTF_STRTAB_1 = 1; /* Name is in an ELF strtab.  */
 
-var CTF_KIND_UNKNOWN  = 0,
-    CTF_KIND_INTEGER  = 1,
-    CTF_KIND_FLOAT    = 2,
-    CTF_KIND_POINTER  = 3,
-    CTF_KIND_ARRAY    = 4,
-    CTF_KIND_FUNCTION = 5,
-    CTF_KIND_STRUCT   = 6,
-    CTF_KIND_UNION    = 7,
-    CTF_KIND_ENUM     = 8,
-    CTF_KIND_FORWARD  = 9,
-    CTF_KIND_TYPEDEF  = 10,
-    CTF_KIND_VOLATILE = 11,
-    CTF_KIND_CONST    = 12,
-    CTF_KIND_RESTRICT = 13,
-    CTF_KIND_SLICE    = 14;
+var CTF_KIND_UNKNOWN  = 0 as uint<6>,
+    CTF_KIND_INTEGER  = 1 as uint<6>,
+    CTF_KIND_FLOAT    = 2 as uint<6>,
+    CTF_KIND_POINTER  = 3 as uint<6>,
+    CTF_KIND_ARRAY    = 4 as uint<6>,
+    CTF_KIND_FUNCTION = 5 as uint<6>,
+    CTF_KIND_STRUCT   = 6 as uint<6>,
+    CTF_KIND_UNION    = 7 as uint<6>,
+    CTF_KIND_ENUM     = 8 as uint<6>,
+    CTF_KIND_FORWARD  = 9 as uint<6>,
+    CTF_KIND_TYPEDEF  = 10 as uint<6>,
+    CTF_KIND_VOLATILE = 11 as uint<6>,
+    CTF_KIND_CONST    = 12 as uint<6>,
+    CTF_KIND_RESTRICT = 13 as uint<6>,
+    CTF_KIND_SLICE    = 14 as uint<6>;
 
 var ctf_kind_str =
   ["unknown", "integer", "float", "pointer", "array",
