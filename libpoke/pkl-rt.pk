@@ -803,7 +803,76 @@ immutable fun _pkl_print_format_any = (any val,
 
     return s;
   }
+  fun handle_type = void:
+  {
+    ctx.begin_class ("type");
 
+    var is_int_p = asm int<32>: ("tyisi; nip" : val),
+        is_uint_p = asm int<32>: ("tyisiu; nip" : val),
+        is_long_p = asm int<32>: ("tyisl; nip" : val),
+        is_ulong_p = asm int<32>: ("tyislu; nip" : val);
+
+    if (is_int_p || is_uint_p || is_long_p || is_ulong_p)
+      {
+        var sign_p = asm int<32>: ("tyigetsg; nip" : val);
+        var width = asm uint<64>: ("tyigetsz; nip" : val);
+
+        ctx.emit ((sign_p ? "" : "u") + "int<" + lutos (width, 10) + ">");
+      }
+    else if (asm int<32>: ("tyiso; nip" : val))
+      {
+        var base_type = asm any: ("tyogetm; nip" : val),
+            unit_in_bits = asm uint<64>: ("tyogetu; nip" : val);
+
+        ctx.emit ("offset<");
+        _pkl_print_format_any (base_type, ctx, depth);
+        ctx.emit ("," + lutos (unit_in_bits, 10) + ">");
+      }
+    else if (asm int<32>: ("tyiss; nip" : val))
+      ctx.emit ("string");
+    else if (asm int<32>: ("tyisv; nip" : val))
+      ctx.emit ("void");
+    else if (asm int<32>: ("tyisa; nip" : val))
+      {
+        _pkl_print_format_any (asm any: ("tyagett; nip" : val), ctx, depth);
+        ctx.emit ("[");
+        if (!asm int<32>: ("tyagetb; nip; isn; nip" : val))
+          _pkl_print_format_any (asm any: ("tyagetb; nip; call" : val), ctx, depth);
+        ctx.emit ("]");
+      }
+    else if (asm int<32>: ("tyissct; nip" : val))
+      {
+        var maybe_name = asm any: ("tysctgetn; nip" : val);
+        var name
+          = asm int<32>: ("isn; nip" : maybe_name) ? "struct"
+                                                   : (maybe_name as string);
+        var nfields = asm uint<64>: ("tysctgetnf; nip" : val);
+
+        ctx.emit (name);
+        ctx.emit (" {");
+        for (var i = 0UL; i < nfields; ++i)
+          {
+            var maybe_fname = asm any: ("tysctgetfn; nip2" : val, i);
+            var ftype = asm any: ("tysctgetft; nip2" : val, i);
+
+            if (i != 0UL)
+              ctx.emit (" ");
+            _pkl_print_format_any (ftype, ctx, depth);
+            if (!asm int<32>: ("isn; nip" : maybe_fname))
+              ctx.emit (" " + (maybe_fname as string));
+            ctx.emit (";");
+          }
+        ctx.emit ("}");
+      }
+    else if (asm int<32>: ("tyisc; nip" : val))
+      {
+        assert (
+          0,
+          "Unreachable reached! (There's no PVM type for closures (for now)!)");
+      }
+
+    ctx.end_class ("type");
+  }
   fun handle_integral = (int<32> long_p, int<32> signed_p) void:
   {
     var bits = asm uint<64>: ("siz; nip" : val);
@@ -1059,7 +1128,7 @@ immutable fun _pkl_print_format_any = (any val,
   if (asm int<32>: ("isn; nip" : val))
     ctx.emit ("null");
   else if (asm int<32>: ("isty; nip" : val))
-    /* handle_type */;
+    handle_type;
   else if (asm int<32>: ("typof; nip; isn; nip" : val))
     {
       ctx.begin_class ("special");
