@@ -1056,28 +1056,32 @@ immutable fun _pkl_print_format_any = (any val,
     ctx.end_class ("struct");
   }
 
-  if (asm int<32>: ("tyisi; nip" : val))
-    handle_integral :long_p 0 :signed_p 1;
-  else if (asm int<32>: ("tyiso; nip" : val))
-    handle_offset;
-  else if (asm int<32>: ("tyisl; nip" : val))
-    handle_integral :long_p 1 :signed_p 1;
-  else if (asm int<32>: ("tyisiu; nip" : val))
-    handle_integral :long_p 0 :signed_p 0;
-  else if (asm int<32>: ("tyislu; nip" : val))
-    handle_integral :long_p 1 :signed_p 0;
-  else if (asm int<32>: ("tyiss; nip" : val))
-    handle_string;
-  else if (asm int<32>: ("tyisa; nip" : val))
-    handle_array;
-  else if (asm int<32>: ("tyissct; nip" : val))
-    handle_struct;
-  else if (asm int<32>: ("tyisc; nip" : val))
+  if (asm int<32>: ("isn; nip" : val))
+    ctx.emit ("null");
+  else if (asm int<32>: ("isty; nip" : val))
+    /* handle_type */;
+  else if (asm int<32>: ("typof; nip; isn; nip" : val))
     {
       ctx.begin_class ("special");
       ctx.emit ("#<closure>");
       ctx.end_class ("special");
     }
+  else if (asm int<32>: ("typof; nip; tyisi; nip" : val))
+    handle_integral :long_p 0 :signed_p 1;
+  else if (asm int<32>: ("typof; nip; tyiso; nip" : val))
+    handle_offset;
+  else if (asm int<32>: ("typof; nip; tyisl; nip" : val))
+    handle_integral :long_p 1 :signed_p 1;
+  else if (asm int<32>: ("typof; nip; tyisiu; nip" : val))
+    handle_integral :long_p 0 :signed_p 0;
+  else if (asm int<32>: ("typof; nip; tyislu; nip" : val))
+    handle_integral :long_p 1 :signed_p 0;
+  else if (asm int<32>: ("typof; nip; tyiss; nip" : val))
+    handle_string;
+  else if (asm int<32>: ("typof; nip; tyisa; nip" : val))
+    handle_array;
+  else if (asm int<32>: ("typof; nip; tyissct; nip" : val))
+    handle_struct;
   else
     {
       ctx.begin_class ("special");

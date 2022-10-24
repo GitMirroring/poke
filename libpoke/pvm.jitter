@@ -5351,6 +5351,22 @@ instruction ogetbt ()
 end
 
 
+## Instructions to handle values
+
+# Instruction: isn
+#
+# Given a value, push 1 on the stack if the value is null.
+# Push 0 otherwise.
+#
+# Stack: ( VAL -- VAL INT )
+
+instruction isn ()
+  code
+    JITTER_PUSH_STACK (PVM_MAKE_INT (JITTER_TOP_STACK () == PVM_NULL, 32));
+  end
+end
+
+
 ## Instructions to handle mapped values
 
 # Instruction: mm
@@ -5698,120 +5714,191 @@ instruction typof ()
   end
 end
 
-# Instruction: tyisi
+# Instruction: isty
 #
-# Given a value, push 1 on the stack if it is an integer.
+# Given a value, push 1 on the stack if it is a PVM type.
 # Push 0 otherwise.
 #
-# Stack: ( VAL -- VAL INT )
+# Stack: ( TYPE -- TYPE INT )
+
+instruction isty ()
+  code
+    int is_type_p = PVM_IS_TYP (JITTER_TOP_STACK ());
+
+    JITTER_PUSH_STACK (PVM_MAKE_INT (is_type_p, 32));
+  end
+end
+
+# Instruction: tyisi
+#
+# Given a type, push 1 on the stack if it is an int.
+# Push 0 otherwise.
+#
+# Stack: ( TYPE -- TYPE INT )
 
 instruction tyisi ()
   code
-    JITTER_PUSH_STACK (PVM_MAKE_INT (PVM_IS_INT (JITTER_TOP_STACK ()), 32));
+    pvm_val typ = JITTER_TOP_STACK ();
+    int isi_p
+      = PVM_VAL_TYP_CODE (typ) == PVM_TYPE_INTEGRAL
+        && PVM_VAL_INT (PVM_VAL_TYP_I_SIGNED_P (typ))
+        && PVM_VAL_ULONG (PVM_VAL_TYP_I_SIZE (typ)) <= 32;
+
+    JITTER_PUSH_STACK (PVM_MAKE_INT (isi_p, 32));
   end
 end
 
 # Instruction: tyisiu
 #
-# Given a value, push 1 on the stack if it is an unsigned integer.
+# Given a type, push 1 on the stack if it is an uint.
 # Push 0 otherwise.
 #
-# Stack: ( VAL -- VAL INT )
+# Stack: ( TYPE -- TYPE INT )
 
 instruction tyisiu ()
   code
-    JITTER_PUSH_STACK (PVM_MAKE_INT (PVM_IS_UINT (JITTER_TOP_STACK ()), 32));
+    pvm_val typ = JITTER_TOP_STACK ();
+    int isiu_p
+      = PVM_VAL_TYP_CODE (typ) == PVM_TYPE_INTEGRAL
+        && !PVM_VAL_INT (PVM_VAL_TYP_I_SIGNED_P (typ))
+        && PVM_VAL_ULONG (PVM_VAL_TYP_I_SIZE (typ)) <= 32;
+
+    JITTER_PUSH_STACK (PVM_MAKE_INT (isiu_p, 32));
   end
 end
 
 # Instruction: tyisl
 #
-# Given a value, push 1 on the stack if it is a long.
+# Given a type, push 1 on the stack if it is a long.
 # Push 0 otherwise.
 #
-# Stack: ( VAL -- VAL INT )
+# Stack: ( TYPE -- TYPE INT )
 
 instruction tyisl ()
   code
-    JITTER_PUSH_STACK (PVM_MAKE_INT (PVM_IS_LONG (JITTER_TOP_STACK ()), 32));
+    pvm_val typ = JITTER_TOP_STACK ();
+    int isl_p
+      = PVM_VAL_TYP_CODE (typ) == PVM_TYPE_INTEGRAL
+        && PVM_VAL_INT (PVM_VAL_TYP_I_SIGNED_P (typ))
+        && PVM_VAL_ULONG (PVM_VAL_TYP_I_SIZE (typ)) > 32;
+
+    JITTER_PUSH_STACK (PVM_MAKE_INT (isl_p, 32));
   end
 end
 
 # Instruction: tyislu
 #
-# Given a value, push 1 on the stack if it is an unsigned integer.
+# Given a type, push 1 on the stack if it is an ulong.
 # Push 0 otherwise.
 #
-# Stack: ( VAL -- VAL INT )
+# Stack: ( TYPE -- TYPE INT )
 
 instruction tyislu ()
   code
-    JITTER_PUSH_STACK (PVM_MAKE_INT (PVM_IS_ULONG (JITTER_TOP_STACK ()), 32));
+    pvm_val typ = JITTER_TOP_STACK ();
+    int islu_p
+      = PVM_VAL_TYP_CODE (typ) == PVM_TYPE_INTEGRAL
+        && !PVM_VAL_INT (PVM_VAL_TYP_I_SIGNED_P (typ))
+        && PVM_VAL_ULONG (PVM_VAL_TYP_I_SIZE (typ)) > 32;
+
+    JITTER_PUSH_STACK (PVM_MAKE_INT (islu_p, 32));
   end
 end
 
 # Instruction: tyiso
 #
-# Given a value, push 1 on the stack if it is an offset.  Push 0
+# Given a type, push 1 on the stack if it is an offset.  Push 0
 # otherwise.
 #
-# Stack: ( VAL -- VAL INT )
+# Stack: ( TYPE -- TYPE INT )
 
 instruction tyiso ()
   code
-    JITTER_PUSH_STACK (PVM_MAKE_INT (PVM_IS_OFF (JITTER_TOP_STACK ()), 32));
+    pvm_val typ = JITTER_TOP_STACK ();
+    int isoff_p = PVM_VAL_TYP_CODE (typ) == PVM_TYPE_OFFSET;
+
+    JITTER_PUSH_STACK (PVM_MAKE_INT (isoff_p, 32));
   end
 end
 
 # Instruction: tyiss
 #
-# Given a value, push 1 on the stack if it is a string.  Push 0
+# Given a type, push 1 on the stack if it is a string.  Push 0
 # otherwise.
 #
-# Stack: ( VAL -- VAL INT )
+# Stack: ( TYPE -- TYPE INT )
 
 instruction tyiss ()
   code
-    JITTER_PUSH_STACK (PVM_MAKE_INT (PVM_IS_STR (JITTER_TOP_STACK ()), 32));
+    pvm_val typ = JITTER_TOP_STACK ();
+    int isstr_p = PVM_VAL_TYP_CODE (typ) == PVM_TYPE_STRING;
+
+    JITTER_PUSH_STACK (PVM_MAKE_INT (isstr_p, 32));
   end
 end
 
 # Instruction: tyisa
 #
-# Given a value, push 1 on the stack if it is an array.  Push 0
+# Given a type, push 1 on the stack if it is an array.  Push 0
 # otherwise.
 #
-# Stack: ( VAL -- VAL INT )
+# Stack: ( TYPE -- TYPE INT )
 
 instruction tyisa ()
   code
-    JITTER_PUSH_STACK (PVM_MAKE_INT (PVM_IS_ARR (JITTER_TOP_STACK ()), 32));
+    pvm_val typ = JITTER_TOP_STACK ();
+    int isarr_p = PVM_VAL_TYP_CODE (typ) == PVM_TYPE_ARRAY;
+
+    JITTER_PUSH_STACK (PVM_MAKE_INT (isarr_p, 32));
   end
 end
 
 # Instruction: tyisc
 #
-# Given a value, push 1 on the stack if it is a closure.  Push 0
+# Given a type, push 1 on the stack if it is a closure.  Push 0
 # otherwise.
 #
-# Stack: ( VAL -- VAL INT )
+# Stack: ( TYPE -- TYPE INT )
 
 instruction tyisc ()
   code
-    JITTER_PUSH_STACK (PVM_MAKE_INT (PVM_IS_CLS (JITTER_TOP_STACK ()), 32));
+    pvm_val typ = JITTER_TOP_STACK ();
+    int iscls_p = typ == PVM_NULL ? 1
+                                  : PVM_VAL_TYP_CODE (typ) == PVM_TYPE_CLOSURE;
+
+    JITTER_PUSH_STACK (PVM_MAKE_INT (iscls_p, 32));
   end
 end
 
 # Instruction: tyissct
 #
-# Given a value, push 1 on the stack if it is a struct.  Push 0
+# Given a type, push 1 on the stack if it is a struct.  Push 0
 # otherwise.
 #
-# Stack: ( VAL -- VAL INT )
+# Stack: ( TYPE -- TYPE INT )
 
 instruction tyissct ()
   code
-    JITTER_PUSH_STACK (PVM_MAKE_INT (PVM_IS_SCT (JITTER_TOP_STACK ()), 32));
+    pvm_val typ = JITTER_TOP_STACK ();
+    int issct_p = PVM_VAL_TYP_CODE (typ) == PVM_TYPE_STRUCT;
+
+    JITTER_PUSH_STACK (PVM_MAKE_INT (issct_p, 32));
+  end
+end
+
+# Instruction: tyisv ()
+#
+# Given a type, push 1 on the stack if it is a void.  Push 0
+# otherwise.
+#
+# Stack: ( TYPE -- TYPE INT)
+
+instruction tyisv ()
+  code
+    pvm_val typ = JITTER_TOP_STACK ();
+    int isv_p = PVM_VAL_TYP_CODE (typ) == PVM_TYPE_VOID;
+
+    JITTER_PUSH_STACK (PVM_MAKE_INT (isv_p, 32));
   end
 end
 
@@ -5845,6 +5932,33 @@ instruction mktyi ()
   end
 end
 
+# Instruction: tyigetsz
+#
+# Given an integral type, push its size (in bits) to the stack.
+#
+# Stack: ( ITYPE -- ITYPE ULONG )
+instruction tyigetsz ()
+  code
+    pvm_val size = PVM_VAL_TYP_I_SIZE (JITTER_TOP_STACK ());
+
+    JITTER_PUSH_STACK (size);
+  end
+end
+
+# Instruction: tyigetsg
+#
+# Given an integral type, push its sign to the stack.  0 means
+# unsigned and 1 means signed.
+#
+# Stack: ( ITYPE -- ITYPE INT )
+instruction tyigetsg ()
+  code
+    pvm_val sign = PVM_VAL_TYP_I_SIGNED_P (JITTER_TOP_STACK ());
+
+    JITTER_PUSH_STACK (sign);
+  end
+end
+
 # Instruction: mktys
 #
 # Push a string type on the stack.
@@ -5871,6 +5985,30 @@ instruction mktyo ()
   { res = pvm_make_offset_type (a, b); }
     JITTER_BINARY_STACK(F);
 #undef F
+  end
+end
+
+# Instruction: tyogetm
+#
+# Given an offset type, push type of magnitude to the stack.
+#
+# Stack : ( OTYPE -- OTYPE ITYPE)
+
+instruction tyogetm ()
+  code
+    JITTER_PUSH_STACK (PVM_VAL_TYP_O_BASE_TYPE (JITTER_TOP_STACK ()));
+  end
+end
+
+# Instruction: tyogetu
+#
+# Given an offset type, push unit value to the stack.
+#
+# Stack : ( OTYPE -- OTYPE ULONG)
+
+instruction tyogetu ()
+  code
+    JITTER_PUSH_STACK (PVM_VAL_TYP_O_UNIT (JITTER_TOP_STACK ()));
   end
 end
 
@@ -5997,6 +6135,54 @@ instruction tysctgetn ()
     pvm_val type_name = PVM_VAL_TYP_S_NAME (type);
 
     JITTER_PUSH_STACK (type_name);
+  end
+end
+
+# Instruction: tysctgetnf
+#
+# Given a struct type, push its number of fields to the stack.
+#
+# Stack: ( SCT -- SCT ULONG )
+
+instruction tysctgetnf ()
+  code
+    pvm_val type = JITTER_TOP_STACK ();
+    pvm_val type_nfields = PVM_VAL_TYP_S_NFIELDS (type);
+
+    JITTER_PUSH_STACK (type_nfields);
+  end
+end
+
+# Instruction: tysctgetfn
+#
+# Given a struct type and an index, push the field name to the stack.
+# If the field is not named push PVM_NULL.
+#
+# Stack: ( SCT ULONG -- SCT ULONG STR )
+
+instruction tysctgetfn ()
+  code
+    pvm_val type = JITTER_UNDER_TOP_STACK ();
+    pvm_val index = JITTER_TOP_STACK ();
+    pvm_val *field_names = PVM_VAL_TYP_S_FNAMES (type);
+
+    JITTER_PUSH_STACK (field_names[PVM_VAL_ULONG (index)]);
+  end
+end
+
+# Instruction: tysctgetft
+#
+# Given a struct type and an index, push the field type to the stack.
+#
+# Stack: ( SCT ULONG -- SCT ULONG TYP )
+
+instruction tysctgetft ()
+  code
+    pvm_val type = JITTER_UNDER_TOP_STACK ();
+    pvm_val index = JITTER_TOP_STACK ();
+    pvm_val *field_types = PVM_VAL_TYP_S_FTYPES (type);
+
+    JITTER_PUSH_STACK (field_types[PVM_VAL_ULONG (index)]);
   end
 end
 

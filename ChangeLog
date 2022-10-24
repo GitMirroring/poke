@@ -1,5 +1,52 @@
 2022-10-26  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pkl-gen-attrs.pks (attr_size): Add `typof' and `nip'
+	instructions around `tyis*` instructions.
+	(attr_eoffset): Likewise.
+	(attr_esize): Likewise.
+	(attr_ename): Likewise.
+	(attr_elem): Likewise.
+	* libpoke/pkl-insn.def (isn): New instruction.
+	(isty): Likewise.
+	(tyigetsz): Likewise.
+	(tyigetsg): Likewise.
+	(tyisv): Likewise.
+	(tyogetm): Likewise.
+	(tyogetu): Likewise.
+	(tyagetn): Likewise.
+	(tyagett): Likewise.
+	(tyagetb): Likewise.
+	(tysctgetnf): Likewise.
+	(tysctgetfn): Likewise.
+	(tysctgetft): Likewise.
+	* libpoke/pkl-rt.pk (_pkl_print_format_any): Adapt.
+	* libpoke/pvm-val.c (pvm_typeof): Handle closure case (return
+	`PVM_NULL' as the type of closure).
+	* libpoke/pvm.jitter (isn): New instruction.
+	(isty): Likewise.
+	(tyigetsz): Likewise.
+	(tyigetsg): Likewise.
+	(tyisv): Likewise.
+	(tyogetm): Likewise.
+	(tyogetu): Likewise.
+	(tyagetn): Likewise.
+	(tyagett): Likewise.
+	(tyagetb): Likewise.
+	(tysctgetnf): Likewise.
+	(tysctgetfn): Likewise.
+	(tysctgetft): Likewise.
+	(tyisi): Adapt to expect type (not value).
+	(tyisiu): Likewise.
+	(tyisl): Likewise.
+	(tyislu): Likewise.
+	(tyiso): Likewise.
+	(tyiss): Likewise.
+	(tyisa): Likewise.
+	(tyisc): Likewise.
+	(tyissct): Likewise.
+
+2022-10-26  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-insn.def (iolist): Remove instruction.
 	(ionum): New instruction.
 	(ioref): Likewise.

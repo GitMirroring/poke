@@ -289,6 +289,10 @@ PKL_DEF_INSN(PKL_INSN_SSET,"","sset")
 PKL_DEF_INSN(PKL_INSN_SSETI,"","sseti")
 PKL_DEF_INSN(PKL_INSN_SMODI,"","smodi")
 
+/* Instructions to handle values.  */
+
+PKL_DEF_INSN(PKL_INSN_ISN,"","isn")
+
 /* Instructions to handle mapped values.  */
 
 PKL_DEF_INSN(PKL_INSN_MM,"","mm")
@@ -324,33 +328,46 @@ PKL_DEF_INSN(PKL_INSN_MSETSIZ,"","msetsiz")
 
 PKL_DEF_INSN(PKL_INSN_ISA,"","isa")
 
-PKL_DEF_INSN(PKL_INSN_MKTYV,"","mktyv")
+PKL_DEF_INSN(PKL_INSN_TYPOF,"","typof")
+PKL_DEF_INSN(PKL_INSN_ISTY,"","isty")
+
 PKL_DEF_INSN(PKL_INSN_MKTYI,"","mktyi")
+PKL_DEF_INSN(PKL_INSN_TYIGETSZ,"","tyigetsz")
+PKL_DEF_INSN(PKL_INSN_TYIGETSG,"","tyigetsg")
+PKL_DEF_INSN(PKL_INSN_TYISI,"","tyisi")
+PKL_DEF_INSN(PKL_INSN_TYISIU,"","tyisiu")
+PKL_DEF_INSN(PKL_INSN_TYISL,"","tyisl")
+PKL_DEF_INSN(PKL_INSN_TYISLU,"","tyislu")
+
+PKL_DEF_INSN(PKL_INSN_MKTYV,"","mktyv")
+PKL_DEF_INSN(PKL_INSN_TYISV,"","tyisv")
+
 PKL_DEF_INSN(PKL_INSN_MKTYS,"","mktys")
+PKL_DEF_INSN(PKL_INSN_TYISS,"","tyiss")
+
 PKL_DEF_INSN(PKL_INSN_MKTYO,"","mktyo")
-PKL_DEF_INSN(PKL_INSN_MKTYSCT,"","mktysct")
+PKL_DEF_INSN(PKL_INSN_TYOGETM,"","tyogetm")
+PKL_DEF_INSN(PKL_INSN_TYOGETU,"","tyogetu")
+PKL_DEF_INSN(PKL_INSN_TYISO,"","tyiso")
+
 PKL_DEF_INSN(PKL_INSN_MKTYC,"","mktyc")
+PKL_DEF_INSN(PKL_INSN_TYISC,"","tyisc")
+/* PKL_DEF_INSN(PKL_INSN_TYCNA,"","tycna") */
+/* PKL_DEF_INSN(PKL_INSN_TYCAT,"","tycat") */
+/* PKL_DEF_INSN(PKL_INSN_TYCRT,"","tycrt") */
+
+PKL_DEF_INSN(PKL_INSN_MKTYSCT,"","mktysct")
+PKL_DEF_INSN(PKL_INSN_TYSCTGETN,"","tysctgetn")
+PKL_DEF_INSN(PKL_INSN_TYSCTGETNF,"","tysctgetnf")
+PKL_DEF_INSN(PKL_INSN_TYSCTGETFN,"","tysctgetfn")
+PKL_DEF_INSN(PKL_INSN_TYSCTGETFT,"","tysctgetft")
+PKL_DEF_INSN(PKL_INSN_TYISSCT,"","tyissct")
 
 PKL_DEF_INSN(PKL_INSN_MKTYA,"","mktya")
 PKL_DEF_INSN(PKL_INSN_TYAGETN,"","tyagetn")
 PKL_DEF_INSN(PKL_INSN_TYAGETT,"","tyagett")
 PKL_DEF_INSN(PKL_INSN_TYAGETB,"","tyagetb")
-
-PKL_DEF_INSN(PKL_INSN_TYPOF,"","typof")
-
-PKL_DEF_INSN(PKL_INSN_TYISI,"","tyisi")
-PKL_DEF_INSN(PKL_INSN_TYISIU,"","tyisiu")
-PKL_DEF_INSN(PKL_INSN_TYISL,"","tyisl")
-PKL_DEF_INSN(PKL_INSN_TYISLU,"","tyislu")
-PKL_DEF_INSN(PKL_INSN_TYISS,"","tyiss")
-PKL_DEF_INSN(PKL_INSN_TYISO,"","tyiso")
 PKL_DEF_INSN(PKL_INSN_TYISA,"","tyisa")
-PKL_DEF_INSN(PKL_INSN_TYISC,"","tyisc")
-PKL_DEF_INSN(PKL_INSN_TYISSCT,"","tyissct")
-
-/** Struct types. */
-
-PKL_DEF_INSN(PKL_INSN_TYSCTGETN,"","tysctgetn")
 
 /* Branch instructions.  */
 

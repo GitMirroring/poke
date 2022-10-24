@@ -36,7 +36,9 @@
         ;; value.
    .c if (PKL_AST_TYPE_CODE (@type) == PKL_TYPE_ANY)
    .c {
+        typof
         tyisc
+        nip
         bzi .not_a_function
         push PVM_E_CONV
         push "msg"
@@ -161,10 +163,14 @@
         .macro attr_eoffset
         ;; If the value is not composite, raise E_inval.
         swap                    ; IDX VAL
-        tyissct                 ; IDX VAL ISSCT
+        typof                   ; IDX VAL TYP
+        tyissct                 ; IDX VAL TYP ISSCT
+        nip                     ; IDX VAL ISSCT
         bnzi .struct
         drop                    ; IDX VAL
-        tyisa                   ; IDX VAL ISARR
+        typof                   ; IDX VAL TYP
+        tyisa                   ; IDX VAL TYP ISARR
+        nip                     ; IDX VAL ISARR
         bnzi .array
         push PVM_E_INVAL
         push "msg"
@@ -200,10 +206,14 @@
         .macro attr_esize
         ;; If the value is not composite, raise E_inval.
         swap                    ; IDX VAL
-        tyissct                 ; IDX VAL ISSCT
+        typof                   ; IDX VAL TYP
+        tyissct                 ; IDX VAL TYP ISSCT
+        nip                     ; IDX VAL ISSCT
         bnzi .struct
         drop                    ; IDX VAL
-        tyisa                   ; IDX VAL ISARR
+        typof                   ; IDX VAL TYP
+        tyisa                   ; IDX VAL TYP ISARR
+        nip                     ; IDX VAL ISARR
         bnzi .array
         push PVM_E_INVAL
         push "msg"
@@ -257,10 +267,14 @@
         .macro attr_ename
         ;; If the value is not composite, raise E_inval.
         swap                    ; IDX VAL
-        tyissct                 ; IDX VAL ISSCT
+        typof                   ; IDX VAL TYP
+        tyissct                 ; IDX VAL TYP ISSCT
+        nip                     ; IDX VAL ISSCT
         bnzi .struct
         drop                    ; IDX VAL
-        tyisa                   ; IDX VAL ISARR
+        typof                   ; IDX VAL TYP
+        tyisa                   ; IDX VAL TYP ISARR
+        nip                     ; IDX VAL ISARR
         bnzi .array
         push PVM_E_INVAL
         push "msg"
@@ -313,10 +327,14 @@
         .macro attr_elem
         ;; If the value is not composite, raise E_inval.
         swap                    ; IDX VAL
-        tyissct                 ; IDX VAL ISSCT
+        typof                   ; IDX VAL TYP
+        tyissct                 ; IDX VAL TYP ISSCT
+        nip                     ; IDX VAL ISSCT
         bnzi .struct
         drop                    ; IDX VAL
-        tyisa                   ; IDX VAL ISARR
+        typof                   ; IDX VAL TYP
+        tyisa                   ; IDX VAL TYP ISARR
+        nip                     ; IDX VAL ISARR
         bnzi .array
         push PVM_E_INVAL
         push "msg"

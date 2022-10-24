@@ -1643,6 +1643,8 @@ pvm_typeof (pvm_val val)
     type = PVM_VAL_SCT_TYPE (val);
   else if (PVM_IS_TYP (val))
     type = val;
+  else if (PVM_IS_CLS (val))
+    type = PVM_NULL;
   else
     assert (0);
 
