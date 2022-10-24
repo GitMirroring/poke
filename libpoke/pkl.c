@@ -816,8 +816,8 @@ pvm_type_to_ast_type (pkl_ast ast, pvm_val type)
         return pkl_ast_make_offset_type (ast, base_type, unit);
         break;
       }
-    case PVM_TYPE_ANY:
-      return pkl_ast_make_any_type (ast);
+    case PVM_TYPE_VOID:
+      return pkl_ast_make_void_type (ast);
       break;
     case PVM_TYPE_STRUCT:
       /* XXX writeme */

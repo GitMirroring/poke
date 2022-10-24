@@ -223,8 +223,8 @@ pk_type_code (pk_val val)
       return PK_TYPE_OFFSET;
     case PVM_TYPE_CLOSURE:
       return PK_TYPE_CLOSURE;
-    case PVM_TYPE_ANY:
-      return PK_TYPE_ANY;
+    case PVM_TYPE_VOID:
+      return PK_TYPE_VOID;
     default:
       return PK_TYPE_UNKNOWN;
     }
@@ -393,12 +393,6 @@ pk_val
 pk_offset_type_unit (pk_val type)
 {
   return PVM_VAL_TYP_O_UNIT (type);
-}
-
-pk_val
-pk_make_any_type (void)
-{
-  return pvm_make_any_type ();
 }
 
 pk_val

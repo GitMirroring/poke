@@ -108,7 +108,6 @@ wrapped-functions
   pvm_array_rem
   pvm_env_set_var
   pvm_get_struct_method
-  pvm_make_any_type
   pvm_make_closure_type
   pvm_make_void_type
   pvm_make_cls
@@ -5785,18 +5784,6 @@ end
 instruction mktyv ()
   code
     JITTER_PUSH_STACK (pvm_make_void_type ());
-  end
-end
-
-# Instruction: mktyany
-#
-# Build an "any" type and push it on the stack.
-#
-# Stack: ( -- TYPE )
-
-instruction mktyany ()
-  code
-    JITTER_PUSH_STACK (pvm_make_any_type ());
   end
 end
 

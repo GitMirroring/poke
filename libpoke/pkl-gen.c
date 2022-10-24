@@ -1844,7 +1844,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_funcall)
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_REV, aindex);
 
       /* Create the array of variable arguments.  */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, pvm_make_any_type ());
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL);
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL);
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MKTYA);
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
@@ -2911,10 +2911,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_type_any)
     {
       /* This value is arbitrary... literally `any' value.. :D */
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, pvm_make_int (0, 32));
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL);
     }
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_TYPE))
-    pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MKTYANY);
+    pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL);
 }
 PKL_PHASE_END_HANDLER
 

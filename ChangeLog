@@ -1,3 +1,26 @@
+2022-10-24  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pvm.jitter (wrapped-functions): Remove `pvm_make_any_type'.
+	(mktyany): Remove instruction.
+	* libpoke/pkl-insn.def (PKL_INSN_MKTYANY): Remove instruction.
+	* libpoke/pvm.h (pvm_make_any_type): Remove function decl.
+	* libpoke/pvm-val.h (enum pvm_type_code): Remove PVM_TYPE_ANY.
+	* libpoke/pk-val.c (pk_type_code): Remove case for PVM_TYPE_ANY.
+	(pk_make_any_type): Remove function def.
+	* libpoke/pkl-gen.c (pkl_gen_ps_type_any): Replace PKL_INSN_MKTYANY
+	with PVM_NULL.  And use PVM_NULL as the result of construction.
+	* libpoke/pkl.c (pvm_type_to_ast_type): Remove case for PVM_TYPE_ANY.
+	* libpoke/pvm-val.c (any_type): Remove variable.
+	(pvm_make_any_type): Remove function.
+	(pvm_print_val_1): Remove case for PVM_TYPE_ANY.
+	(pvm_type_equal_p): Likewise.
+	(pvm_val_initialize): Remove `any_type'.
+	(pvm_val_finalize): Likewise.
+	* libpoke/libpoke.h (PK_TYPE_ANY): Remove macro.
+	(PK_TYPE_VOID): Add macro.
+	* libpoke/pkl-gen.pks (emit_tv_field_absent): s/mktyany/push null/.
+	(struct_field_mapper): Likewise.
+
 2022-10-23  Arsen Arsenović  <arsen@aarsen.me>
 
         * doc/gen-pvm-insns.sh (SUBSECTIONS): Emit @pvindex calls for

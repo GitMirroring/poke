@@ -38,7 +38,6 @@
 
 static pvm_val string_type;
 static pvm_val void_type;
-static pvm_val any_type;
 
 /* We are currently only supporting a relatively small number of
    integral types, i.e. signed and unsigned types of sizes 1 to 64
@@ -515,12 +514,6 @@ pvm_val
 pvm_make_void_type (void)
 {
   return void_type;
-}
-
-pvm_val
-pvm_make_any_type (void)
-{
-  return any_type;
 }
 
 pvm_val
@@ -1501,11 +1494,6 @@ pvm_print_val_1 (pvm vm, int depth, int mode, int base, int indent,
         case PVM_TYPE_VOID:
           pk_puts ("void");
           break;
-        case PVM_TYPE_ANY:
-          pk_term_class ("any");
-          pk_puts ("any");
-          pk_term_end_class ("any");
-          break;
         case PVM_TYPE_ARRAY:
           PVM_PRINT_VAL_1 (PVM_VAL_TYP_A_ETYPE (val), ndepth);
           pk_puts ("[");
@@ -1682,7 +1670,6 @@ pvm_type_equal_p (pvm_val type1, pvm_val type2)
         return (t1_size == t2_size && t1_signed == t2_signed);
       }
     case PVM_TYPE_STRING:
-    case PVM_TYPE_ANY:
     case PVM_TYPE_VOID:
       return 1;
     case PVM_TYPE_ARRAY:
@@ -1823,12 +1810,10 @@ pvm_val_initialize (void)
 
   pvm_alloc_add_gc_roots (&string_type, 1);
   pvm_alloc_add_gc_roots (&void_type, 1);
-  pvm_alloc_add_gc_roots (&any_type, 1);
   pvm_alloc_add_gc_roots (&common_int_types, 65 * 2);
 
   string_type = pvm_make_type (PVM_TYPE_STRING);
   void_type = pvm_make_type (PVM_TYPE_VOID);
-  any_type = pvm_make_type (PVM_TYPE_ANY);
 
   for (i = 0; i < 65; ++i)
     for (j = 0; j < 2; ++j)
@@ -1840,6 +1825,5 @@ pvm_val_finalize (void)
 {
   pvm_alloc_remove_gc_roots (&string_type, 1);
   pvm_alloc_remove_gc_roots (&void_type, 1);
-  pvm_alloc_remove_gc_roots (&any_type, 1);
   pvm_alloc_remove_gc_roots (&common_int_types, 65 * 2);
 }

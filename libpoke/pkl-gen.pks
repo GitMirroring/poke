@@ -571,7 +571,7 @@
 ;;; event.
 
         .macro emit_tv_field_absent
-        mktyany
+        push null
         push null
         mktya
         push ulong<64>1
@@ -997,7 +997,7 @@
    .c {
         ;; Generate a PK_TV_FIELD_MAPPED tracer event.
         ;; First, create an empty any[] array for the arguments.
-        mktyany                 ; ... BOFF STR VAL ANYT
+        push null               ; ... BOFF STR VAL ANYT
         push null               ; ... BOFF STR VAL ANYT NULL
         mktya                   ; ... BOFF STR VAL ATYPE
         push ulong<64>6         ; ... BOFF STR VAL ATYPE NELEM

@@ -1171,7 +1171,7 @@ pk_val pk_typeof (pk_val val) LIBPOKE_API;
 #define PK_TYPE_ARRAY   5
 #define PK_TYPE_STRUCT  6
 #define PK_TYPE_CLOSURE 7
-#define PK_TYPE_ANY     8
+#define PK_TYPE_VOID    8
 
 int pk_type_code (pk_val val) LIBPOKE_API;
 
