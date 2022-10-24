@@ -969,7 +969,7 @@ immutable fun _pkl_print_format_any = (any val,
 
     var struct_type_name
       = asm string: ("typof
-                      tysctn
+                      tysctgetn
                       nip2
                       bn .namenull
                       nip

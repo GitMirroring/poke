@@ -1,5 +1,13 @@
 2022-10-24  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pkl-insn.def (PKL_INSN_TYSCTN): Removed.
+	(PKL_INSN_TYSCTGETN): Added (renamed from PKL_INSN_TYSCTN).
+	* libpoke/pkl-rt.pk (_pkl_print_format_any): s/tysctn/tysctgetn/.
+	* libpoke/pvm.jitter (tysctn): Removed.
+	(tysctgetn): Added (renamed from tysctn).
+
+2022-10-24  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pvm.jitter (wrapped-functions): Remove `pvm_make_any_type'.
 	(mktyany): Remove instruction.
 	* libpoke/pkl-insn.def (PKL_INSN_MKTYANY): Remove instruction.

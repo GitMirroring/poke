@@ -5944,14 +5944,14 @@ instruction mktysct ()
   end
 end
 
-# Instruction: tysctn
+# Instruction: tysctgetn
 #
 # Given a struct type, push its name to the stack.  If the struct
 # type is not named push PVM_NULL.
 #
 # Stack: ( SCT -- SCT STR )
 
-instruction tysctn ()
+instruction tysctgetn ()
   code
     pvm_val type = JITTER_TOP_STACK ();
     pvm_val type_name = PVM_VAL_TYP_S_NAME (type);

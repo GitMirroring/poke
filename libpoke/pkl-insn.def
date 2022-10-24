@@ -350,7 +350,7 @@ PKL_DEF_INSN(PKL_INSN_TYISSCT,"","tyissct")
 
 /** Struct types. */
 
-PKL_DEF_INSN(PKL_INSN_TYSCTN,"","tysctn")
+PKL_DEF_INSN(PKL_INSN_TYSCTGETN,"","tysctgetn")
 
 /* Branch instructions.  */
 
