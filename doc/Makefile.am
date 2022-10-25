@@ -21,6 +21,8 @@ poke_TEXINFOS = fdl.texi pvm-insns.texi poke-settings.texi
 EXTRA_DIST = gen-pvm-insns.sh learn-poke-language-in-y-minutes.pk \
              poke2texi.pk
 
+AM_MAKEINFOFLAGS = --set-customization-variable CHECK_NORMAL_MENU_STRUCTURE=true
+
 # The description of PVM instructions is generated from the
 # libpoke/pvm.jitter file.
 

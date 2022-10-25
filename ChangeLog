@@ -1,5 +1,7 @@
 2022-10-25  Arsen Arsenović  <arsen@aarsen.me>
 
+	* doc/Makefile.am (AM_MAKEINFOFLAGS): Enable the
+	`CHECK_NORMAL_MENU_STRUCTURE' flag.
 	* doc/poke.texi (Top): Add `Indices' to menu.
 	(Indices): Rename from Indicies (i.e. fix a typo).
 
