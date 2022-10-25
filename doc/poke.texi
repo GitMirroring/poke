@@ -84,9 +84,7 @@ Internals
 Appendices
 * Table of ASCII Codes::	   The ASCII character set.
 * GNU Free Documentation License:: Distribution terms for this document.
-
-Indexes
-* Concept Index::
+* Indices::			   List of indices in this document.
 
 @detailmenu
 @ifnothtml
@@ -15683,8 +15681,8 @@ It returns an offset that is the result of aligning the given
 
 @include fdl.texi
 
-@node Indicies
-@appendix Indicies
+@node Indices
+@appendix Indices
 
 @menu
 * Concept Index::               General concept index

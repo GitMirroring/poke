@@ -1,5 +1,10 @@
 2022-10-25  Arsen Arsenović  <arsen@aarsen.me>
 
+	* doc/poke.texi (Top): Add `Indices' to menu.
+	(Indices): Rename from Indicies (i.e. fix a typo).
+
+2022-10-25  Arsen Arsenović  <arsen@aarsen.me>
+
 	* pickles/dwarf-frame.pk: Set CFA constants to `uint<6>'
 	explicitly, to avoid `in' type errors.
 	* pickles/pe.pk: Set PE_DEBUG_TYPE constants to uint<32>,
