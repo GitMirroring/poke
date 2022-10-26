@@ -71,7 +71,12 @@ immutable fun iobias = (int<32> ios = get_ios) offset<uint<64>,1>:
 
 immutable fun iolist = int<32>[]:
 {
-  return asm int<32>[]: ("iolist");
+  var a = int<32>[] (),
+      n = asm uint<64>: ("ionum");
+
+  for (var i = 0UL; i < n; ++i)
+    apush (a, asm int<32>: ("ioref; nip" : i));
+  return a;
 }
 
 immutable fun iosetbias = (offset<uint<64>,1> bias = 0#1, int<32> ios = get_ios) void:

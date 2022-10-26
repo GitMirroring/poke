@@ -1,3 +1,15 @@
+2022-10-26  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-insn.def (iolist): Remove instruction.
+	(ionum): New instruction.
+	(ioref): Likewise.
+	* libpoke/pvm.jitter (iolist): Remove instruction.
+	(ionum): New instruction.
+	(ioref): Likewise.
+	(late-c): Add callback functions to traverse IO space.
+	* libpoke/pkl-rt.pk (iolist): Re-write in terms of new
+	instructions.
+
 2022-10-26  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* etc/poke.rec (Introduce SELF in methods): Removed as DONE.

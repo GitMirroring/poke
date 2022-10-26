@@ -917,19 +917,38 @@ late-c
     };
 #undef E
 
-    struct iolist_ctx
+    struct ionum_ctx
     {
-      pvm_val arr_ios;
+      uint64_t count;
     };
 
     static void
-    iolist_callback (ios io, void *data)
+    ionum_callback (ios io, void *data)
     {
-      struct iolist_ctx *ctx = data;
-      pvm_val arr = ctx->arr_ios;
+      struct ionum_ctx *ctx = data;
 
-      (void) pvm_array_insert (arr, PVM_VAL_ARR_NELEM (arr),
-                               PVM_MAKE_INT (ios_get_id (io), 32));
+      ++ctx->count;
+    }
+
+    struct ioref_ctx
+    {
+      uint64_t index;
+      int ios_id;
+    };
+
+    static void
+    ioref_callback (ios io, void *data)
+    {
+      struct ioref_ctx *ctx = data;
+
+      if (ctx->ios_id != -1)
+        return;
+      if (ctx->index == 0)
+        {
+          ctx->ios_id = ios_get_id (io);
+          return;
+        }
+      --ctx->index;
     }
 
     static int
@@ -1812,23 +1831,44 @@ instruction iosize ()
   end
 end
 
-# Instruction: iolist
+# Instruction: ionum
 #
-# Push an array of open IO spaces (array of signed integers) on the stack.
-# This array may be empty if no IO space is open.
+# Pushe the number of IO spaces on the stack.
 #
-# Stack: ( -- ARR )
+# Stack: ( -- ULONG )
 
-instruction iolist ()
+instruction ionum ()
   code
-    struct iolist_ctx iolist_ctx;
-    pvm_val arr = pvm_make_array (pvm_make_integral_type (PVM_MAKE_ULONG (32, 64),
-                                                          PVM_MAKE_INT (1, 32)),
-                                  PVM_MAKE_ULONG (0, 64));
+    struct ionum_ctx ctx;
 
-    iolist_ctx.arr_ios = arr;
-    ios_map (iolist_callback, &iolist_ctx);
-    JITTER_PUSH_STACK (arr);
+    ctx.count = 0;
+    ios_map (ionum_callback, &ctx);
+    JITTER_PUSH_STACK (PVM_MAKE_ULONG (ctx.count, 64));
+  end
+end
+
+# Instruction: ioref
+#
+# Given an index ULONG, push the descriptor of the IO space on
+# the stack as a signed integer.
+#
+# If the provided index is out of bounds, then raise
+# PVM_E_OUT_OF_BOUNDS.
+#
+# Stack: ( ULONG -- ULONG IOS )
+# Exceptions: PVM_E_OUT_OF_BOUNDS
+
+instruction ioref ()
+  branching # because of PVM_RAISE_DIRECT
+  code
+    struct ioref_ctx ctx;
+
+    ctx.index = PVM_VAL_ULONG (JITTER_TOP_STACK ());
+    ctx.ios_id = -1;
+    ios_map (ioref_callback, &ctx);
+    if (ctx.ios_id == -1)
+      PVM_RAISE_DIRECT (PVM_E_OUT_OF_BOUNDS);
+    JITTER_PUSH_STACK (PVM_MAKE_INT (ctx.ios_id, 32));
   end
 end
 
