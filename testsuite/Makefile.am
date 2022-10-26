@@ -2173,6 +2173,8 @@ EXTRA_DIST = \
   poke.pkl/scons-union-method-2.pk \
   poke.pkl/scons-union-method-3.pk \
   poke.pkl/scons-union-method-4.pk \
+  poke.pkl/self-1.pk \
+  poke.pkl/self-2.pk \
   poke.pkl/set-endian-1.pk \
   poke.pkl/set-ios-1.pk \
   poke.pkl/sizeof-1.pk \

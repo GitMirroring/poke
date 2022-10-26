@@ -1437,10 +1437,22 @@ pushlevel_args:
                      arguments.  */
                   pkl_parser->env = pkl_env_push_frame (pkl_parser->env);
 
-                  /* If in a method, register a dummy for the initial
-                     implicit argument.  */
+                  /* If in a method, register an argument SELF for the
+                     initial implicit argument.  */
                   if (pkl_parser->in_method_decl_p)
-                    pkl_register_dummies (pkl_parser, 1);
+                    {
+                      pkl_ast_node arg_type
+                        = pkl_ast_make_any_type (pkl_parser->ast);
+                      pkl_ast_node arg_name
+                        = pkl_ast_make_identifier (pkl_parser->ast,
+                                                   "SELF");
+                      pkl_ast_node arg
+                        = pkl_ast_make_func_arg (pkl_parser->ast,
+                                                 arg_type, arg_name,
+                                                 NULL /* initial */);
+
+                      assert (pkl_register_arg (pkl_parser, arg));
+                    }
                 }
         ;
 

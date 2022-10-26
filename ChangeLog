@@ -1,3 +1,13 @@
+2022-10-26  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-tab.y (pushlevel_args): Register a named argument
+	"SELF" instead of a dummy.
+	* testsuite/poke.pkl/self-1.pk: New test.
+	* testsuite/poke.pkl/self-2.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+	* doc/poke.texi (Methods): Mention the SELF variable.
+	(Struct Methods): Likewise.
+
 2022-10-25  Arsen Arsenović  <arsen@aarsen.me>
 
 	* doc/Makefile.am (AM_MAKEINFOFLAGS): Enable the

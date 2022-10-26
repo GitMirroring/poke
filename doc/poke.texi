@@ -5311,6 +5311,28 @@ type Packet =
 Note how we use a variable @code{MAXSIZE} in order to avoid
 hard-coding 4096 twice in the struct definition.
 
+Occasionally it is useful to access to additional properties of a
+containing struct or union in a method, other than its fields.  For
+this purpose it is possible to refer explicitly to the struct using
+the @code{SELF} keyword.  Note that the value referred has type
+@code{any}.
+
+For example, this is how we could print the name of the current
+alternative in a pretty-printer for an union:
+
+@example
+type Foo =
+  union int<32>
+    @{
+      int<32> One == 1;
+      int<32> Two == 2;
+      method _print = void:
+      @{
+        printf ("%s (%v)", SELF'ename (0), SELF'elem (0));
+      @}
+    @};
+@end example
+
 @node Padding and Alignment
 @section Padding and Alignment
 @cindex padding
@@ -12015,6 +12037,10 @@ the struct value whose method is being used.
 
 Methods can refer to the fields of the containing struct type that
 have been defined before the method itself, by name.
+
+Additionally, the containing struct can be referred explicitly under
+the name @code{SELF} in the body of the method.  @code{SELF} has type
+@code{any}.
 
 @node Computed Fields
 @subsection Computed Fields
