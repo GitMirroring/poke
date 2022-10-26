@@ -454,44 +454,6 @@ Description:
 + Modeled after the Tcl open(3tcl)
 RFC: yes
 
-
-Summary: Introduce SELF in methods
-Component: Language
-Kind: ENH
-Priority: 3
-Description:
-+ Poke methods can refer to the fields of the enclosing struct type like
-+ if they were regular variables:
-+
-+   struct
-+   {
-+     byte a;
-+
-+     method set_a = (byte v) void:
-+     {
-+       a = v;
-+     }
-+   }
-+
-+ The reference to `v' really means a sref to the struct value implicitly
-+ passed as the first argument to the method.  This is useful and
-+ convenient.  However, sometimes it is useful to access to the
-+ properties of the struct, like its size, and for that it is necessary
-+ to add a SELF:
-+
-+   method size = void:
-+   {
-+     return SELF'size;
-+   }
-+
-+ The type of SELF would be `any' (since we do not support recursive
-+ definitions) and the keyword SELF would only be available in method
-+ bodies.  Ideally it wouldn't be a keyword anywhere else: maybe that is
-+ achievable by piggybacking into the lexer.
-+
-+ Is `SELF' the right keyword to use?  Using uppercase reduces the odds
-+ of collision with user defined identifiers.
-
 Summary: Make endianness a type quality
 Component: Language
 Kind: ENH

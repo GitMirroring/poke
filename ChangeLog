@@ -1,5 +1,9 @@
 2022-10-26  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* etc/poke.rec (Introduce SELF in methods): Removed as DONE.
+
+2022-10-26  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-tab.y (pushlevel_args): Register a named argument
 	"SELF" instead of a dummy.
 	* testsuite/poke.pkl/self-1.pk: New test.
