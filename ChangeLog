@@ -1,3 +1,10 @@
+2022-10-27  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-insn.def (isn): Remove instruction because we
+	already have the `nnn' instruction.
+	* libpoke/pvm.jitter: Likewise.
+	* libpoke/pkl-rt.pk (_pkl_print_format_any): Adapt.
+
 2022-10-27  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* etc/hacking.org (How `any' is handed in the PVM): New section.

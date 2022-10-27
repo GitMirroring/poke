@@ -5351,22 +5351,6 @@ instruction ogetbt ()
 end
 
 
-## Instructions to handle values
-
-# Instruction: isn
-#
-# Given a value, push 1 on the stack if the value is null.
-# Push 0 otherwise.
-#
-# Stack: ( VAL -- VAL INT )
-
-instruction isn ()
-  code
-    JITTER_PUSH_STACK (PVM_MAKE_INT (JITTER_TOP_STACK () == PVM_NULL, 32));
-  end
-end
-
-
 ## Instructions to handle mapped values
 
 # Instruction: mm

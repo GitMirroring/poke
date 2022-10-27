@@ -838,7 +838,7 @@ immutable fun _pkl_print_format_any = (any val,
 
         _pkl_print_format_any (asm any: ("tyagett; nip" : val), ctx, depth);
         ctx.emit ("[");
-        if (!asm int<32>: ("isn; nip" : bound))
+        if (!asm int<32>: ("nnn; nip" : bound))
           _pkl_print_format_any (bound, ctx, depth);
         ctx.emit ("]");
       }
@@ -846,7 +846,7 @@ immutable fun _pkl_print_format_any = (any val,
       {
         var maybe_name = asm any: ("tysctgetn; nip" : val);
         var name
-          = asm int<32>: ("isn; nip" : maybe_name) ? "struct"
+          = asm int<32>: ("nnn; nip" : maybe_name) ? "struct"
                                                    : (maybe_name as string);
         var nfields = asm uint<64>: ("tysctgetnf; nip" : val);
 
@@ -860,7 +860,7 @@ immutable fun _pkl_print_format_any = (any val,
             if (i != 0UL)
               ctx.emit (" ");
             _pkl_print_format_any (ftype, ctx, depth);
-            if (!asm int<32>: ("isn; nip" : maybe_fname))
+            if (!asm int<32>: ("nnn; nip" : maybe_fname))
               ctx.emit (" " + (maybe_fname as string));
             ctx.emit (";");
           }
@@ -1127,11 +1127,11 @@ immutable fun _pkl_print_format_any = (any val,
     ctx.end_class ("struct");
   }
 
-  if (asm int<32>: ("isn; nip" : val))
+  if (asm int<32>: ("nnn; nip" : val))
     ctx.emit ("null");
   else if (asm int<32>: ("isty; nip" : val))
     handle_type;
-  else if (asm int<32>: ("typof; nip; isn; nip" : val))
+  else if (asm int<32>: ("typof; nip; nnn; nip" : val))
     {
       ctx.begin_class ("special");
       ctx.emit ("#<closure>");
