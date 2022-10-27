@@ -1385,6 +1385,15 @@ have a testsuite in =testsuite/poke.FOO= with a driver
      reason (like to show the arguments taken by a function type.)
 
 * The Poke Virtual Machine
+** PVM types
+*** How =any= is handed in the PVM
+
+    The Poke type =any= is not implemented in the PVM as a PVM type
+    value.  Instead, =null= is used to denote it, by convention.
+
+    Note that it is not possible to use =void= to denote the Poke
+    =any= type, because of closure types: a closure returning =void=
+    is not the same than a closure returning =any=.
 
 ** Exception Handling
 

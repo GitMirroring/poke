@@ -1,9 +1,9 @@
-                       __________________________
+		       __________________________
 
-                        GNU POKE - HACKING NOTES
+			GNU POKE - HACKING NOTES
 
-                            The poke hackers
-                       __________________________
+			    The poke hackers
+		       __________________________
 
 
 Table of Contents
@@ -85,11 +85,13 @@ _________________
 .. 5. Adding Compiler Built-Ins
 .. 6. Writing Compiler Diagnostics
 12. The Poke Virtual Machine
-.. 1. Exception Handling
-.. 2. Signal Handling
-.. 3. Offsets and bit-offsets in the PVM
-.. 4. Writing relocatable instructions
-.. 5. Wrapping globals
+.. 1. PVM types
+..... 1. How `any' is handed in the PVM
+.. 2. Exception Handling
+.. 3. Signal Handling
+.. 4. Offsets and bit-offsets in the PVM
+.. 5. Writing relocatable instructions
+.. 6. Wrapping globals
 13. Memory Management
 .. 1. Using ASTREF
 .. 2. Using ASTDEREF
@@ -1781,7 +1783,21 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
 12 The Poke Virtual Machine
 ===========================
 
-12.1 Exception Handling
+12.1 PVM types
+~~~~~~~~~~~~~~
+
+12.1.1 How `any' is handed in the PVM
+-------------------------------------
+
+  The Poke type `any' is not implemented in the PVM as a PVM type value.
+  Instead, `null' is used to denote it, by convention.
+
+  Note that it is not possible to use `void' to denote the Poke `any'
+  type, because of closure types: a closure returning `void' is not the
+  same than a closure returning `any'.
+
+
+12.2 Exception Handling
 ~~~~~~~~~~~~~~~~~~~~~~~
 
   Exception types or codes are signed 32-bit integers, and are defined
@@ -1812,7 +1828,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   `libpoke/pkl-rt-1.pkl'.
 
 
-12.2 Signal Handling
+12.3 Signal Handling
 ~~~~~~~~~~~~~~~~~~~~
 
   When the PVM is about to execute a program, it installs a signal
@@ -1831,7 +1847,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   PVM state.
 
 
-12.3 Offsets and bit-offsets in the PVM
+12.4 Offsets and bit-offsets in the PVM
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   The PVM supports a `pvm_off' boxed value, to denote pairs of
@@ -1865,7 +1881,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   bit-offsets instead encoded as `ulong<64>' values.
 
 
-12.4 Writing relocatable instructions
+12.5 Writing relocatable instructions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   When operating in non-threaded mode, Jitter likes to move the code
@@ -1899,7 +1915,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   many platforms and non-threading modes.
 
 
-12.5 Wrapping globals
+12.6 Wrapping globals
 ~~~~~~~~~~~~~~~~~~~~~
 
   The non-threaded Jitter operation modes require every global (variable
