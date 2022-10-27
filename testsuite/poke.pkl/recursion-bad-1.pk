@@ -1,0 +1,3 @@
+/* { dg-do compile } */
+/* https://sourceware.org/bugzilla/show_bug.cgi?id=25379 */
+{ fun foo = void: { foo (); } /* { dg-error "syntax error" } */

@@ -25,6 +25,8 @@
 #include <inttypes.h>
 #include "string-buffer.h"
 #include "xalloc.h"
+#include "gl_linkedhash_set.h"
+#include "gl_xset.h"
 
 #include "pvm.h"
 #include "pvm-alloc.h" /* For pvm_{alloc,free}_uncollectable.  */
@@ -2253,17 +2255,46 @@ pkl_ast_node_free_chain (pkl_ast_node ast)
     }
 }
 
-/* Free all allocated resources used by AST.  Note that nodes marked
-   as "registered", as well as their children, are not disposed.  */
+/* Recursively descends down a tree, marking and freeing as it goes.
+   VISITATIONS is a set of pointers that has already been freed that this
+   function can track frees in.  */
 
-void
-pkl_ast_node_free (pkl_ast_node ast)
+static void
+pkl_ast_node_free_1 (gl_set_t visitations, pkl_ast_node ast)
 {
+#define PKL_AST_NODE_FREE(...) \
+  pkl_ast_node_free_1 (visitations, __VA_ARGS__)
+
+  /* Take care not to use pkl_ast_node_free here, as doing that will result in
+     a double-free, as it throws away the current visitation set.  In the same
+     vein, take care to mark and check VISITATIONS, using VISIT_AND_FREE when
+     possible.  */
   pkl_ast_node t, n;
   size_t i;
+  bool added;
 
   if (ast == NULL)
     return;
+
+  /* Check if we already freed this one.  */
+  if (gl_set_search (visitations, ast))
+    return;
+
+
+#define VISIT_AND_FREE(ptr)                     \
+  do {                                          \
+    if (!ptr)                                   \
+      break;                                    \
+                                                \
+    bool added = gl_set_add (visitations, ptr); \
+                                                \
+    /* This one was already freed.  */          \
+    if (!added)                                 \
+      break;                                    \
+                                                \
+    free (ptr);                                 \
+  } while (0)
+
 
   assert (PKL_AST_REFCOUNT (ast) > 0);
 
@@ -2273,62 +2304,67 @@ pkl_ast_node_free (pkl_ast_node ast)
       return;
     }
 
+  /* OK, we need to free.  Mark this node as freed (it will be actually freed
+     at the end).  */
+  added = gl_set_add (visitations, ast);
+  assert (added);
+
   switch (PKL_AST_CODE (ast))
     {
     case PKL_AST_PROGRAM:
       for (t = PKL_AST_PROGRAM_ELEMS (ast); t; t = n)
         {
           n = PKL_AST_CHAIN (t);
-          pkl_ast_node_free (t);
+          PKL_AST_NODE_FREE (t);
         }
       break;
 
     case PKL_AST_SRC:
-      free (PKL_AST_SRC_FILENAME (ast));
+      VISIT_AND_FREE (PKL_AST_SRC_FILENAME (ast));
       break;
 
     case PKL_AST_EXP:
 
       for (i = 0; i < PKL_AST_EXP_NUMOPS (ast); i++)
-        pkl_ast_node_free (PKL_AST_EXP_OPERAND (ast, i));
+        PKL_AST_NODE_FREE (PKL_AST_EXP_OPERAND (ast, i));
 
       break;
 
     case PKL_AST_COND_EXP:
 
-      pkl_ast_node_free (PKL_AST_COND_EXP_COND (ast));
-      pkl_ast_node_free (PKL_AST_COND_EXP_THENEXP (ast));
-      pkl_ast_node_free (PKL_AST_COND_EXP_ELSEEXP (ast));
+      PKL_AST_NODE_FREE (PKL_AST_COND_EXP_COND (ast));
+      PKL_AST_NODE_FREE (PKL_AST_COND_EXP_THENEXP (ast));
+      PKL_AST_NODE_FREE (PKL_AST_COND_EXP_ELSEEXP (ast));
       break;
 
     case PKL_AST_ENUM:
 
-      pkl_ast_node_free (PKL_AST_ENUM_TAG (ast));
+      PKL_AST_NODE_FREE (PKL_AST_ENUM_TAG (ast));
 
       for (t = PKL_AST_ENUM_VALUES (ast); t; t = n)
         {
           n = PKL_AST_CHAIN (t);
-          pkl_ast_node_free (t);
+          PKL_AST_NODE_FREE (t);
         }
 
       break;
 
     case PKL_AST_ENUMERATOR:
 
-      pkl_ast_node_free (PKL_AST_ENUMERATOR_IDENTIFIER (ast));
-      pkl_ast_node_free (PKL_AST_ENUMERATOR_VALUE (ast));
+      PKL_AST_NODE_FREE (PKL_AST_ENUMERATOR_IDENTIFIER (ast));
+      PKL_AST_NODE_FREE (PKL_AST_ENUMERATOR_VALUE (ast));
       break;
 
     case PKL_AST_TYPE:
 
-      free (PKL_AST_TYPE_NAME (ast));
+      VISIT_AND_FREE (PKL_AST_TYPE_NAME (ast));
       switch (PKL_AST_TYPE_CODE (ast))
         {
         case PKL_TYPE_ARRAY:
           pvm_free_uncollectable (PKL_AST_TYPE_A_CLOSURES (ast));
 
-          pkl_ast_node_free (PKL_AST_TYPE_A_BOUND (ast));
-          pkl_ast_node_free (PKL_AST_TYPE_A_ETYPE (ast));
+          PKL_AST_NODE_FREE (PKL_AST_TYPE_A_BOUND (ast));
+          PKL_AST_NODE_FREE (PKL_AST_TYPE_A_ETYPE (ast));
           break;
         case PKL_TYPE_STRUCT:
           pvm_free_uncollectable (PKL_AST_TYPE_S_CLOSURES (ast));
@@ -2336,21 +2372,21 @@ pkl_ast_node_free (pkl_ast_node ast)
           for (t = PKL_AST_TYPE_S_ELEMS (ast); t; t = n)
             {
               n = PKL_AST_CHAIN (t);
-              pkl_ast_node_free (t);
+              PKL_AST_NODE_FREE (t);
             }
           break;
         case PKL_TYPE_FUNCTION:
-          pkl_ast_node_free (PKL_AST_TYPE_F_RTYPE (ast));
-          pkl_ast_node_free (PKL_AST_TYPE_F_FIRST_OPT_ARG (ast));
+          PKL_AST_NODE_FREE (PKL_AST_TYPE_F_RTYPE (ast));
+          PKL_AST_NODE_FREE (PKL_AST_TYPE_F_FIRST_OPT_ARG (ast));
           for (t = PKL_AST_TYPE_F_ARGS (ast); t; t = n)
             {
               n = PKL_AST_CHAIN (t);
-              pkl_ast_node_free (t);
+              PKL_AST_NODE_FREE (t);
             }
           break;
         case PKL_TYPE_OFFSET:
-          pkl_ast_node_free (PKL_AST_TYPE_O_UNIT (ast));
-          pkl_ast_node_free (PKL_AST_TYPE_O_BASE_TYPE (ast));
+          PKL_AST_NODE_FREE (PKL_AST_TYPE_O_UNIT (ast));
+          PKL_AST_NODE_FREE (PKL_AST_TYPE_O_BASE_TYPE (ast));
           break;
         case PKL_TYPE_INTEGRAL:
         case PKL_TYPE_STRING:
@@ -2362,76 +2398,76 @@ pkl_ast_node_free (pkl_ast_node ast)
 
     case PKL_AST_STRUCT_TYPE_FIELD:
 
-      pkl_ast_node_free (PKL_AST_STRUCT_TYPE_FIELD_NAME (ast));
-      pkl_ast_node_free (PKL_AST_STRUCT_TYPE_FIELD_TYPE (ast));
-      pkl_ast_node_free (PKL_AST_STRUCT_TYPE_FIELD_SIZE (ast));
-      pkl_ast_node_free (PKL_AST_STRUCT_TYPE_FIELD_CONSTRAINT (ast));
-      pkl_ast_node_free (PKL_AST_STRUCT_TYPE_FIELD_INITIALIZER (ast));
-      pkl_ast_node_free (PKL_AST_STRUCT_TYPE_FIELD_LABEL (ast));
-      pkl_ast_node_free (PKL_AST_STRUCT_TYPE_FIELD_OPTCOND_PRE (ast));
-      pkl_ast_node_free (PKL_AST_STRUCT_TYPE_FIELD_OPTCOND_POST (ast));
+      PKL_AST_NODE_FREE (PKL_AST_STRUCT_TYPE_FIELD_NAME (ast));
+      PKL_AST_NODE_FREE (PKL_AST_STRUCT_TYPE_FIELD_TYPE (ast));
+      PKL_AST_NODE_FREE (PKL_AST_STRUCT_TYPE_FIELD_SIZE (ast));
+      PKL_AST_NODE_FREE (PKL_AST_STRUCT_TYPE_FIELD_CONSTRAINT (ast));
+      PKL_AST_NODE_FREE (PKL_AST_STRUCT_TYPE_FIELD_INITIALIZER (ast));
+      PKL_AST_NODE_FREE (PKL_AST_STRUCT_TYPE_FIELD_LABEL (ast));
+      PKL_AST_NODE_FREE (PKL_AST_STRUCT_TYPE_FIELD_OPTCOND_PRE (ast));
+      PKL_AST_NODE_FREE (PKL_AST_STRUCT_TYPE_FIELD_OPTCOND_POST (ast));
       break;
 
     case PKL_AST_FUNC_TYPE_ARG:
 
-      pkl_ast_node_free (PKL_AST_FUNC_TYPE_ARG_TYPE (ast));
-      pkl_ast_node_free (PKL_AST_FUNC_TYPE_ARG_NAME (ast));
+      PKL_AST_NODE_FREE (PKL_AST_FUNC_TYPE_ARG_TYPE (ast));
+      PKL_AST_NODE_FREE (PKL_AST_FUNC_TYPE_ARG_NAME (ast));
       break;
 
     case PKL_AST_INDEXER:
 
-      pkl_ast_node_free (PKL_AST_INDEXER_ENTITY (ast));
-      pkl_ast_node_free (PKL_AST_INDEXER_INDEX (ast));
+      PKL_AST_NODE_FREE (PKL_AST_INDEXER_ENTITY (ast));
+      PKL_AST_NODE_FREE (PKL_AST_INDEXER_INDEX (ast));
       break;
 
     case PKL_AST_TRIMMER:
 
-      pkl_ast_node_free (PKL_AST_TRIMMER_ENTITY (ast));
-      pkl_ast_node_free (PKL_AST_TRIMMER_FROM (ast));
-      pkl_ast_node_free (PKL_AST_TRIMMER_TO (ast));
-      pkl_ast_node_free (PKL_AST_TRIMMER_ADDEND (ast));
+      PKL_AST_NODE_FREE (PKL_AST_TRIMMER_ENTITY (ast));
+      PKL_AST_NODE_FREE (PKL_AST_TRIMMER_FROM (ast));
+      PKL_AST_NODE_FREE (PKL_AST_TRIMMER_TO (ast));
+      PKL_AST_NODE_FREE (PKL_AST_TRIMMER_ADDEND (ast));
       break;
 
     case PKL_AST_FUNC:
 
-      free (PKL_AST_FUNC_NAME (ast));
-      pkl_ast_node_free (PKL_AST_FUNC_RET_TYPE (ast));
-      pkl_ast_node_free (PKL_AST_FUNC_BODY (ast));
-      pkl_ast_node_free (PKL_AST_FUNC_FIRST_OPT_ARG (ast));
+      VISIT_AND_FREE (PKL_AST_FUNC_NAME (ast));
+      PKL_AST_NODE_FREE (PKL_AST_FUNC_RET_TYPE (ast));
+      PKL_AST_NODE_FREE (PKL_AST_FUNC_BODY (ast));
+      PKL_AST_NODE_FREE (PKL_AST_FUNC_FIRST_OPT_ARG (ast));
       for (t = PKL_AST_FUNC_ARGS (ast); t; t = n)
             {
               n = PKL_AST_CHAIN (t);
-              pkl_ast_node_free (t);
+              PKL_AST_NODE_FREE (t);
             }
       break;
 
     case PKL_AST_FUNC_ARG:
 
-      pkl_ast_node_free (PKL_AST_FUNC_ARG_TYPE (ast));
-      pkl_ast_node_free (PKL_AST_FUNC_ARG_IDENTIFIER (ast));
-      pkl_ast_node_free (PKL_AST_FUNC_ARG_INITIAL (ast));
+      PKL_AST_NODE_FREE (PKL_AST_FUNC_ARG_TYPE (ast));
+      PKL_AST_NODE_FREE (PKL_AST_FUNC_ARG_IDENTIFIER (ast));
+      PKL_AST_NODE_FREE (PKL_AST_FUNC_ARG_INITIAL (ast));
       break;
 
     case PKL_AST_STRING:
 
-      free (PKL_AST_STRING_POINTER (ast));
+      VISIT_AND_FREE (PKL_AST_STRING_POINTER (ast));
       break;
 
     case PKL_AST_IDENTIFIER:
 
-      free (PKL_AST_IDENTIFIER_POINTER (ast));
+      VISIT_AND_FREE (PKL_AST_IDENTIFIER_POINTER (ast));
       break;
 
     case PKL_AST_STRUCT_REF:
 
-      pkl_ast_node_free (PKL_AST_STRUCT_REF_STRUCT (ast));
-      pkl_ast_node_free (PKL_AST_STRUCT_REF_IDENTIFIER (ast));
+      PKL_AST_NODE_FREE (PKL_AST_STRUCT_REF_STRUCT (ast));
+      PKL_AST_NODE_FREE (PKL_AST_STRUCT_REF_IDENTIFIER (ast));
       break;
 
     case PKL_AST_STRUCT_FIELD:
 
-      pkl_ast_node_free (PKL_AST_STRUCT_FIELD_NAME (ast));
-      pkl_ast_node_free (PKL_AST_STRUCT_FIELD_EXP (ast));
+      PKL_AST_NODE_FREE (PKL_AST_STRUCT_FIELD_NAME (ast));
+      PKL_AST_NODE_FREE (PKL_AST_STRUCT_FIELD_EXP (ast));
       break;
 
     case PKL_AST_STRUCT:
@@ -2439,14 +2475,14 @@ pkl_ast_node_free (pkl_ast_node ast)
       for (t = PKL_AST_STRUCT_FIELDS (ast); t; t = n)
         {
           n = PKL_AST_CHAIN (t);
-          pkl_ast_node_free (t);
+          PKL_AST_NODE_FREE (t);
         }
       break;
 
     case PKL_AST_ARRAY_INITIALIZER:
 
-      pkl_ast_node_free (PKL_AST_ARRAY_INITIALIZER_INDEX (ast));
-      pkl_ast_node_free (PKL_AST_ARRAY_INITIALIZER_EXP (ast));
+      PKL_AST_NODE_FREE (PKL_AST_ARRAY_INITIALIZER_INDEX (ast));
+      PKL_AST_NODE_FREE (PKL_AST_ARRAY_INITIALIZER_EXP (ast));
       break;
 
     case PKL_AST_ARRAY:
@@ -2454,92 +2490,91 @@ pkl_ast_node_free (pkl_ast_node ast)
       for (t = PKL_AST_ARRAY_INITIALIZERS (ast); t; t = n)
         {
           n = PKL_AST_CHAIN (t);
-          pkl_ast_node_free (t);
+          PKL_AST_NODE_FREE (t);
         }
 
       break;
 
     case PKL_AST_DECL:
 
-      free (PKL_AST_DECL_SOURCE (ast));
-      pkl_ast_node_free (PKL_AST_DECL_NAME (ast));
-      pkl_ast_node_free (PKL_AST_DECL_INITIAL (ast));
+      VISIT_AND_FREE (PKL_AST_DECL_SOURCE (ast));
+      PKL_AST_NODE_FREE (PKL_AST_DECL_NAME (ast));
+      PKL_AST_NODE_FREE (PKL_AST_DECL_INITIAL (ast));
       break;
 
     case PKL_AST_OFFSET:
 
-      pkl_ast_node_free (PKL_AST_OFFSET_MAGNITUDE (ast));
-      pkl_ast_node_free (PKL_AST_OFFSET_UNIT (ast));
+      PKL_AST_NODE_FREE (PKL_AST_OFFSET_MAGNITUDE (ast));
+      PKL_AST_NODE_FREE (PKL_AST_OFFSET_UNIT (ast));
       break;
 
     case PKL_AST_CAST:
 
-      pkl_ast_node_free (PKL_AST_CAST_TYPE (ast));
-      pkl_ast_node_free (PKL_AST_CAST_EXP (ast));
+      PKL_AST_NODE_FREE (PKL_AST_CAST_TYPE (ast));
+      PKL_AST_NODE_FREE (PKL_AST_CAST_EXP (ast));
       break;
 
     case PKL_AST_ISA:
 
-      pkl_ast_node_free (PKL_AST_ISA_TYPE (ast));
-      pkl_ast_node_free (PKL_AST_ISA_EXP (ast));
+      PKL_AST_NODE_FREE (PKL_AST_ISA_TYPE (ast));
+      PKL_AST_NODE_FREE (PKL_AST_ISA_EXP (ast));
       break;
 
     case PKL_AST_MAP:
 
-      pkl_ast_node_free (PKL_AST_MAP_TYPE (ast));
-      pkl_ast_node_free (PKL_AST_MAP_IOS (ast));
-      pkl_ast_node_free (PKL_AST_MAP_OFFSET (ast));
+      PKL_AST_NODE_FREE (PKL_AST_MAP_TYPE (ast));
+      PKL_AST_NODE_FREE (PKL_AST_MAP_IOS (ast));
+      PKL_AST_NODE_FREE (PKL_AST_MAP_OFFSET (ast));
       break;
 
     case PKL_AST_CONS:
 
-      pkl_ast_node_free (PKL_AST_CONS_TYPE (ast));
-      pkl_ast_node_free (PKL_AST_CONS_VALUE (ast));
+      PKL_AST_NODE_FREE (PKL_AST_CONS_TYPE (ast));
+      PKL_AST_NODE_FREE (PKL_AST_CONS_VALUE (ast));
       break;
 
     case PKL_AST_FUNCALL:
 
-      pkl_ast_node_free (PKL_AST_FUNCALL_FUNCTION (ast));
+      PKL_AST_NODE_FREE (PKL_AST_FUNCALL_FUNCTION (ast));
       for (t = PKL_AST_FUNCALL_ARGS (ast); t; t = n)
         {
           n = PKL_AST_CHAIN (t);
-          pkl_ast_node_free (t);
+          PKL_AST_NODE_FREE (t);
         }
 
       break;
 
     case PKL_AST_FUNCALL_ARG:
 
-      pkl_ast_node_free (PKL_AST_FUNCALL_ARG_EXP (ast));
-      pkl_ast_node_free (PKL_AST_FUNCALL_ARG_NAME (ast));
+      PKL_AST_NODE_FREE (PKL_AST_FUNCALL_ARG_EXP (ast));
+      PKL_AST_NODE_FREE (PKL_AST_FUNCALL_ARG_NAME (ast));
       break;
 
     case PKL_AST_VAR:
 
-      pkl_ast_node_free (PKL_AST_VAR_NAME (ast));
-      if (!PKL_AST_VAR_IS_RECURSIVE (ast))
-        pkl_ast_node_free (PKL_AST_VAR_DECL (ast));
+      PKL_AST_NODE_FREE (PKL_AST_VAR_NAME (ast));
+      PKL_AST_NODE_FREE (PKL_AST_VAR_DECL (ast));
       break;
 
     case PKL_AST_INCRDECR:
 
-      pkl_ast_node_free (PKL_AST_INCRDECR_EXP (ast));
+      PKL_AST_NODE_FREE (PKL_AST_INCRDECR_EXP (ast));
       break;
 
     case PKL_AST_LAMBDA:
 
-      pkl_ast_node_free (PKL_AST_LAMBDA_FUNCTION (ast));
+      PKL_AST_NODE_FREE (PKL_AST_LAMBDA_FUNCTION (ast));
       break;
 
     case PKL_AST_ASM_EXP:
 
-      pkl_ast_node_free (PKL_AST_ASM_EXP_TYPE (ast));
-      pkl_ast_node_free (PKL_AST_ASM_EXP_TEMPLATE (ast));
+      PKL_AST_NODE_FREE (PKL_AST_ASM_EXP_TYPE (ast));
+      PKL_AST_NODE_FREE (PKL_AST_ASM_EXP_TEMPLATE (ast));
 
       for (t = PKL_AST_ASM_EXP_INPUTS (ast); t; t = n)
         {
           n = PKL_AST_CHAIN (t);
-          pkl_ast_node_free (t);
+          PKL_AST_NODE_FREE (t);
         }
 
       break;
@@ -2549,97 +2584,97 @@ pkl_ast_node_free (pkl_ast_node ast)
       for (t = PKL_AST_COMP_STMT_STMTS (ast); t; t = n)
         {
           n = PKL_AST_CHAIN (t);
-          pkl_ast_node_free (t);
+          PKL_AST_NODE_FREE (t);
         }
 
       break;
 
     case PKL_AST_ASS_STMT:
 
-      pkl_ast_node_free (PKL_AST_ASS_STMT_LVALUE (ast));
-      pkl_ast_node_free (PKL_AST_ASS_STMT_EXP (ast));
+      PKL_AST_NODE_FREE (PKL_AST_ASS_STMT_LVALUE (ast));
+      PKL_AST_NODE_FREE (PKL_AST_ASS_STMT_EXP (ast));
       break;
 
     case PKL_AST_IF_STMT:
 
-      pkl_ast_node_free (PKL_AST_IF_STMT_EXP (ast));
-      pkl_ast_node_free (PKL_AST_IF_STMT_THEN_STMT (ast));
-      pkl_ast_node_free (PKL_AST_IF_STMT_ELSE_STMT (ast));
+      PKL_AST_NODE_FREE (PKL_AST_IF_STMT_EXP (ast));
+      PKL_AST_NODE_FREE (PKL_AST_IF_STMT_THEN_STMT (ast));
+      PKL_AST_NODE_FREE (PKL_AST_IF_STMT_ELSE_STMT (ast));
       break;
 
     case PKL_AST_LOOP_STMT:
 
-      pkl_ast_node_free (PKL_AST_LOOP_STMT_ITERATOR (ast));
-      pkl_ast_node_free (PKL_AST_LOOP_STMT_CONDITION (ast));
-      pkl_ast_node_free (PKL_AST_LOOP_STMT_BODY (ast));
-      pkl_ast_node_free (PKL_AST_LOOP_STMT_HEAD (ast));
-      pkl_ast_node_free (PKL_AST_LOOP_STMT_TAIL (ast));
+      PKL_AST_NODE_FREE (PKL_AST_LOOP_STMT_ITERATOR (ast));
+      PKL_AST_NODE_FREE (PKL_AST_LOOP_STMT_CONDITION (ast));
+      PKL_AST_NODE_FREE (PKL_AST_LOOP_STMT_BODY (ast));
+      PKL_AST_NODE_FREE (PKL_AST_LOOP_STMT_HEAD (ast));
+      PKL_AST_NODE_FREE (PKL_AST_LOOP_STMT_TAIL (ast));
 
       break;
 
     case PKL_AST_LOOP_STMT_ITERATOR:
 
-      pkl_ast_node_free (PKL_AST_LOOP_STMT_ITERATOR_DECL (ast));
-      pkl_ast_node_free (PKL_AST_LOOP_STMT_ITERATOR_CONTAINER (ast));
+      PKL_AST_NODE_FREE (PKL_AST_LOOP_STMT_ITERATOR_DECL (ast));
+      PKL_AST_NODE_FREE (PKL_AST_LOOP_STMT_ITERATOR_CONTAINER (ast));
 
       break;
 
     case PKL_AST_RETURN_STMT:
 
-      pkl_ast_node_free (PKL_AST_RETURN_STMT_EXP (ast));
+      PKL_AST_NODE_FREE (PKL_AST_RETURN_STMT_EXP (ast));
       break;
 
     case PKL_AST_EXP_STMT:
 
-      pkl_ast_node_free (PKL_AST_EXP_STMT_EXP (ast));
+      PKL_AST_NODE_FREE (PKL_AST_EXP_STMT_EXP (ast));
       break;
 
     case PKL_AST_TRY_STMT:
 
-      pkl_ast_node_free (PKL_AST_TRY_STMT_BODY (ast));
-      pkl_ast_node_free (PKL_AST_TRY_STMT_HANDLER (ast));
-      pkl_ast_node_free (PKL_AST_TRY_STMT_ARG (ast));
-      pkl_ast_node_free (PKL_AST_TRY_STMT_EXP (ast));
+      PKL_AST_NODE_FREE (PKL_AST_TRY_STMT_BODY (ast));
+      PKL_AST_NODE_FREE (PKL_AST_TRY_STMT_HANDLER (ast));
+      PKL_AST_NODE_FREE (PKL_AST_TRY_STMT_ARG (ast));
+      PKL_AST_NODE_FREE (PKL_AST_TRY_STMT_EXP (ast));
       break;
 
     case PKL_AST_TRY_STMT_BODY:
 
-      pkl_ast_node_free (PKL_AST_TRY_STMT_BODY_CODE (ast));
+      PKL_AST_NODE_FREE (PKL_AST_TRY_STMT_BODY_CODE (ast));
       break;
 
     case PKL_AST_TRY_STMT_HANDLER:
 
-      pkl_ast_node_free (PKL_AST_TRY_STMT_HANDLER_CODE (ast));
+      PKL_AST_NODE_FREE (PKL_AST_TRY_STMT_HANDLER_CODE (ast));
       break;
 
     case PKL_AST_FORMAT_ARG:
-      free (PKL_AST_FORMAT_ARG_SUFFIX (ast));
-      free (PKL_AST_FORMAT_ARG_BEGIN_SC (ast));
-      free (PKL_AST_FORMAT_ARG_END_SC (ast));
-      pkl_ast_node_free (PKL_AST_FORMAT_ARG_EXP (ast));
+      VISIT_AND_FREE (PKL_AST_FORMAT_ARG_SUFFIX (ast));
+      VISIT_AND_FREE (PKL_AST_FORMAT_ARG_BEGIN_SC (ast));
+      VISIT_AND_FREE (PKL_AST_FORMAT_ARG_END_SC (ast));
+      PKL_AST_NODE_FREE (PKL_AST_FORMAT_ARG_EXP (ast));
       break;
 
     case PKL_AST_FORMAT:
       {
-        free (PKL_AST_FORMAT_PREFIX (ast));
+        VISIT_AND_FREE (PKL_AST_FORMAT_PREFIX (ast));
         for (t = PKL_AST_FORMAT_ARGS (ast); t; t = n)
           {
             n = PKL_AST_CHAIN (t);
-            pkl_ast_node_free (t);
+            PKL_AST_NODE_FREE (t);
           }
         for (t = PKL_AST_FORMAT_TYPES (ast); t; t = n)
           {
             n = PKL_AST_CHAIN (t);
-            pkl_ast_node_free (t);
+            PKL_AST_NODE_FREE (t);
           }
-        pkl_ast_node_free (PKL_AST_FORMAT_FMT (ast));
+        PKL_AST_NODE_FREE (PKL_AST_FORMAT_FMT (ast));
         break;
       }
 
     case PKL_AST_PRINT_STMT:
       {
-        pkl_ast_node_free (PKL_AST_PRINT_STMT_STR_EXP (ast));
-        pkl_ast_node_free (PKL_AST_PRINT_STMT_FORMAT (ast));
+        PKL_AST_NODE_FREE (PKL_AST_PRINT_STMT_STR_EXP (ast));
+        PKL_AST_NODE_FREE (PKL_AST_PRINT_STMT_FORMAT (ast));
         break;
       }
 
@@ -2649,22 +2684,22 @@ pkl_ast_node_free (pkl_ast_node ast)
 
 
     case PKL_AST_RAISE_STMT:
-      pkl_ast_node_free (PKL_AST_RAISE_STMT_EXP (ast));
+      PKL_AST_NODE_FREE (PKL_AST_RAISE_STMT_EXP (ast));
       break;
 
     case PKL_AST_ASM_STMT:
-      pkl_ast_node_free (PKL_AST_ASM_STMT_TEMPLATE (ast));
+      PKL_AST_NODE_FREE (PKL_AST_ASM_STMT_TEMPLATE (ast));
 
       for (t = PKL_AST_ASM_STMT_INPUTS (ast); t; t = n)
         {
           n = PKL_AST_CHAIN (t);
-          pkl_ast_node_free (t);
+          PKL_AST_NODE_FREE (t);
         }
 
       for (t = PKL_AST_ASM_STMT_OUTPUTS (ast); t; t = n)
         {
           n = PKL_AST_CHAIN (t);
-          pkl_ast_node_free (t);
+          PKL_AST_NODE_FREE (t);
         }
 
       break;
@@ -2679,9 +2714,29 @@ pkl_ast_node_free (pkl_ast_node ast)
       assert (0);
     }
 
-  pkl_ast_node_free (PKL_AST_TYPE (ast));
+  PKL_AST_NODE_FREE (PKL_AST_TYPE (ast));
+
+  /* Free this node, to match the mark above.  */
   free (ast);
+
+#undef VISIT_AND_FREE
+#undef PKL_AST_NODE_FREE
 }
+
+/* Free all allocated resources used by AST.  Note that nodes marked
+   as "registered", as well as their children, are not disposed.  */
+
+void
+pkl_ast_node_free (pkl_ast_node ast)
+{
+  gl_set_t visitations = gl_set_create_empty (GL_LINKEDHASH_SET,
+                                              NULL, NULL, NULL);
+  pkl_ast_node_free_1 (visitations, ast);
+  gl_set_free (visitations);
+}
+
+/* This macro shouldn't be invoked outside of the implementation of the
+   node_free walker, other users should be calling pkl_ast_node_free.  */
 
 /* Allocate and initialize a new AST and return it.  */
 

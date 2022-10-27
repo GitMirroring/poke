@@ -1,0 +1,11 @@
+/* { dg-do compile } */
+/* Test that an error while typifying does not result in bad recursive frees.
+*/
+"xxx" in [1]; /* { dg-error "" } */
+
+fun fact = (uint<4> a) uint<64>:
+  {
+    if (a == 0)
+      return 1;
+    return a * fact (a);
+  }
