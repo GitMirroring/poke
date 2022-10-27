@@ -1,5 +1,10 @@
 2022-10-27  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pvm-val.c (pvm_make_array_type): Add an assertion
+	for `bounder' to make sure it's not NULL.
+
+2022-10-27  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* doc/poke.texi (Describe-Compute): Fix Packet struct to use
 	constraint.
 	(Commands and Dot-Commands): Use `expression` and `function`

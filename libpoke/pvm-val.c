@@ -527,12 +527,14 @@ pvm_make_offset_type (pvm_val base_type, pvm_val unit)
 }
 
 pvm_val
-pvm_make_array_type (pvm_val type, pvm_val bound)
+pvm_make_array_type (pvm_val type, pvm_val bounder)
 {
   pvm_val atype = pvm_make_type (PVM_TYPE_ARRAY);
 
+  assert (bounder);
+
   PVM_VAL_TYP_A_ETYPE (atype) = type;
-  PVM_VAL_TYP_A_BOUND (atype) = bound;
+  PVM_VAL_TYP_A_BOUND (atype) = bounder;
   return atype;
 }
 
