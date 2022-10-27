@@ -834,10 +834,12 @@ immutable fun _pkl_print_format_any = (any val,
       ctx.emit ("void");
     else if (asm int<32>: ("tyisa; nip" : val))
       {
+        var bound = asm any: ("tyagetb; nip; call" : val);
+
         _pkl_print_format_any (asm any: ("tyagett; nip" : val), ctx, depth);
         ctx.emit ("[");
-        if (!asm int<32>: ("tyagetb; nip; isn; nip" : val))
-          _pkl_print_format_any (asm any: ("tyagetb; nip; call" : val), ctx, depth);
+        if (!asm int<32>: ("isn; nip" : bound))
+          _pkl_print_format_any (bound, ctx, depth);
         ctx.emit ("]");
       }
     else if (asm int<32>: ("tyissct; nip" : val))

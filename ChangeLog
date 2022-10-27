@@ -1,3 +1,8 @@
+2022-10-27  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-rt.pk (_pkl_print_format_any): Fix array boundary
+	for types.
+
 2022-10-26  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-rt.pk (_pkl_print_format_any): Handle PVM types.
