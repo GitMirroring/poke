@@ -1,5 +1,10 @@
 2022-10-27  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* etc/poke.rec (Fix %destructors in parser): Removed as DONE.
+	(Do not leak decl AST nodes in parser): Likewise.
+
+2022-10-27  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-tab.y (integer): New rule.
 	(primary): Use it.
 	(integral_type_specifier): Likewise.

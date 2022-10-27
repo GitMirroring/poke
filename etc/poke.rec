@@ -833,26 +833,6 @@ Description:
 + For example: type Foo = union { int i; int j : i != 10; }
 Target: 3.0
 
-Summary: Fix %destructors in parser
-Component: Compiler
-Kind: BUG
-BZ: 26889
-Priority: 3
-Description:
-+ A suitable %destructor should be added to the Poke parser, to assure
-+ no memory leaks when an error occurs (AST nodes).
-
-
-Summary: Do not leak decl AST nodes in parser
-Component: Compiler
-Kind: BUG
-BZ: 26890
-Priority: 3
-Description:
-+ Do not leak decl AST nodes if there is an error condition like an
-+ already declared entity.
-
-
 Summary: Remove call to `abort' in pkl-lex.l
 Component: Compiler
 Kind: BUG
