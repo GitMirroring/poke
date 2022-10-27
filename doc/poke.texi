@@ -389,7 +389,7 @@ For example, consider the following Poke type definition:
 type Packet =
   struct
   @{
-    uint<16> magic = 0xef;
+    uint<16> magic == 0xef;
     uint<32> size;
     byte[size] data @@ 8#B;
   @};
@@ -435,7 +435,7 @@ conditionally.  Union types are used for that purpose.
 @cindex Poke
 @cindex pickle
 
-GNU poke is a new program and it introduces many a new concept.  It is
+GNU poke is a new program and it introduces many new concepts.  It is
 a good idea to clarify how we call things in the poke community.
 Unless everyone uses the same nomenclature to refer to pokish
 thingies, it is gonna get very confusing very soon!
@@ -669,16 +669,16 @@ Dot-commands are so called because their names start with the dot
 character (@code{.}).  They can feature subcommands.  Example:
 
 @example
-(poke) .vm disassemble mapper int[] @@ 0#B
-(poke) .vm disassemble writer int[] @@ 0#B
+(poke) .vm disassemble expression int[] @@ 0#B
+(poke) .vm disassemble function (dump)
 @end example
 
 When there is no ambiguity, the command name and the subcommands can
 be shortened to prefixes.  The commands above can also be written as:
 
 @example
-(poke) .vm dis m int[] @@ 0#B
-(poke) .vm dis w int[] @@ 0#B
+(poke) .vm dis e int[] @@ 0#B
+(poke) .vm dis f (dump)
 @end example
 
 @cindex flags
@@ -689,8 +689,8 @@ commands accept a @code{n} flag to indicate we want a native
 disassemble.  We can pass it as follows:
 
 @example
-(poke) .vm disassemble mapper/n int[] @@ 0#B
-(poke) .vm disassemble writer/n int[] @@ 0#B
+(poke) .vm disassemble expression/n int[] @@ 0#B
+(poke) .vm disassemble function/n (dump)
 @end example
 
 If a dot-command accepts more than one argument, they are separated
@@ -741,7 +741,7 @@ The order of arguments is irrelevant in principle:
 
 However, beware side effects while computing the values you pass as
 the arguments!  The expressions themselves are evaluated from left to
-right.
+right (according to the order of declaration in the signature).
 
 Which arguments are accepted, and their kind, depend on the specific
 command.
@@ -2269,7 +2269,7 @@ Let's see this in poke:
 
 In the section discussing negative integers, we saw how the difference
 between a signed number and an unsigned number is basically a
-different interpretation of the most significant byte.  Exactly the
+different interpretation of the most significant bit.  Exactly the
 same applies to weird numbers.
 
 Let's summon our unsigned 12-bit integer at the beginning of the file
@@ -2282,7 +2282,7 @@ Let's summon our unsigned 12-bit integer at the beginning of the file
 @end example
 
 @noindent
-The most significant byte of the resulting value (not of its written
+The most significant bit of the resulting value (not of its written
 form) indicates that this number would be positive if we were mapping
 the corresponding signed value.  Let's see:
 
@@ -3359,7 +3359,7 @@ case 5x7:
 @cindex conversions
 @cindex coercions
 @noindent
-There is something worth noting in this last mapping.  Even tough we
+There is something worth noting in this last mapping.  Even though we
 were poking bytes (passing the @code{byte} type specifier to the map
 operators) we specified the 32-bit signed integers @code{5} and
 @code{7} instead of @code{5UB} and @code{7UB}.  When poke finds a
@@ -4803,7 +4803,7 @@ type definition:
 type Packet =
   struct
   @{
-    byte magic = 0xab;
+    byte magic == 0xab;
     byte size;
     byte[size] payload;
     byte[size] control;
@@ -5025,7 +5025,7 @@ type Packet =
       catch if E_div_by_zero @{ return 0; @}
     @}
 
-    int crc = corrected_crc;
+    int crc == corrected_crc;
   @};
 @end example
 
@@ -5418,7 +5418,7 @@ type Elf64_Chdr =
   struct
   @{
     Elf_Word ch_type;
-    Elf_Word ch_reserved = 0;
+    Elf_Word ch_reserved == 0;
     offset<Elf64_Xword,B> ch_size;
     offset<Elf64_Xword,B> ch_addralign;
   @};
@@ -7184,7 +7184,7 @@ type ID3V1_Tag =
     method get_year = int: @{ return atoi (catos (year)); @}
     method set_year = (int val) void:
     @{
-      var str = format "%d", val;
+      var str = format ("%d", val);
       stoca (str, year);
     @}
     [...]
@@ -7555,11 +7555,11 @@ the following prototype:
 
 @example
 fun save = (int ios = get_ios,
-              string file = "",
-              off64 from = 0#B,
-              off64 size = 0#B,
-              int append = 0,
-              int verbose = 0) void:
+            string file = "",
+            off64 from = 0#B,
+            off64 size = 0#B,
+            int append = 0,
+            int verbose = 0) void:
 @{ ... @}
 @end example
 
@@ -8562,6 +8562,9 @@ buffer.  The syntax is:
 where @var{name} is the name of the buffer to create.  Note that poke
 adds prefix and trailing asterisk characters, to differentiate file
 names from buffer names.
+
+When invoked with no @var{name}, poke generates a new unique name for
+the buffer.
 
 When a new memory buffer IOS is opened it becomes the current IO
 space.  @xref{file command}.
@@ -11086,7 +11089,7 @@ header sets the current endianness, depending on the value of
 @example
 byte ei_data : ei_data == ELFDATA2LSB       \
                ? set_endian (ENDIAN_LITTLE) \
-               : set_endian (BIG);
+               : set_endian (ENDIAN_BIG);
 @end example
 
 Note that @code{set_endian} always returns @code{1}.

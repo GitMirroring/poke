@@ -1,5 +1,20 @@
 2022-10-27  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* doc/poke.texi (Describe-Compute): Fix Packet struct to use
+	constraint.
+	(Commands and Dot-Commands): Use `expression` and `function`
+	sub-cmd of `.vm disassemble`.
+	(Poking a SBM Image): Fix typo.
+	(Signed Weird Integers): Minor fix (s/byte/bit/).
+	(How Structs are Built): Fix example.
+	(Reserved fields): Likewise.
+	(Setters and Getters): Likewise.
+	(Loading pickles as Modules): Likewise.
+	(Field Constraints): Likewise.
+	(mem command): Explain invocation of .mem with no arg.
+
+2022-10-27  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pvm.jitter (mktya): Fix documentation.
 	* libpoke/pkl-rt.pk (_Pkl_ClsN): New type.
 	(_Pkl_ClsI): Likewise.
