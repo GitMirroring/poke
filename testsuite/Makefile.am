@@ -2041,6 +2041,8 @@ EXTRA_DIST = \
   poke.pkl/raise-6.pk \
   poke.pkl/raise-diag-1.pk \
   poke.pkl/rand-1.pk \
+  poke.pkl/recursion-bad-1.pk \
+  poke.pkl/recursion-bad-2.pk \
   poke.pkl/redef-diag-1.pk \
   poke.pkl/redef-diag-2.pk \
   poke.pkl/redef-diag-3.pk \

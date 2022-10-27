@@ -1,3 +1,18 @@
+2022-10-27  Arsen Arsenović  <arsen@aarsen.me>
+
+	* bootstrap.conf (libpoke_modules): Add set, xset and
+	linkedhash-set.
+	* libpoke/pkl-ast.c (pkl_ast_node_free): Allocate a visitation
+	set, and move most code...
+	(do_pkl_ast_node_free): ... to here, so that we can track and
+	avoid freed nodes.  Also, no longer consult IS_RECURSIVE for
+	lifetime information.
+	(visit_and_free): New function.  Frees and tracks what it freed,
+	to avoid double frees.
+	* testsuite/poke.pkl/recursion-bad-1.pk: New test.
+	* testsuite/poke.pkl/recursion-bad-2.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Add the new tests.
+
 2022-10-25  Arsen Arsenović  <arsen@aarsen.me>
 
 	* doc/Makefile.am (AM_MAKEINFOFLAGS): Enable the
