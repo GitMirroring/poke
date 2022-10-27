@@ -34,8 +34,6 @@
 #include "pkl-pass.h"
 #include "pkl-trans.h"
 
-#include "pvm-program.h" /* For pvm_program_expand_asm_template */
-
 /* This file implements several transformation compiler phases which,
    generally speaking, are restartable.  */
 

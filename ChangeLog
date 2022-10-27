@@ -1,3 +1,7 @@
+2022-10-27  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-trans.c: Do not include pvm-program.h.
+
 2022-10-27  Arsen Arsenović  <arsen@aarsen.me>
 
 	* bootstrap.conf (libpoke_modules): Add set, xset and
