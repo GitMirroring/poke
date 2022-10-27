@@ -574,7 +574,7 @@ load_module (struct pkl_parser *parser,
 
 %type <ast> start program program_elem_list program_elem load
 %type <ast> expression expression_list expression_opt primary
-%type <ast> identifier bconc map
+%type <ast> identifier bconc map integer
 %type <ast> funcall funcall_arg_list funcall_arg
 %type <ast> format_arg_list format_arg
 %type <ast> array array_initializer_list array_initializer
@@ -784,6 +784,22 @@ load:
                   $2 = ASTREF ($2);
                   pkl_ast_node_free ($2);
                 }
+        ;
+
+/*
+ * Integers literals with overflow checking.
+ */
+
+integer:
+          INTEGER
+        | LEXER_EXCEPTION
+          {
+            $$ = NULL; /* To avoid bison warning.  */
+            pkl_error (pkl_parser->compiler, pkl_parser->ast, @1,
+                       $1);
+            free ($1);
+            YYERROR;
+          }
         ;
 
 /*
@@ -1113,19 +1129,11 @@ primary:
                                          back, over);
                   PKL_AST_LOC ($$) = @1;
                 }
-        | INTEGER
+        | integer
                 {
                   $$ = $1;
                   PKL_AST_LOC ($$) = @$;
                   PKL_AST_LOC (PKL_AST_TYPE ($$)) = @$;
-                }
-        | LEXER_EXCEPTION
-                {
-                  $$ = NULL; /* To avoid bison warning.  */
-                  pkl_error (pkl_parser->compiler, pkl_parser->ast, @1,
-                             $1);
-                  free ($1);
-                  YYERROR;
                 }
         | CHAR
                 {
@@ -1586,7 +1594,7 @@ cons_type_specifier:
         ;
 
 integral_type_specifier:
-          integral_type_sign INTEGER '>'
+          integral_type_sign integer '>'
                 {
                     $$ = pkl_ast_make_integral_type (pkl_parser->ast,
                                                      PKL_AST_INTEGER_VALUE ($2),
@@ -1633,7 +1641,7 @@ offset_type_specifier:
                   $4 = ASTREF ($4); pkl_ast_node_free ($4);
                   PKL_AST_LOC ($$) = @$;
                 }
-        | OFFSETCONSTR simple_type_specifier ',' INTEGER '>'
+        | OFFSETCONSTR simple_type_specifier ',' integer '>'
                 {
                     $$ = pkl_ast_make_offset_type (pkl_parser->ast,
                                                    $2, $4);

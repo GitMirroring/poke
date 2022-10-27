@@ -1,0 +1,5 @@
+/* { dg-do compile } */
+
+var a =
+  2#B as offset<uint<32>,
+                512B>; /* { dg-error "signed overflow.*\n.*" } */

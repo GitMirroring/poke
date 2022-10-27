@@ -1,0 +1,6 @@
+/* { dg-do compile } */
+
+var a = 2 as
+          int<
+          512B /* { dg-error "signed overflow.*\n.*" } */
+          >;

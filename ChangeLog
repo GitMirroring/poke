@@ -1,3 +1,13 @@
+2022-10-27  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-tab.y (integer): New rule.
+	(primary): Use it.
+	(integral_type_specifier): Likewise.
+	(offset_type_specifier): Likewise.
+	* testsuite/poke.pkl/offsets-diag-3.pk: New test.
+	* testsuite/poke.pkl/int-type-diag-3.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+
 2022-10-27  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-rt.pk (_pkl_print_format_any): Fix array boundary

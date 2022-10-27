@@ -1520,6 +1520,7 @@ EXTRA_DIST = \
   poke.pkl/int-struct-type-diag-15.pk \
   poke.pkl/int-type-diag-1.pk \
   poke.pkl/int-type-diag-2.pk \
+  poke.pkl/int-type-diag-3.pk \
   poke.pkl/int-type.pk \
   poke.pkl/int-union-1.pk \
   poke.pkl/int-union-2.pk \
@@ -1807,6 +1808,7 @@ EXTRA_DIST = \
   poke.pkl/offsets-53.pk \
   poke.pkl/offsets-diag-1.pk \
   poke.pkl/offsets-diag-2.pk \
+  poke.pkl/offsets-diag-3.pk \
   poke.pkl/open-1.pk \
   poke.pkl/open-2.pk \
   poke.pkl/open-3.pk \
