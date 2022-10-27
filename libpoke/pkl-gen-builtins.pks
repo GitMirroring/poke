@@ -131,7 +131,7 @@
         .macro builtin_get_color_bgcolor
         .let #itype = pvm_make_integral_type (pvm_make_ulong (32, 64), pvm_make_int (1, 32))
         push #itype
-        push null
+        .call _pkl_mkclsn
         mktya
         push ulong<64>3
         mka                     ; ARR

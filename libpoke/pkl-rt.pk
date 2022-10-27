@@ -708,6 +708,32 @@ immutable fun _pkl_dispatch_tv = (int<32> e, any[] a) void:
   pk_tracer_dispatch.table[e] (e, a);
 }
 
+/* Closures which are useful for creating array bounders.  */
+
+type _Pkl_ClsN = ()any;
+type _Pkl_ClsI = ()uint<64>;
+type _Pkl_ClsO = ()offset<uint<64>,1>;
+
+/* Return a closure that returns `null'.  */
+
+immutable fun _pkl_mkclsn = _Pkl_ClsN:
+{
+  /* HACK This is equivalent to `push null'.
+     Until we get a more powerful assembler, we have to use this
+     trick.  */
+  return lambda any: { return asm any: ("push 7"); };
+}
+
+immutable fun _pkl_mkclsi = (uint<64> i) _Pkl_ClsI:
+{
+  return lambda uint<64>: { return i; };
+}
+
+immutable fun _pkl_mkclso = (offset<uint<64>,1> o) _Pkl_ClsO:
+{
+  return lambda offset<uint<64>,1>: { return o; };
+}
+
 /* Hooks for the IO subsystem.
 
    The functions in `ios_open_hook' are invoked once a new IO space

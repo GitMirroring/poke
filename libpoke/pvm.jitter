@@ -5998,19 +5998,20 @@ end
 
 # Instruction: mktya
 #
-# Given an elements type and an unsigned long denoting a length, build
-# an array type having these features and push it on the stack.  If
-# the type array is unbounded then length is PVM_NULL.
+# Given an elements type and a bounder closure, build an array type
+# having these features and push it on the stack.  The bounder closure
+# can return either PVM_NULL, or an integer, or an offset as the boundary
+# of the array type.
 #
-# Stack: ( TYPE (ULONG|NULL) -- TYPE )
+# Stack: ( TYPE BOUNDER -- TYPE )
 
 instruction mktya ()
   code
-     pvm_val bound = JITTER_TOP_STACK ();
+     pvm_val bounder = JITTER_TOP_STACK ();
      pvm_val etype = JITTER_UNDER_TOP_STACK ();
 
      JITTER_DROP_STACK ();
-     JITTER_TOP_STACK () = pvm_make_array_type (etype, bound);
+     JITTER_TOP_STACK () = pvm_make_array_type (etype, bounder);
   end
 end
 

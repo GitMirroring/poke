@@ -1,5 +1,15 @@
 2022-10-27  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pvm.jitter (mktya): Fix documentation.
+	* libpoke/pkl-rt.pk (_Pkl_ClsN): New type.
+	(_Pkl_ClsI): Likewise.
+	(_Pkl_ClsO): Likewise.
+	(_pkl_mkclsn): New function.
+	(_pkl_mkclsi): Likewise.
+	(_pkl_mkclso): Likewise.
+
+2022-10-27  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-insn.def (isn): Remove instruction because we
 	already have the `nnn' instruction.
 	* libpoke/pvm.jitter: Likewise.

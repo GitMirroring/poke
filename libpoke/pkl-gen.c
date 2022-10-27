@@ -1397,7 +1397,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_format)
   /* Save all the intermediate strings in an array of strings and at the
      end, concatenate all of elements into a single string on the stack.  */
   pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, pvm_make_string_type ());
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL);
+  pkl_asm_call (PKL_GEN_ASM, PKL_GEN_PAYLOAD->env, "_pkl_mkclsn");
   pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MKTYA);
   pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
                 pvm_make_ulong (0, 64)); /* FIXME use better hint */
@@ -1845,8 +1845,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_funcall)
 
       /* Create the array of variable arguments.  */
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL);
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL);
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MKTYA);
+      pkl_asm_call (PKL_GEN_ASM, PKL_GEN_PAYLOAD->env, "_pkl_mkclsn");
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MKTYA); /* ANY[] */
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
                     pvm_make_ulong (aindex, 64));
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MKA);

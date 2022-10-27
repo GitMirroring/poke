@@ -572,8 +572,8 @@
 
         .macro emit_tv_field_absent
         push null
-        push null
-        mktya
+        .call _pkl_mkclsn
+        mktya                   ; any[]
         push ulong<64>1
         mka                     ; STR ARGS
         over                    ; STR ARGS STR
@@ -998,7 +998,7 @@
         ;; Generate a PK_TV_FIELD_MAPPED tracer event.
         ;; First, create an empty any[] array for the arguments.
         push null               ; ... BOFF STR VAL ANYT
-        push null               ; ... BOFF STR VAL ANYT NULL
+        .call _pkl_mkclsn       ; ... BOFF STR VAL ANYT BOUNDER
         mktya                   ; ... BOFF STR VAL ATYPE
         push ulong<64>6         ; ... BOFF STR VAL ATYPE NELEM
         mka                     ; ... BOFF STR VAL ARGS
