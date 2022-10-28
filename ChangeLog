@@ -1,5 +1,12 @@
 2022-10-28  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/poke.pk (_pk_bounder_unbounded): New function.
+	* poke/poke.c (set_script_args): Install a proper bounder in array
+	type.
+	* libpoke/libpoke.h: Fix doc string of pk_make_array_type.
+
+2022-10-28  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* testsuite/poke.std/std-test.pk: Fix with_temp_ios test for
 	big-endian.
 

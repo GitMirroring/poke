@@ -72,6 +72,14 @@ fun pk_exception_handler = (Exception exception) void:
      }
   }
 
+/* Bounder for constructing unbounded Poke array types from C.  */
+
+fun pk_bounder_unbounded = any:
+{
+  /* XXX use `push null' whenever supported.  */
+  return asm any: ("push 7");
+}
+
 /* Load some poke subsystems.  */
 
 load "pk-table.pk";

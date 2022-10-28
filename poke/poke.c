@@ -322,6 +322,7 @@ set_script_args (int argc, char *argv[])
   int i, nargs;
   uint64_t index;
   pk_val argv_array;
+  pk_val array_type_bounder = pk_decl_val (poke_compiler, "pk_bounder_unbounded");
 
   /* Look for -L SCRIPT */
   for (i = 0; i < argc; ++i)
@@ -333,7 +334,7 @@ set_script_args (int argc, char *argv[])
   nargs = argc - i;
   argv_array = pk_make_array (pk_make_uint (nargs, 64),
                               pk_make_array_type (pk_make_string_type (),
-                                                  PK_NULL /* bound */));
+                                                  array_type_bounder));
 
   for (index = 0; i < argc; ++i, ++index)
     pk_array_insert_elem (argv_array, index,

@@ -1068,8 +1068,12 @@ void pk_struct_type_set_ftype (pk_val type, uint64_t idx,
 /* Build and return an array type.
 
    ETYPE is the type of the elements of the array.
-
-   At this point BOUND is always PK_NULL.  */
+   BOUNDER is either:
+   - A ()any closure returning PK_NULL to denote an unbounded array.
+   - A closure ()uint<64> to denote an array type bounded by number of
+     elements.
+   - A closure ()offset<uint<64>,1> to denote an array type bounded by
+     size.  */
 
 pk_val pk_make_array_type (pk_val etype, pk_val bound) LIBPOKE_API;
 
