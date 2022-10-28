@@ -531,7 +531,7 @@ pvm_make_array_type (pvm_val type, pvm_val bounder)
 {
   pvm_val atype = pvm_make_type (PVM_TYPE_ARRAY);
 
-  assert (bounder);
+  assert (PVM_IS_CLS (bounder));
 
   PVM_VAL_TYP_A_ETYPE (atype) = type;
   PVM_VAL_TYP_A_BOUND (atype) = bounder;

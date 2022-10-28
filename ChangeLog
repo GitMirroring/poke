@@ -1,3 +1,8 @@
+2022-10-28  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pvm-val.c (pvm_make_array_type): Fix assertion
+	for `bounder' to check that if it is a closure.
+
 2022-10-28  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* poke/poke.pk (_pk_bounder_unbounded): New function.
