@@ -360,7 +360,7 @@ pkl_loc_to_source (struct pkl_parser *parser, pkl_ast_loc loc,
       cur_pos = ftello (fp);
       tmp = fseeko (fp, 0, SEEK_SET);
 
-      while (nchars <= max_chars
+      while (nchars < max_chars
              && (c = fgetc (fp)) != EOF)
         {
           if (cur_line >= loc.first_line
