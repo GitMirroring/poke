@@ -203,7 +203,7 @@ var tests = [
     name = "with_temp_ios",
     func = lambda (string name) void:
       {
-        var a = 10;
+        var a = 10U;
         var end = get_endian;
 
         /* First, simple test with no opened IO space.  */
@@ -226,7 +226,7 @@ var tests = [
                                          a = int<32> @ 0#B; };
         assert (get_ios == ios);
         assert (get_endian == end);
-        assert (!end == ENDIAN_BIG ? a == 0xabcd : a == 0xcdab);
+        assert (!end == ENDIAN_BIG ? a == 0xabcd0000 : a == 0xcdab);
 
         /* Now with an exception return.  */
         try with_temp_ios :handler "*bar*"
@@ -239,7 +239,7 @@ var tests = [
 
         assert (get_ios == ios);
         assert (get_endian == end);
-        assert (!end == ENDIAN_BIG ? a == 0xbeef : a == 0xefbe);
+        assert (!end == ENDIAN_BIG ? a == 0xbeef0000 : a == 0xefbe);
         close (ios);
       },
   },

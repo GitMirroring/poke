@@ -1,5 +1,10 @@
 2022-10-28  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* testsuite/poke.std/std-test.pk: Fix with_temp_ios test for
+	big-endian.
+
+2022-10-28  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-diag.c (pkl_loc_to_source): Fix memory overrun.
 
 2022-10-27  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
