@@ -1,3 +1,25 @@
+2022-10-29  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-ast.c (pkl_ast_make_break_stmt): Remove.
+	(pkl_ast_make_break_continue_stmt): Renamed from
+	pkl_ast_make_continue_stmt.
+	(pkl_ast_node_free_1): Adapt accordingly.
+	(pkl_ast_print_1): Likewise.
+	* libpoke/pkl-ast.h (enum pkl_ast_code): Rename
+	PKL_AST_CONTINUE_STMT to PKL_AST_BREAK_CONTINUE_STMT.
+	(enum pkl_ast_code): Remove PKL_AST_BREAK_STMT.
+	(PKL_AST_CONTINUE_STMT_KIND): Define.
+	(struct pkl_ast_break_continue_stmt): Renamed from
+	pkL_ast_continue_stmt.
+	(PKL_AST_BREAK_CONTINUE_STMT_BREAK): Define.
+	(PKL_AST_BREAK_CONTINUE_STMT_CONTINUE): Likewise.
+	* libpoke/pkl-tab.y: Adapt to the unified AST node.
+	* libpoke/pkl-pass.c (pkl_do_pass_1): Likewise.
+	* libpoke/pkl-anal.c: Likewise.
+	* libpoke/pkl-trans.c: Likewise.
+	* etc/poke.rec (unify `break' and `continue' in the same AST
+	node): Removed as DONE.
+
 2022-10-28  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pvm-val.c (pvm_make_array_type): Fix assertion

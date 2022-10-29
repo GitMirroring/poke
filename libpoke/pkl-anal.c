@@ -405,32 +405,21 @@ PKL_PHASE_BEGIN_HANDLER (pkl_anal1_ps_type_function)
 }
 PKL_PHASE_END_HANDLER
 
-/* Make sure every BREAK statement has an associated entity.  */
+/* Make sure every BREAK and CONTINUE statement has an associated
+   entity.  */
 
-PKL_PHASE_BEGIN_HANDLER (pkl_anal1_ps_break_stmt)
+PKL_PHASE_BEGIN_HANDLER (pkl_anal1_ps_break_continue_stmt)
 {
-  pkl_ast_node break_stmt = PKL_PASS_NODE;
+  pkl_ast_node stmt = PKL_PASS_NODE;
 
-  if (!PKL_AST_BREAK_STMT_ENTITY (break_stmt))
+  if (!PKL_AST_BREAK_CONTINUE_STMT_ENTITY (stmt))
     {
-      PKL_ERROR (PKL_AST_LOC (break_stmt),
-                 "`break' statement without containing statement");
-      PKL_ANAL_PAYLOAD->errors++;
-      PKL_PASS_ERROR;
-    }
-}
-PKL_PHASE_END_HANDLER
+      int kind = PKL_AST_BREAK_CONTINUE_STMT_KIND (stmt);
 
-/* Make sure every CONTINUE statement has an associated entity.  */
-
-PKL_PHASE_BEGIN_HANDLER (pkl_anal1_ps_continue_stmt)
-{
-  pkl_ast_node continue_stmt = PKL_PASS_NODE;
-
-  if (!PKL_AST_CONTINUE_STMT_ENTITY (continue_stmt))
-    {
-      PKL_ERROR (PKL_AST_LOC (continue_stmt),
-                 "`continue' statement without containing statement");
+      PKL_ERROR (PKL_AST_LOC (stmt),
+                 "%s statement without containing statement",
+                 kind == PKL_AST_BREAK_CONTINUE_STMT_KIND_BREAK
+                 ? "`break'" : "`continue'");
       PKL_ANAL_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
@@ -743,8 +732,7 @@ struct pkl_phase pkl_phase_anal1 =
    PKL_PHASE_PS_HANDLER (PKL_AST_PROGRAM, pkl_anal_ps_program),
    PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT, pkl_anal1_ps_struct),
    PKL_PHASE_PS_HANDLER (PKL_AST_COMP_STMT, pkl_anal1_ps_comp_stmt),
-   PKL_PHASE_PS_HANDLER (PKL_AST_BREAK_STMT, pkl_anal1_ps_break_stmt),
-   PKL_PHASE_PS_HANDLER (PKL_AST_CONTINUE_STMT, pkl_anal1_ps_continue_stmt),
+   PKL_PHASE_PS_HANDLER (PKL_AST_BREAK_CONTINUE_STMT, pkl_anal1_ps_break_continue_stmt),
    PKL_PHASE_PS_HANDLER (PKL_AST_FUNCALL, pkl_anal1_ps_funcall),
    PKL_PHASE_PR_HANDLER (PKL_AST_FUNC, pkl_anal1_pr_func),
    PKL_PHASE_PS_HANDLER (PKL_AST_FUNC, pkl_anal1_ps_func),

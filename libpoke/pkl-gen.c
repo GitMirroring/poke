@@ -1161,32 +1161,21 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_if_stmt)
 PKL_PHASE_END_HANDLER
 
 /*
- * BREAK_STMT
+ * BREAK_CONTINUE_STMT
  */
 
-PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_break_stmt)
+PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_break_continue_stmt)
 {
-  int nframes = PKL_AST_BREAK_STMT_NFRAMES (PKL_PASS_NODE);
+  pkl_ast_node stmt = PKL_PASS_NODE;
+  int kind = PKL_AST_BREAK_CONTINUE_STMT_KIND (stmt);
+  int nframes = PKL_AST_BREAK_CONTINUE_STMT_NFRAMES (PKL_PASS_NODE);
 
   if (nframes > 0)
     pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_POPF, nframes);
   pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BA,
-                pkl_asm_break_label (PKL_GEN_ASM));
-}
-PKL_PHASE_END_HANDLER
-
-/*
- * CONTINUE_STMT
- */
-
-PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_continue_stmt)
-{
-  int nframes = PKL_AST_CONTINUE_STMT_NFRAMES (PKL_PASS_NODE);
-
-  if (nframes > 0)
-    pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_POPF, nframes);
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BA,
-                pkl_asm_continue_label (PKL_GEN_ASM));
+                kind == PKL_AST_BREAK_CONTINUE_STMT_KIND_BREAK
+                ? pkl_asm_break_label (PKL_GEN_ASM)
+                : pkl_asm_continue_label (PKL_GEN_ASM));
 }
 PKL_PHASE_END_HANDLER
 
@@ -4682,8 +4671,7 @@ struct pkl_phase pkl_phase_gen =
    PKL_PHASE_PR_HANDLER (PKL_AST_ASS_STMT, pkl_gen_pr_ass_stmt),
    PKL_PHASE_PR_HANDLER (PKL_AST_INCRDECR, pkl_gen_pr_incrdecr),
    PKL_PHASE_PR_HANDLER (PKL_AST_IF_STMT, pkl_gen_pr_if_stmt),
-   PKL_PHASE_PS_HANDLER (PKL_AST_BREAK_STMT, pkl_gen_ps_break_stmt),
-   PKL_PHASE_PS_HANDLER (PKL_AST_CONTINUE_STMT, pkl_gen_ps_continue_stmt),
+   PKL_PHASE_PS_HANDLER (PKL_AST_BREAK_CONTINUE_STMT, pkl_gen_ps_break_continue_stmt),
    PKL_PHASE_PR_HANDLER (PKL_AST_LOOP_STMT, pkl_gen_pr_loop_stmt),
    PKL_PHASE_PR_HANDLER (PKL_AST_RETURN_STMT, pkl_gen_pr_return_stmt),
    PKL_PHASE_PS_HANDLER (PKL_AST_RETURN_STMT, pkl_gen_ps_return_stmt),

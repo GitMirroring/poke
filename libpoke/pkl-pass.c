@@ -538,8 +538,7 @@ pkl_do_pass_1 (pkl_compiler compiler,
       PKL_PASS (PKL_AST_LOOP_STMT_ITERATOR_CONTAINER (node));
       PKL_PASS (PKL_AST_LOOP_STMT_ITERATOR_DECL (node));
       break;
-    case PKL_AST_BREAK_STMT:
-    case PKL_AST_CONTINUE_STMT:
+    case PKL_AST_BREAK_CONTINUE_STMT:
       break;
     case PKL_AST_RETURN_STMT:
       if (PKL_AST_RETURN_STMT_EXP (node))

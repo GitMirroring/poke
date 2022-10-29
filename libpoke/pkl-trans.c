@@ -1370,33 +1370,17 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_try_stmt)
 }
 PKL_PHASE_END_HANDLER
 
-/* Annotate break statements with enclosing escapable construct, and
-   with their lexical nesting level with respect to the enclosing
-   escapable construct.  */
+/* Annotate break and continue statements with enclosing escapable
+   construct, and with their lexical nesting level with respect to the
+   enclosing escapable construct.  */
 
-PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_break_stmt)
+PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_break_continue_stmt)
 {
   if (PKL_TRANS_ESCAPABLE)
     {
-      PKL_AST_BREAK_STMT_ENTITY (PKL_PASS_NODE)
+      PKL_AST_BREAK_CONTINUE_STMT_ENTITY (PKL_PASS_NODE)
         = PKL_TRANS_ESCAPABLE->node;
-      PKL_AST_BREAK_STMT_NFRAMES (PKL_PASS_NODE)
-        = PKL_TRANS_ESCAPABLE->nframes;
-    }
-}
-PKL_PHASE_END_HANDLER
-
-/* Annotate continue statements with enclosing escapable construct,
-   and with their lexical nesting level with respect to the enclosing
-   escapable construct.  */
-
-PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_continue_stmt)
-{
-  if (PKL_TRANS_ESCAPABLE)
-    {
-      PKL_AST_CONTINUE_STMT_ENTITY (PKL_PASS_NODE)
-        = PKL_TRANS_ESCAPABLE->node;
-      PKL_AST_CONTINUE_STMT_NFRAMES (PKL_PASS_NODE)
+      PKL_AST_BREAK_CONTINUE_STMT_NFRAMES (PKL_PASS_NODE)
         = PKL_TRANS_ESCAPABLE->nframes;
     }
 }
@@ -1473,8 +1457,7 @@ struct pkl_phase pkl_phase_trans1 =
    PKL_PHASE_PS_HANDLER (PKL_AST_LOOP_STMT_ITERATOR, pkl_trans1_ps_loop_stmt_iterator),
    PKL_PHASE_PR_HANDLER (PKL_AST_LOOP_STMT, pkl_trans1_pr_loop_stmt),
    PKL_PHASE_PS_HANDLER (PKL_AST_LOOP_STMT, pkl_trans1_ps_loop_stmt),
-   PKL_PHASE_PS_HANDLER (PKL_AST_BREAK_STMT, pkl_trans1_ps_break_stmt),
-   PKL_PHASE_PS_HANDLER (PKL_AST_CONTINUE_STMT, pkl_trans1_ps_continue_stmt),
+   PKL_PHASE_PS_HANDLER (PKL_AST_BREAK_CONTINUE_STMT, pkl_trans1_ps_break_continue_stmt),
    PKL_PHASE_PR_HANDLER (PKL_AST_TRY_STMT_BODY, pkl_trans1_pr_try_stmt),
    PKL_PHASE_PS_HANDLER (PKL_AST_TRY_STMT_BODY, pkl_trans1_ps_try_stmt),
    PKL_PHASE_PR_HANDLER (PKL_AST_TRY_STMT_BODY, pkl_trans1_pr_try_stmt_body),

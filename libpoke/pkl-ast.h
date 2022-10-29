@@ -88,8 +88,7 @@ enum pkl_ast_code
   PKL_AST_TRY_STMT_BODY,
   PKL_AST_TRY_STMT_HANDLER,
   PKL_AST_PRINT_STMT,
-  PKL_AST_BREAK_STMT,
-  PKL_AST_CONTINUE_STMT,
+  PKL_AST_BREAK_CONTINUE_STMT,
   PKL_AST_RAISE_STMT,
   PKL_AST_ASM_STMT,
   PKL_AST_LAST_STMT = PKL_AST_ASM_STMT,
@@ -1917,46 +1916,33 @@ struct pkl_ast_print_stmt
 pkl_ast_node pkl_ast_make_print_stmt (pkl_ast ast,
                                       int printf_p, pkl_ast_node fmt);
 
-/* PKL_AST_CONTINUE_STMT nodes represent `continue' statements.  Each
-   continue statement is associated to a loop node.
+/* PKL_AST_BREAK_CONTINUE_STMT nodes represent `continue' and `break'
+   statements.  Each such statement is associated to a loop node.
 
-   ENTITY is the loop node associated with this continue statement.
+   KIND determines that kind of statement this is.
 
-   NFRAMES is the lexical depth of the continue statement, relative to
-   the enclosing entity.  */
+   ENTITY is the loop node associated with this statement.
 
-#define PKL_AST_CONTINUE_STMT_ENTITY(AST) ((AST)->continue_stmt.entity)
-#define PKL_AST_CONTINUE_STMT_NFRAMES(AST) ((AST)->continue_stmt.nframes)
+   NFRAMES is the lexical depth of the statement, relative to the
+   enclosing entity.  */
 
-struct pkl_ast_continue_stmt
+#define PKL_AST_BREAK_CONTINUE_STMT_KIND(AST) ((AST)->break_continue_stmt.kind)
+#define PKL_AST_BREAK_CONTINUE_STMT_ENTITY(AST) ((AST)->break_continue_stmt.entity)
+#define PKL_AST_BREAK_CONTINUE_STMT_NFRAMES(AST) ((AST)->break_continue_stmt.nframes)
+
+#define PKL_AST_BREAK_CONTINUE_STMT_KIND_BREAK 0
+#define PKL_AST_BREAK_CONTINUE_STMT_KIND_CONTINUE 1
+
+struct pkl_ast_break_continue_stmt
 {
   struct pkl_ast_common common;
   union pkl_ast_node *entity;
+  int kind;
   int nframes;
 };
 
-pkl_ast_node pkl_ast_make_continue_stmt (pkl_ast ast);
-
-/* PKL_AST_BREAK_STMT nodes represent `break' statements.  Each break
-   statement is associated to a loop or switch node.
-
-   ENTITY is the loop or switch node associated with this break
-   statement.
-
-   NFRAMES is the lexical depth of the break statement, relative to
-   the enclosing entity.  */
-
-#define PKL_AST_BREAK_STMT_ENTITY(AST) ((AST)->break_stmt.entity)
-#define PKL_AST_BREAK_STMT_NFRAMES(AST) ((AST)->break_stmt.nframes)
-
-struct pkl_ast_break_stmt
-{
-  struct pkl_ast_common common;
-  union pkl_ast_node *entity;
-  int nframes;
-};
-
-pkl_ast_node pkl_ast_make_break_stmt (pkl_ast ast);
+pkl_ast_node pkl_ast_make_break_continue_stmt (pkl_ast ast,
+                                               int kind);
 
 /* PKL_AST_RAISE_STMT nodes represent `raise' statements, which are
    used in order to raise exceptions at the program level.
@@ -2058,8 +2044,7 @@ union pkl_ast_node
   struct pkl_ast_try_stmt try_stmt;
   struct pkl_ast_try_stmt_body try_stmt_body;
   struct pkl_ast_try_stmt_body try_stmt_handler;
-  struct pkl_ast_break_stmt break_stmt;
-  struct pkl_ast_continue_stmt continue_stmt;
+  struct pkl_ast_break_continue_stmt break_continue_stmt;
   struct pkl_ast_raise_stmt raise_stmt;
   struct pkl_ast_print_stmt print_stmt;
   struct pkl_ast_asm_stmt asm_stmt;

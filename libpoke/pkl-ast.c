@@ -2168,24 +2168,16 @@ pkl_ast_make_print_stmt (pkl_ast ast,
   return print_stmt;
 }
 
-/* Build and return an AST node for a `break' statement.  */
-
-pkl_ast_node
-pkl_ast_make_break_stmt (pkl_ast ast)
-{
-  pkl_ast_node break_stmt = pkl_ast_make_node (ast,
-                                               PKL_AST_BREAK_STMT);
-  return break_stmt;
-}
-
 /* Build and return an AST node for a `continue' statement.  */
 
 pkl_ast_node
-pkl_ast_make_continue_stmt (pkl_ast ast)
+pkl_ast_make_break_continue_stmt (pkl_ast ast, int kind)
 {
-  pkl_ast_node continue_stmt = pkl_ast_make_node (ast,
-                                                  PKL_AST_CONTINUE_STMT);
-  return continue_stmt;
+  pkl_ast_node break_continue_stmt
+    = pkl_ast_make_node (ast, PKL_AST_BREAK_CONTINUE_STMT);
+
+  PKL_AST_BREAK_CONTINUE_STMT_KIND (break_continue_stmt) = kind;
+  return break_continue_stmt;
 }
 
 /* Build and return an AST node for a `raise' statement.  */
@@ -2678,8 +2670,7 @@ pkl_ast_node_free_1 (gl_set_t visitations, pkl_ast_node ast)
         break;
       }
 
-    case PKL_AST_BREAK_STMT:
-    case PKL_AST_CONTINUE_STMT:
+    case PKL_AST_BREAK_CONTINUE_STMT:
       break;
 
 
@@ -3547,13 +3538,8 @@ pkl_ast_print_1 (FILE *fp, pkl_ast_node ast, int indent)
         PRINT_AST_SUBAST (format, PRINT_STMT_FORMAT);
       break;
 
-    case PKL_AST_BREAK_STMT:
-      IPRINTF ("BREAK_STMT::\n");
-      PRINT_COMMON_FIELDS;
-      break;
-
-    case PKL_AST_CONTINUE_STMT:
-      IPRINTF ("CONTINUE_STMT::\n");
+    case PKL_AST_BREAK_CONTINUE_STMT:
+      IPRINTF ("BREAK_CONTINUE_STMT::\n");
       PRINT_COMMON_FIELDS;
       break;
 

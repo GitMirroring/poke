@@ -2541,12 +2541,14 @@ stmt:
                 }
         | BREAK ';'
                 {
-                  $$ = pkl_ast_make_break_stmt (pkl_parser->ast);
+                  $$ = pkl_ast_make_break_continue_stmt (pkl_parser->ast,
+                                                         PKL_AST_BREAK_CONTINUE_STMT_KIND_BREAK);
                   PKL_AST_LOC ($$) = @$;
                 }
         | CONTINUE ';'
                 {
-                  $$ = pkl_ast_make_continue_stmt (pkl_parser->ast);
+                  $$ = pkl_ast_make_break_continue_stmt (pkl_parser->ast,
+                                                         PKL_AST_BREAK_CONTINUE_STMT_KIND_CONTINUE);
                   PKL_AST_LOC ($$) = @$;
                 }
         | RETURN ';'

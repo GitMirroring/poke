@@ -690,19 +690,6 @@ Description:
 + This task is about identifying these cases, and to move the
 + corresponding check to anal1.
 
-Summary: unify `break' and `continue' in the same AST node
-Component: Compiler
-Kind: ENH
-Priority: 3
-Description:
-+ The `break' and `continue' statements are similar enough to merit
-+ using the same kind of AST node, which would require a discriminant
-+ field (kind = break | continue).
-+
-+ Likewise, there is some code duplication in the assembler which may be
-+ optimized: pkl_asm_break_label_1 vs. pkl_asm_continue_label_1.
-
-
 Summary: Do tail recursion optimization in the compiler
 Component: Compiler
 Kind: ENH
