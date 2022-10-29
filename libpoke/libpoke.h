@@ -1068,7 +1068,7 @@ void pk_struct_type_set_ftype (pk_val type, uint64_t idx,
 /* Build and return an array type.
 
    ETYPE is the type of the elements of the array.
-   BOUNDER is either:
+   BOUND is either:
    - A ()any closure returning PK_NULL to denote an unbounded array.
    - A closure ()uint<64> to denote an array type bounded by number of
      elements.
