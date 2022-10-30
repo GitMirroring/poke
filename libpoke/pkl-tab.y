@@ -565,7 +565,8 @@ load_module (struct pkl_parser *parser,
 %left BCONC
 %right '@' NSMAP
 %nonassoc UNIT INC DEC
-%right UNARY AS ISA
+%right AS ISA
+%right UNARY
 %left HYPERUNARY
 %left '.'
 %left ATTR
@@ -982,12 +983,12 @@ expression:
                                                 $1, $3);
                   PKL_AST_LOC ($$) = @$;
                 }
-        | expression AS simple_type_specifier
+        | expression AS simple_type_specifier %prec AS
                 {
                   $$ = pkl_ast_make_cast (pkl_parser->ast, $3, $1);
                   PKL_AST_LOC ($$) = @$;
                 }
-        | expression ISA simple_type_specifier
+        | expression ISA simple_type_specifier %prec ISA
                 {
                   $$ = pkl_ast_make_isa (pkl_parser->ast, $3, $1);
                   PKL_AST_LOC ($$) = @$;
