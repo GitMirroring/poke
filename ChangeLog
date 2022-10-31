@@ -1,5 +1,10 @@
 2022-10-31  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* pickles/coff.pk (COFF_Strtab): Make the get_string method
+	map-agnostic.
+
+2022-10-31  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-typify.c (pkl_typify1_ps_indexer): Allow offsets as
 	indexes in indexers.
 	* libpoke/pkl-promo.c (pkl_promo_ps_indexer): Promote offset
