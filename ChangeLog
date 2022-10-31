@@ -1,5 +1,13 @@
 2022-10-31  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-rt.pk (_pkl_aoref): Array element offsets are
+	absolute.
+	* testsuite/poke.pkl/arrays-index-15.pk: New test.
+	* testsuite/poke.pkl/arrays-index-16.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+
+2022-10-31  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* pickles/coff.pk (COFF_Strtab): Make the get_string method
 	map-agnostic.
 

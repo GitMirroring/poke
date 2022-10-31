@@ -581,6 +581,9 @@ fun _pkl_aoref = (any[] array, offset<uint<64>,1> idx) any:
 {
   var len = array'length;
 
+  if (array'mapped)
+    idx += array'offset;
+
   for (var i = 0UL; i < len; ++i)
     {
       if (array'eoffset (i) > idx)

@@ -1,0 +1,8 @@
+/* { dg-do run } */
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {open ("*foo*")} } */
+/* { dg-command {string[] @ 1#B = ["foo", "x", "bar"]} } */
+/* { dg-command {var a = string[3] @ 1#B} } */
+/* { dg-command {a[8#N]} } */
+/* { dg-output {"x"} } */

@@ -767,6 +767,8 @@ EXTRA_DIST = \
   poke.pkl/arrays-index-12.pk \
   poke.pkl/arrays-index-13.pk \
   poke.pkl/arrays-index-14.pk \
+  poke.pkl/arrays-index-15.pk \
+  poke.pkl/arrays-index-16.pk \
   poke.pkl/arrays-index-diag-1.pk \
   poke.pkl/arrays-index-diag-2.pk \
   poke.pkl/arrays-index-diag-3.pk \
