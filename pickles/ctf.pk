@@ -321,7 +321,7 @@ type CTF_Dictionary =
       {
         if (off >= header.cth_strlen)
           raise E_inval;
-        return string @ (strings'offset + off);
+        return strings[off];
       }
   };
 

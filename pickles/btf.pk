@@ -244,6 +244,6 @@ type BTF_Section =
 
     method get_string = (offset<uint<32>,B> off) string:
       {
-        return string @ strings'offset + off;
+        return strings[off];
       }
   };
