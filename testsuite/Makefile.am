@@ -2415,6 +2415,7 @@ EXTRA_DIST = \
   poke.pkl/trim-33.pk \
   poke.pkl/trim-34.pk \
   poke.pkl/trim-35.pk \
+  poke.pkl/trim-36.pk \
   poke.pkl/trim-diag-1.pk \
   poke.pkl/trim-diag-2.pk \
   poke.pkl/trim-diag-3.pk \

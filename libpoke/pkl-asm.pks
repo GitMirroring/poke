@@ -560,6 +560,15 @@
         bnzi .ebounds
         drop                    ; ARR NELEM TO
         drop                    ; ARR NELEM
+        bnzlu .check_from
+        ;; The array has zero elements.  In this case we have to
+        ;; check FROM differently.
+        pushvar $from           ; ARR NELEM FROM
+        ltlu                    ; ARR NELEM FROM (NELEM<FROM)
+        bnzi .ebounds
+        drop3                   ; ARR
+        ba .bounds_ok
+.check_from:
         pushvar $from           ; ARR NELEM FROM
         lelu                    ; ARR NELEM FROM (NELEM<=FROM)
         bnzi .ebounds
