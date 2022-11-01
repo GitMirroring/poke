@@ -1496,7 +1496,12 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans2_ps_exp)
         break;
     }
 
-  PKL_AST_LITERAL_P (exp) = literal_p;
+  /* XXX note that POW is currently not constant-folded.  See comment
+     in pkl-fold.c */
+  if (PKL_AST_EXP_CODE (exp) == PKL_AST_OP_POW)
+    PKL_AST_LITERAL_P (exp) = 0;
+  else
+    PKL_AST_LITERAL_P (exp) = literal_p;
 }
 PKL_PHASE_END_HANDLER
 

@@ -616,7 +616,9 @@ EMUL_UU (bnoto) { return ~op; }
                   break;                                                \
                 case PKL_AST_OP_POW:                                    \
                   /* XXX constant-folding this implies to not use */    \
-                  /* ipow, but a version that checks overflow.  */      \
+                  /* ipow, but a version that checks overflow.  Please */ \
+                  /* remove the workaround in pkl_trans2_ps_exp */      \
+                  /* once this gets fixed.  */                          \
                   PKL_PASS_DONE;                                        \
                   break;                                                \
                 default:                                                \

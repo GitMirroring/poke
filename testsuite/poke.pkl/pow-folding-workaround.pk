@@ -1,0 +1,3 @@
+/* { dg-do compile } */
+
+type x=struct{int[0'size*0**0.>>0];};

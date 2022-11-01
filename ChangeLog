@@ -1,5 +1,14 @@
 2022-11-01  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-trans.c (pkl_trans2_ps_exp): Do not assume EXP
+	expressions will be constant-folded.
+	* libpoke/pkl-fold.c (OP_BINARY_III): Add a note regarding the
+	workaround in pkl_trans2_ps_exp.
+	* testsuite/poke.pkl/pow-folding-workaround.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
+
+2022-11-01  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-ast.c (pkl_ast_sizeof_type): Add assertion.
 
 2022-11-01  Jose E. Marchesi  <jemarch@gnu.org>

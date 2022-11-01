@@ -1900,6 +1900,7 @@ EXTRA_DIST = \
   poke.pkl/pos-offsets-1.pk \
   poke.pkl/pow-diag-1.pk \
   poke.pkl/pow-diag-2.pk \
+  poke.pkl/pow-folding-workaround.pk \
   poke.pkl/pow-integers-1.pk \
   poke.pkl/pow-integers-2.pk \
   poke.pkl/pow-integers-3.pk \
