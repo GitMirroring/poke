@@ -162,4 +162,9 @@ void pkl_env_map_decls (pkl_env env,
                         pkl_map_decl_fn cb,
                         void *data);
 
+/* Function to rollback/undo redefinitions/renames of global objects
+   in the given environment.  */
+
+void pkl_env_rollback_renames (pkl_env env);
+
 #endif /* !PKL_ENV_H  */

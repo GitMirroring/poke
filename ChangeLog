@@ -1,5 +1,22 @@
 2022-11-01  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-ast.h (PKL_AST_DECL_PREV_NAME): Define.
+	(struct pkl_ast_decl): New field prev_name.
+	* libpoke/pkl-ast.c (pkl_ast_node_free_1): Free PREV_NAME.
+	(pkl_ast_print_1): Print PREV_NAME.
+	* libpoke/pkl-env.h: Prototype for pkl_env_rollback_renames.
+	* libpoke/pkl-env.c (pkl_env_rollback_renames_1): New function.
+	(pkl_env_rollback_renames): Likewise.
+	(register_decl): Cache the previous name used in the decl.
+	* libpoke/pkl.c (pkl_compile_expression): Rollback renames in the
+	compile-time environment in case of compilation error.
+	(pkl_execute_expression): Likewise.
+	(pkl_execute_file): Likewise.
+	(pkl_execute_statement): Likewise.
+	(pkl_execute_buffer): Likewise.
+
+2022-11-01  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-trans.c (pkl_trans2_ps_exp): Do not assume EXP
 	expressions will be constant-folded.
 	* libpoke/pkl-fold.c (OP_BINARY_III): Add a note regarding the

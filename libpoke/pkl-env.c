@@ -144,7 +144,8 @@ register_decl (int top_level_p,
         {
           pkl_ast_node decl_name = PKL_AST_DECL_NAME (found_decl);
 
-          free (PKL_AST_IDENTIFIER_POINTER (decl_name));
+          PKL_AST_DECL_PREV_NAME (found_decl)
+            = PKL_AST_IDENTIFIER_POINTER (decl_name);
           PKL_AST_IDENTIFIER_POINTER (decl_name) = strdup ("");
         }
       else
@@ -431,4 +432,38 @@ pkl_env_get_next_matching_decl (pkl_env env, struct pkl_ast_node_iter *iter,
       pkl_env_iter_next (env, iter);
     }
   return NULL;
+}
+
+static void
+pkl_env_rollback_renames_1 (pkl_hash hash_table)
+{
+  int i;
+  for (i = 0; i < HASH_TABLE_SIZE; ++i)
+    {
+      pkl_ast_node t;
+      pkl_ast_node decl = hash_table[i];
+
+      for (t = decl; t; t = PKL_AST_CHAIN2 (t))
+        {
+          pkl_ast_node decl_name = PKL_AST_DECL_NAME (t);
+
+          if (PKL_AST_DECL_PREV_NAME (t))
+            {
+              assert (decl_name
+                      && STREQ (PKL_AST_IDENTIFIER_POINTER (decl_name), ""));
+
+              free (PKL_AST_IDENTIFIER_POINTER (decl_name));
+              PKL_AST_IDENTIFIER_POINTER (decl_name)
+                = PKL_AST_DECL_PREV_NAME (t);
+              PKL_AST_DECL_PREV_NAME (t) = NULL;
+            }
+        }
+    }
+}
+
+void
+pkl_env_rollback_renames (pkl_env env)
+{
+  pkl_env_rollback_renames_1 (env->hash_table);
+  pkl_env_rollback_renames_1 (env->units_hash_table);
 }
