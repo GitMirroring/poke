@@ -1077,6 +1077,7 @@ pkl_ast_sizeof_type (pkl_ast ast, pkl_ast_node type)
           {
             pkl_ast_node mag, unit;
 
+            assert (PKL_AST_CODE (bound) == PKL_AST_OFFSET);
             mag = PKL_AST_OFFSET_MAGNITUDE (bound);
             unit = PKL_AST_OFFSET_UNIT (bound);
             res = pkl_ast_make_integer (ast,
