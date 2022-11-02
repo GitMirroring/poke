@@ -1,3 +1,12 @@
+2022-11-02  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-rt.pk (_pkl_print_format_any): Fix `lutos' for long
+	values.
+	* libpoke/std.pk (ltos): Likewise.
+	* testsuite/poke.pkl/printf-40.pk: New test.
+	* testsuite/poke.std/std-test.pk: Test ltos with i > 2^31.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
+
 2022-11-01  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-ast.h (PKL_AST_DECL_PREV_NAME): Define.

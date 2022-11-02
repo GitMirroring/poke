@@ -87,6 +87,7 @@ var tests = [
         assert (ltos (15, 16) == "f");
         assert (ltos (-15, 16) == "-f");
         assert (ltos (123456, 8) == "361100");
+        assert (ltos (2UL**32, 16) == "100000000");
       }
   },
   PkTest {

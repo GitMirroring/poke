@@ -867,7 +867,7 @@ immutable fun _pkl_print_format_any = (any val,
     if (i == 0)
       s = "0";
 
-    while (i)
+    while (i > 0)
       {
         s = chars[i % base] as string + s;
         i = i / base;
