@@ -158,6 +158,7 @@ pk_cmd_jmd (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
      "<jemarch> 1000 bitcoins could be in fucking HACKING and you people "
      "would not fucking notice",
      "<mnabipoor> Yes, acid is awesome!",
+     "[jemarch blames mnabipoor]",
      NULL
     };
   static int num_strings = 0;

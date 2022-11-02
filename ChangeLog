@@ -1,3 +1,7 @@
+2022-11-03  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* poke/pk-cmd-misc.c (pk_cmd_jmd): New quote.
+
 2022-11-02  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-rt.pk (_pkl_print_format_any): Fix `lutos' for long
