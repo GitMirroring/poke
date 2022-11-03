@@ -524,7 +524,7 @@ type RV32_InsnFmt_J = struct uint<32>
   };
 
 // risbuj
-type RV32_Insn = union
+type RV32_Insn = union uint<32>
   {
     RV32_InsnFmt_R r;
     RV32_InsnFmt_I i;
@@ -533,18 +533,6 @@ type RV32_Insn = union
     RV32_InsnFmt_U u;
     RV32_InsnFmt_J j;
 
-    method as_uint = uint<32>:
-      {
-        type I = uint<32>;
-
-        return !(r ?! E_elem) ? r as I
-             : !(i ?! E_elem) ? i as I
-             : !(s ?! E_elem) ? s as I
-             : !(b ?! E_elem) ? b as I
-             : !(u ?! E_elem) ? u as I
-             : !(j ?! E_elem) ? j as I
-             : 0U /* impossible */;
-      }
     method get_name = string:
       {
         return !(r ?! E_elem) ? r.get_name
