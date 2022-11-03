@@ -1,0 +1,9 @@
+/* { dg-do run } */
+/* { dg-data {c*} {0x10 0x20 0x30 0x40 0x50} } */
+
+type Foo = struct int { int i : 0; };
+type Bar = struct int { int i : 0; };
+type Baz = union int { Foo f; Bar b; };
+
+/* { dg-command {try Baz @ 1#B; catch if E_constraint {print "caught";}} } */
+/* { dg-output "caught" } */

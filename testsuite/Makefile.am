@@ -307,6 +307,7 @@ EXTRA_DIST = \
   poke.map/maps-int-union-4.pk \
   poke.map/maps-int-union-3.pk \
   poke.map/maps-int-union-5.pk \
+  poke.map/maps-int-union-6.pk \
   poke.map/maps-ios-1.pk \
   poke.map/maps-ios-2.pk \
   poke.map/maps-ios-3.pk \

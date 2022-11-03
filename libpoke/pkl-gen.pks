@@ -1144,6 +1144,10 @@
         pushe .eof_in_alternative
         push PVM_E_CONSTRAINT
         pushe .constraint_in_alternative
+        ;; Note that this `dup' is necessary in order to not disturb
+        ;; the value at the TOS present when the EOF and CONSTRAINT
+        ;; handlers are installed.
+        dup                      ; ...[EBOFF ENAME EVAL] [NEBOFF] NEBOFF
  .c   }
  .c   if (PKL_AST_TYPE_S_ITYPE (@type_struct))
  .c   {
@@ -1160,33 +1164,29 @@
         ;; Note that at this point the field is assured to be
         ;; an integral type, as per typify.
         pushvar $strict
-        swap                     ; ...[EBOFF ENAME EVAL] STRICT NEBOFF
+        swap                     ; ...[EBOFF ENAME EVAL] [NEBOFF] STRICT NEBOFF
         pushvar $boff
-        pushvar $ivalue          ; ...[EBOFF ENAME EVAL] STRICT NEBOFF OFF IVAL
-        .e struct_field_extractor @type_struct, @field, @struct_itype, @field_type, \
-                                  #ivalw, #fieldw
-                                 ; ...[EBOFF ENAME EVAL] NEBOFF
+        pushvar $ivalue          ; ...[EBOFF ENAME EVAL] [NEBOFF] STRICT NEBOFF OFF IVAL
+        .e struct_field_extractor @type_struct, @field, @struct_itype, \
+                                  @field_type, #ivalw, #fieldw
+                                 ; ...[EBOFF ENAME EVAL] [NEBOFF] EBOFF ENAME EVAL NEBOFF
  .c   }
  .c   else
  .c   {
- .c     if (PKL_AST_TYPE_S_UNION_P (@type_struct))
- .c     {
-        ;; Note that this `dup' is necessary in order to not disturb
-        ;; the value at the TOS present when the EOF and CONSTRAINT
-        ;; handlers are installed.
-        dup                      ; ...[EBOFF ENAME EVAL] [NEBOFF] NEBOFF
- .c     }
         ;; Attempt the mapping.
         pushvar $strict          ; ...[EBOFF ENAME EVAL] [NEBOFF] NEBOFF STRICT
         swap                     ; ...[EBOFF ENAME EVAL] [NEBOFF] STRICT NEBOFF
         pushvar $ios             ; ...[EBOFF ENAME EVAL] [NEBOFF] STRICT NEBOFF IOS
         swap                     ; ...[EBOFF ENAME EVAL] [NEBOFF] STRICT IOS NEBOFF
         pushvar $boff            ; ...[EBOFF ENAME EVAL] [NEBOFF] STRICT IOS NEBOFF OFF
+        ; ( STRICT IOS BOFF SBOFF -- BOFF STR VAL NBOFF )
         .e struct_field_mapper @type_struct, @field
                                 ; ...[NEBOFF] [EBOFF ENAME EVAL] NEBOFF
 .omitted_field:
- .c     if (PKL_AST_TYPE_S_UNION_P (@type_struct))
- .c     {
+ .c   }
+ .c   if (PKL_AST_TYPE_S_UNION_P (@type_struct))
+ .c   {
+        ; Drop the value created from dup
         tor
         tor
         tor
@@ -1196,10 +1196,6 @@
         fromr
         fromr
         fromr
- .c     }
- .c   }
- .c   if (PKL_AST_TYPE_S_UNION_P (@type_struct))
- .c   {
         pope
         pope
  .c   }
