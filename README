@@ -14,7 +14,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with GNU Jitter.  If not, see <http://www.gnu.org/licenses/>.
+along with GNU Jitter.  If not, see <https://www.gnu.org/licenses/>.
 
 
 About GNU Jitter
@@ -63,7 +63,7 @@ Online resources
 
 The Jitter home page is at https://www.gnu.org/software/jitter .
 A public git repository is available at the URL
-http://git.ageinghacker.net/jitter .
+https://git.ageinghacker.net/jitter .
 
 Discussions about Jitter, which spawned off as a sub-project of GNU epsilon,
 are always considered on topic on the GNU epsilon mailing list.  See
@@ -77,7 +77,7 @@ About the author
 ================
 
 GNU Jitter was written by Luca Saiu.  His personal web site, which includes
-contact information, is http://ageinghacker.net .
+contact information, is https://ageinghacker.net .
 
 
 About compact copyright notices

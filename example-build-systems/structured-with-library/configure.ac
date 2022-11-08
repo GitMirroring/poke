@@ -19,7 +19,7 @@
 ## GNU General Public License for more details.
 
 ## You should have received a copy of the GNU General Public License
-## along with GNU Jitter.  If not, see <http://www.gnu.org/licenses/>.
+## along with GNU Jitter.  If not, see <https://www.gnu.org/licenses/>.
 
 
 # Global initialization.
@@ -31,7 +31,7 @@ AC_INIT([Structured],
         [1.0],
         [bug-jitter@gnu.org],
         [structured-with-library],
-        [http://ageinghacker.net/jitter])
+        [https://www.gnu.org/software/jitter])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_HEADERS([config.h])
 

@@ -229,7 +229,7 @@ All the code examples contained in this manual are released into the
 public domain, up to the extent of the applicable law.
 @end quotation
 
-The author's personal web site @url{http://ageinghacker.net} contains
+The author's personal web site @url{https://ageinghacker.net} contains
 his contact information.
 @end copying
 
@@ -241,8 +241,8 @@ his contact information.
 @title GNU Jitter
 @subtitle a generator of efficient language virtual machines
 @subtitle for version @value{VERSION}, updated in @value{UPDATED-MONTH}
-@c @author Luca Saiu (@email{positron@@gnu.org}, @url{http://ageinghacker.net})
-@c @author Luca Saiu (@url{http://ageinghacker.net})
+@c @author Luca Saiu (@email{positron@@gnu.org}, @url{https://ageinghacker.net})
+@c @author Luca Saiu (@url{https://ageinghacker.net})
 @c @author Luca Saiu (@email{positron@@gnu.org})
 @author Luca Saiu
 @page
@@ -1321,7 +1321,7 @@ version 3 or later.
 @cindex Luca Saiu
 @cindex Saiu, Luca
 You can find my contact information on my personal web site
-@url{http://ageinghacker.net}.
+@url{https://ageinghacker.net}.
 
 @cindex email
 @cindex mailing list
@@ -4459,7 +4459,7 @@ Available at @url{http://www.bradrodriguez.com/papers/moving1.htm}.
 Luca Saiu, ``Scalable BIBOP garbage collection for parallel functional
 programs on multi-core machines'', draft,
 Laboratoire d’Informatique de l’Université Paris Nord, 2011.
-Available at @url{http://ageinghacker.net/publications/gc-draft--saiu--2011.pdf}.
+Available at @url{https://ageinghacker.net/publications/gc-draft--saiu--2011.pdf}.
 @*
 An ultimately unsuccessful attempt by the Author to compete with
 Bohem's garbage collector playing by the same rules: mark-sweep,

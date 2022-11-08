@@ -19,7 +19,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with GNU Jitter.  If not, see <http://www.gnu.org/licenses/>. */
+   along with GNU Jitter.  If not, see <https://www.gnu.org/licenses/>. */
 
 
 /* Preliminary C code.  This is not included in the generated header.

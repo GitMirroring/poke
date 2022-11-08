@@ -17,7 +17,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with GNU Jitter.  If not, see <http://www.gnu.org/licenses/>. */
+   along with GNU Jitter.  If not, see <https://www.gnu.org/licenses/>. */
 
 
 /* Generated file warning.
@@ -513,7 +513,7 @@ the_argp_program_version_hook (FILE * restrict stream, struct argp_state *s)
       "by the Free Software Foundation.  For more information see the\n"
       "file named COPYING.\n"
       "\n"
-      "Written by Luca Saiu <http://ageinghacker.net> (GNU Jitter, its\n"
+      "Written by Luca Saiu <https://ageinghacker.net> (GNU Jitter, its\n"
       "runtime, this driver program).\n");
 }
 void (*argp_program_version_hook) (FILE * restrict stream, struct argp_state *s)

@@ -1,4 +1,4 @@
-Copyright (C) 2017-2021 Luca Saiu
+Copyright (C) 2017-2022 Luca Saiu
 Written by Luca Saiu
 
 This file is part of GNU Jitter.
@@ -13,15 +13,15 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with
-this software.  If not, see <http://www.gnu.org/licenses/>.
+this software.  If not, see <https://www.gnu.org/licenses/>.
 
 
 Obtaining the latest version
 ============================
 
 GNU Jitter is developed on a public git repository, accessible by anybody over
-HTTP at
-  http://git.ageinghacker.net/jitter
+HTTPS at
+  https://git.ageinghacker.net/jitter
 , and over ssh by developers.
 
 

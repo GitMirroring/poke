@@ -17,7 +17,7 @@
 ## GNU General Public License for more details.
 
 ## You should have received a copy of the GNU General Public License
-## along with GNU Jitter.  If not, see <http://www.gnu.org/licenses/>.
+## along with GNU Jitter.  If not, see <https://www.gnu.org/licenses/>.
 
 
 ## This M4sh "library" serves to generate portable shell scripts, and is meant
@@ -156,7 +156,7 @@ Public License, version 3 or any later version published by the Free Software
 Foundation.  For more information see the file named COPYING in the source
 distribution.
 
-Written by Luca Saiu <http://ageinghacker.net>.
+Written by Luca Saiu <https://ageinghacker.net>.
 EOF
     exit 0
 }

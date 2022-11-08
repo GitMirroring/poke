@@ -16,7 +16,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with GNU Jitter.  If not, see <http://www.gnu.org/licenses/>. */
+   along with GNU Jitter.  If not, see <https://www.gnu.org/licenses/>. */
 
 
 /* Include the Gnulib header. */
@@ -258,7 +258,7 @@ jitterc_emit_initial_comments_to_stream (const struct jitterc_vm *vm,
       "   GNU General Public License for more details.\n"
       "\n"
       "   You should have received a copy of the GNU General Public License\n"
-      "   along with GNU Jitter.  If not, see <http://www.gnu.org/licenses/>.\n"
+      "   along with GNU Jitter.  If not, see <https://www.gnu.org/licenses/>.\n"
       "\n";
   const char *no_explicit_legal_notice_text
     = "This generated code also is also derived from a user VM specification.\n";

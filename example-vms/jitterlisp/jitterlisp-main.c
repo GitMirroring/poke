@@ -18,7 +18,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with GNU Jitter.  If not, see <http://www.gnu.org/licenses/>. */
+   along with GNU Jitter.  If not, see <https://www.gnu.org/licenses/>. */
 
 
 /* Include the Gnulib header. */
@@ -207,7 +207,7 @@ the_argp_program_version_hook (FILE * restrict stream, struct argp_state *s)
       "published by the Free Software Foundation.  For more information\n"
       "see the file named COPYING.\n"
       "\n"
-      "Written by Luca Saiu <http://ageinghacker.net>.\n");
+      "Written by Luca Saiu <https://ageinghacker.net>.\n");
 }
 void (*argp_program_version_hook) (FILE * restrict stream, struct argp_state *s)
   = the_argp_program_version_hook;

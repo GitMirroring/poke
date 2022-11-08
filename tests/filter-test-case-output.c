@@ -1,6 +1,7 @@
 /* Jitter: test-case output normaliser.
 
    Copyright (C) 2017, 2020 Luca Saiu
+   Updated in 2022 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -16,7 +17,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with GNU Jitter.  If not, see <http://www.gnu.org/licenses/>. */
+   along with GNU Jitter.  If not, see <https://www.gnu.org/licenses/>. */
 
 
 /* Rationale.
@@ -117,7 +118,7 @@ const char *argp_program_version
     "You may redistribute copies of Jitter under the terms of the GNU General Public\n"
     "License, version 3 or any later version published by the Free Software Foundation.\n"
     "For more information see the file named COPYING in the source distribution.\n\n"
-    "Written by Luca Saiu <http://ageinghacker.net>.";
+    "Written by Luca Saiu <https://ageinghacker.net>.";
 const char *argp_program_bug_address = PACKAGE_BUGREPORT;
 
 /* Forward declaration. */

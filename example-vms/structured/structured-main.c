@@ -17,7 +17,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with GNU Jitter.  If not, see <http://www.gnu.org/licenses/>. */
+   along with GNU Jitter.  If not, see <https://www.gnu.org/licenses/>. */
 
 
 #include <stdio.h>
@@ -206,7 +206,7 @@ structured_version (void)
           "by the Free Software Foundation.  For more information see the\n"
           "file named COPYING.\n"
           "\n"
-          "Written by Luca Saiu  <http://ageinghacker.net>.\n");
+          "Written by Luca Saiu  <https://ageinghacker.net>.\n");
 
   exit (EXIT_SUCCESS);
 }

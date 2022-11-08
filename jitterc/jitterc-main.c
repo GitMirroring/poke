@@ -17,7 +17,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with GNU Jitter.  If not, see <http://www.gnu.org/licenses/>. */
+   along with GNU Jitter.  If not, see <https://www.gnu.org/licenses/>. */
 
 
 /* Include the Gnulib header. */
@@ -183,7 +183,7 @@ const char *argp_program_version
     "by the Free Software Foundation.  For more information see the\n"
     "file named COPYING.\n"
     "\n"
-    "Written by Luca Saiu <http://ageinghacker.net>.";
+    "Written by Luca Saiu <https://ageinghacker.net>.";
 const char *argp_program_bug_address = "<" PACKAGE_BUGREPORT ">";
 
 /* Forward-declaration.  I like having argp defined here, before parse_opt which

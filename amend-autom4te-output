@@ -1,6 +1,6 @@
 # This is an -*- sh -*- script.  No shebang is necessary.
 # Copyright (C) 2020 Luca Saiu
-# Updated in 2021 by Luca Saiu
+# Updated in 2021 and 2022 by Luca Saiu
 # Written by Luca Saiu
 
 # This file is part of GNU Jitter.
@@ -16,7 +16,7 @@
 # GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with GNU Jitter.  If not, see <http://www.gnu.org/licenses/>.
+# along with GNU Jitter.  If not, see <https://www.gnu.org/licenses/>.
 
 
 # Introduction and rationale.
@@ -83,7 +83,7 @@ Public License, version 3 or any later version published by the Free Software
 Foundation.  For more information see the file named COPYING in the source
 distribution.
 
-Written by Luca Saiu <http://ageinghacker.net>.
+Written by Luca Saiu <https://ageinghacker.net>.
 EOF
     exit 0
   fi
