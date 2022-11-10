@@ -1,5 +1,12 @@
 2022-11-10  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pvm.jitter (pushios): Modified to not raise exceptions.
+	* libpoke/pkl-tab.y: Remove BUILTIN_GET_IOS.
+	* libpoke/pkl-rt.pk (get_ios): raise E_io with an explicative
+	message if pushios returns < 0.
+
+2022-11-10  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pvm.jitter (open): Modified to not raise exceptions.
 	* libpoke/pkl-ast.h (PKL_AST_BUILTIN_OPEN): Remove.
 	* libpoke/pkl-lex.l: Do not recognize __PKL_BUILTIN_OPEN__.

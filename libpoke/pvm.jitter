@@ -1750,20 +1750,19 @@ end
 # Instruction: pushios
 #
 # Push the descriptor of the current IO space on the stack, as a
-# signed integer.  If no IO space is currently opened, raise
-# PVM_E_NO_IOS.
+# signed integer.  If no IO space is currently opened, push a negative
+# number.
 #
 # Stack: ( -- INT )
-# Exceptions: PVM_E_NO_IOS
 
 instruction pushios ()
-  branching # because of PVM_RAISE_DIRECT
   code
     ios cur_io = ios_cur ();
 
     if (cur_io == NULL)
-       PVM_RAISE_DFL (PVM_E_NO_IOS);
-    JITTER_PUSH_STACK (PVM_MAKE_INT (ios_get_id (cur_io), 32));
+       JITTER_PUSH_STACK (PVM_MAKE_INT (-1, 32));
+    else
+       JITTER_PUSH_STACK (PVM_MAKE_INT (ios_get_id (cur_io), 32));
   end
 end
 

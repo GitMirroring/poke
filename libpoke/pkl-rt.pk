@@ -798,8 +798,11 @@ immutable fun _pkl_run_ios_set_hook = (int<32> ios) void:
 
 immutable fun get_ios = int<32>:
 {
-  return asm int<32>: ("pushios");
-  // XXX handle exceptions.
+  var ios = asm int<32>: ("pushios");
+
+  if (ios < 0)
+    raise E_no_ios;
+  return ios;
 }
 
 immutable fun set_ios = (int<32> ios) int<32>:
