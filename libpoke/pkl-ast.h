@@ -1608,7 +1608,6 @@ pkl_ast_node pkl_ast_make_incrdecr (pkl_ast ast,
 #define PKL_AST_BUILTIN_NONE 0
 #define PKL_AST_BUILTIN_PRINT 1
 #define PKL_AST_BUILTIN_SET_IOS 6
-#define PKL_AST_BUILTIN_OPEN 7
 #define PKL_AST_BUILTIN_CLOSE 8
 #define PKL_AST_BUILTIN_GETENV 10
 #define PKL_AST_BUILTIN_FORGET 11

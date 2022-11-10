@@ -728,9 +728,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_comp_stmt)
         case PKL_AST_BUILTIN_SET_IOS:
           RAS_MACRO_BUILTIN_SET_IOS;
           break;
-        case PKL_AST_BUILTIN_OPEN:
-          RAS_MACRO_BUILTIN_OPEN;
-          break;
         case PKL_AST_BUILTIN_CLOSE:
           RAS_MACRO_BUILTIN_CLOSE;
           break;

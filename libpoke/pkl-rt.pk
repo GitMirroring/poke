@@ -37,54 +37,6 @@ immutable fun set_endian = (int<32> endian) int<32>:
  return 1;
 }
 
-immutable fun get_ios = int<32>:
-{
-  return asm int<32>: ("pushios");
-}
-
-immutable fun set_ios = (int<32> ios) int<32>:
-  __PKL_BUILTIN_SET_IOS__;
-immutable fun open = (string handler, uint<64> flags = 0) int<32>:
-  __PKL_BUILTIN_OPEN__;
-immutable fun close = (int<32> ios) void:
-  __PKL_BUILTIN_CLOSE__;
-
-immutable fun iosize = (int<32> ios = get_ios) offset<uint<64>,8>:
-{
-  return asm offset<uint<64>,8>: ("iosize; nip" : ios);
-}
-
-immutable fun iohandler = (int<32> ios = get_ios) string:
-{
-  return asm string: ("iohandler; nip" : ios);
-}
-
-immutable fun ioflags = (int<32> ios = get_ios) uint<64>:
-{
-  return asm uint<64>: ("ioflags; nip" : ios);
-}
-
-immutable fun iobias = (int<32> ios = get_ios) offset<uint<64>,1>:
-{
-  return asm offset<uint<64>,1>: ("iogetb; nip" : ios);
-}
-
-immutable fun iolist = int<32>[]:
-{
-  var a = int<32>[] (),
-      n = asm uint<64>: ("ionum");
-
-  for (var i = 0UL; i < n; ++i)
-    apush (a, asm int<32>: ("ioref; nip" : i));
-  return a;
-}
-
-immutable fun iosetbias = (offset<uint<64>,1> bias = 0#1, int<32> ios = get_ios) void:
-{
-  asm ("iosetb; drop" :: bias, ios);
-}
-
-
 immutable fun getenv = (string name) string:
   __PKL_BUILTIN_GETENV__;
 
@@ -841,6 +793,84 @@ immutable fun _pkl_run_ios_set_hook = (int<32> ios) void:
   for (f in ios_set_hook)
     f (ios);
 }
+
+/* Poke programming interface to handle IO spaces.  */
+
+immutable fun get_ios = int<32>:
+{
+  return asm int<32>: ("pushios");
+  // XXX handle exceptions.
+}
+
+immutable fun set_ios = (int<32> ios) int<32>:
+  __PKL_BUILTIN_SET_IOS__;
+
+immutable fun iosize = (int<32> ios = get_ios) offset<uint<64>,8>:
+{
+  return asm offset<uint<64>,8>: ("iosize; nip" : ios);
+}
+
+immutable fun iohandler = (int<32> ios = get_ios) string:
+{
+  return asm string: ("iohandler; nip" : ios);
+}
+
+immutable fun ioflags = (int<32> ios = get_ios) uint<64>:
+{
+  return asm uint<64>: ("ioflags; nip" : ios);
+}
+
+immutable fun iobias = (int<32> ios = get_ios) offset<uint<64>,1>:
+{
+  return asm offset<uint<64>,1>: ("iogetb; nip" : ios);
+}
+
+immutable fun iolist = int<32>[]:
+{
+  var a = int<32>[] (),
+      n = asm uint<64>: ("ionum");
+
+  for (var i = 0UL; i < n; ++i)
+    apush (a, asm int<32>: ("ioref; nip" : i));
+  return a;
+}
+
+immutable fun iosetbias = (offset<uint<64>,1> bias = 0#1, int<32> ios = get_ios) void:
+{
+  asm ("iosetb; drop" :: bias, ios);
+}
+
+immutable fun open = (string handler, uint<64> flags = 0) int<32>:
+{
+  var set_ios_p = get_ios ?! E_no_ios;
+  var ios = asm int<32>: ("open" : handler, flags);
+
+  if (ios >= 0)
+    ;
+  else if (ios == -3)
+    raise Exception { code = EC_io_flags,
+                      msg = "insufficient permissions or device doesn't exist" };
+  else if (ios == -5)
+    raise E_eof;
+  else if (ios == -6)
+    raise Exception { code = EC_inval,
+                      msg = "invalid arguments passed to `open'" };
+  else if (ios == -7)
+    raise Exception { code = EC_io,
+                      msg = "IO space already opened" };
+  else
+    raise E_io;
+
+  _pkl_run_ios_open_hook (ios);
+  if (set_ios_p)
+    _pkl_run_ios_set_hook (ios);
+
+  return ios;
+}
+
+immutable fun close = (int<32> ios) void:
+  __PKL_BUILTIN_CLOSE__;
+
 
 /* Printer and formatter for values of type `any'.  */
 

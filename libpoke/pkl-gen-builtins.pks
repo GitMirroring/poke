@@ -38,42 +38,6 @@
         return
         .end
 
-;;; RAS_MACRO_BUILTIN_OPEN
-;;;
-;;; Body of the `open' compiler built-in with prototype
-;;; (string handler, uint<64> flags = 0) int<32>
-
-        .macro builtin_open
-        push PVM_E_NO_IOS
-        pushe .nopios
-        pushios                 ; PIOS
-        pope
-        ba .gotpios
-.nopios:
-        drop
-        push null               ; null
-.gotpios:
-        pushvar 0, 0            ; PIOS HANDLER
-        pushvar 0, 1            ; PIOS HANDLER FLAGS
-        open                    ; PIOS IOS
-        ;; First, call the ios_open hook.
-        dup
-        .call _pkl_run_ios_open_hook
-        drop                    ; PIOS IOS
-        ;; We also have to call the ios_set hook if opening
-        ;; this IO space will result in it being selected
-        ;; as the current space.  That will happen if there
-        ;; is no currently an IO space open.
-        swap                    ; IOS PIOS
-        bnn .done
-        drop                    ; IOS
-        dup                     ; IOS IOS
-        .call _pkl_run_ios_set_hook
-.done:
-        drop                    ; IOS
-        return
-        .end
-
 ;;; RAS_MACRO_BUILTIN_CLOSE
 ;;;
 ;;; Body of the `close' compiler built-in with prototype

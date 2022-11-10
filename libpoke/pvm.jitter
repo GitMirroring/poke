@@ -1664,26 +1664,27 @@ end
 # If there is no other IO space opened when this instruction is
 # executed, then the just opened space becomes the current IO space.
 #
-# If it is not possible to open the IO space according to the provided
-# flags, the PVM_E_IOFLAGS exception is raised.  If there is any other
-# error performing the operation, PVM_E_IO is raised.
+# If there is an error condition opening the IO space, a negative
+# number indicating the condition is pushed on the stack.  Note that
+# valid IOS descriptors are non-negative.  The possible error
+# conditions are:
+#
+# -1 for an unspecified error condition.
+# -3 invalid flags specified
+# -4 memory allocation failure.
+# -5 end of file
+# -6 invalid argument passed to open
+# -7 IO space already opened
+# -8 Insufficient permissions to perform the requested operation.
 #
 # Stack: ( STR ULONG -- INT )
-# Exceptions: PVM_E_IOFLAGS, PVM_E_IO
 
 instruction open ()
-  branching # because of PVM_RAISE_DIRECT
   code
      char *filename = PVM_VAL_STR (JITTER_UNDER_TOP_STACK ());
      uint64_t flags = PVM_VAL_ULONG (JITTER_TOP_STACK ());
 
      int ret = ios_open (filename, flags, 0);
-
-     if (ret == IOS_EFLAGS)
-       PVM_RAISE_DFL (PVM_E_IOFLAGS);
-     else if (ret < IOS_OK)
-       PVM_RAISE_DFL (PVM_E_IO);
-
      JITTER_DROP_STACK ();
      JITTER_TOP_STACK () = PVM_MAKE_INT (ret, 32);
   end
