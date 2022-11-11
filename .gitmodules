@@ -1,7 +1,7 @@
 [submodule "gnulib"]
 	path = gnulib
-	url = git://git.sv.gnu.org/gnulib
+	url = https://git.sv.gnu.org/git/gnulib.git
 [submodule "jitter"]
 	path = jitter
-	url = http://git.ageinghacker.net/jitter
+	url = https://git.ageinghacker.net/jitter
 	ignore = dirty

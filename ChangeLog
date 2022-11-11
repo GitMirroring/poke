@@ -1,3 +1,7 @@
+2022-11-11  Arsen Arsenović  <arsen@aarsen.me>
+
+	* .gitmodules: Upgrade to HTTPS URLs.
+
 2022-11-11  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* testsuite/poke.map/maps-unions-17.pk: New test.
