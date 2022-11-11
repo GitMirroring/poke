@@ -1,3 +1,8 @@
+2022-11-11  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* etc/vim/syntax/poke.vim (keyword): Add `computed' to the list
+	of keywords.
+
 2022-11-10  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pvm.jitter (pushios): Modified to not raise exceptions.

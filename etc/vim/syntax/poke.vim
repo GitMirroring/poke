@@ -24,7 +24,7 @@ if exists('b:current_syntax')
 endif
 
 " Poke statement
-syn keyword pokeStatement assert break continue return
+syn keyword pokeStatement assert break continue return computed
 syn keyword pokeStatement type unit fun method nextgroup=pokeFunction skipwhite
 syn keyword pokeStatement var nextgroup=pokeVar skipWhite
 
