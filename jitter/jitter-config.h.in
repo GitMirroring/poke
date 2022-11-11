@@ -212,6 +212,15 @@
 #undef JITTER_HAVE__SC_LEVEL4_CACHE_SIZE
 
 
+/* System-specific features.
+ * ************************************************************************** */
+
+/* Some RISC-V systems provide a function __riscv_flush_icache for invalidating
+   icache lines.  When that function is not available we fall back to the
+   generic GCC builtin. */
+#undef JITTER_HAVE___RISCV_FLUSH_ICACHE
+
+
 /* External library availability.
  * ************************************************************************** */
 

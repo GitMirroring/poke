@@ -1438,6 +1438,27 @@ if test "x$ac_cv_have_section_note_gnu_stack_in_arm_syntax" = "xyes"; then
 fi
 
 
+# Check for system-specific headers and functions.
+################################################################
+
+# A system-specific header declaring functions for invalidating icache lines is
+# available on several system but not all; for example I have it only on some of
+# my cross RISC-V configurations.  This might depend on glibc versions.
+AC_CHECK_HEADERS([sys/cachectl.h], [jitter_have_sys_cachectl_h=yes])
+AC_CHECK_FUNCS([__riscv_flush_icache])
+if test "x$ac_cv_func___riscv_flush_icache" = 'xyes'; then
+  jitter_have___riscv_flush_icache=yes
+fi
+
+# Define a feature macro on systems providing __riscv_flush_icache along with
+# its declaration.
+if test "x$jitter_have_sys_cachectl_h" = 'xyes' \
+   && test "x$jitter_have___riscv_flush_icache" = 'xyes'; then
+    AC_DEFINE_UNQUOTED([JITTER_HAVE___RISCV_FLUSH_ICACHE], [1],
+                       [Define iff __riscv_flush_icache is available])
+fi
+
+
 # Check for specific functions or "declarations" in the C library.
 ##################################################################
 

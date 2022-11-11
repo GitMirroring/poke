@@ -24,7 +24,12 @@
 #include <assert.h>
 #include <string.h>
 
-#include <sys/cachectl.h>  /* for __riscv_flush_icache */
+#if defined (JITTER_HAVE___RISCV_FLUSH_ICACHE)
+# include <sys/cachectl.h>  /* for __riscv_flush_icache */
+#else
+  /* Nothing serious: the generic GCC builtin __builtin___clear_cache should be
+     sufficient. */
+#endif
 
 #include <jitter/jitter-fatal.h>
 
@@ -125,7 +130,11 @@ struct jitter_riscv_b_type_instruction
 void
 jitter_invalidate_icache (char *from, size_t byte_no)
 {
+#if defined (JITTER_HAVE___RISCV_FLUSH_ICACHE)
   __riscv_flush_icache (from, from + byte_no, 0);
+#else
+  /* Do nothing: __builtin___clear_cache is called elsewhere. */
+#endif
 }
 
 /* Return the distance in bytes, from the pointed instruction, to be patched,
