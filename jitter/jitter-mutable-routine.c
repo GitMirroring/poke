@@ -631,6 +631,8 @@ jitter_mutable_routine_append_symbolic_label_parameter_safe
 
   /* ...And now we can in fact use the non-symbolic variant. */
   jitter_label label = jitter_symbolic_label (p, label_name);
+  if (label_pointer != NULL)
+    * label_pointer = label;
   return jitter_mutable_routine_append_label_parameter_safe (p, label);
 }
 
