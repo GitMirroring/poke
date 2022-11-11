@@ -834,10 +834,6 @@ gl_INIT
 AM_PATH_LISPDIR
 
 
-# Check for headers.
-################################################################
-
-
 # Check for C language features.
 ################################################################
 
@@ -1252,7 +1248,6 @@ echo "$ac_cv_have_returns_nonnull")
 
 # Many people like to compile with -Werror.  This is a way of redefining
 # attributes not supported by the compiler so that they expand to nothing.
-
 
 
 # Check for GCC builtins.
