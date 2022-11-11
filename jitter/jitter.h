@@ -102,7 +102,6 @@
       && (JITTER_WORD_CHAR_NO == JITTER_SIZEOF_LONG_LONG)
   typedef long long  jitter_int;
   typedef unsigned long long  jitter_uint;
-#else
 # define JITTER_PRIi     "lli"
 # define JITTER_PRIu     "llu"
 # define JITTER_PRIo     "llo"
@@ -110,6 +109,7 @@
 # define JITTER_INT_MIN  LLONG_MIN
 # define JITTER_INT_MAX  LLONG_MAX
 # define JITTER_UINT_MAX ULLONG_MAX
+#else
 # error "can't find a word-sized integer type."
 #endif // #if    (JITTER_SIZEOF_VOID_P == ...)
 
