@@ -1,5 +1,12 @@
 2022-11-11  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* testsuite/poke.map/maps-unions-17.pk: New test.
+	* testsuite/poke.map/maps-unions-18.pk: Likewise.
+	* testsuite/poke.map/maps-unions-19.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+
+2022-11-11  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-gen.pks (struct_field_extractor): Keep the right
 	lexical environment when subpassing results in a constraint
 	exception.

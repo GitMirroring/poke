@@ -545,6 +545,9 @@ EXTRA_DIST = \
   poke.map/maps-unions-14.pk \
   poke.map/maps-unions-15.pk \
   poke.map/maps-unions-16.pk \
+  poke.map/maps-unions-17.pk \
+  poke.map/maps-unions-18.pk \
+  poke.map/maps-unions-19.pk \
   poke.map/maps-unions-method-1.pk \
   poke.map/maps-unions-method-2.pk \
   poke.map/maps-unions-method-3.pk \
