@@ -22,7 +22,7 @@
 
 
         # The initial value loaded in %r1 is the number of outer-loop iterations.
-        mov 1, %r1
+        mov 10, %r1
         b $condition
 $reinit:
         # We want to iterate 2**31 times on both 32-bit and 64-bit
