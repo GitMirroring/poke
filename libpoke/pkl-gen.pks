@@ -864,9 +864,36 @@
    .c }
    .c else if (PKL_AST_TYPE_CODE (@field_type) == PKL_TYPE_STRUCT)
    .c {
+        push PVM_E_CONSTRAINT
+        pushe .constraint_error
+        push PVM_E_EOF
+        pushe .eof
         .c PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_DEINTEGRATOR);
         .c PKL_PASS_SUBPASS (@field_type);
         .c PKL_GEN_POP_CONTEXT;
+        pope
+        pope
+        ba .val_ok
+.eof:
+        ;; Set some location info in the exception's message
+   .c pkl_ast_node field_name = PKL_AST_STRUCT_TYPE_FIELD_NAME (@field);
+   .c if (field_name)
+   .c {
+        push "msg"
+        push "while mapping field "
+        .e field_location_str @struct_type, @field
+        sconc
+        nip2
+        sset
+   .c }
+        pope
+.constraint_error:
+        ;; This is to keep the right lexical environment in
+        ;; case the subpass above raises an exception.
+        push null
+        regvar $constrainterrorval
+        raise
+.val_ok:
    .c }
         dup                             ; STRICT BOFF VALC VALC
         regvar $val                     ; STRICT BOFF VALC
