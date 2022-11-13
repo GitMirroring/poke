@@ -1,6 +1,6 @@
 /* Jitter: defective VM instructions.
 
-   Copyright (C) 2018, 2021 Luca Saiu
+   Copyright (C) 2018, 2021, 2022 Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -30,6 +30,16 @@
 #include <jitter/jitter-print.h>
 #include <jitter/jitter-vm.h>
 
+
+/* Debugging macros for this compilation unit.
+ * ************************************************************************** */
+
+/* Uncomment this line to have a verbose log of defects at initialisation
+   time. */
+// #define JITTER_DEBUG_DEFECTS  1
+
+
+
 
 /* Defect printing, defined unconditionally.
  * ************************************************************************** */
@@ -137,7 +147,7 @@ jitter_print_specialized_instruction_name (jitter_print_context cx,
   jitter_defect_begin_class (cx, vm, class_name_suffix);
   jitter_print_char_star (cx, specialized_instruction_name);
   jitter_print_end_class (cx);
-#if 0
+#if defined (JITTER_DEBUG_DEFECTS)
   jitter_print_char_star (cx, " ");
   jitter_defect_begin_class (cx, vm, class_name_suffix);
   jitter_print_long (cx, 10, (long) specialized_instruction_opcode);
@@ -264,8 +274,8 @@ jitter_fill_replacement_table
     if (__builtin_expect (descs [i].displacement != correct_displacement,
                           false))
       {
-#if 0
-        fprintf (stderr, "DEBUG: displacement is %li instaed of %li\n", (long) descs [i].displacement, (long) correct_displacement);
+#if defined (JITTER_DEBUG_DEFECTS)
+        fprintf (stderr, "DEBUG: %s: displacement is %li instaed of %li\n", vm->specialized_instruction_names [descs [i].specialized_opcode], (long) descs [i].displacement, (long) correct_displacement);
 #endif
         bool call_related
           = specialized_instruction_call_relateds [descs[i].specialized_opcode];
@@ -286,11 +296,17 @@ jitter_fill_replacement_table
            by adding its opcode to defective_specialized_instructions. */
         defective_specialized_instructions [defective_no - 1]
           = descs [i].specialized_opcode;
-#if 0
+#if defined (JITTER_DEBUG_DEFECTS)
         fprintf (stderr,
                  "The specialized instruction %s is defective.\n",
                  vm->specialized_instruction_names
                     [descs [i].specialized_opcode]);
+#endif
+      }
+  else
+      {
+#if defined (JITTER_DEBUG_DEFECTS)
+        fprintf (stderr, "DEBUG: %s: correct displacement %li\n", vm->specialized_instruction_names [descs [i].specialized_opcode], (long) descs [i].displacement);
 #endif
       }
 
@@ -304,12 +320,12 @@ jitter_fill_replacement_table
      then set them all to be replaced. */
   if (call_related_defective_no > 0)
     {
-#if 0
+#if defined (JITTER_DEBUG_DEFECTS)
       fprintf (stderr, "At least one call-related instruction is defective.  Marking them all as to be replaced:\n");
 #endif
       for (i = 0; i < call_related_specialized_instruction_id_no; i ++)
         {
-#if 0
+#if defined (JITTER_DEBUG_DEFECTS)
           fprintf (stderr, "* Marking %s as to be replaced.\n", vm->specialized_instruction_names [call_related_specialized_instruction_ids [i]]);
 #endif
           replacement_table [call_related_specialized_instruction_ids [i]] = true;
@@ -391,7 +407,7 @@ jitter_fill_replacement_table
     = call_related_defective_no;
   vm->replacement_specialized_instruction_no = replacement_no;
 
-#if 0
+#if defined (JITTER_DEBUG_DEFECTS)
   fprintf (stderr, "%i defects, %i defective instructions, %i replacements\n",
            defect_no, defective_no, replacement_no);
 #endif
