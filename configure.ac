@@ -2601,6 +2601,18 @@ for dispatch in $jitter_enabled_dispatches; do
   AC_MSG_NOTICE([generating flags for dispatch "$dispatch"...])
   JITTER_FLAGS_CFLAGS=""
 
+  # clang accepts some GCC optimisation options it does not actually use but
+  # then warns about them in a distractive way, by defaut.  Disable such
+  # warnings if the warning-disabling option is understood.  The same holds for
+  # GNU C attributes that clang accepts but then warns about.
+  # It would make sense in theory to apply these opions to any compiler; but
+  # since the focus is on GCC, I prefer not to ignore warnings *by GCC*.
+  if test "x$JITTER_HAVE_ACTUAL_GCC" = 'xno'; then
+    jitter_check_cc_options JITTER_FLAGS_CFLAGS -Wno-ignored-optimization-argument
+    jitter_check_cc_options JITTER_FLAGS_CFLAGS -Wno-unknown-attributes
+    jitter_check_cc_options JITTER_FLAGS_CFLAGS -Wno-ignored-attributes
+  fi
+
   # Clang cannot seem to compile very large generated files with computed goto
   # using -O2 without looping forever, or maybe terminating after a ridiculously
   # long time; override -O2 with -O1 in that case.  This is specifically a
