@@ -5371,19 +5371,12 @@ end
 # Instruction: map
 #
 # Given a value, mark it as as mapped.  If the value can't be
-# mapped then PVM_E_INVAL is raised.
+# mapped then this is a no-operation.
 #
 # Stack: ( VAL -- VAL )
-# Exceptions: PVM_E_INVAL
 
 instruction map ()
-  branching # because of PVM_RAISE_DIRECT
   code
-    pvm_val val = JITTER_TOP_STACK ();
-
-    if (!(PVM_IS_ARR (val) || PVM_IS_SCT (val)))
-      PVM_RAISE (PVM_E_INVAL, pvm_literal_notmappable, PVM_E_INVAL_ESTATUS);
-
     PVM_VAL_SET_MAPPED_P (JITTER_TOP_STACK (), 1);
   end
 end
