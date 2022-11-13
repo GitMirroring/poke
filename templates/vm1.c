@@ -29,6 +29,8 @@
 
 
 
+#include <jitter/jitter-early-header.h>
+
 /* When we are using Gnulib the standard header files included below will in
    fact be Gnulib replacements; make sure that the Gnulib macros are
    recognised.

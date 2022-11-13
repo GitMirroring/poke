@@ -4512,6 +4512,8 @@ static void
 jitterc_emit_executor (const struct jitterc_vm *vm)
 {
   FILE *f = jitterc_fopen_a_and_remember_basename (vm, "vm2.c");
+  EMIT("#include <jitter/jitter-early-header.h>\n\n");
+
   EMIT("//#include <config.h>\n\n");
 
   EMIT("#include <stdbool.h>\n");

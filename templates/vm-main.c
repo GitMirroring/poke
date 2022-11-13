@@ -1,7 +1,6 @@
 /* VM default frontend for vmprefix VM.
 
-   Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021 Luca Saiu
-   Updated in 2022 by Luca Saiu
+   Copyright (C) 2016, 2017, 2018, 2019, 2020, 2021, 2022 Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -32,6 +31,8 @@
 
 /* Include headers.
  * ************************************************************************** */
+
+#include <jitter/jitter-early-header.h>
 
 #ifdef HAVE_CONFIG_H
 /* Use Gnulib, if available; on GNU everything should work even without it.

@@ -19,6 +19,8 @@
    along with GNU Jitter.  If not, see <https://www.gnu.org/licenses/>. */
 
 
+#include <jitter/jitter-early-header.h>
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <unistd.h>

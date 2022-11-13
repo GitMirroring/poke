@@ -39,6 +39,8 @@
 /* This is the main VM header to use from hand-written code.
  * ************************************************************************** */
 
+#include <jitter/jitter-early-header.h>
+
 #include <stdio.h>
 #include <stdbool.h>
 

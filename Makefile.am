@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in .
-# Copyright (C) 2016-2020 Luca Saiu
-# Updated in 2021 and 2022 by Luca Saiu
+# Copyright (C) 2016-2020, 2022 Luca Saiu
+# Updated in 2021 by Luca Saiu
 # Written by Luca Saiu
 
 # This file is part of GNU Jitter.
@@ -348,6 +348,7 @@ jitterinclude_HEADERS += \
   jitter/jitter-arithmetic.h \
   jitter/jitter-bitwise.h \
   jitter/jitter-cpp.h \
+  jitter/jitter-early-header.h \
   jitter/jitter-fatal.h \
   jitter/jitter-malloc.h \
   jitter/jitter-dynamic-buffer.h \
@@ -581,6 +582,7 @@ EXTRA_DIST += $(JITTER_TEMPLATES)
 # variable; see the comments in "Native-code libjitter sources for supported
 # architectures" below.
 SOURCES_FOR_LIBJITTER = \
+  jitter/jitter-early-header.h \
   jitter/jitter.c jitter/jitter.h \
   jitter/jitter-c-compiler-version.h \
   jitter/jitter-instruction.c jitter/jitter-instruction.h \
