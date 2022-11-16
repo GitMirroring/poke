@@ -818,6 +818,39 @@ immutable fun _pkl_dispatch_tv = (int<32> e, any[] a) void:
   pk_tracer_dispatch.table[e] (e, a);
 }
 
+/* Given the bit-offset of a field in an integral struct, relative to
+   the beginning of the IO space, the width of the field in bits, the
+   bit-offset of the containing struct in the IO space, the total
+   width in bits of the integral struct, return the offset of the
+   beginning of the field within the stored integral struct relative
+   to the beginning of the stored struct, taking the current
+   endianness into account.  */
+
+immutable fun _pkl_integral_offset = (uint<64> field_offset,
+                                      uint<64> field_width,
+                                      uint<64> struct_offset,
+                                      uint<64> struct_width) uint<64>:
+{
+  var field_reloffset = field_offset - struct_offset;
+  if (asm int<32>: ("pushend") == ENDIAN_LITTLE)
+    field_reloffset = struct_width - field_reloffset - field_width;
+  return struct_offset + field_reloffset;
+}
+
+/* Adjust the given FIELD_OFFSET in STRUCT_WIDTH according to
+   the current endianness.  */
+
+fun _pkl_adjust_integral_offset = (uint<64> field_offset,
+                                   uint<64> field_width,
+                                   uint<64> struct_offset,
+                                   uint<64> struct_width) uint<64>:
+{
+  var field_reloffset = field_offset - struct_offset;
+  if (asm int<32>: ("pushend") == ENDIAN_LITTLE)
+    field_reloffset = struct_width - (field_reloffset - field_width);
+  return struct_offset + field_reloffset;
+}
+
 /* Closures which are useful for creating array bounders.  */
 
 type _Pkl_ClsN = ()any;

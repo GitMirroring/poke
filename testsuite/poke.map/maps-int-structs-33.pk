@@ -1,0 +1,28 @@
+/* { dg-do run } */
+/* { dg-data {c*} {0x10 0x20 0x30 0x40  0x50 0x60 0x70 0x80   0x90 0xa0 0xb0 0xc0} } */
+
+type BTF_Int =
+  struct uint<32>
+  {
+    uint<4> x;
+    struct uint<8>
+    {
+      uint<4> a;
+      uint<4> b;
+    } foo;
+    uint<4> y;
+    struct uint<16>
+    {
+      uint<8> c;
+      uint<8> d;
+    } bar;
+  };
+
+/* { dg-command {.set endian big} } */
+/* { dg-command {.set obase 16} } */
+/* { dg-command {var b = BTF_Int @ 1#B} } */
+/* { dg-command {b} } */
+/* { dg-output "BTF_Int \{x=0x2UN,foo=struct \{a=0x0UN,b=0x3UN\},y=0x0UN,bar=struct \{c=0x40UB,d=0x50UB\}\}" } */
+/* { dg-command {b.bar.c = 0xff} } */
+/* { dg-command {uint<8> @ 3#B} } */
+/* { dg-output "\n0xffUB" } */

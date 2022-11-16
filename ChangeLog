@@ -1,3 +1,12 @@
+2023-07-23  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-rt.pk (_pkl_integral_offset): New function.
+	* libpoke/pkl-gen.pks (struct_mapper): Use struct_field_mapper
+	instead of struct_field_extractor for nested integral structs and
+	unions.
+	* testsuite/poke.map/maps-int-structs-33.pk: New test.
+	* testsuite/poke.map/maps-int-struct-34.pk: Likewise.
+
 2023-07-20  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* doc/poke.texi (Scripts): Add missing `open' to example.

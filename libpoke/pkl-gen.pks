@@ -979,6 +979,9 @@
    .c }
    .c else if (PKL_AST_TYPE_CODE (@field_type) == PKL_TYPE_STRUCT)
    .c {
+        ;; This is currently not used for structs within integral
+        ;; structs.  See struct_mapper.
+   .c   assert (0);
         push PVM_E_CONSTRAINT
         pushe .constraint_error
         push PVM_E_EOF
@@ -1245,10 +1248,11 @@
         ;; handlers are installed.
         dup                      ; ...[EBOFF ENAME EVAL] [NEBOFF] NEBOFF
  .c   }
- .c   if (PKL_AST_TYPE_S_ITYPE (@type_struct))
+      .let @field_type = PKL_AST_STRUCT_TYPE_FIELD_TYPE (@field);
+ .c   if (PKL_AST_TYPE_S_ITYPE (@type_struct)
+ .c       && PKL_AST_TYPE_CODE (PKL_AST_STRUCT_TYPE_FIELD_TYPE (@field)) != PKL_TYPE_STRUCT)
  .c   {
         .let @struct_itype = PKL_AST_TYPE_S_ITYPE (@type_struct);
-        .let @field_type = PKL_AST_STRUCT_TYPE_FIELD_TYPE (@field);
         .let #ivalw = pvm_make_ulong (PKL_AST_TYPE_I_SIZE (@struct_itype), 64);
  .c     size_t field_type_size
  .c        = (PKL_AST_TYPE_CODE (@field_type) == PKL_TYPE_OFFSET
@@ -1274,10 +1278,42 @@
         swap                     ; ...[EBOFF ENAME EVAL] [NEBOFF] STRICT NEBOFF
         pushvar $ios             ; ...[EBOFF ENAME EVAL] [NEBOFF] STRICT NEBOFF IOS
         swap                     ; ...[EBOFF ENAME EVAL] [NEBOFF] STRICT IOS NEBOFF
+        ;; When mapping a struct or union field inside an integral struct
+        ;; we need to adjust the effective offset of the field
+        ;; to take into account the endianness.
+  .c   if (PKL_AST_TYPE_S_ITYPE (@type_struct))
+  .c   {
+  .c    assert (PKL_AST_TYPE_CODE (@field_type) == PKL_TYPE_STRUCT);
+        .let @struct_itype = PKL_AST_TYPE_S_ITYPE (@type_struct)
+        .let @field_itype = PKL_AST_TYPE_S_ITYPE (@field_type)
+  .c    assert (@struct_itype && @field_itype);
+        .let #ivalw = pvm_make_ulong (PKL_AST_TYPE_I_SIZE (@struct_itype), 64)
+        .let #fieldw = pvm_make_ulong (PKL_AST_TYPE_I_SIZE (@field_itype), 64)
+        push #fieldw            ; ... NEBOFF FIELDW
+        pushvar $boff           ; ... NEBOFF FIELDW STRUCTO
+        push #ivalw             ; ... NEBOFF FIELDW STRUCTO IVALW
+        .call _pkl_integral_offset
+                                ; ... NEBOFF
+  .c   }
         pushvar $boff            ; ...[EBOFF ENAME EVAL] [NEBOFF] STRICT IOS NEBOFF OFF
         ; ( STRICT IOS BOFF SBOFF -- BOFF STR VAL NBOFF )
         .e struct_field_mapper @type_struct, @field
                                 ; ...[NEBOFF] [EBOFF ENAME EVAL] NEBOFF
+        ;; If this is an integral struct, adjust the new bit-offset,
+        ;; which depends on endianness.
+  .c   if (PKL_AST_TYPE_S_ITYPE (@type_struct)
+  .c       && PKL_AST_TYPE_CODE (@field_type) == PKL_TYPE_STRUCT)
+  .c   {
+        .let @struct_itype = PKL_AST_TYPE_S_ITYPE (@type_struct)
+        .let #ivalw = pvm_make_ulong (PKL_AST_TYPE_I_SIZE (@struct_itype), 64)
+        .let @field_itype = PKL_AST_TYPE_S_ITYPE (@field_type)
+        .let #fieldw = pvm_make_ulong (PKL_AST_TYPE_I_SIZE (@field_itype), 64)
+        push #fieldw                      ; ... NEBOFF FIELDW
+        pushvar $boff                     ; ... NEBOFF FIELDW STRUCTO
+        push #ivalw                       ; ... NEBOFF FIELDW STRUCTO IVALW
+        .call _pkl_adjust_integral_offset ; ... ADJUSTED_NEBOFF
+
+  .c   }
 .omitted_field:
  .c   }
  .c   if (PKL_AST_TYPE_S_UNION_P (@type_struct))
