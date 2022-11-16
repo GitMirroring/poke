@@ -1,0 +1,4 @@
+/* { dg-do compile } */
+
+var a =
+  0o_; /* { dg-error "" } */

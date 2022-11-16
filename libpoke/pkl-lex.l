@@ -191,7 +191,7 @@ CHAR                   '(.|\\[ntr\\]|\\[0-7]|\\[0-7][0-7]|\\[0-7][0-7][0-7])'
 STRING             \"([^"\\]|\\(.|\n))*\"
 HEXCST                   0[xX][0-9a-fA-F][0-9a-fA-F_]*
 BINCST                   0[bB][01][01_]*
-OCTCST             0[oO][0-7_]*
+OCTCST             0[oO][0-7][0-7_]*
 DECCST             [0-9][0-9_]*
 IS                   ((u|U)|(u|U)?(l|L|b|B|h|H|n|N)|(l|L|b|B|h|H|n|N)(u|U))
 

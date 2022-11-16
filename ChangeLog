@@ -1,3 +1,11 @@
+2022-11-16  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-lex.l: Require at least one digit in octal
+	constants.
+	* testsuite/poke.pkl/integers-diag-3.pk: New test.
+	* testsuite/poke.pkl/integers-diag-4.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+
 2022-11-13  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pvm.jitter: Change `map' instruction to not raise
