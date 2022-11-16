@@ -1,0 +1,276 @@
+/* redoxfs.pk - RedoxFS file system of Redox OS.  */
+
+/* Copyright (C) 2020 The poke authors */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* RedoxFS
+ * File-system of RedoxOS (a Unix-like operating system written in Rust)
+ *
+ * The file-system has a header (type `RedoxFS_Header`). Header has a
+ * pointer to root node. Nodes are represented by type `RedoxFS_Node`.
+ * Data is stored in `extents` of each node. Extents are represented
+ * by type `RedoxFS_Extents`. Each node has 238 extents. If a node needs
+ * more extents, it will use the extents of the `next` node.
+ * Each node can be a file or directory or symlink.
+ * Extents of file nodes are point to the actual data. And extents of
+ * directory nodes are point to child nodes.
+ *
+ * https://gitlab.redox-os.org/redox-os/redoxfs/
+ */
+
+/* set_endian(ENDIAN_LITTLE); */
+
+load time;
+load uuid;
+
+/* Block size */
+unit RedoxFS_BLKSZ = 4096UL * 8;  /* `4096*8` bits */
+
+type RedoxFS_Extent =
+  struct
+  {
+    offset<uint64,RedoxFS_BLKSZ> block;
+    offset<uint64,B> length;
+
+    method is_empty_p = int:
+      {
+        return block == 0#B && length == 0#B;  /* CHKME block ?= 0#B */
+      }
+    method get_data = uint8[]:
+      {
+        return uint8[length] @ block;
+      }
+  };
+
+type RedoxFS_Time =
+  struct
+  {
+    uint64 sec;
+    uint32 nsec;
+  };
+
+var RedoxFS_MODE_TYPE    = 0xF000UH,
+    RedoxFS_MODE_FILE    = 0x8000UH,
+    RedoxFS_MODE_DIR     = 0x4000UH,
+    RedoxFS_MODE_SYMLINK = 0xA000UH;
+
+var RedoxFS_MODE_PERM  = 0x0FFFUH,
+    RedoxFS_MODE_EXEC  = 0o1UH,
+    RedoxFS_MODE_WRITE = 0o2UH,
+    RedoxFS_MODE_READ  = 0o4UH;
+
+/* Callback for extent visitor */
+type RedoxFS_EVisitor = (RedoxFS_Extent) void;
+
+/* A file/folder node */
+type RedoxFS_Node =
+  struct
+  {
+    uint16 mode;
+    uint32 uid;
+    uint32 gid;
+    RedoxFS_Time ctime;
+    RedoxFS_Time mtime;
+    RedoxFS_Time atime;
+    uint8[226] name;
+    offset<uint64,RedoxFS_BLKSZ> parent;
+    offset<uint64,RedoxFS_BLKSZ> next;
+    RedoxFS_Extent[#RedoxFS_BLKSZ - 288#B] extents;
+
+    method is_file_p = int:
+      {
+        return (mode & RedoxFS_MODE_FILE) == RedoxFS_MODE_FILE;
+      }
+    method is_dir_p = int:
+      {
+        return (mode & RedoxFS_MODE_DIR) == RedoxFS_MODE_DIR;
+      }
+    method is_symlink_p = int:
+      {
+        return (mode & RedoxFS_MODE_SYMLINK) == RedoxFS_MODE_SYMLINK;
+      }
+    method get_name = string:
+      {
+        return catos (name);
+      }
+    method visit_extents = (RedoxFS_EVisitor v) uint64:
+      {
+        var c = 0;  /* counter */
+
+        for (e in extents where !e.is_empty_p)
+          {
+            ++c;
+            v (e);
+          }
+        return c;
+      }
+    /* Node pretty-printer
+     *
+     * Prints the contents of a `RedoxFS_Node` in a readable fashion.
+     * To increase readability, prints the non-empty extents before
+     * the other fields.
+     */
+    method _print = void:
+      {
+        print ("#<\n  extents = [\n");
+
+        var f = 0UL;             /* first */
+        var l = extents'length;  /* last  */
+
+        while (f != l) {
+          var e = extents[f];
+
+          if (!e.is_empty_p)
+            printf ("    .[%u64d]=%v\n", f, e);
+          ++f;
+        }
+
+        var mtype =
+          is_symlink_p ? "FILE | SYM"
+          : is_dir_p ? "DIR"
+          : is_file_p ? "FILE"
+          : "?";  /* This is for zero blocks */
+
+        printf (
+          "  ],\n  mode=%s | %u12o,\n  uid=%u32d,\n  gid=%u32d,\n  ctime=%v (",
+          mtype, mode & RedoxFS_MODE_PERM, uid, gid, ctime);
+        ptime (ctime.sec);
+        printf ("),\n  mtime=%v (", mtime);
+        ptime (mtime.sec);
+        printf ("),\n  atime=%v (", atime);
+        ptime (atime.sec);
+        printf ("),\n  name=%s,\n", get_name);
+        printf ("  parent=%v,\n  next=%v,\n>\n", parent, next);
+      }
+  };
+
+/* Visit all extents of a node, including the nodes pointed to by `next`
+ * field.
+ *
+ * Note that this function cannot be implemented as a method of
+ * `RedoxFS_Node`; because we need to map the `RedoxFS_Node` and we cannot
+ * map an incomplete type.
+ */
+fun redoxfs_visit_extents = (RedoxFS_Node n, RedoxFS_EVisitor v) uint64:
+  {
+    var counter = n.visit_extents (v);
+
+    while (n.next != 0#B)
+      {
+        n = RedoxFS_Node @ n.next;
+        counter += n.visit_extents (v);
+      }
+    return counter;
+  }
+
+type RedoxFS_Header =
+  struct
+  {
+    string signature = "RedoxFS";
+    uint64 version = 4UL;
+
+    /* Disk ID, a 128-bit unique identifier */
+    UUID uuid;
+
+    offset<uint64,B> size;
+
+    offset<uint64,RedoxFS_BLKSZ> root;  /* Block of root node */
+    offset<uint64,RedoxFS_BLKSZ> free;  /* Block of free space node */
+
+    /* Padding */
+    uint8[#RedoxFS_BLKSZ - 56#B];
+
+    method _print = void:
+      {
+        printf "#<\n  signature=%s,\n  version=%u64d,\n  uuid=%v,\n  \
+size=%v,\n  root=%v,\n  free=%v\n>", signature, version, uuid, size, root, free;
+      }
+  };
+
+assert (#RedoxFS_Node == #RedoxFS_BLKSZ);
+assert ((RedoxFS_Header {})'size == #RedoxFS_BLKSZ);
+
+/* Callback for file-system walker
+ *
+ * FTYPE  'f' for files, 'd' for directories, 's' for symlinks
+ * NAME   Name of the entity
+ * PATH   Path of the parent directory
+ * ES     Array of extents corresponding to the entity
+ */
+type RedoxFS_Visitor = (char /*ftype*/,
+                        string /*name*/,
+                        string /*path*/,
+                        RedoxFS_Extent[] /*es*/)void;
+
+type RedoxFS_Filesystem =
+  struct
+  {
+    RedoxFS_Header header;
+    RedoxFS_Node root @ header.root;
+
+    /* File-system walker
+     *
+     * `redoxfs_walk` traverses the file-system hierarchy and call the visitor
+     * callback function for each entity (file, directory or symlink).
+     */
+    method walk = (RedoxFS_Visitor v, RedoxFS_Node n = root) void:
+      {
+        fun nothing = (RedoxFS_Extent e) void: {};
+        fun filev = (RedoxFS_Node n, string curdir) void:
+          {
+            /* TODO(mnabipoor) Measure performance of array construction */
+            var es_count = redoxfs_visit_extents (n, nothing);
+            var es = RedoxFS_Extent[es_count] ();
+            var i = 0UL;
+            fun cp = (RedoxFS_Extent e) void: { es[i++] = e; };
+
+            redoxfs_visit_extents (n, cp);
+            v('f', n.get_name, curdir, es);
+          }
+        fun visit = (RedoxFS_Node n, string curdir) void:
+          {
+            if (n.is_symlink_p)
+              v('s', catos (n.extents[0].get_data), curdir, RedoxFS_Extent[] ());
+            else if (n.is_dir_p)
+              {
+                var name = n.get_name;
+                var path = (curdir == "/" ? "" :  curdir) + "/" + name;
+                var es_count = redoxfs_visit_extents (n, nothing);
+                var es = RedoxFS_Extent[es_count] ();
+                var i = 0UL;
+                fun ev = (RedoxFS_Extent e) void:
+                  {
+                    es[i++] = e;
+                    visit (RedoxFS_Node @ e.block, path);
+                  };
+
+                redoxfs_visit_extents (n, ev);
+                v('d', name, curdir, es);
+              }
+            else if (n.is_file_p)
+              filev (n, curdir);
+          }
+        var nxt = n.next;
+
+        visit (n, "/");
+        while (nxt != 0#B)
+          {
+            n = RedoxFS_Node @ nxt;
+            nxt = n.next;
+            visit (n, "/");
+          }
+      }
+  };

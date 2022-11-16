@@ -606,6 +606,9 @@ EXTRA_DIST = \
   poke.pickles/id3v1-test.pk \
   poke.pickles/rgb24-test.pk \
   poke.pickles/elf-test.pk \
+  poke.pickles/uuid-test.pk \
+  poke.pickles/redoxfs-test.pk \
+  poke.pickles/pcap-test.pk \
   poke.pkl/pkl.exp \
   poke.pkl/postincr-1.pk \
   poke.pkl/postincr-2.pk \

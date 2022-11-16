@@ -1,3 +1,14 @@
+2022-11-16  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* pickles/uuid.pk: New pickle.
+	* pickles/redoxfs.pk: Likewise.
+	* pickles/pcap.pk: Likewise.
+	* testsuite/poke.pickles/uuid-test.pk: New test.
+	* testsuite/poke.pickles/pcap-test.pk: Likewise.
+	* testsuite/poke.pickles/redoxfs-test.pk: Likewise.
+	* pickles/Makefile.am (dist_pickles_DATA): Update.
+	* testsuite/Makefile.am (EXTRA_DIST): Likewise.
+
 2022-11-16  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-lex.l: Require at least one digit in octal

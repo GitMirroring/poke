@@ -1,0 +1,88 @@
+/* pcap.pk - Pickle for libpcap capture file format.  */
+
+/* Copyright (C) 2022 The poke authors.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* https://wiki.wireshark.org/Development/LibpcapFileFormat */
+
+/* Global Header */
+type PCAP_Header =
+  struct
+  {
+    uint<8>[4] magic :
+      get_endian == ENDIAN_BIG ? magic in [[0xa1UB, 0xb2UB, 0xc3UB, 0xd4UB],
+                                           [0xa1UB, 0xb2UB, 0x3cUB, 0xd4UB]]
+                               : magic in [[0xd4UB, 0xc3UB, 0xb2UB, 0xa1UB],
+                                           [0xd4UB, 0x3cUB, 0xb2UB, 0xa1UB]];
+
+    uint16 version_major == 2;
+    uint16 version_minor == 4;
+    int32  thiszone; /* GMT to local correction */
+    uint32 sigfigs;  /* accuracy of timestamps */
+    uint32 snaplen;  /* max length of captured packets, in octets */
+    uint32 network;  /* data link type */
+
+    /* Nano-second resolution file? */
+    method is_nsec_p = int:
+      {
+        return magic in [
+          [0xa1UB, 0xb2UB, 0x3cUB, 0xd4UB],
+          [0xd4UB, 0x3cUB, 0xb2UB, 0xa1UB],
+        ];
+      }
+  };
+
+/* Packet (Record) Header */
+type PCAP_PacketHeader =
+  struct /* (int nsec_p) */
+  {
+    uint32 ts_sec;   /* timestamp seconds */
+    uint32 ts_usec;  /* microseconds (or nanoseconds if `nsec_p`) */
+    offset<uint32,B> incl_len : /* number of octets of packet saved in file */
+      incl_len > 0#B;
+    offset<uint32,B> orig_len : /* actual length of packet */
+      incl_len <= orig_len;
+
+    method is_sliced_p = int:
+      {
+        return incl_len != orig_len;
+      }
+  };
+
+type PCAP_Packet =
+  struct
+  {
+    PCAP_PacketHeader header;
+
+    var body_offset = OFFSET;
+    var body_length = header.incl_len;
+
+    byte[0] @ body_offset + body_length; /* End-of-packet marker */
+
+    method get_body_offset = offset<uint32,B>: { return body_offset; }
+    method get_body_length = offset<uint32,B>: { return body_length; }
+    method get_body = byte[]:
+      {
+        return byte[body_length] @ body_offset;
+      }
+  };
+
+type PCAP =
+  struct
+  {
+    PCAP_Header header;
+    PCAP_Packet[] packets;
+  };

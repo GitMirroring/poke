@@ -1,0 +1,85 @@
+/* uuid-test.pk - Tests for the UUID pickle.  */
+
+/* Copyright (C) 2022 The poke authors.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+load pktest;
+load uuid;
+
+// b183fa14-6477-11ed-81ce-0242ac120002
+var DATA_UUIDv1_1 = [
+  0xb1UB, 0x83UB, 0xfaUB, 0x14UB, 0x64UB, 0x77UB, 0x11UB, 0xedUB,
+  0x81UB, 0xceUB, 0x02UB, 0x42UB, 0xacUB, 0x12UB, 0x00UB, 0x02UB,
+];
+
+assert (DATA_UUIDv1_1'size == 128#b);
+
+var tests = [
+  PkTest {
+    name = "UUID version 1 (check both endians)",
+    func = lambda (string name) void:
+      {
+        with_temp_ios
+          :endian ENDIAN_BIG
+          :do lambda void:
+            {
+              byte[128#b] @ 0#B = DATA_UUIDv1_1;
+
+              var uuid = UUID @ 0#B;
+
+              assert (uuid.version == 1);
+
+              assert (uuid.time_low == 0xb183fa14U);
+              assert (uuid.time_mid == 0x6477UH);
+              assert (uuid.time_hi == 0x1ed);
+
+              // Seconds since 15 Oct. 1582 times 100
+              // 2022-11-14 23:54:36.045570.0 UTC
+              assert (uuid.time == 0x1ed6477b183fa14);
+              assert (uuid.time == 138877628760455700);
+
+              assert (uuid.clock_seq == 462);
+              assert (uuid.node == 0x02_42_ac_12_00_02);
+            };
+
+        with_temp_ios
+          :endian ENDIAN_LITTLE
+          :do lambda void:
+            {
+              byte[128#b] @ 0#B = DATA_UUIDv1_1;
+
+              var uuid = UUID @ 0#B;
+
+              assert (uuid.version == 1);
+
+              assert (uuid.time_low == 0xb183fa14U);
+              assert (uuid.time_mid == 0x6477UH);
+              assert (uuid.time_hi == 0x1ed);
+
+              // Seconds since 15 Oct. 1582 times 100
+              // 2022-11-14 23:54:36.045570.0 UTC
+              assert (uuid.time == 0x1ed6477b183fa14);
+              assert (uuid.time == 138877628760455700);
+
+              assert (uuid.clock_seq == 462);
+              assert (uuid.node == 0x02_42_ac_12_00_02);
+            };
+      },
+  },
+];
+
+var ok = pktest_run (tests);
+exit (ok ? 0 : 1);
