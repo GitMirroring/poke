@@ -1,3 +1,9 @@
+2022-11-21  Arsen Arsenović  <arsen@aarsen.me>
+
+	* etc/hacking.org (Continuous Integration): Document the
+	Sourceware buildbot.
+	* HACKING: Regenerate.
+
 2022-11-16  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* pickles/uuid.pk: New pickle.

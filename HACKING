@@ -1,9 +1,9 @@
-		       __________________________
+                       __________________________
 
-			GNU POKE - HACKING NOTES
+                        GNU POKE - HACKING NOTES
 
-			    The poke hackers
-		       __________________________
+                            The poke hackers
+                       __________________________
 
 
 Table of Contents
@@ -498,6 +498,17 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   | https://gitlab.com/gnu-poke/ci-distcheck/pipelines
   | https://gitlab.com/gnu-poke/ci-distcheck/-/jobs?scope=finished
   `----
+
+
+  CI is also currently in the process of being deployed on the
+  Sourceware buildbot at <https://builder.sourceware.org/>.  The sources
+  for this are in the Sourceware `builder.git' repository at
+  <https://sourceware.org/git/?p=builder.git>. The README file contains
+  a good reference of how to hack on the build machinery.
+
+  Parts relevant to poke are named `/.*gnupoke.*/' in the Sourceware
+  buildbot configuration.  Please see the repository linked above for
+  details.
 
 
 4 Coding Style and Conventions
