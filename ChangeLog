@@ -1,3 +1,8 @@
+2022-11-23  Arsen Arsenović  <arsen@aarsen.me>
+
+	* doc/Makefile.am (poke.text): Make dependencies match other
+	Texinfo targets.
+
 2022-11-23  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-lex.l (build_overflow_error_msg): Use PRIu64 instead

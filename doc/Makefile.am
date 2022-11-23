@@ -93,7 +93,7 @@ html-local:
 app_DATA += poke.text
 EXTRA_DIST += poke.text
 
-poke.text: $(srcdir)/poke.texi
+poke.text: $(srcdir)/poke.texi $(srcdir)/version.texi $(poke_TEXINFOS)
 	$(MAKEINFO) --plaintext $(srcdir)/poke.texi > poke.text-tmp
 	mv poke.text-tmp $(srcdir)/poke.text
 
