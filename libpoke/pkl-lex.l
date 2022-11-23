@@ -176,7 +176,7 @@ build_overflow_error_msg (uint64_t value, int width)
                         : "");
 
   asprintf (&msg,
-            "signed overflow\ntry: %luU%s as int<%d>",
+            "signed overflow\ntry: %" PRIu64 "U%s as int<%d>",
             value, suffix, width);
   return msg;
 }
