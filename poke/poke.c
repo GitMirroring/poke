@@ -158,6 +158,9 @@ static const struct option long_options[] =
   {NULL, 0, NULL, 0},
 };
 
+/* String passed to getopt_long.  */
+static const char *const poke_getopt_string = "ql:c:s:L:";
+
 static void
 print_help (void)
 {
@@ -351,7 +354,7 @@ parse_args_1 (int argc, char *argv[])
 
   while ((ret = getopt_long (argc,
                              argv,
-                             "ql:c:s:L:",
+                             poke_getopt_string,
                              long_options,
                              NULL)) != -1)
     {
@@ -379,7 +382,25 @@ parse_args_1 (int argc, char *argv[])
         case NO_INIT_FILE_ARG:
           poke_load_init_file = 0;
           break;
+        case '?':
+          exit (EXIT_FAILURE);
+          break;
+        case QUIET_ARG:
+        case LOAD_ARG:
+        case LOAD_AND_EXIT_ARG:
+        case CMD_ARG:
+        case SOURCE_ARG:
+        case COLOR_ARG:
+        case STYLE_ARG:
+        case STYLE_BRIGHT_ARG:
+        case STYLE_DARK_ARG:
+        case 'c':
+        case 'l':
+        case 's':
+          /* Handled in parse_args_2.  */
+          break;
         default:
+          assert (!"Did you forget to add a CASE for a flag in parse_args_1?");
           break;
         }
     }
@@ -394,7 +415,7 @@ parse_args_2 (int argc, char *argv[])
   optind = 1;
   while ((ret = getopt_long (argc,
                              argv,
-                             "ql:c:s:L:",
+                             poke_getopt_string,
                              long_options,
                              NULL)) != -1)
     {
@@ -464,6 +485,13 @@ parse_args_2 (int argc, char *argv[])
         case NO_INIT_FILE_ARG:
           /* These are handled in parse_args_1.  */
           break;
+        case HELP_ARG:
+        case VERSION_ARG:
+          /* Handled in parse_args_1.  */
+          break;
+        case LOAD_AND_EXIT_ARG:
+          /* Handled in set_script_args.  */
+          break;
           /* libtextstyle arguments are handled in pk-term.c, not
              here.   */
         case COLOR_ARG:
@@ -471,8 +499,11 @@ parse_args_2 (int argc, char *argv[])
         case STYLE_DARK_ARG:
         case STYLE_BRIGHT_ARG:
           break;
-        default:
+        case '?':
           goto exit_failure;
+        default:
+          assert (!"Did you forget to add a case for a flag in parse_args_2?");
+          break;
         }
     }
 

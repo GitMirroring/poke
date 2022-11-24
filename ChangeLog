@@ -1,3 +1,12 @@
+2022-11-24  Arsen Arsenović  <arsen@aarsen.me>
+
+	* poke/poke.c (poke_getopt_string): Extract the getopt string, to
+	avoid repetition.
+	(parse_args_1): Use common poke_getopt_string, assert out on
+	unhandled option, and exit on unknown option.
+	(parse_args_2): Use common poke_getopt_string, assert out on
+	unhandled option.
+
 2022-11-24  Agathe Porte  <floss@microjoe.org>
 
 	* doc/poke.texi: fix sbm image bytes in example.
