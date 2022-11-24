@@ -3374,7 +3374,7 @@ The final header looks like:
 @example
 (poke) dump :size 16#B
 76543210  0011 2233 4455 6677 8899 aabb ccdd eeff  0123456789ABCDEF
-00000000: 5342 4d05 0800 0000 0000 0000 0000 0000  SBM.............
+00000000: 5342 4d05 0700 0000 0000 0000 0000 0000  SBM.............
 @end example
 
 @subsection Poking the Pixels

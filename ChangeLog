@@ -1,3 +1,7 @@
+2022-11-24  Agathe Porte  <floss@microjoe.org>
+
+	* doc/poke.texi: fix sbm image bytes in example.
+
 2022-11-23  Arsen Arsenović  <arsen@aarsen.me>
 
 	* doc/Makefile.am (poke.text): Make dependencies match other
