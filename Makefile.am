@@ -116,8 +116,8 @@ endif # JITTER_SUBPACKAGE
 # overridden with a command-line option) to access template files but the prefix
 # is only known very late, at make time.
 CPPFLAGS_FOR_PATHS = \
-  -DJITTER_FLAGDIR=$(flagdir) \
-  -DJITTER_TEMPLATEDIR=$(templatedir)
+  -DJITTER_FLAGDIR=\"$(flagdir)\" \
+  -DJITTER_TEMPLATEDIR=\"$(templatedir)\"
 
 # FIXME: I probably should do the same for headers.
 # jitterincludedir = $(includedir)/$(PACKAGE)/$(VERSION)

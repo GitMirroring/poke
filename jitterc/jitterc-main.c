@@ -48,7 +48,7 @@
    The macro definition is convenient as it is, without surrounding parens,
    since it can be directly concatenated as a string literal. */
 #define JITTERC_DEFAULT_FLAG_DIRECTORY  \
-  JITTER_STRINGIFY(JITTER_FLAGDIR)
+  JITTER_FLAGDIR
 
 /* The directory where templates are.  Of course this is only useful if the
    package is installed, but this default can be changed with the command-line
@@ -56,7 +56,7 @@
    The macro definition is convenient as it is, without surrounding parens,
    since it can be directly concatenated as a string literal. */
 #define JITTERC_DEFAULT_TEMPLATE_DIRECTORY  \
-  JITTER_STRINGIFY(JITTER_TEMPLATEDIR)
+  JITTER_TEMPLATEDIR
 
 /* All the information encoded by the user in the command line. */
 struct jitterc_command_line
