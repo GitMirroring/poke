@@ -600,6 +600,7 @@ EXTRA_DIST = \
   poke.pickles/openpgp-test.pk \
   poke.pickles/pe-test.pk \
   poke.pickles/riscv-test.pk \
+  poke.pickles/sframe-test.pk \
   poke.pickles/ustar-test.pk \
   poke.pickles/color-test.pk \
   poke.pickles/mbr-test.pk \

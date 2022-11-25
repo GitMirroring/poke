@@ -1,0 +1,234 @@
+/* sframe.pk - SFrame implementation for GNU poke.  */
+
+/* Copyright (C) 2022 Free Software Foundation.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* SFrame format.
+
+   SFrame format is the Simple Frame format, which is can be used to represent
+   information needed for vanilla backtracing.  SFrame format keeps track of
+   minimal necessary information needed for backtracing:
+     - Canonical Frame Address (CFA)
+     - Frame Pointer (FP)
+     - Return Address (RA)
+
+   More details about the format are available in the upstream binutils-gdb
+   repository in :
+     - include/sframe.h header file, and
+     - libsframe/doc/sframe-spec.texi.
+*/
+
+load elf;
+
+/* SFrame format versions.  */
+var SFRAME_VERSION_1 = 1;
+/* SFrame magic number.  */
+var SFRAME_MAGIC = 0xdee2 as uint<16>;
+
+/* Various flags for SFrame.  */
+
+/* Function Descriptor Entries are sorted on PC.  */
+var SFRAME_F_FDE_SORTED = 0x1;
+/* Frame-pointer based unwinding.  */
+var SFRAME_F_FRAME_POINTER = 0x2;
+
+var SFRAME_CFA_FIXED_FP_INVALID = 0;
+var SFRAME_CFA_FIXED_RA_INVALID = 0;
+
+type SFrame_Preamble =
+  struct
+  {
+    uint<16> sfp_magic : ((sfp_magic == SFRAME_MAGIC)
+                           || (sfp_magic == 0xe2de && set_endian (!get_endian)))
+                          = SFRAME_MAGIC;
+
+    byte sfp_version = SFRAME_VERSION_1;
+    byte sfp_flags;
+  };
+
+/* SFrame FRE types.  */
+var SFRAME_FRE_TYPE_ADDR1 = 0 as uint<4>,
+    SFRAME_FRE_TYPE_ADDR2 = 1 as uint<4>,
+    SFRAME_FRE_TYPE_ADDR4 = 2 as uint<4>;
+
+/* SFrame FDE types.
+   The SFrame format has two possible representations for functions.  The
+   choice of which type to use is made according to the instruction patterns
+   in the relevant program stub.  */
+
+/* Unwinders perform a (PC >= FRE_START_ADDR) to look up a matching FRE.  */
+var SFRAME_FDE_TYPE_PCINC = 0 as uint<1>,
+/* Unwinders perform a (PC & FRE_START_ADDR_AS_MASK >= FRE_START_ADDR_AS_MASK)
+   to look up a matching FRE.  */
+    SFRAME_FDE_TYPE_PCMASK = 1 as uint<1>;
+
+/* SFrame FDE Function Info.  */
+type SFrame_Func_Info =
+  struct
+  {
+    uint<3> unused;
+    uint<1> fde_type : fde_type in [SFRAME_FDE_TYPE_PCINC,
+                                    SFRAME_FDE_TYPE_PCMASK];
+    uint<4> fre_type : fre_type in [SFRAME_FRE_TYPE_ADDR1,
+                                    SFRAME_FRE_TYPE_ADDR2,
+                                    SFRAME_FRE_TYPE_ADDR4];
+};
+
+/* Supported ABIs/Arch.  */
+var SFRAME_ABI_AARCH64_ENDIAN_BIG = 1 as byte, /* AARCH64 little endian.  */
+    SFRAME_ABI_AARCH64_ENDIAN_LITTLE = 2 as byte, /* AARCH64 big endian.  */
+    SFRAME_ABI_AMD64_ENDIAN_LITTLE = 3 as byte; /* AMD64 little endian.  */
+
+/* Currently auxilliary header is not being generated and used.  The pickle will
+   need updates when the SFrame format uses a non-zero number of bytes in
+   the auxilliary header.  */
+var SFRAME_HEADER_AUXHDR_LEN_ZERO = 0 as uint<8>;
+
+type SFrame_Header =
+  struct
+  {
+    SFrame_Preamble sfh_preamble;
+    byte sfh_abi_arch : sfh_abi_arch in [SFRAME_ABI_AARCH64_ENDIAN_BIG,
+                                         SFRAME_ABI_AARCH64_ENDIAN_LITTLE,
+                                         SFRAME_ABI_AMD64_ENDIAN_LITTLE];
+    int<8> sfh_cfa_fixed_bp_offset;
+    int<8> sfh_cfa_fixed_ra_offset;
+    uint<8> sfh_auxhdr_len = SFRAME_HEADER_AUXHDR_LEN_ZERO;
+    uint<32> sfh_num_fdes;
+    uint<32> sfh_num_fres;
+    offset<uint32,B> sfh_frelen;
+
+    offset<uint32,B> sfh_fdeoff;
+    offset<uint32,B> sfh_freoff;
+  };
+
+var SFRAME_FRE_OFFSET_1B = 0 as uint<2>,
+    SFRAME_FRE_OFFSET_2B = 1 as uint<2>,
+    SFRAME_FRE_OFFSET_4B = 2 as uint<2>;
+
+/* In SFrame version 1, a max of 3 distinct offsets are supported.  */
+var SFRAME_FRE_OFFSET_NUM = 3 as uint<2>;
+
+/* A SFRAME FRE can be SP or BP based.  */
+var SFRAME_BASE_REG_BP = 0 as uint<1>,
+    SFRAME_BASE_REG_SP = 1 as uint<1>;
+
+type SFrame_FRE_Info =
+  struct byte
+  {
+    uint<1> unused;
+    uint<2> offset_size : offset_size in [SFRAME_FRE_OFFSET_1B,
+                                          SFRAME_FRE_OFFSET_2B,
+                                          SFRAME_FRE_OFFSET_4B];
+    uint<4> offset_num : offset_num <= SFRAME_FRE_OFFSET_NUM;
+    uint<1> base_reg_id : base_reg_id in [SFRAME_BASE_REG_BP,
+                                          SFRAME_BASE_REG_SP];
+  };
+
+/* SFRAME FRE with 8-bit start address offsets.  */
+type SFrame_FRE_addr1 =
+  struct
+  {
+    uint<8> fre_start_address;
+    SFrame_FRE_Info fre_info;
+    union
+    {
+      int<8>[fre_info.offset_num] offsets_1B
+         : fre_info.offset_size == SFRAME_FRE_OFFSET_1B;
+      int<16>[fre_info.offset_num] offsets_2B
+         : fre_info.offset_size == SFRAME_FRE_OFFSET_2B;
+      int<32>[fre_info.offset_num] offsets_4B
+         : fre_info.offset_size == SFRAME_FRE_OFFSET_4B;
+    } offsets;
+  };
+
+/* SFRAME FRE with 16-bit start address offsets.  */
+type SFrame_FRE_addr2 =
+  struct
+  {
+    uint<16> fre_start_address;
+    SFrame_FRE_Info fre_info;
+    union
+    {
+      int<8>[fre_info.offset_num] offsets_1B
+         : fre_info.offset_size == SFRAME_FRE_OFFSET_1B;
+      int<16>[fre_info.offset_num] offsets_2B
+         : fre_info.offset_size == SFRAME_FRE_OFFSET_2B;
+      int<32>[fre_info.offset_num] offsets_4B
+         : fre_info.offset_size == SFRAME_FRE_OFFSET_4B;
+    } offsets;
+  };
+
+/* SFRAME FRE with 32-bit start address offsets.  */
+type SFrame_FRE_addr4=
+  struct
+  {
+    uint<32> fre_start_address;
+    SFrame_FRE_Info fre_info;
+    union
+    {
+      int<8>[fre_info.offset_num] offsets_1B
+         : fre_info.offset_size == SFRAME_FRE_OFFSET_1B;
+      int<16>[fre_info.offset_num] offsets_2B
+         : fre_info.offset_size == SFRAME_FRE_OFFSET_2B;
+      int<32>[fre_info.offset_num] offsets_4B
+         : fre_info.offset_size == SFRAME_FRE_OFFSET_4B;
+    } offsets;
+  };
+
+
+type SFrame_Func_Desc_Entry =
+  struct
+  {
+    uint<32> func_start_address;
+    uint<32> func_size;
+    offset<uint32,B> func_freoff;
+    uint<32> func_num_fres;
+    SFrame_Func_Info func_info;
+
+    method get_sframe_fre_addr1s
+      = (offset<uint32,B> hdr_freoff) SFrame_FRE_addr1[]:
+      {
+        var off = hdr_freoff + func_freoff;
+        return SFrame_FRE_addr1[func_num_fres] @ off;
+      }
+    method get_sframe_fre_addr2s
+      = (offset<uint32,B> hdr_freoff) SFrame_FRE_addr2[]:
+      {
+        var off = hdr_freoff + func_freoff;
+        return SFrame_FRE_addr2[func_num_fres] @ off;
+      }
+    method get_sframe_fre_addr4s
+      = (offset<uint32,B> hdr_freoff) SFrame_FRE_addr4[]:
+      {
+        var off = hdr_freoff + func_freoff;
+        return SFrame_FRE_addr4[func_num_fres] @ off;
+      }
+  };
+
+type SFrame_section =
+  struct
+  {
+    SFrame_Header header;
+
+    var func_index_off = OFFSET + header.sfh_fdeoff;
+    var func_index_size = header.sfh_freoff - header.sfh_fdeoff;
+    var fre_off = OFFSET + header.sfh_freoff;
+    var fre_size = header.sfh_frelen;
+
+    SFrame_Func_Desc_Entry[func_index_size] funcidx @ func_index_off;
+    byte[fre_size] fres_data_bytes @ fre_off;
+  };

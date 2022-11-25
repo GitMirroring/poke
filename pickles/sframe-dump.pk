@@ -1,4 +1,4 @@
-/* ctf-frame-dump.pk - Utilities for dumping CTF Frame information.  */
+/* sframe-dump.pk - Utilities for dumping SFrame information.  */
 
 /* Copyright (C) 2022 Free Software Foundation.  */
 
@@ -16,49 +16,49 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* This file contains routines for dumping out CTF Frame information.  */
+/* This file contains routines for dumping out SFrame information.  */
 
-load "ctf-frame.pk";
+load sframe;
 
-/* Dump each FDE in the CTF Frame section.  */
+/* Dump each FDE in the SFrame section.  */
 
-fun ctf_frame_dump_fdes = (CTF_Frame_section ctf_frame_arg) void:
+fun sframe_dump_fdes = (SFrame_section sframe_arg) void:
 {
   var i = 0;
-  for (index in ctf_frame_arg.funcidx)
+  for (index in sframe_arg.funcidx)
     printf ("%u32d:   %v \n", i++, index);
 }
 
-/* Dump CTF Frame FREs.  */
+/* Dump SFrame FREs.  */
 
-fun ctf_frame_dump_fres = (CTF_Frame_section ctf_frame_arg) void:
+fun sframe_dump_fres = (SFrame_section sframe_arg) void:
 {
   var i = 0;
 
-  for (func in ctf_frame_arg.funcidx)
+  for (func in sframe_arg.funcidx)
     {
       /* Get the FRE type.  */
       var fre_type = func.func_info.fre_type;
       var num_fres = func.func_num_fres;
-      var fre_off = ctf_frame_arg.header'size + ctf_frame_arg.header.cth_freoff;
+      var fre_off = sframe_arg.header'size + sframe_arg.header.sfh_freoff;
 
-      if (fre_type == CTF_FRAME_ROW_ENTRY_TYPE_ADDR1)
+      if (fre_type == SFRAME_FRE_TYPE_ADDR1)
         {
-          var fres = func.get_fres_addr1s (fre_off);
+          var fres = func.get_sframe_fre_addr1s (fre_off);
           /* print fres.  */
           for (fre in fres)
             printf ("%u32d:   %v \n", i++, fre);
         }
-      else if (fre_type == CTF_FRAME_ROW_ENTRY_TYPE_ADDR2)
+      else if (fre_type == SFRAME_FRE_TYPE_ADDR2)
         {
-          var fres = func.get_fres_addr2s (fre_off);
+          var fres = func.get_sframe_fre_addr2s (fre_off);
           /* print fres.  */
           for (fre in fres)
             printf ("%u32d:   %v \n", i++, fre);
         }
-      else if (fre_type == CTF_FRAME_ROW_ENTRY_TYPE_ADDR4)
+      else if (fre_type == SFRAME_FRE_TYPE_ADDR4)
         {
-          var fres = func.get_fres_addr4s (fre_off);
+          var fres = func.get_sframe_fre_addr4s (fre_off);
           /* print fres.  */
           for (fre in fres)
             printf ("%u32d:   %v \n", i++, fre);

@@ -1,0 +1,62 @@
+/* sframe-test.pk - Tests for the SFrame pickle.  */
+
+/* Copyright (C) 2022 Free Software Foundation.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+load pktest;
+load sframe;
+
+var data = open ("*data*");
+
+/* Generated using:
+ * static int cnt;
+ * int foo() { return ++cnt; }
+ * int main() { return foo(); }
+ *
+ * gcc -O0 -Wa,--gsframe -c
+ */
+uint<8>[92] @ data : 0#B = [
+  0xe2UB, 0xdeUB, 0x01UB, 0x00UB, 0x03UB, 0x00UB, 0xf8UB, 0x00UB,
+  0x02UB, 0x00UB, 0x00UB, 0x00UB, 0x08UB, 0x00UB, 0x00UB, 0x00UB,
+  0x1eUB, 0x00UB, 0x00UB, 0x00UB, 0x00UB, 0x00UB, 0x00UB, 0x00UB,
+  0x22UB, 0x00UB, 0x00UB, 0x00UB, 0x00UB, 0x00UB, 0x00UB, 0x00UB,
+  0x1bUB, 0x00UB, 0x00UB, 0x00UB, 0x00UB, 0x00UB, 0x00UB, 0x00UB,
+  0x04UB, 0x00UB, 0x00UB, 0x00UB, 0x00UB, 0x00UB, 0x00UB, 0x00UB,
+  0x00UB, 0x10UB, 0x00UB, 0x00UB, 0x00UB, 0x0fUB, 0x00UB, 0x00UB,
+  0x00UB, 0x04UB, 0x00UB, 0x00UB, 0x00UB, 0x00UB, 0x00UB, 0x03UB,
+  0x08UB, 0x01UB, 0x05UB, 0x10UB, 0xf0UB, 0x04UB, 0x04UB, 0x10UB,
+  0xf0UB, 0x1aUB, 0x05UB, 0x08UB, 0xf0UB, 0x00UB, 0x03UB, 0x08UB,
+  0x01UB, 0x05UB, 0x10UB, 0xf0UB, 0x04UB, 0x04UB, 0x10UB, 0xf0UB,
+  0x0fUB, 0x05UB, 0x08UB, 0xf0UB
+];
+
+var tests = [
+  PkTest {
+    name = "read sframe header",
+    func = lambda (string name) void:
+      {
+        var hdr = SFrame_Header @ data : 0#B;
+
+        assert (hdr.sfh_preamble.sfp_magic == 0xdee2);
+        assert (hdr.sfh_abi_arch == SFRAME_ABI_AMD64_ENDIAN_LITTLE);
+        assert (hdr.sfh_num_fdes == 2);
+        assert (hdr.sfh_num_fres == 8);
+      },
+  },
+];
+
+var ok = pktest_run (tests);
+exit (ok ? 0 : 1);
