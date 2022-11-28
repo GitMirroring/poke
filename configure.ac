@@ -1783,6 +1783,18 @@ architecture including $default_host_cpu, in order to avoid surprising the \
 GNU poke friends with mysterious errors.  I still have bugs to fix.])
 jitter_supports_minimal_threading=no
 
+# Temporarily, as of 2022-11, disable no-threding on powerpc32.  There is a poke
+# but needing to be investigated (everything seems to work on the Jitter side,
+# as far as I can tell).
+if test "x$default_host_cpu" = 'xppc' \
+   || test "x$default_host_cpu" = 'xpowerpc' \
+   || test "x$default_host_cpu" = 'xppcle' \
+   || test "x$default_host_cpu" = 'xpowerpcle'; then
+  jitter_supports_no_threading='no'
+  AC_MSG_WARN([temporarily disabling no-threading on PowerPC32 because of a
+problem in poke, to be investigated])
+fi
+
 dnl # GNU poke, which is currently the main Jitter client, uses far branches which
 dnl # are only well supported on two architectures where the instruction encodings
 dnl # is generous enough.  It is a pity, but I am temporarily disabling this until
