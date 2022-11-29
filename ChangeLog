@@ -1,3 +1,9 @@
+2022-11-29  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* testsuite/lib/poke-pk.exp (tap_execute): Only keep the filename
+	and parent directory name for test files to be consistent with
+	the rest.
+
 2022-11-27  Arsen Arsenović  <arsen@aarsen.me>
 
 	* bootstrap: Sync with Gnulib.
