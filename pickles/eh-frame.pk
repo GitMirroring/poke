@@ -1,0 +1,157 @@
+/* eh-frame.pk - EH_FRAME imlementation for GNU poke.
+                 Unwind Information.  */
+
+/* Copyright (C) 2022 Free Software Foundation.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+load leb128;
+load "dwarf-frame.pk";
+
+/* EH Frame Common Information Entry (CIE)
+
+   There is at least one CIE in every non-empty .eh_frame
+   section.  */
+
+type EH_Frame_CIE =
+  struct
+  {
+    /* Size of the CIE structure, not including the 'length' field
+       itself.  */
+    offset<uint<32>,B> length : length != 0#B;
+
+    /* Constant used to distinguish CIEs from FDEs.  */
+    uint<32> cie_id == 0;
+
+    /* This version number is specific to the call frame information
+       and is independent of the DWARF version number.  */
+    uint<8> version : ((dwarf_version == 2 && version == 1)
+                       || (dwarf_version == 3 && version == 3)
+                       || (dwarf_version == 4 && version == 4)
+                       || version == 1 /* GAS generates version 1.  */);
+
+    /* UTF-8 string that identifies the augmentation to this CIE or to
+       the FDEs that use it.  If there is no augmentation this value
+       is a zero byte.  */
+    string augmentation;
+
+    union
+    {
+      struct
+      {
+        /* Size of a target address in this CIE and any FDEs that use it.
+           If a CU exists for this frame, its address size must match the
+           address size here.  */
+        offset<uint<8>,B> address_size;
+
+        /* Size of a segment selector in this CIE and any FDEs that use
+           it.  */
+        offset<uint<8>,B> segment_size;
+      } d : version >= 4;
+      struct {} nothing;
+    } sz;
+
+    /* A constant that is factored out of all advance location
+       instructions.  */
+    ULEB128 code_alignment_factor;
+
+    /* A constant that is factored out of certain offset
+       instructions.  */
+    LEB128 data_alignment_factor;
+
+    union
+      {
+        /* Constant that indicates which column in the rule table
+           represents the return address of the function.  */
+        ULEB128 ra_uleb : version == 1;
+        uint<8> ra;
+      } return_column;
+
+    union
+      {
+        ULEB128 size : augmentation[0] == 'z';
+        struct {} nothing;
+      } aug;
+
+    union
+      {
+        byte encoding : augmentation[1] == 'L';
+        struct {} nothing;
+      } lsda;
+
+    union
+      {
+        byte encoding : (augmentation[1] == 'R' || augmentation[2] == 'R');
+        struct {} nothing;
+      } fde;
+
+    /* DWARF CFI instructions.  */
+    var cfi_insns_bytes = length + 4#B - OFFSET;
+    /* FIXME at this time, the following fails.
+       Keep the bytes as unread for now.  */
+    /* Dwarf_CFI[cfi_insns_bytes] initial_instructions; */
+    byte[cfi_insns_bytes] unread_data;
+  };
+
+/* EH Frame FDE.
+   Description of a frame for a given function.  */
+
+type EH_Frame_FDE =
+  struct
+  {
+    /* Size of the header and instruction stream for this function,
+       not including the `length' field itself.  */
+    offset<uint<32>,B> length : length != 0#B;
+
+    /* Offset into the .eh_frame section that denotes the CIE that
+       is associated with this FDE.  */
+    uint<32> cie_pointer: cie_pointer != 0;
+
+    /* XXX initial_location (segment selector and target address)  */
+    uint<32> code_offset;
+
+    /* Number of bytes of program instructions described by this
+       entry.  */
+    uint<32> code_length;
+
+    ULEB128 augmentation_size;
+
+    /* FIXME - Handle the left over bytes as unread bytes for now.
+       This is where the DWARF CFI insns for the FDE are specified.
+       It is unclear by reading the relevant stubs in GNU gas/ld why
+       Dwarf_CFI insns[] parsing is not successful here.  */
+    var unread_bytes = length + 4#B - OFFSET;
+    byte[unread_bytes] unread_data;
+
+    /* var padding = (length.value
+                      - (cie_pointer'size + initial_location'size
+                         + address_range'size + address_range.value()#B)); */
+
+     // Dwarf_CFI[unread_bytes] instructions;
+  };
+
+
+type EH_Frame_Section_Entry =
+  union
+  {
+    EH_Frame_CIE cie : cie.cie_id == 0;
+    EH_Frame_FDE fde;
+  };
+
+type EH_Frame_Section =
+  struct
+  {
+    EH_Frame_Section_Entry[] eh_frame_entries;
+  };
