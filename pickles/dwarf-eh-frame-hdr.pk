@@ -1,0 +1,92 @@
+/* dwarf-eh-frame-hdr.pk - DWARF EH Frames HDR section implementation for
+                           GNU poke.
+
+/* Copyright (C) 2022 Free Software Foundation.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* DWARF .eh_frame Personality Encoding types.  */
+var DW_EH_PE_absptr = 0x00 as byte,
+    DW_EH_PE_omit = 0xff as byte,
+    DW_EH_PE_uleb128 = 0x01 as byte,
+    DW_EH_PE_udata2 = 0x02 as byte,
+    DW_EH_PE_udata4 = 0x03 as byte,
+    DW_EH_PE_udata8 = 0x04 as byte,
+    DW_EH_PE_signed = 0x08 as byte,
+    DW_EH_PE_sleb128 = 0x09 as byte,
+    DW_EH_PE_sdata2 = 0x0a as byte,
+    DW_EH_PE_sdata4 = 0x0b as byte,
+    DW_EH_PE_sdata8 = 0x0c as byte,
+    DW_EH_PE_pcrel = 0x10 as byte,
+    DW_EH_PE_textrel = 0x20 as byte,
+    DW_EH_PE_datarel = 0x30 as byte,
+    DW_EH_PE_funcrel = 0x40 as byte,
+    DW_EH_PE_aligned = 0x50 as byte,
+    DW_EH_PE_indirect = 0x80 as byte;
+
+type DW_EH_Frame_Hdr_Index_Entry =
+  struct
+  {
+    uint32 addr;
+    offset<uint<32>,B> fde_offset;
+  };
+
+
+type DW_EH_Frame_Hdr_Section =
+  struct
+  {
+    /* .eh_frame_hdr format for DWARF Frames has a header of
+       size = 8 bytes.  */
+
+    /* Currently the version is set to 1. A value of 2 is used for
+       Compact EH Frames format.  */
+    byte hdr_version : hdr_version == 1;
+    byte addr_encoding : addr_encoding == (DW_EH_PE_pcrel | DW_EH_PE_sdata4);
+    byte fde_encoding : fde_encoding in [DW_EH_PE_udata4, DW_EH_PE_omit];
+    byte search_table_encoding : search_table_encoding in [(DW_EH_PE_datarel | DW_EH_PE_sdata4), DW_EH_PE_omit];
+    /* Pointer to start of .eh_frame section.  */
+    offset<uint<32>,B> eh_frame_offset;
+
+    /* The header for the .eh_frame_hdr section for DWARF Frames is
+       optionally followed by:
+         -- [encoded] fde_count  = total number of FDEs in .eh_frame section
+         -- fde_count x [encoded] { addr, fde offset } pairs, where
+              - addr is the starting address of the function
+              - fde_offset is the offset to the corresponding FDE in .eh_frame
+              section.
+         These pairs are sorted on increasing addr.  */
+    union
+      {
+        uint32 fde_count : fde_encoding != DW_EH_PE_omit;
+        struct {} nothing : fde_encoding == DW_EH_PE_omit;
+      } count;
+    union
+      {
+        DW_EH_Frame_Hdr_Index_Entry[] eh_frame_hdr_entries : ((fde_encoding == DW_EH_PE_udata4)
+                                                              && (search_table_encoding == (DW_EH_PE_datarel | DW_EH_PE_sdata4)));
+        struct {} nothing : (fde_encoding == DW_EH_PE_omit
+                             && search_table_encoding == DW_EH_PE_omit);
+      } entries;
+  };
+
+
+/* Dump the address of each index entry in the section.  */
+
+fun dw_eh_frame_hdr_dump_index_addr = (DW_EH_Frame_Hdr_Section eh_frame_hdr) void:
+{
+  var i = 0;
+  for (ent in eh_frame_hdr.entries.eh_frame_hdr_entries)
+    printf ("%u32d:   %v \n", i++, ent.addr);
+}

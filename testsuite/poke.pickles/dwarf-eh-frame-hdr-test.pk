@@ -1,0 +1,69 @@
+/* dwarf-eh-frame-hdr-test.pk - Tests for the DWARF EH Frames HDR pickle.  */
+
+/* Copyright (C) 2022 Free Software Foundation.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+load pktest;
+load "dwarf-eh-frame-hdr.pk";
+
+set_endian(ENDIAN_LITTLE);
+
+var data = open ("*data*");
+
+uint<8>[100] @ data : 0#B = [
+  0x01UB, 0x1bUB, 0x03UB, 0x3bUB, 0x60UB, 0x00UB, 0x00UB, 0x00UB,
+  0x0bUB, 0x00UB, 0x00UB, 0x00UB, 0xd4UB, 0xefUB, 0xffUB, 0xffUB,
+  0xa4UB, 0x00UB, 0x00UB, 0x00UB, 0x14UB, 0xf0UB, 0xffUB, 0xffUB,
+  0x7cUB, 0x00UB, 0x00UB, 0x00UB, 0x44UB, 0xf0UB, 0xffUB, 0xffUB,
+  0x90UB, 0x00UB, 0x00UB, 0x00UB, 0xfaUB, 0xf0UB, 0xffUB, 0xffUB,
+  0xccUB, 0x00UB, 0x00UB, 0x00UB, 0x10UB, 0xf1UB, 0xffUB, 0xffUB,
+  0xecUB, 0x00UB, 0x00UB, 0x00UB, 0x8eUB, 0xf1UB, 0xffUB, 0xffUB,
+  0x0cUB, 0x01UB, 0x00UB, 0x00UB, 0xb7UB, 0xf1UB, 0xffUB, 0xffUB,
+  0x2cUB, 0x01UB, 0x00UB, 0x00UB, 0xbeUB, 0xf1UB, 0xffUB, 0xffUB,
+  0x4cUB, 0x01UB, 0x00UB, 0x00UB, 0x1cUB, 0xf2UB, 0xffUB, 0xffUB,
+  0x6cUB, 0x01UB, 0x00UB, 0x00UB, 0x61UB, 0xf2UB, 0xffUB, 0xffUB,
+  0x8cUB, 0x01UB, 0x00UB, 0x00UB, 0x1aUB, 0xf3UB, 0xffUB, 0xffUB,
+  0xacUB, 0x01UB, 0x00UB, 0x00UB
+];
+
+var tests = [
+  PkTest {
+    name = "read header info",
+    func = lambda (string name) void:
+      {
+        var sec = DW_EH_Frame_Hdr_Section @ data : 0#B;
+
+        assert (sec.hdr_version == 1);
+        assert (sec.addr_encoding == (DW_EH_PE_pcrel | DW_EH_PE_sdata4));
+        assert (sec.fde_encoding == DW_EH_PE_udata4);
+        assert (sec.search_table_encoding  == (DW_EH_PE_datarel | DW_EH_PE_sdata4));
+      },
+  },
+  PkTest {
+    name = "read index",
+    func = lambda (string name) void:
+      {
+        var sec = DW_EH_Frame_Hdr_Section @ data : 0#B;
+
+        assert (sec.count.fde_count == 11);
+      },
+  }
+];
+
+var ok = pktest_run (tests);
+
+close (data);
+exit (ok ? 0 : 1);
