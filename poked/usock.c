@@ -20,7 +20,9 @@
 #include <assert.h>
 #include <errno.h>
 #include <inttypes.h>
+#include <stdarg.h>
 #include <stdint.h>
+#include <stdio.h> // vasprintf
 #include <stdlib.h>
 #include <string.h>
 
@@ -738,6 +740,24 @@ usock_out (struct usock *u, uint8_t chan, uint32_t kind, const void *data,
   u->outbufs = usock_buf_chain (buf, u->outbufs);
   pthread_mutex_unlock (&u->mutex);
   usock_notify (u);
+}
+
+void
+usock_out_printf (struct usock *u, uint8_t chan, uint32_t kind,
+                  const char *fmt, ...)
+{
+  char *data = NULL;
+  va_list ap;
+  int n;
+
+  va_start (ap, fmt);
+  n = vasprintf (&data, fmt, ap);
+  va_end (ap);
+  if (n == -1)
+    err (1, "%s: vasprintf () failed", __func__);
+
+  usock_out (u, chan, kind, data, n);
+  free (data);
 }
 
 // API

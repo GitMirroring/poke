@@ -62,4 +62,9 @@ struct usock_buf *usock_in (struct usock *u);
 void usock_out (struct usock *u, uint8_t chan, uint32_t kind, const void *data,
                 size_t len);
 
+// Like `usock_out' but with a printf-like interface.
+void usock_out_printf (struct usock *u, uint8_t chan, uint32_t kind,
+                       const char *fmt, ...)
+    __attribute__ ((format (printf, 4, 5)));
+
 #endif

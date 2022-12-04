@@ -1,5 +1,10 @@
 2022-12-04  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* poked/usock.h (usock_out_printf): New function.
+	* poked/usock.c (usock_out_printf): Likewise.
+
+2022-12-04  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* poked/usock.h (USOCK_CHAN_IN_AUTOCMPL): Remove macro.
 	(USOCK_CHAN_OUT_DISASM): Likewise.
 	(USOCK_CHAN_OUT_PDISAS): New macro.
