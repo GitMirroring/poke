@@ -54,8 +54,12 @@ static void poked_free (void);
 #define VUCMD_FILTER 4
 #define VUCMD_FINISH 5
 
-#define AUTOCMPL_IDENT 1
-#define AUTOCMPL_IOS 2
+/* Auto-completion  */
+#define AUTOCMPL_ITER_BEGIN OUTCMD_ITER_BEGIN
+#define AUTOCMPL_ITER_END OUTCMD_ITER_END
+// #define AUTOCMPL_ERR OUTCMD_ERR
+#define AUTOCMPL_IDENT 4
+#define AUTOCMPL_IOS 5
 
 /* Poke disassmbler  */
 #define PDISAS_ITER_BEGIN OUTCMD_ITER_BEGIN
@@ -246,12 +250,19 @@ poked_autocmpl_send_one (pk_val pkind, pk_val pstring)
   assert (pkind != PK_NULL);
   assert (pstring != PK_NULL);
 
-  uint32_t kind = (uint32_t)pk_uint_value (pkind);
+  enum
+  {
+    PLET_AUTOCMPL_IDENT = 1U, /* Identifier: variable, function, type.  */
+    PLET_AUTOCMPL_IOS = 2U,   /* IO Space.  */
+  };
+  uint32_t str_kind = (uint32_t)pk_uint_value (pkind);
+  uint32_t kind;
   const char *string = pk_string_str (pstring);
   struct bufb b;
   char *candidate;
 
-  assert (kind == AUTOCMPL_IDENT || kind == AUTOCMPL_IOS);
+  assert (str_kind == PLET_AUTOCMPL_IDENT || str_kind == PLET_AUTOCMPL_IOS);
+  kind = str_kind == PLET_AUTOCMPL_IDENT ? AUTOCMPL_IDENT : AUTOCMPL_IOS;
 
   if (bufb_init (&b, malloc (1024), 1024) != OK)
     err (1, "bufb_init() failed");
@@ -264,8 +275,8 @@ poked_autocmpl_send_one (pk_val pkind, pk_val pstring)
     }                                                                         \
   while (0)
 #define FUNC                                                                  \
-  (kind == AUTOCMPL_IDENT ? pk_completion_function                            \
-                          : pk_ios_completion_function)
+  (str_kind == PLET_AUTOCMPL_IDENT ? pk_completion_function                   \
+                                   : pk_ios_completion_function)
 
   APPEND (string);
   if ((candidate = FUNC (pkc, string, 0)) != NULL)
@@ -285,6 +296,8 @@ poked_autocmpl_send_one (pk_val pkind, pk_val pstring)
 static void
 poked_autocmpl_send (void)
 {
+  static uint64_t iteration;
+
   pk_val kind_arr = pk_decl_val (pkc, "__poked_autocmpl_kind");
   pk_val string_arr = pk_decl_val (pkc, "__poked_autocmpl_string");
   uint64_t nelem = pk_uint_value (pk_array_nelem (kind_arr));
@@ -293,8 +306,13 @@ poked_autocmpl_send (void)
   assert (pk_uint_value (pk_array_nelem (string_arr)) == nelem);
 
   for (uint64_t i = 0; i < nelem; ++i)
-    poked_autocmpl_send_one (pk_array_elem_value (kind_arr, i),
-                             pk_array_elem_value (string_arr, i));
+    {
+      ++iteration;
+      iteration_begin (srv, USOCK_CHAN_OUT_AUTOCMPL, iteration);
+      poked_autocmpl_send_one (pk_array_elem_value (kind_arr, i),
+                               pk_array_elem_value (string_arr, i));
+      iteration_end (srv, USOCK_CHAN_OUT_AUTOCMPL, iteration);
+    }
   (void)pk_call (pkc, pk_decl_val (pkc, "__poked_autocmpl_reset"), NULL, &exc,
                  0);
 }

@@ -1,3 +1,17 @@
+2022-12-05  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* poked/poked.pk (AUTOCMPL_IDENT): Change the value.
+	(AUTOCMPL_IOS): Likewise.
+	(AUTOCMPL_ITER_BEGIN): New macro.
+	(AUTOCMPL_ITER_END): Likewise.
+	(poked_autocmpl_send_one): Adapt.
+	(poked_autocmpl_send): Send iteration.
+
+2022-12-04  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* poked/poked.pk (plet_disasm): Add an assertion for valid
+	architectures.
+
 2022-12-04  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* poked/poked.c (PDISAS_ITER_BEGIN): New macro.
