@@ -37,7 +37,7 @@ struct usock *srv;
 #define OK 0
 #define NOK 1
 
-static int poked_init (void);
+static int poked_init (int pdap_version);
 static void poked_free (void);
 
 #define OUTCMD_ITER_BEGIN 1
@@ -459,6 +459,7 @@ main (int argc, char *argv[])
   void *ret;
   int poked_restart_p;
   uint64_t n_iteration;
+  const int pdap_version = 0; /* pdap: poke daemon message protocol  */
 
   poked_options_init (argc, argv);
 
@@ -471,12 +472,13 @@ main (int argc, char *argv[])
   if (pthread_create (&th, &thattr, srvthread, srv) != 0)
     err (1, "pthread_create() failed");
 
-  printf ("socket_path %s\n\n", poked_options.socket_path);
+  printf ("socket_path %s\npdap_version %d\n\n", poked_options.socket_path,
+          pdap_version);
 
 poked_restart:
   poked_restart_p = 0;
   n_iteration = 0;
-  poked_init ();
+  poked_init (pdap_version);
   while (1)
     {
       struct usock_buf *inbuf;
@@ -765,7 +767,7 @@ static struct pk_iod_if iod = {
 //--- poke
 
 static int
-poked_init (void)
+poked_init (int pdap_version)
 {
   static struct pk_term_if tif = {
     .flush_fn = tif_flush,
@@ -863,6 +865,9 @@ poked_init (void)
           || (0 /* FIXME pk_type_code(pk_typeof(pval)) != PK_CLOSURE */))
         errx (1, "missing function(s) in init file: %s", FUNCS[i]);
     }
+
+  pk_decl_set_val (pkc, "__poked_pdap_version",
+                   pk_make_int (pdap_version, 32));
 
   if (pk_defvar (pkc, "poked_libpoke_version", pk_make_string (VERSION))
       == PK_NULL)

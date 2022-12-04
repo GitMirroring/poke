@@ -1,3 +1,11 @@
+2022-12-04  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* poked/poked.c (main): Print PDAP version.
+	(poked_init): Add new param (`pdap_version').
+	Update `__poked_pdap_version' Poke variable.
+	* poked/poked.pk (__poked_pdap_version): New variable.
+	(poked_pdap_version): New function.
+
 2022-11-29  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* testsuite/lib/poke-pk.exp (tap_execute): Only keep the filename
