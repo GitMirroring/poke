@@ -21,10 +21,12 @@ load "pk-dump-minimal.pk";
 // FIXME be endian-correct
 // FIXME offset<long,N> -> offset<ulong,N>
 
-// `poked.c' will initialize it to the right value.
+// `poked.c' will initialize these to the right value.
 var __poked_pdap_version = -1;
+var __poked_libpoke_version = "";
 
 fun poked_pdap_version = int<32>: { return __poked_pdap_version; }
+fun poked_libpoke_version = string: { return __poked_libpoke_version; }
 
 var __poked_restart_p = 0;
 var __poked_exit_p = 0;

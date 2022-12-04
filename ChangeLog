@@ -1,5 +1,11 @@
 2022-12-04  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* poked/poked.pk (__poked_libpoke_version): New variable.
+	(poked_libpoke_version): New function.
+	* poked/poked.c (poked_init): Set `__poked_libpoke_version'.
+
+2022-12-04  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* poked/poked.c (main): Print PDAP version.
 	(poked_init): Add new param (`pdap_version').
 	Update `__poked_pdap_version' Poke variable.

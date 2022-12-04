@@ -868,10 +868,7 @@ poked_init (int pdap_version)
 
   pk_decl_set_val (pkc, "__poked_pdap_version",
                    pk_make_int (pdap_version, 32));
-
-  if (pk_defvar (pkc, "poked_libpoke_version", pk_make_string (VERSION))
-      == PK_NULL)
-    errx (1, "unable to declare poked_libpoke_version variable");
+  pk_decl_set_val (pkc, "__poked_libpoke_version", pk_make_string (VERSION));
 
   return OK;
 }
