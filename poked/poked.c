@@ -41,12 +41,12 @@ static int poked_init (int pdap_version);
 static void poked_free (void);
 
 #define OUTCMD_ITER_BEGIN 1
-#define OUTCMD_TXT 2
-#define OUTCMD_ITER_END 3
-#define OUTCMD_CLS_BEGIN 4
-#define OUTCMD_CLS_END 5
-#define OUTCMD_EVAL 6
-#define OUTCMD_ERR 7
+#define OUTCMD_ITER_END 2
+#define OUTCMD_ERR 3
+#define OUTCMD_TXT 4
+#define OUTCMD_CLS_BEGIN 5
+#define OUTCMD_CLS_END 6
+#define OUTCMD_EVAL 7
 
 #define VUCMD_CLEAR 1
 #define VUCMD_APPEND 2

@@ -1,5 +1,14 @@
 2022-12-04  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* poked/poked.c (OUTCMD_TXT): Change the value.
+	(OUTCMD_ITER_END): Likewise.
+	(OUTCMD_CLS_BEGIN): Likewise.
+	(OUTCMD_CLS_END): Likewise.
+	(OUTCMD_EVAL): Likewise.
+	(OUTCMD_ERR): Likewise.
+
+2022-12-04  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* poked/usock.h (usock_out_printf): New function.
 	* poked/usock.c (usock_out_printf): Likewise.
 
