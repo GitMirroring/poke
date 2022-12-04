@@ -1,5 +1,31 @@
 2022-12-04  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* poked/poked.c (PDISAS_ITER_BEGIN): New macro.
+	(PDISAS_ITER_END): Likewise.
+	(PDISAS_ERR): Likewise.
+	(PDISAS_TXT): Likewise.
+	(PDISAS_KIND): Likewise.
+	(termout_disas): New function.
+	(poked_disasm_send): Likewise.
+	(iteration_send): Add new param (`chan').
+	(iteration_begin): Likewise.
+	(iteration_end): Likewise.
+	(poked_compile): Add support for Poke disasm.
+	(main): Update `iteration_begin' and `iteration_end'
+	invocation.
+	* poked/poked.pk (PLET_DISAS_KIND_FUNC): New const.
+	(PLET_DISAS_KIND_FUNC_NATIVE): Likewise.
+	(PLET_DISAS_KIND_EXPR): Likewise.
+	(PLET_DISAS_KIND_EXPR_NATIVE): Likewise.
+	(__Poked_Disas): New type.
+	(__poked_disas_data): New variable.
+	(__poked_disas_p): Likewise.
+	(__poked_disas_reset): New function.
+	(plet_disas_func): Likewise.
+	(plet_disas_expr): Likewise.
+
+2022-12-04  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* poked/poked.c (OUTCMD_TXT): Change the value.
 	(OUTCMD_ITER_END): Likewise.
 	(OUTCMD_CLS_BEGIN): Likewise.

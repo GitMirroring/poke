@@ -57,6 +57,13 @@ static void poked_free (void);
 #define AUTOCMPL_IDENT 1
 #define AUTOCMPL_IOS 2
 
+/* Poke disassmbler  */
+#define PDISAS_ITER_BEGIN OUTCMD_ITER_BEGIN
+#define PDISAS_ITER_END OUTCMD_ITER_END
+#define PDISAS_ERR OUTCMD_ERR
+#define PDISAS_TXT OUTCMD_TXT
+#define PDISAS_KIND 5
+
 static uint8_t termout_chan = USOCK_CHAN_OUT_OUT;
 static uint32_t termout_cmdkind = OUTCMD_TXT;
 
@@ -79,6 +86,13 @@ termout_eval (void)
 {
   termout_chan = USOCK_CHAN_OUT_OUT;
   termout_cmdkind = OUTCMD_EVAL;
+}
+
+static void
+termout_disas (void)
+{
+  termout_chan = USOCK_CHAN_OUT_PDISAS;
+  termout_cmdkind = PDISAS_TXT;
 }
 
 //---
@@ -135,7 +149,8 @@ poked_buf_send (void)
 //---
 
 static void
-iteration_send (struct usock *srv, uint64_t n_iteration, int begin_p)
+iteration_send (struct usock *srv, uint8_t chan, uint64_t n_iteration,
+                int begin_p)
 {
   uint8_t buf[8] = {
 #define b(i) (uint8_t) (n_iteration >> (i))
@@ -143,20 +158,20 @@ iteration_send (struct usock *srv, uint64_t n_iteration, int begin_p)
 #undef b
   };
 
-  usock_out (srv, USOCK_CHAN_OUT_OUT,
-             begin_p ? OUTCMD_ITER_BEGIN : OUTCMD_ITER_END, buf, sizeof (buf));
+  usock_out (srv, chan, begin_p ? OUTCMD_ITER_BEGIN : OUTCMD_ITER_END, buf,
+             sizeof (buf));
 }
 
 static void
-iteration_begin (struct usock *srv, uint64_t n_iteration)
+iteration_begin (struct usock *srv, uint8_t chan, uint64_t n_iteration)
 {
-  return iteration_send (srv, n_iteration, 1);
+  return iteration_send (srv, chan, n_iteration, 1);
 }
 
 static void
-iteration_end (struct usock *srv, uint64_t n_iteration)
+iteration_end (struct usock *srv, uint8_t chan, uint64_t n_iteration)
 {
-  return iteration_send (srv, n_iteration, 0);
+  return iteration_send (srv, chan, n_iteration, 0);
 }
 
 #define iteration_send private_
@@ -288,6 +303,69 @@ poked_autocmpl_send (void)
 
 //---
 
+static void
+poked_disas_send (void)
+{
+  enum
+  {
+    /* Keep these in-sync with `poked.pk'.  */
+    PLET_DISAS_KIND_FUNC = 1U,
+    PLET_DISAS_KIND_FUNC_NATIVE = 2U,
+    PLET_DISAS_KIND_EXPR = 3U,
+    PLET_DISAS_KIND_EXPR_NATIVE = 4U,
+  };
+  static uint64_t iteration;
+
+  pk_val disas_arr = pk_decl_val (pkc, "__poked_disas_data");
+  uint64_t nelem = pk_uint_value (pk_array_nelem (disas_arr));
+  pk_val exc;
+
+  for (uint64_t i = 0; i < nelem; ++i)
+    {
+      pk_val data = pk_array_elem_value (disas_arr, i);
+      uint64_t kind = pk_uint_value (pk_struct_ref_field_value (data, "kind"));
+      const char *str
+          = pk_string_str (pk_struct_ref_field_value (data, "str"));
+
+      assert (kind == PLET_DISAS_KIND_FUNC
+              || kind == PLET_DISAS_KIND_FUNC_NATIVE
+              || kind == PLET_DISAS_KIND_EXPR
+              || kind == PLET_DISAS_KIND_EXPR_NATIVE);
+
+      ++iteration;
+      iteration_begin (srv, USOCK_CHAN_OUT_PDISAS, iteration);
+
+      /* Send PDISAS_KIND message with the function_name/expression.  */
+      usock_out_printf (srv, USOCK_CHAN_OUT_PDISAS, PDISAS_KIND, "%c%s",
+                        (int)kind, str);
+
+      termout_disas ();
+      if (kind == PLET_DISAS_KIND_FUNC || kind == PLET_DISAS_KIND_FUNC_NATIVE)
+        {
+          int native_p = kind == PLET_DISAS_KIND_FUNC_NATIVE;
+
+          if (pk_disassemble_function (pkc, str, native_p) != PK_OK)
+            usock_out_printf (srv, USOCK_CHAN_OUT_PDISAS, PDISAS_ERR,
+                              "invalid function `%s' to disassemble", str);
+        }
+      else if (kind == PLET_DISAS_KIND_EXPR
+               || kind == PLET_DISAS_KIND_EXPR_NATIVE)
+        {
+          int native_p = kind == PLET_DISAS_KIND_EXPR_NATIVE;
+
+          if (pk_disassemble_expression (pkc, str, native_p) != PK_OK)
+            usock_out_printf (srv, USOCK_CHAN_OUT_PDISAS, PDISAS_ERR,
+                              "invalid expression `%s' to disassemble", str);
+        }
+      termout_restore ();
+
+      iteration_end (srv, USOCK_CHAN_OUT_PDISAS, iteration);
+    }
+  (void)pk_call (pkc, pk_decl_val (pkc, "__poked_disas_reset"), NULL, &exc, 0);
+}
+
+//---
+
 static int
 poked_compile (const char *src, uint8_t chan, int *poked_restart_p,
                int *done_p)
@@ -349,6 +427,8 @@ poked_compile (const char *src, uint8_t chan, int *poked_restart_p,
     }
   if (pk_int_value (pk_decl_val (pkc, "__poked_autocmpl_p")))
     poked_autocmpl_send ();
+  if (pk_int_value (pk_decl_val (pkc, "__poked_disas_p")))
+    poked_disas_send ();
   if (pk_int_value (pk_decl_val (pkc, "__vu_do_p")))
     {
       const char *filt = pk_string_str (pk_decl_val (pkc, "__vu_filter"));
@@ -507,9 +587,9 @@ poked_restart:
                 if (poked_options.debug_p)
                   printf ("< '%.*s'\n", (int)srclen, src);
                 n_iteration++;
-                iteration_begin (srv, n_iteration);
+                iteration_begin (srv, USOCK_CHAN_OUT_OUT, n_iteration);
                 (void)poked_compile (src, chan, &poked_restart_p, &done_p);
-                iteration_end (srv, n_iteration);
+                iteration_end (srv, USOCK_CHAN_OUT_OUT, n_iteration);
                 if (poked_restart_p)
                   {
                     usock_buf_free_chain (inbuf);

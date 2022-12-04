@@ -429,6 +429,49 @@ fun plet_autocomplete = (uint kind, string str) void:
     __poked_autocmpl_p = 1;
   }
 
+//--- poke disassembly
+
+var PLET_DISAS_KIND_FUNC = 1U,
+    PLET_DISAS_KIND_FUNC_NATIVE = 2U,
+    PLET_DISAS_KIND_EXPR = 3U,
+    PLET_DISAS_KIND_EXPR_NATIVE = 4U;
+
+type __Poked_Disas = struct
+  {
+    uint<8> kind : 0 < kind && kind <= 4U;
+    string  str; /* Function name or Poke expression.  */
+  };
+
+var __poked_disas_data = __Poked_Disas[] (),
+    __poked_disas_p = 0;
+fun __poked_disas_reset = void:
+  {
+    __poked_disas_data = __Poked_Disas[] ();
+    __poked_disas_p = 0;
+  }
+
+fun plet_disas_func = (string func_name, int native_p = 0) void:
+  {
+    var d = __Poked_Disas {
+      kind=native_p ? PLET_DISAS_KIND_FUNC_NATIVE : PLET_DISAS_KIND_FUNC,
+      str=func_name,
+    };
+
+    apush (__poked_disas_data, d);
+    __poked_disas_p = 1;
+  }
+
+fun plet_disas_expr = (string expr, int native_p = 0) void:
+  {
+    var d = __Poked_Disas {
+      kind=native_p ? PLET_DISAS_KIND_EXPR_NATIVE : PLET_DISAS_KIND_EXPR,
+      str=expr,
+    };
+
+    apush (__poked_disas_data, d);
+    __poked_disas_p = 1;
+  }
+
 //---
 
 print "//---\nGNU poke in daemon mode!\n";
