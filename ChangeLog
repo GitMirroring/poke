@@ -1,5 +1,13 @@
 2022-12-04  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* poked/usock.h (USOCK_CHAN_IN_AUTOCMPL): Remove macro.
+	(USOCK_CHAN_OUT_DISASM): Likewise.
+	(USOCK_CHAN_OUT_PDISAS): New macro.
+	(USOCK_CHAN_OUT_CDISAS): Likewise.
+	* poked/poked.pk (plet_disasm): Update the CPU disasm channel.
+
+2022-12-04  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* poked/poked.pk (__poked_libpoke_version): New variable.
 	(poked_libpoke_version): New function.
 	* poked/poked.c (poked_init): Set `__poked_libpoke_version'.

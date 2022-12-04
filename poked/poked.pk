@@ -401,7 +401,7 @@ fun plet_disasm = (string arch, offset<uint64,B> adr, byte[] code) void:
     var d = __Disasm{ arch = arch , adr = adr, code = code };
 
     __Disasm @ fd : 0#B = d;
-    poked_chan_send (3, byte[d'size] @ fd : 0#B);
+    poked_chan_send (/*USOCK_CHAN_OUT_CDISAS*/ 6, byte[d'size] @ fd : 0#B);
     close (fd);
   }
 
