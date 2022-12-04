@@ -397,6 +397,9 @@ type __Disasm = struct
 
 fun plet_disasm = (string arch, offset<uint64,B> adr, byte[] code) void:
   {
+    assert (
+      arch in ["x86_32", "x86_64", "arm", "arm_thumb", "aarch64", "m68k"]);
+
     var fd = open("*__poked_disasm*");
     var d = __Disasm{ arch = arch , adr = adr, code = code };
 
