@@ -1304,6 +1304,18 @@ immutable fun _pkl_format_any = (any val, int<32> depth = 0) string:
   return result;
 }
 
+
+/* Internationalization support */
+
+immutable fun dgettext = (string domain, string msgid) string:
+{
+  return asm string: ("dgettext" : domain, msgid);
+}
+
+immutable fun dngettext = (string domain, string msingular, string mplural, uint<64> n) string:
+{
+  return asm string: ("dngettext" : n, domain, msingular, mplural);
+}
 /**** Set the default load path ****/
 
 immutable var load_path = "";

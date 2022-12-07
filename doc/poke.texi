@@ -247,6 +247,7 @@ The Standard Library
 * CRC Functions::               Cyclic Redundancy Checksums.
 * Dates and Times::             Processing and displaying dates and times.
 * Offset Functions::            Useful functions that operate on offsets.
+* Internationalization::        The Poke Gettext interface.
 
 @c Hacking poke
 @c * Writing Commands::		Extending poke with new commands.
@@ -14995,6 +14996,7 @@ facilities provided by the library.
 * CRC Functions::               Cyclic Redundancy Checksums.
 * Dates and Times::             Processing and displaying dates and times.
 * Offset Functions::            Useful functions that operate on offsets.
+* Internationalization::        The Poke Gettext interface.
 @end menu
 
 @node Standard Integral Types
@@ -15566,6 +15568,45 @@ fun alignto = (uoff64 offset, uoff64 to) uoff64:
 @noindent
 It returns an offset that is the result of aligning the given
 @var{offset} to the given alignment @var{to}.
+
+@node Internationalization
+@section Internationalization
+
+@cindex Internationalization
+The Poke language runtime provides access to the GNU Gettext
+facilities, and as such, permits internationalization.  This API
+exposes two functions identical in functionality and interface to
+their C counterparts:
+
+@c TODO(arsen): It might be nice to convert tables like this one to
+@c @ftable, and to similarly reduce the number of single-function
+@c nodes we have.
+
+@table @code
+
+@item dgettext (string domain, string msgid): string
+
+@cindex dgettext
+Attempts to translate a text string into the users native language by
+looking up @var{msgid} in the domain specified by @var{domain}.
+
+@item dngettext (string domain, string ms, string mp, uint<64> n): string
+
+@cindex dngettext
+Attempts to translate a text string into the user's native language by
+looking up the appropriate plural form as specified by the users
+native language.  The translation is done by looking up @var{ms} if
+@var{n} indicates singular form, and @var{mp} otherwise, in the
+@var{domain}.
+
+@end table
+
+@c TODO(arsen): Wishful thinking.
+
+GNU @code{xgettext} has native support for extracting strings from
+Poke code.
+
+@xref{Top,,, gettext, GNU @code{gettext} utiltities}
 
 @c @node Hacking Poke
 @c @chapter Hacking Poke

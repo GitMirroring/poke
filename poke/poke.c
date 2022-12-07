@@ -811,6 +811,10 @@ pk_fatal (const char *errmsg)
 int
 main (int argc, char *argv[])
 {
+  setlocale (LC_ALL, "");
+  bindtextdomain (PACKAGE, LOCALEDIR);
+  textdomain (PACKAGE);
+
   /* Determine whether the tool has been invoked interactively.  */
   poke_interactive_p = isatty (fileno (stdin));
 

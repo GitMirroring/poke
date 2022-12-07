@@ -183,6 +183,7 @@ early-header-c
 #   include "ios.h"
 #   include "pkt.h"
 #   include "pk-utils.h"
+#   include <gettext.h>
 
     /* Exception handlers, that are installed in the "exceptionstack".
 
@@ -6814,6 +6815,52 @@ end
 instruction sel ()
   code
     JITTER_PUSH_STACK (pvm_elemsof (JITTER_TOP_STACK ()));
+  end
+end
+
+# Instruction: dgettext
+#
+# Given a domain and msgid, translate string via dgettext ().  The top element
+# on the stack will be the string to translate, and the one under it the domain
+# to translate in.
+#
+# Stack: ( STR STR -- STR )
+
+instruction dgettext ()
+  code
+    const char *domain = PVM_VAL_STR (JITTER_UNDER_TOP_STACK ());
+    const char *msgid = PVM_VAL_STR (JITTER_TOP_STACK ());
+
+    const char *msg = dgettext (domain, msgid);
+
+    JITTER_DROP_STACK ();
+    JITTER_DROP_STACK ();
+
+    JITTER_PUSH_STACK (pvm_make_string (msg));
+  end
+end
+
+# Instruction: dngettext
+#
+# Given a domain and msgid, translate string via dngettext ().
+#
+# Stack: ( ULONG STR STR STR -- STR )
+
+instruction dngettext ()
+  code
+    uint64_t n = PVM_VAL_ULONG (JITTER_AT_DEPTH_STACK (3));
+    const char *domain = PVM_VAL_STR (JITTER_AT_DEPTH_STACK (2));
+    const char *singular = PVM_VAL_STR (JITTER_UNDER_TOP_STACK ());
+    const char *plural = PVM_VAL_STR (JITTER_TOP_STACK ());
+
+    const char *msg = dngettext (domain, singular, plural, n);
+
+    JITTER_DROP_STACK ();
+    JITTER_DROP_STACK ();
+    JITTER_DROP_STACK ();
+    JITTER_DROP_STACK ();
+
+    JITTER_PUSH_STACK (pvm_make_string (msg));
   end
 end
 

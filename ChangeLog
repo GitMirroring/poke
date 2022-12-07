@@ -1,3 +1,15 @@
+2022-12-07  Arsen Arsenović  <arsen@aarsen.me>
+
+	* doc/poke.texi (Top): Add Internationalization to menu.
+	(The Standard Library): Ditto.
+	(Internationalization): New section, documenting d(n)gettext.
+	* poke/poke.c (main): Set up gettext.
+	* libpoke/pvm.jitter: Add new instructions, dngettext and
+	dgettext, that allow Poke programs to localize.
+	* libpoke/pkl-rt.pk (dgettext): New built-in wrapper around
+	dgettext.
+	(dngettext): New built-in wrapper around dngettext.
+
 2022-12-05  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* poked/poked.pk (AUTOCMPL_IDENT): Change the value.
