@@ -1,5 +1,12 @@
 2022-12-10  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* testsuite/poke.pkl/scons-constraints-1.pk: Adapt to new
+	exception mesage.
+	* testsuite/poke.pkl/scons-constraints-2.pk: Likewise.
+	* testsuite/poke.pktest/pktest-12.pk: Likewise.
+
+2022-12-10  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-ast.h (struct pkl_ast_struct_type_field): New field
 	constraint_src.
 	(PKL_AST_STRUCT_TYPE_FIELD_CONSTRAINT_SRC): Define.
