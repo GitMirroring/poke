@@ -809,6 +809,7 @@ pkl_ast_node pkl_ast_make_struct_ref (pkl_ast ast,
 #define PKL_AST_STRUCT_TYPE_FIELD_TYPE(AST) ((AST)->sct_type_elem.type)
 #define PKL_AST_STRUCT_TYPE_FIELD_SIZE(AST) ((AST)->sct_type_elem.size)
 #define PKL_AST_STRUCT_TYPE_FIELD_CONSTRAINT(AST) ((AST)->sct_type_elem.constraint)
+#define PKL_AST_STRUCT_TYPE_FIELD_CONSTRAINT_SRC(AST) ((AST)->sct_type_elem.constraint_src)
 #define PKL_AST_STRUCT_TYPE_FIELD_LABEL(AST) ((AST)->sct_type_elem.label)
 #define PKL_AST_STRUCT_TYPE_FIELD_ENDIAN(AST) ((AST)->sct_type_elem.endian)
 #define PKL_AST_STRUCT_TYPE_FIELD_OPTCOND_PRE(AST) ((AST)->sct_type_elem.optcond_pre)
@@ -833,6 +834,7 @@ struct pkl_ast_struct_type_field
   union pkl_ast_node *optcond_post;
   int endian;
   int computed_p;
+  char *constraint_src;
 };
 
 pkl_ast_node pkl_ast_make_struct_type_field (pkl_ast ast,

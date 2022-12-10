@@ -1942,6 +1942,22 @@ struct_type_field:
                                                          $7, $2, $1, $8);
                     PKL_AST_LOC ($$) = @$;
 
+                    if (constraint)
+                      {
+                        char *code = pkl_loc_to_source (pkl_parser,
+                                                        PKL_AST_LOC (constraint),
+                                                        256);
+                        if (impl_constraint_p)
+                          {
+                            assert ($4 != NULL);
+                            code = pk_str_concat (PKL_AST_IDENTIFIER_POINTER ($4),
+                                                  " == ", code, NULL);
+                          }
+                        
+                        PKL_AST_STRUCT_TYPE_FIELD_CONSTRAINT_SRC ($$)
+                          = code;
+                      }
+
                     /* If endianness is empty, bison includes the
                        blank characters before the type field as if
                        they were part of this rule.  Therefore the

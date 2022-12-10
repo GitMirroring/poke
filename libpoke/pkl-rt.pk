@@ -285,6 +285,31 @@ immutable var E_perm
 immutable var E_stack
   = Exception {code = EC_stack, name = "invalid stack", exit_status = 1};
 
+/* Given the name of a struct field FNAME, and a snippet with Poke
+   code CODE, return a suitable string to be put in the `msg' field of
+   an E_constraint exception resulting from the evaluation of an
+   expression whose source code is in CODE.
+
+   Note that FNAME can be empty if the field is anonymous.
+   Also, CODE may be empty.  */
+
+immutable fun _pkl_e_constraint_msg = (string fname, string code) string:
+{
+  var msg = "";
+
+  if (code != "")
+    {
+      msg += "failed expression\n  ";
+      for (c in code)
+        msg += (c == '\n') ? "\n  " : c as string;
+    }
+
+  if (fname != "")
+    msg += "\nin field " + fname;
+
+  return msg;
+}
+
 /* Registration of user-defined exceptions */
 
 immutable type _ExceptionCodeGenerator = () int<32>;

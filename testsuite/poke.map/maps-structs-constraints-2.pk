@@ -4,4 +4,4 @@
 type Packet = struct { byte a; byte b : b == a; };
 
 /* { dg-command { try Packet @ 0#B; catch (Exception e) { if (e.code == EC_constraint) print e.msg + "\n"; } } } */
-/* { dg-output "constraint expression failed for field Packet\\.b" } */
+/* { dg-output "in field Packet\\.b" } */

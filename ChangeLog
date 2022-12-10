@@ -1,3 +1,20 @@
+2022-12-10  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-ast.h (struct pkl_ast_struct_type_field): New field
+	constraint_src.
+	(PKL_AST_STRUCT_TYPE_FIELD_CONSTRAINT_SRC): Define.
+	* libpoke/pkl-ast.c (pkl_ast_dup_type): Adapt accordingly.
+	(pkl_ast_node_free_1): Likewise.
+	* libpoke/pkl-tab.y (struct_type_field): Fill in constraint_src in
+	struct field type AST nodes.
+	* libpoke/pkl-rt.pk (_pkl_e_constraint_msg): New function.
+	* libpoke/pkl-gen.pks (check_struct_field_constraint): Call
+	_pkl_e_constraint_msg.
+	* testsuite/poke.map/maps-structs-constraints-2.pk: Adapt to new
+	message.
+	* testsuite/poke.map/maps-structs-constraints-3.pk: Likewise.
+	* testsuite/poke.pickles/pcap-test.pk: Likewise.
+
 2022-12-05  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* poked/poked.pk (AUTOCMPL_IDENT): Change the value.

@@ -215,7 +215,7 @@ var tests = [
               catch (Exception ex)
                 {
                   assert (ex.code == EC_constraint);
-                  assert (ex.msg[39:] == "PCAP_Header.magic");
+                  assert (ex.msg[ex.msg'length-17:] == "PCAP_Header.magic");
                   return;
                 }
               assert (0, "Unreachable reached!");

@@ -622,6 +622,7 @@ pkl_ast_dup_type (pkl_ast_node type)
           pkl_ast_node struct_type_elem_type;
           pkl_ast_node struct_type_elem_size;
           pkl_ast_node struct_type_elem_constraint;
+          char *struct_type_elem_constraint_src;
           pkl_ast_node struct_type_elem_initializer;
           pkl_ast_node struct_type_elem_label;
           pkl_ast_node new_struct_type_elem_name;
@@ -640,6 +641,10 @@ pkl_ast_dup_type (pkl_ast_node type)
           struct_type_elem_type = PKL_AST_STRUCT_TYPE_FIELD_TYPE (t);
           struct_type_elem_size = PKL_AST_STRUCT_TYPE_FIELD_SIZE (t);
           struct_type_elem_constraint = PKL_AST_STRUCT_TYPE_FIELD_CONSTRAINT (t);
+          struct_type_elem_constraint_src
+            = (PKL_AST_STRUCT_TYPE_FIELD_CONSTRAINT_SRC (t)
+               ? xstrdup (PKL_AST_STRUCT_TYPE_FIELD_CONSTRAINT_SRC (t))
+               : NULL);
           struct_type_elem_initializer = PKL_AST_STRUCT_TYPE_FIELD_INITIALIZER (t);
           struct_type_elem_label = PKL_AST_STRUCT_TYPE_FIELD_LABEL (t);
           struct_type_elem_endian = PKL_AST_STRUCT_TYPE_FIELD_ENDIAN (t);
@@ -663,6 +668,8 @@ pkl_ast_dup_type (pkl_ast_node type)
                                               struct_type_elem_optcond_pre,
                                               struct_type_elem_optcond_post);
 
+          PKL_AST_STRUCT_TYPE_FIELD_CONSTRAINT_SRC (struct_type_elem)
+            = struct_type_elem_constraint_src;
           PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (struct_type_elem)
             = struct_type_elem_computed_p;
           PKL_AST_STRUCT_TYPE_FIELD_SIZE (struct_type_elem)
@@ -2395,6 +2402,7 @@ pkl_ast_node_free_1 (gl_set_t visitations, pkl_ast_node ast)
       PKL_AST_NODE_FREE (PKL_AST_STRUCT_TYPE_FIELD_TYPE (ast));
       PKL_AST_NODE_FREE (PKL_AST_STRUCT_TYPE_FIELD_SIZE (ast));
       PKL_AST_NODE_FREE (PKL_AST_STRUCT_TYPE_FIELD_CONSTRAINT (ast));
+      free (PKL_AST_STRUCT_TYPE_FIELD_CONSTRAINT_SRC (ast));
       PKL_AST_NODE_FREE (PKL_AST_STRUCT_TYPE_FIELD_INITIALIZER (ast));
       PKL_AST_NODE_FREE (PKL_AST_STRUCT_TYPE_FIELD_LABEL (ast));
       PKL_AST_NODE_FREE (PKL_AST_STRUCT_TYPE_FIELD_OPTCOND_PRE (ast));

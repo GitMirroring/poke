@@ -674,18 +674,31 @@
         push "name"
         push "constraint violation"
         sset
-        ;; If the field is named, add the name of the field to the
-        ;; E_constraint message to make people's life better.
+        ;; Set the `msg' field of the exception.  The value is calculated
+        ;; by _pkl_e_constraint_msg, that gets passed the field name and
+        ;; the constraint expression code.
+        push "msg"
    .c pkl_ast_node field_name = PKL_AST_STRUCT_TYPE_FIELD_NAME (@field);
    .c if (field_name)
    .c {
-        push "msg"
-        push "constraint expression failed for field "
         .e field_location_str @struct_type, @field
-        sconc
-        nip2
-        sset
    .c }
+   .c else
+   .c {
+        push ""
+   .c }
+   .c if (PKL_AST_STRUCT_TYPE_FIELD_CONSTRAINT_SRC (@field))
+   .c {
+        .let #code = \
+          pvm_make_string (PKL_AST_STRUCT_TYPE_FIELD_CONSTRAINT_SRC (@field))
+        push #code
+   .c }
+   .c else
+   .c {
+        push ""
+   .c }
+        .call _pkl_e_constraint_msg
+        sset
         raise
 .constraint_ok:
         drop
