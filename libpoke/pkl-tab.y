@@ -1953,7 +1953,7 @@ struct_type_field:
                             code = pk_str_concat (PKL_AST_IDENTIFIER_POINTER ($4),
                                                   " == ", code, NULL);
                           }
-                        
+
                         PKL_AST_STRUCT_TYPE_FIELD_CONSTRAINT_SRC ($$)
                           = code;
                       }
