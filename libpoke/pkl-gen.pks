@@ -586,6 +586,69 @@
         drop                    ; STR
         .end
 
+;;; RAS_MACRO_EMIT_TV_FIELD_EVENT @field_type
+;;; ( BOFF STR ANY EVENT -- )
+;;;
+;;; Emit one of `mapped' or `constructed' tracing events for a
+;;; field that has been just mapped or constructed.
+;;;
+;;; BOFF is the bit-offset of the field that has been mapped or
+;;; constructed.
+;;;
+;;; STR is either PVM_NULL (for anonymous fields) or a string with the
+;;; name of the field.
+;;;
+;;; ANY is the value of the field.
+;;;
+;;; EVENT shall be one of the PK_TV_* codes and identifies the event
+;;; to emit.
+;;;
+;;; Macro-arguments:
+;;;
+;;; @field is an AST node denoting the field that has been just
+;;; mapped or constructed.
+
+        .macro emit_tv_field_event @field
+        ;; First, create an empty any[] array for the arguments.
+        push null
+        .call _pkl_mkclsn
+        mktya
+        push ulong<64>4
+        mka                     ; BOFF STR ANY EVENT ARGS
+        ;; First any argument: field_value
+        quake                   ; BOFF STR EVENT ANY ARGS
+        swap                    ; BOFF STR EVENT ARGS ANY
+        push ulong<64>0         ; BOFF STR EVENT ARGS ANY 0UL
+        swap                    ; BOFF STR EVENT ARGS 0UL ANY
+        ains                    ; BOFF STR EVENT ARGS
+        ;; Second any argument: field_type
+        .let @field_type = PKL_AST_STRUCT_TYPE_FIELD_TYPE (@field)
+        .e typeof @field_type
+                                ; BOFF STR EVENT ARGS PKTYPE
+        push ulong<64>1         ; BOFF STR EVENT ARGS PKTYPE 1UL
+        swap                    ; BOFF STR EVENT ARGS 1UL PKTYPE
+        ains                    ; BOFF STR EVENT ARGS
+        ;; Third any argument: field_name
+        quake                   ; BOFF EVENT STR ARGS
+        swap                    ; BOFF EVENT ARGS STR
+        bnn .name_ok
+        drop
+        push ""
+.name_ok:
+        push ulong<64>2         ; BOFF EVENT ARGS STR 2UL
+        swap                    ; BOFF EVENT ARGS 2UL STR
+        ains                    ; BOFF EVENT ARGS
+        ;; Fourth any argument: field_offset
+        quake                   ; EVENT BOFF ARGS
+        push ulong<64>3         ; EVENT BOFF ARGS 3UL
+        rot                     ; EVENT ARGS 3UL BOFF
+        push ulong<64>1
+        mko                     ; EVENT ARGS 3UL OFF
+        ains                    ; EVENT ARGS
+        .call _pkl_dispatch_tv  ; null
+        drop                    ; _
+        .end
+
 ;;; RAS_MACRO_HANDLE_STRUCT_FIELD_LABEL @field
 ;;; ( BOFF SBOFF - BOFF )
 ;;;
@@ -1036,57 +1099,11 @@
    .c if (pkl_tracer_p (RAS_COMPILER))
    .c {
         ;; Generate a PK_TV_FIELD_MAPPED tracer event.
-        ;; First, create an empty any[] array for the arguments.
-        push null               ; ... BOFF STR VAL ANYT
-        .call _pkl_mkclsn       ; ... BOFF STR VAL ANYT BOUNDER
-        mktya                   ; ... BOFF STR VAL ATYPE
-        push ulong<64>6         ; ... BOFF STR VAL ATYPE NELEM
-        mka                     ; ... BOFF STR VAL ARGS
-        ;; First any argument: field_value
-        over                    ; ... BOFF STR VAL ARGS VAL
-        tor                     ; ... BOFF STR VAL ARGS [VAL]
-        push ulong<64>0         ; ... BOFF STR VAL ARGS 0UL [VAL]
-        rot                     ; ... BOFF STR ARGS 0UL VAL [VAL]
-        ains                    ; ... BOFF STR ARGS [VAL]
-        ;; Second any argument: field_type
-        .let @field_type = PKL_AST_STRUCT_TYPE_FIELD_TYPE (@field)
-        .e typeof @field_type
-                                ; ... BOFF STR ARGS PKTYPE [VAL]
-        push ulong<64>1         ; ... BOFF STR ARGS PKTYPE 1UL [VAL]
-        swap                    ; ... BOFF STR ARGS 1UL PKTYPE [VAL]
-        ains                    ; ... BOFF STR ARGS [VAL]
-        ;; Third any argument: field_name
-        over                    ; ... BOFF STR ARGS STR [VAL]
-        tor                     ; ... BOFF STR ARGS [VAL STR]
-        push ulong<64>2         ; ... BOFF STR ARGS 2UL [VAL STR]
-        rot                     ; ... BOFF ARGS 2UL STR [VAL STR]
-        ;; ... but beware of anonyous fields
-        bnn .name_ok
-        drop
-        push ""
-.name_ok:
-        ains                    ; ... BOFF ARGS [VAL STR]
-        ;; Fourth any argument: field_offset
-        over                    ; ... BOFF ARGS BOF [VAL STR]
-        tor                     ; ... BOFF ARGS [VAL STR BOFF]
-        push ulong<64>3         ; ... BOFF ARGS 2UL [VAL STR BOFF]
-        rot                     ; ... ARGS 2UL BOFF [VAL STR BOFF]
-        push ulong<64>1         ; ... ARGS 2UL BOFF 1UL [VAL STR BOFF]
-        mko                     ; ... ARGS 2UL OFFSET [VAL STR BOFF]
-        ains                    ; ... ARGS [VAL STR BOFF]
-        ;; Empty the return stack before calling.
-        fromr                   ; ... ARGS BOFF [VAL STR]
-        swap                    ; ... BOFF ARGS [VAL STR]
-        fromr                   ; ... BOFF ARGS STR [VAL]
-        swap                    ; ... BOFF STR ARGS [VAL]
-        fromr                   ; ... BOFF STR ARGS VAL
-        swap                    ; ... BOFF STR VAL ARGS
-        ;; Push the first argument (event number) and call handler
-        push PK_TV_FIELD_MAPPED ; ... BOFF STR VAL ARGS TV
-        swap
-        .call _pkl_dispatch_tv  ; ... BOFF STR VAL null
-        ;; And back to the initial state!
-        drop                    ; ... BOFF STR VAL
+        oover                   ; STRICT BOFF STR VAL BOFF
+        oover                   ; STRICT BOFF STR VAL BOFF STR
+        oover                   ; STRICT BOFF STR VAL BOFF STR VAL
+        push PK_TV_FIELD_MAPPED ; STRICT BOFF STR VAL BOFF STR VAL EVENT
+        .e emit_tv_field_event @field ; STRICT BOFF STR VAL
    .c }
         ;; Evaluate the field's post optcond and constraints
         .e handle_struct_field_constraints @struct_type, @field
@@ -1525,75 +1542,6 @@
         return
         .end
 
-;;; RAS_MACRO_EMIT_FIELD_EVENT @field_type
-;;; ( EVENT -- )
-;;;
-;;; Call a tracing event EVENT handler passing the following arguments
-;;; to it:  ( ANY Pk_Type STR OFF -- )
-;;;
-;;; Macro-arguments:
-;;;
-;;; @field_type is the type of the field for which the event is
-;;; called
-
-        .macro emit_field_event @field_type
-   .c if (pkl_tracer_p (RAS_COMPILER))
-   .c {
-        ;; Generate a PK_TV_FIELD_MAPPED tracer event.
-        ;; First, create an empty any[] array for the arguments.
-        push null               ; ... BOFF STR VAL ANYT
-        .call _pkl_mkclsn       ; ... BOFF STR VAL ANYT BOUNDER
-        mktya                   ; ... BOFF STR VAL ATYPE
-        push ulong<64>6         ; ... BOFF STR VAL ATYPE NELEM
-        mka                     ; ... BOFF STR VAL ARGS
-        ;; First any argument: field_value
-        over                    ; ... BOFF STR VAL ARGS VAL
-        tor                     ; ... BOFF STR VAL ARGS [VAL]
-        push ulong<64>0         ; ... BOFF STR VAL ARGS 0UL [VAL]
-        rot                     ; ... BOFF STR ARGS 0UL VAL [VAL]
-        ains                    ; ... BOFF STR ARGS [VAL]
-        ;; Second any argument: field_type
-        .let @field_type = PKL_AST_STRUCT_TYPE_FIELD_TYPE (@field)
-        .e typeof @field_type
-                                ; ... BOFF STR ARGS PKTYPE [VAL]
-        push ulong<64>1         ; ... BOFF STR ARGS PKTYPE 1UL [VAL]
-        swap                    ; ... BOFF STR ARGS 1UL PKTYPE [VAL]
-        ains                    ; ... BOFF STR ARGS [VAL]
-        ;; Third any argument: field_name
-        over                    ; ... BOFF STR ARGS STR [VAL]
-        tor                     ; ... BOFF STR ARGS [VAL STR]
-        push ulong<64>2         ; ... BOFF STR ARGS 2UL [VAL STR]
-        rot                     ; ... BOFF ARGS 2UL STR [VAL STR]
-        ;; ... but beware of anonyous fields
-        bnn .name_ok
-        drop
-        push ""
-.name_ok:
-        ains                    ; ... BOFF ARGS [VAL STR]
-        ;; Fourth any argument: field_offset
-        over                    ; ... BOFF ARGS BOF [VAL STR]
-        tor                     ; ... BOFF ARGS [VAL STR BOFF]
-        push ulong<64>3         ; ... BOFF ARGS 2UL [VAL STR BOFF]
-        rot                     ; ... ARGS 2UL BOFF [VAL STR BOFF]
-        push ulong<64>1         ; ... ARGS 2UL BOFF 1UL [VAL STR BOFF]
-        mko                     ; ... ARGS 2UL OFFSET [VAL STR BOFF]
-        ains                    ; ... ARGS [VAL STR BOFF]
-        ;; Empty the return stack before calling.
-        fromr                   ; ... ARGS BOFF [VAL STR]
-        swap                    ; ... BOFF ARGS [VAL STR]
-        fromr                   ; ... BOFF ARGS STR [VAL]
-        swap                    ; ... BOFF STR ARGS [VAL]
-        fromr                   ; ... BOFF STR ARGS VAL
-        swap                    ; ... BOFF STR VAL ARGS
-        ;; Push the first argument (event number) and call handler
-        push PK_TV_FIELD_CONSTRUCTED ; ... BOFF STR VAL ARGS TV
-        swap
-        .call _pkl_dispatch_tv  ; ... BOFF STR VAL null
-        ;; And back to the initial state!
-        drop                    ; ... BOFF STR VAL
-   .c }
-        .end
-
 ;;; RAS_MACRO_STRUCT_FIELD_CONSTRUCTOR
 ;;; ( SCT -- VAL INT )
 ;;;
@@ -1607,11 +1555,11 @@
 ;;; @type_struct is an AST node denoting the type of the struct
 ;;; being constructed.
 ;;;
-;;; @field_type is an AST node denoting the type of the field to
-;;; construct.
+;;; @field is an AST node denoting the field being constructed.
 
-        .macro struct_field_constructor @type_struct @field_type
+        .macro struct_field_constructor @type_struct @field
                                 ; SCT
+        .let @field_type = PKL_AST_STRUCT_TYPE_FIELD_TYPE (@field)
  .c if (PKL_AST_TYPE_S_UNION_P (@type_struct))
  .c {
         push PVM_E_CONSTRAINT
@@ -1619,8 +1567,25 @@
  .c }
  .c     PKL_PASS_SUBPASS (@field_type);
                                 ; VAL
+ .c if (pkl_tracer_p (RAS_COMPILER))
+ .c {
+        dup                     ; VAL VAL
+        ;; XXX we need the real field bit-offset here.
+        push ulong<64>0         ; VAL VAL BOFF
+   .c pkl_ast_node field_name = PKL_AST_STRUCT_TYPE_FIELD_NAME (@field);
+   .c if (field_name)
+   .c {
+        .let #fname = pvm_make_string (PKL_AST_IDENTIFIER_POINTER (field_name))
+        push #fname             ; VAL VAL BOFF STR
+   .c }
+   .c else
+   .c {
+        push null               ; VAL VAL BOFF null
+   .c }
+        rot                     ; VAL BOFF (STR|null) VAL
         push PK_TV_FIELD_CONSTRUCTED
-        .e emit_field_event @field_type
+        .e emit_tv_field_event @field
+ .c }
  .c if (PKL_AST_TYPE_S_UNION_P (@type_struct))
  .c {
         pope
@@ -1807,7 +1772,7 @@
  .c }
  .c else
  .c {
-        .e struct_field_constructor @type_struct, @field_type ; SCT ENAME EVAL INT
+        .e struct_field_constructor @type_struct, @field ; SCT ENAME EVAL INT
  .c   if (PKL_AST_TYPE_S_UNION_P (@type_struct))
  .c   {
         .label .alternative_ok
@@ -2804,7 +2769,10 @@
 ;;; ( -- Pk_Type )
 ;;;
 ;;; Given a type, calculate its Pk_Type value and push it on the
-;;; stack
+;;; stack.
+;;;
+;;; If Pk_Type is not available as a type at the time this macro
+;;; is expanded then push PVM_NULL.
 
         .macro typeof @type
         .let @pktype = pkl_env_lookup_type (pkl_get_env (PKL_PASS_COMPILER), \

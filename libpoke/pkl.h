@@ -208,6 +208,7 @@ int pkl_tracer_p (pkl_compiler compiler);
 
 #define PK_TV_FIELD_MAPPED 0
 #define PK_TV_FIELD_ABSENT 1
+#define PK_TV_FIELD_CONSTRUCTED 2
 
 /* Set/get the quiet_p flag in/from the compiler.  If this flag is
    set, the compiler emits as few output as possible.  */

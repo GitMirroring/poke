@@ -2546,6 +2546,23 @@ instruction over ()
   end
 end
 
+# Instruction: oover
+#
+# Push a copy of the element under the under top of the main stack.
+#
+# Stack: ( A B C -- A B C A )
+
+instruction oover ()
+  code
+    pvm_val c = JITTER_TOP_STACK ();
+    pvm_val a;
+    JITTER_DROP_STACK ();
+    a = JITTER_UNDER_TOP_STACK ();
+    JITTER_PUSH_STACK (c);
+    JITTER_PUSH_STACK (a);
+  end
+end
+
 # Instruction: rot
 #
 # Rotate the three elements at the top of the main stack, clock-wise.
