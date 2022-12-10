@@ -1658,6 +1658,7 @@
         .label .optcond_post_ok
         .label .omitted_field
         .label .got_value
+        .label .constructed_value
         .let @field_initializer = PKL_AST_STRUCT_TYPE_FIELD_INITIALIZER (@field)
         .let @field_type = PKL_AST_STRUCT_TYPE_FIELD_TYPE (@field)
  .c   if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD)
@@ -1783,7 +1784,28 @@
  .c   }
         drop                                    ; SCT ENAME EVAL
  .c }
+        ba .constructed_value
 .got_value:
+ .c if (pkl_tracer_p (RAS_COMPILER))
+ .c {
+        dup                     ; VAL VAL
+        ;; XXX we need the real field bit-offset here.
+        push ulong<64>0         ; VAL VAL BOFF
+   .c pkl_ast_node field_name = PKL_AST_STRUCT_TYPE_FIELD_NAME (@field);
+   .c if (field_name)
+   .c {
+        .let #fname = pvm_make_string (PKL_AST_IDENTIFIER_POINTER (field_name))
+        push #fname             ; VAL VAL BOFF STR
+   .c }
+   .c else
+   .c {
+        push null               ; VAL VAL BOFF null
+   .c }
+        rot                     ; VAL BOFF (STR|null) VAL
+        push PK_TV_FIELD_CONSTRUCTED
+        .e emit_tv_field_event @field
+ .c }
+.constructed_value:
         ;; If the field type is an array, emit a cast here so array
         ;; bounds are checked.  This is not done in promo because the
         ;; array bounders shall be evaluated in this lexical

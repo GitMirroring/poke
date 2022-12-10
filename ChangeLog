@@ -1,5 +1,11 @@
 2022-12-10  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-gen.pks (struct_constructor): Emit
+	tv_field_constructed event for fields for which there are
+	initializers in the constructor.
+
+2022-12-10  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-insn.def: Define oover.
 	* libpoke/pvm.jitter (oover): New instruction.
 	* libpoke/pkl-rt.pk (PK_TV_FIELD_CONSTRUCTED): Define.
