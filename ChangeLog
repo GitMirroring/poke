@@ -1,5 +1,13 @@
 2022-12-10  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-rt.pk (PK_TV_FIELD_CONSTRUCTED): Define.
+	* libpoke/pkl-gen.pks (emit_field_event): New macro.
+	* poke/pk-tracer.pk (pk_tv_action_field_mapped_constructed):
+	Rename from pk_tv_action_field_mapped and adapted to handle both
+	events.
+
+2022-12-10  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* testsuite/poke.pkl/scons-constraints-1.pk: Adapt to new
 	exception mesage.
 	* testsuite/poke.pkl/scons-constraints-2.pk: Likewise.

@@ -680,6 +680,24 @@ immutable var pk_tracer_p = 0;
      FIELD_OFFSET (offset<uint<64>,b>)
        Offset of the field just mapped.
 
+   A FIELD_CONSTRUCTED tracing event is generated every time a struct
+   or union field has been successfully constructed, but before its
+   constraints have been checked.  The event dispatch function is
+   passed the following arguments:
+
+     FIELD_VALUE (any)
+       The value of the field that has been constructed.
+
+     FIELD_Type (Pk_Type)
+       A Pk_Type describing the type of the field value.
+
+     FIELD_NAME (string)
+       The name of the field that was constructed.  If the field is
+       anonymous then an empty string is passed.
+
+     FIELD_OFFSET (offset<uint<64>,b>)
+       Offset of the field just constructed.
+
    A FIELD_ABSENT tracing event is generated every time an optional
    field is found to be absent when mapping or constructing a struct.
    The event dispatch function is passed the following arguments:
@@ -690,7 +708,8 @@ immutable var pk_tracer_p = 0;
 
 immutable var PK_TV_FIELD_MAPPED = 0;
 immutable var PK_TV_FIELD_ABSENT = 1;
-immutable var PK_TV_NUM_EVENTS = 2;
+immutable var PK_TV_FIELD_CONSTRUCTED = 2;
+immutable var PK_TV_NUM_EVENTS = 3;
 
 /* Tracing events can be handled by "actions".  Each action is
    implemented by an "event handler, which is a Poke function

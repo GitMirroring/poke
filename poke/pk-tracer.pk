@@ -16,10 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* Action for PK_TV_FIELD_{MAPPED,CONSTRUCTED} tracing events.  */
 
-/* Action for PK_TV_FIELD_MAPPED tracing events.  */
-
-fun pk_tv_action_field_mapped = (int<32> e, any[] args) void:
+fun pk_tv_action_field_mapped_constructed = (int<32> e, any[] args) void:
 {
   var field_value = args[0],
       field_type = args[1] as Pk_Type,
@@ -27,14 +26,17 @@ fun pk_tv_action_field_mapped = (int<32> e, any[] args) void:
       field_offset = args[3] as offset<uint<64>,b>;
 
   term_begin_class ("trace");
-  printf ("tracer: field_mapped: %<struct-field-name:%s%> = %v @ %v\n",
+  printf ("tracer: field_%s: %<struct-field-name:%s%> = %v @ %v\n",
+          e == PK_TV_FIELD_MAPPED ? "mapped" : "constructed",
           field_name == "" ? "<anonymous>" : field_name,
           field_value, field_offset);
   term_end_class ("trace");
 }
 
 pk_tracer_dispatch.set_action (PK_TV_FIELD_MAPPED,
-                               pk_tv_action_field_mapped);
+                               pk_tv_action_field_mapped_constructed);
+pk_tracer_dispatch.set_action (PK_TV_FIELD_CONSTRUCTED,
+                               pk_tv_action_field_mapped_constructed);
 
 /* Action for PK_TV_FIELD_ABSENT tracing events.  */
 
