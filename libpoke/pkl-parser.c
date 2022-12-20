@@ -67,6 +67,30 @@ pkl_parser_free (struct pkl_parser *parser)
   return;
 }
 
+static void
+remove_local_toplevels_1 (pkl_ast_node decl, void *)
+{
+  if (!PKL_AST_DECL_LOCAL_P (decl))
+    return;
+
+  pkl_ast_node decl_name = PKL_AST_DECL_NAME (decl);
+
+  PKL_AST_DECL_PREV_NAME (decl) = PKL_AST_IDENTIFIER_POINTER (decl_name);
+  PKL_AST_IDENTIFIER_POINTER (decl_name) = strdup ("");
+
+}
+
+/* Hide all toplevel variables declared LOCAL.  */
+
+static void
+remove_local_toplevels (pkl_env env)
+{
+  pkl_env_map_decls (env,
+                     PKL_AST_DECL_KIND_ANY,
+                     remove_local_toplevels_1,
+                     NULL);
+}
+
 /* Read from FD until end of file, parsing its contents as a PKL
    program.  Return 0 if the parsing was successful, 1 if there was a
    syntax error and 2 if there was a memory exhaustion.  */
@@ -108,6 +132,7 @@ pkl_parse_file (pkl_compiler compiler, pkl_env *env,
      discarded anyway.  XXX but it would be nice to fix this in the
      parser's destructor.  */
   assert (ret != 0 || pkl_env_toplevel_p (parser->env));
+  remove_local_toplevels (parser->env);
   pkl_parser_free (parser);
 
   return ret;
@@ -181,6 +206,7 @@ pkl_parse_buffer (pkl_compiler compiler, pkl_env *env,
      discarded anyway.  XXX but it would be nice to fix this in the
      parser's destructor.  */
   assert (ret != 0 || pkl_env_toplevel_p (parser->env));
+  remove_local_toplevels (parser->env);
   pkl_parser_free (parser);
 
   return ret;

@@ -1,3 +1,30 @@
+2022-12-20  Arsen Arsenović  <arsen@aarsen.me>
+
+	* libpoke/pkl-tab.y (field_modifier_list): New %union field.
+	Tracks modifiers applied to the current declaration.
+	(LOCAL): New keyword.
+	(program_elem): Remove ad-hoc IMMUTABLE support.
+	(unmodified_declaration): Rename from declaration, to replace it
+	with a wrapper that adds immutable and local modifiers.
+	(modifier): New non-terminal, matching an instances of immutable
+	and local.
+	(modifier_list): New non-terminal, zero or more modifiers.
+	(declaration): Match a modifier_list preceding an
+	unmodified_declaration and apply its modifiers.
+	* libpoke/pkl-parser.c (remove_local_toplevels_1): New function.
+	(remove_local_toplevels): New function that hides all variables
+	declared local.
+	(pkl_parse_file): Call remove_local_toplevels after parsing.
+	(pkl_parse_buffer): Ditto.
+	* libpoke/pkl-lex.l: Add "local" as a new token.
+	* libpoke/pkl-ast.h (PKL_AST_DECL_LOCAL_P): Add new declaration
+	property.  LOCAL_P is zero if a declaration should be available to
+	other parse runs (i.e. other files)
+	(struct pkl_ast_decl): Add local_p.
+	* libpoke/pkl-ast.c (pkl_ast_make_decl): Initialize LOCAL_P to
+	zero.
+	(pkl_ast_print_1): Dump the new LOCAL_P value.
+
 2022-12-07  Arsen Arsenović  <arsen@aarsen.me>
 
 	* doc/poke.texi (Top): Add Internationalization to menu.

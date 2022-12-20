@@ -270,6 +270,7 @@ S ::
 "apush"         { return APUSH; }
 "apop"          { return APOP; }
 "fun"           { return DEFUN; }
+"local"         { return LOCAL; }
 "method"        { return METHOD; }
 "type"          { return DEFTYPE; }
 "var"           { return DEFVAR; }

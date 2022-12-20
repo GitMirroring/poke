@@ -1103,7 +1103,7 @@ pkl_ast_node pkl_ast_type_incr_step (pkl_ast ast, pkl_ast_node type);
 
    PREV_NAME is used in order to cache the name in the declaration
    when the later is set to "" in re-definition of non-immutable
-   global objects.  See pkl-env.c to see how this field is used.
+   local or global objects.  See pkl-env.c to see how this field is used.
 
    INITIAL is the initial value of the entity.  The kind of node
    depends on what is being declared:
@@ -1124,7 +1124,10 @@ pkl_ast_node pkl_ast_type_incr_step (pkl_ast ast, pkl_ast_node type);
    corresponding to a struct field.
 
    IMMUTABLE_P indicates whether this declaration can be redefined.
-   Used when bootstrapping the compiler.  */
+   Used when bootstrapping the compiler.
+
+   LOCAL_P indicates that this declaration should be unregistered from the
+   toplevlel env when parsing is done.  */
 
 #define PKL_AST_DECL_KIND(AST) ((AST)->decl.kind)
 #define PKL_AST_DECL_NAME(AST) ((AST)->decl.name)
@@ -1135,6 +1138,7 @@ pkl_ast_node pkl_ast_type_incr_step (pkl_ast ast, pkl_ast_node type);
 #define PKL_AST_DECL_STRUCT_FIELD_P(AST) ((AST)->decl.struct_field_p)
 #define PKL_AST_DECL_IN_STRUCT_P(AST) ((AST)->decl.in_struct_p)
 #define PKL_AST_DECL_IMMUTABLE_P(AST) ((AST)->decl.immutable_p)
+#define PKL_AST_DECL_LOCAL_P(AST) ((AST)->decl.local_p)
 
 #define PKL_AST_DECL_KIND_ANY 0
 #define PKL_AST_DECL_KIND_VAR 1
@@ -1150,6 +1154,7 @@ struct pkl_ast_decl
   int struct_field_p;
   int in_struct_p;
   int immutable_p;
+  int local_p;
   char *source;
   char *prev_name;
   union pkl_ast_node *name;

@@ -381,6 +381,11 @@ load_module (struct pkl_parser *parser,
   enum pkl_ast_op opcode;
   int integer;
   char *exception_msg;
+  struct
+  {
+    char is_immutable : 1;
+    char is_local : 1;
+  } field_modifier_list;
 }
 
 %destructor {
@@ -445,6 +450,7 @@ load_module (struct pkl_parser *parser,
 %token UINTCONSTR        _("uint type constructor")
 %token OFFSETCONSTR      _("offset type constructor")
 %token DEFUN             _("keyword `fun'")
+%token LOCAL             _("keyword `local'")
 %token DEFSET            _("keyword `defset'")
 %token DEFTYPE           _("keyword `type'")
 %token DEFVAR            _("keyword `var'")
@@ -588,7 +594,7 @@ load_module (struct pkl_parser *parser,
 %type <ast> struct_type_field_label struct_type_computed_field
 %type <field_const_init> struct_type_field_constraint_and_init
 %type <ast> struct_type_field_optcond_pre struct_type_field_optcond_post
-%type <ast> declaration simple_declaration
+%type <ast> declaration simple_declaration unmodified_declaration
 %type <ast> defvar defvar_list deftype deftype_list
 %type <ast> defunit defunit_list
 %type <ast> function_specifier function_arg_list function_arg function_arg_initial
@@ -597,6 +603,7 @@ load_module (struct pkl_parser *parser,
 %type <ast> integral_struct
 %type <integer> struct_type_pinned integral_type_sign struct_or_union
 %type <integer> builtin endianness defun_or_method ass_exp_op mapop
+%type <field_modifier_list> modifier_list modifier
 
 /* The following two tokens are used in order to support several start
    rules: one is for parsing an expression, declaration or sentence,
@@ -708,11 +715,6 @@ program_elem_list:
 
 program_elem:
           declaration
-        | IMMUTABLE declaration
-          {
-            PKL_AST_DECL_IMMUTABLE_P ($2) = 1;
-            $$ = $2;
-          }
         | stmt
         | load
         ;
@@ -2059,7 +2061,7 @@ simple_declaration:
         | DEFUNIT defunit_list { $$ = $2; }
         ;
 
-declaration:
+unmodified_declaration:
         defun_or_method identifier
                 {
                   /* In order to allow for the function to be called
@@ -2115,6 +2117,44 @@ declaration:
                   pkl_parser->in_method_decl_p = 0;
                 }
         | simple_declaration ';' { $$ = $1; }
+        ;
+
+modifier:
+          IMMUTABLE
+            {
+              memset (&$$, 0, sizeof ($$));
+              $$.is_immutable = 1;
+            }
+        | LOCAL
+            {
+              memset (&$$, 0, sizeof ($$));
+              if (!pkl_env_toplevel_p (pkl_parser->env))
+                {
+                  pkl_error (pkl_parser->compiler, pkl_parser->ast, @1,
+                             "`local' only makes sense in global scope");
+                  YYERROR;
+                }
+              $$.is_local = 1;
+            }
+        ;
+
+modifier_list:
+          %empty { memset (&$$, 0, sizeof ($$)); }
+        | modifier_list modifier
+            {
+              $$ = $1;
+              $$.is_local |= $2.is_local;
+              $$.is_immutable |= $2.is_immutable;
+            }
+        ;
+
+declaration:
+          modifier_list unmodified_declaration
+            {
+              $$ = $2;
+              PKL_AST_DECL_IMMUTABLE_P ($$) = !!$1.is_immutable;
+              PKL_AST_DECL_LOCAL_P ($$) = !!$1.is_local;
+            }
         ;
 
 defun_or_method:
