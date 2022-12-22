@@ -1,3 +1,7 @@
+2022-12-22  Darshit Shah  <darnir@gnu.org>
+
+	* doc/poke.texi: Simplify Hyperlink setup by calling `make install`
+
 2022-12-10  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-gen.pks (struct_constructor): Emit

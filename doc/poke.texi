@@ -896,14 +896,8 @@ and install @command{app-client}:
 $ git clone https://gitlab.com/darnir/hyperlink-app-client
 $ cd hyperlink-app-client
 $ make
-$ cp app-client /location/in/$PATH/variable
+$ sudo make install
 @end example
-
-Next step is to copy the @file{app-client.desktop} file in the git
-repository to @file{$HOME/.local/share/applications}. This is a XDG
-Desktop Entry for the app-client. And let's most applications on your
-system know that this should be used to handle @code{app://}
-URIs. (See the @code{MimeType} field)
 
 This is enough for any utility (like terminals) that use
 @command{xdg-open} to do the right thing with hyperlinks.  However,
