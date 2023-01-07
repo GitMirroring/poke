@@ -66,18 +66,7 @@ type PCAP_Packet =
   struct
   {
     PCAP_PacketHeader header;
-
-    var body_offset = OFFSET;
-    var body_length = header.incl_len;
-
-    byte[0] @ body_offset + body_length; /* End-of-packet marker */
-
-    method get_body_offset = offset<uint32,B>: { return body_offset; }
-    method get_body_length = offset<uint32,B>: { return body_length; }
-    method get_body = byte[]:
-      {
-        return byte[body_length] @ body_offset;
-      }
+    byte[header.incl_len] body;
   };
 
 type PCAP =

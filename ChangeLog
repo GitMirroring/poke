@@ -1,3 +1,7 @@
+2022-01-07  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* pickles/pcap.pk (PCAP_Packet): Declare body as a byte array.
+
 2022-12-22  Darshit Shah  <darnir@gnu.org>
 
 	* doc/poke.texi: Simplify Hyperlink setup by calling `make install`
