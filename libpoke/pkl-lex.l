@@ -299,8 +299,6 @@ S ::
 "computed"      { return COMPUTED; }
 "immutable"     { return IMMUTABLE; }
 
-"__PKL_BUILTIN_GETENV__" {
-   if (yyextra->bootstrapped) { RESTORE_LOC; REJECT; } return BUILTIN_GETENV; }
 "__PKL_BUILTIN_TERM_GET_COLOR__" {
    if (yyextra->bootstrapped) { RESTORE_LOC; REJECT; } return BUILTIN_TERM_GET_COLOR; }
 "__PKL_BUILTIN_TERM_SET_COLOR__" {

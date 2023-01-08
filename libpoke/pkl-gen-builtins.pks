@@ -20,34 +20,6 @@
 ;;; Note that each macro should expand to the body of a function,
 ;;; and handle its arguments and return value whenever necessary.
 
-;;; RAS_MACRO_BUILTIN_IOHANDLER
-;;;
-;;; Body of the `iohandler' compiler built-in with prototype
-;;; (int<32> ios = get_ios) string
-
-        .macro builtin_iohandler
-        pushvar 0, 0
-        iohandler
-        nip
-        return
-        .end
-
-;;; RAS_MACRO_BUILTIN_GETENV
-;;;
-;;; Body of the `getenv' compiler built-in with prototype
-;;; (string name) string
-
-        .macro builtin_getenv
-        pushvar 0, 0
-        getenv
-        nip
-        bnn .env_var_found
-        push PVM_E_INVAL
-        raise
-.env_var_found:
-        return
-        .end
-
 ;;; RAS_MACRO_BUILTIN_GET_COLOR_BGCOLOR
 ;;;
 ;;; Body of the `term_get_color' and `term_get_bgcolor' compiler
@@ -127,17 +99,4 @@
    .c {
         popobc
    .c }
-        .end
-
-;;; RAS_MACRO_BUILTIN_UNSAFE_STRING_SET
-;;;
-;;; Body of the `__pkl_unsafe_string_set' compiler built-in with prototype
-;;; (string dst, uint<64> index, string str) void
-
-        .macro builtin_unsafe_string_set
-        pushvar 0, 0
-        pushvar 0, 1
-        pushvar 0, 2
-        strset
-        drop
         .end

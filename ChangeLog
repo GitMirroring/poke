@@ -1,5 +1,19 @@
 2023-01-08  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-gen-builtins.pks (builtin_iohandler): Remove.
+	* libpoke/pkl-tab.y (builtin): Remove rule for BUILTIN_IOHANDLER.
+	* libpoke/pkl-gen-builtins.pks (builtin_unsafe_string_set): Remove.
+	* libpoke/pkl-tab.y (builtin): Remove rule for BUILTIN_UNSAFE_STRING_SET.
+	* libpoke/pkl-ast.h (PKL_AST_BUILTIN_GETENV): Remove.
+	* libpoke/pkl-gen.c (pkl_gen_ps_comp_stmt): Remove case for
+	PKL_AST_BUILTIN_GETENV.
+	* libpoke/pkl-lex.l: Remove rule for __PKL_BUILTIN_GETENV__.
+	* libpoke/pkl-tab.y (builtin): Remove rule for BUILTIN_GETENV.
+	* libpoke/pkl-gen-builtins.pks (builtin_getenv): Remove.
+	* libpoke/pkl-rt.pk (getenv): Rewrite as a normal function.
+
+2023-01-08  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* testsuite/poke.cmd/sdiff-2.pk: Adapt to new value printing.
 	* testsuite/poke.cmd/sdiff-3.pk: Likewise.
 	* testsuite/poke.cmd/sdiff-4.pk: Likewise.
