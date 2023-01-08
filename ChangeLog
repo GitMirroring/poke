@@ -1,5 +1,11 @@
 2023-01-08  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-rt.pk (_pkl_stroref): Make immutable.
+	(_pkl_aoref): Likewise.
+	(_pkl_aoref_complete): Likewise.
+
+2023-01-08  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-gen-builtins.pks (builtin_iohandler): Remove.
 	* libpoke/pkl-tab.y (builtin): Remove rule for BUILTIN_IOHANDLER.
 	* libpoke/pkl-gen-builtins.pks (builtin_unsafe_string_set): Remove.

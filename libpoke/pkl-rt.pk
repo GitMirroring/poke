@@ -548,8 +548,8 @@ immutable fun _pkl_assert = (uint<64> cond, string msg, string filename,
    element stored in the array at that exact offset.  If no such
    element exists in the array then raise E_out_of_bounds.  */
 
-fun _pkl_aoref_complete = (any[] array, offset<uint<64>,1> idx,
-                           uint<64> elem_bsize) any:
+immutable fun _pkl_aoref_complete = (any[] array, offset<uint<64>,1> idx,
+                                     uint<64> elem_bsize) any:
 {
   var len = array'length;
 
@@ -567,7 +567,7 @@ fun _pkl_aoref_complete = (any[] array, offset<uint<64>,1> idx,
    stored in the array at that exact offset.  If no such element exists
    in the array then raise E_out_of_bounds.  */
 
-fun _pkl_aoref = (any[] array, offset<uint<64>,1> idx) any:
+immutable fun _pkl_aoref = (any[] array, offset<uint<64>,1> idx) any:
 {
   var len = array'length;
 
@@ -592,7 +592,7 @@ fun _pkl_aoref = (any[] array, offset<uint<64>,1> idx) any:
    past the end of the string or the offset is not byte-aligned then
    raise E_out_of_bounds.  */
 
-fun _pkl_stroref = (string str, offset<uint<64>,1> idx) uint<8>:
+immutable fun _pkl_stroref = (string str, offset<uint<64>,1> idx) uint<8>:
 {
   if (idx'magnitude % 8 != 0 || idx >= str'size)
     raise E_out_of_bounds;
