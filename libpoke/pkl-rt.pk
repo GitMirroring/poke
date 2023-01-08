@@ -922,8 +922,11 @@ immutable fun open = (string handler, uint<64> flags = 0) int<32>:
 }
 
 immutable fun close = (int<32> ios) void:
-  __PKL_BUILTIN_CLOSE__;
-
+{
+  _pkl_run_ios_close_pre_hook (ios);
+  asm ("close" :: ios);
+  _pkl_run_ios_close_hook (ios);
+}
 
 /* Printer and formatter for values of type `any'.  */
 

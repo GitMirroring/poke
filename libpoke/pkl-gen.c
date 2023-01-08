@@ -725,9 +725,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_comp_stmt)
     {
       switch (comp_stmt_builtin)
         {
-        case PKL_AST_BUILTIN_CLOSE:
-          RAS_MACRO_BUILTIN_CLOSE;
-          break;
         case PKL_AST_BUILTIN_GETENV:
           RAS_MACRO_BUILTIN_GETENV;
           break;
