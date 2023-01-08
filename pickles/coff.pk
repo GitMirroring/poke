@@ -81,7 +81,6 @@ var COFF_TEXT = ".text",
 type COFF_File_Hdr =
   struct
   {
-
     fun set_arch = (int arch) int: { coff_arch = arch; return 1; }
 
     uint<16>           magic = coff_arch_magic[0] : magic in coff_arch_magic
