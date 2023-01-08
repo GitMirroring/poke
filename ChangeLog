@@ -1,3 +1,8 @@
+2023-01-08  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-rt.pk (_pkl_print_format_any): Simplify inline asm
+	snippet.
+
 2022-01-07  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* pickles/pcap.pk (PCAP_Packet): Declare body as a byte array.

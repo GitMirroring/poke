@@ -1186,16 +1186,7 @@ immutable fun _pkl_print_format_any = (any val,
     if (ctx.pretty_print_p && vm_opprint)
     {
       var struct_has_pp
-        = asm int<32>: ("srefmnt
-                         bn .no_pp
-                         drop3
-                         nip
-                         ba .has_pp
-                       .no_pp:
-                         drop3
-                         drop
-                       .has_pp:"
-                       : 0, 1, val, "_print");
+        = asm int<32>: ("srefmnt; nn; nip3" : val, "_print");
 
       if (struct_has_pp)
         {
