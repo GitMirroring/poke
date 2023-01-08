@@ -1,6 +1,6 @@
 /* decls.c -- Unit tests related to declarations and libpoke.  */
 
-/* Copyright (C) 2022 Jose E. Marchesi */
+/* Copyright (C) 2022, 2023 Jose E. Marchesi */
 
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
