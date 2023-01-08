@@ -1,5 +1,10 @@
 2023-01-08  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* pickles/diff.pk (format_value): Remove function.
+	Use regular `format' for `any' values.
+
+2023-01-08  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-ast.h (PKL_AST_BUILTIN_CLOSE): Remove.
 	* libpoke/pkl-gen.c (pkl_gen_ps_comp_stmt): Remove case for
 	PKL_AST_BUILTIN_CLOSE.

@@ -188,39 +188,6 @@ fun diff_structured = (any a, any b,
       return "." + ename;
   }
 
-  fun format_value = (any val) string:
-  {
-    /* Note we don't try to be exhaustive here.  */
-    if (val isa string)
-      return format ("%v", val as string);
-    else if (val isa int<64>)
-      return format ("%v", val as int<64>);
-    else if (val isa uint<64>)
-      return format ("%v", val as uint<64>);
-    else if (val isa int<32>)
-      return format ("%v", val as int<32>);
-    else if (val isa uint<32>)
-      return format ("%v", val as uint<32>);
-    else if (val isa int<16>)
-      return format ("%v", val as int<16>);
-    else if (val isa uint<16>)
-      return format ("%v", val as uint<16>);
-    else if (val isa offset<int<64>,B>)
-      return format ("%v", val as offset<int<64>,B>);
-    else if (val isa offset<uint<64>,B>)
-      return format ("%v", val as offset<uint<64>,B>);
-    else if (val isa offset<int<32>,B>)
-      return format ("%v", val as offset<int<32>,B>);
-    else if (val isa offset<uint<32>,B>)
-      return format ("%v", val as offset<uint<32>,B>);
-    else if (val isa offset<int<16>,B>)
-      return format ("%v", val as offset<int<16>,B>);
-    else if (val isa offset<uint<16>,B>)
-      return format ("%v", val as offset<uint<16>,B>);
-    else
-      return "";
-  }
-
   fun get_bytes = (any v) byte[]:
   {
     try return byte[v'size] @ v'ios : v'offset;
@@ -263,7 +230,7 @@ fun diff_structured = (any a, any b,
           thunk.addrem :what what :off val'eoffset (idx) :siz val'esize (idx)
                        :bytes get_elem_bytes (val, idx)
                        :name prefix + format_ename (val'ename (idx))
-                       :value format_value (val'elem (idx));
+                       :value format ("%v", val'elem (idx));
       }
     }
   }
@@ -308,8 +275,8 @@ fun diff_structured = (any a, any b,
                            :boff b'eoffset (idx) :bsiz b'esize (idx)
                            :abytes a_bytes :bbytes b_bytes
                            :aname a_full_name :bname b_full_name
-                           :avalue format_value (a'elem (idx))
-                           :bvalue format_value (b'elem (idx));
+                           :avalue format ("%v", a'elem (idx))
+                           :bvalue format ("%v", b'elem (idx));
           }
         }
         else if (b_is_present)
@@ -340,8 +307,8 @@ fun diff_structured = (any a, any b,
                      :boff b'offset :bsiz b'size
                      :abytes a_bytes :bbytes b_bytes
                      :aname prefix_a :bname prefix_b
-                     :avalue format_value (a)
-                     :bvalue format_value (b);
+                     :avalue format ("%v", a)
+                     :bvalue format ("%v", b);
     }
   }
   catch (Exception e)
