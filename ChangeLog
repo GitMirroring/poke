@@ -1,5 +1,15 @@
 2023-01-08  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-ast.h (PKL_AST_BUILTIN_SET_IOS): Remove.
+	* libpoke/pkl-gen.c (pkl_gen_ps_comp_stmt): Remove case for
+	PKL_AST_BUILTIN_SET_IOS.
+	* libpoke/pkl-lex.l: Remove rule for __PKL_BUILTIN_SET_IOS__.
+	* libpoke/pkl-tab.y (builtin): Remove rule for BUILTIN_SET_IOS.
+	* libpoke/pkl-gen-builtins.pks (builtin_set_ios): Remove.
+	* libpoke/pkl-rt.pk (set_ios): Rewrite as a normal function.
+
+2023-01-08  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-rt.pk (_pkl_print_format_any): Simplify inline asm
 	snippet.
 

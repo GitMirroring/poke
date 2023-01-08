@@ -299,8 +299,6 @@ S ::
 "computed"      { return COMPUTED; }
 "immutable"     { return IMMUTABLE; }
 
-"__PKL_BUILTIN_SET_IOS__" {
-   if (yyextra->bootstrapped) { RESTORE_LOC; REJECT; } return BUILTIN_SET_IOS; }
 "__PKL_BUILTIN_CLOSE__" {
    if (yyextra->bootstrapped) { RESTORE_LOC; REJECT; } return BUILTIN_CLOSE; }
 "__PKL_BUILTIN_GETENV__" {

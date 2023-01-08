@@ -850,7 +850,13 @@ immutable fun get_ios = int<32>:
 }
 
 immutable fun set_ios = (int<32> ios) int<32>:
-  __PKL_BUILTIN_SET_IOS__;
+{
+  asm ("popios" :: ios);
+  _pkl_run_ios_set_hook (ios);
+  /* Always return `true' to facilitate using this function
+     in struct constraint expressions.  */
+  return 1;
+}
 
 immutable fun iosize = (int<32> ios = get_ios) offset<uint<64>,8>:
 {

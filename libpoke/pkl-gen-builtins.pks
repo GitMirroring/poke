@@ -20,24 +20,6 @@
 ;;; Note that each macro should expand to the body of a function,
 ;;; and handle its arguments and return value whenever necessary.
 
-;;; RAS_MACRO_BUILTIN_SET_IOS
-;;;
-;;; Body of the `set_ios' compiler built-in with prototype
-;;; (int<32> ios) int<32>
-
-        .macro builtin_set_ios
-        pushvar 0, 0
-        dup
-        popios
-        ;; Call the set_ios hook.
-        .call _pkl_run_ios_set_hook
-        drop
-        ;; Always return `true' to facilitate using this function
-        ;; in struct constraint expressions.
-        push int<32>1
-        return
-        .end
-
 ;;; RAS_MACRO_BUILTIN_CLOSE
 ;;;
 ;;; Body of the `close' compiler built-in with prototype
