@@ -140,16 +140,14 @@ immutable var exception_code = lambda _ExceptionCodeGenerator:
 
 immutable fun getenv = (string name) string:
 {
-  /* XXX avoid calling getenv twice here, once we have proper
-     support for `push PVM_E_INVAL' in the run-time assembler.  */
-  var env_var_found = asm int<32>: ("getenv; nn; nip2" : name);
+  var env_var = asm any: ("getenv; nip" : name);
 
-  if (!env_var_found)
+  if (!asm int<32>: ("nn; nip" : env_var))
     raise Exception { code = EC_inval,
                       name = "invalid argument",
                       msg = "no environment variable " + name };
 
-  return asm string: ("getenv; nip" : name);
+  return env_var as string;
 }
 
 /* Compiler built-ins. */
