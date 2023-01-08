@@ -1,5 +1,18 @@
 2023-01-08  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* testsuite/poke.cmd/sdiff-2.pk: Adapt to new value printing.
+	* testsuite/poke.cmd/sdiff-3.pk: Likewise.
+	* testsuite/poke.cmd/sdiff-4.pk: Likewise.
+	* testsuite/poke.cmd/sdiff-8.pk: Likewise.
+	* testsuite/poke.cmd/sdiff-1.pk: Run sdiff with :values 0.
+	* testsuite/poke.cmd/sdiff-5.pk: Likewise.
+	* testsuite/poke.cmd/sdiff-6.pk: Likewise.
+	* testsuite/poke.cmd/sdiff-7.pk: Likewise.
+	* testsuite/poke.cmd/sdiff-10.pk: Likewise.
+	* testsuite/poke.cmd/sdiff-12.pk: Likewise.
+
+2023-01-08  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* pickles/diff.pk (format_value): Remove function.
 	Use regular `format' for `any' values.
 

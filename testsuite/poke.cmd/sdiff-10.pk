@@ -7,7 +7,7 @@ type Bar = struct { byte x; Foo y; };
 
 /* { dg-command {.file foo} } */
 /* { dg-command {.file bar} } */
-/* { dg-command { sdiff :a (Bar @ 0 : 0#B) :b (Bar @ 1 : 0#B) } } */
+/* { dg-command { sdiff :a (Bar @ 0 : 0#B) :b (Bar @ 1 : 0#B) :values 0 } } */
 /* { dg-output "@@ 0x00\\+2,0x00\\+2 @@\n" } */
 /* { dg-output "-00 +a.x *\n" } */
 /* { dg-output "\\+01 +b.x *\n" } */

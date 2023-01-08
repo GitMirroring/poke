@@ -3,7 +3,7 @@
 
 type Foo = struct { byte sz; byte[sz] data; };
 
-/* { dg-command { sdiff :a (Foo @ 1#B) :b (Foo @ 0#B) } } */
+/* { dg-command { sdiff :a (Foo @ 1#B) :b (Foo @ 0#B) :values 0 } } */
 /* { dg-output "@@ 0x01\\+5,0x00\\+1 @@\n" } */
 /* { dg-output "-04 +a.sz *\n" } */
 /* { dg-output "\\+00 +b.sz *\n" } */

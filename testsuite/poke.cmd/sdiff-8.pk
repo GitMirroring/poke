@@ -8,7 +8,7 @@ type Foo = struct { byte sz; string str; };
 /* { dg-command {.file bar} } */
 /* { dg-command { sdiff :a (Foo @ 0 : 0#B) :b (Foo @ 1 : 0#B) } } */
 /* { dg-output "@@ 0x00\\+4,0x00\\+5 @@\n" } */
-/* { dg-output "-00 +a.sz *\n" } */
-/* { dg-output "\\+01 +b.sz *\n" } */
+/* { dg-output "-00 +a.sz +0UB\n" } */
+/* { dg-output "\\+01 +b.sz +1UB\n" } */
 /* { dg-output "-27 28 00 +a.str +\"'\\(\" *\n" } */
 /* { dg-output "\\+29 30 31 00 +b.str +\"\\)01\" *\n" } */
