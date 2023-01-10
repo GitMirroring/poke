@@ -1,3 +1,37 @@
+2022-01-11  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* pickles/riscv.pk (RV_Opcode): Remove the re-definition.
+	(RV32_OPCODE_*): Change the type from `RV_Opcode' to `uint<7>'.
+	(RV32_InsnFmt_I): Adapt.
+	(RV32_InsnFmt_S): Likewise.
+	(RV32_InsnFmt_B): Likewise.
+	(RV32_InsnFmt_U): Likewise.
+	(RV32_InsnFmt_J): Likewise.
+	(rv32_lui): Likewise.
+	(rv32_auipc): Likewise.
+	(rv32_jal): Likewise.
+	(_rv32_branch): Likewise.
+	(rv32_jalr): Likewise.
+	(rv32_lb): Likewise.
+	(rv32_lh): Likewise.
+	(rv32_lw): Likewise.
+	(rv32_lbu): Likewise.
+	(rv32_lhu): Likewise.
+	(rv32_addi): Likewise.
+	(rv32_slti): Likewise.
+	(rv32_sltiu): Likewise.
+	(rv32_xori): Likewise.
+	(rv32_ori): Likewise.
+	(rv32_andi): Likewise.
+	(rv32_slli): Likewise.
+	(rv32_srli): Likewise.
+	(rv32_srai): Likewise.
+	(rv32_fence): Likewise.
+	(rv32_ecall): Likewise.
+	(rv32_ebreak): Likewise.
+	(_rv32_op): Likewise.
+	(_rv32_s): Likewise.
+
 2023-01-11  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* pickles/ieee754.pk: New pickle for IEEE 754 floating-point
