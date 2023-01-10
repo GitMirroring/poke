@@ -329,8 +329,14 @@ set_script_args (int argc, char *argv[])
 
   /* Look for -L SCRIPT */
   for (i = 0; i < argc; ++i)
-    if (STREQ (argv[i], "-L"))
-      break;
+    {
+      char *optarg = argv[i];
+
+      if (strlen (optarg) >= 2
+          && optarg[0] == '-'
+          && optarg[1] == 'L')
+        break;
+    }
 
   /* Any argument after SCRIPT is an argument for the script.  */
   i = i + 2;

@@ -1,3 +1,7 @@
+2023-01-10  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* poke/poke.c (set_script_args): Fix check for -L in argv.
+
 2023-01-08  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-rt.pk (getenv): Avoid calling the `gettenv'
