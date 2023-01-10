@@ -1,0 +1,120 @@
+/* ieee754-test.pk - Tests for the IEEE 754 pickle.  */
+
+/* Copyright (C) 2022-2023 The poke authors.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+load pktest;
+load ieee754;
+
+var data = open("*data*");
+
+var tests = [
+  PkTest {
+    name = "binary16",
+    func = lambda (string name) void:
+      {
+        var one = 0x3c00 as Float16;
+
+        assert (one.sign == 0);
+        assert (one.exp == 0xf);
+        assert (one.frac == 0);
+        assert (!one.is_inf_p);
+        assert (!one.is_nan_p);
+
+        var minus_two = 0xc000 as Float16;
+
+        assert (minus_two.sign == 1);
+        assert (minus_two.exp == 0x10); // 2^(16-15) = 2^1 = 2
+        assert (minus_two.frac == 0);
+        assert (!minus_two.is_inf_p);
+        assert (!minus_two.is_nan_p);
+
+        var random = 0x5144 as Float16;
+
+        assert (random.sign == 0);
+        assert (random.exp == 0x14); // 42
+        assert (random.frac == 0x144); // .125
+        assert (!random.is_inf_p);
+        assert (!random.is_nan_p);
+
+        var posinf = 0b0111110000000000 as Float16;
+
+        assert (posinf.is_inf_p);
+        assert (!posinf.is_nan_p);
+      },
+  },
+  PkTest {
+    name = "binary32",
+    func = lambda (string name) void:
+      {
+        var one = 0x3f800000 as Float32;
+
+        assert (one.sign == 0);
+        assert (one.exp == 127); // 2^(127-127) == 2^0 == 1
+        assert (one.frac == 0);
+        assert (format ("%f32d", +one) == "1.0000000");
+
+        var minus_two = 0xc0000000 as Float32;
+
+        assert (minus_two.sign == 1);
+        assert (minus_two.exp == 128); // 2^(128-127) == 2^1 == 1
+        assert (minus_two.frac == 0);
+        assert (format ("%f32d", +minus_two) == "-2.0000000");
+
+        var random = 0x42288659 as Float32;
+
+        assert (random.sign == 0);
+        assert (random.exp == 0x84);
+        assert (random.frac == 0x288659);
+        assert (format ("%f32d", +random) == "42.1311989");
+
+        uint<8>[4] @ data : 0#B = [ 0xa4UB, 0x70UB, 0x45UB, 0x41UB];
+
+        type little_32 = struct { little uint<32> f; };
+        var l32 = (little_32 @ data : 0#B).f as Float32;
+
+        assert (l32.sign == 0);
+        assert (l32.exp - 127 == 3);
+        assert (l32.frac == 0x4570a4);
+
+        // Reverse the four bytes:
+        uint<8>[4] @ data : 0#B = [ 0x41UB, 0x45UB, 0x70UB, 0xa4UB];
+
+        type big_32 = struct { big uint<32> f; };
+        var b32 = (big_32 @ data : 0#B).f as Float32;
+
+        assert (b32 == l32);
+      },
+  },
+    PkTest {
+    name = "binary64",
+    func = lambda (string name) void:
+      {
+        var pi = 0x400921fb54442eeaUL as Float64;
+
+        assert (pi.sign == 0);
+        assert (pi.exp == 0b10000000000);
+        assert (pi.frac
+                == 0b1001001000011111101101010100010001000010111011101010U);
+        assert (format ("%f64d", +pi) == "3.141592653590000");
+      },
+  },
+];
+
+var ok = pktest_run (tests);
+
+close (data);
+exit(ok ? 0 : 1);

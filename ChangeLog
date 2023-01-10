@@ -1,5 +1,13 @@
 2023-01-11  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* pickles/ieee754.pk: New pickle for IEEE 754 floating-point
+	numbers based on initial code from apache2.
+	* pickles/Makefile.am (dist_pickles_DATA): Add new pickle.
+	* testsuite/poke.pickles/ieee754-test.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
+2023-01-11  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-insn.def (formatf32): Add new instruction.
 	(formatf64): Likewise.
 	* libpoke/pvm.jitter (FORMATF): New macro for formatting

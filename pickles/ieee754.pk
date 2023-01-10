@@ -1,0 +1,64 @@
+/* ieee754.pk - IEEE Standard for Floating-Point Arithmetic.  */
+
+/* Copyright (C) 2022-2023 The poke authors.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+type IEEE754_binary16 =
+  struct int<16>
+  {
+    uint<1> sign;
+    uint<5> exp;
+    uint<10> frac; // aka significand, aka mantissa.
+
+    method is_nan_p  = int: { return exp == 0x1f && frac != 0; }
+    method is_snan_p = int: { return exp == 0x1f && (frac & 0x200U); }
+    method is_qnan_p = int: { return exp == 0x1f && !(frac & 0x200U); }
+    method is_inf_p  = int: { return exp == 0x1f && frac == 0; }
+  };
+
+type IEEE754_binary32 =
+  struct int<32>
+  {
+    uint<1> sign;
+    uint<8> exp;
+    uint<23> frac; // aka significand, aka mantissa.
+
+    method is_nan_p  = int: { return exp == 0xff && frac != 0; }
+    method is_snan_p = int: { return exp == 0xff && (frac & 0x400000U); }
+    method is_qnan_p = int: { return exp == 0xff && !(frac & 0x400000U); }
+    method is_inf_p  = int: { return exp == 0xff && frac == 0; }
+
+    method _print = void: { printf ("#<%f32d>", sign:::exp:::frac); }
+  };
+
+type IEEE754_binary64 =
+  struct int<64>
+  {
+    uint<1> sign;
+    uint<11> exp;
+    uint<52> frac; // aka significand, aka mantissa.
+
+    method is_nan_p  = int: { return exp == 0x7ff && frac != 0; }
+    method is_snan_p = int: { return exp == 0x7ff && (frac & 0x4000000000000U); }
+    method is_qnan_p = int: { return exp == 0x7ff && !(frac & 0x4000000000000U); }
+    method is_inf_p  = int: { return exp == 0x7ff && frac == 0; }
+
+    method _print = void: { printf ("#<%f64d>", sign:::exp:::frac); }
+  };
+
+type Float16 = IEEE754_binary16;
+type Float32 = IEEE754_binary32;
+type Float64 = IEEE754_binary64;
