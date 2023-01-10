@@ -314,7 +314,6 @@ Description:
 +    int i : i > 1,
 +            i % 2 == 0;
 + };
-Target: 3.0
 
 Summary: Named annotations in struct types
 Component: Language
@@ -373,7 +372,6 @@ Description:
 +       BSON_Code_Scope value;
 +     } js_scope;
 +   }
-Target: 3.0
 
 Summary: Implement {beginning,end}-of-defun-function functions in poke-mode
 Component: Emacs
@@ -613,7 +611,6 @@ Description:
 + The second option is more coherent with the constructors like int<16>.
 + But it will require a lexical trick TYPE<.
 RFC: yes
-Target: 3.0
 
 Summary: Add error recovery support to the compiler
 Component: Compiler
@@ -632,13 +629,11 @@ Summary: Constant-fold array trims
 Component: Compiler
 Kind: OPT
 Priority: 3
-Target: 3.0
 
 Summary: Constant-fold array casts
 Component: Compiler
 Kind: OPT
 Priority: 3
-Target: 3.0
 
 Summary: Constant-fold `isa' expressions
 Component: Compiler
@@ -818,7 +813,6 @@ Description:
 + any case.  This applies to constraints, array bounds, etc.
 +
 + For example: type Foo = union { int i; int j : i != 10; }
-Target: 3.0
 
 Summary: Remove call to `abort' in pkl-lex.l
 Component: Compiler
@@ -951,7 +945,6 @@ Description:
 + The pvm_cls values should be expanded to hold the name of
 + the closure (optional, can be "") and we can also use this
 + name for disassemblying.
-Target: 3.0
 
 Summary: Location tracking in PVM
 Component: PVM
