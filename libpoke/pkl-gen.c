@@ -1462,49 +1462,83 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_format)
       /* Generate code to put the value on the stack.  */
       PKL_PASS_SUBPASS (exp);
 
-      /* Everything except %v.  */
-      if (!PKL_AST_FORMAT_ARG_VALUE_P (arg))
+      if (PKL_AST_FORMAT_ARG_VALUE_P (arg))
+        {
+          /* Generate code to format the literal value (%v).  */
+          exp_type = PKL_AST_TYPE (exp);
+          arg_omode = PKL_AST_FORMAT_ARG_FORMAT_MODE (arg);
+          arg_odepth = PKL_AST_FORMAT_ARG_FORMAT_DEPTH (arg);
+
+          /* Set the argument's own omode and odepth, saving
+             the VM's own.  */
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSHOM); /* OMODE */
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                        pvm_make_int (arg_omode, 32)); /* OMODE NOMODE */
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_POPOM);  /* OMODE */
+
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSHOD); /* OMODE ODEPTH */
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                        pvm_make_int (arg_odepth, 32)); /* OMODE ODEPTH NODEPTH */
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_POPOD);   /* OMODE ODEPTH */
+
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ROT); /* OMODE ODEPTH EXP */
+
+          /* Format the value.  */
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                        pvm_make_int (0, 32)); /* OMODE ODEPTH EXP DEPTH */
+          PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_FORMATER);
+          PKL_PASS_SUBPASS (exp_type); /* OMODE ODEPTH STR */
+          PKL_GEN_POP_CONTEXT;
+
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NROT); /* STR OMODE ODEPTH */
+
+          /* Restore the current omode and odepth in the VM.  */
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_POPOD); /* ARR STR OMODE */
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_POPOM); /* ARR STR */
+        }
+      else if (PKL_AST_FORMAT_ARG_FLOATING_POINT_P (arg))
+        {
+          enum pkl_asm_insn insn;
+          pvm_val prec
+              = pvm_make_uint (PKL_AST_FORMAT_ARG_FLOATING_POINT_PREC (arg),
+                               32);
+
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, prec); /* ARR EXP PREC */
+
+          switch (PKL_AST_FORMAT_ARG_FLOATING_POINT_WIDTH (arg))
+            {
+            case PKL_AST_FORMAT_ARG_FLOATING_POINT_WIDTH_SINGLE:
+              insn = PKL_INSN_FORMATF32;
+              break;
+            case PKL_AST_FORMAT_ARG_FLOATING_POINT_WIDTH_DOUBLE:
+              insn = PKL_INSN_FORMATF64;
+              break;
+            default:
+              assert (0 && "unreachable reached");
+            }
+          switch (PKL_AST_FORMAT_ARG_FLOATING_POINT_STYLE (arg))
+            {
+            case 'f':
+              pkl_asm_insn (PKL_GEN_ASM, insn, 0);  /* ARR STR */
+              break;
+            case 'e':
+              pkl_asm_insn (PKL_GEN_ASM, insn, 1);  /* ARR STR */
+              break;
+            case 'g':
+              pkl_asm_insn (PKL_GEN_ASM, insn, 2);  /* ARR STR */
+              break;
+            default:
+              assert (0 && "unreachable reached");
+            }
+        }
+      else
         {
           pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
                         base ? pvm_make_int (base, 32) : PVM_NULL);
-          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_FORMAT, PKL_AST_TYPE (exp));
-          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, pvm_make_ulong (nstr++, 64));
-          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP);
-          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_AINS);
-          goto fmt_suffix;
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_FORMAT,
+                        PKL_AST_TYPE (exp));  /* ARR STR */
         }
 
-      /* Generate code to format the literal value (%v).  */
-      exp_type = PKL_AST_TYPE (exp);
-      arg_omode = PKL_AST_FORMAT_ARG_FORMAT_MODE (arg);
-      arg_odepth = PKL_AST_FORMAT_ARG_FORMAT_DEPTH (arg);
-
-      /* Set the argument's own omode and odepth, saving
-         the VM's own.  */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSHOM); /* OMODE */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
-                    pvm_make_int (arg_omode, 32)); /* OMODE NOMODE */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_POPOM);  /* OMODE */
-
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSHOD); /* OMODE ODEPTH */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
-                    pvm_make_int (arg_odepth, 32)); /* OMODE ODEPTH NODEPTH */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_POPOD);   /* OMODE ODEPTH */
-
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ROT); /* OMODE ODEPTH EXP */
-
-      /* Format the value.  */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
-                    pvm_make_int (0, 32)); /* OMODE ODEPTH EXP DEPTH */
-      PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_FORMATER);
-      PKL_PASS_SUBPASS (exp_type); /* OMODE ODEPTH STR */
-      PKL_GEN_POP_CONTEXT;
-
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NROT); /* STR OMODE ODEPTH */
-
-      /* Restore the current omode and odepth in the VM.  */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_POPOD); /* ARR STR OMODE */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_POPOM); /* ARR STR */
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
                     pvm_make_ulong (nstr++, 64)); /* ARR STR IDX */
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP);  /* ARR IDX STR */
@@ -1641,6 +1675,41 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_print_stmt)
                   /* Restore the current omode and odepth in the VM.  */
                   pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_POPOD); /* OMODE */
                   pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_POPOM); /* _ */
+                }
+              else if (PKL_AST_FORMAT_ARG_FLOATING_POINT_P (arg))
+                {
+                  enum pkl_asm_insn insn;
+                  pvm_val prec = pvm_make_uint (
+                      PKL_AST_FORMAT_ARG_FLOATING_POINT_PREC (arg), 32);
+
+                  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, prec); /* EXP PREC */
+
+                  switch (PKL_AST_FORMAT_ARG_FLOATING_POINT_WIDTH (arg))
+                    {
+                    case PKL_AST_FORMAT_ARG_FLOATING_POINT_WIDTH_SINGLE:
+                      insn = PKL_INSN_FORMATF32;
+                      break;
+                    case PKL_AST_FORMAT_ARG_FLOATING_POINT_WIDTH_DOUBLE:
+                      insn = PKL_INSN_FORMATF64;
+                      break;
+                    default:
+                      assert (0 && "unreachable reached");
+                    }
+                  switch (PKL_AST_FORMAT_ARG_FLOATING_POINT_STYLE (arg))
+                    {
+                    case 'f':
+                      pkl_asm_insn (PKL_GEN_ASM, insn, 0);  /* STR */
+                      break;
+                    case 'e':
+                      pkl_asm_insn (PKL_GEN_ASM, insn, 1);  /* STR */
+                      break;
+                    case 'g':
+                      pkl_asm_insn (PKL_GEN_ASM, insn, 2);  /* STR */
+                      break;
+                    default:
+                      assert (0 && "unreachable reached");
+                    }
+                  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PRINTS);
                 }
               else
                 {

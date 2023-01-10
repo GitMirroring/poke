@@ -875,6 +875,27 @@ late-header-c
     JITTER_PUSH_STACK (pvm_make_string ((OUT)));                            \
   } while (0)
 
+#define FORMATF(RESULT,NUM,PREC,STYLE,TYPEF)                                \
+  do                                                                        \
+    {                                                                       \
+      static const char STYLES[] = { 'f', 'e', 'g' };                       \
+      TYPEF x;                                                              \
+      int n;                                                                \
+      char fmt[16];                                                         \
+                                                                            \
+      PVM_ASSERT (sizeof (x) == sizeof (NUM));                              \
+      PVM_ASSERT ((STYLE) < 3);                                             \
+                                                                            \
+      memcpy (&x, &(NUM), sizeof (NUM));                                    \
+      n = snprintf (fmt, sizeof (fmt), "%%.%u%c", (unsigned)(PREC),         \
+                    STYLES[(STYLE) % 3]);                                   \
+      if (n == -1)                                                          \
+        PVM_RAISE_DFL (PVM_E_CONV);                                         \
+      n = asprintf (&(RESULT), fmt, x);                                     \
+      if (n == -1)                                                          \
+        PVM_RAISE_DFL (PVM_E_CONV);                                         \
+    }                                                                       \
+  while (0)
   end
 end
 
@@ -2396,6 +2417,75 @@ instruction formatlu (?n)
     char res[64 + 2 /* suffix */ + 1 /* nul */];
 
     PVM_FORMATL (res, sizeof (res), ULONG, uint64_t, 0 /* signed_p */, base);
+  end
+end
+
+# Instruction: formatf32
+#
+# Given a UINT (that should be interpreted as a 32-bit floating-point
+# number), and a UINT (as the conversion precision), push the string
+# representation of the floating-point number with specified precision.
+#
+# The formatting style is given by a literal parameters.
+# Style 0 corresponds to %f-tag which converts the number in the style
+# [-]ddd.ddd where the number of digits after the decimal-point character
+# is the equal to the precision.
+# Style 1 corresponds to %e-tag which converts the number in the style
+# [-]d.ddde+-dd (so called scientific notation).  Precision for this
+# style also means the number of digits after the decimal-point character.
+# Style 2 corresponds to %g-tag which choose either %f style or %e based
+# on the length of the repsentation.  For this style, precision specify
+# the number of significant numbers.
+#
+# Stack: ( UINT UINT -- STR )
+
+instruction formatf32 (?n 0 1 2)
+  branching # because of PVM_RAISE_DIRECT
+  code
+    char *result = NULL;
+    uint32_t num = PVM_VAL_UINT (JITTER_UNDER_TOP_STACK ());
+    unsigned style = (unsigned)JITTER_ARGN0;
+    uint32_t precision = PVM_VAL_UINT (JITTER_TOP_STACK ());
+
+    JITTER_DROP_STACK ();
+    FORMATF (result, num, precision, style, float);
+    JITTER_TOP_STACK () = pvm_make_string (result);
+    free (result);
+  end
+end
+
+# Instruction: formatf64
+#
+# Given a ULONG (that should be interpreted as a 64-bit floating-point
+# number), and a UINT (as the conversion precision), push the string
+# representation of the floating-point number with specified precision.
+# The formatting style is given by a literal parameters.
+#
+# The formatting style is given by a literal parameters.
+# Style 0 corresponds to %f-tag which converts the number in the style
+# [-]ddd.ddd where the number of digits after the decimal-point character
+# is the equal to the precision.
+# Style 1 corresponds to %e-tag which converts the number in the style
+# [-]d.ddde+-dd (so called scientific notation).  Precision for this
+# style also means the number of digits after the decimal-point character.
+# Style 2 corresponds to %g-tag which choose either %f style or %e based
+# on the length of the repsentation.  For this style, precision specify
+# the number of significant numbers.
+#
+# Stack: ( ULONG UINT -- STR )
+
+instruction formatf64 (?n 0 1 2)
+  branching # because of PVM_RAISE_DIRECT
+  code
+    char *result = NULL;
+    uint64_t num = PVM_VAL_ULONG (JITTER_UNDER_TOP_STACK ());
+    unsigned style = (unsigned)JITTER_ARGN0;
+    uint32_t precision = PVM_VAL_UINT (JITTER_TOP_STACK ());
+
+    JITTER_DROP_STACK ();
+    FORMATF (result, num, precision, style, double);
+    JITTER_TOP_STACK () = pvm_make_string (result);
+    free (result);
   end
 end
 

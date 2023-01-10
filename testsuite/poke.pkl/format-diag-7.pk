@@ -1,0 +1,3 @@
+/* { dg-do compile } */
+
+format (" %f64b %s", 1U, "Hi"); /* { dg-error "" } */

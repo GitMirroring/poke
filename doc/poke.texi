@@ -14485,6 +14485,41 @@ integers.
 Same as @code{%i}, but for unsigned integers.
 @item %c
 A shorter way to write @code{%u8c}.
+@item %f@var{bits}[.@var{precision}]d
+@itemx %e@var{bits}[.@var{precision}]d
+@itemx %g@var{bits}[.@var{precision}]d
+These tags accept integral values, that are cast to an integral value
+of width @var{bits} and then interpreted as an IEEE 754 floating-point
+number.  Currently, valid values for @var{bits} are 32 and 64.
+
+When using @code{%f} tag, the number will be printed in decimal
+notation in the style @code{[-]ddd.ddd}, where the number of digits
+after the decimal-point character is equal to the @var{precision}
+specification.  The default @var{precision} for @code{%f32} tag
+is 7 and for @code{%f64} is 15.
+
+The @code{%e} tag will print the number in the style
+@code{[-]d.ddde+-dd} where there is one digit (which is non-zero
+if the floating-point number is non-zero) before the decimal-point
+character and the number of digits after it is equal the
+@var{precision}.  The exponent always contains at least two digits;
+if the value is zero, the exponent is 00.
+
+And @code{%g} tag will print the number in style @code{%f} or
+@code{%e}.  The @var{precision} specifies the number of the
+significant digits.  Style @code{%e} is used if the exponent from its
+conversion is less than -4 or greater than or equal to the
+@var{precision}.  Trailing zeros are removed from the fractional
+part of the result; a decimal point appears only if it is followed
+by at least one digit.
+
+@example
+(poke) printf ("%f64d\n", 0x40091eb851eb851fUL);
+3.140000000000000
+(poke) printf ("pi:%e32d\n", 0x4048f5c3U)
+pi:3.1400001e+00
+@end example
+
 @item %v
 Print the value printed representation of the argument, which can be
 of any type including complex types like arrays and structs.  This is

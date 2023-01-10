@@ -1,0 +1,3 @@
+/* { dg-do run } */
+
+printf ("%s%f64d%u64x", "FP!", 0x40091eb851eb851fU, 0x40091eb851eb851fU); /* { dg-output {FP!3.14000000000000040091eb851eb851f} } */

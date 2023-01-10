@@ -1,0 +1,4 @@
+/* { dg-do run } */
+
+/* { dg-command {format ("%e64.15d", 0x40091eb851eb851fU);} } */
+/* { dg-output {"3.140000000000000e\+00"} } */

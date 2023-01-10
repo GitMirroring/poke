@@ -1,0 +1,4 @@
+/* { dg-do run } */
+
+/* { dg-command {format ("%s%f32.7d%u32x", "FP!", 0x4048f5c3U, 0x4048f5c3U);} } */
+/* { dg-output {"FP!3.14000014048f5c3"} } */

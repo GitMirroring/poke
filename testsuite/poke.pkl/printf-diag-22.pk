@@ -1,0 +1,3 @@
+/* { dg-do compile } */
+
+printf ("AB%f32oCD", 1U); /* { dg-error "" } */

@@ -1416,6 +1416,30 @@ pkl_ast_node pkl_ast_make_format (pkl_ast ast, pkl_ast_node fmt,
    VALUE_P indicates whether the argument shall be printed as a PVM
    value or not (whether this argument corresponds to a %v or not).
 
+   FLOATING_POINT_P indicates whether the argument shall be interpreted
+   as a floating-point number.  The argument should be an integral
+   value.  The argument will be casted to UINT<32> for 32-bit
+   floating-point numbers and will be casted to UINT<64> for 64-bit
+   floating-point numbers.
+
+   FLOATING_POINT_STYLE specify the floating-point style; the valid
+   values are 'f', 'e' and 'g' ASCII characters.  'f' corresponds to
+   %f-tag which print the number in the style [-]ddd.ddd where
+   the number of digits after the decimal-point character is equal to
+   the precision.  'e' corresponds to %e-tag which print the number in
+   the style [-]d.ddde+-dd (so called scientific notation).  And finally
+   'g' which corresponds to %g-tag will choose either %f or %e based on
+   length of the representation.
+
+   FLOATING_POINT_PREC specify the precision in string representation
+   of the floating-point number.  For %f- and %g-tags it specify the
+   number of digits after the decimal-point character, and for %g-tag
+   it specify the number of significant digits.
+
+   FLOATING_POINT_WIDTH specify the width of the floating-point number
+   which can be one the PKL_AST_FLOATING_POINT_WIDTH_* constants defined
+   below.
+
    FORMAT_MODE and FORMAT_DEPTH specify how the argument shall be
    printed if VALUE_P is true.  FORMAT_MODE can be one of the
    PKL_AST_FORMAT_MODE_* constants defined below, while FORMAT_DEPTH can
@@ -1427,11 +1451,22 @@ pkl_ast_node pkl_ast_make_format (pkl_ast ast, pkl_ast_node fmt,
 #define PKL_AST_FORMAT_ARG_BEGIN_SC(AST) ((AST)->format_arg.begin_sc)
 #define PKL_AST_FORMAT_ARG_END_SC(AST) ((AST)->format_arg.end_sc)
 #define PKL_AST_FORMAT_ARG_VALUE_P(AST) ((AST)->format_arg.value_p)
+#define PKL_AST_FORMAT_ARG_FLOATING_POINT_P(AST)     \
+  ((AST)->format_arg.floating_point_p)
+#define PKL_AST_FORMAT_ARG_FLOATING_POINT_STYLE(AST) \
+  ((AST)->format_arg.floating_point_style)
+#define PKL_AST_FORMAT_ARG_FLOATING_POINT_PREC(AST)  \
+  ((AST)->format_arg.floating_point_prec)
+#define PKL_AST_FORMAT_ARG_FLOATING_POINT_WIDTH(AST) \
+  ((AST)->format_arg.floating_point_width)
 #define PKL_AST_FORMAT_ARG_FORMAT_MODE(AST) ((AST)->format_arg.format_mode)
 #define PKL_AST_FORMAT_ARG_FORMAT_DEPTH(AST) ((AST)->format_arg.format_depth)
 
 #define PKL_AST_FORMAT_MODE_FLAT 0
 #define PKL_AST_FORMAT_MODE_TREE 1
+
+#define PKL_AST_FORMAT_ARG_FLOATING_POINT_WIDTH_SINGLE 0
+#define PKL_AST_FORMAT_ARG_FLOATING_POINT_WIDTH_DOUBLE 1
 
 struct pkl_ast_format_arg
 {
@@ -1441,6 +1476,10 @@ struct pkl_ast_format_arg
   char *end_sc;
   int base;
   int value_p;
+  int floating_point_p;
+  int floating_point_style;
+  unsigned floating_point_prec;
+  int floating_point_width;
   int format_mode;
   int format_depth;
   char *suffix;

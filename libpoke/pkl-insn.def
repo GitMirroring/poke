@@ -252,6 +252,8 @@ PKL_DEF_INSN(PKL_INSN_FORMATI,"n","formati")
 PKL_DEF_INSN(PKL_INSN_FORMATIU,"n","formatiu")
 PKL_DEF_INSN(PKL_INSN_FORMATL,"n","formatl")
 PKL_DEF_INSN(PKL_INSN_FORMATLU,"n","formatlu")
+PKL_DEF_INSN(PKL_INSN_FORMATF32,"n","formatf32")
+PKL_DEF_INSN(PKL_INSN_FORMATF64,"n","formatf64")
 
 /* Offset instructions.  */
 

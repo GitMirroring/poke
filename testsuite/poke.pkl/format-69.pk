@@ -1,0 +1,4 @@
+/* { dg-do run } */
+
+/* { dg-command {format ("%s%f64.14d%s", "!", 0x40091eb851eb851fU, "XxX");} } */
+/* { dg-output {"!3.14000000000000XxX"} } */

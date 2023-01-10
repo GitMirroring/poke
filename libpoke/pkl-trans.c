@@ -25,6 +25,7 @@
 #include <string.h>
 #include <xalloc.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #include "pk-utils.h"
 
@@ -684,7 +685,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_format)
   pkl_ast_node format_fmt = PKL_AST_FORMAT_FMT (format);
   char *fmt, *p;
   pkl_ast_node t, arg;
-  int ntag, nargs = 0;
+  int ntag, nargs = PKL_AST_FORMAT_NARGS (format);
   pkl_ast_node types = NULL, prev_arg = NULL;
   const char *msg = NULL;
   /* XXX this hard limit should go away.  */
@@ -872,6 +873,110 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_format)
                   msg = _("expected decimal digit after %u");
                 else
                   msg = _("expected decimal digit after %i");
+
+                goto invalid_tag;
+              }
+            ntag++;
+            break;
+          }
+        case 'f':
+        case 'e':
+        case 'g':
+          {
+            unsigned int bits;
+
+            PKL_AST_FORMAT_ARG_FLOATING_POINT_P (arg) = 1;
+            PKL_AST_FORMAT_ARG_FLOATING_POINT_STYLE (arg) = p[1];
+
+            if (p[2] >= '0' && p[2] <= '9')
+              {
+                int next_idx;
+
+                if (p[3] >= '0' && p[3] <= '9')
+                  {
+                    bits = (p[2] - '0') * 10 + (p[3] - '0');
+                    next_idx = 4;
+                  }
+                else
+                  {
+                    bits = p[2] - '0';
+                    next_idx = 3;
+                  }
+
+                if (bits == 0 || !(/*bits == 16 ||*/ bits == 32 || bits == 64))
+                  {
+                    msg = _("invalid bit-width for a floating-point number");
+                    goto invalid_tag;
+                  }
+                PKL_AST_FORMAT_ARG_FLOATING_POINT_WIDTH (arg)
+                    = bits == 32
+                          ? PKL_AST_FORMAT_ARG_FLOATING_POINT_WIDTH_SINGLE
+                          : PKL_AST_FORMAT_ARG_FLOATING_POINT_WIDTH_DOUBLE;
+
+                if (p[next_idx] == '.')
+                  {
+                    int prec_begin_idx;
+                    char tmp;
+                    long prec;
+
+                    prec_begin_idx = ++next_idx;
+                    while (p[next_idx] >= '0' && p[next_idx] <= '9')
+                      ++next_idx;
+                    if (next_idx == prec_begin_idx)
+                      {
+                        msg = _("expected a precision number after dot");
+                        goto invalid_tag;
+                      }
+                    tmp = p[next_idx];
+                    p[next_idx] = '\0';
+                    errno = 0;
+                    prec = strtol (&p[prec_begin_idx], NULL, 10);
+                    if (errno != 0)
+                      {
+                        msg = _("invalid precision");
+                        goto invalid_tag;
+                      }
+                    PKL_AST_FORMAT_ARG_FLOATING_POINT_PREC (arg)
+                        = (unsigned)prec;
+                    p[next_idx] = tmp;
+                  }
+                else
+                  {
+                    PKL_AST_FORMAT_ARG_FLOATING_POINT_PREC (arg)
+                        = bits == 32 ? 7 : 15;
+                  }
+
+                switch (p[next_idx])
+                  {
+                  case 'b': PKL_AST_FORMAT_ARG_BASE (arg) = 2; break;
+                  case 'o': PKL_AST_FORMAT_ARG_BASE (arg) = 8; break;
+                  case 'd': PKL_AST_FORMAT_ARG_BASE (arg) = 10; break;
+                  case 'x': PKL_AST_FORMAT_ARG_BASE (arg) = 16; break;
+                  default:
+                    msg = _("invalid base");
+                    goto invalid_tag;
+                  }
+
+                if (PKL_AST_FORMAT_ARG_BASE (arg) != 10)
+                  {
+                    msg = _("only base 10 is supported for floating-point numbers");
+                    goto invalid_tag;
+                  }
+
+                atype = pkl_ast_make_integral_type (PKL_PASS_AST,
+                                                    bits, /*signed_p*/ 0);
+                types = pkl_ast_chainon (types, atype);
+
+                p += ++next_idx;
+              }
+            else
+              {
+                if (p[1] == 'f')
+                  msg = _("expected decimal digit after %f");
+                else if (p[1] == 'e')
+                  msg = _("expected decimal digit after %e");
+                else
+                  msg = _("expected decimal digit after %g");
 
                 goto invalid_tag;
               }

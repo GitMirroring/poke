@@ -1,0 +1,3 @@
+/* { dg-do run } */
+
+printf ("%g64.15d", 0x40091eb851eb851fU); /* { dg-output {3.14} } */

@@ -1390,7 +1390,46 @@ EXTRA_DIST = \
   poke.pkl/format-40.pk \
   poke.pkl/format-41.pk \
   poke.pkl/format-42.pk \
+  poke.pkl/format-43.pk \
+  poke.pkl/format-44.pk \
+  poke.pkl/format-45.pk \
+  poke.pkl/format-46.pk \
+  poke.pkl/format-47.pk \
+  poke.pkl/format-48.pk \
+  poke.pkl/format-49.pk \
+  poke.pkl/format-50.pk \
+  poke.pkl/format-51.pk \
+  poke.pkl/format-52.pk \
+  poke.pkl/format-53.pk \
+  poke.pkl/format-54.pk \
+  poke.pkl/format-55.pk \
+  poke.pkl/format-56.pk \
+  poke.pkl/format-57.pk \
+  poke.pkl/format-58.pk \
+  poke.pkl/format-59.pk \
+  poke.pkl/format-60.pk \
+  poke.pkl/format-61.pk \
+  poke.pkl/format-62.pk \
+  poke.pkl/format-63.pk \
+  poke.pkl/format-64.pk \
+  poke.pkl/format-65.pk \
+  poke.pkl/format-66.pk \
+  poke.pkl/format-67.pk \
+  poke.pkl/format-68.pk \
+  poke.pkl/format-69.pk \
+  poke.pkl/format-70.pk \
+  poke.pkl/format-71.pk \
+  poke.pkl/format-72.pk \
+  poke.pkl/format-73.pk \
   poke.pkl/format-diag-1.pk \
+  poke.pkl/format-diag-2.pk \
+  poke.pkl/format-diag-3.pk \
+  poke.pkl/format-diag-4.pk \
+  poke.pkl/format-diag-5.pk \
+  poke.pkl/format-diag-6.pk \
+  poke.pkl/format-diag-7.pk \
+  poke.pkl/format-diag-8.pk \
+  poke.pkl/format-diag-9.pk \
   poke.pkl/format-optcond-1.pk \
   poke.pkl/format-optcond-2.pk \
   poke.pkl/format-optcond-3.pk \
@@ -1979,6 +2018,37 @@ EXTRA_DIST = \
   poke.pkl/printf-38.pk \
   poke.pkl/printf-39.pk \
   poke.pkl/printf-40.pk \
+  poke.pkl/printf-41.pk \
+  poke.pkl/printf-42.pk \
+  poke.pkl/printf-43.pk \
+  poke.pkl/printf-44.pk \
+  poke.pkl/printf-45.pk \
+  poke.pkl/printf-46.pk \
+  poke.pkl/printf-47.pk \
+  poke.pkl/printf-48.pk \
+  poke.pkl/printf-49.pk \
+  poke.pkl/printf-50.pk \
+  poke.pkl/printf-51.pk \
+  poke.pkl/printf-52.pk \
+  poke.pkl/printf-53.pk \
+  poke.pkl/printf-54.pk \
+  poke.pkl/printf-55.pk \
+  poke.pkl/printf-56.pk \
+  poke.pkl/printf-57.pk \
+  poke.pkl/printf-58.pk \
+  poke.pkl/printf-59.pk \
+  poke.pkl/printf-60.pk \
+  poke.pkl/printf-61.pk \
+  poke.pkl/printf-62.pk \
+  poke.pkl/printf-63.pk \
+  poke.pkl/printf-64.pk \
+  poke.pkl/printf-65.pk \
+  poke.pkl/printf-66.pk \
+  poke.pkl/printf-67.pk \
+  poke.pkl/printf-68.pk \
+  poke.pkl/printf-69.pk \
+  poke.pkl/printf-70.pk \
+  poke.pkl/printf-71.pk \
   poke.pkl/printf-binary-1.pk \
   poke.pkl/printf-binary-2.pk \
   poke.pkl/printf-binary-3.pk \
@@ -2008,6 +2078,14 @@ EXTRA_DIST = \
   poke.pkl/printf-diag-15.pk \
   poke.pkl/printf-diag-16.pk \
   poke.pkl/printf-diag-18.pk \
+  poke.pkl/printf-diag-19.pk \
+  poke.pkl/printf-diag-20.pk \
+  poke.pkl/printf-diag-21.pk \
+  poke.pkl/printf-diag-22.pk \
+  poke.pkl/printf-diag-23.pk \
+  poke.pkl/printf-diag-24.pk \
+  poke.pkl/printf-diag-25.pk \
+  poke.pkl/printf-diag-26.pk \
   poke.pkl/printf-value-1.pk \
   poke.pkl/printf-value-2.pk \
   poke.pkl/printf-value-3.pk \

@@ -1,0 +1,3 @@
+/* { dg-do run } */
+
+printf ("Xx%f32.7dxX", 0x4048f5c3U); /* { dg-output {Xx3.1400001xX} } */

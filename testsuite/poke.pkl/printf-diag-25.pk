@@ -1,0 +1,3 @@
+/* { dg-do compile } */
+
+printf ("%f64o", 1U); /* { dg-error "" } */

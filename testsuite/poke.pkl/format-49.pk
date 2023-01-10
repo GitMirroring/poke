@@ -1,0 +1,4 @@
+/* { dg-do run } */
+
+/* { dg-command {format ("Xx%f32.7d", 0x4048f5c3U);} } */
+/* { dg-output {"Xx3.1400001"} } */

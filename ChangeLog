@@ -1,3 +1,104 @@
+2023-01-11  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-insn.def (formatf32): Add new instruction.
+	(formatf64): Likewise.
+	* libpoke/pvm.jitter (FORMATF): New macro for formatting
+	floating-point numbers.
+	(formatf32): New instruction for formatting floating-point
+	numbers.
+	(formatf64): Likewise.
+	* libpoke/pkl-ast.h (PKL_AST_FORMAT_ARG_FLOATING_POINT_P): New macro.
+	(PKL_AST_FORMAT_ARG_FLOATING_POINT_STYLE): Likewise.
+	(PKL_AST_FORMAT_ARG_FLOATING_POINT_PREC): Likewise.
+	(PKL_AST_FORMAT_ARG_FLOATING_POINT_WIDTH): Likewise.
+	(PKL_AST_FORMAT_ARG_FLOATING_POINT_WIDTH_SINGLE): Likewise.
+	(PKL_AST_FORMAT_ARG_FLOATING_POINT_WIDTH_DOUBLE): Likewise.
+	(struct pkl_ast_format_arg): Add new fields for floating-points.
+	* libpoke/pkl-trans.c (pkl_trans1_ps_format): Handle new specifiers
+	for floating-point numbers (f, e, g).
+	* libpoke/pkl-gen.c (pkl_gen_pr_format): Add support for formatting
+	and printing floating-point numbers.
+	* doc/poke.texi (Printing): Add new format specifiers to the table.
+	* testsuite/poke.pkl/format-43.pk: New test.
+	* testsuite/poke.pkl/format-44.pk: Likewise.
+	* testsuite/poke.pkl/format-45.pk: Likewise.
+	* testsuite/poke.pkl/format-46.pk: Likewise.
+	* testsuite/poke.pkl/format-47.pk: Likewise.
+	* testsuite/poke.pkl/format-48.pk: Likewise.
+	* testsuite/poke.pkl/format-49.pk: Likewise.
+	* testsuite/poke.pkl/format-50.pk: Likewise.
+	* testsuite/poke.pkl/format-51.pk: Likewise.
+	* testsuite/poke.pkl/format-52.pk: Likewise.
+	* testsuite/poke.pkl/format-53.pk: Likewise.
+	* testsuite/poke.pkl/format-54.pk: Likewise.
+	* testsuite/poke.pkl/format-55.pk: Likewise.
+	* testsuite/poke.pkl/format-56.pk: Likewise.
+	* testsuite/poke.pkl/format-57.pk: Likewise.
+	* testsuite/poke.pkl/format-58.pk: Likewise.
+	* testsuite/poke.pkl/format-59.pk: Likewise.
+	* testsuite/poke.pkl/format-60.pk: Likewise.
+	* testsuite/poke.pkl/format-61.pk: Likewise.
+	* testsuite/poke.pkl/format-62.pk: Likewise.
+	* testsuite/poke.pkl/format-63.pk: Likewise.
+	* testsuite/poke.pkl/format-64.pk: Likewise.
+	* testsuite/poke.pkl/format-65.pk: Likewise.
+	* testsuite/poke.pkl/format-66.pk: Likewise.
+	* testsuite/poke.pkl/format-67.pk: Likewise.
+	* testsuite/poke.pkl/format-68.pk: Likewise.
+	* testsuite/poke.pkl/format-69.pk: Likewise.
+	* testsuite/poke.pkl/format-70.pk: Likewise.
+	* testsuite/poke.pkl/format-71.pk: Likewise.
+	* testsuite/poke.pkl/format-72.pk: Likewise.
+	* testsuite/poke.pkl/format-73.pk: Likewise.
+	* testsuite/poke.pkl/format-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/format-diag-3.pk: Likewise.
+	* testsuite/poke.pkl/format-diag-4.pk: Likewise.
+	* testsuite/poke.pkl/format-diag-5.pk: Likewise.
+	* testsuite/poke.pkl/format-diag-6.pk: Likewise.
+	* testsuite/poke.pkl/format-diag-7.pk: Likewise.
+	* testsuite/poke.pkl/format-diag-8.pk: Likewise.
+	* testsuite/poke.pkl/format-diag-9.pk: Likewise.
+	* testsuite/poke.pkl/printf-41.pk: Likewise.
+	* testsuite/poke.pkl/printf-42.pk: Likewise.
+	* testsuite/poke.pkl/printf-43.pk: Likewise.
+	* testsuite/poke.pkl/printf-44.pk: Likewise.
+	* testsuite/poke.pkl/printf-45.pk: Likewise.
+	* testsuite/poke.pkl/printf-46.pk: Likewise.
+	* testsuite/poke.pkl/printf-47.pk: Likewise.
+	* testsuite/poke.pkl/printf-48.pk: Likewise.
+	* testsuite/poke.pkl/printf-49.pk: Likewise.
+	* testsuite/poke.pkl/printf-50.pk: Likewise.
+	* testsuite/poke.pkl/printf-51.pk: Likewise.
+	* testsuite/poke.pkl/printf-52.pk: Likewise.
+	* testsuite/poke.pkl/printf-53.pk: Likewise.
+	* testsuite/poke.pkl/printf-54.pk: Likewise.
+	* testsuite/poke.pkl/printf-55.pk: Likewise.
+	* testsuite/poke.pkl/printf-56.pk: Likewise.
+	* testsuite/poke.pkl/printf-57.pk: Likewise.
+	* testsuite/poke.pkl/printf-58.pk: Likewise.
+	* testsuite/poke.pkl/printf-59.pk: Likewise.
+	* testsuite/poke.pkl/printf-60.pk: Likewise.
+	* testsuite/poke.pkl/printf-61.pk: Likewise.
+	* testsuite/poke.pkl/printf-62.pk: Likewise.
+	* testsuite/poke.pkl/printf-63.pk: Likewise.
+	* testsuite/poke.pkl/printf-64.pk: Likewise.
+	* testsuite/poke.pkl/printf-65.pk: Likewise.
+	* testsuite/poke.pkl/printf-66.pk: Likewise.
+	* testsuite/poke.pkl/printf-67.pk: Likewise.
+	* testsuite/poke.pkl/printf-68.pk: Likewise.
+	* testsuite/poke.pkl/printf-69.pk: Likewise.
+	* testsuite/poke.pkl/printf-70.pk: Likewise.
+	* testsuite/poke.pkl/printf-71.pk: Likewise.
+	* testsuite/poke.pkl/printf-diag-19.pk: Likewise.
+	* testsuite/poke.pkl/printf-diag-20.pk: Likewise.
+	* testsuite/poke.pkl/printf-diag-21.pk: Likewise.
+	* testsuite/poke.pkl/printf-diag-22.pk: Likewise.
+	* testsuite/poke.pkl/printf-diag-23.pk: Likewise.
+	* testsuite/poke.pkl/printf-diag-24.pk: Likewise.
+	* testsuite/poke.pkl/printf-diag-25.pk: Likewise.
+	* testsuite/poke.pkl/printf-diag-26.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
 2023-01-11  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* utils/pk-elfextractor.in: Update to new semantics of `in'
