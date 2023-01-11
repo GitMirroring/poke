@@ -8800,6 +8800,7 @@ with the PVM.
 @menu
 * @:.vm disassemble::		PVM and native disassembler.
 * @:.vm profile::               Profiling Poke programs.
+* @:.vm dispatch                PVM dispatching strategy.
 @end menu
 
 @node @:.vm disassemble
@@ -8840,6 +8841,28 @@ Resets the profiling counts in the virtual machine.
 @item .vm profile show
 Outputs a summary with both counts and sample information.
 @end table
+
+@node @:.vm dispatch
+@subsection @code{.vm dispatch}
+@cindex dispatch
+
+The @command{.vm dispatch} command prints the current dispatching
+strategy in PVM (provided by Jitter).  There are four different kind
+of dispatches:
+
+@itemize
+@item switch
+@item direct threading
+@item minimal threading
+@item no threading
+@end itemize
+
+@code{no threading} is the fastest one and the least portable
+dispatch, and @code{switch} is the slowest and the most portable
+one.
+
+Jitter by default will use the most efficient dispatch which is
+both stable and available for the current configuration.
 
 @node exit command
 @section @code{.exit}

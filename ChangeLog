@@ -1,6 +1,26 @@
 2023-01-11  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pvm.jitter (wrapped-globals): Add
+	pvm_literal_dispatch_name.
+	(pvm_literal_dispatch_name): New global constant.
+	(vmdisp): New instruction for pushing the name of current
+	dispatching strategy to the stack.
+	* libpoke/pkl-rt.pk (vm_dispatch): New function.
+	* doc/poke.texi (.vm dispatch): Add new subsection.
+	* poke/pk-cmd-vm.c (pk_cmd_vm_dispatch): New function.
+	(vm_dispatch_cmd): New variable.
+	(vm_cmds): Add `vm_dispatch_cmd' command.
+	* poke/pk-help.pk (.vm topic): Add `.vm dispatch'.
+	* poke/poke.pk (pk_print_vm_dispatch): New function.
+	* testsuite/poke.repl/repl.exp (tab-completion-3): Adapt.
+	(tab-completion-4): Likewise.
+	(tab-completion-6): Likewise.
+	(tab-completion-5): New test for tab completion of
+	`.vm dispatch'.
+
+2023-01-11  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pvm.jitter (wrapped-globals): Add
 	pvm_literal_formatf_{fmt,styles} to the list.
 	(pvm_literal_formatf_fmt): Define global variable for wrapping
 	format string in `formatf{32,64}' (we cannot directly use string

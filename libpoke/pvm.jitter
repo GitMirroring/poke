@@ -165,6 +165,7 @@ wrapped-globals
   pvm_literal_newline
   pvm_literal_formatf_fmt
   pvm_literal_formatf_styles
+  pvm_literal_dispatch_name
   libpoke_term_if
   pvm_exception_names
 end
@@ -934,6 +935,7 @@ late-c
     static const char *pvm_literal_newline = "\n";
     static const char *pvm_literal_formatf_fmt = "%%.%u%c";
     static const char pvm_literal_formatf_styles[3] = { 'f', 'e', 'g' };
+    static const char *pvm_literal_dispatch_name = PVM_DISPATCH_HUMAN_READABLE;
 
 #define E(key) [PVM_E_##key] = PVM_E_##key##_NAME,
     static const char *pvm_exception_names[] = {
@@ -6777,6 +6779,18 @@ end
 
 instruction note (?n pvm_literal_printer)
   code
+  end
+end
+
+# Instruction: vmdisp
+#
+# Pushes the current dispatching strategy of current VM to the stack.
+#
+# Stack: ( -- STR )
+
+instruction vmdisp ()
+  code
+    JITTER_PUSH_STACK (pvm_make_string (pvm_literal_dispatch_name));
   end
 end
 

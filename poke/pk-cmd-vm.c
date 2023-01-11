@@ -104,6 +104,21 @@ pk_cmd_vm_profile_reset (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
   return 1;
 }
 
+static int
+pk_cmd_vm_dispatch (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
+{
+  pk_val vm_dispatch, retval, exception;
+
+  vm_dispatch = pk_decl_val (poke_compiler, "pk_print_vm_dispatch");
+  assert (vm_dispatch != PK_NULL);
+
+  if (pk_call (poke_compiler, vm_dispatch, &retval, &exception, 0)
+               == PK_ERROR
+      || exception != PK_NULL)
+    assert (0); /* This shouldn't happen.  */
+  return 1;
+}
+
 extern struct pk_cmd null_cmd; /* pk-cmd.c  */
 
 const struct pk_cmd vm_disas_exp_cmd =
@@ -166,10 +181,15 @@ const struct pk_cmd vm_profile_cmd =
 
 struct pk_trie *vm_trie;
 
+const struct pk_cmd vm_dispatch_cmd =
+  {"dispatch", "", "", 0, NULL, NULL, pk_cmd_vm_dispatch,
+   "vm dispatch", NULL};
+
 const struct pk_cmd *vm_cmds[] =
   {
     &vm_disas_cmd,
     &vm_profile_cmd,
+    &vm_dispatch_cmd,
     &null_cmd
   };
 

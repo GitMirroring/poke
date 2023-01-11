@@ -330,7 +330,10 @@ Perform an operation related to the Poke Virtual Machine.
 .vm profile reset
   Reset the profiling counters.
 .vm profile show
-  Print a report with collected profiling information."
+  Print a report with collected profiling information.
+
+.vm dispatch
+  Print current dispatching strategy."
   };
 
 pk_help_add_topic

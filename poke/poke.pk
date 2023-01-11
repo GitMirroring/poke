@@ -80,6 +80,13 @@ fun pk_bounder_unbounded = any:
   return asm any: ("push 7");
 }
 
+/* Print current dispatching strategy of PVM.  */
+
+fun pk_print_vm_dispatch = void:
+{
+  printf ("%s\n", vm_dispatch);
+}
+
 /* Load some poke subsystems.  */
 
 load "pk-table.pk";

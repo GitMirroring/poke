@@ -290,6 +290,11 @@ immutable fun vm_set_omode = (int<32> omode) void:
   asm ("popom" :: omode);
 }
 
+immutable fun vm_dispatch = string:
+{
+  return asm string: ("vmdisp");
+}
+
 immutable fun __pkl_unsafe_string_set = (string dst, uint<64> index,
                                          string str) void:
 {
