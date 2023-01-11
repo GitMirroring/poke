@@ -3254,12 +3254,12 @@ pkl_ast_print_1 (FILE *fp, pkl_ast_node ast, int indent)
       PRINT_AST_SUBAST (name, STRUCT_TYPE_FIELD_NAME);
       PRINT_AST_SUBAST (type, STRUCT_TYPE_FIELD_TYPE);
       PRINT_AST_IMM (computed_p, STRUCT_TYPE_FIELD_COMPUTED_P, "%d");
-      PRINT_AST_SUBAST (type, STRUCT_TYPE_FIELD_SIZE);
-      PRINT_AST_SUBAST (exp, STRUCT_TYPE_FIELD_CONSTRAINT);
-      PRINT_AST_SUBAST (exp, STRUCT_TYPE_FIELD_INITIALIZER);
-      PRINT_AST_SUBAST (exp, STRUCT_TYPE_FIELD_LABEL);
-      PRINT_AST_SUBAST (exp, STRUCT_TYPE_FIELD_OPTCOND_PRE);
-      PRINT_AST_SUBAST (exp, STRUCT_TYPE_FIELD_OPTCOND_POST);
+      PRINT_AST_SUBAST (size, STRUCT_TYPE_FIELD_SIZE);
+      PRINT_AST_SUBAST (constraint, STRUCT_TYPE_FIELD_CONSTRAINT);
+      PRINT_AST_SUBAST (initializer, STRUCT_TYPE_FIELD_INITIALIZER);
+      PRINT_AST_SUBAST (label, STRUCT_TYPE_FIELD_LABEL);
+      PRINT_AST_SUBAST (pre, STRUCT_TYPE_FIELD_OPTCOND_PRE);
+      PRINT_AST_SUBAST (post, STRUCT_TYPE_FIELD_OPTCOND_POST);
       PRINT_AST_IMM (endian, STRUCT_TYPE_FIELD_ENDIAN, "%d");
       break;
 
@@ -3268,7 +3268,7 @@ pkl_ast_print_1 (FILE *fp, pkl_ast_node ast, int indent)
 
       PRINT_COMMON_FIELDS;
       PRINT_AST_SUBAST (type, FUNC_TYPE_ARG_TYPE);
-      PRINT_AST_SUBAST (type, FUNC_TYPE_ARG_NAME);
+      PRINT_AST_SUBAST (name, FUNC_TYPE_ARG_NAME);
       PRINT_AST_IMM (optional, FUNC_TYPE_ARG_OPTIONAL, "%d");
       break;
 
@@ -3513,21 +3513,21 @@ pkl_ast_print_1 (FILE *fp, pkl_ast_node ast, int indent)
       IPRINTF ("EXP_STMT::\n");
 
       PRINT_COMMON_FIELDS;
-      PRINT_AST_SUBAST (exp_stmt, EXP_STMT_EXP);
+      PRINT_AST_SUBAST (exp, EXP_STMT_EXP);
       break;
 
     case PKL_AST_TRY_STMT_BODY:
       IPRINTF ("TRY_STMT_BODY::\n");
 
       PRINT_COMMON_FIELDS;
-      PRINT_AST_SUBAST (try_stmt_body_code, TRY_STMT_BODY_CODE);
+      PRINT_AST_SUBAST (body_code, TRY_STMT_BODY_CODE);
       break;
 
     case PKL_AST_TRY_STMT_HANDLER:
       IPRINTF ("TRY_STMT_HANDLER::\n");
 
       PRINT_COMMON_FIELDS;
-      PRINT_AST_SUBAST (try_stmt_handler_code, TRY_STMT_HANDLER_CODE);
+      PRINT_AST_SUBAST (handler_code, TRY_STMT_HANDLER_CODE);
       break;
 
     case PKL_AST_TRY_STMT:
@@ -3535,10 +3535,10 @@ pkl_ast_print_1 (FILE *fp, pkl_ast_node ast, int indent)
 
       PRINT_COMMON_FIELDS;
       PRINT_AST_IMM (kind, TRY_STMT_KIND, "%d");
-      PRINT_AST_SUBAST (try_stmt_body, TRY_STMT_BODY);
-      PRINT_AST_SUBAST (try_stmt_handler, TRY_STMT_HANDLER);
-      PRINT_AST_SUBAST (try_stmt_arg, TRY_STMT_ARG);
-      PRINT_AST_SUBAST (try_stmt_exp, TRY_STMT_EXP);
+      PRINT_AST_SUBAST (body, TRY_STMT_BODY);
+      PRINT_AST_SUBAST (handler, TRY_STMT_HANDLER);
+      PRINT_AST_SUBAST (arg, TRY_STMT_ARG);
+      PRINT_AST_SUBAST (exp, TRY_STMT_EXP);
       break;
 
     case PKL_AST_PRINT_STMT:
@@ -3559,16 +3559,16 @@ pkl_ast_print_1 (FILE *fp, pkl_ast_node ast, int indent)
       IPRINTF ("RAISE_STMT::\n");
 
       PRINT_COMMON_FIELDS;
-      PRINT_AST_SUBAST (raise_stmt_exp, RAISE_STMT_EXP);
+      PRINT_AST_SUBAST (exp, RAISE_STMT_EXP);
       break;
 
     case PKL_AST_ASM_STMT:
       IPRINTF ("ASM_STMT::\n");
 
       PRINT_COMMON_FIELDS;
-      PRINT_AST_SUBAST (asm_stmt_template, ASM_STMT_TEMPLATE);
-      PRINT_AST_SUBAST (asm_stmt_inputs, ASM_STMT_INPUTS);
-      PRINT_AST_SUBAST (asm_stmt_outputs, ASM_STMT_OUTPUTS);
+      PRINT_AST_SUBAST (template, ASM_STMT_TEMPLATE);
+      PRINT_AST_SUBAST (inputs, ASM_STMT_INPUTS);
+      PRINT_AST_SUBAST (outputs, ASM_STMT_OUTPUTS);
       break;
 
     case PKL_AST_NULL_STMT:

@@ -1,3 +1,8 @@
+2023-01-11  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-ast.c (pkl_ast_print_1): Fix names in
+	PRINT_AST_SUBAST.
+
 2023-01-10  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* poke/poke.c (set_script_args): Fix check for -L in argv.
