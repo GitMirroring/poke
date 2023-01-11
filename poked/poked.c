@@ -471,6 +471,9 @@ poked_compile (const char *src, uint8_t chan, int *poked_restart_p,
 static void
 poked_help (void);
 
+static void
+poked_version (void);
+
 static struct poked_options
 {
   int debug_p;
@@ -509,7 +512,7 @@ poked_options_init (int argc, char *argv[])
           break;
         case OPT_VERSION:
         case 'v':
-          puts (VERSION);
+          poked_version ();
           exit (EXIT_SUCCESS);
           break;
         case OPT_DEBUG:
@@ -539,6 +542,28 @@ poked_help (void)
   puts ("  -v, --version             show version and exit");
   puts ("  -d, --debug               be more verbose during the execution");
   puts ("  -S, --socket-path=PATH    path of unix domain socket to listen on");
+  printf ("\n\
+Report bugs in the bug tracker at\n\
+  <%s>\n\
+  or by email to <%s>.\n", PACKAGE_BUGZILLA, PACKAGE_BUGREPORT);
+#ifdef PACKAGE_PACKAGER_BUG_REPORTS
+  printf (_("Report %s bugs to: %s\n"), PACKAGE_PACKAGER,
+          PACKAGE_PACKAGER_BUG_REPORTS);
+#endif
+  printf ("%s home page: <%s>\n", PACKAGE_NAME, PACKAGE_URL);
+  printf ("General help using GNU software: %s\n", "<http://www.gnu.org/gethelp/>");
+}
+
+static void
+poked_version (void)
+{
+  printf ("poked (GNU poke) %s\n\n", VERSION);
+  printf ("\
+Copyright (C) %s The poke authors.\n\
+License GPLv3+: GNU GPL version 3 or later", "2022-2023");
+  puts (".\n\
+This is free software: you are free to change and redistribute it.\n\
+There is NO WARRANTY, to the extent permitted by law.");
 }
 
 int

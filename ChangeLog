@@ -1,5 +1,12 @@
 2023-01-11  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* poked/poked.c (poked_version): Add new function to print version
+	in GNU style.
+	(poked_options_init): Use `poked_version'.
+	(poked_help): Make it GNU-compatible.
+
+2023-01-11  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pvm.jitter (formatf32): Add literal parameter to the
 	instruction's doc.
 	(formatf64): Likewise.
