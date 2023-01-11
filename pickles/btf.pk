@@ -38,12 +38,15 @@ var BTF_KIND_UNKNOWN = 0 as uint<5>,
     BTF_KIND_DATASEC = 15 as uint<5>,
     BTF_KIND_FLOAT = 16 as uint<5>,
     BTF_KIND_DECL_TAG = 17 as uint<5>,
-    BTF_KIND_TYPE_TAG = 18 as uint<5>;
+    BTF_KIND_TYPE_TAG = 18 as uint<5>,
+    BTF_KIND_LAST = BTF_KIND_TYPE_TAG;
 
 var btf_kind_names =
   ["unkn", "int", "ptr", "array", "struct", "union", "enum",
    "fwd", "typedef", "volatile", "const", "restrict", "func",
    "func_proto", "var", "datasec", "float", "decl_tag", "type_tag"];
+
+assert (btf_kind_names'length == BTF_KIND_LAST + 1);
 
 var BTF_VAR_STATIC = 0,
     BTF_VAR_GLOBAL_ALLOCATED = 1,
@@ -137,7 +140,7 @@ type BTF_Type =
     {
       uint<1> kind_flag;
       uint<2>;
-      uint<5> kind;
+      uint<5> kind : kind <= BTF_KIND_LAST;
       uint<8>;
       uint<16> vlen; /* Note that vlen encodes the linkage of
                         BTF_KIND_FUNC entries.  (yes, pfff.)  */
