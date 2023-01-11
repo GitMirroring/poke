@@ -447,15 +447,15 @@ poked_compile (const char *src, uint8_t chan, int *poked_restart_p,
     poked_autocmpl_send ();
   if (pk_int_value (pk_decl_val (pkc, "__poked_disas_p")))
     poked_disas_send ();
-  if (pk_int_value (pk_decl_val (pkc, "__vu_do_p")))
+  if (pk_int_value (pk_decl_val (pkc, "__plet_vu_do_p")))
     {
-      const char *filt = pk_string_str (pk_decl_val (pkc, "__vu_filter"));
+      const char *filt = pk_string_str (pk_decl_val (pkc, "__plet_vu_filter"));
 
       usock_out (srv, USOCK_CHAN_OUT_VU, VUCMD_FILTER, filt,
                  strlen (filt) + 1);
       usock_out (srv, USOCK_CHAN_OUT_VU, VUCMD_CLEAR, "", 1);
       termout_vu_append ();
-      (void)pk_call (pkc, pk_decl_val (pkc, "__vu_dump"), NULL, &exc, 0);
+      (void)pk_call (pkc, pk_decl_val (pkc, "__plet_vu_dump"), NULL, &exc, 0);
       assert (exc == PK_NULL);
       termout_restore ();
       usock_out (srv, USOCK_CHAN_OUT_VU, VUCMD_FINISH, "", 1);
@@ -908,8 +908,8 @@ poked_init (int pdap_version)
   };
   // These functions should be defined by `pk` script
   static const char *FUNCS[] = {
-    "poked_exit", "poked_defer", "poked_ehandler",
-    "dot",        "dots",        "dot_set_txtcoord",
+    "poked_exit",  "poked_defer",  "poked_ehandler",
+    "plet_vu_dot", "plet_vu_dots", "plet_vu_dot_set_txtcoord",
   };
   static const size_t FUNCS_LEN = sizeof (FUNCS) / sizeof (FUNCS[0]);
   const char *pk = getenv ("POKED_PK");
@@ -954,12 +954,8 @@ poked_init (int pdap_version)
   /* Add load paths to the incremental compiler.  */
   {
     pk_val load_path = pk_decl_val (pkc, "load_path");
-    char *newpath = pk_str_concat (pk_string_str (load_path),
-                                   ":",
-                                   poked_appdir,
-                                   ":",
-                                   poke_picklesdir,
-                                   NULL);
+    char *newpath = pk_str_concat (pk_string_str (load_path), ":",
+                                   poked_appdir, ":", poke_picklesdir, NULL);
 
     pk_decl_set_val (pkc, "load_path", pk_make_string (newpath));
     free (newpath);

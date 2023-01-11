@@ -108,29 +108,19 @@ fun poked_ehandler = (Exception exception) void:
 
 //--- vu
 
-var __dots = [[0L#N,0L#N]];
+var __poked_dots = [[0L#N,0L#N]];
 
-type __DotUpdateFunc = () void;
-type __DotUpdateFuncEntry = struct
+fun plet_vu_dots = offset<long,N>[2]:
+  { return __poked_dots[__poked_dots'length - 1]; }
+fun plet_vu_dot = offset<long,N>:
+  { return plet_vu_dots[0]; }
+fun plet_vu_dot2 = offset<long,N>:
+  { return plet_vu_dots[1]; }
+fun plet_vu_dots_set = (offset<long,N> d1, offset<long,N> d2) void:
   {
-    string name;
-    __DotUpdateFunc func;
-  };
-// var __dot_update_funcs = __DotUpdateFuncEntry[] ();
-
-fun dot_update_register = (__DotUpdateFunc func) void:
-  {
-    // __dot_update_funcs += [func];
+    __poked_dots += [[d1, d2]]; // TODO put a limit
   }
-
-fun dots = offset<long,N>[2]: { return __dots[__dots'length - 1]; }
-fun dot = offset<long,N>: { return dots[0]; }
-fun dot2 = offset<long,N>: { return dots[1]; }
-fun dots_set = (offset<long,N> d1, offset<long,N> d2) void:
-  {
-    __dots += [[d1, d2]]; // TODO put a limit
-  }
-fun dot_set_txtcoord = (int line1, int col1, int line2, int col2) void:
+fun plet_vu_dot_set_txtcoord = (int line1, int col1, int line2, int col2) void:
   {
 /*
 00000000: 2550 4446 2d31 2e34 0a25 c3a4 c3bc c3b6  %PDF-1.4.%......
@@ -165,19 +155,18 @@ fun dot_set_txtcoord = (int line1, int col1, int line2, int col2) void:
     line2 -= 1;
     var d1 = (line1 * 32 + col1) as long;
     var d2 = (line2 * 32 + col2) as long;
-    dots_set (d1#N, d2#N);
+    plet_vu_dots_set (d1#N, d2#N);
 
     assert (d1#N <= d2#N);
 
-    // Run registered functions
-    // for (a in __dot_update_funcs)
+    // for (a in __plet_vu_dot_update_funcs)
       {
         // try-catch?
         //a.func;
       }
   }
 
-type __vu_Args = struct
+type __Poked_VuArgs = struct
   {
     int ios;
     offset<long,B> from;
@@ -186,24 +175,24 @@ type __vu_Args = struct
     int cluster_by;
     int ascii;
   };
-var __vu_do_p = 0,
-    __vu_args = __vu_Args {},
-    __vu_filter = "";
+var __plet_vu_do_p = 0,
+    __plet_vu_args = __Poked_VuArgs {},
+    __plet_vu_filter = "";
 
-fun __vu_dump = void:
+fun __plet_vu_dump = void:
   {
-    // assert (__vu_do_p);
-    __vu_do_p = 0;
-    dump :ios __vu_args.ios
-         :from __vu_args.from
-         :size __vu_args.size
-         :group_by __vu_args.group_by
-         :cluster_by __vu_args.cluster_by
-         :ascii __vu_args.ascii
+    // assert (__plet_vu_do_p);
+    __plet_vu_do_p = 0;
+    dump :ios __plet_vu_args.ios
+         :from __plet_vu_args.from
+         :size __plet_vu_args.size
+         :group_by __plet_vu_args.group_by
+         :cluster_by __plet_vu_args.cluster_by
+         :ascii __plet_vu_args.ascii
          :ruler 0
          ;
   }
-fun plet_vu = (string filt = __vu_filter,
+fun plet_vu = (string filt = __plet_vu_filter,
                string[] filts = string[] (),
                int<32> ios = get_ios,
                offset<long,B> from = pk_dump_get_offset (ios),
@@ -212,7 +201,7 @@ fun plet_vu = (string filt = __vu_filter,
                int cluster_by = pk_dump_cluster_by,
                int ascii = pk_dump_ascii) void:
   {
-    __vu_args = __vu_Args {
+    __plet_vu_args = __Poked_VuArgs {
         ios = ios, from = from, size = size, group_by = group_by,
         cluster_by = cluster_by, ascii = ascii,
       };
@@ -225,18 +214,18 @@ fun plet_vu = (string filt = __vu_filter,
                   "Invalid filter name (unexpected semi-colon): " + f);
         for (var i = 1; i < filts'length; ++i)
           fs += ";" + filts[i];
-        __vu_filter = fs;
+        __plet_vu_filter = fs;
       }
-    else if (filt != __vu_filter)
+    else if (filt != __plet_vu_filter)
       {
         assert (strchr (filt, ';') == filt'length,
                 "Invalid filter name (unexpected semi-colon)");
-        __vu_filter = filt;
+        __plet_vu_filter = filt;
       }
-    __vu_do_p = 1;
+    __plet_vu_do_p = 1;
   }
-fun plet_vu_highlight = (offset<long,N> from = dot,
-                         offset<long,N> size = dot2 - dot) void:
+fun plet_vu_highlight = (offset<long,N> from = plet_vu_dot,
+                         offset<long,N> size = plet_vu_dot2 - plet_vu_dot) void:
   {
     var f = from'magnitude;
     var l = (from + size)'magnitude;
@@ -279,116 +268,11 @@ fun plet_vu_highlight = (offset<long,N> from = dot,
 
 //--- treevu
 
-// TODO treevu{,_arr}
-fun plet_treevu_sct = (any v, Pk_Type typeinfo) void:
-  {
-    var ti = typeinfo;
-
-    assert (v'mapped);
-    assert (ti.code == PK_TYPE_STRUCT);
-
-    var endian_ = get_endian;
-    var fd = open ("*__poked_treevu*");
-
-    set_endian (ENDIAN_LITTLE);
-
-    fun defer = void:
-      {
-        set_endian (endian_);
-        close (fd);
-      }
-
-    // var CMD_CLEAR = 1UB;
-    var CMD_APPEND = 2UB;
-
-    type T = struct
-      {
-        byte cmd = CMD_APPEND;
-        offset<uint64,b> offset;
-        offset<uint64,b> size;
-        uint16 nfields;
-        string[nfields] ftypes;
-        string[nfields] fnames;
-        offset<uint64,b>[nfields] foffsets;
-        offset<uint64,b>[nfields] fsizes;
-      };
-
-    var foffsets = offset<uint64,b>[ti.nfields] ();
-    var fsizes = offset<uint64,b>[ti.nfields] ();
-
-    for (var i = 0; i < ti.nfields; ++i)
-      {
-        foffsets[i] = v'eoffset (i); // FIXME ?! E_inval
-        fsizes[i] = v'esize (i);
-      }
-
-    try
-      {
-        var d = T{
-          offset = v'offset,
-          size = v'size,
-          nfields = ti.nfields,
-          ftypes = ti.ftypes,
-          fnames = ti.fnames,
-          foffsets = foffsets,
-          fsizes = fsizes,
-        };
-        T @ fd : 0#B = d;
-        poked_chan_send (4, byte[d'size] @ fd : 0#B);
-      }
-    catch
-      {
-        defer;
-        raise;
-      }
-    defer;
-  }
-
-var __treevu_i = 0;
-
-fun __treevu_fname = string:
-  {
-    return format ("/tmp/.treevu_%i32d", __treevu_i++);
-  }
-
-fun plet_treevu = (string varname) void:
-  {
-    type DeferFunc = () void;
-    var defers = DeferFunc[] ();
-    fun defer = (DeferFunc f) void: { defers += [(f)]; }
-    fun defers_run = void: { for (var i = defers'length; i != 0; --i) defers[i - 1] (); }
-    var lpath = load_path;
-    var fname = __treevu_fname;
-    var fd = open (fname, IOS_F_CREATE | IOS_M_RDWR);
-    var off = 0#B;
-
-    defer (lambda void: { close (fd); });
-    defer (lambda void: { load_path = lpath; });
-    load_path = "/tmp:" + load_path;
-
-    fun add = (string s) void: { string @ fd : off = s; off += s'length#B; }
-
-    var src = format ("\
-printf \"%%v\\n\", %s;
-", varname);
-
-    try
-      {
-        add (src);
-
-        print (string @ fd : 0#B);
-      }
-    catch
-      {
-        defers_run;
-        raise;
-      }
-    defers_run;
-  }
+/* WIP.  */
 
 //--- disasm
 
-type __Disasm = struct
+type __Poked_Disasm = struct
   {
     string arch;
     little offset<uint64,B> adr;
@@ -401,9 +285,9 @@ fun plet_disasm = (string arch, offset<uint64,B> adr, byte[] code) void:
       arch in ["x86_32", "x86_64", "arm", "arm_thumb", "aarch64", "m68k"]);
 
     var fd = open("*__poked_disasm*");
-    var d = __Disasm{ arch = arch , adr = adr, code = code };
+    var d = __Poked_Disasm{ arch = arch , adr = adr, code = code };
 
-    __Disasm @ fd : 0#B = d;
+    __Poked_Disasm @ fd : 0#B = d;
     poked_chan_send (/*USOCK_CHAN_OUT_CDISAS*/ 6, byte[d'size] @ fd : 0#B);
     close (fd);
   }

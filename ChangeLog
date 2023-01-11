@@ -1,5 +1,27 @@
 2023-01-11  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* poked/poked.pk (__dots): Renamed to `__poked_dots'.
+	(__PokedDotUpdateFunc): Removed.
+	(__PokedDotUpdateFuncEntry): Removed.
+	(dots): Renamed to `plet_vu_dots'.
+	(dot): Renamed to `plet_vu_dot'.
+	(dot2): Renamed to `plet_vu_dot2'.
+	(dots_set): Renamed to `plet_vu_dots_set'.
+	(dot_set_txtcoord): Renamed to `plet_vu_dot_set_txtcoord'.
+	(__vu_Args): Renamed to `__Poked_VuArgs'.
+	(__vu_do_p): Renamed to `__plet_vu_do_p'.
+	(__vu_args): Renamed to `__plet_vu_args'.
+	(__vu_filter): Renamed to `__plet_vu_filter'.
+	(__vu_dump): Renamed to `__plet_vu_dump'.
+	(plet_vu): Adapt.
+	(plet_vu_highlight): Adapt.
+	(treevu): Remove treevu pokelet code.  Needs more work.
+	(__Disasm): Renamed to `__Poked_Disasm'.
+	* poked/poked.c (poked_init): Adapt.
+	(poked_compile): Likewise.
+
+2023-01-11  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pvm.jitter (wrapped-globals): Add
 	pvm_literal_dispatch_name.
 	(pvm_literal_dispatch_name): New global constant.
