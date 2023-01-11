@@ -21,7 +21,7 @@
 
 load elf;
 
-if (!(argv'length in [1,2]))
+if (!(argv'length in [1UL,2UL]))
   {
     print "Usage: elfextractor FILE [SECTION_NAME]\n";
     exit (1);

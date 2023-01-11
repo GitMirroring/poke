@@ -1,5 +1,10 @@
 2023-01-11  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* utils/pk-elfextractor.in: Update to new semantics of `in'
+	operator.
+
+2023-01-11  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* pickles/btf.pk (BTF_KIND_LAST): Define.
 	(BTF_Type): Add constraint to info.kind.
 
