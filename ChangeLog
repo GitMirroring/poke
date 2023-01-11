@@ -1,5 +1,15 @@
 2023-01-11  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pvm.jitter (wrapped-globals): Add
+	pvm_literal_formatf_{fmt,styles} to the list.
+	(pvm_literal_formatf_fmt): Define global variable for wrapping
+	format string in `formatf{32,64}' (we cannot directly use string
+	literals in advanced modes).
+	(pvm_literal_formatf_styles): Likewise.
+	(FORMATF): Use new wrapped globals.  Remove % operator.
+
+2023-01-11  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* poked/poked.c (poked_version): Add new function to print version
 	in GNU style.
 	(poked_options_init): Use `poked_version'.

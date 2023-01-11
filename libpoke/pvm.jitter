@@ -163,6 +163,8 @@ wrapped-globals
   pvm_literal_eindex
   pvm_literal_notmappable
   pvm_literal_newline
+  pvm_literal_formatf_fmt
+  pvm_literal_formatf_styles
   libpoke_term_if
   pvm_exception_names
 end
@@ -878,7 +880,6 @@ late-header-c
 #define FORMATF(RESULT,NUM,PREC,STYLE,TYPEF)                                \
   do                                                                        \
     {                                                                       \
-      static const char STYLES[] = { 'f', 'e', 'g' };                       \
       TYPEF x;                                                              \
       int n;                                                                \
       char fmt[16];                                                         \
@@ -887,8 +888,8 @@ late-header-c
       PVM_ASSERT ((STYLE) < 3);                                             \
                                                                             \
       memcpy (&x, &(NUM), sizeof (NUM));                                    \
-      n = snprintf (fmt, sizeof (fmt), "%%.%u%c", (unsigned)(PREC),         \
-                    STYLES[(STYLE) % 3]);                                   \
+      n = snprintf (fmt, sizeof (fmt), pvm_literal_formatf_fmt,             \
+                    (unsigned)(PREC), pvm_literal_formatf_styles[(STYLE)]); \
       if (n == -1)                                                          \
         PVM_RAISE_DFL (PVM_E_CONV);                                         \
       n = asprintf (&(RESULT), fmt, x);                                     \
@@ -931,6 +932,8 @@ late-c
     static const char *pvm_literal_eindex = "invalid index in ains";
     static const char *pvm_literal_notmappable = "not mappable value";
     static const char *pvm_literal_newline = "\n";
+    static const char *pvm_literal_formatf_fmt = "%%.%u%c";
+    static const char pvm_literal_formatf_styles[3] = { 'f', 'e', 'g' };
 
 #define E(key) [PVM_E_##key] = PVM_E_##key##_NAME,
     static const char *pvm_exception_names[] = {
