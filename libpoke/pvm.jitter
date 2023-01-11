@@ -2420,7 +2420,7 @@ instruction formatlu (?n)
   end
 end
 
-# Instruction: formatf32
+# Instruction: formatf32 STYLE
 #
 # Given a UINT (that should be interpreted as a 32-bit floating-point
 # number), and a UINT (as the conversion precision), push the string
@@ -2454,7 +2454,7 @@ instruction formatf32 (?n 0 1 2)
   end
 end
 
-# Instruction: formatf64
+# Instruction: formatf64 STYLE
 #
 # Given a ULONG (that should be interpreted as a 64-bit floating-point
 # number), and a UINT (as the conversion precision), push the string

@@ -1,5 +1,11 @@
 2023-01-11  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pvm.jitter (formatf32): Add literal parameter to the
+	instruction's doc.
+	(formatf64): Likewise.
+
+2023-01-11  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* pickles/riscv.pk (RV_Opcode): Remove the re-definition.
 	(RV32_OPCODE_*): Change the type from `RV_Opcode' to `uint<7>'.
 	(RV32_InsnFmt_I): Adapt.
