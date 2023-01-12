@@ -1,3 +1,8 @@
+2023-01-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* configure.ac: Change version to 2.90.0.
+	* NEWS: Add entries for 2.90.0.
+
 2023-01-20  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* configure.ac: Report missing gensub-capable awk at configure
