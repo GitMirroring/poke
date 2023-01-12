@@ -7,6 +7,301 @@ See the manual for detailed information.
   are permitted in any medium without royalty provided the copyright
   notice and this notice are preserved.
 
+ Version 2.90.0 (21 January 2023)
+* User interface updates
+
+  - A screen pager has been added to the poke application.  If enabled
+    with the `.set pager yes' option, output will be paged one
+    screenful at a time.
+
+  - A tracer has been added to libpoke and the poke application.  If
+    enabled with the `.set tracer yes' option, subsequent loaded Poke
+    types will be instrumentalized so calls to user-defined handlers
+    are executed when certain events happen:
+
+    + Every time a field gets mapped.
+    + Every time a struct/union gets mapped.
+    + Every time a field gets constructed.
+    + Every time a struct/union gets constructed.
+    + Every time an optional field is omitted when mapping or
+      constructing.
+
+    This is very useful when debugging and writing pickles.
+
+  - A new command sdiff (for "structured diff") has been added to the
+    poke application, that provides a way to generate patchable diffs
+    of mapped structured Poke values.  This command is an interface to
+    the structured diffs provided by the new diff.pk pickle.
+
+  - When no name is passed to the .mem command, an unique name for the
+    memory IOS with the form *N* will be used automatically, where N
+    is a positive integer.
+
+  - auto-completion of 'attributes is now available in the poke
+    application.
+
+  - Constraint errors now contain details on the location (which
+    field) where the constraint error happens, along with the
+    particular expression that failed.
+
+  - Inline assembler expressions and statements are now supported:
+
+      asm (TEMPLATE [: OUTPUTS [: INPUTS]])
+      asm TYPE: (TEMPLATE [: INPUTS])
+
+    where PVM assembly code can be executed as part of normal Poke
+    programs.
+
+  - Both `printf' and `format' now support printing values of type
+    `any'.
+
+  - Both `printf' and `format' now support printing integral values
+    interpreted as floating-point values encoded in IEEE 754.  Format
+    tags %f, %g and %e are supported.  This feature, along with the
+    new ieee754.pk pickle, eases dealing with floating-point data in
+    binary data.
+
+  - Pre-conditional optional fields are added to complement the
+    currently supported post-conditional optional fields.  A
+    pre-conditional optional field like:
+
+      if (CONDITION)
+        TYPE FNAME;
+
+    makes FNAME optional based on the evaluation of CONDITION.  But
+    the field itself is not mapped if the condition evaluates to
+    false.
+
+  - A new option `.set autoremap no' can be used in order to tell poke
+    to not remap mapped values automatically.  This greatly speeds up
+    things, but assumes that the contents of the IO space are not
+    updated out of the control of the user.  See the manual for
+    details.
+
+  - The :to argument to the `extract' command is now optional, and
+    defaults to the empty string.
+
+  - ${XDG_CONFIG_HOME:-$HOME/.config} is now preferred to
+    XDG_CONFIG_DIRS.
+
+* Poke Language updates
+
+  - Array and struct constructors are now primaries in the Poke
+    syntax.  This means that it is no longer necessary to enclose them
+    between parenthesis in constructions like:
+
+      (Packet {}).field
+
+    and this is now accepted:
+
+      Packet {}.field
+
+  - Bit-concatenation is now supported in l-values.  After executing
+    this code:
+
+      var a = 0 as int<4>;
+      var b = 0 as uint<28>;
+
+      a:::b = 0x12345678;
+
+    the value of `a' is 0x1N and the value of `b' is (uint<28>)
+    0x2345678.
+
+  - Arrays can now be indented by size, by specifying an offset as an
+    index.  This is particularly useful for accessing structures such
+    as string tables without having to explicitly iterate on the
+    array's elements.
+
+  - Union types can now be declared as "integral".  The same features
+    of integral structs are now available for unions: integration,
+    deintegration, the ability of being used in contexts where an
+    integer is expected, etc.
+
+  - Support for "computed fields" has been added to struct and union
+    types.  Computed fields are accessed just like regular fields, but
+    the semantics of referring to them and of assigning to them are
+    specified by the user by the way of defining getter and setter
+    methods.
+
+  - This version introduces three new Poke attributes that work on
+    values of type `any':
+
+    VAL'elem (N)
+      evaluates to the Nth element in VAL, as a value of type `any'.
+
+    VAL'eoffset (N)
+      evaluates to the offset of the Nth element in VAL.
+
+    VAL'esize (N)
+      evaluates to the size of the Nth element in VAL.
+
+    VAL'ename (N)
+      attribute evaluates to the name of the Nth element in VAL.
+
+  - Two new operators have been introduced to facilitate operating
+    Poke array as stacks in an efficient way: apush and apop.
+
+  - Poke programs can now hook in the IO subsystem by installing
+    functions that will be invoked when certain operations on IO
+    spaces are being performed:
+
+    ios_open_hook
+      Functions in this hook are invoked once a new IO space has been
+      opened.
+
+    ios_set_hook
+      Functions in this hook are invoked once the current IO space
+      changes.
+
+    ios_close_pre_hook
+    ios_close_hook
+      Functions in these hooks are invoked before and after an IO space is
+      closed, respectively.
+
+  - The 'length attribute is now valid in values of type `any'.
+
+  - Poke declarations can now be annotated as `immutable'.  It is not
+    allowed to re-define immutable definitions.
+
+  - A new compiler built-in `iolist' has been introduced, that returns
+    an array with the IO space identifiers of currently open IOS.
+
+  - We have changed the logic of the EXCOND operator ?!.  It now
+    evaluates to 1 (true) if the execution of the first operand raises
+    the specified exception, and to 0 (false) otherwise.  We
+    profusedly apologize for the backwards incompatibility, but this
+    is way better than the previous (reversed) logic.
+
+  - The containing struct or union value can now be refered as SELF in
+    the body of methods.  SELF is of type `any'.
+
+  - Integer literal suffixes (B, H, U, etc) are case-insensitive.  But
+    until now little-case `b' wasn't being recognized as such.  Now 1B
+    == 1b.
+
+  - Casting to union types now raise a compile-time error.
+
+  - If no explicit message is specified in calls to `assert', a
+    default one showing the source code of the failing condition is
+    constructed and used instead.
+
+  - An operator `remap' has been used in order to force a re-map of
+    some mapped Poke value.
+
+* Standard Poke Library updates
+
+  - New standard functions:
+
+    eoffset (V, N)
+      Given a value of type `any' and a name, returns the offset of
+      the element having that name.
+
+    openset (HANDLER, [FLAGS])
+      Open an IO space and make it the current IO space.
+
+    with_temp_ios ([HANDLER], [FLAGS], [DO], [ENDIAN])
+      Execute some code with a temporary IO space.
+
+    with_cur_ios (IOS, [DO], [ENDIAN])
+      Execute some code on some given IO space.
+
+* libpoke updates
+
+  - New API function pk_struct_ref_set_field_value.
+
+  - New API function pk_type_name.
+
+* Pickles updates
+
+  - New pickles provided in the poke distribution:
+
+    diff.pk
+      Useful binary diffing utilities.  In particular, it implements
+      the "structured diff" format as described in
+      https://binary-tools.net/bindiff.pdf.
+
+    io.pk
+      Facilities to dump data to the terminal.
+
+    pk-table.pk
+      Convenient facilities to Poke programs to print tabulated data.
+
+    openpgp.pk
+      Pickle to poke at OpenPGP RFC 4880 data.
+
+    sframe.pk
+    sframe-dump.pk
+      Pickles for the SFrame unwinding format, and related dump
+      utilities.
+
+    search.pk
+      Utility for searching data in IO spaces that conform to some
+      given Poke type.
+
+    riscv.pk
+      Pickle to poke at instructions encoded in the RISC-V instruction
+      set (RV32I).  It also provides methods to generate assembly
+      language.
+
+    coff.pk
+    coff-aarch64.pk
+    coff-i386.pk
+      COFF object files.
+
+    pe.pk
+    pe-amd64.pk
+    pe-arm.pk
+    pe-arm64.pk
+    pe-debug.pk
+    pe-i386.pk
+    pe-ia64.pk
+    pe-m32r.pk
+    pe-mips.pk
+    pe-ppc.pk
+    pe-riscv.pk
+    pe-sh3.pk
+      PE/COFF object files.
+
+    pcap.pk
+      Capture file format.
+
+    uuid.pk
+      Universally Unique Identifier (UUID) as defined by RFC4122.
+
+    redoxfs.pk
+      RedoxFS files ystem of Redox OS.
+
+    ieee754.pk
+      IEEE Standard for Floating-Point Arithmetic.
+
+  - The ELF pickle now provides functions implementing ELF hashing.
+
+* Build system updates
+
+  - It is now supported to configure the poke sources with
+    --disable-hserver.
+
+* Documentation updates
+
+  - Documentation for the `format' language construction has been
+    added to the poke manual.
+
+* Other updates
+
+  - A new program poked, for "poke daemon", has been contributed to
+    the poke distribution by Mohammad-Reza Nabipoor.  poked links with
+    libpoke and uses Unix sockets to act as a broker to communicate
+    with an instance of a Poke incremental compiler.  This is already
+    used by several user interfaces to poke.
+
+  - The machine-interface subsystem has been removed from poke, in
+    favor of the poked approach.
+
+  - The example GUI that was intended to be a test tool for the
+    machine interface has been removed from the poke distribution.
+
+  - Many bugs have been fixed.
+
  Version 2.4 (25 July 2022)
 * Improvements
 
