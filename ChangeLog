@@ -1,3 +1,7 @@
+2023-01-12  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* doc/poke.texi (.vm dispatch): Fix menu.
+
 2023-01-11  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* poked/poked.pk (__dots): Renamed to `__poked_dots'.
