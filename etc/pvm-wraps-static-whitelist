@@ -23,3 +23,4 @@ pvm_strncpy
 pvm_strcat
 pvm_strncat
 pvm_strcmp
+pvm_free

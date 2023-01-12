@@ -1,5 +1,14 @@
 2023-01-12  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pvm.jitter (pvm_free): New function.
+	(formatf32): Use pvm_free.
+	(formatf64): Likewise.
+	Remove rpl_free from wrapped-functions.
+	* etc/pvm-wraps-whitelist: Whitelist rpl_free and free.
+	* etc/pvm-wraps-static-whitelist: Whitelist pvm_free.
+
+2023-01-12  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pvm.jitter: Add rpl_free and asprintf to
 	wrapped-functions.
 	* etc/pvm-wraps-static-whitelist: Add pvm_literal_dispatch_name,

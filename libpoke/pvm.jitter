@@ -137,7 +137,6 @@ wrapped-functions
   ios_set_cur
   random
   srandom
-  rpl_free
   secure_getenv
   asprintf
   gettime
@@ -977,6 +976,12 @@ late-c
           return;
         }
       --ctx->index;
+    }
+
+    static void
+    pvm_free (void *p)
+    {
+      free (p);
     }
 
     static int
@@ -2457,7 +2462,7 @@ instruction formatf32 (?n 0 1 2)
     JITTER_DROP_STACK ();
     FORMATF (result, num, precision, style, float);
     JITTER_TOP_STACK () = pvm_make_string (result);
-    free (result);
+    pvm_free (result);
   end
 end
 
@@ -2492,7 +2497,7 @@ instruction formatf64 (?n 0 1 2)
     JITTER_DROP_STACK ();
     FORMATF (result, num, precision, style, double);
     JITTER_TOP_STACK () = pvm_make_string (result);
-    free (result);
+    pvm_free (result);
   end
 end
 
