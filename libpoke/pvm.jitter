@@ -137,7 +137,9 @@ wrapped-functions
   ios_set_cur
   random
   srandom
+  rpl_free
   secure_getenv
+  asprintf
   gettime
   pvm_memcpy
   pvm_strlen

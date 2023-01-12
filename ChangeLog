@@ -1,3 +1,10 @@
+2023-01-12  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pvm.jitter: Add rpl_free and asprintf to
+	wrapped-functions.
+	* etc/pvm-wraps-static-whitelist: Add pvm_literal_dispatch_name,
+	pvm_literal_formatf_fmt and pvm_literal_formatf_styles.
+
 2023-01-12  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* doc/poke.texi (.vm dispatch): Fix menu.
