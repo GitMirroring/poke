@@ -16,6 +16,7 @@ pvm_literal_dispatch_name
 pvm_literal_formatf_fmt
 pvm_literal_formatf_styles
 pvm_exception_names
+pvm_asprintf
 pvm_memcpy
 pvm_strlen
 pvm_strcpy

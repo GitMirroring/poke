@@ -138,8 +138,8 @@ wrapped-functions
   random
   srandom
   secure_getenv
-  asprintf
   gettime
+  pvm_asprintf
   pvm_memcpy
   pvm_strlen
   pvm_strcmp
@@ -233,6 +233,7 @@ early-c
 #   include <assert.h>
 #   include <time.h>
 #   include <errno.h>
+#   include <stdarg.h>
 #   include "timespec.h"
 #   include "intprops.h"
 
@@ -894,7 +895,7 @@ late-header-c
                     (unsigned)(PREC), pvm_literal_formatf_styles[(STYLE)]); \
       if (n == -1)                                                          \
         PVM_RAISE_DFL (PVM_E_CONV);                                         \
-      n = asprintf (&(RESULT), fmt, x);                                     \
+      n = pvm_asprintf (&(RESULT), fmt, x);                                 \
       if (n == -1)                                                          \
         PVM_RAISE_DFL (PVM_E_CONV);                                         \
     }                                                                       \
@@ -988,6 +989,17 @@ late-c
     pvm_nanosleep (const struct timespec *rqtp, struct timespec *rmtp)
     {
       return nanosleep (rqtp, rmtp);
+    }
+    static int
+    pvm_asprintf (char **resultp, const char *format, ...)
+    {
+      va_list args;
+      int result;
+
+      va_start (args, format);
+      result = vasprintf (resultp, format, args);
+      va_end (args);
+      return result;
     }
     static void *
     pvm_memcpy (void *restrict dest, const void *restrict src, size_t n)

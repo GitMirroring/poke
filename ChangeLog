@@ -1,3 +1,11 @@
+2023-01-13  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pvm.jitter (FORMATF): Use pvm_asprint.
+	(wrapped-functions): Add pvm_asprintf.
+	(pvm_asprintf): New function.
+	* etc/pvm-wraps-static-whitelist: Add pvm_asprintf.
+	* etc/pvm-wraps-whitelist: Add asprintf and rpl_asprintf.
+
 2023-01-12  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pvm.jitter (pvm_free): New function.
