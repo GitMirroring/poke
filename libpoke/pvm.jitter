@@ -134,10 +134,10 @@ wrapped-functions
   ios_set_bias
   ios_get_bias
   ios_set_cur
-  random
-  srandom
-  secure_getenv
-  gettime
+  pvm_random
+  pvm_srandom
+  pvm_secure_getenv
+  pvm_gettime
   pvm_asprintf
   pvm_memcpy
   pvm_strlen
@@ -1011,6 +1011,26 @@ late-c
       result = vsnprintf (str, size, format, args);
       va_end (args);
       return result;
+    }
+    static int
+    pvm_random (void)
+    {
+      return random ();
+    }
+    static void
+    pvm_srandom (unsigned int s)
+    {
+      srandom (s);
+    }
+    static void
+    pvm_gettime (struct timespec *ts)
+    {
+      gettime (ts);
+    }
+    static char *
+    pvm_secure_getenv (char const *name)
+    {
+      return secure_getenv (name);
     }
     static void *
     pvm_memcpy (void *restrict dest, const void *restrict src, size_t n)
@@ -6839,7 +6859,7 @@ end
 instruction getenv ()
   code
     const char *varname = PVM_VAL_STR (JITTER_TOP_STACK ());
-    char *value = secure_getenv (varname);
+    char *value = pvm_secure_getenv (varname);
 
     if (value == NULL)
       JITTER_PUSH_STACK (PVM_NULL);
@@ -6876,9 +6896,9 @@ instruction rand ()
     unsigned int seed = PVM_VAL_UINT (JITTER_TOP_STACK ());
 
     if (seed != 0)
-      srandom (seed);
+      pvm_srandom (seed);
     JITTER_DROP_STACK ();
-    JITTER_PUSH_STACK (PVM_MAKE_INT (random (), 32));
+    JITTER_PUSH_STACK (PVM_MAKE_INT (pvm_random (), 32));
   end
 end
 
@@ -6897,7 +6917,7 @@ instruction time ()
       PVM_MAKE_ULONG (2, 64),
       pvm_make_integral_type (PVM_MAKE_ULONG (64, 64), PVM_MAKE_INT (1, 32)));
 
-    gettime (&ts);
+    pvm_gettime (&ts);
     (void) pvm_array_insert (arr, PVM_MAKE_LONG (0, 64),
                              PVM_MAKE_LONG (ts.tv_sec, 64));
     (void) pvm_array_insert (arr, PVM_MAKE_LONG (1, 64),

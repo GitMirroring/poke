@@ -26,3 +26,7 @@ pvm_strcat
 pvm_strncat
 pvm_strcmp
 pvm_free
+pvm_random
+pvm_srandom
+pvm_gettime
+pvm_secure_getenv

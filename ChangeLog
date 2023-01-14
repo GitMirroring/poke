@@ -1,5 +1,22 @@
 2023-01-14  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pvm.jitter (wrapped-functions): Wrap pvm_random,
+	pvm_srandom, pvm_gettime and pvm_secure_getenv.
+	(pvm_random): New function.
+	(pvm_srandom): Likewise.
+	(pvm_gettime): Likewise.
+	(pvm_secure_getenv): Likewise.
+	(rand): Use pvm_srandom, pvm_random and pvm_gettime.
+	(time): Use pvm_gettime.
+	(getenv): Use pvm_secure_getenv.
+	* etc/pvm-wraps-static-whitelist: Add pvm_random, pvm_srandom,
+	pvm_gettime and pvm_secure_getenv.
+	* etc/pvm-wraps-whitelist: Add random, rpl_random, srandom,
+	rpl_srandom, gettime, rpl_gettime, secure_getenv and
+	rpl_secure_getenv.
+
+2023-01-14  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* bootstrap.conf (libpoke_modules): Import module vsnprintf-posix.
 	* libpoke/pvm.jitter (wrapped-functions): Add pvm_snprintf.
 	(pvm_snprintf): New function.
