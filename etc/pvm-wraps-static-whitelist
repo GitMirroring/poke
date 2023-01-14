@@ -18,6 +18,7 @@ pvm_literal_formatf_styles
 pvm_exception_names
 pvm_asprintf
 pvm_memcpy
+pvm_snprintf
 pvm_strlen
 pvm_strcpy
 pvm_strncpy

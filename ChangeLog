@@ -1,3 +1,14 @@
+2023-01-14  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* bootstrap.conf (libpoke_modules): Import module vsnprintf-posix.
+	* libpoke/pvm.jitter (wrapped-functions): Add pvm_snprintf.
+	(pvm_snprintf): New function.
+	(FORMATF): Use pvm_snprintf.
+	(PVM_FORMATI): Likewise.
+	(PVM_FORMATL): Likewise.
+	* etc/pvm-wraps-static-whitelist: Add pvm_snprintf.
+	* etc/pvm-wraps-whitelist: Add vsnprintf and rpl_vsnprintf.
+
 2023-01-13  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pvm.jitter (FORMATF): Use pvm_asprint.
