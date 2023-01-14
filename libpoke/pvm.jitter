@@ -149,9 +149,6 @@ wrapped-functions
   pvm_snprintf
 end
 
-#wrapped-globals
-#  pvm_printf_format_string
-#end
 wrapped-globals
   pvm_literal_empty
   pvm_literal_c
