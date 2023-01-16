@@ -1,3 +1,8 @@
+2023-01-16  Arsen Arsenović  <arsen@aarsen.me>
+
+	* cfg.mk (sc_tests_listed_in_makefile_am): Modernize egrep
+	invocation into grep -E, as the former was deprecated.
+
 2023-01-14  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pvm.jitter (wrapped-functions): Wrap pvm_random,
