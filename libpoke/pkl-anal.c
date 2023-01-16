@@ -252,23 +252,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_anal1_ps_comp_stmt)
 }
 PKL_PHASE_END_HANDLER
 
-/* Every node in the AST should have a valid location after parsing.
-   This handler is used in both anal1 and anal2.  */
-
-PKL_PHASE_BEGIN_HANDLER (pkl_anal_ps_default)
-{
-#if 0
-  if (!PKL_AST_LOC_VALID (PKL_AST_LOC (PKL_PASS_NODE)))
-    {
-      PKL_ICE (PKL_AST_NOLOC,
-               "node #%" PRIu64 " with code %d has no location",
-               PKL_AST_UID (PKL_PASS_NODE), PKL_AST_CODE (PKL_PASS_NODE));
-      PKL_PASS_ERROR;
-    }
-#endif
-}
-PKL_PHASE_END_HANDLER
-
 /* The arguments to a funcall should be either all named, or none
    named.  Also, it is not allowed to specify the same argument
    twice.  */
@@ -750,7 +733,6 @@ struct pkl_phase pkl_phase_anal1 =
    PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_ARRAY, pkl_anal1_ps_type_array),
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_SL, pkl_anal1_ps_op_sl),
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_ATTR, pkl_anal1_ps_op_attr),
-   PKL_PHASE_PS_DEFAULT_HANDLER (pkl_anal_ps_default),
   };
 
 
@@ -1036,7 +1018,6 @@ struct pkl_phase pkl_phase_anal2 =
    PKL_PHASE_PS_HANDLER (PKL_AST_ASM_STMT, pkl_anal2_ps_asm_stmt),
    PKL_PHASE_PS_HANDLER (PKL_AST_ASM_EXP, pkl_anal2_ps_asm_exp),
    PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_STRUCT, pkl_anal2_ps_type_struct),
-   PKL_PHASE_PS_DEFAULT_HANDLER (pkl_anal_ps_default),
   };
 
 

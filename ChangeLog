@@ -1,3 +1,9 @@
+2023-01-17  Jose E. Marchesi  <jemarch@termi>
+
+	* libpoke/pkl-anal.c (pkl_anal_ps_default): Remove handler.
+	(pkl_phase_anal1): And do not use it.
+	(pkl_phase_anal2): Likewise.
+
 2023-01-16  Arsen Arsenović  <arsen@aarsen.me>
 
 	* cfg.mk (sc_tests_listed_in_makefile_am): Modernize egrep
