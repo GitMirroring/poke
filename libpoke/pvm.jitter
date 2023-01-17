@@ -877,7 +877,7 @@ late-header-c
     JITTER_PUSH_STACK (pvm_make_string ((OUT)));                            \
   } while (0)
 
-#define FORMATF(RESULT,NUM,PREC,STYLE,TYPEF)                                \
+#define PVM_FORMATF(RESULT,NUM,PREC,STYLE,TYPEF)                            \
   do                                                                        \
     {                                                                       \
       TYPEF x;                                                              \
@@ -887,8 +887,8 @@ late-header-c
       PVM_ASSERT (sizeof (x) == sizeof (NUM));                              \
       PVM_ASSERT ((STYLE) < 3);                                             \
                                                                             \
-      memcpy (&x, &(NUM), sizeof (NUM));                                    \
-      n = pvm_snprintf (fmt, sizeof (fmt), pvm_literal_formatf_fmt,             \
+      pvm_memcpy (&x, &(NUM), sizeof (NUM));                                \
+      n = pvm_snprintf (fmt, sizeof (fmt), pvm_literal_formatf_fmt,         \
                         (unsigned)(PREC), pvm_literal_formatf_styles[(STYLE)]); \
       if (n == -1)                                                          \
         PVM_RAISE_DFL (PVM_E_CONV);                                         \
@@ -2500,7 +2500,7 @@ instruction formatf32 (?n 0 1 2)
     uint32_t precision = PVM_VAL_UINT (JITTER_TOP_STACK ());
 
     JITTER_DROP_STACK ();
-    FORMATF (result, num, precision, style, float);
+    PVM_FORMATF (result, num, precision, style, float);
     JITTER_TOP_STACK () = pvm_make_string (result);
     pvm_free (result);
   end
@@ -2535,7 +2535,7 @@ instruction formatf64 (?n 0 1 2)
     uint32_t precision = PVM_VAL_UINT (JITTER_TOP_STACK ());
 
     JITTER_DROP_STACK ();
-    FORMATF (result, num, precision, style, double);
+    PVM_FORMATF (result, num, precision, style, double);
     JITTER_TOP_STACK () = pvm_make_string (result);
     pvm_free (result);
   end

@@ -1,3 +1,10 @@
+2023-01-17  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pvm.jitter (FORMATF): Rename the macro to `PVM_FORMATF'
+	and s/memcpy/pvm_memcpy/.
+	(formatf32): s/FORMATF/PVM_FORMATF/.
+	(formatf64): Likewise.
+
 2023-01-17  Arsen Arsenović  <arsen@aarsen.me>
 
 	* doc/poke.texi (Top): Include the introductory paragraph from
