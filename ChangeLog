@@ -1,3 +1,8 @@
+2023-01-17  Arsen Arsenović  <arsen@aarsen.me>
+
+	* doc/Makefile.am (html-local): Remove outdated workaround for bug
+	in older Texinfo versions.
+
 2023-01-17  Jose E. Marchesi  <jemarch@termi>
 
 	* libpoke/pkl-anal.c (pkl_anal_ps_default): Remove handler.
