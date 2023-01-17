@@ -1,5 +1,8 @@
 2023-01-17  Arsen Arsenović  <arsen@aarsen.me>
 
+	* doc/poke.texi (Top): Include the introductory paragraph from
+	<https://jemarch.net/poke.html>, and a brief elaboration on the
+	contents of the manual.
 	* doc/Makefile.am (html-local): Remove outdated workaround for bug
 	in older Texinfo versions.
 
