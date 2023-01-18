@@ -1,5 +1,10 @@
 2023-01-18  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* etc/pvm-wraps-whitelist: Add rpl_printf, __stpcpy_chk, memcpy,
+	rpl_memcpy and __strcpy_chk.
+
+2023-01-18  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/Makefile.am (libpoke_la_SOURCES): Add pvm-wrappers.c and
 	pvm-wrappers.h.
 	* libpoke/pvm-wrappers.c: New file.
