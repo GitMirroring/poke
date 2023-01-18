@@ -66,6 +66,7 @@ end
 ## Functions and globals to wrap.
 
 wrapped-functions
+  pvm_free
   pvm_array_insert
   pvm_array_set
   pvm_assert
