@@ -1,5 +1,9 @@
 2023-01-18  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* cfg.mk (sc_pvm_wrappers): Remove empty lines.
+
+2023-01-18  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* etc/pvm-wraps-whitelist: Add rpl_printf, __stpcpy_chk, memcpy,
 	rpl_memcpy and __strcpy_chk.
 
