@@ -40,6 +40,7 @@ struct usock *srv;
 static int poked_init (int pdap_version);
 static void poked_free (void);
 
+/* Terminal output  */
 #define OUTCMD_ITER_BEGIN 1
 #define OUTCMD_ITER_END 2
 #define OUTCMD_ERR 3
@@ -48,11 +49,12 @@ static void poked_free (void);
 #define OUTCMD_CLS_END 6
 #define OUTCMD_EVAL 7
 
-#define VUCMD_CLEAR 1
-#define VUCMD_APPEND 2
-#define VUCMD_HIGHLIGHT 3
-#define VUCMD_FILTER 4
-#define VUCMD_FINISH 5
+/* View (vu)  */
+#define VUCMD_ITER_BEGIN 1
+#define VUCMD_ITER_END 2
+#define VUCMD_CLEAR 3
+#define VUCMD_APPEND 4
+#define VUCMD_HIGHLIGHT 5
 
 /* Auto-completion  */
 #define AUTOCMPL_ITER_BEGIN OUTCMD_ITER_BEGIN
@@ -451,14 +453,14 @@ poked_compile (const char *src, uint8_t chan, int *poked_restart_p,
     {
       const char *filt = pk_string_str (pk_decl_val (pkc, "__plet_vu_filter"));
 
-      usock_out (srv, USOCK_CHAN_OUT_VU, VUCMD_FILTER, filt,
+      usock_out (srv, USOCK_CHAN_OUT_VU, VUCMD_ITER_BEGIN, filt,
                  strlen (filt) + 1);
       usock_out (srv, USOCK_CHAN_OUT_VU, VUCMD_CLEAR, "", 1);
       termout_vu_append ();
       (void)pk_call (pkc, pk_decl_val (pkc, "__plet_vu_dump"), NULL, &exc, 0);
       assert (exc == PK_NULL);
       termout_restore ();
-      usock_out (srv, USOCK_CHAN_OUT_VU, VUCMD_FINISH, "", 1);
+      usock_out (srv, USOCK_CHAN_OUT_VU, VUCMD_ITER_END, "", 1);
     }
   if (pk_int_value (pk_decl_val (pkc, "__poked_chan_send_p")))
     poked_buf_send ();

@@ -196,14 +196,11 @@ fun plet_vu = (string filt = __plet_vu_filter,
                string[] filts = string[] (),
                int<32> ios = get_ios,
                offset<long,B> from = pk_dump_get_offset (ios),
-               offset<long,B> size = pk_dump_size,
-               offset<long,B> group_by = pk_dump_group_by,
-               int cluster_by = pk_dump_cluster_by,
-               int ascii = pk_dump_ascii) void:
+               offset<long,B> size = pk_dump_size) void:
   {
     __plet_vu_args = __Poked_VuArgs {
-        ios = ios, from = from, size = size, group_by = group_by,
-        cluster_by = cluster_by, ascii = ascii,
+        ios = ios, from = from, size = size, group_by = 2#B,
+        cluster_by = 8, ascii = 1,
       };
     if (filts'length != 0)
       {
@@ -260,7 +257,7 @@ fun plet_vu_highlight = (offset<long,N> from = plet_vu_dot,
 //                                                                    , l4  , c31 , c32 , c33 , c34  ,
     "%u64d,%u64d,%u64d,%u64d,%u64d,%u64d,%u64d,%u64d,%u64d,%u64d,%u64d,%u64d,%u64d,%u64d,%u64d,%u64d",
     l1, c11, c12, c13, c14, l2, l3, c21, c22, c23, c24, l4, c31, c32, c33, c34);
-    var payload = byte[payload_str'length + 1] ();
+    var payload = byte[payload_str'size] ();
 
     stoca (payload_str, payload);
     poked_chan_send (2, [3UB] + payload);

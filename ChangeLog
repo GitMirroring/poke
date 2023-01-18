@@ -1,3 +1,10 @@
+2023-01-18  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* poked/poked.c (VUCMD_*): Re-enumerate the view (vu) commands.
+	* poked/poked.pk (plet_vu): Simplify the dump format. We can
+	make it more flexible again later.
+	(plet_vu_highlight): Simplify array allocation.
+
 2023-01-18  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* cfg.mk (sc_pvm_wrappers): Remove empty lines.
