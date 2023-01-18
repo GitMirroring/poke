@@ -1,5 +1,17 @@
 2023-01-18  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/Makefile.am (libpoke_la_SOURCES): Add pvm-wrappers.c and
+	pvm-wrappers.h.
+	* libpoke/pvm-wrappers.c: New file.
+	* libpoke/pvm-wrappers.h: Likewise.
+	* libpoke/pvm.jitter: Move pvm_* wrappers to pvm-wrappers.c.
+	* etc/pvm-wraps-whitelist: Remove entries for functions called
+	from pvm_* wrappers.
+	* etc/pvm-wraps-static-whitelist: Remove functions no longer
+	defined in pvm.jitter.
+
+2023-01-18  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* etc/pvm-wraps-whitelist: Add printf and rpl_printf.
 
 2023-01-18  Jose E. Marchesi  <jemarch@gnu.org>

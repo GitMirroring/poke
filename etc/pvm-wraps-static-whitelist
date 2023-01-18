@@ -1,6 +1,5 @@
 # These are the pvm_* wrappers for external symbols we have
 # in pvm.jitter.
-pvm_nanosleep
 pvm_literal_c
 pvm_literal_empty
 pvm_literal_code
@@ -16,17 +15,3 @@ pvm_literal_dispatch_name
 pvm_literal_formatf_fmt
 pvm_literal_formatf_styles
 pvm_exception_names
-pvm_asprintf
-pvm_memcpy
-pvm_snprintf
-pvm_strlen
-pvm_strcpy
-pvm_strncpy
-pvm_strcat
-pvm_strncat
-pvm_strcmp
-pvm_free
-pvm_random
-pvm_srandom
-pvm_gettime
-pvm_secure_getenv

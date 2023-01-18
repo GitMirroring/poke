@@ -56,6 +56,7 @@ libpoke_la_SOURCES = libpoke.h libpoke.c \
                      pvm-alloc.h pvm-alloc.c \
                      pvm-program.h pvm-program.c \
                      pvm-program-point.h \
+                     pvm-wrappers.c pvm-wrappers.h \
                      pvm.jitter \
                      ios.c ios.h ios-dev.h \
                      ios-dev-file.c ios-dev-mem.c \
