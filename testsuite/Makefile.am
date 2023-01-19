@@ -611,6 +611,7 @@ EXTRA_DIST = \
   poke.pickles/redoxfs-test.pk \
   poke.pickles/pcap-test.pk \
   poke.pickles/ieee754-test.pk \
+  poke.pickles/pdap-test.pk \
   poke.pkl/pkl.exp \
   poke.pkl/postincr-1.pk \
   poke.pkl/postincr-2.pk \

@@ -1,0 +1,293 @@
+/* pdap.pk - PokeD Application Protocol.  */
+
+/* Copyright (C) 2022-2023 The poke authors */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+load leb128;
+
+/* All commands happen between the pair of *_ITER_BEGIN and *_ITER_END
+   commands.  */
+
+var PDAP_OUT_CMD_ITER_BEGIN = 1UB,
+    PDAP_OUT_CMD_ITER_END   = 2UB,
+    PDAP_OUT_CMD_ERR        = 3UB,
+    PDAP_OUT_CMD_TXT        = 4UB,
+    PDAP_OUT_CMD_CLS_BEGIN  = 5UB,
+    PDAP_OUT_CMD_CLS_END    = 6UB,
+    PDAP_OUT_CMD_EVAL       = 7UB;
+
+var PDAP_VU_CMD_ITER_BEGIN = 1UB,
+    PDAP_VU_CMD_ITER_END   = 2UB,
+    PDAP_VU_CMD_CLEAR      = 3UB,
+    PDAP_VU_CMD_APPEND     = 4UB,
+    PDAP_VU_CMD_HIGHLIGHT  = 5UB;
+
+/* Auto-completion.  */
+var PDAP_AUTOCMPL_ITER_BEGIN = PDAP_OUT_CMD_ITER_BEGIN,
+    PDAP_AUTOCMPL_ITER_END   = PDAP_OUT_CMD_ITER_END,
+/*  PDAP_AUTOCMPL_ERR        = PDAP_OUT_CMD_ITER_ERR, */
+    PDAP_AUTOCMPL_IDENT      = 4UB,
+    PDAP_AUTOCMPL_IOS        = 5UB;
+
+/* Poke disassmbler.  */
+var PDAP_PDISAS_ITER_BEGIN = PDAP_OUT_CMD_ITER_BEGIN,
+    PDAP_PDISAS_ITER_END   = PDAP_OUT_CMD_ITER_END,
+    PDAP_PDISAS_ERR        = PDAP_OUT_CMD_ERR,
+    PDAP_PDISAS_TXT        = PDAP_OUT_CMD_TXT,
+    PDAP_PDISAS_KIND       = 5UB;
+
+var PDAP_DIRECTION_IN  = 0 as uint<1>,
+    PDAP_DIRECTION_OUT = 1 as uint<1>;
+
+/* Pokelet role.  */
+type PDAP_Role = struct uint<8>
+  {
+    uint<1> direction;
+    uint<7> channel : 0 < channel && channel <= 120;
+  };
+
+/* Terminal output messages (output channel 1).  */
+
+type PDAP_Out_Msg =
+  struct
+  {
+    little offset<uint<16>,B> length : length > 0#B;
+    ULEB128 command : command.value < 128UB /* For now.  */
+        && (command.value as uint<8>) in [
+             PDAP_OUT_CMD_ITER_BEGIN, PDAP_OUT_CMD_ITER_END,
+             PDAP_OUT_CMD_ERR, PDAP_OUT_CMD_TXT,
+             PDAP_OUT_CMD_CLS_BEGIN, PDAP_OUT_CMD_CLS_END,
+             PDAP_OUT_CMD_EVAL,
+           ];
+
+    var cmd = command.value as uint<8>;
+
+    var body_begin_off = OFFSET;
+
+    if (cmd in [PDAP_OUT_CMD_ITER_BEGIN, PDAP_OUT_CMD_ITER_END])
+    little uint<64> iteration;
+
+    if (cmd == PDAP_OUT_CMD_ERR)
+    string error;
+
+    if (cmd == PDAP_OUT_CMD_TXT)
+    string text;
+
+    if (cmd in [PDAP_OUT_CMD_CLS_BEGIN, PDAP_OUT_CMD_CLS_END])
+    string class;
+
+    if (cmd == PDAP_OUT_CMD_EVAL)
+    string eval;
+
+    var body_end_off = OFFSET;
+
+    /* End-of-packet marker.  */
+    byte[0] eop : body_end_off - body_begin_off + command'size == length;
+  };
+
+fun pdap_out_msg_iter_begin = (uint<64> iter) PDAP_Out_Msg:
+  {
+    return PDAP_Out_Msg {
+      length = 9UH#B,
+      command = ULEB128 {last = PDAP_OUT_CMD_ITER_BEGIN},
+      iteration = iter,
+    };
+  }
+
+fun pdap_out_msg_iter_end = (uint<64> iter) PDAP_Out_Msg:
+  {
+    return PDAP_Out_Msg {
+      length = 9UH#B,
+      command = ULEB128 {last = PDAP_OUT_CMD_ITER_END},
+      iteration = iter,
+    };
+  }
+
+fun pdap_out_msg_err = (string err) PDAP_Out_Msg:
+  {
+    return PDAP_Out_Msg {
+      length = 1UH#B + err'size,
+      command = ULEB128 {last = PDAP_OUT_CMD_ERR},
+      error = err,
+    };
+  }
+
+fun pdap_out_msg_txt = (string txt) PDAP_Out_Msg:
+  {
+    return PDAP_Out_Msg {
+      length = 1UH#B + txt'size,
+      command = ULEB128 {last = PDAP_OUT_CMD_TXT},
+      text = txt,
+    };
+  }
+
+fun pdap_out_msg_class_begin = (string name) PDAP_Out_Msg:
+  {
+    return PDAP_Out_Msg {
+      length = 1UH#B + name'size,
+      command = ULEB128 {last = PDAP_OUT_CMD_CLS_BEGIN},
+      class = name,
+    };
+  }
+
+fun pdap_out_msg_class_end = (string name) PDAP_Out_Msg:
+  {
+    return PDAP_Out_Msg {
+      length = 1UH#B + name'size,
+      command = ULEB128 {last = PDAP_OUT_CMD_CLS_END},
+      class = name,
+    };
+  }
+
+/* Printed representation of the expression statements.  */
+fun pdap_out_msg_eval = (string val) PDAP_Out_Msg:
+  {
+    return PDAP_Out_Msg {
+      length = 1UH#B + val'size,
+      command = ULEB128 {last = PDAP_OUT_CMD_EVAL},
+      eval = val,
+    };
+  }
+
+/* View (vu) output messages (output channel 2).  */
+
+type PDAP_Vu_Msg =
+  struct
+  {
+    little offset<uint<16>,B> length : length > 0#B;
+    ULEB128 command : command.value < 128UB /* For now.  */
+        && (command.value as uint<8>) in [
+            PDAP_VU_CMD_ITER_BEGIN, PDAP_VU_CMD_ITER_END,
+            PDAP_VU_CMD_CLEAR, PDAP_VU_CMD_APPEND, PDAP_VU_CMD_HIGHLIGHT];
+
+    var cmd = command.value as uint<8>;
+
+    var body_begin_off = OFFSET;
+
+    if (cmd in [PDAP_VU_CMD_ITER_BEGIN, PDAP_VU_CMD_ITER_END])
+    string filter;
+
+    if (cmd == PDAP_VU_CMD_APPEND)
+    string text;
+
+    if (cmd == PDAP_VU_CMD_HIGHLIGHT)
+    string highlight;
+
+    var body_end_off = OFFSET;
+
+    /* End-of-packet marker.  */
+    byte[0] eop : body_end_off - body_begin_off + command'size == length;
+  };
+
+fun pdap_vu_msg_iter_begin = (string filter) PDAP_Vu_Msg:
+  {
+    return PDAP_Vu_Msg {
+      length = 1UH#B + filter'size,
+      command = ULEB128 {last = PDAP_VU_CMD_ITER_BEGIN},
+      filter = filter,
+    };
+  }
+
+fun pdap_vu_msg_iter_end = PDAP_Vu_Msg:
+  {
+    return PDAP_Vu_Msg {
+      length = 2UH#B,
+      command = ULEB128 {last = PDAP_VU_CMD_ITER_END},
+      filter = "",
+    };
+  }
+
+fun pdap_vu_msg_clear = PDAP_Vu_Msg:
+  {
+    return PDAP_Vu_Msg {
+      length = 1UH#B,
+      command = ULEB128 {last = PDAP_VU_CMD_CLEAR},
+    };
+  }
+
+fun pdap_vu_msg_append = (string txt) PDAP_Vu_Msg:
+  {
+    return PDAP_Vu_Msg {
+      length = 1UB#B + txt'size,
+      command = ULEB128 {last = PDAP_VU_CMD_APPEND},
+      text = txt,
+    };
+  }
+
+/* To keep the vu output consumer (the vu pokelet), as dumb as possible,
+   we keep the assumption at a minimum level.  One assumption is that
+   there are, at least, 2 columns of text: one for the bytes shown as
+   hex numbers and one for the ASCII representation of the bytes.
+
+   vu pokelet should be able to CLEAR the visible text, APPEND new text
+   to currently visible text, or HIGHLIGHT the selected ranges of bytes.
+
+   One example for the format of vu channel may looks like this:
+
+00000000: 2550 4446 2d31 2e34 0a25 c3a4 c3bc c3b6  %PDF-1.4.%......
+00000010: c39f 0a32 2030 206f 626a 0a3c 3c2f 4c65  ...2 0 obj.<</Le
+00000020: 6e67 7468 2033 2030 2052 2f46 696c 7465  ngth 3 0 R/Filte
+00000030: 722f 466c 6174 6544 6563 6f64 653e 3e0a  r/FlateDecode>>.
+00000040: 7374 7265 616d 0a78 9c6d 4fcb 0ac2 400c  stream.x.mO...@.
+00000050: bcef 57e4 2cb8 cd3e 92b5 b02c d887 a0e0  ..W.,..>...,....
+00000060: a1b0 e041 3c88 b652 10c1 52f0 f7dd 563c  ...A<..R..R...V<
+00000070: 0832 1092 c964 92a0 54f0 12d9 7a18 fbee  .2...d..T...z...
+
+   The semantics of the CLEAR and APPEND commands are clear! And to HIGHLIGHT
+   a range of bytes, we need four line numbers:
+
+     line1: First partially-selected line number
+     line2: First fully-selected line number
+     line3: Last fully-selected line number
+     line4: Last partially-selected line number
+
+   Also to keep the pokelet as dumb as possible, for each line, we need
+   four numbers for the columns; first pair for highlighting the "bytes"
+   part, and second pair for highlighting the "ASCII" part.  */
+fun pdap_vu_msg_highlight = (
+    /* First partially-selected line.  */
+    uint<64> line1, uint<64> col1_bytes_begin, uint<64> col1_bytes_end,
+    uint<64> col1_ascii_begin, uint<64> col1_ascii_end,
+
+    /* First and last fully-selected lines.  */
+    uint<64> line2, uint<64> line3, uint<64> col_bytes_begin,
+    uint<64> col_bytes_end, uint<64> col_ascii_begin, uint<64> col_ascii_end,
+
+    /* Last partially-selected line.  */
+    uint<64> line4, uint<64> col4_bytes_begin, uint<64> col4_bytes_end, uint<64> col4_ascii_begin,
+    uint<64> col4_ascii_end) PDAP_Vu_Msg:
+  {
+    var payload = format ("%u64d,%u64d,%u64d,%u64d,%u64d,\
+%u64d,%u64d,%u64d,%u64d,%u64d,%u64d,\
+%u64d,%u64d,%u64d,%u64d,%u64d",
+      /* First partially-selected line.  */
+      line1, col1_bytes_begin, col1_bytes_end, col1_ascii_begin,
+      col1_ascii_end,
+
+      /* First and last fully-selected lines.  */
+      line2, line3, col_bytes_begin, col_bytes_end, col_ascii_begin,
+      col_ascii_end,
+
+      /* Last partially-selected line.  */
+      line4, col4_bytes_begin, col4_bytes_end, col4_ascii_begin,
+      col4_ascii_end);
+
+    return PDAP_Vu_Msg {
+      length = 1UB#B + payload'size,
+      command = ULEB128 {last = PDAP_VU_CMD_HIGHLIGHT},
+      highlight = payload,
+    };
+  }

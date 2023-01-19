@@ -1,5 +1,11 @@
 2023-01-19  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* pickles/pdap.pk: New pickle for "PokeD Application Protocol".
+	* testsuite/poke.pickles/pdap-test.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
+2023-01-19  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* doc/poke.texi (poked): Add new chapter.
 
 2023-01-19  Arsen Arsenović  <arsen@aarsen.me>
