@@ -73,6 +73,9 @@ Pickles
 * Object Formats::		Editing executables and libraries.
 * Programs::			Facilities to write binary utilities.
 
+poked
+* poked::                       The poke daemon.
+
 poke and Emacs
 * Programming Emacs Modes::     Modes to write Poke and RAS programs.
 
@@ -8392,6 +8395,117 @@ foo -qyz
 The special option @code{--}, if found in the command line, stops the
 processing of options.  Everything found about it is considered
 non-option arguments.
+
+@node poked
+@chapter poked
+
+The @code{poke} application is a REPL (Read-Evaluate-Print-Loop) and
+therefore the user interacts with it by providing Poke statements or
+expressions (or dot-commands) in the standard input, and then the
+program prints the response to the commands in the standard output, or
+standard error.  This is good for human users, but not that convenient
+for other programs that may wish to communicate with a poke incremental
+compiler.
+
+@code{poked} is a different sort of application that accepts Poke code
+(and more) over Unix sockets and provides responses over the same
+socket.  This is very convenient for programs to interact with the
+poke incremental compiler.  The client programs that interact with
+@code{poked} are called @emph{pokelets}.
+
+This form of interaction is particularly userful to write user
+interfaces to GNU poke, in the form of several pokelets.  Examples
+of such interfaces are
+@url{https://git.savannah.gnu.org/cgit/poke/poke-el.git,Emacs
+interface to poke} and @url{https://sourceware.org/pacme/,pacme}.
+
+@code{poked} is basically a message broker that provides (for now)
+120 input channels and 120 output channels.  The first 60 channels
+are reserved for the @code{poked} developers in order to provide
+standard channels whose meaning is fixed and the same for any pokelet.
+The rest of the channels can be freely dedicated for any purpose by
+anybode else.
+
+The combination of @emph{channel number} and @emph{channel direction}
+creates the client's @emph{role}.  For now, it's a single byte.  The
+most significant bit determines whether it's an input or output
+channel.  Or in poke syntax:
+
+@example
+var PDAP_DIRECTION_IN  = 0 as uint<1>,
+    PDAP_DIRECTION_OUT = 1 as uint<1>;
+
+type PDAP_Role = struct uint<8>
+  @{
+    uint<1> direction;
+    uint<7> channel : 0 < channel && channel <= 120;
+  @};
+@end example
+
+Pokelets are expected to write their role over the socket when
+they're connected to the @code{poked}.
+
+@code{poked}, on start up, will create a Unix socket and prints
+current options to the @code{stdout}.  Options are a pair of
+space-separated key/values, each on one line.  Options will end
+with an empty line.  An example of @code{poked} output:
+
+@example
+socket_path /tmp/poked.ipc
+pdap_version 0
+
+@end example
+
+Currently, only first two input channels are active.  Input channel
+number 1 is for @emph{code input} which means anything sent to this
+channel will be compiled and executed using @code{pk_compile_buffer}
+function of @code{libpoke}; and input channel number 2 is for
+@emph{command input} which will compile and execute the input message
+using @code{pk_compile_statement} function.
+
+For output channels:
+
+@table @dfn
+@item Channel 1
+Terminal output.
+@item Channel 2
+View (vu) output.
+@item Channel 3
+Poke Virtual Machine (PVM) disassembly output.
+@item Channel 4
+Treevu (tree view) output (not supported yet).
+@item Channel 5
+Auto-completion output.
+@item Channel 6
+CPU disassembly output.
+@end table
+
+The format of each message written to output channels are documented
+in @code{pdap.pk} pickle.
+
+The following functions are available for pokelets:
+
+@table @code
+@item poked_pdap_version
+Version of current PDAP (PokeD Application Protocol).
+@item poked_libpoke_version
+Version of @code{libpoke}.
+@item poked_restart
+Restart the Poke environment of @code{poked}.
+@item poked_exit
+Exit the @code{poked}.
+@item poked_chan_send
+Signature: @code{(uint<7> chan, byte[] data) void}.
+Send data to the specified output channel.
+@end table
+
+The following variable is also available for pokelets to use:
+
+@table @code
+@item poked_after_cmd_hook
+An array of callbacks to be run after executing the @emph{command}
+(received from input channel 2).  Callback signature: @code{()void}.
+@end table
 
 @node Programming Emacs Modes
 @chapter Programming Emacs Modes

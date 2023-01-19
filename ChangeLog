@@ -1,3 +1,7 @@
+2023-01-19  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* doc/poke.texi (poked): Add new chapter.
+
 2023-01-19  Arsen Arsenović  <arsen@aarsen.me>
 
 	* poke/pk-repl.c (space_substitute_display_matches): Force
