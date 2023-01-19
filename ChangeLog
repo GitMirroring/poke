@@ -1,3 +1,9 @@
+2023-01-19  Arsen Arsenović  <arsen@aarsen.me>
+
+	* poke/pk-repl.c (space_substitute_display_matches): Force
+	redisplay after displaying match list, to match GNU Readline
+	behavior.
+
 2023-01-18  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* poked/poked.c (VUCMD_*): Re-enumerate the view (vu) commands.

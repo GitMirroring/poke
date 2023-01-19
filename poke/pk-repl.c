@@ -97,6 +97,7 @@ space_substitute_display_matches (char **matches, int num_matches,
     }
 
   rl_display_match_list (matches, num_matches, max_length);
+  rl_forced_update_display ();
 }
 
 /* Display the rl_line_buffer substituting
