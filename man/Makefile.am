@@ -17,7 +17,7 @@
 
 if NATIVE_BUILD
 
-man_MANS = poke.1
+man_MANS = poke.1 poked.1
 
 EXTRA_DIST = $(man_MANS)
 MAINTAINERCLEANFILES = $(man_MANS)
@@ -34,5 +34,11 @@ poke.1: $(top_srcdir)/poke/poke.c $(common_mandeps)
 	$(top_builddir)/run \
 	  $(HELP2MAN) -p poke --name="The GNU extensible binary editor" \
 	      $(builddir)/../poke/poke$(EXEEXT) -o $(srcdir)/poke.1
+
+poked.1: $(top_srcdir)/poked/poked.c $(common_mandeps)
+	$(MAKE) $(AM_MAKEFLAGS) $(builddir)/../poked/poked$(EXEEXT)
+	$(top_builddir)/run \
+	  $(HELP2MAN) -p poked --name="The poke daemon" -N \
+	      $(builddir)/../poked/poked$(EXEEXT) -o $(srcdir)/poked.1
 
 endif

@@ -1,5 +1,10 @@
 2023-01-19  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* man/Makefile.am (man_MANS): Add poked.
+	(poked.1): New rule to generate man page for poked.
+
+2023-01-19  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* pickles/pdap.pk: New pickle for "PokeD Application Protocol".
 	* testsuite/poke.pickles/pdap-test.pk: New test.
 	* testsuite/Makefile.am (EXTRA_DIST): Update.
