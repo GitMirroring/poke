@@ -59,9 +59,8 @@ fun pk_exception_handler = (Exception exception) void:
   {
    if (exception.code != EC_exit && exception.code != EC_signal)
      {
-       print ("unhandled "
-              + (exception.name == "" ? "unknown" : exception.name)
-              + " exception\n");
+       printf ("unhandled %<warning:%s exception%>\n",
+               exception.name == "" ? "unknown" : exception.name);
 
        if (exception.location != "" || exception.msg != "")
          {
