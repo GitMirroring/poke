@@ -114,7 +114,12 @@ dnl here, using the value ':' for when no suitable awk is found.  Then
 dnl in the `.pkc : .pks' rule in Makefile.am an error message is
 dnl emitted in case no proper AWK is present.
 
-AX_CHECK_AWK_GENSUB([RAS_AWK=$AWK], [RAS_AWK=:])
+error_on_awk_gensub=no
+AX_CHECK_AWK_GENSUB([RAS_AWK=$AWK],
+  [if test -d $srcdir/.git ; then
+     error_on_awk_gensub=yes
+   fi
+   RAS_AWK=:])
 AC_SUBST([RAS_AWK])
 
 dnl The Boehm-Weiser garbage collector
@@ -272,6 +277,11 @@ if test "x$libnbd_enabled" != "xyes"; then
 fi
 
 dnl Report errors
+
+if test "x$error_on_awk_gensub" = "xyes"; then
+   AC_MSG_ERROR([you need a gensub-capable awk when building from VCS.
+     Please install gawk.])
+fi
 
 if test "x$have_gc" = "xno"; then
    AC_MSG_ERROR([can't find the Boehm GC library.  Please install it.])
