@@ -986,6 +986,9 @@ pvm_sizeof (pvm_val val)
   else if (PVM_IS_CLS (val))
     /* By convention, closure values have size zero.  */
     return 0;
+  else if (val == PVM_NULL)
+    /* By convention, PVM_NULL values have size zero.  */
+    return 0;
 
   assert (0);
   return 0;

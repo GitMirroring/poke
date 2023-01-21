@@ -6875,6 +6875,8 @@ end
 # Instruction: siz
 #
 # Given a value, push its size as a bit-offset.
+# By convention, the following PVM values have size zero:
+#   type, closure, null
 #
 # Stack: ( VAL -- VAL ULONG )
 
