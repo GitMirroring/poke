@@ -40,7 +40,8 @@ The following packages should be installed before GNU poke is installed
 * GNU readline
   + Mandatory.
     Poke uses GNU libreadline in order to provide a nice line editor in
-    the '(poke)' prompt.  Any recent version will suffice.
+    the '(poke)' prompt.  Any recent version will suffice.  But the readline-
+    imitating wrapper around the BSD 'editline' library will not be sufficient.
   + Homepage:
     https://www.gnu.org/software/readline/
   + Download:
