@@ -656,15 +656,43 @@ PKL_PHASE_BEGIN_HANDLER (pkl_anal1_ps_cons)
         }
       break;
     case PKL_TYPE_ARRAY:
-      /* Array constructors accept zero or one arguments.  */
-      if (pkl_ast_chain_length (cons_value) > 1)
-        {
-          PKL_ERROR (PKL_AST_LOC (cons),
-                     "struct constructor requires exactly one argument");
-          PKL_ANAL_PAYLOAD->errors++;
-          PKL_PASS_ERROR;
-        }
-      break;
+      {
+        /* It is not allowed to construct arrays of values of type
+           `any' unless the constructed array has no elements or an
+           initial value is specified.  */
+
+        pkl_ast_node cons_type_etype;
+        pkl_ast_node cons_type_bound;
+
+        assert (PKL_AST_TYPE_CODE (cons_type) == PKL_TYPE_ARRAY);
+        cons_type_etype = PKL_AST_TYPE_A_ETYPE (cons_type);
+        cons_type_bound = PKL_AST_TYPE_A_BOUND (cons_type);
+
+        if (PKL_AST_TYPE_CODE (cons_type_etype) == PKL_TYPE_ANY
+            && pkl_ast_chain_length (cons_value) == 0
+            && cons_type_bound != NULL
+            && ((PKL_AST_CODE (cons_type_bound) == PKL_AST_INTEGER
+                 && PKL_AST_INTEGER_VALUE (cons_type_bound) > 0)
+                || (PKL_AST_CODE (cons_type_bound) == PKL_AST_OFFSET
+                    && PKL_AST_INTEGER_VALUE (PKL_AST_OFFSET_MAGNITUDE (cons_type_bound)) > 0)))
+          {
+            PKL_ERROR (PKL_AST_LOC (cons),
+                       "constructing non-empty arrays of `any' without an initializer\n"
+                       "is not supported");
+            PKL_ANAL_PAYLOAD->errors++;
+            PKL_PASS_ERROR;
+          }
+
+        /* Array constructors accept zero or one arguments.  */
+        if (pkl_ast_chain_length (cons_value) > 1)
+          {
+            PKL_ERROR (PKL_AST_LOC (cons),
+                       "struct constructor requires exactly one argument");
+            PKL_ANAL_PAYLOAD->errors++;
+            PKL_PASS_ERROR;
+          }
+        break;
+      }
     default:
       assert (0);
     }

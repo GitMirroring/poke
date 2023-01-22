@@ -1,3 +1,13 @@
+2023-01-22  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-anal.c (pkl_anal1_ps_cons): Constructing non-empty
+	arrays of `any' without initial values is not supported.
+	* testsuite/poke.pkl/acons-diag-9.pk: New test.
+	* testsuite/poke.pkl/acons-diag-10.pk: Likewise.
+	* testsuite/poke.pkl/acons-13.pk: Likewise.
+	* testsuite/poke.pkl/acons-14.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+
 2023-01-22  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* poke/pk-cmd.c (pk_cmd_exec): Add support for `immutable'.

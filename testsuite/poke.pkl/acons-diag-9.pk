@@ -1,0 +1,3 @@
+/* { dg-do compile } */
+
+any[3] (); /* { dg-error ".*\n.*not supported" } */

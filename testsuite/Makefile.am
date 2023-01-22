@@ -643,6 +643,8 @@ EXTRA_DIST = \
   poke.pkl/acons-diag-6.pk \
   poke.pkl/acons-diag-7.pk \
   poke.pkl/acons-diag-8.pk \
+  poke.pkl/acons-diag-9.pk \
+  poke.pkl/acons-diag-10.pk \
   poke.pkl/acons-fun-1.pk \
   poke.pkl/acons-fun-2.pk \
   poke.pkl/acons-1.pk \
@@ -656,6 +658,8 @@ EXTRA_DIST = \
   poke.pkl/acons-9.pk \
   poke.pkl/acons-11.pk \
   poke.pkl/acons-12.pk \
+  poke.pkl/acons-13.pk \
+  poke.pkl/acons-14.pk \
   poke.pkl/add-arrays-1.pk \
   poke.pkl/add-arrays-2.pk \
   poke.pkl/add-arrays-3.pk \
