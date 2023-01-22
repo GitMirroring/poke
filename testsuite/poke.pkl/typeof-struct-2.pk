@@ -10,10 +10,6 @@ var t = typeof (Foo);
 /* { dg-output "\n1" } */
 /* { dg-command { t.integral_p } } */
 /* { dg-output "\n0" } */
-/* { dg-command { t.signed_p } } */
-/* { dg-output "\n0" } */
-/* { dg-command { t.size } } */
-/* { dg-output "\n0UL" } */
 /* { dg-command { t.nfields } } */
 /* { dg-output "\n0" } */
 /* { dg-command { t.nmethods } } */

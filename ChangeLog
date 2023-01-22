@@ -1,3 +1,11 @@
+2023-01-23  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* testsuite/poke.pkl/typeof-struct-2.pk: Likewise.
+
+	* testsuite/poke.pkl/typeof-struct-1.pk: Update test.
+
+	* libpoke/pkl-gen.pks (typeof): Initialize integral_p.
+
 2023-01-22  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* poke/poke.c (pk_print_version): Bump copyright year to 2023 and

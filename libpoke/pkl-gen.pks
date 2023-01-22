@@ -2828,10 +2828,23 @@
                                             "Pk_Type")
         .let #pktype_constructor = PKL_AST_TYPE_S_CONSTRUCTOR (@pktype)
         ;; Create a Pk_Type on the stack calling its constructor
-        ;; with a single constructor field `code'.
+        ;; with constructor fields `code' and `integral_p'.  Note that
+        ;; the initializer for integral_p will only be used if the
+        ;; type is a struct type.
         push ulong<64>0         ; OFF
         push ulong<64>0         ; OFF EOFF
-        push "code"             ; OFF EOFF ENAME
+        push "integral_p"       ; OFF EOFF ENAME
+  .c if (PKL_AST_TYPE_CODE (@type) == PKL_TYPE_STRUCT
+  .c         && PKL_AST_TYPE_S_ITYPE (@type))
+  .c {
+        push int<32>1
+  .c }
+  .c else
+  .c {
+        push int<32>0
+  .c }
+        push ulong<64>32        ; OFF ... EOFF
+        push "code"             ; OFF ... EOFF ENAME
   .c  int pk_type_code;
   .c  int pk_type_unknown = PK_TYPE_CODE ("PK_TYPE_UNKNOWN");
   .c  switch (PKL_AST_TYPE_CODE (@type))
@@ -2865,12 +2878,12 @@
         ;; Number of methods
         push ulong<64>0         ; OFF EOFF ENAME EVAL 0UL
         ;; Number of fields
-        push ulong<64>1         ; OFF EOFF ENAME EVAL 0UL 1UL
+        push ulong<64>2         ; OFF EOFF ENAME EVAL 0UL 2UL
         ;; Type of the Pk_Type struct
   .c    PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPE);
   .c    PKL_PASS_SUBPASS (@pktype);
   .c    PKL_GEN_POP_CONTEXT;
-                                ; OFF EOFF ENAME EVAL 0UL 1UL TYP
+                                ; OFF EOFF ENAME EVAL 0UL 2UL TYP
         mksct
         push #pktype_constructor
         call                    ; PkType
