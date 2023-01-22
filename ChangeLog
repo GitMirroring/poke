@@ -1,3 +1,7 @@
+2023-01-22  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* poke/pk-cmd.c (pk_cmd_exec): Add support for `immutable'.
+
 2023-01-21  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* configure.ac: Change version to 2.90.0.

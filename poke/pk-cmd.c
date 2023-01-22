@@ -621,7 +621,7 @@ pk_cmd_exec (const char *str)
       int retval = 1;
       pk_val exit_exception;
 
-      if (IS_COMMAND(ecmd, "fun"))
+      if (IS_COMMAND(ecmd, "fun") || IS_COMMAND(ecmd, "immutable"))
         what = 0;
       else
         {
