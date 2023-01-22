@@ -12375,6 +12375,7 @@ raised.
 * type::			Naming types.
 * The any Type::		Polymorphism.
 * The isa Operator::		Testing for types of values.
+* typeof::                      Introspection of types.
 @end menu
 
 @node type
@@ -12457,6 +12458,164 @@ value:
 0
 @end example
 
+@node typeof
+@subsection @code{typeof}
+@cindex typeof
+
+The @code{typeof} language construction provides information about
+some Poke type.  It has the form:
+
+@example
+typeof (@var{entity})
+@end example
+
+@noindent
+where @var{entity} is either a value or a type specifier.  It returns
+a @code{Pk_Type} value describing either the specified type, or the
+type of the specified value.
+
+The @code{Pk_Type} struct provides the following fields for all kind
+of types:
+
+@table @code
+@item uint<32> code
+This is a numerical code that identifies the kind of the described
+type.
+
+Valid codes are @code{PK_TYPE_UNKNOWN}, @code{PK_TYPE_INTEGRAL},
+@code{PK_TYPE_OFFSET}, @code{PK_TYPE_STRING}, @code{PK_TYPE_ARRAY},
+@code{PK_TYPE_STRUCT}, @code{PK_TYPE_FUNCTION} and @code{PK_TYPE_ANY}.
+
+@item string name
+If the described type is named, then this field contains the name.
+Otherwise it is the empty string.
+
+@example
+(poke) type myint = int
+(poke) typeof (1 as myint)
+Pk_Type @{
+  code=1,
+  name="myint",
+  [...]
+@}
+@end example
+
+@item int<32> complete_p
+If the size of the described type can be determined at compile time,
+then this field is 1, 0 otherwise.
+@end table
+
+The following fields are provided in @code{Pk_Type} only for integral,
+offset and integral struct types:
+
+@table @code
+@item int<32> signed_p
+If the described type is signed, this field is 1, 0 otherwise.
+@item uint<64> size
+The number of bits of values of the described integral type, or the
+number of bits of the integral value of the described integral struct
+type, or the number of bits of the magnitude of the described offset
+type.
+
+This would be 23UL for an @code{int<23>} type, and 32UL for an
+@code{offset<int<32>,1>} type.
+@end table
+
+The following fields are provided in @code{Pk_Type} only for
+offset types:
+
+@table @code
+@item _unit
+The unit of the described offset type, in bit units.  This would be
+8UL for an @code{offset<int<32>,B>} type, for example.
+@end table
+
+The following fields are provided in @code{Pk_Type} only for array
+types:
+
+@table @code
+@item int<32> bounded_p
+This field is 1 if the described array type is bounded by either
+number of elements or by size, 0 otherwise.
+@end table
+
+The following fields are provided in @code{Pk_Type} only for struct
+types:
+
+@table @code
+@item int<32> union_p
+This field is 1 if the described struct type is an union, 0 otherwise.
+@item int<32> pinned_p
+This field is 1 if the described struct type is pinned, 0 otherwise.
+@item int<32> integral_p
+This field is 1 if the described struct type is integral, 0 otherwise.
+@item int<32> nfields
+Number of fields defined in the described struct type.  This count
+includes optional fields and computed fields.
+@item int<32> nmethods
+Number of methods defined in the described struct type.
+@item string[] fnames
+Array of @code{nfields} strings, with the names of the fields defined
+in the described struct type.  Anonymous fields feature empty strings.
+@item int<32>[] fcomputed
+Array of @code{nfields} integers, which are 1 for fields that are
+computed, 0 for fields that are not computed.
+@item string[] ftypes
+Array of @code{nfields} strings, with the type specifiers of the types
+of the fields defined in the described struct type.
+@item string[] mnames
+Array of @code{nmethods} strings, with the names of the methods
+defined in the described struct type.
+@item string[] mtypes
+Array of @code{nmethods} strings, with the type specifiers of the
+types of the methods defined in the described struct type.
+@item (any)any deintegrator
+Closure that, when passed an integral value of the same signedness and
+width than the described integral struct, returns the struct value
+corresponding to that value.
+
+@example
+(poke) type Foo = struct int<32> @{ int<16> a; uint<16> b; @}
+(poke) typeof (Foo).deintegrator (0x0eadbeef)
+Foo @{
+  a=0x0eadH,
+  b=0xbeefUH
+@}
+@end example
+@end table
+
+The following fields are provided in @code{Pk_Type} only for struct
+and array types:
+
+@table @code
+@item (int<32>,int<32>,uint<64>,uint<64>,uint<64>)any mapper
+Closure that, when passed an integer predicate denoting whether to do
+a strict mapping, an IO space identifier, a bit-offset in the given IO
+space, map a value of the described type.
+
+The last two arguments of the closure are ignored by mappers of struct
+types.  Mappers of array types interpret the last two arguments as a
+number of elements bound and a size bound, respectively.
+
+@item (any)void writer
+Closure that, when passed a mapped value of the described type, writes
+the contents of the value to the corresponding IO space.
+
+@item (any)any integrator
+Closure that, when passed a value of the described type (an array type
+or an integral struct type) returns the integral value corresponding
+to the contents of the value.
+
+@example
+(poke) type Foo = struct int<32> @{ int<16> a; uint<16> b; @}
+(poke) typeof (Foo).integrator (Foo @{ a = 0xab, b = 0xcd @})
+0x00ab00cd
+@end example
+
+@item (any,any)int<32> comparator
+Closure that, when passed two values of the described type, returns 1
+if the values are equal,0 otherwise.
+@end table
 
 @node Assignments
 @section Assignments
