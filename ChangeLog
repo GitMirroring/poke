@@ -1,5 +1,10 @@
 2023-01-22  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/poke.c (pk_print_version): Bump copyright year to 2023 and
+	do not use a year range.
+
+2023-01-22  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-gen.pks (typifier_mapper_wrapper): New function.
 	(array_typifier): Use typifier_mapper_wrapper.
 	(struct_typifier): Likewise.
