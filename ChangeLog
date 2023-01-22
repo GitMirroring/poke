@@ -3,7 +3,7 @@
 	* configure.ac: Change version to 2.90.0.
 	* NEWS: Add entries for 2.90.0.
 
-2023-01-23  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+2023-01-21  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pvm-val.c (pvm_sizeof): Add case for `PVM_NULL'.
 	* libpoke/pvm.jitter (siz): Add a comment describing special
