@@ -892,13 +892,13 @@ immutable fun iobias = (int<32> ios = get_ios) offset<uint<64>,1>:
   return asm offset<uint<64>,1>: ("iogetb; nip" : ios);
 }
 
-immutable fun iolist = int<32>[]:
+immutable fun iolist = int<32>[2]:
 {
-  var a = int<32>[] (),
-      n = asm uint<64>: ("ionum");
+  var n = asm uint<64>: ("ionum"),
+      a = int<32>[n] ();
 
   for (var i = 0UL; i < n; ++i)
-    apush (a, asm int<32>: ("ioref; nip" : i));
+    a[i] = asm int<32>: ("ioref; nip" : i);
   return a;
 }
 

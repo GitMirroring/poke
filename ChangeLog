@@ -1,5 +1,10 @@
 2023-01-23  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-rt.pk (iolist): Use array indexing instead of
+	`apush'.
+
+2023-01-23  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* testsuite/poke.pkl/typeof-struct-2.pk: Likewise.
 
 	* testsuite/poke.pkl/typeof-struct-1.pk: Update test.
