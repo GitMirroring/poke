@@ -1,0 +1,6 @@
+/* { dg-do compile } */
+
+type Foo = struct { computed int i; };
+
+var f = Foo {};
+f.i = 10; /* { dg-error "set_i.*not defined" } */

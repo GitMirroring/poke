@@ -876,6 +876,7 @@ EXTRA_DIST = \
   poke.pkl/ass-diag-7.pk \
   poke.pkl/ass-diag-8.pk \
   poke.pkl/ass-diag-9.pk \
+  poke.pkl/ass-diag-10.pk \
   poke.pkl/ass-function-1.pk \
   poke.pkl/ass-offset-1.pk \
   poke.pkl/ass-struct-int-1.pk \
@@ -1148,9 +1149,6 @@ EXTRA_DIST = \
   poke.pkl/computed-diag-2.pk \
   poke.pkl/computed-diag-3.pk \
   poke.pkl/computed-diag-4.pk \
-  poke.pkl/computed-diag-5.pk \
-  poke.pkl/computed-diag-6.pk \
-  poke.pkl/computed-diag-7.pk \
   poke.pkl/computed-diag-8.pk \
   poke.pkl/computed-diag-9.pk \
   poke.pkl/computed-diag-10.pk \
@@ -1176,6 +1174,7 @@ EXTRA_DIST = \
   poke.pkl/computed-16.pk \
   poke.pkl/computed-17.pk \
   poke.pkl/computed-18.pk \
+  poke.pkl/computed-19.pk \
   poke.pkl/cond-exp-diag-1.pk \
   poke.pkl/cond-exp-diag-2.pk \
   poke.pkl/cond-exp-diag-3.pk \
@@ -2358,6 +2357,7 @@ EXTRA_DIST = \
   poke.pkl/sref-5.pk \
   poke.pkl/sref-diag-1.pk \
   poke.pkl/sref-diag-2.pk \
+  poke.pkl/sref-diag-3.pk \
   poke.pkl/string-diag-1.pk \
   poke.pkl/string-diag-2.pk \
   poke.pkl/string-multiline-1.pk \

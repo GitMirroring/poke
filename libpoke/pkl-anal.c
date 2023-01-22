@@ -607,7 +607,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_anal1_ps_var)
 PKL_PHASE_END_HANDLER
 
 /* It is an error to set a struct field as a variable if we are not in
-   a method.  */
+   a method.
+
+   Assigning to a computed fild that lacks a setter is a compile-time
+   error.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_anal1_ps_ass_stmt)
 {
@@ -1030,6 +1033,81 @@ PKL_PHASE_BEGIN_HANDLER (pkl_anal2_ps_asm_exp)
 }
 PKL_PHASE_END_HANDLER
 
+/* Referring to a computed field that lacks a getter is a compile-time
+   error.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_anal2_ps_struct_ref)
+{
+  pkl_ast_node struct_ref = PKL_PASS_NODE;
+  pkl_ast_node struct_ref_identifier = PKL_AST_STRUCT_REF_IDENTIFIER (struct_ref);
+  const char *struct_ref_identifier_str = PKL_AST_IDENTIFIER_POINTER (struct_ref_identifier);
+  pkl_ast_node struct_ref_struct = PKL_AST_STRUCT_REF_STRUCT (struct_ref);
+  pkl_ast_node struct_type = PKL_AST_TYPE (struct_ref_struct);
+  pkl_ast_node field = pkl_ast_get_struct_type_field (struct_type,
+                                                      struct_ref_identifier_str);
+
+  if (PKL_PASS_PARENT
+      && PKL_AST_CODE (PKL_PASS_PARENT) != PKL_AST_ASS_STMT
+      && field
+      && PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (field))
+    {
+      char *getter = pk_str_concat ("get_", struct_ref_identifier_str, NULL);
+
+      if (!pkl_ast_get_struct_type_method (struct_type, getter))
+        {
+          char *struct_type_str = pkl_type_str (struct_type, 1);
+
+          PKL_ERROR (PKL_AST_LOC (struct_ref_identifier),
+                     "method %s for computed field in struct type %s is not defined",
+                     getter, struct_type_str);
+          free (struct_type_str);
+          PKL_ANAL_PAYLOAD->errors ++;
+          PKL_PASS_ERROR;
+        }
+
+      free (getter);
+    }
+}
+PKL_PHASE_END_HANDLER
+
+/* Assigning to a computed fild that lacks a setter is a compile-time
+   error.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_anal2_ps_ass_stmt)
+{
+  pkl_ast_node ass_stmt = PKL_PASS_NODE;
+  pkl_ast_node ass_stmt_lvalue = PKL_AST_ASS_STMT_LVALUE (ass_stmt);
+
+  if (PKL_AST_CODE (ass_stmt_lvalue) == PKL_AST_STRUCT_REF)
+    {
+      pkl_ast_node sct = PKL_AST_STRUCT_REF_STRUCT (ass_stmt_lvalue);
+      pkl_ast_node struct_type = PKL_AST_TYPE (sct);
+      pkl_ast_node field_name = PKL_AST_STRUCT_REF_IDENTIFIER (ass_stmt_lvalue);
+      const char *field_name_str = PKL_AST_IDENTIFIER_POINTER (field_name);
+      pkl_ast_node field = pkl_ast_get_struct_type_field (struct_type, field_name_str);
+
+      if (field
+          && PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (field))
+        {
+          char *setter = pk_str_concat ("set_", field_name_str, NULL);
+
+          if (!pkl_ast_get_struct_type_method (struct_type, setter))
+            {
+              char *struct_type_str = pkl_type_str (struct_type, 1);
+
+              PKL_ERROR (PKL_AST_LOC (field_name),
+                         "method %s for computed field in struct type %s is not defined",
+                         setter, struct_type_str);
+              free (struct_type_str);
+              PKL_ANAL_PAYLOAD->errors ++;
+              PKL_PASS_ERROR;
+            }
+
+          free (setter);
+        }
+    }
+}
+PKL_PHASE_END_HANDLER
 
 struct pkl_phase pkl_phase_anal2 =
   {
@@ -1045,6 +1123,8 @@ struct pkl_phase pkl_phase_anal2 =
    PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT_TYPE_FIELD, pkl_anal2_ps_struct_type_field),
    PKL_PHASE_PS_HANDLER (PKL_AST_ASM_STMT, pkl_anal2_ps_asm_stmt),
    PKL_PHASE_PS_HANDLER (PKL_AST_ASM_EXP, pkl_anal2_ps_asm_exp),
+   PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT_REF, pkl_anal2_ps_struct_ref),
+   PKL_PHASE_PS_HANDLER (PKL_AST_ASS_STMT, pkl_anal2_ps_ass_stmt),
    PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_STRUCT, pkl_anal2_ps_type_struct),
   };
 

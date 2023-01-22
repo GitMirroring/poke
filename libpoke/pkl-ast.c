@@ -2784,6 +2784,55 @@ pkl_ast_reverse (pkl_ast_node ast)
 }
 
 pkl_ast_node
+pkl_ast_get_struct_type_field (pkl_ast_node struct_type,
+                               const char *field_name)
+{
+  pkl_ast_node field = PKL_AST_TYPE_S_ELEMS (struct_type);
+
+  for (field = PKL_AST_TYPE_S_ELEMS (struct_type);
+       field;
+       field = PKL_AST_CHAIN (field))
+    {
+      if (PKL_AST_CODE (field) == PKL_AST_STRUCT_TYPE_FIELD)
+        {
+          pkl_ast_node fname = PKL_AST_STRUCT_TYPE_FIELD_NAME (field);
+
+          if (fname && STREQ (PKL_AST_IDENTIFIER_POINTER (fname),
+                              field_name))
+            return field;
+        }
+    }
+
+  return NULL;
+
+}
+
+pkl_ast_node
+pkl_ast_get_struct_type_method (pkl_ast_node struct_type,
+                                const char *method_name)
+{
+  pkl_ast_node decl = PKL_AST_TYPE_S_ELEMS (struct_type);
+
+  for (decl = PKL_AST_TYPE_S_ELEMS (struct_type);
+       decl;
+       decl = PKL_AST_CHAIN (decl))
+    {
+      if (PKL_AST_CODE (decl) == PKL_AST_DECL
+          && PKL_AST_FUNC_METHOD_P (PKL_AST_DECL_INITIAL (decl)))
+        {
+          pkl_ast_node decl_name = PKL_AST_DECL_NAME (decl);
+
+          if (decl_name
+              && STREQ (PKL_AST_IDENTIFIER_POINTER (decl_name),
+                        method_name))
+            return decl;
+        }
+    }
+
+  return NULL;
+}
+
+pkl_ast_node
 pkl_ast_type_incr_step (pkl_ast ast, pkl_ast_node type)
 {
   pkl_ast_node step = NULL;

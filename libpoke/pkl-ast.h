@@ -1087,6 +1087,20 @@ pkl_ast_node pkl_type_integral_promote (pkl_ast ast,
                                         pkl_ast_node type1,
                                         pkl_ast_node type2);
 
+/* Return the PKL_AST_STRUCT_TYPE_FIELD with the given FIELD_NAME in
+   the given STRUCT_TYPE.  If no such a field exists in the struct
+   type, return NULL.  */
+
+pkl_ast_node pkl_ast_get_struct_type_field (pkl_ast_node struct_type,
+                                            const char *field_name);
+
+/* Return the PKL_AST_DECL node node corresponding to the method named
+   METHOD_NAME in the given STRUCT_TYPE.  If no such method exists
+   then return NULL.  */
+
+pkl_ast_node pkl_ast_get_struct_type_method (pkl_ast_node struct_type,
+                                             const char *method_name);
+
 /* Return an expression that evaluates to an increment step for the
    given TYPE.  If the provided type doesn't support the notion of
    increment step this function returns NULL.  */

@@ -1013,6 +1013,9 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
       }
     case PKL_AST_STRUCT_REF:
       {
+        pkl_ast_node sct = PKL_AST_STRUCT_REF_STRUCT (lvalue);
+        pkl_ast_node struct_type = PKL_AST_TYPE (sct);
+
         if (assigning_computed_field_p)
           {
             /* Assigning to a computed field.
@@ -1027,14 +1030,27 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
             char *setter = pk_str_concat ("set_",
                                           computed_field_name,
                                           NULL);
+            pkl_ast_node setter_decl
+              = pkl_ast_get_struct_type_method (struct_type, setter);
 
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* VAL SCT */
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
-                          pvm_make_string (setter));   /* VAL SCT SETTER_NAME */
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SREFMNT);
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP);   /* VAL SCT CLS */
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_CALL);  /* NULL */
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);  /* _ */
+            if (setter_decl)
+              {
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* VAL SCT */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                              pvm_make_string (setter));   /* VAL SCT SETTER_NAME */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SREFMNT);
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP);   /* VAL SCT CLS */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_CALL);  /* NULL */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);  /* _ */
+              }
+            else
+              {
+                /* No setter defined for this computer field.  */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                              pvm_make_exception (PVM_E_ELEM, PVM_E_ELEM_NAME,
+                                                  PVM_E_ELEM_ESTATUS, NULL, NULL));
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_RAISE);
+              }
 
             free (setter);
           }
@@ -1043,8 +1059,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
             /* Assigning to a regular struct field.  */
             /* Stack: VAL SCT ID */
 
-            pkl_ast_node sct = PKL_AST_INDEXER_ENTITY (lvalue);
-            pkl_ast_node struct_type = PKL_AST_TYPE (sct);
             pvm_program_label label1 = pkl_asm_fresh_label (PKL_GEN_ASM);
             pvm_program_label label2 = pkl_asm_fresh_label (PKL_GEN_ASM);
 
@@ -2888,13 +2902,26 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_struct_ref)
           char *getter = pk_str_concat ("get_",
                                         PKL_AST_IDENTIFIER_POINTER (computed_field_name),
                                         NULL);
+          pkl_ast_node getter_decl
+            = pkl_ast_get_struct_type_method (struct_ref_struct_type, getter);
 
-          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);  /* STRUCT */
-          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
-                        pvm_make_string (getter));   /* STRUCT GETTER_NAME */
-          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SREFMNT); /* STRUCT GETTER_NAME CLS */
-          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP);  /* STRUCT CLS */
-          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_CALL); /* VAL */
+          if (getter_decl)
+            {
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);  /* STRUCT */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                            pvm_make_string (getter));   /* STRUCT GETTER_NAME */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SREFMNT); /* STRUCT GETTER_NAME CLS */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP);  /* STRUCT CLS */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_CALL); /* VAL */
+            }
+          else
+            {
+              /* No getter defined for this computer field.  */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                            pvm_make_exception (PVM_E_ELEM, PVM_E_ELEM_NAME,
+                                                PVM_E_ELEM_ESTATUS, NULL, NULL));
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_RAISE);
+            }
 
           free (getter);
         }

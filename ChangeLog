@@ -1,5 +1,27 @@
 2023-01-22  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-ast.h: Prototype for pkl_asm_struct_type_method_p.
+	Prototype for pkl_asm_get_struct_type_field.
+	* libpoke/pkl-ast.c (pkl_asm_get_struct_type_method): New
+	function.
+	(pkl_asm_get_struct_type_field): Likewise.
+	* libpoke/pkl-anal.c (pkl_anal2_ps_struct_ref): New handler.
+	(pkl_anal2_ps_ass_stmt): Likewise.
+	(pkl_phase_anal2): Register handlers.
+	* libpoke/pkl-typify.c (pkl_typify1_ps_type_struct): Do no force
+	to define getter and setter methods for computer fields.
+	* libpoke/pkl-gen.c (pkl_gen_ps_struct_ref): Raise an exception
+	when referring to a computed field with no getter.
+	(pkl_gen_pr_ass_stmt): Likewise for the setter.
+	* testsuite/poke.pkl/sref-diag-3.pk: New test.
+	* testsuite/poke.pkl/computed-19.pk: Likewise.
+	* testsuite/poke.pkl/computed-diag-5.pk: Remove.
+	* testsuite/poke.pkl/computed-diag-6.pk: Likewise.
+	* testsuite/poke.pkl/computed-diag-7.pk: Likewise.
+	* testsuite/poke.pkl/ass-diag-10.pk: Likewise.
+
+2023-01-22  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* testsuite/poke.pkl/acons-20.pk: New test.
 	* testsuite/poke.pkl/acons-21.pk: Likewise.
 	* testsuite/poke.pkl/acons-22.pk: Likewise.

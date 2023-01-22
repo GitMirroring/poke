@@ -1,0 +1,12 @@
+/* { dg-do run } */
+
+type Foo =
+  struct
+  {
+    int j;
+    computed int i;
+    method get_i = int: { return j + 1; }
+  };
+
+/* { dg-command {Foo{ j = 3 }.i} } */
+/* { dg-output "4" } */

@@ -1,0 +1,5 @@
+/* { dg-do compile } */
+
+type Foo = struct { computed int i; };
+
+Foo{}.i; /* { dg-error "get_i.*not defined" } */

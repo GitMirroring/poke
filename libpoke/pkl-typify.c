@@ -1722,8 +1722,8 @@ PKL_PHASE_END_HANDLER
    Labels are not allowed in integral structs or unions, pinned structs and
    unions.  Optional fields are not allowed in integral structs or unions.
 
-   Computed fields should have getter and setter methods defined for
-   them, and they should handle values of the right type.  */
+   If computed fields have getter and setter methods defined for them,
+   they should handle values of the right type.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
 {
@@ -1878,7 +1878,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
              signature (TYPE)void.  */
 
           pkl_ast_node decl;
-          int found_setter_p = 0, found_getter_p = 0;
           char *getter_name, *setter_name;
 
           pkl_ast_node field_name = PKL_AST_STRUCT_TYPE_FIELD_NAME (field);
@@ -1929,8 +1928,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
                           PKL_TYPIFY_PAYLOAD->errors++;
                           PKL_PASS_ERROR;
                         }
-
-                      found_getter_p = 1;
                     }
 
                   if (STREQ (PKL_AST_IDENTIFIER_POINTER (method_name),
@@ -1960,28 +1957,9 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
                           PKL_TYPIFY_PAYLOAD->errors++;
                           PKL_PASS_ERROR;
                         }
-
-                      found_setter_p = 1;
                     }
                 }
             }
-
-          if (!found_getter_p)
-            {
-              PKL_ERROR (PKL_AST_LOC (field),
-                         "computed field requires a getter method");
-              PKL_TYPIFY_PAYLOAD->errors++;
-            }
-
-          if (!found_setter_p)
-            {
-              PKL_ERROR (PKL_AST_LOC (field),
-                         "computed field requires a setter method");
-              PKL_TYPIFY_PAYLOAD->errors++;
-            }
-
-          if (!found_getter_p || !found_setter_p)
-            PKL_PASS_ERROR;
 
           free (getter_name);
           free (setter_name);
