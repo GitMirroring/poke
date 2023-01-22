@@ -1,5 +1,16 @@
 2023-01-22  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-gen.pks (typifier_mapper_wrapper): New function.
+	(array_typifier): Use typifier_mapper_wrapper.
+	(struct_typifier): Likewise.
+	* libpoke/pkl-rt.pk (Pk_type): Do not expose ebound and sbound in
+	the mapper closure.
+	* doc/poke.texi (typeof): Update accordingly.
+	* testsuite/poke.pkl/typeof-27.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
+
+2023-01-22  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* doc/poke.texi (typeof): New section.
 
 2023-01-22  Jose E. Marchesi  <jemarch@gnu.org>

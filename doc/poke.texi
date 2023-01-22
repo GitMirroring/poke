@@ -12588,14 +12588,10 @@ The following fields are provided in @code{Pk_Type} only for struct
 and array types:
 
 @table @code
-@item (int<32>,int<32>,uint<64>,uint<64>,uint<64>)any mapper
+@item (int<32>,int<32>,uint<64>)any mapper
 Closure that, when passed an integer predicate denoting whether to do
 a strict mapping, an IO space identifier, a bit-offset in the given IO
 space, map a value of the described type.
-
-The last two arguments of the closure are ignored by mappers of struct
-types.  Mappers of array types interpret the last two arguments as a
-number of elements bound and a size bound, respectively.
 
 @item (any)void writer
 Closure that, when passed a mapped value of the described type, writes

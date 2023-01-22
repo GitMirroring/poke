@@ -647,13 +647,11 @@ immutable type Pk_Type =
     string[] mnames     if code == PK_TYPE_STRUCT;
     string[] mtypes     if code == PK_TYPE_STRUCT;
 
-    type Mapper_Fn = (int<32>,int<32>,uint<64>,uint<64>,uint<64>)any;
-
-    Mapper_Fn mapper             if code in [PK_TYPE_ARRAY, PK_TYPE_STRUCT];
-    (any)void writer             if code in [PK_TYPE_ARRAY, PK_TYPE_STRUCT];
-    (any)any integrator          if code in [PK_TYPE_ARRAY, PK_TYPE_STRUCT];
-    (any)any deintegrator        if code == PK_TYPE_STRUCT;
-    (any,any)int<32> comparator  if code == PK_TYPE_STRUCT;
+    (int<32>,int<32>,uint<64>)any mapper if code in [PK_TYPE_ARRAY, PK_TYPE_STRUCT];
+    (any)void writer                     if code in [PK_TYPE_ARRAY, PK_TYPE_STRUCT];
+    (any)any integrator                  if code in [PK_TYPE_ARRAY, PK_TYPE_STRUCT];
+    (any)any deintegrator                if code == PK_TYPE_STRUCT;
+    (any,any)int<32> comparator          if code == PK_TYPE_STRUCT;
   };
 
 /* Tracing.

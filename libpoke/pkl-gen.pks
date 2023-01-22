@@ -3029,6 +3029,55 @@
         return
         .end
 
+;;; RAS_FUNCTION_TYPIFIER_MAPPER_WRAPPER @type #mapper
+;;; ( STRICT_P IOS BOFFSET -- ANY )
+;;;
+;;; Assemble a function that calls the mapper of the given type
+;;; using the provided arguments, plus the right ebound and sbound
+;;; arguments extracted from the given type.
+;;;
+;;; This is to hide ebound and sbound from the mapper field in
+;;; the Pk_Type struct, which are not useful at the Poke level.
+;;;
+;;; Macro arguments:
+;;; @type is an AST node with the type of the entity to be
+;;; mapped, which can be either an array or a struct.
+;;;
+;;; #mapper is a closure with the mapper function to invoke.
+
+        .function typifier_mapper_wrapper @type #mapper
+        prolog
+        ;; Expand the argument list with EBOUND and SBOUND
+        ;; from the given type.
+   .c if (PKL_AST_TYPE_CODE (@type) == PKL_TYPE_STRUCT)
+   .c {
+        push null               ; ... EBOUND
+        push null               ; ... EBOUND SBOUND
+   .c }
+   .c else
+   .c {
+   .c    assert (PKL_AST_TYPE_CODE (@type) == PKL_TYPE_ARRAY);
+        .let @type_bound = PKL_AST_TYPE_A_BOUND (@type)
+        .let #ebound =                                                       \
+          (@type_bound && PKL_AST_TYPE_CODE (PKL_AST_TYPE (@type_bound)) == PKL_TYPE_INTEGRAL) \
+          ? PKL_AST_TYPE_A_BOUNDER (@type) : PVM_NULL
+        .let #sbound =                                                       \
+          (@type_bound && PKL_AST_TYPE_CODE (PKL_AST_TYPE (@type_bound)) == PKL_TYPE_OFFSET) \
+          ? PKL_AST_TYPE_A_BOUNDER (@type) : PVM_NULL
+        push #ebound
+   .c if (#ebound != PVM_NULL)
+        call
+        push #sbound
+   .c if (#sbound != PVM_NULL)
+        call
+   .c }
+        ;; Call the mapper.
+                                ; STRICT_P IOS BOFFSET EBOUND SBOUND
+        push #mapper
+        call
+        return
+        .end
+
 ;;; RAS_FUNCTION_TYPIFIER_ANY_ANY_INT_WRAPPER @type
 ;;; ( VAL VAL -- INT )
 ;;;
@@ -3090,8 +3139,14 @@
         .let #mapper = PKL_AST_TYPE_A_MAPPER (@type)
  .c if (#mapper != PVM_NULL)
  .c {
+ .c     pvm_val mapper_closure;
+        .let #function = PKL_AST_TYPE_A_MAPPER (@type)
+  .c    RAS_FUNCTION_TYPIFIER_MAPPER_WRAPPER (mapper_closure,
+  .c                                          @type, #function);
+        .let #mapper = mapper_closure
         push "mapper"
         push #mapper
+        pec
         sset
   .c }
   .c if (PKL_AST_TYPE_A_WRITER (@type) != PVM_NULL)
@@ -3158,8 +3213,14 @@
         .let #mapper = PKL_AST_TYPE_S_MAPPER (@type)
  .c if (#mapper != PVM_NULL)
  .c {
+ .c     pvm_val mapper_closure;
+        .let #function = PKL_AST_TYPE_S_MAPPER (@type)
+  .c    RAS_FUNCTION_TYPIFIER_MAPPER_WRAPPER (mapper_closure,
+  .c                                          @type, #function);
+        .let #mapper = mapper_closure
         push "mapper"
         push #mapper
+        pec
         sset
   .c }
   .c if (PKL_AST_TYPE_S_WRITER (@type) != PVM_NULL)

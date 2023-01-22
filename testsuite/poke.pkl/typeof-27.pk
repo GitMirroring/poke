@@ -1,0 +1,7 @@
+/* { dg-do run } */
+
+type Foo = int[12#B][3];
+
+/* { dg-command {.mem} } */
+/* { dg-command { typeof (Foo).mapper (1, 0, 0) } } */
+/* { dg-output {\[\[0,0,0\],\[0,0,0\],\[0,0,0\]\]} } */

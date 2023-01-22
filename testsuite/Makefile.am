@@ -2567,6 +2567,7 @@ EXTRA_DIST = \
   poke.pkl/typeof-24.pk \
   poke.pkl/typeof-25.pk \
   poke.pkl/typeof-26.pk \
+  poke.pkl/typeof-27.pk \
   poke.pkl/typeof-array-1.pk \
   poke.pkl/typeof-array-2.pk \
   poke.pkl/typeof-int-1.pk \
