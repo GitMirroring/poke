@@ -1,3 +1,10 @@
+2023-01-22  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* testsuite/poke.pkl/acons-20.pk: New test.
+	* testsuite/poke.pkl/acons-21.pk: Likewise.
+	* testsuite/poke.pkl/acons-22.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+
 2023-01-22  Jose E. Marchesi  <jemarch@termi>
 
 	* libpoke/pkl-gen.pks (array_constructor): Support element types

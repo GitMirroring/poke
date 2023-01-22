@@ -1,0 +1,4 @@
+/* { dg-do run } */
+
+/* { dg-command {string[8#B]("foo")} } */
+/* { dg-output {\["foo","foo"\]} } */

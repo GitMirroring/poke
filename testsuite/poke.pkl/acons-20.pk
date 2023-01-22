@@ -1,0 +1,4 @@
+/* { dg-do run } */
+
+/* { dg-command {try string[3#B]("foo"); catch if E_constraint { print "caught\n"; } } } */
+/* { dg-output "caught" } */

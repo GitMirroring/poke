@@ -665,6 +665,9 @@ EXTRA_DIST = \
   poke.pkl/acons-17.pk \
   poke.pkl/acons-18.pk \
   poke.pkl/acons-19.pk \
+  poke.pkl/acons-20.pk \
+  poke.pkl/acons-21.pk \
+  poke.pkl/acons-22.pk \
   poke.pkl/add-arrays-1.pk \
   poke.pkl/add-arrays-2.pk \
   poke.pkl/add-arrays-3.pk \

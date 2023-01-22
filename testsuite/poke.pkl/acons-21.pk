@@ -1,0 +1,4 @@
+/* { dg-do run } */
+
+/* { dg-command {string[3#B]("")} } */
+/* { dg-output {\["","",""\]} } */
