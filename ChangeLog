@@ -1,3 +1,22 @@
+2023-01-22  Jose E. Marchesi  <jemarch@termi>
+
+	* libpoke/pkl-gen.pks (array_constructor): Support element types
+	of size 0 with sbound > 0.
+	* testsuite/poke.pkl/acons-15.pk: New test.
+	* testsuite/poke.pkl/acons-16.pk: Likewise.
+	* testsuite/poke.pkl/acons-17.pk: Likewise.
+	* testsuite/poke.pkl/acons-18.pk: Likewise.
+	* testsuite/poke.pkl/acons-19.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+
+2023-01-22  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-gen.pks (array_constructor): Get an argument with
+	the initial value to put in constructed arrays.
+	* libpoke/pkl-gen.c (pkl_gen_pr_type_array): Pass initial value
+	to the constructor.
+	(pkl_gen_ps_cons): Likewise.
+
 2023-01-22  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-anal.c (pkl_anal1_ps_cons): Constructing non-empty

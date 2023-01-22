@@ -2451,21 +2451,12 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_cons)
   switch (cons_kind)
     {
     case PKL_AST_CONS_KIND_ARRAY:
-      /* Build an array with default values.  Note how array
-         constructors do not use their argument.  */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL);
+      /* Build an array with the given initial value.  */
+      if (!PKL_AST_CONS_VALUE (cons))
+        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL);
       PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_CONSTRUCTOR);
       PKL_PASS_SUBPASS (cons_type);
       PKL_GEN_POP_CONTEXT;
-
-      /* If an initial value has been provided, set the elements of
-         the array to this value.  */
-      if (PKL_AST_CONS_VALUE (cons))
-        {
-          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP);  /* ARR IVAL */
-          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_AFILL); /* ARR IVAL */
-          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);  /* ARR */
-        }
       break;
     case PKL_AST_CONS_KIND_STRUCT:
       PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_CONSTRUCTOR);
@@ -3428,14 +3419,12 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_array)
     }
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_CONSTRUCTOR))
     {
-      /* Stack: null */
+      /* Stack: initval */
       pkl_ast_node array_type = PKL_PASS_NODE;
       pkl_ast_node array_type_bound = PKL_AST_TYPE_A_BOUND (array_type);
       pvm_val array_type_constructor = PKL_AST_TYPE_A_CONSTRUCTOR (array_type);
 
       PKL_GEN_PAYLOAD->constructor_depth++;
-
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* The null.  */
 
       /* Make sure the array type has a bounder.  */
       if (PKL_GEN_PAYLOAD->constructor_depth == 1

@@ -1,0 +1,6 @@
+/* { dg-do run } */
+
+type Fn = ()void;
+
+/* { dg-command { try Fn[3#B](); catch if E_constraint { print "caught\n"; } } } */
+/* { dg-output {caught} } */

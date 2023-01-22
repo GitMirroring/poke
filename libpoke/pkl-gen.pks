@@ -316,10 +316,11 @@
         .end
 
 ;;; RAS_FUNCTION_ARRAY_CONSTRUCTOR @array_type
-;;; ( EBOUND SBOUND -- ARR )
+;;; ( INITVAL EBOUND SBOUND -- ARR )
 ;;;
 ;;; Assemble a function that constructs an array value of a given
-;;; type, with default values.
+;;; type, using INITVAL.  If INITVAL is PVM_NULL then a default
+;;; value is constructed.
 ;;;
 ;;; EBOUND and SBOUND determine the bounding of the array.  If both
 ;;; are null, then the array is unbounded.  Otherwise, only one of
@@ -333,7 +334,7 @@
 
         .function array_constructor @array_type
         prolog
-        pushf 4                 ; EBOUND SBOUND
+        pushf 3                 ; INITVAL EBOUND SBOUND
         ;; If both bounds are null, then ebound is 0.
         bn .sbound_nil
         ba .bounds_ready
@@ -347,8 +348,29 @@
         push ulong<64>0         ; null 0UL
         swap                    ; 0UL null
 .bounds_ready:
-        regvar $sbound          ; EBOUND
-        regvar $ebound          ; _
+        regvar $sbound          ; INITVAL EBOUND
+        regvar $ebound          ; INITVAL
+        .let @array_elem_type = PKL_AST_TYPE_A_ETYPE (@array_type)
+     .c if (PKL_AST_TYPE_CODE (@array_elem_type) != PKL_TYPE_FUNCTION)
+     .c {
+        ;; If INITVAL is not PVM_NULL, of size 0 and the SBOUND is
+        ;; bigger than 0 then the sbound can't be verified and indeed
+        ;; the loop below would never terminate.  But this is always
+        ;; the case for arrays of functions.
+        bn .initval_is_ok
+        siz                     ; INITVAL INITVAL_SIZE
+        bnzlu .initval_is_ok_with_drop
+        drop
+     .c }
+        pushvar $sbound         ; INITVAL SBOUND
+        bn .initval_is_ok_with_drop
+        bzlu .initval_is_ok_with_drop
+        drop
+        ba .bounds_fail
+.initval_is_ok_with_drop:
+        drop                    ; INITVAL
+.initval_is_ok:
+        regvar $initval         ; _
         ;; Initialize the element index and the bit count, and put them
         ;; in locals.
         push ulong<64>0         ; 0UL
@@ -380,10 +402,15 @@
         nip2
 .end_loop_on:
      .loop
-        ;; Insert the element in the array.
+        ;; Insert the element in the array.  If INITVAL is
+        ;; not PVM_NULL, then use it.  Otherwise construct
+        ;; a default value.
         pushvar $eidx           ; ARR EIDX
-        push null               ; ARR EIDX null
+        pushvar $initval        ; ARR EIDX INITVAL
+        bnn .gotinitval
+                                ; ARR EIDX null
         .c PKL_PASS_SUBPASS (PKL_AST_TYPE_A_ETYPE (@array_type));
+.gotinitval:
                                 ; ARR EIDX EVAL
         dup                     ; ARR EIDX EVAL EVAL
         tor                     ; ARR EIDX EVAL [EVAL]
@@ -1543,9 +1570,9 @@
         .end
 
 ;;; RAS_MACRO_STRUCT_FIELD_CONSTRUCTOR
-;;; ( SCT -- VAL INT )
+;;; ( INITVAL -- VAL INT )
 ;;;
-;;; Construct a struct field, given an initial SCT that may be NULL.
+;;; Construct a struct field, given an INITVAL that may be NULL.
 ;;; Push on the stack the constructed value, and an integer predicate
 ;;; indicating whether the construction of the value was successful,
 ;;; or resulted in a constraint error.

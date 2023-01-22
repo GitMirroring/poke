@@ -1,0 +1,6 @@
+/* { dg-do run } */
+
+type Fn = ()void;
+
+/* { dg-command { Fn[0#B](lambda void: {}) } } */
+/* { dg-output {\[\]} } */
