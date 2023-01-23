@@ -14410,8 +14410,8 @@ Division by zero exception.
 No IOS exception.  This is raised when the IO space is accessed but
 there is no IO space.
 @item E_no_return
-No return exception.  This is raised when the end of a void function
-is reached.
+No return exception.  This is raised when the end of a non-void
+function is reached.
 @item E_io
 Generic IO exception.
 @item E_io_flags

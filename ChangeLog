@@ -1,3 +1,9 @@
+2023-01-23  Arsen Arsenović  <arsen@aarsen.me>
+
+	* doc/poke.texi (Exceptions): Fix typo in the E_no_return
+	description (end of a void function -> end of a non-void
+	function).
+
 2023-01-23  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-rt.pk (iolist): Use array indexing instead of
