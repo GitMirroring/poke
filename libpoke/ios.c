@@ -760,19 +760,21 @@ ios_read_int (ios io, ios_off offset, int flags,
       case 16:
         {
           if (endian == IOS_ENDIAN_LSB)
-            *value = (int16_t) (c[1] << 8) | c[0];
+            *value = ((uint64_t) c[1] << 8) | c[0];
           else
-            *value = (int16_t) (c[0] << 8) | c[1];
+            *value = ((uint64_t) c[0] << 8) | c[1];
+          *value = (uint64_t) *value << 48;
+          *value >>= 48;
           return IOS_OK;
         }
 
       case 24:
         {
           if (endian == IOS_ENDIAN_LSB)
-            *value = (c[2] << 16) | (c[1] << 8) | c[0];
+            *value = ((uint64_t) c[2] << 16) | ((uint64_t) c[1] << 8) | c[0];
           else
-            *value = (c[0] << 16) | (c[1] << 8) | c[2];
-          *value <<= 40;
+            *value = ((uint64_t) c[0] << 16) | ((uint64_t) c[1] << 8) | c[2];
+          *value = (uint64_t) *value << 40;
           *value >>= 40;
           return IOS_OK;
         }
@@ -780,9 +782,11 @@ ios_read_int (ios io, ios_off offset, int flags,
       case 32:
         {
           if (endian == IOS_ENDIAN_LSB)
-            *value = (int32_t) (c[3] << 24) | (c[2] << 16) | (c[1] << 8) | c[0];
+            *value = ((uint64_t) c[3] << 24) | ((uint64_t) c[2] << 16) | ((uint64_t) c[1] << 8) | c[0];
           else
-            *value = (int32_t) (c[0] << 24) | (c[1] << 16) | (c[2] << 8) | c[3];
+            *value = ((uint64_t) c[0] << 24) | ((uint64_t) c[1] << 16) | ((uint64_t) c[2] << 8) | c[3];
+          *value = (uint64_t) *value << 32;
+          *value >>= 32;
           return IOS_OK;
         }
 
@@ -794,7 +798,7 @@ ios_read_int (ios io, ios_off offset, int flags,
           else
             *value = ((uint64_t) c[0] << 32) | ((uint64_t) c[1] << 24)
                      | (c[2] << 16) | (c[3] << 8) | c[4];
-          *value <<= 24;
+          *value = (uint64_t) *value << 24;
           *value >>= 24;
           return IOS_OK;
         }
@@ -809,7 +813,7 @@ ios_read_int (ios io, ios_off offset, int flags,
             *value = ((uint64_t) c[0] << 40) | ((uint64_t) c[1] << 32)
                      | ((uint64_t) c[2] << 24) | (c[3] << 16)
                      | (c[4] << 8) | c[5];
-          *value <<= 16;
+          *value = (uint64_t) *value << 16;
           *value >>= 16;
           return IOS_OK;
         }
@@ -824,7 +828,7 @@ ios_read_int (ios io, ios_off offset, int flags,
             *value = ((uint64_t) c[0] << 48) | ((uint64_t) c[1] << 40)
                      | ((uint64_t) c[2] << 32) | ((uint64_t) c[3] << 24)
                      | (c[4] << 16) | (c[5] << 8) | c[6];
-          *value <<= 8;
+          *value = (uint64_t) *value << 8;
           *value >>= 8;
           return IOS_OK;
         }
@@ -851,8 +855,7 @@ ios_read_int (ios io, ios_off offset, int flags,
                                      (uint64_t *) value);
   if (ret_val == IOS_OK)
     {
-      *value <<= 64 - bits;
-      *value >>= 64 - bits;
+      *value = ((int64_t) (((uint64_t) *value) << (64 - bits))) >> (64 - bits);
       return IOS_OK;
     }
   return ret_val;

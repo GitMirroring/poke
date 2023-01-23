@@ -60,12 +60,12 @@
    Bits marked with `x' are unused and should be always 0.  */
 
 #define PVM_VAL_INT_SIZE(V) (((int) (((V) >> 3) & 0x1f)) + 1)
-#define PVM_VAL_INT(V) (((int32_t) ((V) >> 32))                \
-                        << (32 - PVM_VAL_INT_SIZE ((V)))       \
+#define PVM_VAL_INT(V) (((int32_t) (((uint32_t) ((V) >> 32))            \
+                                    << (32 - PVM_VAL_INT_SIZE ((V)))))  \
                         >> (32 - PVM_VAL_INT_SIZE ((V))))
 #define PVM_MAKE_INT(V,S)                            \
   (((((uint64_t) (int64_t) (V)) & 0xffffffff) << 32) \
-   | ((((S) - 1) & 0x1f) << 3)                       \
+   | ((uint32_t)(((S) - 1) & 0x1f) << 3)             \
    | PVM_VAL_TAG_INT)
 
 #define PVM_VAL_UINT_SIZE(V) (((int) (((V) >> 3) & 0x1f)) + 1)
@@ -73,7 +73,7 @@
                          & ((uint32_t) (~( ((~0ul) << ((PVM_VAL_UINT_SIZE ((V)))-1)) << 1 ))))
 #define PVM_MAKE_UINT(V,S)                      \
   (((((uint64_t) (V)) & 0xffffffff) << 32)      \
-   | ((((S) - 1) & 0x1f) << 3)                  \
+   | ((uint32_t) (((S) - 1) & 0x1f) << 3)       \
    | PVM_VAL_TAG_UINT)
 
 #define PVM_MAX_UINT(size) ((1U << (size)) - 1)
@@ -108,8 +108,8 @@
     ((uint64_t) (uintptr_t) ll) | (T); })
 
 #define PVM_VAL_LONG_SIZE(V) (_PVM_VAL_LONG_ULONG_SIZE (V))
-#define PVM_VAL_LONG(V) (_PVM_VAL_LONG_ULONG_VAL ((V))           \
-                         << (64 - PVM_VAL_LONG_SIZE ((V)))      \
+#define PVM_VAL_LONG(V) (((int64_t) ((uint64_t) _PVM_VAL_LONG_ULONG_VAL ((V)) \
+                                     << (64 - PVM_VAL_LONG_SIZE ((V))))) \
                          >> (64 - PVM_VAL_LONG_SIZE ((V))))
 #define PVM_MAKE_LONG(V,S)                              \
   (PVM_MAKE_LONG_ULONG ((V),(S),PVM_VAL_TAG_LONG))
