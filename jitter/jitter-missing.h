@@ -127,12 +127,12 @@
 
 /* Do nothing. */
 void
-flockfile ()
+flockfile (FILE *f)
   __attribute__ ((nonnull (1)));
 
 /* Do nothing. */
 void
-funlockfile ()
+funlockfile (FILE *f)
   __attribute__ ((nonnull (1)));
 
 #endif // #ifndef JITTER_MISSING_H_
