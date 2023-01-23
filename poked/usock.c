@@ -635,15 +635,19 @@ usock_new (const char *path)
   u->pipefd[1] = -1;
   if (pipe (u->pipefd) == -1)
     goto error;
-  if (fcntl (u->pipefd[0], F_SETFL, O_NONBLOCK | O_CLOEXEC) == -1)
+  if (fcntl (u->pipefd[0], F_SETFD, FD_CLOEXEC) == -1)
     goto error;
-  if (fcntl (u->pipefd[1], F_SETFL, O_CLOEXEC) == -1)
+  if (fcntl (u->pipefd[1], F_SETFD, FD_CLOEXEC) == -1)
+    goto error;
+  if (fcntl (u->pipefd[0], F_SETFL, O_NONBLOCK) == -1)
     goto error;
 
   if ((u->fd = socket (AF_UNIX, SOCK_STREAM, 0)) == -1)
     goto error;
 
-  if (fcntl (u->fd, F_SETFL, O_NONBLOCK | O_CLOEXEC) == -1)
+  if (fcntl (u->fd, F_SETFD, FD_CLOEXEC) == -1)
+    goto error;
+  if (fcntl (u->fd, F_SETFL, O_NONBLOCK) == -1)
     goto error;
 
   memset (&adr, 0, sizeof (adr));
