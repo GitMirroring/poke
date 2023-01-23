@@ -1,3 +1,10 @@
+2023-01-24  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* testsuite/poke.pkl/apop-diag-2.pk: Fixed.
+	* testsuite/poke.pkl/apop-diag-3.pk: Likewise.
+	* testsuite/poke.pkl/apush-diag-4.pk: Likewise.
+	* testsuite/poke.pkl/apush-diag-5.pk: Likewise.
+
 2023-01-23  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-anal.c (pkl_anal2_ps_op_apush_apop): New phase for
