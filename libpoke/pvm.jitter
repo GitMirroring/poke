@@ -6819,25 +6819,18 @@ end
 # Instruction: time
 #
 # Push the current system time to the stack in the form of
-# an array of two long elements containing the number of seconds
+# two long elements containing the number of seconds
 # and nanoseconds since the epoch.
 #
-# Stack: ( -- ARR )
+# Stack: ( -- LONG(sec) LONG(nsec) )
 
 instruction time ()
   code
     struct timespec ts;
-    pvm_val arr = pvm_make_array (
-      PVM_MAKE_ULONG (2, 64),
-      pvm_make_integral_type (PVM_MAKE_ULONG (64, 64), PVM_MAKE_INT (1, 32)));
 
     pvm_gettime (&ts);
-    (void) pvm_array_insert (arr, PVM_MAKE_LONG (0, 64),
-                             PVM_MAKE_LONG (ts.tv_sec, 64));
-    (void) pvm_array_insert (arr, PVM_MAKE_LONG (1, 64),
-                             PVM_MAKE_LONG (ts.tv_nsec, 64));
-
-    JITTER_PUSH_STACK (arr);
+    JITTER_PUSH_STACK (PVM_MAKE_LONG (ts.tv_sec, 64));
+    JITTER_PUSH_STACK (PVM_MAKE_LONG (ts.tv_nsec, 64));
   end
 end
 

@@ -1,0 +1,7 @@
+/* { dg-do run } */
+
+var t = get_time;
+
+/* { dg-command {.set obase 10} } */
+/* { dg-command {t isa int<64>[2]} } */
+/* { dg-output "1" } */

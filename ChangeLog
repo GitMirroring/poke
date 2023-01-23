@@ -1,5 +1,14 @@
 2023-01-23  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pvm.jitter (time): Change the instruction to push
+	SEC and NSEC to the stack (instead of creating an array and
+	pushing the array to the stack).
+	* libpoke/pkl-rt.pk (get_time): Adapt.
+	* testsuite/poke.pkl/get-time-1.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
+
+2023-01-23  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-typify.c (pkl_typify1_ps_type_integral): Reject
 	`int<1>' as invalid type.
 	* testsuite/poke.cmd/sdiff-10.pk: s/int<1>/uint<1>/.

@@ -178,7 +178,10 @@ immutable fun flush = (int<32> ios, offset<uint<64>,1> offset) void:
 
 immutable fun get_time = int<64>[2]:
 {
-  return asm int<64>[2]: ("time");
+  var t = int<64>[2] ();
+
+  asm ("time" : t[0], t[1]);
+  return t;
 }
 
 immutable fun strace = void:
