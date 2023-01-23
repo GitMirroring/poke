@@ -181,11 +181,6 @@ immutable fun get_time = int<64>[2]:
   return asm int<64>[2]: ("time");
 }
 
-immutable fun sleep = (int<64> sec, int<64> nsec = 0) void:
-{
-  asm ("sleep; drop; drop" :: sec, nsec);
-}
-
 immutable fun strace = void:
 {
   asm ("strace 0");
@@ -544,6 +539,20 @@ immutable fun _pkl_assert = (uint<64> cond, string msg, string filename,
       exit_status = 1,
     };
   }
+
+/* Sleep instruction wrapper.  */
+
+immutable fun sleep = (int<64> sec, int<64> nsec = 0) void:
+{
+  var err = 0;
+  asm ("sleep; nip2" : err : sec, nsec);
+  if (err == -1)
+    raise E_inval;
+  if (err == -2)
+    raise E_generic;
+  assert (err == 0,
+          "Unhandled error in sleep()!  Please email <poke-devel@gnu.org>.");
+}
 
 /* The following function implements the fast path of the aoref macro
    in pkl-gen.pks.  Given an array whose elements have all the same

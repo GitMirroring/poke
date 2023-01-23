@@ -6846,32 +6846,33 @@ end
 # Sleep for a given number of seconds and nanoseconds.
 #
 # If the provided number of nanoseconds are not in the range 0 to
-# 999999999 or the number of provided seconds is negative, raise
-# PVM_E_INVAL.
+# 999999999 or the number of provided seconds is negative, pushes
+# -1.
 #
-# If there is any other error performing the operation then raise
-# PVM_E_GENERIC.
+# If there is any other error performing the operation then push
+# -2.
 #
-# Stack: ( LONG LONG -- LONG LONG )
-# Exceptions: PVM_E_INVAL, PVM_E_GENERIC
+# EINTR is treated as no error currently.
+#
+# Stack: ( LONG LONG -- LONG LONG INT )
 
 instruction sleep ()
-  branching # because of PVM_RAISE_DIRECT
   code
     struct timespec ts;
 
     ts.tv_sec = PVM_VAL_LONG (JITTER_UNDER_TOP_STACK ());
     ts.tv_nsec = PVM_VAL_LONG (JITTER_TOP_STACK ());
 
-    if (pvm_nanosleep (&ts, NULL) == -1)
+    if (ts.tv_sec < 0 || ts.tv_nsec < 0 || ts.tv_nsec > 999999999)
+      JITTER_PUSH_STACK (PVM_MAKE_INT (-1, 32));
+    else if (pvm_nanosleep (&ts, NULL) == -1 && errno != EINTR)
     {
-      if (errno == EINTR)
-        /* This is most likely Ctrl-C.  Do nothing */;
-      else if (errno == EINVAL)
-        PVM_RAISE_DFL (PVM_E_INVAL);
+      if (errno == EINVAL)
+        JITTER_PUSH_STACK (PVM_MAKE_INT (-1, 32));
       else
-        PVM_RAISE_DFL (PVM_E_GENERIC);
-    }
+        JITTER_PUSH_STACK (PVM_MAKE_INT (-2, 32));
+    } else
+      JITTER_PUSH_STACK (PVM_MAKE_INT (0, 32));
   end
 end
 

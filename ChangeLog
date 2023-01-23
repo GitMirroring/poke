@@ -22,6 +22,14 @@
 
 2023-01-23  Arsen Arsenović  <arsen@aarsen.me>
 
+	* libpoke/pvm.jitter (sleep): Push an error code rather than
+	raising an exception.  Do a range check on the passed seconds and
+	nanoseconds value, to reconcile differences between platforms.
+	* libpoke/pkl-rt.pk (sleep): Translate error codes pushed by the
+	sleep instruction into exceptions.
+
+2023-01-23  Arsen Arsenović  <arsen@aarsen.me>
+
 	* doc/poke.texi (Exceptions): Fix typo in the E_no_return
 	description (end of a void function -> end of a non-void
 	function).
