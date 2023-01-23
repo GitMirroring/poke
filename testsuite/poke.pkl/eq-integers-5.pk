@@ -3,9 +3,9 @@
 var x = 10U;
 var y = 10U;
 
-/* { dg-command { x as int<1> == y } } */
+/* { dg-command { x as uint<1> == y } } */
 /* { dg-output "0" } */
 
 /* For constant folding: */
-/* { dg-command { 10U as int<1> == 10U } } */
+/* { dg-command { 10U as uint<1> == 10U } } */
 /* { dg-output "\n0" } */

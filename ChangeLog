@@ -1,5 +1,21 @@
 2023-01-23  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pkl-typify.c (pkl_typify1_ps_type_integral): Reject
+	`int<1>' as invalid type.
+	* testsuite/poke.cmd/sdiff-10.pk: s/int<1>/uint<1>/.
+	* testsuite/poke.map/maps-int-structs-6.pk: Likewise.
+	* testsuite/poke.map/maps-int-structs-11.pk: Likewise.
+	* testsuite/poke.pkl/cast-integers-12.pk: Likewise.
+	* testsuite/poke.pkl/eq-integers-5.pk: Likewise.
+	* testsuite/poke.pkl/eq-offsets-8.pk: Likewise.
+	* testsuite/poke.pkl/mod-offsets-3.pk: Likewise.
+	* testsuite/poke.pkl/mod-offsets-4.pk: Likewise.
+	* testsuite/poke.pkl/int-type.pk: Remove `int<1>'.
+	* testsuite/poke.pkl/int-type-diag-4.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
+
+2023-01-23  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* poked/poked.c (poked_version): Don't use year range.
 
 2023-01-23  Jose E. Marchesi  <jemarch@gnu.org>

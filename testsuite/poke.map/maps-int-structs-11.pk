@@ -6,7 +6,7 @@
 type Foo =
   struct int<16>
   {
-    int<1> s;
+    uint<1> s;
     offset<uint<15>,3> m;
   };
 
@@ -14,8 +14,8 @@ type Foo =
 
 /* { dg-command { .set endian little } } */
 /* { dg-command { Foo @ 0#B } } */
-/* { dg-output "Foo {s=\\(int<1>\\) 0b0,m=\\(uint<15>\\) 0b010001110000000#3}" } */
+/* { dg-output "Foo {s=\\(uint<1>\\) 0b0,m=\\(uint<15>\\) 0b010001110000000#3}" } */
 
 /* { dg-command { .set endian big } } */
 /* { dg-command { Foo @ 0#B } } */
-/* { dg-output "\nFoo {s=\\(int<1>\\) 0b1,m=\\(uint<15>\\) 0b000000000100011#3}" } */
+/* { dg-output "\nFoo {s=\\(uint<1>\\) 0b1,m=\\(uint<15>\\) 0b000000000100011#3}" } */

@@ -1696,12 +1696,15 @@ PKL_PHASE_END_HANDLER
 PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_integral)
 {
   pkl_ast_node type = PKL_PASS_NODE;
+  int signed_p = PKL_AST_TYPE_I_SIGNED_P (type);
+  int width_min = signed_p ? 2 : 1;
 
-  if (PKL_AST_TYPE_I_SIZE (type) < 1
+  if (PKL_AST_TYPE_I_SIZE (type) < width_min
       || PKL_AST_TYPE_I_SIZE (type) > 64)
     {
       PKL_ERROR (PKL_AST_LOC (type),
-                 "the width of an integral type should be in the [1,64] range");
+                 "the width of %s integral type should be in the [%d,64] "
+                 "range", signed_p ? "a signed" : "an unsigned", width_min);
       PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }

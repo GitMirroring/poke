@@ -2,7 +2,7 @@
 /* { dg-data {c*} {0x00 0x27 0x28 0x00 0x22 0x33 0x44 0xbc} foo } */
 /* { dg-data {c*} {0x01 0x29 0x30 0x31 0x00 0x33 0x9a 0xbc} bar } */
 
-type Foo = struct { int<2> a; int<2> b; int<3> c; int<1> d; };
+type Foo = struct { int<2> a; int<2> b; int<3> c; uint<1> d; };
 type Bar = struct { byte x; Foo y; };
 
 /* { dg-command {.file foo} } */

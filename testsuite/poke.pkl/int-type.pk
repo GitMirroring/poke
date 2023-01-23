@@ -2,7 +2,6 @@
 
 /* Type constructor.  */
 
-type int1 = int<1>;
 type uint1 = uint<1>;
 
 type int2 = int<2>;

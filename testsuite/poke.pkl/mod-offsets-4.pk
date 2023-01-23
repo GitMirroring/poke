@@ -1,6 +1,6 @@
 /* { dg-do run } */
 
-type Packet = struct { int<1>[5]; };
+type Packet = struct { uint<1>[5]; };
 type Byte = byte;
 
 var x = 2#Packet;

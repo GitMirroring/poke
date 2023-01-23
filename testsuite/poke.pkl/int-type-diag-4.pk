@@ -1,0 +1,4 @@
+/* { dg-do compile } */
+
+type int1 =
+  int<1>; /* { dg-error "width of a signed integral.*.2,64. range" } */
