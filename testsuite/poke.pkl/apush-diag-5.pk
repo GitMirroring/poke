@@ -1,0 +1,5 @@
+/* { dg-do compile } */
+
+var a = int[8#B] ();
+
+apush (a, 0); /* { dg-error "apush operation is not allowed" } */

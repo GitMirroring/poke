@@ -1,5 +1,20 @@
 2023-01-23  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pkl-anal.c (pkl_anal2_ps_op_apush_apop): New phase for
+	compile-time check of `apush' and `apop' operations on arrays;
+	emit compile-time error unless the array is unbounded.
+	(pkl_phase_anal2): Add new phases for `PKL_AST_OP_A{PUSH,POP}'.
+	* testsuite/poke.pkl/apush-diag-4.pk: New test.
+	* testsuite/poke.pkl/apush-diag-5.pk: Likewise.
+	* testsuite/poke.pkl/apop-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/apop-diag-3.pk: Likewise.
+	* testsuite/poke.pkl/apop-1.pk: Adapt.
+	* testsuite/poke.pkl/apush-1.pk: Likewise.
+	* testsuite/poke.pkl/apush-2.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+
+2023-01-23  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pvm.jitter (time): Change the instruction to push
 	SEC and NSEC to the stack (instead of creating an array and
 	pushing the array to the stack).

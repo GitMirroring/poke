@@ -735,11 +735,15 @@ EXTRA_DIST = \
   poke.pkl/apop-1.pk \
   poke.pkl/apop-2.pk \
   poke.pkl/apop-diag-1.pk \
+  poke.pkl/apop-diag-2.pk \
+  poke.pkl/apop-diag-3.pk \
   poke.pkl/apush-1.pk \
   poke.pkl/apush-2.pk \
   poke.pkl/apush-diag-1.pk \
   poke.pkl/apush-diag-2.pk \
   poke.pkl/apush-diag-3.pk \
+  poke.pkl/apush-diag-4.pk \
+  poke.pkl/apush-diag-5.pk \
   poke.pkl/array-1.pk \
   poke.pkl/array-2.pk \
   poke.pkl/array-bound-1.pk \

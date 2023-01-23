@@ -1109,6 +1109,27 @@ PKL_PHASE_BEGIN_HANDLER (pkl_anal2_ps_ass_stmt)
 }
 PKL_PHASE_END_HANDLER
 
+/* Make sure that apush/apop is not applied to an array with
+   fixed size boundary.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_anal2_ps_op_apush_apop)
+{
+  pkl_ast_node exp = PKL_PASS_NODE;
+  pkl_ast_node arr = PKL_AST_EXP_OPERAND (exp, 0);
+  pkl_ast_node arr_type = PKL_AST_TYPE (arr);
+  pkl_ast_node arr_type_bound = PKL_AST_TYPE_A_BOUND (arr_type);
+
+  if (arr_type_bound)
+    {
+      PKL_ERROR (PKL_AST_LOC (exp), "%s is not allowed on a bounded array",
+                 PKL_AST_EXP_CODE (exp) == PKL_AST_OP_APUSH ? "apush"
+                                                            : "apop");
+      PKL_ANAL_PAYLOAD->errors++;
+      PKL_PASS_ERROR;
+    }
+}
+PKL_PHASE_END_HANDLER
+
 struct pkl_phase pkl_phase_anal2 =
   {
    PKL_PHASE_PS_HANDLER (PKL_AST_SRC, pkl_anal_ps_src),
@@ -1126,6 +1147,8 @@ struct pkl_phase pkl_phase_anal2 =
    PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT_REF, pkl_anal2_ps_struct_ref),
    PKL_PHASE_PS_HANDLER (PKL_AST_ASS_STMT, pkl_anal2_ps_ass_stmt),
    PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_STRUCT, pkl_anal2_ps_type_struct),
+   PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_APUSH, pkl_anal2_ps_op_apush_apop),
+   PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_APOP, pkl_anal2_ps_op_apush_apop),
   };
 
 

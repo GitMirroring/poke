@@ -1,0 +1,5 @@
+/* { dg-do compile } */
+
+var a = int[2] ();
+
+apop (a); /* { dg-error "apop operation is not allowed" } */
