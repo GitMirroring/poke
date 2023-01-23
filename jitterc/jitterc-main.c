@@ -176,7 +176,7 @@ static struct argp_option jitterc_option_specification[] =
    use weak symbols on reasonable platforms. */
 const char *argp_program_version
   = "jitter (" PACKAGE_NAME ") " PACKAGE_VERSION "\n"
-    "Copyright (C) 2021 Luca Saiu.\n"
+    "Copyright (C) 2023 Luca Saiu.\n"
     "GNU Jitter comes with ABSOLUTELY NO WARRANTY.\n"
     "You may redistribute copies of GNU Jitter under the terms of the GNU\n"
     "General Public License, version 3 or any later version published\n"

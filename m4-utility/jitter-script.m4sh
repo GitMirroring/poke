@@ -149,7 +149,7 @@ version ()
 {
     cat <<EOF
 ${script_printed_name} (@JITTER_PACKAGE_NAME@) @JITTER_PACKAGE_VERSION@
-Copyright (C) 2016-2022 Luca Saiu.
+Copyright (C) 2016-2023 Luca Saiu.
 GNU Jitter comes with ABSOLUTELY NO WARRANTY.
 You may redistribute copies of GNU Jitter under the terms of the GNU General
 Public License, version 3 or any later version published by the Free Software

@@ -1,7 +1,7 @@
 ## This is an -*- Autoconf -*- file to be processed with autoconf
 ## to obtain a configure script.
 
-## Copyright (C) 2016-2022 Luca Saiu
+## Copyright (C) 2016-2023 Luca Saiu
 ## Copyright (C) 2021 pEp foundation (Android port)
 ## Written by Luca Saiu
 
