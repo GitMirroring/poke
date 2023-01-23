@@ -1784,14 +1784,27 @@ GNU poke friends with mysterious errors.  I still have bugs to fix.])
 jitter_supports_minimal_threading=no
 
 # Temporarily, as of 2022-11, disable no-threding on powerpc32.  There is a poke
-# but needing to be investigated (everything seems to work on the Jitter side,
-# as far as I can tell).
+# bug needing to be investigated (everything seems to work on the Jitter side,
+# as far as I can tell).  Or could this be an actual Jitter problem?  I will
+# have to check.
 if test "x$default_host_cpu" = 'xppc' \
    || test "x$default_host_cpu" = 'xpowerpc' \
    || test "x$default_host_cpu" = 'xppcle' \
    || test "x$default_host_cpu" = 'xpowerpcle'; then
   jitter_supports_no_threading='no'
   AC_MSG_WARN([temporarily disabling no-threading on PowerPC32 because of a
+problem in poke, to be investigated])
+fi
+
+# Temporarily, as of 2023-01, disable no-threding on riscv.  There is a poke
+# bug needing to be investigated (everything seems to work on the Jitter side,
+# as far as I can tell).  Or could this be an actual Jitter problem?  I will
+# have to check.
+if test "x$default_host_cpu" = 'xriscv' \
+   || test "x$default_host_cpu" = 'xriscv32' \
+   || test "x$default_host_cpu" = 'xriscv64'; then
+  jitter_supports_no_threading='no'
+  AC_MSG_WARN([temporarily disabling no-threading on RISC-V because of a
 problem in poke, to be investigated])
 fi
 
