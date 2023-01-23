@@ -1526,9 +1526,9 @@ EXTRA_DIST = \
   poke.pkl/get-endian-1.pk \
   poke.pkl/get-ios-1.pk \
   poke.pkl/get-ios-2.pk \
-  poke.pkl/get-time-1.pk \
   poke.pkl/getenv-1.pk \
   poke.pkl/getenv-2.pk \
+  poke.pkl/gettime-1.pk \
   poke.pkl/gt-arrays-diag-1.pk \
   poke.pkl/gt-functions-diag-1.pk \
   poke.pkl/gt-functions-diag-2.pk \

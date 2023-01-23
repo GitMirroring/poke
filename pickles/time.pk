@@ -24,7 +24,7 @@ type Timespec = struct
 
 fun gettimeofday = Timespec:
 {
-  var time = get_time;
+  var time = gettime;
   return Timespec {sec = time[0], nsec = time[1]};
 }
 

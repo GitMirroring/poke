@@ -176,7 +176,7 @@ immutable fun flush = (int<32> ios, offset<uint<64>,1> offset) void:
   asm ("ogetm; nip; flush" :: ios, offset);
 }
 
-immutable fun get_time = int<64>[2]:
+immutable fun gettime = int<64>[2]:
 {
   var t = int<64>[2] ();
 

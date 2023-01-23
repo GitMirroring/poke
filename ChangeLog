@@ -1,5 +1,13 @@
 2023-01-24  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pkl-rt.pk (get_time): Renamed to `gettime'.
+	* pickles/time.pk (gettimeofday): s/get_time/gettime/.
+	* testsuite/poke.pkl/get-time-1.pk: Removed.
+	* testsuite/poke.pkl/gettime-1.pk: Added.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
+2023-01-24  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* testsuite/poke.pkl/apop-diag-2.pk: Fixed.
 	* testsuite/poke.pkl/apop-diag-3.pk: Likewise.
 	* testsuite/poke.pkl/apush-diag-4.pk: Likewise.
