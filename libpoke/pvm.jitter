@@ -466,7 +466,10 @@ late-header-c
      }                                                                       \
      else                                                                    \
      {                                                                       \
-        PVM_BINOP (TYPEA, TYPEB, TYPER, OP);                                 \
+        int size = PVM_VAL_##TYPER##_SIZE (JITTER_UNDER_TOP_STACK ());       \
+        pvm_val res = PVM_MAKE_##TYPER ((uint64_t) PVM_VAL_##TYPEA (JITTER_UNDER_TOP_STACK ()) \
+                                        << PVM_VAL_##TYPEB (JITTER_TOP_STACK ()), size); \
+        JITTER_PUSH_STACK (res);                                             \
      }                                                                       \
    }
 
