@@ -48,7 +48,7 @@ jitter_invalidate_icache (char *from, size_t byte_no)
 static jitter_int
 jitter_distance_from (const char *destination_p, const char *from_p)
 {
-  return destination_p - from_p;
+  return (jitter_int) destination_p - (jitter_int) from_p;
 }
 
 enum jitter_snippet_to_patch

@@ -146,7 +146,7 @@ static jitter_int
 jitter_distance_from (const char *destination_p,
                       const char *branch_instruction_p)
 {
-  return destination_p - branch_instruction_p;
+  return (jitter_int) destination_p - (jitter_int) from_p;
 }
 
 enum jitter_snippet_to_patch

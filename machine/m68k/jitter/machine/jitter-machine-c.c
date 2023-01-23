@@ -291,7 +291,7 @@ jitter_patch_patch_in (char *native_code,
   /* The distance is computed from the end of the first 16 bits of the
      instruction; technically speaking the 32-bit displacement is optional. */
   char *target = * (char **) immediate_pointer;
-  int32_t distance = target - native_code;
+  int32_t distance = (int32_t) target - (int32_t) native_code;
   distance -= 2; /* Account for the first 16 bits of the instruction. */
   switch (snippet)
     {
