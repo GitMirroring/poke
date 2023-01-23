@@ -5,6 +5,8 @@ The following packages should be installed before GNU poke is installed
   + Mandatory.
     Poke uses the Boehm conservative garbage collector for managing the
     memory of some of its subsystems.
+    On most platforms, any 8.x version is sufficient. On Cygwin, version
+    8.2.2 or newer is needed.
   + Homepage:
     https://www.hboehm.info/gc/
   + Download:
