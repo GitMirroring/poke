@@ -1302,7 +1302,7 @@ struct pkl_phase pkl_phase_fold =
    ENTRY (OR, or), ENTRY (IOR, ior), ENTRY (ADD, add),
    ENTRY (XOR, xor), ENTRY (AND, and), ENTRY (BAND, band),
    ENTRY (EQ, eq), ENTRY (NE, ne), ENTRY (SL, sl),
-   ENTRY (SR, sr), ENTRY (ADD, add), ENTRY (SUB, sub),
+   ENTRY (SR, sr), ENTRY (SUB, sub),
    ENTRY (MUL, mul), ENTRY (DIV, div), ENTRY (CEILDIV, cdiv),
    ENTRY (MOD, mod), ENTRY (GCD, gcd),
    ENTRY (LT, lt), ENTRY (GT, gt), ENTRY (LE, le),
