@@ -1783,29 +1783,15 @@ architecture including $default_host_cpu, in order to avoid surprising the \
 GNU poke friends with mysterious errors.  I still have bugs to fix.])
 jitter_supports_minimal_threading=no
 
-# Temporarily, as of 2022-11, disable no-threding on powerpc32.  There is a poke
-# bug needing to be investigated (everything seems to work on the Jitter side,
-# as far as I can tell).  Or could this be an actual Jitter problem?  I will
-# have to check.
-if test "x$default_host_cpu" = 'xppc' \
-   || test "x$default_host_cpu" = 'xpowerpc' \
-   || test "x$default_host_cpu" = 'xppcle' \
-   || test "x$default_host_cpu" = 'xpowerpcle'; then
+# Temporarily, as of 2023-01, disable no-threding on every architecture other
+# than x86_64: there is a poke bug needing to be investigated (everything seems
+# to work on the Jitter side, as far as I can tell).
+# The problem is not only missing support for far branches, otherwise m68k would
+# work.  To be investigated.
+if test "x$default_host_cpu" != 'xx86_64'; then
   jitter_supports_no_threading='no'
-  AC_MSG_WARN([temporarily disabling no-threading on PowerPC32 because of a
-problem in poke, to be investigated])
-fi
-
-# Temporarily, as of 2023-01, disable no-threding on riscv.  There is a poke
-# bug needing to be investigated (everything seems to work on the Jitter side,
-# as far as I can tell).  Or could this be an actual Jitter problem?  I will
-# have to check.
-if test "x$default_host_cpu" = 'xriscv' \
-   || test "x$default_host_cpu" = 'xriscv32' \
-   || test "x$default_host_cpu" = 'xriscv64'; then
-  jitter_supports_no_threading='no'
-  AC_MSG_WARN([temporarily disabling no-threading on RISC-V because of a
-problem in poke, to be investigated])
+  AC_MSG_WARN([temporarily disabling no-threading on architectures different
+from x86_64 because of a problem in poke, to be investigated])
 fi
 
 dnl # GNU poke, which is currently the main Jitter client, uses far branches which
