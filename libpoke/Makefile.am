@@ -244,4 +244,13 @@ pvm-vm1.c: pvm-vm.h
 pvm-vm2.c: pvm-vm1.c
 	@{ test -f $(srcdir)/pvm-vm2.c && test ! $(srcdir)/pvm-vm2.c -ot $(srcdir)/pvm-vm1.c; } || $(MAKE) generate-vm-files
 
+# In order to avoid problems with older installations, we remove the
+# Poke scripts installed in $(pkgdatadir).  Note however that other
+# programs may install scripts in subdirectories under $(pkgdatadir),
+# and these are not to be touched.
+install-data-local: uninstall-sources
+uninstall-local: uninstall-sources
+uninstall-sources:
+	rm -f $(DESTDIR)$(pkgdatadir)/*.pk
+
 # End of Makefile.am

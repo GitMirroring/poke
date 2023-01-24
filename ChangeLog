@@ -1,3 +1,9 @@
+2023-01-24  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* libpoke/Makefile.am (uninstall-sources): New rule.
+	(uninstall-local): Likewise.
+	(install-data-local): Likewise.
+
 2023-01-24  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* poked/usock.c (usock_new): Don't blindly set FD_CLOEXEC; first
