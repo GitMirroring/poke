@@ -1786,12 +1786,15 @@ jitter_supports_minimal_threading=no
 # Temporarily, as of 2023-01, disable no-threding on every architecture other
 # than x86_64: there is a poke bug needing to be investigated (everything seems
 # to work on the Jitter side, as far as I can tell).
+# Avoid problems on solaris by disabling no-threading, which is over-aggressive:
+# in fact using GCC things would work.
 # The problem is not only missing support for far branches, otherwise m68k would
 # work.  To be investigated.
-if test "x$default_host_cpu" != 'xx86_64'; then
+if test "x$default_host_cpu" != 'xx86_64' \
+   || echo "$host_os" | grep 'solaris' > /dev/null 2> /dev/null; then
   jitter_supports_no_threading='no'
   AC_MSG_WARN([temporarily disabling no-threading on architectures different
-from x86_64 because of a problem in poke, to be investigated])
+from x86_64 and on solaris because of a problem in poke, to be investigated])
 fi
 
 dnl # GNU poke, which is currently the main Jitter client, uses far branches which
