@@ -18,8 +18,38 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-dnl TODO: apply git-version-gen patch on next (annotated) tag.
-AC_INIT([GNU poke], [3.0], [poke-devel@gnu.org], [poke],
+dnl Branch-specific suffix to apply to the version, to disambiguate it from
+dnl other branches.  master and maint/poke-* are treated special in that they
+dnl get a short description, where all other branches get emitted in full.
+m4_define([poke_branch],
+	  [m4_esyscmd_s([git tag --points-at HEAD 2>/dev/null | grep -q . \
+                            || { git branch --show-current                \
+                                     | sed 's|^maint/poke-.*|maint|;
+                                            s|^master$|dev|'; }])])
+
+
+dnl Version generated from a Git tag via git-version-gen.  To understand the
+dnl following mess, it is integral to know that ``:'' is special in Git and
+dnl will never be emitted.  We (ab)use this fact to escape the ``-g'', which is
+dnl another special construct in Git - used by git-describe output to delimit
+dnl the object reference from data for human consumption.
+dnl We also rely on this fact and choose ``:'' as a safe sed delimiter.
+dnl After we escape -g, and sufficiently mangle the describe output in order to
+dnl shove the branch name into the middle of it, we convert the escape ``:''
+dnl back into a ``g'', so that we end up with a git-showable reference (unless
+dnl the tree is -dirty).
+
+m4_define([poke_version], [m4_esyscmd_s([
+    build-aux/git-version-gen .tarball-version                            \
+        --prefix 'releases\/poke-'                                        \
+        's:^\(releases/poke-\)\([^-]*\)-\([^-]*\)\(-g.*\):\1\2-]poke_branch()-[\3\4:;
+         s:g\([[:xdigit:]]\+\)$:\:\1:'                                    \
+      | sed 's/:/g/'
+])])
+
+AC_INIT([GNU poke],
+        [poke_version()],
+	[poke-devel@gnu.org], [poke],
         [http://www.jemarch.net/poke.html])
 
 AC_CONFIG_AUX_DIR([build-aux])
