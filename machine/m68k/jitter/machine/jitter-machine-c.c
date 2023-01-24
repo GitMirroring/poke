@@ -291,7 +291,15 @@ jitter_patch_patch_in (char *native_code,
   /* The distance is computed from the end of the first 16 bits of the
      instruction; technically speaking the 32-bit displacement is optional. */
   char *target = * (char **) immediate_pointer;
-  int32_t distance = (int32_t) target - (int32_t) native_code;
+  int32_t distance
+    = (/* To avoid undefined behaviour subtract two unsigned integers --
+          which may wrap around -- and then convert the result, which will be
+          on two's complement on this platform, to a signed value.  We are
+          still technically in undefined behaviour's territory because the
+          two pointers do not belong to the same buffer, but GCC can handle
+          this. */
+       (int32_t)
+       ((uint32_t) target - (uint32_t) native_code));
   distance -= 2; /* Account for the first 16 bits of the instruction. */
   switch (snippet)
     {

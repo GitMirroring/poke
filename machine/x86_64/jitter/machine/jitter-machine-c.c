@@ -48,7 +48,14 @@ jitter_invalidate_icache (char *from, size_t byte_no)
 static jitter_int
 jitter_distance_from (const char *destination_p, const char *from_p)
 {
-  return (jitter_int) destination_p - (jitter_int) from_p;
+  return (/* To avoid undefined behaviour subtract two unsigned integers --
+             which may wrap around -- and then convert the result, which will be
+             on two's complement on this platform, to a signed value.  We are
+             still technically in undefined behaviour's territory because the
+             two pointers do not belong to the same buffer, but GCC can handle
+             this. */
+          (jitter_int)
+          ((jitter_uint) destination_p - (jitter_uint) from_p));
 }
 
 enum jitter_snippet_to_patch
