@@ -239,6 +239,21 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   The standard target `make distcheck' builds a distributable sources
   tarball, and tests that it can be built and tested properly.
 
+  Note that if you're working on a checkout that is not fresh (i.e. it
+  has had commits or tags since you last ran `./autogen.sh'), it is
+  desirable to re-run `./autogen.sh', or otherwise regenerate
+  `configure', to get updated version information.  This version will be
+  stored in the newly-generated dist tarball.
+
+  Keep in mind that, when regenerating, a dirty tree, including
+  differently dated submodules, will cause the version to be suffixed
+  with `-dirty'.  Should this happen, and you want to go through with
+  the release anyway, `git stash' your changes and `git submodule
+  update' submodules, so that they get checked out to in-tree revisions.
+  This also ensures that you're testing the version of the tree that
+  will make it into a release, rather than something with a potentially
+  uncommitted fix, or suchlike.
+
 
 2.7 Installing Obvious Changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

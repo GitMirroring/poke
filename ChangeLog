@@ -107,6 +107,20 @@
 
 	* poked/poked.c (poked_version): Don't use year range.
 
+2023-01-24  Arsen Arsenović  <arsen@aarsen.me>
+
+	Integrate git-version-gen.
+	* etc/hacking.org (Building Release Tarballs): Add some notes
+	about how to get correct versioning information.
+	* configure.ac: Invoke git-version-gen to compute version value.
+	* bootstrap.conf (gnulib_modules): Add git-version-gen.
+	* Makefile.am (EXTRA_DIST): Add ``.version''.
+	(BUILT_SOURCES): Ditto.
+	($(top_srcdir)/.version): store current $(VERSION) value.
+	(dist-hook): Store version as .tarball-version.
+	* .gitignore: Ignore .version
+	* HACKING: Regenerate.
+
 2023-01-23  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pvm.jitter (PVM_BINOP_SL): Do not trigger left-shit UB.

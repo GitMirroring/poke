@@ -19,7 +19,8 @@ ACLOCAL_AMFLAGS = -I m4 -I m4/libpoke
 SUBDIRS = jitter gl maps pickles gl-libpoke libpoke poke poked utils \
           doc man testsuite etc po
 
-EXTRA_DIST = INSTALL.generic DEPENDENCIES
+EXTRA_DIST = INSTALL.generic DEPENDENCIES $(top_srcdir)/.version
+BUILT_SOURCES = $(top_srcdir)/.version
 
 noinst_SCRIPTS = run
 
@@ -46,5 +47,13 @@ cyclo-$(PACKAGE).html: $(CYCLO_SRCS)
 update-hacking:
 	emacs ${srcdir}/etc/hacking.org --batch -f org-ascii-export-to-ascii --kill
 	mv -f ${srcdir}/etc/hacking.txt ${srcdir}/HACKING
+
+# Support for git-version-gen
+$(top_srcdir)/.version: $(top_srcdir)/configure
+	echo '$(VERSION)' > $@-t
+	mv $@-t $@
+
+dist-hook:
+	echo '$(VERSION)' > $(distdir)/.tarball-version
 
 .PHONY = update-hacking
