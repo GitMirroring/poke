@@ -621,6 +621,7 @@ usock_new (const char *path)
 {
   struct usock *u;
   struct sockaddr_un adr;
+  int flags;
 
   u = calloc (1, sizeof (*u));
   if (u == NULL)
@@ -635,9 +636,11 @@ usock_new (const char *path)
   u->pipefd[1] = -1;
   if (pipe (u->pipefd) == -1)
     goto error;
-  if (fcntl (u->pipefd[0], F_SETFD, FD_CLOEXEC) == -1)
+  if ((flags = fcntl (u->pipefd[0], F_GETFD)) == -1
+      || fcntl (u->pipefd[0], F_SETFD, flags | FD_CLOEXEC) == -1)
     goto error;
-  if (fcntl (u->pipefd[1], F_SETFD, FD_CLOEXEC) == -1)
+  if ((flags = fcntl (u->pipefd[1], F_GETFD)) == -1
+      || fcntl (u->pipefd[1], F_SETFD, flags | FD_CLOEXEC) == -1)
     goto error;
   if (fcntl (u->pipefd[0], F_SETFL, O_NONBLOCK) == -1)
     goto error;
@@ -645,7 +648,8 @@ usock_new (const char *path)
   if ((u->fd = socket (AF_UNIX, SOCK_STREAM, 0)) == -1)
     goto error;
 
-  if (fcntl (u->fd, F_SETFD, FD_CLOEXEC) == -1)
+  if ((flags = fcntl (u->fd, F_GETFD)) == -1
+      || fcntl (u->fd, F_SETFD, flags | FD_CLOEXEC) == -1)
     goto error;
   if (fcntl (u->fd, F_SETFL, O_NONBLOCK) == -1)
     goto error;

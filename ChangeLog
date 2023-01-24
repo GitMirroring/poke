@@ -1,5 +1,10 @@
 2023-01-24  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* poked/usock.c (usock_new): Don't blindly set FD_CLOEXEC; first
+	get the flags, enable the FD_CLOEXEC flag and set new the flag.
+
+2023-01-24  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-rt.pk (get_time): Renamed to `gettime'.
 	* pickles/time.pk (gettimeofday): s/get_time/gettime/.
 	* testsuite/poke.pkl/get-time-1.pk: Removed.
