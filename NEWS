@@ -139,7 +139,9 @@ See the manual for detailed information.
       attribute evaluates to the name of the Nth element in VAL.
 
   - Two new operators have been introduced to facilitate operating
-    Poke array as stacks in an efficient way: apush and apop.
+    Poke array as stacks in an efficient way: apush and apop.  Since
+    these operators change the size of the involved arrays, they are
+    only allowed in unbounded arrays.
 
   - Poke programs can now hook in the IO subsystem by installing
     functions that will be invoked when certain operations on IO
@@ -187,6 +189,12 @@ See the manual for detailed information.
 
   - An operator `remap' has been used in order to force a re-map of
     some mapped Poke value.
+
+  - Signed integral types of one bit are not allowed.  How could they
+    be, in two's complement?
+
+  - The built-in function get_time has been renamed to gettime, to
+    follow the usual naming of the corresponding standard C function.
 
 * Standard Poke Library updates
 
@@ -733,7 +741,7 @@ See the manual for detailed information.
     : vm_{obase,opprint,oacutoff,odepth,oindent,omaps,omode}
     : vm_set_{obase,opprint,oacutoff,odepth,oindent,omaps,omode}
 
-  - We added introspection capabilities: typeof. XXX.
+  - We added introspection capabilities: typeof.
 
 * Standard Poke Library updates
 
