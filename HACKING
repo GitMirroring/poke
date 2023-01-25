@@ -11,17 +11,18 @@ _________________
 
 1. Nomenclature
 2. Maintenance
-.. 1. Global Maintainer
-.. 2. Maintainers
-.. 3. Write After Approval
-.. 4. Personal Branches
-.. 5. Building Release Tarballs
-.. 6. Installing Obvious Changes
-.. 7. The poke.rec database
-.. 8. The source for this HACKING file
-.. 9. The Bugzilla
+.. 1. GNU Maintainer
+.. 2. Global Maintainers
+.. 3. Maintainers
+.. 4. Write After Approval
+.. 5. Personal Branches
+.. 6. Building Release Tarballs
+.. 7. Installing Obvious Changes
+.. 8. The poke.rec database
+.. 9. The source for this HACKING file
+.. 10. The Bugzilla
 ..... 1. Dealing with spam in the Bugzilla
-.. 10. Backporting to maintenance branches
+.. 11. Backporting to maintenance branches
 3. Development Environment
 .. 1. Autotools
 .. 2. Dejagnu
@@ -78,10 +79,7 @@ _________________
 .. 4. Compiler Passes and Phases
 ..... 1. Naming Conventions for Phases
 ..... 2. Naming Conventions for Handlers
-..... 3. Transformation Phases
-..... 4. Analysis Phases
-..... 5. Type System Phases
-..... 6. Front and Middle End Handlers should be Re-entrant
+..... 3. Front and Middle End Handlers should be Re-entrant
 .. 5. Adding Compiler Built-Ins
 .. 6. Writing Compiler Diagnostics
 12. The Poke Virtual Machine
@@ -92,6 +90,7 @@ _________________
 .. 4. Offsets and bit-offsets in the PVM
 .. 5. Writing relocatable instructions
 .. 6. Wrapping globals
+..... 1. Wrapping standard function calls
 13. Memory Management
 .. 1. Using ASTREF
 .. 2. Using ASTDEREF
@@ -153,13 +152,19 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
 2 Maintenance
 =============
 
-2.1 Global Maintainer
-~~~~~~~~~~~~~~~~~~~~~
+2.1 GNU Maintainer
+~~~~~~~~~~~~~~~~~~
 
   Jose E. Marchesi <jemarch@gnu.org>
 
 
-2.2 Maintainers
+2.2 Global Maintainers
+~~~~~~~~~~~~~~~~~~~~~~
+
+  Jose E. Marchesi <jemarch@gnu.org>
+
+
+2.3 Maintainers
 ~~~~~~~~~~~~~~~
 
   Maintainers are individuals who are responsible for, and have
@@ -173,14 +178,14 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   messages to the list with the patches they push.  This helps to keep
   the other hackers aware of what is going on in other areas.
 
-        poked                   Mohammad-Reza Nabipoor <mnabipoor@gnu.org>
         etc/poke-mode.el        Aurélien Aptel <aaptel@suse.com>
         doc/learn-poke-language-in-y-minutes.pk
-                                Mohammad-Reza Nabipoor <mnabipoor@gnu.org>
-        pickles/riscv.pk        Mohammad-Reza Nabipoor <mnabipoor@gnu.org>
+        pickles/riscv.pk
+        pickles/pcap.pk
+        poked                   Mohammad-Reza Nabipoor <mnabipoor@gnu.org>
 
 
-2.3 Write After Approval
+2.4 Write After Approval
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
   The people below have write access to the git repository, and can
@@ -204,7 +209,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
         Arsen Arsenović		<arsen@aarsen.me>
 
 
-2.4 Personal Branches
+2.5 Personal Branches
 ~~~~~~~~~~~~~~~~~~~~~
 
   Anyone having write access to the git repository is allowed to push
@@ -228,17 +233,17 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   branch owner.
 
 
-2.5 Building Release Tarballs
+2.6 Building Release Tarballs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   The standard target `make distcheck' builds a distributable sources
   tarball, and tests that it can be built and tested properly.
 
 
-2.6 Installing Obvious Changes
+2.7 Installing Obvious Changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  Anyone having write access to the git repository is allowed to push
+  Anyone listed in the Write After Approval section is allowed to push
   obvious changes to non-personal branches.  The "obvious" category
   includes typos in comments, renaming of variables, etc.
 
@@ -248,7 +253,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   like `[COMMITTED]'.  Also, make sure to include the patch itself.
 
 
-2.7 The poke.rec database
+2.8 The poke.rec database
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
   We maintain a database in `etc/poke.rec', in the form of a recfile.
@@ -260,7 +265,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   See the comment at the top of `poke.rec' for more information.
 
 
-2.8 The source for this HACKING file
+2.9 The source for this HACKING file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   This file (HACKING) is an ASCII export of the org-mode file in
@@ -273,8 +278,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
     will execute Emacs in batch mode and update HACKING.
 
 
-2.9 The Bugzilla
-~~~~~~~~~~~~~~~~
+2.10 The Bugzilla
+~~~~~~~~~~~~~~~~~
 
   We maintain a bugs database in <https://www.sourceware.org/bugzilla>.
   Our product is `poke', which is divided in several components
@@ -291,8 +296,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   `etc/poke.rec'.
 
 
-2.9.1 Dealing with spam in the Bugzilla
----------------------------------------
+2.10.1 Dealing with spam in the Bugzilla
+----------------------------------------
 
   Sometimes the bugzilla at sourceware gets some spam, in the form of
   bugs containing crap.  If you see one, you can flag is as spam by
@@ -304,7 +309,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
         Status -> Closed as invalid
 
 
-2.10 Backporting to maintenance branches
+2.11 Backporting to maintenance branches
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   At any time we keep several branches open to development in poke:
@@ -1534,142 +1539,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   the AST nodes with code `PKL_AST_COMP_STMT'.
 
 
-11.4.3 Transformation Phases
-----------------------------
-
-  trans1
-        - Finishes strings by expanding sequences, emitting diagnostics
-          if an invalid sequence is found.
-        - Computes and set the number of elements in STRUCT nodes.
-        - Computes and sets the number of elements, fields and
-          declarations in struct TYPE nodes.
-        - Completes offsets with implicit magnitude by adding a
-          magnitude of int<32>1.
-        - Calculates the number of arguments in FUNCALL nodes.
-        - Annotates declaration nodes as being directly contained in
-          struct type nodes.
-        - Annotates variables that refer to recursive function calls as
-          recursive.
-        - Annotates variables with the enclosing function, and with
-          their lexical nesting level with respect the beginning of the
-          enclosing function.
-        - Variables that refer to parameterless functions are
-          transformed into funcalls to these functions.
-        - Finalizes ATTR node by determining the operation corresponding
-          to the attribute name, turning the IDENTIFIERxEXP binary
-          expression into an unary expression.
-        - Annotates a function's first optional argument and the number
-          of formal arguments.
-        - Completes function types with their number of formal
-          arguments, annotates its first optional argument, and
-          determines whether the function type gets a vararg.
-        - Completes trimmers with implicit indexes, i.e. [N:], [:N] or
-          [:], by adding the missing index as an appropriate expression.
-        - Decodes format strings in printf statements.
-        - Computes and sets the indexes of all the elements of an ARRAY
-          node (array literal) and sets the size of the array.
-        - Annotates compound statements with the number of variable and
-          function declarations occurring within the statement.
-  trans2
-        - Annotates expression nodes that are literals, i.e. expressions
-          whose values can be computed at compile-time.
-        - Annotates offsets, arrays, indexers, trimmers, structs, struct
-          references, and casts as literals.
-        - Turn struct references that refer to parameterless methods
-          into funcalls to these methods.
-        - In offsets whose units are type names, make sure these types
-          are complete and replace the unit with an expression that
-          evaluates to the size of the unit type, in bits.
-  trans3
-        - SIZEOF nodes whose operand is a complete type are replaced
-          with an offset.
-
-
-11.4.4 Analysis Phases
-----------------------
-
-  anal1
-        - Checks that the elements in struct literals have unique names.
-        - Checks that the elements in struct types have unique names.
-        - Checks that declarations in unions appear before any of the
-          alternatives.
-        - Checks that builtin compound statements don't contain
-          statements.
-        - Check that the actual arguments passed to a funcall are all
-          either named or none named.
-        - Check that named arguments to funcalls are passed only once.
-        - Check that all optional formal arguments in a function
-          specifier are located at the end of the arguments list.
-        - Check that function specifiers have at most one vararg
-          argument, and that it is located at the end of the formal
-          arguments list.
-        - Check that function types have at most one vararg argument,
-          and that it is located at the end of the formal arguments
-          list.
-        - Check that every BREAK statement have a containing statement.
-        - Check that every RETURN statement have a containing function.
-        - If the unit in an offset type specifier is specified using an
-          integral constant, this constant should be bigger than zero.
-        - The unit of an offset literal, if expressed as an integral,
-          shall be bigger than zero.
-        - Check that the bit count operator in left shift operations are
-          less than the number of bits of the shifted operand.  This is
-          checked in cases where the bit count is constant.
-        - Methods can only be defined in a struct type.
-        - The initializing expressions in unit declarations should be
-          integer nodes.
-        - Only methods can call other methods.
-        - Methods are not allowed to refer to variables and functions
-          defined in struct types.
-        - A method can only refer to struct fields and methods defined
-          in the same struct type.
-        - Functions recursively defined inside methods are not allowed
-          to refer to struct fields and methods.
-        - Only methods can assign struct fields as variables.
-  anal2
-        - Every expression, array and struct node should be annotated
-          with a type, and the type's completeness should have been
-          determined.
-        - The magnitude in offset literals should be an integral
-          expression.
-        - The magnitude in offset literals should have a type and its
-          completeness should be known.
-        - A return statement returning a value is not allowed in a void
-          function.
-        - An expressionless return statement is invalid in a non-void
-          function.
-        - A funcall to a void function is only allowed in an
-          expression-statement.
-        - Endianness specifiers in struct fields are only valid when
-          applied to integral types.
-        - In unions, alternatives appearing after an alternative with no
-          constraint expression, or a constant expression known to be
-          true, are unreachable.  Warn about this.
-        - If an union alternative has a constraint known to be false, it
-          is never taken.  Warn about this.
-        - Optional fields are not supported in unions.
-        - The indexes in array initializers should be constant.
-  analf
-        - Every array initializer should have an index.
-        - Check that the left-hand side of assignment statements are of
-          the right kind.
-
-
-11.4.5 Type System Phases
--------------------------
-
-  typify1
-        - Checks that the expression in which a funcall is applied is a
-          function, and that the types of the formal parameters mach the
-          types of the funcall arguments.
-        - Checks that void functions are not called in contexts where a
-          value is expected.
-  typify2
-        - Checks that the type of the expression in a return statement
-          matches the return type of its containing function.
-
-
-11.4.6 Front and Middle End Handlers should be Re-entrant
+11.4.3 Front and Middle End Handlers should be Re-entrant
 ---------------------------------------------------------
 
   When a type is referenced by name, for example in a map:
@@ -1693,6 +1563,10 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
 
 11.5 Adding Compiler Built-Ins
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  [NOTE: now that inline asm statements are supported, built-ins are
+   implemented as immutable functions in the compiler runtime
+   rt-pkl.pk.]
 
   Compiler built-ins are predefined functions, provided by the compiler,
   that generate particular assembler instructions.
@@ -1950,6 +1824,28 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
     `wrapped-functions' or `wrapped-globals'.  This includes for example
     the `pvm_*' wrappers we define in the file, to be used in PVM
     instructions.
+
+
+12.6.1 Wrapping standard function calls
+---------------------------------------
+
+  If we need to call to a standard library function provided by the
+  system (such as `printf', `strstr', or the like) from the body of a
+  PVM instruction, we have to consider the possibility of gnulib
+  replacing such function with another having a name like `rpl_printf'
+  or `rpl_strstr'.
+
+  Since the `wrapped-functions' list in pvm.jitter is static and the
+  referred functions must exist, just wrapping the `rpl_*' symbols
+  doesn't work.
+
+  So instead, for every standard function `FOO' we call from PVM
+  instructions, we:
+
+  - Create a wrapper for it, called `pvm_FOO', and put it in the
+    pvm-wrappers.[ch] source files.
+  - Use `pvm_FOO' in the PVM instruction.
+  - Add `pvm_FOO' to the wrapped-functions section in pvm.jitter.
 
 
 13 Memory Management
