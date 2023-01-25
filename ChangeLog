@@ -1,3 +1,8 @@
+2023-01-25  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* configure.ac: Bump version number to 3.0.
+	* NEWS: Likewise.
+
 2023-01-24  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* configure.ac: Bump version number to 2.90.1.
