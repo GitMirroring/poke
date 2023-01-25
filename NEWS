@@ -11,11 +11,11 @@ See the manual for detailed information.
 * User interface updates
 
   - A screen pager has been added to the poke application.  If enabled
-    with the `.set pager yes' option, output will be paged one
+    with the =.set pager yes= option, output will be paged one
     screenful at a time.
 
   - A tracer has been added to libpoke and the poke application.  If
-    enabled with the `.set tracer yes' option, subsequent loaded Poke
+    enabled with the =.set tracer yes= option, subsequent loaded Poke
     types will be instrumentalized so calls to user-defined handlers
     are executed when certain events happen:
 
@@ -46,16 +46,16 @@ See the manual for detailed information.
 
   - Inline assembler expressions and statements are now supported:
 
-      asm (TEMPLATE [: OUTPUTS [: INPUTS]])
-      asm TYPE: (TEMPLATE [: INPUTS])
+    : asm (TEMPLATE [: OUTPUTS [: INPUTS]])
+    : asm TYPE: (TEMPLATE [: INPUTS])
 
     where PVM assembly code can be executed as part of normal Poke
     programs.
 
-  - Both `printf' and `format' now support printing values of type
-    `any'.
+  - Both =printf= and =format= now support printing values of type
+    =any=.
 
-  - Both `printf' and `format' now support printing integral values
+  - Both =printf= and =format= now support printing integral values
     interpreted as floating-point values encoded in IEEE 754.  Format
     tags %f, %g and %e are supported.  This feature, along with the
     new ieee754.pk pickle, eases dealing with floating-point data in
@@ -65,20 +65,20 @@ See the manual for detailed information.
     currently supported post-conditional optional fields.  A
     pre-conditional optional field like:
 
-      if (CONDITION)
-        TYPE FNAME;
+    : if (CONDITION)
+    :   TYPE FNAME;
 
     makes FNAME optional based on the evaluation of CONDITION.  But
     the field itself is not mapped if the condition evaluates to
     false.
 
-  - A new option `.set autoremap no' can be used in order to tell poke
+  - A new option =.set autoremap no= can be used in order to tell poke
     to not remap mapped values automatically.  This greatly speeds up
     things, but assumes that the contents of the IO space are not
     updated out of the control of the user.  See the manual for
     details.
 
-  - The :to argument to the `extract' command is now optional, and
+  - The :to argument to the =extract= command is now optional, and
     defaults to the empty string.
 
   - ${XDG_CONFIG_HOME:-$HOME/.config} is now preferred to
@@ -90,21 +90,21 @@ See the manual for detailed information.
     syntax.  This means that it is no longer necessary to enclose them
     between parenthesis in constructions like:
 
-      (Packet {}).field
+    : (Packet {}).field
 
     and this is now accepted:
 
-      Packet {}.field
+    : Packet {}.field
 
   - Bit-concatenation is now supported in l-values.  After executing
     this code:
 
-      var a = 0 as int<4>;
-      var b = 0 as uint<28>;
+    : var a = 0 as int<4>;
+    : var b = 0 as uint<28>;
+    :
+    : a:::b = 0x12345678;
 
-      a:::b = 0x12345678;
-
-    the value of `a' is 0x1N and the value of `b' is (uint<28>)
+    the value of =a= is 0x1N and the value of =b= is (uint<28>)
     0x2345678.
 
   - Arrays can now be indented by size, by specifying an offset as an
@@ -124,19 +124,19 @@ See the manual for detailed information.
     methods.
 
   - This version introduces three new Poke attributes that work on
-    values of type `any':
+    values of type =any=:
 
-    VAL'elem (N)
-      evaluates to the Nth element in VAL, as a value of type `any'.
-
-    VAL'eoffset (N)
-      evaluates to the offset of the Nth element in VAL.
-
-    VAL'esize (N)
-      evaluates to the size of the Nth element in VAL.
-
-    VAL'ename (N)
-      attribute evaluates to the name of the Nth element in VAL.
+    : VAL'elem (N)
+    :    evaluates to the Nth element in VAL, as a value of type `any'.
+    :
+    : VAL'eoffset (N)
+    :    evaluates to the offset of the Nth element in VAL.
+    :
+    : VAL'esize (N)
+    :    evaluates to the size of the Nth element in VAL.
+    :
+    : VAL'ename (N)
+    :    attribute evaluates to the name of the Nth element in VAL.
 
   - Two new operators have been introduced to facilitate operating
     Poke array as stacks in an efficient way: apush and apop.  Since
@@ -147,25 +147,25 @@ See the manual for detailed information.
     functions that will be invoked when certain operations on IO
     spaces are being performed:
 
-    ios_open_hook
-      Functions in this hook are invoked once a new IO space has been
-      opened.
+    : ios_open_hook
+    :   Functions in this hook are invoked once a new IO space has been
+    :   opened.
+    :
+    : ios_set_hook
+    :   Functions in this hook are invoked once the current IO space
+    :   changes.
+    :
+    : ios_close_pre_hook
+    : ios_close_hook
+    :   Functions in these hooks are invoked before and after an IO space is
+    :   closed, respectively.
 
-    ios_set_hook
-      Functions in this hook are invoked once the current IO space
-      changes.
+  - The 'length attribute is now valid in values of type =any=.
 
-    ios_close_pre_hook
-    ios_close_hook
-      Functions in these hooks are invoked before and after an IO space is
-      closed, respectively.
-
-  - The 'length attribute is now valid in values of type `any'.
-
-  - Poke declarations can now be annotated as `immutable'.  It is not
+  - Poke declarations can now be annotated as =immutable=.  It is not
     allowed to re-define immutable definitions.
 
-  - A new compiler built-in `iolist' has been introduced, that returns
+  - A new compiler built-in =iolist= has been introduced, that returns
     an array with the IO space identifiers of currently open IOS.
 
   - We have changed the logic of the EXCOND operator ?!.  It now
@@ -175,19 +175,19 @@ See the manual for detailed information.
     is way better than the previous (reversed) logic.
 
   - The containing struct or union value can now be refered as SELF in
-    the body of methods.  SELF is of type `any'.
+    the body of methods.  SELF is of type =any=.
 
   - Integer literal suffixes (B, H, U, etc) are case-insensitive.  But
-    until now little-case `b' wasn't being recognized as such.  Now 1B
-    == 1b.
+    until now little-case =b= wasn't being recognized as such.  Now
+    =1B= is the same than =1b=.
 
   - Casting to union types now raise a compile-time error.
 
-  - If no explicit message is specified in calls to `assert', a
+  - If no explicit message is specified in calls to =assert=, a
     default one showing the source code of the failing condition is
     constructed and used instead.
 
-  - An operator `remap' has been used in order to force a re-map of
+  - An operator =remap= has been used in order to force a re-map of
     some mapped Poke value.
 
   - Signed integral types of one bit are not allowed.  How could they
@@ -200,18 +200,18 @@ See the manual for detailed information.
 
   - New standard functions:
 
-    eoffset (V, N)
-      Given a value of type `any' and a name, returns the offset of
-      the element having that name.
-
-    openset (HANDLER, [FLAGS])
-      Open an IO space and make it the current IO space.
-
-    with_temp_ios ([HANDLER], [FLAGS], [DO], [ENDIAN])
-      Execute some code with a temporary IO space.
-
-    with_cur_ios (IOS, [DO], [ENDIAN])
-      Execute some code on some given IO space.
+    : eoffset (V, N)
+    :   Given a value of type `any' and a name, returns the offset of
+    :   the element having that name.
+    :
+    : openset (HANDLER, [FLAGS])
+    :   Open an IO space and make it the current IO space.
+    :
+    : with_temp_ios ([HANDLER], [FLAGS], [DO], [ENDIAN])
+    :   Execute some code with a temporary IO space.
+    :
+    : with_cur_ios (IOS, [DO], [ENDIAN])
+    :   Execute some code on some given IO space.
 
 * libpoke updates
 
@@ -223,64 +223,64 @@ See the manual for detailed information.
 
   - New pickles provided in the poke distribution:
 
-    diff.pk
-      Useful binary diffing utilities.  In particular, it implements
-      the "structured diff" format as described in
-      https://binary-tools.net/bindiff.pdf.
-
-    io.pk
-      Facilities to dump data to the terminal.
-
-    pk-table.pk
-      Convenient facilities to Poke programs to print tabulated data.
-
-    openpgp.pk
-      Pickle to poke at OpenPGP RFC 4880 data.
-
-    sframe.pk
-    sframe-dump.pk
-      Pickles for the SFrame unwinding format, and related dump
-      utilities.
-
-    search.pk
-      Utility for searching data in IO spaces that conform to some
-      given Poke type.
-
-    riscv.pk
-      Pickle to poke at instructions encoded in the RISC-V instruction
-      set (RV32I).  It also provides methods to generate assembly
-      language.
-
-    coff.pk
-    coff-aarch64.pk
-    coff-i386.pk
-      COFF object files.
-
-    pe.pk
-    pe-amd64.pk
-    pe-arm.pk
-    pe-arm64.pk
-    pe-debug.pk
-    pe-i386.pk
-    pe-ia64.pk
-    pe-m32r.pk
-    pe-mips.pk
-    pe-ppc.pk
-    pe-riscv.pk
-    pe-sh3.pk
-      PE/COFF object files.
-
-    pcap.pk
-      Capture file format.
-
-    uuid.pk
-      Universally Unique Identifier (UUID) as defined by RFC4122.
-
-    redoxfs.pk
-      RedoxFS files ystem of Redox OS.
-
-    ieee754.pk
-      IEEE Standard for Floating-Point Arithmetic.
+    : diff.pk
+    :   Useful binary diffing utilities.  In particular, it implements
+    :   the "structured diff" format as described in
+    :   https://binary-tools.net/bindiff.pdf.
+    :
+    : io.pk
+    :   Facilities to dump data to the terminal.
+    :
+    : pk-table.pk
+    :   Convenient facilities to Poke programs to print tabulated data.
+    :
+    : openpgp.pk
+    :   Pickle to poke at OpenPGP RFC 4880 data.
+    :
+    : sframe.pk
+    : sframe-dump.pk
+    :   Pickles for the SFrame unwinding format, and related dump
+    :   utilities.
+    :
+    : search.pk
+    :   Utility for searching data in IO spaces that conform to some
+    :   given Poke type.
+    :
+    : riscv.pk
+    :   Pickle to poke at instructions encoded in the RISC-V instruction
+    :   set (RV32I).  It also provides methods to generate assembly
+    :   language.
+    :
+    : coff.pk
+    : coff-aarch64.pk
+    : coff-i386.pk
+    :   COFF object files.
+    :
+    : pe.pk
+    : pe-amd64.pk
+    : pe-arm.pk
+    : pe-arm64.pk
+    : pe-debug.pk
+    : pe-i386.pk
+    : pe-ia64.pk
+    : pe-m32r.pk
+    : pe-mips.pk
+    : pe-ppc.pk
+    : pe-riscv.pk
+    : pe-sh3.pk
+    :   PE/COFF object files.
+    :
+    : pcap.pk
+    :   Capture file format.
+    :
+    : uuid.pk
+    :   Universally Unique Identifier (UUID) as defined by RFC4122.
+    :
+    : redoxfs.pk
+    :   RedoxFS files ystem of Redox OS.
+    :
+    : ieee754.pk
+    :   IEEE Standard for Floating-Point Arithmetic.
 
   - The ELF pickle now provides functions implementing ELF hashing.
 
@@ -291,7 +291,7 @@ See the manual for detailed information.
 
 * Documentation updates
 
-  - Documentation for the `format' language construction has been
+  - Documentation for the =format= language construction has been
     added to the poke manual.
 
 * Other updates
