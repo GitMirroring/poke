@@ -241,6 +241,10 @@ ios_close (ios io)
   if (io == cur_io)
     cur_io = io_list;
 
+  /* Re-use the ID if this IOS was the most-recently opened IOS.  */
+  if (ios_next_id == io->id + 1)
+    --ios_next_id;
+
   free (io);
 
   return IOD_ERROR_TO_IOS_ERROR (ret);

@@ -1,3 +1,10 @@
+2023-01-22  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/ios.c (ios_close): Re-use the IOS ID if possible.
+	* testsuite/poke.pkl/ios-close-1.pk: New test.
+	* testsuite/poke.pkl/ios-close-2.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+
 2023-01-26  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-lex.l (pkl_lex_get_base): Handle 0[Bb] literals

@@ -1,0 +1,10 @@
+/* { dg-do run } */
+
+/* { dg-command { .set obase 10 } } */
+/* { dg-command { open ("*1*") } } */
+/* { dg-output "0\n" } */
+/* { dg-command { open ("*2*") } } */
+/* { dg-output "1\n" } */
+/* { dg-command { close (0) } } */
+/* { dg-command { open ("*3*") } } */
+/* { dg-output "2\n" } */

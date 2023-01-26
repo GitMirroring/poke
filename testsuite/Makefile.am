@@ -1672,6 +1672,8 @@ EXTRA_DIST = \
   poke.pkl/iolist-2.pk \
   poke.pkl/iolist-3.pk \
   poke.pkl/iolist-4.pk \
+  poke.pkl/ios-close-1.pk \
+  poke.pkl/ios-close-2.pk \
   poke.pkl/iosetbias-1.pk \
   poke.pkl/iosetbias-2.pk \
   poke.pkl/iosetbias-3.pk \
