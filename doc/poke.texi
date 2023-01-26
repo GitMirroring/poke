@@ -15025,11 +15025,11 @@ integers.  If a @var{seed} different to zero is provided, it is used
 to initialize a new sequence of pseudo-random numbers (which includes
 the one returned.)
 
-The @code{get_time} builtin function can be used in order to seed the
+The @code{gettime} builtin function can be used in order to seed the
 pseudo-random number generator very easily:
 
 @example
-srand (get_time[1])
+srand (gettime[1])
 @end example
 
 @node VM
@@ -15862,7 +15862,7 @@ type Timespec = struct
 @};
 @end example
 
-The function @code{gettimeofday} uses the @code{get_time} builtin in
+The function @code{gettimeofday} uses the @code{gettime} builtin in
 order to construct an instance of @code{Timespec}.  For example:
 
 @example
