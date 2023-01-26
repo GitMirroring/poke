@@ -1,5 +1,9 @@
 2023-01-26  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* doc/poke.texi: get_time is now gettime.
+
+2023-01-26  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-lex.l (pkl_lex_get_base): Handle 0[Bb] literals
 	properly.
 	* testsuite/poke.pkl/integers-11.pk: New test.
