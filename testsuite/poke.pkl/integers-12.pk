@@ -1,0 +1,4 @@
+/* { dg-do run } */
+
+/* { dg-command {0b'size/#b} } */
+/* { dg-output {8UL} } */
