@@ -116,8 +116,11 @@ pkl_lex_get_base (const char *str, int *offset)
       base = 16;
       *offset = 2;
     }
-    else if (str[1] == 'b' || str[1] == 'B')
+    else if ((str[1] == 'b' || str[1] == 'B')
+             && (str[2] != '\0'))
     {
+      /* Note the above check for \0 is to distinguish these two
+         cases: 0[bB][0-1]+ and 0[bB]  */
       base = 2;
       *offset = 2;
     }
