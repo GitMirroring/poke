@@ -18,6 +18,7 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+dnl TODO: apply git-version-gen patch on next (annotated) tag.
 AC_INIT([GNU poke], [3.0], [poke-devel@gnu.org], [poke],
         [http://www.jemarch.net/poke.html])
 
