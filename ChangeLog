@@ -1,3 +1,8 @@
+2023-01-27  Arsen Arsenović  <arsen@aarsen.me>
+
+	* run.in (setup to run uninstalled poke): Replace fragile export
+	listings with set -a/set +a block.
+
 2023-01-27  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* autoconf/poke.m4: New file.
