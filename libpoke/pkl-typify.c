@@ -2715,7 +2715,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_decl)
   if (PKL_PASS_PARENT
       && PKL_AST_CODE (PKL_PASS_PARENT) == PKL_AST_TYPE
       && PKL_AST_TYPE_CODE (PKL_PASS_PARENT) == PKL_TYPE_STRUCT
-      && PKL_AST_DECL_KIND (decl) == PKL_AST_DECL_KIND_FUNC)
+      && PKL_AST_DECL_KIND (decl) == PKL_AST_DECL_KIND_FUNC
+      && PKL_AST_FUNC_METHOD_P (PKL_AST_DECL_INITIAL (decl)))
     {
       pkl_ast_node decl_name = PKL_AST_DECL_NAME (decl);
 

@@ -1,0 +1,12 @@
+/* { dg-do compile } */
+
+/* Functions called _print* shall not be validated
+   as if they were pretty-printer methods.  */
+
+type Foo =
+  struct
+  {
+    int i;
+    fun _print = int: { return 0; }
+    fun _print_i = (int a) void: { print "jorl"; }
+  };
