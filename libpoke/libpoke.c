@@ -69,6 +69,11 @@ pk_compiler_new_with_flags (struct pk_term_if *term_if, uint32_t flags)
       if (flags & PK_F_NOSTDTYPES)
         pkl_flags |= PKL_F_NOSTDTYPES;
 
+      /* Determine the path to the compiler's pkl-config.pk.  */
+      const char *libpoke_configdir = getenv ("POKECONFIGDIR");
+      if (libpoke_configdir == NULL)
+        libpoke_configdir = PKGDATADIR;
+
       /* Determine the path to the compiler's runtime files.  */
       const char *libpoke_datadir = getenv ("POKEDATADIR");
       if (libpoke_datadir == NULL)
@@ -81,6 +86,7 @@ pk_compiler_new_with_flags (struct pk_term_if *term_if, uint32_t flags)
         goto error;
       pkc->compiler = pkl_new (pkc->vm,
                                libpoke_datadir,
+                               libpoke_configdir,
                                pkl_flags);
       if (pkc->compiler == NULL)
         goto error;

@@ -96,7 +96,8 @@ pkl_load_rt (pkl_compiler compiler, char *poke_rt_pk)
 }
 
 pkl_compiler
-pkl_new (pvm vm, const char *rt_path, uint32_t flags)
+pkl_new (pvm vm, const char *rt_path,
+         const char *config_path, uint32_t flags)
 {
   pkl_compiler compiler
     = calloc (1, sizeof (struct pkl_compiler));
@@ -132,11 +133,11 @@ pkl_new (pvm vm, const char *rt_path, uint32_t flags)
     compiler->bootstrapped = 1;
   }
 
-#define LOAD_STD(NAME)                                          \
+#define LOAD_STD(PATH,NAME)                                     \
   do                                                            \
     {                                                           \
       pvm_val exit_exception;                                   \
-      char *path = pk_str_concat (rt_path, "/" NAME, NULL);     \
+      char *path = pk_str_concat ((PATH), "/" NAME, NULL);      \
       if (!path)                                                \
         goto out_of_memory;                                     \
                                                                 \
@@ -152,11 +153,14 @@ pkl_new (pvm vm, const char *rt_path, uint32_t flags)
     }                                                           \
   while (0)
 
+  /* Load the build configuration of libpoke.  */
+  LOAD_STD (config_path, "pkl-config.pk");
+
   /* Load the standard library.  Note that the standard types may not
      be loaded, depending on how the compiler is configured.  */
-  LOAD_STD ("std.pk");
+  LOAD_STD (rt_path, "std.pk");
   if (!(flags & PKL_F_NOSTDTYPES))
-    LOAD_STD ("std-types.pk");
+    LOAD_STD (rt_path, "std-types.pk");
 
   return compiler;
 

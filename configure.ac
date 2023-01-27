@@ -25,6 +25,7 @@ m4_define([poke_branch],
 	  [m4_esyscmd_s([(git tag --points-at HEAD | grep .) >/dev/null 2>&1  \
                             || { git branch --show-current                    \
                                      | sed 's|^maint/poke-.*|maint|;
+                                            s|/|_|g;
                                             s|^master$|dev|'; }])])
 
 
@@ -271,6 +272,7 @@ AC_CONFIG_FILES(Makefile
                 gl/Makefile
                 gl-libpoke/Makefile
                 libpoke/Makefile
+                libpoke/pkl-config.pk
                 poke/Makefile
                 poked/Makefile
                 utils/Makefile
@@ -282,7 +284,8 @@ AC_CONFIG_FILES(Makefile
                 etc/Makefile
                 etc/vim/Makefile
                 testsuite/Makefile
-                testsuite/poke.libpoke/Makefile)
+                testsuite/poke.libpoke/Makefile
+                autoconf/Makefile)
 AC_CONFIG_FILES([run],
                 [chmod +x,-w run])
 

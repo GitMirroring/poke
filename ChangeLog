@@ -1,3 +1,18 @@
+2023-01-27  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* autoconf/poke.m4: New file.
+	* autoconf/Makefile.am: Likewise.
+	* libpoke/pkl-config.pk.in: Likewise.
+	* run.in (POKECONFIGDIR): Define POKECONFIGDIR.
+	* testsuite/Makefile.am (check-DEJAGNU): Likewise.
+	* libpoke/pkl.c (pkl_new): Load pkl-config.pk as part of the
+	compiler bootstrapping.
+	* Makefile.am (SUBDIRS): Add autoconf.
+	* configure.ac (AC_CONFIG_FILES): Add autoconf/Makefile.
+	Add pkl-config.pk.
+	Turn / into _ in poke_branch.
+	* libpoke/Makefile.am (dist_pkgdata_DATA): Add pkl-config.pk.
+
 2023-01-27  Arsen Arsenović  <arsen@aarsen.me>
 
 	* configure.ac (poke_branch): Fix grep -q portability issue.

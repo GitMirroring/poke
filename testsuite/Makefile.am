@@ -32,6 +32,7 @@ if HAVE_DEJAGNU
           POKEPICKLESDIR="$(top_srcdir)/pickles" \
           POKEAPPDIR="$(top_srcdir)/poke" \
           POKEDATADIR="$(top_srcdir)/libpoke" \
+          POKECONFIGDIR="$(top_builddir)/libpoke" \
           POKECMDSDIR="$(top_srcdir)/poke" \
           POKEDOCDIR="$(top_builddir)/doc" \
           POKE_LOAD_PATH="$(top_srcdir)/poke" \

@@ -16,8 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ACLOCAL_AMFLAGS = -I m4 -I m4/libpoke
-SUBDIRS = jitter gl maps pickles gl-libpoke libpoke poke poked utils \
-          doc man testsuite etc po
+SUBDIRS = jitter gl autoconf maps pickles gl-libpoke libpoke poke \
+          poked utils doc man testsuite etc po
 
 EXTRA_DIST = INSTALL.generic DEPENDENCIES $(top_srcdir)/.version
 BUILT_SOURCES = $(top_srcdir)/.version
