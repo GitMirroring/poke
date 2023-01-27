@@ -2395,6 +2395,9 @@ EXTRA_DIST = \
   poke.pkl/strings-index-diag-1.pk \
   poke.pkl/strings-index-diag-2.pk \
   poke.pkl/strings-index-diag-3.pk \
+  poke.pkl/struct-field-pretty-print-1.pk \
+  poke.pkl/struct-field-pretty-print-diag-1.pk \
+  poke.pkl/struct-field-pretty-print-diag-2.pk \
   poke.pkl/struct-method-1.pk \
   poke.pkl/struct-method-2.pk \
   poke.pkl/struct-method-3.pk \

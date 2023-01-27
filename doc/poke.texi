@@ -10963,6 +10963,7 @@ They contain heterogeneous collections of values.
 * Casting Structs::		Converting structs from one type to another.
 * Declarations in Structs::	Declaring stuff within a struct.
 * Methods::			Declaring struct methods.
+* Struct Pretty Printers::      Pretty-printing structs and fields.
 * Computed Fields::             Simulating fields with methods.
 * Struct Attributes::		Accessing properties of struct values.
 @end menu
@@ -12206,6 +12207,82 @@ have been defined before the method itself, by name.
 Additionally, the containing struct can be referred explicitly under
 the name @code{SELF} in the body of the method.  @code{SELF} has type
 @code{any}.
+
+@node Struct Pretty Printers
+@subsection Struct Pretty Printers
+@cindex pretty printers, structs
+@cindex pretty printers, fields
+
+By default the printing statements will print a very detailed written
+representation of struct and union values.  This implies printing out
+every detail of every field.
+
+However, it is possible to change the written representation of a
+struct value by defining @dfn{pretty-printing methods}, which have
+prototypes:
+
+@example
+method _print = void: @{ @var{method_body} @}
+@end example
+
+@noindent
+If a struct or union type has a method called @code{_print}, then it
+is invoked every time a printed representation of the value shall be
+printed on the terminal.
+
+For example a value of a struct type:
+
+@example
+type Switch =
+  struct
+  @{
+    int<32> state;
+
+    method _print = void:
+    @{
+      printf "#<switch:%i32d>", state;
+    @}
+  @};
+@end example
+
+@noindent
+When printed when pretty-printers are active, will result in:
+
+@example
+(poke) .set pretty-print yes
+(poke) Switch @{ state = 1 @}
+#<switch:1>
+@end example
+
+Struct or union fields can also have pretty-printers defined for them:
+just define a method called @code{_print_@var{field_name}} to
+pretty-print a particular field.
+
+For example a value of a struct type:
+
+@example
+type Switch =
+  struct
+  @{
+    int<32> state;
+
+    method _print_state = void:
+    @{
+      printf ("#<%s>", state ? "on" : "off");
+    @}
+  @};
+@end example
+
+@noindent
+This will result in:
+
+@example
+(poke) .set pretty-print yes
+(poke) Switch @{ state = 1 @}
+Switch @{
+  state=#<on>
+@}
+@end example
 
 @node Computed Fields
 @subsection Computed Fields

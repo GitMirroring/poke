@@ -1,0 +1,8 @@
+/* { dg-do compile } */
+
+type Foo =
+  struct
+  {
+    int lala;
+    fun _print_lala = int: { return 0; } /* { dg-error "should be of type" } */
+  };

@@ -1276,7 +1276,16 @@ immutable fun _pkl_print_format_any = (any val,
                 ctx.emit ("=");
               }
 
-            _pkl_print_format_any (field, ctx, depth + 1);
+            if (ctx.pretty_print_p
+                && vm_opprint
+                && field_name != ""
+                && asm int<32>: ("srefmnt; nn; nip3" : val, "_print_" + field_name))
+              {
+                /* Call the field pretty-printer.  */
+                asm ("srefmnt; nip; call; drop" :: val, "_print_" + field_name);
+              }
+            else
+              _pkl_print_format_any (field, ctx, depth + 1);
 
             /* Print field offset if required.  */
             if (vm_omaps)

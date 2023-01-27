@@ -1,0 +1,13 @@
+/* { dg-do run } */
+
+type Foo =
+  struct
+  {
+    int i;
+    int j;
+    method _print_i = void: { print "#<lala>"; }
+  };
+
+/* { dg-command { .set pretty-print yes } } */
+/* { dg-command { Foo {} } } */
+/* { dg-output {Foo {i=#<lala>,j=0}} } */

@@ -2710,7 +2710,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_decl)
   pkl_ast_node decl = PKL_PASS_NODE;
 
   /* If this is a declaration in a struct type, it is a function
-     declaration, and its name is _print, then its type should be
+     declaration, and its name is _print*, then its type should be
      ()void: */
   if (PKL_PASS_PARENT
       && PKL_AST_CODE (PKL_PASS_PARENT) == PKL_AST_TYPE
@@ -2718,8 +2718,9 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_decl)
       && PKL_AST_DECL_KIND (decl) == PKL_AST_DECL_KIND_FUNC)
     {
       pkl_ast_node decl_name = PKL_AST_DECL_NAME (decl);
+      const char *decl_name_str = PKL_AST_IDENTIFIER_POINTER (decl_name);
 
-      if (STREQ (PKL_AST_IDENTIFIER_POINTER (decl_name), "_print"))
+      if (strncmp (decl_name_str, "_print", 6) == 0)
         {
           pkl_ast_node initial = PKL_AST_DECL_INITIAL (decl);
           pkl_ast_node initial_type = PKL_AST_TYPE (initial);
@@ -2729,7 +2730,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_decl)
               || PKL_AST_TYPE_F_NARG (initial_type) != 0)
             {
               PKL_ERROR (PKL_AST_LOC (decl_name),
-                         "_print should be of type ()void");
+                         "%s should be of type ()void",
+                         decl_name_str);
               PKL_TYPIFY_PAYLOAD->errors++;
               PKL_PASS_ERROR;
             }
