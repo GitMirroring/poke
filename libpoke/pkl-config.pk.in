@@ -19,4 +19,4 @@
 /* This file defines variables whose values are substituted by
    the poke build system.  */
 
-var pk_version = "@PACKAGE_VERSION@";
+immutable var pk_version = "@PACKAGE_VERSION@";
