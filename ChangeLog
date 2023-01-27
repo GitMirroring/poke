@@ -1,5 +1,9 @@
 2023-01-28  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* autoconf/poke.m4 (PK_PROG_POKE): Simplify regexp.
+
+2023-01-28  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-config.pk.in: Make pk_version immutable.
 
 2023-01-27  Arsen Arsenović  <arsen@aarsen.me>
