@@ -1,5 +1,16 @@
 2023-01-27  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-typify.c (pkl_typify1_ps_decl): Do not validate
+	signature of _print* functions, as opposed to methods.
+	* testsuite/poke.pkl/struct-types-defun-4.pk: New test.
+	* testsuite/poke.pkl/struct-field-pretty-print-diag-1.pk: Fix
+	test.
+	* testsuite/poke.pkl/struct-field-pretty-print-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/struct-pretty-print-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/struct-pretty-print-diag-2.pk: Likewise.
+
+2023-01-27  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-typify.c (pkl_typify1_ps_decl): Check field
 	pretty-printers.
 	* libpoke/pkl-rt.pk (_pkl_print_format_any): Use field

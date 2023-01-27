@@ -2449,6 +2449,7 @@ EXTRA_DIST = \
   poke.pkl/struct-types-defun-1.pk \
   poke.pkl/struct-types-defun-2.pk \
   poke.pkl/struct-types-defun-3.pk \
+  poke.pkl/struct-types-defun-4.pk \
   poke.pkl/struct-types-defun-diag-1.pk \
   poke.pkl/struct-types-defun-diag-2.pk \
   poke.pkl/struct-types-diag-2.pk \
