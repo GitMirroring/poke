@@ -22,8 +22,8 @@ dnl Branch-specific suffix to apply to the version, to disambiguate it from
 dnl other branches.  master and maint/poke-* are treated special in that they
 dnl get a short description, where all other branches get emitted in full.
 m4_define([poke_branch],
-	  [m4_esyscmd_s([git tag --points-at HEAD 2>/dev/null | grep -q . \
-                            || { git branch --show-current                \
+	  [m4_esyscmd_s([(git tag --points-at HEAD | grep .) >/dev/null 2>&1  \
+                            || { git branch --show-current                    \
                                      | sed 's|^maint/poke-.*|maint|;
                                             s|^master$|dev|'; }])])
 
