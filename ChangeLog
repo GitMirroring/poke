@@ -1,3 +1,7 @@
+2023-01-27  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* doc/poke.texi: Change dircategory to GNU poke.
+
 2023-01-27  Arsen Arsenović  <arsen@aarsen.me>
 
 	* configure.ac: Add git-version-gen reminder.

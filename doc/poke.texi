@@ -21,7 +21,7 @@ later version.
 @end quotation
 @end copying
 
-@dircategory Editors
+@dircategory GNU poke
 @direntry
 * poke: (poke). Interactive editor for binary files.
 @end direntry
