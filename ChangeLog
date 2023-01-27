@@ -1,3 +1,9 @@
+2023-01-27  Arsen Arsenović  <arsen@aarsen.me>
+
+	* configure.ac (poke_branch): Fix grep -q portability issue.
+	* .x-sc_two_space_separator_in_usage: New file.  Exclude
+	configure.ac.
+
 2023-01-27  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* doc/poke.texi: Change dircategory to GNU poke.
