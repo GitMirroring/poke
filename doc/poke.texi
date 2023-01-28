@@ -253,6 +253,7 @@ The Standard Library
 * Conversion Functions::	catos, atoi, @i{etc}.
 * Array Functions::             Functions which deal with arrays.
 * String Functions::		Functions which deal with strings.
+* Character Functions::         Functions which deal with characters.
 * Values Functions::            Functions which deal with values in general.
 * Sorting Functions::		qsort.
 * CRC Functions::               Cyclic Redundancy Checksums.
@@ -15318,6 +15319,7 @@ facilities provided by the library.
 * Conversion Functions::	catos, atoi, @i{etc}.
 * Array Functions::             Functions which deal with arrays.
 * String Functions::		Functions which deal with strings.
+* Character Functions::         Functions which deal with characters.
 * Values Functions::            Functions which deal with values in general.
 * IO Space Functions::          Functions that operate on IO spaces.
 * Sorting Functions::		qsort.
@@ -15622,6 +15624,43 @@ fun strchr = (string s, uint<8> c) int<32>: @{ @dots{} @}
 It returns the index of the first occurrence of the character @var{c}
 in the string @var{s}.  If the character is not found in the string,
 this function returns the length of the string.
+
+@node Character Functions
+@section Character Functions
+The Poke standard library provides the following functions to deal
+with characters:
+
+@menu
+* isdigit::             Is given character a decimal digit?
+* isxdigit::            Is given character a hexadecimal digit?
+@end menu
+
+@node isdigit
+
+The standard function @code{isdigit} provides the following
+interface:
+
+@example
+fun isdigit = (uint<8> @var{c}) int<32>
+@end example
+
+@noindent
+it returns 0 when the given ASCII character @var{c} is not a decimal
+digit, otherwise it returns a non-zero value.
+
+@node isxdigit
+
+The standard function @code{isxdigit} provides the following
+interface:
+
+@example
+fun isxdigit = (uint<8> @var{c}) int<32>
+@end example
+
+@noindent
+it returns 0 when the given ASCII character @var{c} is not a hexadecimal
+digit, otherwise it returns a non-zero value.
+
 
 @node Values Functions
 @section Values Functions

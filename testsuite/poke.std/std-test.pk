@@ -295,6 +295,66 @@ var tests = [
         qsort ([4,3,2,1], cmpints);
       },
   },
+  PkTest {
+    name = "isdigit",
+    func = lambda (string name) void:
+      {
+        assert (isdigit ('0'));
+        assert (isdigit ('1'));
+        assert (isdigit ('2'));
+        assert (isdigit ('3'));
+        assert (isdigit ('4'));
+        assert (isdigit ('5'));
+        assert (isdigit ('6'));
+        assert (isdigit ('7'));
+        assert (isdigit ('8'));
+        assert (isdigit ('9'));
+        assert (!isdigit ('a'));
+        assert (!isdigit ('B'));
+        assert (!isdigit ('}'));
+        assert (!isdigit (' '));
+        assert (!isdigit (0));
+        assert (!isdigit (0xa));
+        assert (!isdigit ('!'));
+      },
+  },
+  PkTest {
+    name = "isxdigit",
+    func = lambda (string name) void:
+      {
+        assert (isxdigit ('0'));
+        assert (isxdigit ('1'));
+        assert (isxdigit ('2'));
+        assert (isxdigit ('3'));
+        assert (isxdigit ('4'));
+        assert (isxdigit ('5'));
+        assert (isxdigit ('6'));
+        assert (isxdigit ('7'));
+        assert (isxdigit ('8'));
+        assert (isxdigit ('9'));
+        assert (isxdigit ('a'));
+        assert (isxdigit ('b'));
+        assert (isxdigit ('c'));
+        assert (isxdigit ('d'));
+        assert (isxdigit ('e'));
+        assert (isxdigit ('f'));
+        assert (isxdigit ('A'));
+        assert (isxdigit ('B'));
+        assert (isxdigit ('C'));
+        assert (isxdigit ('D'));
+        assert (isxdigit ('E'));
+        assert (isxdigit ('F'));
+        assert (!isxdigit ('x'));
+        assert (!isxdigit ('X'));
+        assert (!isxdigit (' '));
+        assert (!isxdigit ('}'));
+        assert (!isxdigit ('('));
+        assert (!isxdigit ('!'));
+        assert (!isxdigit ('\n'));
+        assert (!isxdigit (0xa));
+        assert (!isxdigit (0));
+      },
+  },
 ];
 
 exit (pktest_run (tests) ? 0 : 1);
