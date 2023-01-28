@@ -1250,6 +1250,7 @@ immutable fun _pkl_print_format_any = (any val,
     if (odepth != 0 && depth >= odepth)
       {
         ctx.emit (" {...}");
+        ctx.end_class ("struct");
         return;
       }
 
