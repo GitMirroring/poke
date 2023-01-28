@@ -15582,7 +15582,8 @@ work on strings:
 @menu
 * ltrim::		Remove leading characters.
 * rtrim::		Remove trailing characters.
-* strchr::		Locate a character in a string.
+* strchr::		Locate a character in a string, from the beginning.
+* strrchr::		Locate a character in a string, from the end.
 @end menu
 
 @node ltrim
@@ -15624,6 +15625,20 @@ fun strchr = (string s, uint<8> c) int<32>: @{ @dots{} @}
 It returns the index of the first occurrence of the character @var{c}
 in the string @var{s}.  If the character is not found in the string,
 this function returns the length of the string.
+
+@node strrchr
+@subsection @code{strrchr}
+@cindex @code{strrchr}
+@cindex character, locating in a string
+The standard function @code{strrchr} provides the following interface:
+
+@example
+fun strrchr = (string s, uint<8> c) int<32>: @{ @dots{} @}
+@end example
+
+It returns the index of the last occurrence of the character @var{c}
+in the string @var{s}.  If the character is not found in the string,
+this function returns -1.
 
 @node Character Functions
 @section Character Functions

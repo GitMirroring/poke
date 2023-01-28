@@ -355,6 +355,15 @@ var tests = [
         assert (!isxdigit (0));
       },
   },
+  PkTest {
+    name = "strrchr",
+    func = lambda (string name) void:
+      {
+        assert (strrchr ("foo", 'o') == 2);
+        assert (strrchr ("foo", 'x') == -1);
+        assert (strrchr ("", 'x') == -1);
+      },
+  },
 ];
 
 exit (pktest_run (tests) ? 0 : 1);
