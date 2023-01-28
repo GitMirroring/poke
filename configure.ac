@@ -55,7 +55,7 @@ AC_INIT([GNU poke],
 
 AC_CONFIG_AUX_DIR([build-aux])
 dnl In order to have a custom INSTALL file, we need Automake option 'foreign'.
-AM_INIT_AUTOMAKE([foreign])
+AM_INIT_AUTOMAKE([foreign tar-ustar])
 AC_CONFIG_HEADERS(poke/config.h)
 AC_CONFIG_MACRO_DIRS([m4])
 
