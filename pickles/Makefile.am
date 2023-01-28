@@ -16,14 +16,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 picklesdir = $(pkgdatadir)/pickles
-dist_pickles_DATA = elf-common.pk elf-64.pk elf-32.pk elf.pk ctf.pk ctf-dump.pk leb128.pk \
+dist_pickles_DATA = ctf.pk ctf-dump.pk leb128.pk \
                     bpf.pk btf.pk btf-ext.pk btf-dump.pk bmp.pk \
                     color.pk rgb24.pk id3v1.pk ios.pk diff.pk pk-table.pk \
 		    sframe.pk sframe-dump.pk \
-                    dwarf.pk dwarf-common.pk dwarf-frame.pk dwarf-pubnames.pk \
-                    dwarf-types.pk time.pk argp.pk pktest.pk mbr.pk ustar.pk \
-                    mcr.pk dwarf-expr.pk dwarf-info.pk id3v2.pk jffs2.pk asn1-ber.pk \
+                    time.pk argp.pk pktest.pk mbr.pk ustar.pk \
+                    mcr.pk id3v2.pk jffs2.pk asn1-ber.pk \
                     openpgp.pk search.pk riscv.pk coff.pk coff-i386.pk coff-aarch64.pk \
                     pe.pk pe-amd64.pk pe-arm.pk pe-arm64.pk pe-i386.pk pe-ia64.pk \
                     pe-m32r.pk pe-mips.pk pe-ppc.pk pe-sh3.pk pe-riscv.pk pe-debug.pk \
 		    uuid.pk redoxfs.pk pcap.pk ieee754.pk pdap.pk
+
+EXTRA_DIST = README.elf

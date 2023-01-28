@@ -1061,6 +1061,9 @@ and symbols.  You don't need to have a perfect knowledge of the ELF
 format in order to follow the examples, but being familiarized with
 the concept of object file formats should surely help.
 
+You will need to install the ELF pickle. You can get it at
+@url{https://jemarch.net/poke-elf}.
+
 Obtaining a simple ELF object file is easy, if you have a C compiler
 installed:
 
@@ -8289,7 +8292,9 @@ activities.
 @node ELF
 @section ELF
 
-XXX
+poke-elf (@url{https://jemarch.net/poke-elf}) is a full-fledged pickle
+for editing ELF object files, executables, shared libraries and core
+dumps.  It supports many architectures and extensions.
 
 @node Dwarf
 @section Dwarf

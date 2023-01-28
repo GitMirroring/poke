@@ -592,8 +592,6 @@ EXTRA_DIST = \
   poke.pickles/btf-ext-test.pk \
   poke.pickles/btf-test.pk \
   poke.pickles/coff-test.pk \
-  poke.pickles/ctf-test.pk \
-  poke.pickles/dwarf-test.pk \
   poke.pickles/id3v2-test.pk \
   poke.pickles/jffs-test.pk \
   poke.pickles/leb128-test.pk \
@@ -607,7 +605,6 @@ EXTRA_DIST = \
   poke.pickles/mbr-test.pk \
   poke.pickles/id3v1-test.pk \
   poke.pickles/rgb24-test.pk \
-  poke.pickles/elf-test.pk \
   poke.pickles/uuid-test.pk \
   poke.pickles/redoxfs-test.pk \
   poke.pickles/pcap-test.pk \

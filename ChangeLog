@@ -1,4 +1,30 @@
-2023-01-28  Jose E. Marchesi  <jemarch@termi>
+2023-01-28  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* pickles/sframe.pk: Do not load elf.pk.  It is not needed.
+	* pickles/elf.pk: Remove.
+	* pickles/elf-32.pk: Likewise.
+	* pickles/elf-64.pk: Likewise.
+	* pickles/elf-common.pk: Likewise.
+	* pickles/dwarf.pk: Likewise.
+	* pickles/dwarf-common.pk: Likewise.
+	* pickles/dwarf-expr.pk: Likewise.
+	* pickles/dwarf-frame.pk: Likewise.
+	* pickles/dwarf-info.pk: Likewise.
+	* pickles/dwarf-pubnames.pk: Likewise.
+	* pickles/dwarf-types.pk: Likewise.
+	* pickles/README.elf: New file.
+	* pickles/README.dwarf: Likewise.
+	* pickles/Makefile.am (dist_pickles_DATA): Remove elf pickles.
+	(EXTRA_DIST): Distribute README.elf and README.dwarf.
+	* testsuite/poke.pickles/elf-test.pk: Remove.
+	* testsuite/poke.pickles/dwarf-test.pk: Likewise.
+	* testsuite/poke.pickles/ctf-test.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Remove elf-test.pk,
+	dwarf-test.pk and ctf-test.pk.
+	* doc/poke.texi (Binary Files): Tell how to find the elf pickles.
+	(ELF): Likewise.
+
+2023-01-28  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* poke/poke.c (initialize): Fix addition of POKE_LOAD_PATH to
 	load_path.

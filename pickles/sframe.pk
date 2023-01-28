@@ -31,8 +31,6 @@
      - libsframe/doc/sframe-spec.texi.
 */
 
-load elf;
-
 /* SFrame format versions.  */
 var SFRAME_VERSION_1 = 1;
 /* SFrame magic number.  */
