@@ -1,5 +1,11 @@
 2023-01-28  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/poke.c (initialize): Honor POKE_LOAD_PATH.
+	(print_help): Document new env var.
+	* doc/poke.texi (Invoking poke): Likewise.
+
+2023-01-28  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* bootstrap.conf (gnulib_modules): Remove obsolete package memcpy.
 
 2023-01-28  Jose E. Marchesi  <jemarch@gnu.org>

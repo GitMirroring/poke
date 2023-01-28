@@ -206,6 +206,12 @@ print_help (void)
   puts (_("      --version                       show version and exit"));
 
   puts ("");
+  puts (_("The following environment variables, if set, are used by poke:"));
+  puts ("");
+  puts (_("      POKE_LOAD_PATH                  List of file paths separated"));
+  puts (_("                                      by colon characters (:) which"));
+  puts (_("                                      is prepended to the load_path"));
+  puts (_("                                      when poke starts"));
   /* TRANSLATORS: --help output 5+ (reports)
      TRANSLATORS: the placeholder indicates the bug-reporting address
      for this application.  Please add _another line_ with the
@@ -606,9 +612,11 @@ initialize (int argc, char *argv[])
   {
     pk_val load_path = pk_decl_val (poke_compiler, "load_path");
     char *newpaths;
+    const char *env_load_path = getenv ("POKE_LOAD_PATH");
 
     assert (load_path != PK_NULL);
-    newpaths = pk_str_concat (pk_string_str (load_path),
+    newpaths = pk_str_concat (env_load_path ? env_load_path : "",
+                              pk_string_str (load_path),
                               ":",
                               poke_appdir,
                               ":",

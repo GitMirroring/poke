@@ -562,6 +562,14 @@ Print a help message and exit.
 Show version and exit.
 @end table
 
+The following environment variables, if set, are used by poke:
+
+@table @code
+@item POKE_LOAD_PATH
+List of file paths separated by the colon characters (@code{:}) which
+is prepended to the @code{load_path} when poke starts.
+@end table
+
 @node Commanding poke
 @section Commanding poke
 
