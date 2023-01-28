@@ -1,3 +1,8 @@
+2023-01-28  Jose E. Marchesi  <jemarch@termi>
+
+	* poke/poke.c (initialize): Fix addition of POKE_LOAD_PATH to
+	load_path.
+
 2023-01-28  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* poke/poke.c (initialize): Honor POKE_LOAD_PATH.

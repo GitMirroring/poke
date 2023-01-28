@@ -613,9 +613,16 @@ initialize (int argc, char *argv[])
     pk_val load_path = pk_decl_val (poke_compiler, "load_path");
     char *newpaths;
     const char *env_load_path = getenv ("POKE_LOAD_PATH");
+    char *user_load_path = NULL;
+
+    if (env_load_path)
+      {
+        user_load_path = pk_str_concat (env_load_path, ":", NULL);
+        pk_assert_alloc (user_load_path);
+      }
 
     assert (load_path != PK_NULL);
-    newpaths = pk_str_concat (env_load_path ? env_load_path : "",
+    newpaths = pk_str_concat (user_load_path ? user_load_path : "",
                               pk_string_str (load_path),
                               ":",
                               poke_appdir,
