@@ -186,6 +186,24 @@ fun strchr = (string s, uint<8> c) int<32>:
     return i;
   }
 
+/* Return the index in the string S of the last occurrence of the
+   character C.  If C is not in S then return -1.  */
+
+fun strrchr = (string s, uint<8> c) int<32>:
+  {
+    if (s'length == 0)
+      return -1;
+
+    var i = (s'length - 1) as int<32>;
+    while (i >= 0)
+      {
+        if (s[i] == c)
+          break;
+        i--;
+      }
+    return i;
+  }
+
 /* Return S with leading characters belonging to the given set
    omitted.  By default the omitted characters are whitespaces.  */
 
