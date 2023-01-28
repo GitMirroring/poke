@@ -494,3 +494,17 @@ fun with_cur_ios = (int<32> ios,
     raise exc;
   }
 }
+
+/* Determine that the given ASCII character is a decimal digit or not.  */
+
+fun isdigit = (uint<8> c) int<32>:
+{
+  return c - '0' < 10;
+}
+
+/* Determine that the given ASCII character is a hexadecimal digit or not.  */
+
+fun isxdigit = (uint<8> c) int<32>:
+{
+  return (c - '0' < 10UB) || ((c | 0x20UB) - 'a' < 6UB);
+}

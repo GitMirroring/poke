@@ -1,3 +1,11 @@
+2023-01-28  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/std.pk (isdigit): New function.
+	(isxdigit): Likewise.
+	* testsuite/poke.std/std-test.pk (tests): Add tests for `isdigit'
+	and `isxdigit'.
+	* doc/poke.texi (The Standard Library): Add doc.
+
 2023-01-28  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-rt.pk (_pkl_print_format_any): Make sure to end
