@@ -424,6 +424,67 @@ var tests = [
           }
       },
   },
+  PkTest {
+    name = "version tools",
+    func = lambda (string name) void:
+      {
+        /* Normalizes a number to the [-1,1] integer range.  */
+        fun sign = (int<32> x) int<32>:
+        {
+          if (x == 0)
+            return x;
+
+          var y = x;
+          if (y < 0)
+            y = -y;
+          return x / y;
+        };
+        /* Helper to run a comparison in both directions.  */
+        fun cmptst = (string _a, string _b, int<32> expected) void:
+        {
+          var a = pk_version_parse (_a);
+          var b = pk_version_parse (_b);
+          var forward = sign (pk_vercmp (a, b));
+          var backward = sign (pk_vercmp (b, a));
+          assert (forward == expected, _a + " <=> " + _b + " was wrong");
+          assert (forward == -backward,
+                  _a + " <=> " + _b + " isn't antisymmetric");
+        };
+
+        cmptst ("3.0", "3.0", 0);
+        cmptst ("3.21", "3.3", 1);
+        cmptst ("3.21.0", "3.3.0", 1);
+
+        /* Ensure that -dirty / -gXDIGIT make no difference.  */
+        cmptst ("3.0", "3.0-dirty", 0);
+        cmptst ("3.0-g12345", "3.0-dirty", 0);
+        cmptst ("3.0-g12345-dirty", "3.0", 0);
+        cmptst ("3.0", "2.0-dirty", 1);
+        cmptst ("3.0-g12345", "2.0-dirty", 1);
+        cmptst ("3.0-g12345-dirty", "2.0", 1);
+
+        /* Ensure "dev" handling works.  */
+        cmptst ("3.0-dev-12", "3.0-nondev-12", 1);
+        cmptst ("3.0-dev-12", "3.0-dev-13", -1);
+        cmptst ("3.0-dev-12", "3.0-dev-22-g2e092-dirty", -1);
+        cmptst ("3.0-dev-12", "3.0-arsen/do-gettext-stuff-13", 1);
+        cmptst ("3.0-a/-b/c-12", "3.0-a/-b/c-13", -1);
+
+        /* Ensure invalid versions are discarded.  */
+        for (inv in ["", "abc", "2", "2.0.0.0", "3.0-dev", "-dirty", "3.0foo"])
+          {
+            try
+              {
+                pk_version_parse (inv);
+                assert (0, inv + " should not be valid!");
+              }
+            catch if E_inval
+              {
+                assert (1, "expects exception");
+              }
+          }
+      },
+  },
 ];
 
 exit (pktest_run (tests) ? 0 : 1);

@@ -34,7 +34,7 @@ _ACEOF
     fi
     if test "x$ac_poke_has_pk_version" = "xyes"; then
       cat >conftest.pk <<_ACEOF
-exit (pk_version >= "$2" ? 0 : 1);
+exit ((pk_vercmp (pk_version_parse (pk_version), pk_version_parse ("$2")) >= 0) ? 0 : 1);
 _ACEOF
       ac_prog_version=`$$1 --version 2>&1 | sed -n 's/^.*GNU poke.* \(.*$\)/\1/p'`
       if $$1 -L conftest.pk 2>&1 >/dev/null; then
