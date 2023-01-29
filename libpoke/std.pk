@@ -72,9 +72,19 @@ fun stoca = (string s, uint<8>[] ca, uint<8> fill = 0) void:
       }
   }
 
-fun atoi = (string s, int<32> b = 10) int<64>:
+type Strtoi_Result =
+  struct
+  {
+    uint<64> off;
+    int<64> val;
+  };
+
+fun strtoi = (string s, int<32> b = 10, uint<64> start = 0) Strtoi_Result:
   {
     var result = 0L;
+
+    if (start >= s'length)
+      raise E_out_of_bounds;
 
     fun htoi = (uint<8> c) int<32>:
       {
@@ -112,16 +122,26 @@ fun atoi = (string s, int<32> b = 10) int<64>:
     else
       s = s[1:];
 
-    for (c in s)
+    var i = start;
+    for (; i < s'length; i++)
     {
+      var c = s[i];
       if (!valid(c, b))
         break;
 
       result = result * b + htoi (c);
     }
 
-    return sign * result;
+    return Strtoi_Result { val = sign * result, off = i };
   }
+
+fun atoi = (string s, int<32> b = 10) int<64>:
+{
+  /* Match old behavior.  */
+  if (s == "")
+    return 0;
+  return strtoi (s, b).val;
+}
 
 fun ltos = (int<64> i, uint<32> base = 10) string:
 {
