@@ -382,6 +382,48 @@ var tests = [
         assert (x.val == 1);
       },
   },
+  PkTest {
+    name = "strtok",
+    func = lambda (string name) void:
+      {
+        var x = strtok ("abc123def-foo-bar-baz-xy");
+        try
+          {
+            /* Test whether we emit E_inval for zero-width number parses.  */
+            x.pop_number ();
+            assert (0, "unreachable reached!");
+          }
+        catch if E_inval
+          {
+            assert (1, "expects exception");
+          }
+        assert (x.pop () == 'a');
+        assert (x.more);
+        assert (x.pop () == 'b');
+        assert (x.more);
+        assert (x.pop () == 'c');
+        assert (x.more);
+        assert (x.pop_number (8) == 0o123);
+        assert (x.more);
+        assert (x.popdelim ("-") == "def");
+        assert (x.more);
+        assert (x.peek () == 'f');
+        assert (x.more);
+        assert (x.poprdelim ("-") == "foo-bar-baz");
+        assert (x.more);
+        assert (x.popdelim ("-") == "xy");
+        assert (!x.more);
+        try
+          {
+            x.pop ();
+            assert (0, "unreachable reached!");
+          }
+        catch if E_out_of_bounds
+          {
+            assert (1, "expects exception");
+          }
+      },
+  },
 ];
 
 exit (pktest_run (tests) ? 0 : 1);

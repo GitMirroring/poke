@@ -546,3 +546,107 @@ fun isxdigit = (uint<8> c) int<32>:
 {
   return (c - '0' < 10UB) || ((c | 0x20UB) - 'a' < 6UB);
 }
+
+/* A helper object to tokenize a string.  */
+
+type String_Tokenizer =
+  struct
+  {
+    uint<64> i;
+    string str;
+    computed uint<32> more;
+
+    method get_more = uint<32>:
+    {
+      return i < str'length;
+    }
+
+    method peek = uint<8>:
+    {
+      if (!get_more ())
+        raise E_out_of_bounds;
+
+      return str[i];
+    }
+
+    method pop = uint<8>:
+    {
+      if (!get_more ())
+        raise E_out_of_bounds;
+      return str[i++];
+    }
+
+    method pop_number = (int<32> base = 10) int<64>:
+    {
+      if (!get_more ())
+        raise E_out_of_bounds;
+
+      var res = strtoi (str, base, i);
+      if (res.off == i)
+        raise E_inval;
+
+      i = res.off;
+      return res.val;
+    }
+
+    method popdelim = (string delimiters) string:
+    {
+      /* TODO(arsen): Replace with some set-based thing at some point.  */
+      if (delimiters'length == 0)
+        raise E_inval;
+
+      if (!get_more ())
+        raise E_out_of_bounds;
+
+      var j = i;
+      for (; j < str'length; j++)
+        {
+          var c = str[j];
+          for (d in delimiters)
+            {
+              if (c != d)
+                continue;
+
+              var s = str[i:j];
+              i = j + 1;
+              return s;
+            }
+        }
+      var s = str[i:];
+      i = str'length;
+      return s;
+    }
+
+    method poprdelim = (string delimiters) string:
+    {
+      /* TODO(arsen): Replace with some set-based thing at some point.  */
+      if (delimiters'length == 0)
+        raise E_inval;
+
+      if (!get_more ())
+        raise E_out_of_bounds;
+
+      var j = str'length - 1;
+      for (; j >= i && j < str'length; j--)
+        {
+          var c = str[j];
+          for (d in delimiters)
+            {
+              if (c != d)
+                continue;
+
+              var s = str[i:j];
+              i = j + 1;
+              return s;
+            }
+        }
+      var s = str[i:];
+      i = str'length;
+      return s;
+    }
+  };
+
+fun strtok = (string a) String_Tokenizer:
+{
+  return String_Tokenizer { str = a, i = 0 };
+}
