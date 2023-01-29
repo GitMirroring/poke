@@ -5,6 +5,19 @@
 
 2023-01-29  Arsen Arsenović  <arsen@aarsen.me>
 
+	std.pk: Implement strtok
+	* doc/poke.texi (strtok): Document the strtok API.
+	(String Functions): Add strtok to menu.
+	(Concept Index): Merge fn -> cp, as there's not enough use of the
+	function index to justify separate section currently.
+	* libpoke/std.pk (String_Tokenizer): New type.  Holds the persistent
+	state of the strtok-like operation.
+	(strtok): New function.  Returns a new String_Tokenizer.
+	(String_Tokenizer): New type.  Holds tokenization state.
+	* testsuite/poke.std/std-test.pk: Add strtok test.
+
+2023-01-29  Arsen Arsenović  <arsen@aarsen.me>
+
 	std.pk: Refactor atoi into strtoi
 	* libpoke/std.pk (Strtoi_Result): New type.  Stores the result of
 	a strtoi call.

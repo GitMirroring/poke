@@ -15720,6 +15720,7 @@ work on strings:
 * rtrim::		Remove trailing characters.
 * strchr::		Locate a character in a string, from the beginning.
 * strrchr::		Locate a character in a string, from the end.
+* strtok::		String tokenization.
 @end menu
 
 @node ltrim
@@ -15775,6 +15776,97 @@ fun strrchr = (string s, uint<8> c) int<32>: @{ @dots{} @}
 It returns the index of the last occurrence of the character @var{c}
 in the string @var{s}.  If the character is not found in the string,
 this function returns -1.
+
+@node strtok
+@subsection @code{strtok}
+@cindex @code{strtok}
+@cindex string, tokenizing
+
+@code{strtok} is a helper for tokenizing strings.  The synopsis of
+this API are:
+
+@example
+type String_Tokenizer =
+  struct
+  @{
+    uint<64> i;
+    string str;
+    computed uint<32> more;
+
+    method get_more = uint<32>: @{ @dots{} @}
+
+    method peek = char: @{ @dots{} @}
+    method pop = char: @{ @dots{} @}
+
+    method pop_number = (int<32> @var{base} = 10) int<64>: @{ @dots{} @}
+
+    method popdelim = (string @var{delimiters}) string: @{ @dots{} @}
+    method poprdelim = (string @var{delimiters}) string: @{ @dots{} @}
+  @}
+
+fun strtok = (string @var{a}) String_Tokenizer: @{ @dots{} @}
+@end example
+
+@deftypefun String_Tokenizer strtok (string @var{a})
+Creates a new tokenizer for the string @var{a}, initially on the zero
+position.
+@end deftypefun
+
+@cindex @code{String_Tokenizer}
+The members of the @code{String_Tokenizer} class are:
+
+@deftypeivar String_Tokenizer uint<64> i
+Offset to the next character to be tokenized, i.e. to the first
+character that has not already been consumed.
+@end deftypeivar
+
+@deftypeivar String_Tokenizer string str
+The string being tokenized.  This string is never tokenized.
+@end deftypeivar
+
+@deftypeivar String_Tokenizer uint<32> more
+A read-only computed property whose value is truthy if there's more
+characters and falsey otherwise.
+@end deftypeivar
+
+@deftypemethod String_Tokenizer char poke ()
+Returns the first unread character of the string, but does not advance
+the @var{i} offset.
+
+Raises @code{E_out_of_bounds} if at the end of the string.
+@end deftypemethod
+
+@deftypemethod String_Tokenizer char peek ()
+Returns the first unread character of the string, and advances the
+tokenizer.
+
+Raises @code{E_out_of_bounds} if at the end of the string.
+@end deftypemethod
+
+@deftypemethod String_Tokenizer int<64> pop_number (int<32> @var{base} = 10)
+Returns the number at the start of the string and advances the
+tokenizer in the given @var{base}.  The bases that are supported are
+the same as for @code{strtoi}.
+@xref{strtoi} for a list of supported bases.
+
+Raises @code{E_out_of_bounds} if at the end of the string.
+@end deftypemethod
+
+@deftypemethod String_Tokenizer string popdelim (string @var{delim})
+Returns the substring up to the first character also present in the
+string @var{delim}.  Advances the tokenizer to after the delimiter
+character (i.e. it consumes the delimiter character).
+
+Raises @code{E_out_of_bounds} if at the end of the string.
+@end deftypemethod
+
+@deftypemethod String_Tokenizer string poprdelim (string @var{delim})
+Returns the substring up to the last character also present in the
+string @var{delim}.  Advances the tokenizer to after the delimiter
+character (i.e. it consumes the delimiter character).
+
+Raises @code{E_out_of_bounds} if at the end of the string.
+@end deftypemethod
 
 @node Character Functions
 @section Character Functions
@@ -16262,6 +16354,9 @@ It returns an offset that is the result of aligning the given
 
 @node Concept Index
 @appendixsec Concept Index
+
+@c Merge the findex into the cpindex.
+@syncodeindex fn cp
 
 @printindex cp
 
