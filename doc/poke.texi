@@ -15457,6 +15457,7 @@ useful conversions.
 @menu
 * catos::		converting characters arrays into string.
 * stoca::		filling character arrays from strings.
+* strtoi::		convert numeric prefix to integer.
 * atoi::		converting strings to integers.
 * ltos::		converting integers to strings.
 @end menu
@@ -15507,6 +15508,53 @@ It fills the given array @var{ca} with the contents of the string
 than the length of the array, the extra characters are set to the
 @var{fill} character, which defaults to @code{\0}.
 
+@node strtoi
+@subsection @code{strtoi}
+@cindex @code{strtoi}
+@cindex converting, strings to integers
+The standard function @code{strtoi} provides the following interface:
+
+@example
+type Strtoi_Result =
+  struct
+  @{
+    uint<64> @var{off};
+    int<64> @var{val};
+  @};
+
+fun strtoi = (string @var{str}, int @var{base} = 10, ulong @var{start} = 0) Stroi_Result: @{ @dots{} @}
+@end example
+
+It parses a signed integral number in the given @var{base} in the
+string @var{str} at position @var{start} and returns its value and its
+length in the @var{val} and @var{off} fields of a new
+@code{Strtoi_Result} instance.
+
+Specifying a @var{start} that is greater than or equal to the length
+of the string causes a @code{E_out_of_bound} exception to be raised.
+
+@cindex base, argument in @command{strtoi}
+The accepted values for @var{base} are @code{2}, @code{8}, @code{10}
+(the default) and @code{16}.  If any other base is requested an
+@code{E_inval} exception is raised.
+
+Note that this function parses an integer but permits more characters
+to follow the given integer.  As an example, lets parse ``12foo'' in
+base 16:
+
+@example
+#!!# strtoi ("12foo", 16)
+Strtoi_Result @{
+  off=3UL,
+  val=303L
+@}
+#!!# strtoi ("12foo", 16, 1)
+Strtoi_Result @{
+  off=3UL,
+  val=47L
+@}
+@end example
+
 @node atoi
 @subsection @code{atoi}
 @cindex @code{atoi}
@@ -15520,10 +15568,8 @@ fun atoi = (string @var{str}, int @var{base} = 10) long: @{ @dots{} @}
 It parses a signed integral number in the given @var{base} in the
 string @var{str} and returns it as a signed 64-bit integer.
 
-@cindex base, argument in @command{atoi}
-The accepted values for @var{base} are @code{2}, @code{8}, @code{10}
-(the default) and @code{16}.  If any other base is requested an
-@code{E_inval} exception is raised.
+The accepted values for @var{base} are the same as for @samp{strtoi}.
+@xref{strtoi} for a list of supported bases.
 
 Note that atoi allows for extra information to be stored in @var{str}
 after the parsed integer.  Thus, this works:

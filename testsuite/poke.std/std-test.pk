@@ -364,6 +364,24 @@ var tests = [
         assert (strrchr ("", 'x') == -1);
       },
   },
+  PkTest {
+    name = "strtoi",
+    func = lambda (string name) void:
+      {
+        /* The atoi tests above already thoroughly test the parser.  This test
+           just tests that the extra semantics that atoi () removes are proper.
+       */
+        var x = strtoi ("foo", 16);
+        assert (x.off == 1);
+        assert (x.val == 0xf);
+        x = strtoi ("foo", 16, 1);
+        assert (x.off == 1);
+        assert (x.val == 0);
+        x = strtoi ("1001", 10, 1);
+        assert (x.off == 4);
+        assert (x.val == 1);
+      },
+  },
 ];
 
 exit (pktest_run (tests) ? 0 : 1);
