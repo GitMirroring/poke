@@ -650,3 +650,158 @@ fun strtok = (string a) String_Tokenizer:
 {
   return String_Tokenizer { str = a, i = 0 };
 }
+
+/* Structured representation of GNU poke version strings.  */
+
+type Pk_Version =
+  struct
+  {
+    uint<8> major;
+    uint<8> minor;
+    uint<8> subminor;
+    string branch;
+    uint<32> offset;
+    string commit;
+    uint<8> dirty;
+  };
+
+/* Parse the string A into a new Pk_Version object.  */
+
+fun pk_version_parse = (string a) Pk_Version:
+{
+  var res = Pk_Version {};
+
+  /* Strip the -dirty suffix, if any.  */
+  var dirty = "-dirty";
+  if (a'length >= dirty'length)
+    {
+      var i = a'length - dirty'length;
+      if (a[i:] == dirty)
+        {
+          a = a[:i];
+          res.dirty = 1;
+        };
+    }
+
+  /* With -dirty removed, we can be left with -g[[:xdigit:]]*.  We expect at
+     least a couple letters after a -g, so lets go with a safe three (+ 1 for
+     the ``g'').  Note that git-version-gen sets --abbrev=4 right now.  */
+  var dashi = strrchr (a, '-');
+  if (dashi != -1 && dashi + 4 < a'length && a[dashi + 1] == 'g')
+    {
+      var has_hash = 1;
+      for (var i = dashi + 2;
+           i < a'length;
+           i++)
+        {
+          if (isxdigit (a[i]))
+            continue;
+          has_hash = 0;
+          break;
+        };
+      res.commit = a[dashi + 2:];
+      if (has_hash)
+        a = a[:dashi];
+    };
+
+  var i = strtok (a);
+
+  if (!i.more)
+    raise E_inval;
+
+  /* Helper that pops an equal character from the tokenizer, and checks that
+     it's the desired character.  */
+  fun popassert = (uint<8> x) void:
+  {
+    try
+      {
+        if (i.peek () != x)
+          raise E_inval;
+        i.i++;
+      }
+    catch if E_out_of_bounds
+      {
+        raise E_inval;
+      }
+  };
+
+  try
+    {
+      /* Parsing over x.y[.z][-STR-n].  We expect a number, period, and number,
+         possibly followed by two one more component, a branch identifier and the
+         number of commits on said branch.  */
+      res.major = i.pop_number ();
+      /* Mandatory period.  */
+      popassert ('.');
+      res.minor = i.pop_number();
+    }
+  catch if E_out_of_bounds
+    {
+      /* If any of these two are missing, it's an invalid.  */
+      raise E_inval;
+    };
+
+  if (!i.more)
+    return res;
+
+  if (i.peek () == '.')
+    {
+      i.i++;
+      res.subminor = i.pop_number();
+    };
+
+  if (!i.more)
+    return res;
+
+  try
+    {
+      popassert ('-');
+      res.branch = i.poprdelim ("-");
+      /* The above should've popped the dash too.  */
+      res.offset = i.pop_number ();
+    }
+  catch if E_out_of_bounds
+    {
+      /* If any of these two are missing, it's an invalid.  */
+      raise E_inval;
+    };
+
+  /* We shouldn't have trailing data at this point, beyond the -gXDIGIT string,
+     or the -dirty string, but both should be stripped already.  */
+  if (i.more)
+    raise E_inval;
+
+  return res;
+};
+
+/* Compare a pair GNU poke version strings.  */
+
+fun pk_vercmp = (Pk_Version a, Pk_Version b) int<32>:
+{
+  fun cmp = (uint<32> a, uint<32> b) int<32>:
+  {
+    if (a > b)
+      return 1;
+    if (a < b)
+      return -1;
+    return 0;
+  };
+
+  var diff = cmp (a.major, b.major);
+  if (diff != 0)
+    return diff;
+  diff = cmp (a.minor, b.minor);
+  if (diff != 0)
+    return diff;
+  diff = cmp (a.subminor, b.subminor);
+  if (diff != 0)
+    return diff;
+  diff = cmp (a.subminor, b.subminor);
+  if (diff != 0)
+    return diff;
+  diff = cmp (a.branch == "dev" ? 1 : 0, b.branch == "dev" ? 1 : 0);
+  if (diff != 0)
+    return diff;
+  diff = cmp (a.offset, b.offset);
+  return diff;
+}

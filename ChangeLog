@@ -1,5 +1,22 @@
 2023-01-29  Arsen Arsenović  <arsen@aarsen.me>
 
+	std.pk: Implement pk_version_parse, pk_vercmp
+	* doc/poke.texi (Other Functions): New node and section.
+	Documents miscellaneous functions.
+	(Concept Index): Merge the variable index into the concept index.
+	(Version Tools): New node.  Documents pk_version,
+	pk_version_parse, Pk_Version, pk_vercmp and the version string
+	format.
+	* libpoke/std.pk (pk_vercmp): New function.  Compares a pair of
+	Pk_Version structs.
+	(pk_version_parse): New function.  Parses a version string into a
+	new Pk_Version struct.
+	* testsuite/poke.std/std-test.pk: Add pk_version_parse, pk_vercmp
+	tests.
+	* autoconf/poke.m4 (PK_PROG_POKE): Update to use pk_vercmp.
+
+2023-01-29  Arsen Arsenović  <arsen@aarsen.me>
+
 	std.pk: Implement strtok
 	* doc/poke.texi (strtok): Document the strtok API.
 	(String Functions): Add strtok to menu.
