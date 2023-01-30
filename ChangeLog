@@ -1,3 +1,9 @@
+2023-01-30  Arsen Arsenović  <arsen@aarsen.me>
+
+	poke.texi: Remedy syntax-check fails
+	* doc/poke.texi (strtoi): Remove ``lets''.
+	(strtok): Italicize usages of ``i.e.''.
+
 2023-01-29  Arsen Arsenović  <arsen@aarsen.me>
 
 	std.pk: Implement pk_version_parse, pk_vercmp
