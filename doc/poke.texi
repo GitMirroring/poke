@@ -15631,8 +15631,8 @@ The accepted values for @var{base} are @code{2}, @code{8}, @code{10}
 @code{E_inval} exception is raised.
 
 Note that this function parses an integer but permits more characters
-to follow the given integer.  As an example, lets parse ``12foo'' in
-base 16:
+to follow the given integer.  As an example, take a look at parsing
+``12foo'' in base 16:
 
 @example
 #!!# strtoi ("12foo", 16)
@@ -15818,7 +15818,7 @@ position.
 The members of the @code{String_Tokenizer} class are:
 
 @deftypeivar String_Tokenizer uint<64> i
-Offset to the next character to be tokenized, i.e. to the first
+Offset to the next character to be tokenized, @i{i.e.} to the first
 character that has not already been consumed.
 @end deftypeivar
 
@@ -15857,7 +15857,7 @@ Raises @code{E_out_of_bounds} if at the end of the string.
 @deftypemethod String_Tokenizer string popdelim (string @var{delim})
 Returns the substring up to the first character also present in the
 string @var{delim}.  Advances the tokenizer to after the delimiter
-character (i.e. it consumes the delimiter character).
+character (@i{i.e.} it consumes the delimiter character).
 
 Raises @code{E_out_of_bounds} if at the end of the string.
 @end deftypemethod
@@ -15865,7 +15865,7 @@ Raises @code{E_out_of_bounds} if at the end of the string.
 @deftypemethod String_Tokenizer string poprdelim (string @var{delim})
 Returns the substring up to the last character also present in the
 string @var{delim}.  Advances the tokenizer to after the delimiter
-character (i.e. it consumes the delimiter character).
+character (@i{i.e.} it consumes the delimiter character).
 
 Raises @code{E_out_of_bounds} if at the end of the string.
 @end deftypemethod
