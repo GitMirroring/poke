@@ -16297,9 +16297,13 @@ Parses the string @var{version} into a new instance of
 
 The standard library also provides the following helper function:
 
-@deftypefun int<32> pk_vercmp (Pk_Version @var{a}, Pk_Version @var{a})
+@deftypefun int<32> pk_vercmp (any @var{a}, any @var{b})
 Returns a number greater than, equal to, or lower than zero if @var{a}
-compares greater than, equal to or lower than @var{b}, respectively.
+compares greater than, equal to or lower than @var{b}, respectively,
+as a GNU poke version.
+
+The type of @var{a} and @var{b} must be either @code{string} or
+@code{Pk_Version}, otherwise, this function raises an @code{E_conv}.
 
 This function implements partial ordering, as it's not possible to
 distinguish some version numbers as greater or lower than each other,

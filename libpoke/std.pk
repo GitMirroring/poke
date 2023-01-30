@@ -810,8 +810,20 @@ fun pk_version_parse = (string a) Pk_Version:
 
 /* Compare a pair GNU poke version strings.  */
 
-fun pk_vercmp = (Pk_Version a, Pk_Version b) int<32>:
+fun pk_vercmp = (any _a, any _b) int<32>:
 {
+  fun shoehorn = (any x) Pk_Version:
+  {
+    if (x isa Pk_Version)
+      return x as Pk_Version;
+    if (x isa string)
+      return pk_version_parse (x as string);
+    raise E_conv;
+  };
+
+  var a = shoehorn (_a);
+  var b = shoehorn (_b);
+
   fun cmp = (uint<32> a, uint<32> b) int<32>:
   {
     if (a > b)

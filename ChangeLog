@@ -10,6 +10,14 @@
 
 2023-01-31  Arsen Arsenović  <arsen@aarsen.me>
 
+	pk_vercmp: Allow passing and automatically parsing strings
+	* libpoke/std.pk (pk_vercmp): Allow passing strings.
+	* doc/poke.texi (Version Tools): Document the new flexibility of
+	pk_vercmp.
+
+2023-01-31  Arsen Arsenović  <arsen@aarsen.me>
+
+	pk_parse_version: Provide more context on parse failure
 	* libpoke/std.pk (raise_exception): New function, takes an
 	exception and augments it with more context, to create a new
 	exception.  Intended as a helper for errors during parsing.
