@@ -8,6 +8,14 @@
 	* testsuite/poke.std/std-test.pk: Add tests for
 	Pk_Version.to_string.
 
+2023-01-31  Arsen Arsenović  <arsen@aarsen.me>
+
+	* libpoke/std.pk (raise_exception): New function, takes an
+	exception and augments it with more context, to create a new
+	exception.  Intended as a helper for errors during parsing.
+	(pk_parse_version): Use new raise_exception facility.
+	* doc/poke.texi (strtok): Document raise_exception.
+
 2023-01-30  Arsen Arsenović  <arsen@aarsen.me>
 
 	poke.texi: Remedy syntax-check fails

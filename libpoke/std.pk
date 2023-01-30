@@ -556,6 +556,17 @@ type String_Tokenizer =
     string str;
     computed uint<32> more;
 
+    method raise_exception = (Exception base, string message) void:
+    {
+      raise Exception {
+        code = base.code,
+        name = base.name,
+        exit_status = base.exit_status,
+        location = "at position " + ltos (i),
+        msg = message
+      };
+    }
+
     method get_more = uint<32>:
     {
       return i < str'length;
@@ -583,7 +594,7 @@ type String_Tokenizer =
 
       var res = strtoi (str, base, i);
       if (res.off == i)
-        raise E_inval;
+        raise_exception (E_inval, "expected number");
 
       i = res.off;
       return res.val;
@@ -728,7 +739,7 @@ fun pk_version_parse = (string a) Pk_Version:
   var i = strtok (a);
 
   if (!i.more)
-    raise E_inval;
+    i.raise_exception (E_inval, "expected major.minor");
 
   /* Helper that pops an equal character from the tokenizer, and checks that
      it's the desired character.  */
@@ -737,12 +748,12 @@ fun pk_version_parse = (string a) Pk_Version:
     try
       {
         if (i.peek () != x)
-          raise E_inval;
+          i.raise_exception (E_inval, "expected '" + x as string + "'");
         i.i++;
       }
     catch if E_out_of_bounds
       {
-        raise E_inval;
+        i.raise_exception (E_inval, "expected '" + x as string + "', got EOF");
       }
   };
 
@@ -759,7 +770,7 @@ fun pk_version_parse = (string a) Pk_Version:
   catch if E_out_of_bounds
     {
       /* If any of these two are missing, it's an invalid.  */
-      raise E_inval;
+      i.raise_exception (E_inval, "missing mandatory component");
     };
 
   if (!i.more)
@@ -786,13 +797,13 @@ fun pk_version_parse = (string a) Pk_Version:
   catch if E_out_of_bounds
     {
       /* If any of these two are missing, it's an invalid.  */
-      raise E_inval;
+      i.raise_exception (E_inval, "branch-offset component incomplete");
     };
 
   /* We shouldn't have trailing data at this point, beyond the -gXDIGIT string,
      or the -dirty string, but both should be stripped already.  */
   if (i.more)
-    raise E_inval;
+    i.raise_exception (E_inval, "trailing data");
 
   return res;
 };

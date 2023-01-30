@@ -15804,6 +15804,8 @@ type String_Tokenizer =
 
     method popdelim = (string @var{delimiters}) string: @{ @dots{} @}
     method poprdelim = (string @var{delimiters}) string: @{ @dots{} @}
+
+    method raise_exception = (Exception @var{base}, string @var{message}) void: @{ @dots{} @}
   @}
 
 fun strtok = (string @var{a}) String_Tokenizer: @{ @dots{} @}
@@ -15868,6 +15870,13 @@ string @var{delim}.  Advances the tokenizer to after the delimiter
 character (@i{i.e.} it consumes the delimiter character).
 
 Raises @code{E_out_of_bounds} if at the end of the string.
+@end deftypemethod
+
+@deftypemethod String_Tokenizer void raise_exception @
+               (Exception @var{base}, string @var{message})
+Raises a copy of @var{base} augmented so that it contains a
+description of the tokenizers current position, as well as the
+programmer-specified @var{message}.
 @end deftypemethod
 
 @node Character Functions
@@ -16509,8 +16518,9 @@ measure.
 @c  LocalWords:  variadic args PDP programmatically PKL eBPF dst src
 @c  LocalWords:  BPF Insn Regs le ident ei ELFDATA LSB ELFDAT MSB ios
 @c  LocalWords:  Ehdr ELFDATANONE osabi abiversion nident Unmapping
-@c  LocalWords:  Comparator cmp relocations DIEs nelems
+@c  LocalWords:  Comparator cmp relocations DIEs nelems tokenizers
 @c  LocalWords:  EOF Rela Addr Xword Sxword Shdr addr addralign fmt
 @c  LocalWords:  entsize relocs adoleces libtextstyle classname css
 @c  LocalWords:  ushort ulong uoff abc ltrim whitespace rtrim fdl
 @c  LocalWords:  quicksort array'length comparator printindex
+@c  LocalWords:  tokenizer
