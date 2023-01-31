@@ -1,3 +1,8 @@
+2023-01-31  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* poked/poked.c (poked_options_init): Fix getopt_long to recognize
+	-S.
+
 2023-01-31  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/std.pk (Pk_Version): Add control fields.
