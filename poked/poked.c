@@ -502,7 +502,7 @@ poked_options_init (int argc, char *argv[])
   char c;
   int ret;
 
-  while ((ret = getopt_long (argc, argv, "hvd", options, NULL)) != -1)
+  while ((ret = getopt_long (argc, argv, "hvdS:", options, NULL)) != -1)
     {
       c = ret;
       switch (c)
