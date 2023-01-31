@@ -1291,4 +1291,8 @@ struct pk_iod_if
 int pk_register_iod (pk_compiler pkc, struct pk_iod_if *iod_if)
   LIBPOKE_API;
 
+//#ifdef FUZZING
+int parse_buffer(const uint8_t *data, size_t size, char* conf_path);
+//#endif /* FUZZING */
+
 #endif /* ! LIBPOKE_H */

@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "pvm.h"
 #include <config.h>
 
 #include <gettext.h>
@@ -918,4 +919,82 @@ pkl_tracer_p (pkl_compiler compiler)
   assert (PVM_IS_INT (val));
 
   return PVM_VAL_INT (val);
+}
+
+static void pk_void_term_flush(void){}
+
+static void
+pk_void_puts (const char *str) {}
+
+__attribute__ ((__format__ (__printf__, 1, 2)))
+static void pk_void_printf (const char *format, ...) {}
+
+
+
+static void
+pk_void_term_indent (unsigned int lvl,
+                unsigned int step) {}
+
+static void
+pk_void_term_class (const char *class) {}
+
+static int pk_void_term_end_class(const char *class) { return 0; }
+
+static void
+pk_void_term_hyperlink (const char *url, const char *id) {}
+
+
+static int pk_void_term_end_hyperlink(void) {return 0;}
+
+static struct pk_color pk_void_term_get_color(void) {}
+
+static struct pk_color pk_void_term_get_bgcolor(){};
+
+static void pk_void_term_set_color(struct pk_color color) {}
+
+static void pk_void_term_set_bgcolor (struct pk_color color) {}
+
+static struct pk_term_if internal_libpoke_term_if =
+  {
+    .flush_fn = pk_void_term_flush,
+    .puts_fn = pk_void_puts,
+    .printf_fn = pk_void_printf,
+    .indent_fn = pk_void_term_indent,
+    .class_fn = pk_void_term_class,
+    .end_class_fn = pk_void_term_end_class,
+    .hyperlink_fn = pk_void_term_hyperlink,
+    .end_hyperlink_fn = pk_void_term_end_hyperlink,
+    .get_color_fn = pk_void_term_get_color,
+    .set_color_fn = pk_void_term_set_color,
+    .get_bgcolor_fn = pk_void_term_get_bgcolor,
+    .set_bgcolor_fn = pk_void_term_set_bgcolor,
+  };
+
+int parse_buffer(const uint8_t *data, size_t size, char* conf_path) {
+  libpoke_term_if = internal_libpoke_term_if;
+  pvm vm = pvm_init();
+  pkl_compiler compiler = pkl_new(vm, conf_path, conf_path, 0);
+
+  pkl_ast ast = NULL;
+
+  char *buffer = (char *)data;
+  bool mallocd = false;
+
+  if (size == 0 || (size != 0 && data[size - 1] != 0)) {
+    mallocd = true;
+    buffer = malloc(size + 1);
+    memcpy(buffer, data, size);
+    buffer[size] = 0;
+  }
+
+  pkl_parse_buffer(compiler, &compiler->env, &ast, PKL_PARSE_PROGRAM, buffer,
+                   "test.pk", 0, 0, NULL);
+
+  pvm_shutdown(vm);
+  pkl_ast_free(ast);
+  pkl_free(compiler);
+  if (mallocd) {
+    free(buffer);
+  }
+  return 0;
 }
