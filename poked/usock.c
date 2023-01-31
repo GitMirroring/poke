@@ -33,6 +33,7 @@
 #include <poll.h>
 #include <pthread.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <sys/un.h>
 #include <unistd.h>
 
@@ -622,6 +623,7 @@ usock_new (const char *path)
   struct usock *u;
   struct sockaddr_un adr;
   int flags;
+  mode_t mask;
 
   u = calloc (1, sizeof (*u));
   if (u == NULL)
@@ -654,8 +656,10 @@ usock_new (const char *path)
   adr.sun_family = AF_UNIX;
   strncpy (adr.sun_path, path, sizeof (adr.sun_path) - 1);
   unlink (adr.sun_path);
+  mask = umask (0077);
   if (bind (u->fd, (struct sockaddr *)&adr, sizeof (adr)) == -1)
     goto error;
+  umask (mask);
   if (listen (u->fd, 128) == -1)
     goto error;
 
