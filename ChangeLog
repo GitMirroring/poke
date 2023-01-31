@@ -1,5 +1,11 @@
 2023-01-31  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* poked/usock.c: Include `<sys/stat.h>' for `umask'.
+	(usock_new): use `umask' to create the unix
+	socket with the right permissions.
+
+2023-01-31  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* poked/usock.c (usock_new): use `pipe2' instead of `pipe'.
 	do a F_GETFL before F_SETFL to keep the current flags.
 
