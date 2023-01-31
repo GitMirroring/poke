@@ -16269,9 +16269,17 @@ type Pk_Version =
     string branch;
     uint<32> offset;
     string commit;
-    uint<8> dirty;
+
+    uint<8> has_branch_p;
+    uint<8> has_subminor_p;
+    uint<8> has_commit_p;
+    uint<8> dirty_p;
   @};
 @end example
+
+@deftypefun string Pk_Version.to_string ()
+Method that returns the printed representation of a version.
+@end deftypefun
 
 @deftypefun Pk_Version pk_version_parse (string @var{version})
 Parses the string @var{version} into a new instance of

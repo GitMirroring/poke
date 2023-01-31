@@ -1,3 +1,13 @@
+2023-01-31  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/std.pk (Pk_Version): Add control fields.
+	(Pk_Version.to_string): New method.
+	(Pk_Version._print): Likewise.
+	* doc/poke.texi (Version Tools): Reflect new contents of
+	Pk_Version.
+	* testsuite/poke.std/std-test.pk: Add tests for
+	Pk_Version.to_string.
+
 2023-01-30  Arsen Arsenović  <arsen@aarsen.me>
 
 	poke.texi: Remedy syntax-check fails
