@@ -1,3 +1,8 @@
+2023-01-31  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* poked/usock.c (usock_new): use `pipe2' instead of `pipe'.
+	do a F_GETFL before F_SETFL to keep the current flags.
+
 2023-01-31  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* poked/poked.c (poked_options_init): Fix getopt_long to recognize
