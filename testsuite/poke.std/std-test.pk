@@ -483,6 +483,15 @@ var tests = [
                 assert (1, "expects exception");
               }
           }
+
+        /* Test the to_string method.  */
+        for (s in ["3.0", "3.21", "3.21.0",
+                    "3.0-g12345", "3.0-g12345-dirty",
+                    "3.0-dev-12", "3.0-nondev-12",
+                    "3.0-dev-22-g2e092-dirty",
+                    "3.0-arsen_do-gettext-stuff-13",
+                    "3.0-a_-b_c-12"])
+        assert (pk_version_parse (s).to_string == s);
       },
   },
 ];

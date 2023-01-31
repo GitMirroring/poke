@@ -662,7 +662,27 @@ type Pk_Version =
     string branch;
     uint<32> offset;
     string commit;
-    uint<8> dirty;
+
+    uint<8> has_branch_p;
+    uint<8> has_subminor_p;
+    uint<8> has_commit_p;
+    uint<8> dirty_p;
+
+    method to_string = string:
+    {
+      return format ("%u8d.%u8d%s%s%s%s%s",
+                     major, minor,
+                     has_subminor_p ? format (".%u8d", subminor) : "",
+                     has_branch_p ? "-" + branch : "",
+                     has_branch_p ? format ("-%u32d", offset) : "",
+                     has_commit_p ? "-g" + commit : "",
+                     dirty_p ? "-dirty" : "");
+    }
+
+    method _print = void:
+    {
+      printf "#<%s>", to_string;
+    }
   };
 
 /* Parse the string A into a new Pk_Version object.  */
@@ -679,7 +699,7 @@ fun pk_version_parse = (string a) Pk_Version:
       if (a[i:] == dirty)
         {
           a = a[:i];
-          res.dirty = 1;
+          res.dirty_p = 1;
         };
     }
 
@@ -699,6 +719,7 @@ fun pk_version_parse = (string a) Pk_Version:
           has_hash = 0;
           break;
         };
+      res.has_commit_p = 1;
       res.commit = a[dashi + 2:];
       if (has_hash)
         a = a[:dashi];
@@ -747,6 +768,7 @@ fun pk_version_parse = (string a) Pk_Version:
   if (i.peek () == '.')
     {
       i.i++;
+      res.has_subminor_p =1;
       res.subminor = i.pop_number();
     };
 
@@ -756,6 +778,7 @@ fun pk_version_parse = (string a) Pk_Version:
   try
     {
       popassert ('-');
+      res.has_branch_p = 1;
       res.branch = i.poprdelim ("-");
       /* The above should've popped the dash too.  */
       res.offset = i.pop_number ();
