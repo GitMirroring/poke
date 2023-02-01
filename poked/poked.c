@@ -26,6 +26,7 @@
 #include <err.h>
 #include <getopt.h>
 #include <pthread.h>
+#include <unistd.h>
 
 #include "pk-utils.h"
 #include "usock.h"
@@ -479,7 +480,7 @@ poked_version (void);
 static struct poked_options
 {
   int debug_p;
-  const char *socket_path;
+  char *socket_path;
 } poked_options;
 
 static void
@@ -523,7 +524,7 @@ poked_options_init (int argc, char *argv[])
           break;
         case OPT_SOCK_PATH:
         case 'S':
-          poked_options.socket_path = optarg;
+          poked_options.socket_path = strdup (optarg);
           break;
         default:
           poked_help ();
@@ -531,7 +532,11 @@ poked_options_init (int argc, char *argv[])
         }
     }
   if (poked_options.socket_path == NULL)
-    poked_options.socket_path = "/tmp/poked.ipc";
+    {
+      if (asprintf (&poked_options.socket_path, "/tmp/poked-%ld.ipc",
+                    (long)getuid ()) == -1)
+        err (1, "asprintf() failed for default socket path");
+    }
 }
 
 static void
@@ -658,6 +663,7 @@ poked_restart:
     }
 
 done:
+  free (poked_options.socket_path);
   poked_free ();
   usock_done (srv);
   pthread_join (th, &ret);
