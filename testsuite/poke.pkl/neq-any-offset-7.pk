@@ -1,0 +1,6 @@
+/* { dg-do run } */
+
+fun neq_any = (any a) int<32>: { return a != 2047#KiB; }
+
+/* { dg-command { neq_any (2LU#MiB) } } */
+/* { dg-output "1" } */

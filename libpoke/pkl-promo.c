@@ -31,6 +31,21 @@
 /* Note the following macro evaluates the arguments twice!  */
 #define MAX(A,B) ((A) > (B) ? (A) : (B))
 
+/* Promote a given node A to an `any' type.  */
+
+static void
+promote_to_any (pkl_ast ast, pkl_ast_node *a, int *restart)
+{
+  pkl_ast_node any_type = pkl_ast_make_any_type (ast);
+  pkl_ast_loc loc = PKL_AST_LOC (*a);
+
+  *a = pkl_ast_make_cast (ast, any_type, ASTDEREF (*a));
+  PKL_AST_TYPE (*a) = ASTREF (any_type);
+  PKL_AST_LOC (*a) = loc;
+  *a = ASTREF (*a);
+  *restart = 1;
+}
+
 /* Promote a given node A to an integral type of width SIZE and sign
    SIGN, if possible.  Put the resulting node in A.  Return 1 if the
    promotion was successful, 0 otherwise.  */
@@ -593,6 +608,7 @@ PKL_PHASE_END_HANDLER
            ARRAY    x ARRAY    -> BOOL
            STRUCT   x STRUCT   -> BOOL
            FUNCTION x FUNCTION -> BOOL
+           ANY      x ANY      -> BOOL
 
    In the I x I -> I configuration, the types of the operands are
    promoted in a way both operands end having the same type, following
@@ -611,8 +627,24 @@ PKL_PHASE_BEGIN_HANDLER (pkl_promo_ps_op_rela)
   pkl_ast_node op2 = PKL_AST_EXP_OPERAND (exp, 1);
   pkl_ast_node op1_type = PKL_AST_TYPE (op1);
   pkl_ast_node op2_type = PKL_AST_TYPE (op2);
+  int op1_type_code = PKL_AST_TYPE_CODE (op1_type);
+  int op2_type_code = PKL_AST_TYPE_CODE (op2_type);
 
-  if (PKL_AST_TYPE_CODE (op1_type) != PKL_AST_TYPE_CODE (op2_type))
+  if (op1_type_code == PKL_TYPE_ANY || op2_type_code == PKL_TYPE_ANY)
+    {
+      int restart1, restart2;
+
+      /* Promote the non-any operand to `any'.  */
+      if (op1_type_code != PKL_TYPE_ANY)
+        promote_to_any (PKL_PASS_AST, &PKL_AST_EXP_OPERAND (exp, 0), &restart1);
+      if (op2_type_code != PKL_TYPE_ANY)
+        promote_to_any (PKL_PASS_AST, &PKL_AST_EXP_OPERAND (exp, 1), &restart2);
+
+      PKL_PASS_RESTART = restart1 || restart2;
+      PKL_PASS_DONE;
+    }
+
+  if (op1_type_code != op2_type_code)
     goto error;
 
   /* Handle integral struct operands.  */
@@ -682,8 +714,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_promo_ps_op_rela)
     case PKL_TYPE_ARRAY:
       /* Fallthrough.  */
     case PKL_TYPE_STRUCT:
-      /* Nothing to do.  */
-      break;
+      /* Fallthrough.  */
     case PKL_TYPE_FUNCTION:
       /* Nothing to do.  */
       break;

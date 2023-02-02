@@ -954,6 +954,280 @@ immutable fun close = (int<32> ios) void:
   _pkl_run_ios_close_hook (ios);
 }
 
+/* Return whether the given value is integral, i.e. if it is
+   either a PVM int, uint, long or ulong.  */
+
+immutable fun _pkl_any_integral_p = (any v) int<32>:
+{
+  return (asm int<32>: ("typof; nip; tyisi; nip" : v)
+          || asm int<32>: ("typof; nip; tyisiu; nip" : v)
+          || asm int<32>: ("typof; nip; tyisl; nip" : v)
+          || asm int<32>: ("typof; nip; tyislu; nip" : v));
+}
+
+/* Multiply two uint<64> and return an array of two elements containing
+   the hi and lo part of the resulting uint<128> number.  This uses the
+   Hacker's Delight 32x32->64 algorithm.  */
+
+immutable fun _pkl_64x64_128 = (uint<64> a, uint<64> b) uint<64>[2]:
+{
+  var a1 = (a & 0xffff_ffff);
+  var b1 = (b & 0xffff_ffff);
+  var t = (a1 * b1);
+  var w3 = (t & 0xffff_ffff);
+  var k = (t .>> 32);
+
+  a .>>= 32;
+  t = (a * b1) + k;
+  k = (t & 0xffff_ffff);
+
+  var w1 = (t .>> 32);
+
+  b .>>= 32;
+  t = (a1 * b) + k;
+  k = (t .>> 32);
+
+  return [(a * b) + w1 + k, (t <<.32) + w3];
+}
+
+/* The following table is used by _pkl_eq_integral in order to
+   dispatch equality operations without using slow branches.
+
+   The array takes as indices the PVM type of the operands,
+   encoded the following way:
+
+   [op1type]       [op2type]
+       |               |
+       +- 0: int       +- 0: int
+       +- 1: uint      +- 1: uint
+       +- 2: long      +- 2: long
+       +- 3: ulong     +- 3: ulong  */
+
+immutable var _pkl_eq_integral_dispatch_table
+  = [
+      [
+        /* int, int */
+        lambda (any i1, any i2) int<32>:
+          {
+            return asm int<32>: ("eqi; nip2" : i1, i2);
+          },
+        /* int, uint */
+        lambda (any i1, any i2) int<32>:
+          {
+            var i1u32 = asm uint<32>: ("itoiu 32; nip" : i1);
+            return asm int<32>: ("eqiu; nip2" : i1u32, i2);
+          },
+        /* int, long */
+        lambda (any i1, any i2) int<32>:
+          {
+            var i1i64 = asm int<64>: ("itol 64; nip" : i1);
+            return asm int<32>: ("eql; nip2" : i1i64, i2);
+          },
+        /* int, ulong */
+        lambda (any i1, any i2) int<32>:
+          {
+            var i1u64 = asm uint<64>: ("itolu 64; nip" : i1);
+            return asm int<32>: ("eqlu; nip2" : i1u64, i2);
+          },
+      ],
+      [
+        /* uint, int */
+        lambda (any i1, any i2) int<32>:
+          {
+            var i2u32 = asm uint<32>: ("itoiu 32; nip" : i2);
+            return asm int<32>: ("eqiu; nip2" : i1, i2u32);
+          },
+        /* uint, uint */
+        lambda (any i1, any i2) int<32>:
+          {
+            return asm int<32>: ("eqiu; nip2" : i1, i2);
+          },
+        /* uint, long */
+        lambda (any i1, any i2) int<32>:
+          {
+            var i1i64 = asm int<64>: ("iutol 64; nip" : i1);
+            return asm int<32>: ("eql; nip2" : i1i64, i2);
+          },
+        /* uint, ulong */
+        lambda (any i1, any i2) int<32>:
+          {
+            var i1u64 = asm uint<64>: ("iutolu 64; nip" : i1);
+            return asm int<32>: ("eqlu; nip2" : i1u64, i2);
+          },
+      ],
+      [
+        /* long, int */
+        lambda (any i1, any i2) int<32>:
+          {
+            var i2l64 = asm int<64>: ("itol 64; nip" : i2);
+            return asm int<32>: ("eql; nip2" : i1, i2l64);
+          },
+        /* long, uint */
+        lambda (any i1, any i2) int<32>:
+          {
+            var i2l64 = asm int<64>: ("iutol 64; nip" : i2);
+            return asm int<32>: ("eql; nip2" : i1, i2l64);
+          },
+        /* long, long */
+        lambda (any i1, any i2) int<32>:
+          {
+            return asm int<32>: ("eql; nip2" : i1, i2);
+          },
+        /* long, ulong */
+        lambda (any i1, any i2) int<32>:
+          {
+            var i1u64 = asm uint<64>: ("ltolu 64; nip" : i1);
+            return asm int<32>: ("eqlu; nip2" : i1u64, i2);
+          },
+      ],
+      [
+        /* ulong, int */
+        lambda (any i1, any i2) int<32>:
+          {
+            var i2lu64 = asm uint<64>: ("itolu 64; nip" : i2);
+            return asm int<32>: ("eqlu; nip2" : i1, i2lu64);
+          },
+        /* ulong, uint */
+        lambda (any i1, any i2) int<32>:
+          {
+            var i2lu64 = asm uint<64>: ("iutolu 64; nip" : i2);
+            return asm int<32>: ("eqlu; nip2" : i1, i2lu64);
+          },
+        /* ulong, long */
+        lambda (any i1, any i2) int<32>:
+          {
+            var i2lu64 = asm uint<64>: ("ltolu 64; nip" : i2);
+            return asm int<32>: ("eqlu; nip2" : i1, i2lu64);
+          },
+        /* ulong, ulong */
+        lambda (any i1, any i2) int<32>:
+          {
+            return asm int<32>: ("eqlu; nip2" : i1, i2);
+          },
+      ],
+    ];
+
+/* Determine whether two given integral values are equal.  */
+
+immutable fun _pkl_eq_integral = (any i1, any i2) int<32>:
+{
+  var i1idx = (asm int<32>: ("typof; nip; tyisi; nip" : i1)
+               + asm int<32>: ("typof; nip; tyisiu; nip" : i1) * 2
+               + asm int<32>: ("typof; nip; tyisl; nip" : i1) * 3
+               + asm int<32>: ("typof; nip; tyislu; nip" : i1) * 4) - 1;
+  var i2idx = (asm int<32>: ("typof; nip; tyisi; nip" : i2)
+               + asm int<32>: ("typof; nip; tyisiu; nip" : i2) * 2
+               + asm int<32>: ("typof; nip; tyisl; nip" : i2) * 3
+               + asm int<32>: ("typof; nip; tyislu; nip" : i2) * 4) - 1;
+
+  return _pkl_eq_integral_dispatch_table[i1idx][i2idx](i1, i2);
+}
+
+/* Determine whether two offset values of arbitrary magnitude and
+   unit are equal.  */
+
+immutable fun _pkl_eq_offset = (any v1, any v2) int<32>:
+{
+  fun abs_to_u64 = (any v) uint<64>:
+  {
+    if (asm int<32>: ("typof; nip; tyisi; nip" : v))
+      {
+        var i64 = asm int<64>: ("itol 64; nip" : v);
+        return i64 < 0 ? -i64 : i64;
+      }
+    else if (asm int<32>: ("typof; nip; tyisiu; nip" : v))
+      return asm uint<64>: ("iutolu 64; nip" : v);
+    else if (asm int<32>: ("typof; nip; tyisl; nip" : v))
+      {
+        var i64 = asm int<64>: ("ltol 64; nip" : v);
+        return i64 < 0 ? -i64 : i64;
+      }
+    else if (asm int<32>: ("typof; nip; tyislu; nip" : v))
+      return asm uint<64>: ("lutolu 64; nip" : v);
+
+    /* Unreachable.  */
+    assert (0, "internal run-time error in _pkl_eq_any.eq_offset.abs_to_u64");
+  }
+
+  var v1_magnitude = asm any: ("ogetm; nip" : v1);
+  var v1_unit = asm uint<64>: ("ogetu; nip" : v1);
+  var v2_magnitude = asm any: ("ogetm; nip" : v2);
+  var v2_unit = asm uint<64>: ("ogetu; nip" : v2);
+
+  /* If the units of both offsets are equal, then we got it easy: just
+     compare the magnitudes.  */
+  if (v1_unit == v2_unit) return
+     _pkl_eq_integral (v1_magnitude, v2_magnitude);
+
+  /* Convert the absolute value of the magnitudes to uint<64>  */
+  var v1_magnitude_u64 = abs_to_u64 (v1_magnitude);
+  var v2_magnitude_u64 = abs_to_u64 (v2_magnitude);
+
+  /* Now normalize them to bits by multiplying them by their
+     respective units.  But we gotta do this in 128-bit arithmetic to
+     avoid a possible overflow.  */
+  var v1_normalized = v1_unit == 1
+                      ? [0UL, v1_magnitude_u64]
+                      : _pkl_64x64_128 (v1_magnitude_u64, v1_unit);
+  var v2_normalized = v2_unit == 1
+                      ? [0UL, v2_magnitude_u64]
+                      : _pkl_64x64_128 (v2_magnitude_u64, v2_unit);
+
+  /* Compare and be done.  */
+  return v1_normalized == v2_normalized;
+}
+
+/* Determine whether two given string values are equal.  */
+
+immutable fun _pkl_eq_string = (any v1, any v2) int<32>:
+{
+  return asm int<32>: ("eqs; nip2" : v1, v2);
+}
+
+/* Determine whether two given `any' values are equal.  */
+
+immutable fun _pkl_eq_any = (any v1, any v2) int<32>:
+{
+  fun handle_composite = int<32>:
+  {
+    /* First check the lenght.  */
+    var v1_len = asm uint<64>: ("sel; nip" : v1);
+    var v2_len = asm uint<64>: ("sel; nip" : v2);
+
+    if (v1_len != v2_len)
+      return 0;
+
+    /* Check the elements.  */
+    for (var i = 0UL; i < v1_len; ++i)
+      if (!_pkl_eq_any (v1'elem (i), v2'elem (i)))
+        return 0;
+
+    return 1;
+  }
+
+  if (_pkl_any_integral_p (v1) && _pkl_any_integral_p (v2))
+    /* Integrals.  */
+    return _pkl_eq_integral (v1, v2);
+  else if (asm int<32>: ("typof; nip; tyiso; nip" : v1)
+           && asm int<32>: ("typof; nip; tyiso; nip" : v2))
+    /* Offsets.  */
+    return _pkl_eq_offset (v1, v2);
+  else if (asm int<32>: ("typof; nip; tyiss; nip" : v1)
+           && asm int<32>: ("typof; nip; tyss; nip" : v2))
+    /* Strings.  */
+    return _pkl_eq_string (v1, v2);
+  else if (asm int<32>: ("typof; nip; tyisa; nip" : v1)
+           && asm int<32>: ("typof; nip; tyisa; nip" : v2))
+    /* Arrays.  */
+    return handle_composite;
+  else if (asm int<32>: ("typof; nip; tyissct; nip" : v1)
+           && asm int<32>: ("typof; nip; tyissct; nip" : v2))
+    /* Structs.  */
+    return handle_composite;
+  else
+    return 0;
+}
+
 /* Printer and formatter for values of type `any'.  */
 
 immutable type _Pkl_Print_Format_Ctx =

@@ -164,8 +164,8 @@ PKL_PHASE_END_HANDLER
 
 /* The type of the relational operations EQ, NE, LT, GT, LE and GE is
    a boolean encoded as a 32-bit signed integer type.  Their operands
-   should be either both integral types, or strings, or offsets.  EQ
-   and NE also accept arrays.  */
+   should be either both integral types, or strings, or offsets, or of
+   type `any'.  EQ and NE also accept arrays and any.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_op_rela)
 {
@@ -180,6 +180,12 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_op_rela)
   int op2_type_code = PKL_AST_TYPE_CODE (op2_type);
 
   pkl_ast_node exp_type;
+
+  if ((op1_type_code == PKL_TYPE_ANY
+       || op2_type_code == PKL_TYPE_ANY)
+      && (exp_code == PKL_AST_OP_EQ || exp_code == PKL_AST_OP_NE))
+    /* The not-any operand will be promoted to `any' in promo.  */
+    goto operand_types_ok;
 
   switch (op1_type_code)
     {
@@ -271,6 +277,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_op_rela)
       goto invalid_first_operand;
     }
 
+ operand_types_ok:
   /* Set the type of the expression node.  */
   exp_type = pkl_ast_make_integral_type (PKL_PASS_AST, 32, 1);
   PKL_AST_TYPE (PKL_PASS_NODE) = ASTREF (exp_type);
@@ -279,7 +286,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_op_rela)
  invalid_first_operand:
   INVALID_OPERAND (op1,
                    exp_code == PKL_AST_OP_EQ || exp_code == PKL_AST_OP_NE
-                   ? "expected integral, string, offset, array, struct or function"
+                   ? "expected integral, string, offset, array, struct, function or any"
                    : "expected integral, string or offset");
 
  invalid_second_operand:

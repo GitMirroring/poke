@@ -1,0 +1,6 @@
+/* { dg-do compile } */
+
+fun gt_any = (any a, any b) int<32>:
+{
+  return a > b; /* { dg-error "invalid operand.*\n.*got any" } */
+}

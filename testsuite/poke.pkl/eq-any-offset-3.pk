@@ -1,0 +1,6 @@
+/* { dg-do run } */
+
+fun eq_any = (any a, any b) int<32>: { return a == b; }
+
+/* { dg-command { eq_any (2LU#MiB, 2048#3) } } */
+/* { dg-output "0" } */

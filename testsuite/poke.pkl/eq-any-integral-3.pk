@@ -1,0 +1,31 @@
+/* { dg-do run } */
+
+/* This test tests the any equality and unequality operators
+   in the following integral configurations:
+
+        long OP int
+        long OP uint
+        long OP long
+        long OP ulong  */
+
+fun eq_any = (any a, any b) int<32>: { return a == b; }
+
+/* { dg-command { eq_any (2L, 2) } } */
+/* { dg-output "1" } */
+/* { dg-command { eq_any (100L, 2) } } */
+/* { dg-output "\n0" } */
+
+/* { dg-command { eq_any (2L, 2U) } } */
+/* { dg-output "\n1" } */
+/* { dg-command { eq_any (100L, 2U) } } */
+/* { dg-output "\n0" } */
+
+/* { dg-command { eq_any (2L, 2L) } } */
+/* { dg-output "\n1" } */
+/* { dg-command { eq_any (100L, 2L) } } */
+/* { dg-output "\n0" } */
+
+/* { dg-command { eq_any (2L, 2UL) } } */
+/* { dg-output "\n1" } */
+/* { dg-command { eq_any (100L, 2UL) } } */
+/* { dg-output "\n0" } */

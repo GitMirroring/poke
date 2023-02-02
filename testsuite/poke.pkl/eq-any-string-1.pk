@@ -1,0 +1,12 @@
+/* { dg-do run } */
+
+fun eq_any = (any a, any b) int<32>: { return a == b; }
+
+/* { dg-command {eq_any ("","")} } */
+/* { dg-output "1" } */
+
+/* { dg-command {eq_any ("foo", "foo")} } */
+/* { dg-output "\n1" } */
+
+/* { dg-command {eq_any ("foo", "bar") } } */
+/* { dg-output "\n0" } */

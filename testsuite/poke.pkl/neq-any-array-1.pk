@@ -1,0 +1,15 @@
+/* { dg-do run } */
+
+fun neq_any = (any a, any b) int<32>: { return a != b; }
+
+/* { dg-command {neq_any ([1,2,3], [1,2,3])} } */
+/* { dg-output "0" } */
+
+/* { dg-command {neq_any ([1,2,3], [1,2,3,4])} } */
+/* { dg-output "\n1" } */
+
+/* { dg-command {neq_any ([1,2,3], [1,2,9])} } */
+/* { dg-output "\n1" } */
+
+/* { dg-command {neq_any ([1,2,3], "foo")} } */
+/* { dg-output "\n1" } */

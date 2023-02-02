@@ -1,3 +1,56 @@
+2023-02-03  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-rt.pk (_pkl_64x64_128): New function.
+	(_pkl_any_integral_p): Likewise.
+	(_pkl_eq_integral): Likewise.
+	(_pkl_eq_offset): Likewise.
+	(_pkl_eq_array): Likewise.
+	(_pkl_eq_struct): Likewise.
+	(_pkl_eq_any): Likewise.
+	* libpoke/pkl-gen.c (pkl_gen_ps_op_rela): Support EQ and NE for
+	`any' values.
+	(pkl_gen_pr_cast): Do nothing for casts to `any'.
+	* libpoke/pkl-typify.c (pkl_typify1_ps_op_rela): Likewise.
+	* libpoke/pkl-promo.c (pkl_promo_ps_op_rela): Likewise.
+	(promote_to_any): New function.
+	* testsuite/poke.pkl/eq-any-diag-1.pk: Remove test.
+	* testsuite/poke.pkl/neq-any-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/ge-any-diag-1.pk: New test.
+	* testsuite/poke.pkl/le-any-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/lt-any-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/gt-any-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/eq-any-integral-1.pk: Likewise.
+	* testsuite/poke.pkl/eq-any-integral-2.pk: Likewise.
+	* testsuite/poke.pkl/eq-any-integral-3.pk: Likewise.
+	* testsuite/poke.pkl/eq-any-integral-4.pk: Likewise.
+	* testsuite/poke.pkl/eq-any-offset-1.pk: Likewise.
+	* testsuite/poke.pkl/eq-any-offset-2.pk: Likewise.
+	* testsuite/poke.pkl/eq-any-offset-3.pk: Likewise.
+	* testsuite/poke.pkl/eq-any-offset-4.pk: Likewise.
+	* testsuite/poke.pkl/eq-any-offset-5.pk: Likewise.
+	* testsuite/poke.pkl/eq-any-offset-6.pk: Likewise.
+	* testsuite/poke.pkl/eq-any-offset-7.pk: Likewise.
+	* testsuite/poke.pkl/neq-any-offset-1.pk: Likewise.
+	* testsuite/poke.pkl/neq-any-offset-2.pk: Likewise.
+	* testsuite/poke.pkl/neq-any-offset-3.pk: Likewise.
+	* testsuite/poke.pkl/neq-any-offset-4.pk: Likewise.
+	* testsuite/poke.pkl/neq-any-offset-5.pk: Likewise.
+	* testsuite/poke.pkl/neq-any-offset-6.pk: Likewise.
+	* testsuite/poke.pkl/neq-any-offset-7.pk: Likewise.
+	* testsuite/poke.pkl/eq-any-array-1.pk: Likewise.
+	* testsuite/poke.pkl/eq-any-array-2.pk: Likewise.
+	* testsuite/poke.pkl/neq-any-array-1.pk: Likewise.
+	* testsuite/poke.pkl/neq-any-array-2.pk: Likewise.
+	* testsuite/poke.pkl/eq-any-string-1.pk: Likewise.
+	* testsuite/poke.pkl/neq-any-string-1.pk: Likewise.
+	* testsuite/poke.pkl/eq-any-struct-1.pk: Likewise.
+	* testsuite/poke.pkl/eq-any-struct-2.pk: Likewise.
+	* testsuite/poke.pkl/eq-any-struct-3.pk: Likewise.
+	* testsuite/poke.pkl/eq-any-struct-4.pk: Likewise.
+	* testsuite/poke.pkl/neq-any-struct-1.pk: Likewise.
+	* testsuite/poke.pkl/neq-any-struct-2.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
 2023-02-01  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* poked/poked.c: Include `<unistd.h>' for `getuid'.

@@ -1258,7 +1258,24 @@ EXTRA_DIST = \
   poke.pkl/div-offsets-diag-3.pk \
   poke.pkl/diva-int-1.pk \
   poke.pkl/diva-offset-diag-1.pk \
-  poke.pkl/eq-any-diag-1.pk \
+  poke.pkl/eq-any-array-1.pk \
+  poke.pkl/eq-any-array-2.pk \
+  poke.pkl/eq-any-integral-1.pk \
+  poke.pkl/eq-any-integral-2.pk \
+  poke.pkl/eq-any-integral-3.pk \
+  poke.pkl/eq-any-integral-4.pk \
+  poke.pkl/eq-any-offset-1.pk \
+  poke.pkl/eq-any-offset-2.pk \
+  poke.pkl/eq-any-offset-3.pk \
+  poke.pkl/eq-any-offset-4.pk \
+  poke.pkl/eq-any-offset-5.pk \
+  poke.pkl/eq-any-offset-6.pk \
+  poke.pkl/eq-any-offset-7.pk \
+  poke.pkl/eq-any-string-1.pk \
+  poke.pkl/eq-any-struct-1.pk \
+  poke.pkl/eq-any-struct-2.pk \
+  poke.pkl/eq-any-struct-3.pk \
+  poke.pkl/eq-any-struct-4.pk \
   poke.pkl/eq-arrays-1.pk \
   poke.pkl/eq-arrays-2.pk \
   poke.pkl/eq-arrays-3.pk \
@@ -1507,6 +1524,7 @@ EXTRA_DIST = \
   poke.pkl/funcall-vararg-6.pk \
   poke.pkl/funcall-vararg-diag-1.pk \
   poke.pkl/funcall-vararg-diag-2.pk \
+  poke.pkl/ge-any-diag-1.pk \
   poke.pkl/ge-arrays-diag-1.pk \
   poke.pkl/ge-functions-diag-1.pk \
   poke.pkl/ge-integers-1.pk \
@@ -1527,6 +1545,7 @@ EXTRA_DIST = \
   poke.pkl/getenv-1.pk \
   poke.pkl/getenv-2.pk \
   poke.pkl/gettime-1.pk \
+  poke.pkl/gt-any-diag-1.pk \
   poke.pkl/gt-arrays-diag-1.pk \
   poke.pkl/gt-functions-diag-1.pk \
   poke.pkl/gt-functions-diag-2.pk \
@@ -1720,6 +1739,7 @@ EXTRA_DIST = \
   poke.pkl/lambda-4.pk \
   poke.pkl/lambda-5.pk \
   poke.pkl/lambda-diag-1.pk \
+  poke.pkl/le-any-diag-1.pk \
   poke.pkl/le-arrays-diag-1.pk \
   poke.pkl/le-functions-diag-1.pk \
   poke.pkl/le-integers-1.pk \
@@ -1746,6 +1766,7 @@ EXTRA_DIST = \
   poke.pkl/loop-2.pk \
   poke.pkl/loop-3.pk \
   poke.pkl/loop-4.pk \
+  poke.pkl/lt-any-diag-1.pk \
   poke.pkl/lt-arrays-diag-1.pk \
   poke.pkl/lt-functions-diag-1.pk \
   poke.pkl/lt-integers-1.pk \
@@ -1846,7 +1867,18 @@ EXTRA_DIST = \
   poke.pkl/neg-integers-2.pk \
   poke.pkl/neg-int-struct-1.pk \
   poke.pkl/neg-offsets-1.pk \
-  poke.pkl/neq-any-diag-1.pk \
+  poke.pkl/neq-any-array-1.pk \
+  poke.pkl/neq-any-array-2.pk \
+  poke.pkl/neq-any-offset-1.pk \
+  poke.pkl/neq-any-offset-2.pk \
+  poke.pkl/neq-any-offset-3.pk \
+  poke.pkl/neq-any-offset-4.pk \
+  poke.pkl/neq-any-offset-5.pk \
+  poke.pkl/neq-any-offset-6.pk \
+  poke.pkl/neq-any-offset-7.pk \
+  poke.pkl/neq-any-string-1.pk \
+  poke.pkl/neq-any-struct-1.pk \
+  poke.pkl/neq-any-struct-2.pk \
   poke.pkl/neq-integers-1.pk \
   poke.pkl/neq-integers-2.pk \
   poke.pkl/neq-offsets-1.pk \

@@ -1,0 +1,12 @@
+/* { dg-do run } */
+
+fun neq_any = (any a, any b) int<32>: { return a != b; }
+
+/* { dg-command {neq_any ("","")} } */
+/* { dg-output "0" } */
+
+/* { dg-command {neq_any ("foo", "foo")} } */
+/* { dg-output "\n0" } */
+
+/* { dg-command {neq_any ("foo", "bar") } } */
+/* { dg-output "\n1" } */

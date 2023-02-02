@@ -2443,6 +2443,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_cast)
                     to_type);             /* IVAL(ULONG) IVAL */
       pkl_asm_insn (pasm, PKL_INSN_NIP);  /* IVAL */
     }
+  else if (PKL_AST_TYPE_CODE (to_type) == PKL_TYPE_ANY)
+    /* Do nothing in casts to `any'.  */;
   else
     assert (0);
 
@@ -4441,6 +4443,17 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_op_rela)
     case PKL_TYPE_STRING:
       pkl_asm_insn (pasm, rela_insn, op1_type);
       pkl_asm_insn (pasm, PKL_INSN_NIP2);
+      break;
+    case PKL_TYPE_ANY:
+      assert (exp_code == PKL_AST_OP_EQ
+              || exp_code == PKL_AST_OP_NE);
+
+      pkl_asm_call (PKL_GEN_ASM, PKL_GEN_PAYLOAD->env, "_pkl_eq_any");
+      if (exp_code == PKL_AST_OP_NE)
+        {
+          pkl_asm_insn (pasm, PKL_INSN_NOT);
+          pkl_asm_insn (pasm, PKL_INSN_NIP);
+        }
       break;
     default:
       assert (0);

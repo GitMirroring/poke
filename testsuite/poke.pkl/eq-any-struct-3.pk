@@ -1,0 +1,20 @@
+/* { dg-do run } */
+
+fun eq_any = (any a, any b) int<32>: { return a == b; }
+
+type Foo =
+  struct
+  {
+    int i;
+    long l;
+    string s if i != 0;
+  };
+
+/* { dg-command {eq_any ( Foo {} , Foo {} )} } */
+/* { dg-output "1" } */
+
+/* { dg-command {eq_any ( Foo { i = 2, s = "foo" } , Foo { i = 2, s = "foo"} )} } */
+/* { dg-output "\n1" } */
+
+/* { dg-command {eq_any ( Foo { i = 0 } , Foo { i = 2, l = 3, s = "bar"} )} } */
+/* { dg-output "\n0" } */
