@@ -1,5 +1,10 @@
 2023-02-03  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* doc/poke.texi (The any Type): Document that == and != are
+	applicable to values of type `any'.
+
+2023-02-03  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-rt.pk (_pkl_eq_any): Fix comparation for structs.
 	* testsuite/poke.pkl/eq-any-union-1.pk: New test.
 	* testsuite/poke.pkl/neq-any-union-1.pk: Likewise.

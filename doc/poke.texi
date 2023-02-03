@@ -12531,7 +12531,10 @@ This means that using any operator that require certain types with
 (poke) fun foo = (any v) int: @{ return v as int; @}
 @end example
 
-Arrays of @code{any}, @code{any[]}, are also supported:
+Arrays of @code{any}, @code{any[]}, are also supported.
+
+Values of type @code{any} can be compared for equality and inequality,
+using the @code{==} and @code{!=} operators.
 
 @node The isa Operator
 @subsection The @code{isa} Operator
