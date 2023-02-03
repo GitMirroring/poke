@@ -1213,7 +1213,7 @@ immutable fun _pkl_eq_any = (any v1, any v2) int<32>:
     /* Offsets.  */
     return _pkl_eq_offset (v1, v2);
   else if (asm int<32>: ("typof; nip; tyiss; nip" : v1)
-           && asm int<32>: ("typof; nip; tyss; nip" : v2))
+           && asm int<32>: ("typof; nip; tyiss; nip" : v2))
     /* Strings.  */
     return _pkl_eq_string (v1, v2);
   else if (asm int<32>: ("typof; nip; tyisa; nip" : v1)
