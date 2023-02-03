@@ -1188,18 +1188,55 @@ immutable fun _pkl_eq_string = (any v1, any v2) int<32>:
 
 immutable fun _pkl_eq_any = (any v1, any v2) int<32>:
 {
-  fun handle_composite = int<32>:
+  fun handle_array = int<32>:
   {
-    /* First check the lenght.  */
     var v1_len = asm uint<64>: ("sel; nip" : v1);
     var v2_len = asm uint<64>: ("sel; nip" : v2);
 
+    /* First check the lenght.  */
     if (v1_len != v2_len)
       return 0;
 
     /* Check the elements.  */
     for (var i = 0UL; i < v1_len; ++i)
       if (!_pkl_eq_any (v1'elem (i), v2'elem (i)))
+        return 0;
+
+    return 1;
+  }
+
+  fun handle_struct = int<32>:
+  {
+    fun struct_type_name = (any val) string:
+    {
+      return asm string: ("typof
+                      tysctgetn
+                      nip2
+                      bn .namenull
+                      nip
+                      ba .done
+                    .namenull:
+                      drop
+                    .done:" : "", val);
+    }
+
+    var v1_len = asm uint<64>: ("sel; nip" : v1);
+    var v2_len = asm uint<64>: ("sel; nip" : v2);
+
+    /* First make sure both struct types have the
+       same name.  */
+    if (struct_type_name (v1) != struct_type_name (v2))
+      return 0;
+
+    /* Now check the lenght.  This accommodates optional
+       fields and the like.  */
+    if (v1_len != v2_len)
+      return 0;
+
+    /* Check the elements.  */
+    for (var i = 0UL; i < v1_len; ++i)
+      if (v1'ename (i) != v2'ename (i)
+          || !_pkl_eq_any (v1'elem (i), v2'elem (i)))
         return 0;
 
     return 1;
@@ -1219,11 +1256,11 @@ immutable fun _pkl_eq_any = (any v1, any v2) int<32>:
   else if (asm int<32>: ("typof; nip; tyisa; nip" : v1)
            && asm int<32>: ("typof; nip; tyisa; nip" : v2))
     /* Arrays.  */
-    return handle_composite;
+    return handle_array;
   else if (asm int<32>: ("typof; nip; tyissct; nip" : v1)
            && asm int<32>: ("typof; nip; tyissct; nip" : v2))
     /* Structs.  */
-    return handle_composite;
+    return handle_struct;
   else
     return 0;
 }

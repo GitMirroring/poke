@@ -1271,11 +1271,13 @@ EXTRA_DIST = \
   poke.pkl/eq-any-offset-5.pk \
   poke.pkl/eq-any-offset-6.pk \
   poke.pkl/eq-any-offset-7.pk \
+  poke.pkl/eq-any-union-1.pk \
   poke.pkl/eq-any-string-1.pk \
   poke.pkl/eq-any-struct-1.pk \
   poke.pkl/eq-any-struct-2.pk \
   poke.pkl/eq-any-struct-3.pk \
   poke.pkl/eq-any-struct-4.pk \
+  poke.pkl/eq-any-struct-5.pk \
   poke.pkl/eq-arrays-1.pk \
   poke.pkl/eq-arrays-2.pk \
   poke.pkl/eq-arrays-3.pk \
@@ -1879,6 +1881,7 @@ EXTRA_DIST = \
   poke.pkl/neq-any-string-1.pk \
   poke.pkl/neq-any-struct-1.pk \
   poke.pkl/neq-any-struct-2.pk \
+  poke.pkl/neq-any-union-1.pk \
   poke.pkl/neq-integers-1.pk \
   poke.pkl/neq-integers-2.pk \
   poke.pkl/neq-offsets-1.pk \

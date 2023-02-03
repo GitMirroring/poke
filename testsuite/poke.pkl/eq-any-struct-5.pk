@@ -1,0 +1,16 @@
+/* { dg-do run } */
+
+fun eq_any = (any a, any b) int<32>: { return a == b; }
+
+type Foo =
+  struct
+  {
+  };
+
+type Bar =
+  struct
+  {
+  };
+
+/* { dg-command { eq_any (Foo {}, Bar {}) } } */
+/* { dg-output "0" } */

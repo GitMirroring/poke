@@ -1,0 +1,19 @@
+/* { dg-do run } */
+
+fun neq_any = (any a, any b) int<32>: { return a != b; }
+
+var x = 2;
+
+type Foo =
+  union
+  {
+    int i : x > 0;
+    long l;
+  };
+
+/* { dg-command {var u1 = Foo {}} } */
+/* { dg-command {neq_any (u1, Foo {})} } */
+/* { dg-output "0" } */
+/* { dg-command {x = 0} } */
+/* { dg-command {neq_any (u1, Foo {})} } */
+/* { dg-output "\n1" } */
