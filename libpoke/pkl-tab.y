@@ -2082,7 +2082,7 @@ declaration:
                                          $<ast>$))
                     {
                       pkl_error (pkl_parser->compiler, pkl_parser->ast, @2,
-                                 "function or variable `%s' already defined",
+                                 "function, method or variable `%s' already defined",
                                  PKL_AST_IDENTIFIER_POINTER ($2));
                       YYERROR;
                     }
