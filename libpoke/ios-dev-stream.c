@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -249,12 +250,17 @@ static int
 ios_dev_stream_flush (void *iod, ios_dev_off offset)
 {
   struct ios_dev_stream *sio = iod;
+
   if (sio->flags & IOS_F_READ
       && offset > ios_buffer_get_begin_offset (sio->buffer)
       && offset <= ios_buffer_get_end_offset (sio->buffer))
     return ios_buffer_forget_till (sio->buffer, offset);
   else
-    return IOS_OK;
+    {
+      assert (sio->flags & IOS_F_WRITE);
+      fflush (sio->file);
+    }
+  return IOS_OK;
 }
 
 struct ios_dev_if ios_dev_stream =

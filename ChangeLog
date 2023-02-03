@@ -1,3 +1,9 @@
+2023-02-03  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/ios-dev-stream.c: Include `<assert.h>'.
+	(ios_dev_stream_flush): Call `fflush' when user calls `flush'
+	on output streams.
+
 2023-02-01  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* poked/poked.c: Include `<unistd.h>' for `getuid'.
