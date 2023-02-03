@@ -8541,6 +8541,15 @@ Poke and PVM assembly.  This chapter documents these modes.
 @i{i.e.} @file{.pk} files.  It provides font-lock, auto-completion and
 indentation features.
 
+@code{poke-mode} is no longer part of the poke source, it is available
+from GNU ELPA instead and can be installed via @code{M-x package-install
+ret poke-mode}. You can automatically load @code{poke-mode} by adding it
+to @code{auto-mode-alist}:
+
+@example
+(add-to-list 'auto-mode-alist '("\\.pk\\'" . poke-mode))
+@end example
+
 @node poke-map-mode
 @section poke-map-mode
 
