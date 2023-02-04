@@ -358,10 +358,21 @@ pvm_program_expand_asm_template (const char *str)
   return expanded;
 }
 
-void
+char *
 pvm_program_parse_from_string (const char *str, pvm_program program)
 {
-  pvm_parse_mutable_routine_from_string (str, program->routine);
+  struct pvm_routine_parse_error *err;
+
+  err = pvm_parse_mutable_routine_from_string (str, program->routine);
+  if (err != NULL)
+    {
+      char *invalid_token = xstrdup (err->error_token_text);
+      pvm_routine_parse_error_destroy (err);
+      return invalid_token;
+    }
+
+  /* No error.  */
+  return NULL;
 }
 
 void

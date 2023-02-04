@@ -254,7 +254,13 @@ pvm_program_label pkl_asm_fresh_label (pkl_asm pasm);
 /* Append a label.  */
 void pkl_asm_label (pkl_asm pasm, pvm_program_label label);
 
-/* Assembly from a buffer containing PVM assembly code.  */
-void pkl_asm_from_string (pkl_asm pasm, const char *str);
+/* Assembly from a buffer containing PVM assembly code.
+
+   If there is a parse error, the function returns an allocated string
+   with the name of the offending token.  The caller is expected to
+   free the memory occupied by that string.  In absence of errors, this
+   function returns NULL.  */
+
+char *pkl_asm_from_string (pkl_asm pasm, const char *str);
 
 #endif /* PKL_ASM_H */

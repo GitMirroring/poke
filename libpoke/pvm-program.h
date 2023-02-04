@@ -42,8 +42,13 @@ pvm_routine pvm_program_routine (pvm_program program);
 char *pvm_program_expand_asm_template (const char *str);
 
 /* Parse PVM instructions from the given string and append them to
-   the given program.  */
+   the given program.
 
-void pvm_program_parse_from_string (const char *str, pvm_program program);
+   If there is a parse error, the function returns an allocated string
+   with the name of the offending token.  The caller is expected to
+   free the memory occupied by that string.  In absence of errors, this
+   function returns NULL.  */
+
+char *pvm_program_parse_from_string (const char *str, pvm_program program);
 
 #endif /* ! PVM_PROGRAM_H */
