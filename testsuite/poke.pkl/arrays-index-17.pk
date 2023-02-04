@@ -1,0 +1,9 @@
+/* { dg-do run } */
+
+type Foo = struct { uint<8> i; uint<16> l; };
+var a = Foo[24#B]();
+
+/* { dg-command {a[1].i = 10} } */
+/* { dg-command {a[1].l = 20} } */
+/* { dg-command {a[1#24]} } */
+/* { dg-output {Foo \{i=10UB,l=20UH\}} } */

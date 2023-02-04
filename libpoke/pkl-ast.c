@@ -1048,7 +1048,12 @@ pkl_ast_type_integrable_p (pkl_ast_node type)
 }
 
 /* Build and return an expression that computes the size of TYPE in
-   bits, as an unsigned 64-bit value.  */
+   bits, as an unsigned 64-bit value.
+
+   Note that it is required for the returned expression to not trigger
+   errors in the fold pass, i.e. no division by zero, no overflow, out
+   of bound indexes.  This will be detected by a run-time
+   abort/assert.  */
 
 pkl_ast_node
 pkl_ast_sizeof_type (pkl_ast ast, pkl_ast_node type)

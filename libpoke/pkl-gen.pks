@@ -3418,7 +3418,8 @@
         ;; If the size all the array elements is constant and known
         ;; at compile-time, then we can just calculate the index
         ;; corresponding to the given offset.
-        .let @esize = pkl_ast_sizeof_type (PKL_PASS_AST, @etype)
+        .let @esize = pkl_constant_fold (PKL_PASS_COMPILER, \
+                                         pkl_ast_sizeof_type (PKL_PASS_AST, @etype))
   .c    assert (PKL_AST_CODE (@esize) == PKL_AST_INTEGER);
         .let #esizeval = pvm_make_ulong (PKL_AST_INTEGER_VALUE (@esize), 64);
         push #esizeval            ; ARR IDX ESIZE

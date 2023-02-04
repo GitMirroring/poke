@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#include "pkl-ast.h"
 #include "pkl-compiler.h"
 #include "pvm.h"
 
@@ -311,5 +312,9 @@ int pkl_module_loaded_p (pkl_compiler compiler, const char *path);
    the compiler.  */
 
 void pkl_add_module (pkl_compiler compiler, const char *path);
+
+/* Given an AST node, run constant fold on it.  */
+
+pkl_ast_node pkl_constant_fold (pkl_compiler compiler, pkl_ast_node ast);
 
 #endif /* ! PKL_H */
