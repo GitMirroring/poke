@@ -3419,6 +3419,7 @@
         ;; at compile-time, then we can just calculate the index
         ;; corresponding to the given offset.
         .let @esize = pkl_constant_fold (PKL_PASS_COMPILER, \
+                                         PKL_PASS_AST, \
                                          pkl_ast_sizeof_type (PKL_PASS_AST, @etype))
   .c    assert (PKL_AST_CODE (@esize) == PKL_AST_INTEGER);
         .let #esizeval = pvm_make_ulong (PKL_AST_INTEGER_VALUE (@esize), 64);

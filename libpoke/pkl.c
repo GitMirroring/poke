@@ -921,17 +921,18 @@ pkl_tracer_p (pkl_compiler compiler)
 }
 
 pkl_ast_node
-pkl_constant_fold (pkl_compiler compiler, pkl_ast_node node)
+pkl_constant_fold (pkl_compiler compiler, pkl_ast ast, pkl_ast_node node)
 {
-  pkl_ast ast;
+  pkl_ast tmp_ast;
   struct pkl_fold_payload fold_payload = { 0 };
   struct pkl_phase *fold_phases[] = { &pkl_phase_fold, NULL };
   void *fold_payloads[] = { &fold_payload, NULL };
 
-  ast = pkl_ast_init ();
-  ast->ast = ASTREF (node);
-  if (!pkl_do_pass (compiler, ast, fold_phases, fold_payloads, 0, 1))
+  tmp_ast = pkl_ast_init ();
+  tmp_ast->ast = ASTREF (node);
+  tmp_ast->uid = ast->uid;
+  if (!pkl_do_pass (compiler, tmp_ast, fold_phases, fold_payloads, 0, 1))
     assert (0);
 
-  return ast->ast;
+  return tmp_ast->ast;
 }
