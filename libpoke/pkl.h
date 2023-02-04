@@ -315,6 +315,7 @@ void pkl_add_module (pkl_compiler compiler, const char *path);
 
 /* Given an AST node, run constant fold on it.  */
 
-pkl_ast_node pkl_constant_fold (pkl_compiler compiler, pkl_ast_node ast);
+pkl_ast_node pkl_constant_fold (pkl_compiler compiler, pkl_ast ast,
+                                pkl_ast_node node);
 
 #endif /* ! PKL_H */
