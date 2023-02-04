@@ -4666,6 +4666,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_asm_stmt)
 {
   pkl_ast_node asm_stmt = PKL_PASS_NODE;
   pkl_ast_node input, output;
+  char *asm_ret;
 
   /* Push a canary to the stack.  */
   pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL);
@@ -4678,9 +4679,16 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_asm_stmt)
       PKL_PASS_SUBPASS (input);
     }
 
-  /* Assembly the sm template.  */
-  pkl_asm_from_string (PKL_GEN_ASM,
-                       PKL_AST_IDENTIFIER_POINTER (PKL_AST_ASM_STMT_TEMPLATE (asm_stmt)));
+  /* Assembly the asm template.  */
+  asm_ret = pkl_asm_from_string (PKL_GEN_ASM,
+                                 PKL_AST_IDENTIFIER_POINTER (PKL_AST_ASM_STMT_TEMPLATE (asm_stmt)));
+  if (asm_ret != NULL)
+    {
+      PKL_ERROR (PKL_AST_LOC (PKL_AST_ASM_STMT_TEMPLATE (asm_stmt)),
+                 "error parsing asm template near %s", asm_ret);
+      free (asm_ret);
+      PKL_PASS_ERROR;
+    }
 
   /* Generate the output assignments.  */
   for (output = PKL_AST_ASM_STMT_OUTPUTS (asm_stmt);
@@ -4718,6 +4726,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_asm_exp)
 {
   pkl_ast_node asm_exp = PKL_PASS_NODE;
   pkl_ast_node input;
+  char *asm_ret;
 
   /* Push a canary to the stack.  */
   pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL);
@@ -4731,8 +4740,15 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_asm_exp)
     }
 
   /* Assembly the asm template.  */
-  pkl_asm_from_string (PKL_GEN_ASM,
-                       PKL_AST_IDENTIFIER_POINTER (PKL_AST_ASM_EXP_TEMPLATE (asm_exp)));
+  asm_ret = pkl_asm_from_string (PKL_GEN_ASM,
+                                 PKL_AST_IDENTIFIER_POINTER (PKL_AST_ASM_EXP_TEMPLATE (asm_exp)));
+  if (asm_ret != NULL)
+    {
+      PKL_ERROR (PKL_AST_LOC (PKL_AST_ASM_STMT_TEMPLATE (asm_exp)),
+                 "error parsing asm template near %s", asm_ret);
+      free (asm_ret);
+      PKL_PASS_ERROR;
+    }
 
   /* Check and drop the canary.  */
   {
