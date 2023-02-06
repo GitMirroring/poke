@@ -43,7 +43,7 @@ fun search_type = (Pk_Type typ, int<32> ios = get_ios,
       try
       {
         var found = typ.mapper (1 /* strict */,
-                                ios, from'magnitude*from'unit, 0, 0);
+                                ios, from'magnitude*from'unit);
         var end = found'offset + found'size;
 
         return Search_Match_Data { start = found'offset, end = end };

@@ -1,0 +1,54 @@
+/* search-test.pk - Tests for the search pickle.  */
+
+/* Copyright (C) 2023 The poke authors.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+load pktest;
+load search;
+
+set_endian (ENDIAN_BIG);
+
+var data = [0x12UB, 0x34UB, 0x56UB, 0x78UB, 0x9aUB, 0xbcUB, 0xefUB];
+
+type T1 = struct uint<16>
+  {
+    uint<4> three == 3UN;
+    uint<8> anything;
+    uint<4> six == 6UN;
+  };
+
+var tests = [
+  PkTest {
+    name = "load search pickle",
+    func = lambda (string name) void:
+      {
+        with_temp_ios
+          :do lambda void:
+            {
+              byte[] @ 0#B = data;
+
+              var typ = typeof (T1),
+                  matches = (search_type :typ typ);
+
+              assert (matches'length == 1);
+              assert (matches[0].start == 1#B);
+              assert (matches[0].end == 1#B + typ.size#b);
+            };
+      },
+  },];
+
+var ok = pktest_run (tests);
+exit (ok ? 0 : 1);

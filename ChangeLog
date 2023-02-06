@@ -1,3 +1,9 @@
+2023-02-06  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* pickles/search.pk (search_type): Fix `mapper' invocation.
+	* testsuite/poke.pickles/search-test.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
+
 2023-02-06  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pvm-alloc.c (pvm_alloc_initialize): Do not initialize
