@@ -74,8 +74,11 @@ pvm_alloc_cls (void)
 void
 pvm_alloc_initialize ()
 {
-  /* Initialize the Boehm Garbage Collector.  */
-  GC_INIT ();
+  /* Initialize the Boehm Garbage Collector, but only if it hasn't
+     been already initialized.  The later may happen if some other
+     library or program uses the boehm GC.  */
+  if (!GC_is_init_called ())
+    GC_INIT ();
 }
 
 void

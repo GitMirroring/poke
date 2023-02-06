@@ -1,5 +1,10 @@
 2023-02-06  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pvm-alloc.c (pvm_alloc_initialize): Do not initialize
+	the boehm GC if it has been already initialized.
+
+2023-02-06  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* doc/poke.texi: Update examples to new semantics of FNAME ==
 	EXPR.
 
