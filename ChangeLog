@@ -1,3 +1,8 @@
+2023-02-06  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* doc/poke.texi: Update examples to new semantics of FNAME ==
+	EXPR.
+
 2023-02-04  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl.c (pkl_constant_fold): Get an ast argument and avoid

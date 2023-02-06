@@ -4841,7 +4841,7 @@ operator:
 @example
 (poke) Packet @@ 12#B
 Packet @{
-  magic = 0xab,
+  magic == 0xab,
   size = 2,
   payload = [0x12UB,0x30UB],
   control = [0x1UB,0x1UB]
@@ -4859,7 +4859,7 @@ like this:
 @example
 (poke) Packet @{size = 2, payload = [1UB,2UB]@}
 Packet @{
-  magic = 0xab,
+  magic == 0xab,
   size = 2,
   payload = [0x1UB,0x2UB],
   control = [0x0UB,0x0UB]
@@ -4911,7 +4911,7 @@ We could of course do something like this:
 type Packet =
   struct
   @{
-    byte magic = 0xab;
+    byte magic == 0xab;
     byte size;
 
     byte[size == 0xff ? 0 : size] payload;
@@ -4925,7 +4925,7 @@ However, we can avoid replicating code by using a variable instead:
 type Packet =
   struct
   @{
-    byte magic = 0xab;
+    byte magic == 0xab;
     byte size;
 
     var real_size = (size == 0xff ? 0 : size);
@@ -4949,7 +4949,7 @@ var packet_special = 0xff;
 type Packet =
   struct
   @{
-    byte magic = 0xab;
+    byte magic == 0xab;
     byte size;
 
     var real_size = (size == packet_special ? 0 : size);
@@ -4995,7 +4995,7 @@ load supercrc;
 type Packet =
   struct
   @{
-    byte magic = 0xab;
+    byte magic == 0xab;
     byte size;
 
     var real_size = (size == 0xff ? 0 : size);
@@ -5029,7 +5029,7 @@ load supercrc;
 type Packet =
   struct
   @{
-    byte magic = 0xab;
+    byte magic == 0xab;
     byte size;
 
     var real_size = (size == 0xff ? 0 : size);
@@ -5119,7 +5119,7 @@ load supercrc;
 type Packet =
   struct
   @{
-    byte magic = 0xab;
+    byte magic == 0xab;
     byte size;
 
     var real_size = (size == 0xff ? 0 : size);
@@ -5199,7 +5199,7 @@ var packet_special = 0xff;
 type Packet =
   struct
   @{
-    byte magic = 0xab;
+    byte magic == 0xab;
     byte size;
     [...]
 
@@ -5279,7 +5279,7 @@ following struct type:
 type Packet =
   struct
   @{
-    byte magic = 0xab;
+    byte magic == 0xab;
     byte size : size <= 4096;
     [...]
 
@@ -5309,7 +5309,7 @@ type Packet =
   @{
     var MAXSIZE = 4096;
 
-    byte magic = 0xab;
+    byte magic == 0xab;
     byte size : size <= MAXSIZE;
     [...]
 
