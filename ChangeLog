@@ -1,5 +1,11 @@
 2023-02-06  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* testsuite/poke.pvm/pvm.exp: New file.
+	* testsuite/poke.pvm/vm-insns.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
+
+2023-02-06  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pvm-alloc.c (pvm_alloc_initialize): Do not initialize
 	the boehm GC if it has been already initialized.
 

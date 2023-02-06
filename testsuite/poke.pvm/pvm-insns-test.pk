@@ -1,0 +1,143 @@
+/* pvm-insns-test.pk - Tests for PVM instructions.  */
+
+/* Copyright (C) 2023 Jose E. Marchesi.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+load pktest;
+
+var tests = [
+  /* VM related instructions.  */
+  PkTest {
+    name = "pushend and popend",
+    func = lambda (string name) void:
+      {
+        asm ("popend" :: 0);
+        assert (asm int<32>: ("pushend") == 0);
+        asm ("popend" :: 1);
+        assert (asm int<32>: ("pushend") == 1);
+      },
+  },
+  PkTest {
+    name = "pushob and popob",
+    func = lambda (string name) void:
+      {
+        asm ("popob" :: 2);
+        assert (asm int<32>: ("pushob") == 2);
+        asm ("popob" :: 10);
+        assert (asm int<32>: ("pushob") == 10);
+      }
+  },
+  PkTest {
+    name = "pushom and popom",
+    func = lambda (string name) void:
+      {
+        asm ("popom" :: 0);
+        assert (asm int<32>: ("pushom") == 0);
+        asm ("popom" :: 1);
+        assert (asm int<32>: ("pushom") == 1);
+      }
+  },
+  PkTest {
+    name = "pushoo and popoo",
+    func = lambda (string name) void:
+      {
+        asm ("popoo" :: 0);
+        assert (asm int<32>: ("pushoo") == 0);
+        asm ("popoo" :: 1);
+        assert (asm int<32>: ("pushoo") == 1);
+      }
+  },
+  PkTest {
+    name = "pushoi and popoi",
+    func = lambda (string name) void:
+      {
+        asm ("popoi" :: 0);
+        assert (asm int<32>: ("pushoi") == 0);
+        asm ("popoi" :: 1);
+        assert (asm int<32>: ("pushoi") == 1);
+      }
+  },
+  PkTest {
+    name = "pushod and popod",
+    func = lambda (string name) void:
+      {
+        asm ("popod" :: 0);
+        assert (asm int<32>: ("pushod") == 0);
+        asm ("popod" :: 1);
+        assert (asm int<32>: ("pushod") == 1);
+      }
+  },
+  PkTest {
+    name = "pushoac and popoac",
+    func = lambda (string name) void:
+      {
+        asm ("popoac" :: 0);
+        assert (asm int<32>: ("pushoac") == 0);
+        asm ("popoac" :: 1);
+        assert (asm int<32>: ("pushoac") == 1);
+      }
+  },
+  PkTest {
+    name = "pushopp and popopp",
+    func = lambda (string name) void:
+      {
+        asm ("popopp" :: 0);
+        assert (asm int<32>: ("pushopp") == 0);
+        asm ("popopp" :: 1);
+        assert (asm int<32>: ("pushopp") == 1);
+      }
+  },
+  /* Arithmetic instructions.  */
+  PkTest {
+    name = "addi",
+    func = lambda (string name) void:
+      {
+        assert (asm int<32>: ("addi; nip2" : 1, 2) == 3);
+        var i3 = asm int<3>: ("addi; nip2" : 1 as int<3>, 2 as int<3>);
+        assert (i3 isa int<3> && i3 == 3);
+      }
+  },
+  PkTest {
+    name = "addiu",
+    func = lambda (string name) void:
+      {
+        assert (asm uint<32>: ("addiu; nip2" : 1U, 2U) == 3U);
+        var u5 = asm uint<5>: ("addiu; nip2" : 1 as uint<5>, 2 as uint<5>);
+        assert (u5 isa uint<5> && u5 == 3U);
+      }
+  },
+  PkTest {
+    name = "addl",
+    func = lambda (string name) void:
+      {
+        assert (asm int<64>: ("addl; nip2" : 1L, 2L) == 3);
+        var i34 = asm int<34>: ("addl; nip2" : 1 as int<34>, 2 as int<34>);
+        assert (i34 isa int<34> && i34 == 3);
+      }
+  },
+  PkTest {
+    name = "addlu",
+    func = lambda (string name) void:
+      {
+        assert (asm uint<64>: ("addlu; nip2" : 1UL, 2UL) == 3UL);
+        var u35 = asm uint<35>: ("addlu; nip2" : 1 as uint<35>, 2 as uint<35>);
+        assert (u35 isa uint<35> && u35 == 3LU);
+      }
+  },
+];
+
+var ok = pktest_run (tests);
+exit (ok ? 0 : 1);

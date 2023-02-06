@@ -59,8 +59,16 @@ fun catos = (uint<8>[] chars) string:
    return s;
   }
 
-fun stoca = (string s, uint<8>[] ca, uint<8> fill = 0) void:
+fun stoca = (string s, uint<8>[] ca = uint<8>[](), uint<8> fill = 0) uint<8>[]:
   {
+    if (ca'length == 0)
+    {
+      var res = uint<8>[]();
+      for (c in s)
+        res += [c];
+      return res;
+    }
+
     if (s'length > ca'length)
       raise E_out_of_bounds;
 
@@ -70,6 +78,8 @@ fun stoca = (string s, uint<8>[] ca, uint<8> fill = 0) void:
         ca[i] = i < s'length ? s[i] : fill;
         i = i + 1;
       }
+
+    return ca;
   }
 
 type Strtoi_Result =
