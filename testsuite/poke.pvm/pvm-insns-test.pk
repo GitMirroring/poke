@@ -16,6 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* When testing instructions that push new values on the stack, such
+   as addi for example, please make sure to also check that the
+   new values are of the right type.  So for example, instead of this:
+
+     var res = asm int<32>: ("muli; nip2" : 2, 3);
+     assert (res == 6);
+
+   it is much more useful to do this:
+
+     var res = asm any: ("muli; nip2" : 2, 3);
+     assert (res isa int<32>);
+     assert (res as int<32> == 6);
+*/
+
 load pktest;
 
 var tests = [
@@ -98,6 +112,176 @@ var tests = [
         assert (asm int<32>: ("pushopp") == 0);
         asm ("popopp" :: 1);
         assert (asm int<32>: ("pushopp") == 1);
+      }
+  },
+  /* Integer overflow instructions.  */
+  PkTest {
+    name = "addiof",
+    func = lambda (string name) void:
+      {
+        var res = asm any: ("addiof; nip2" : 2, 3);
+        assert (res isa int<32>);
+        assert (res as int<32> == 0);
+        res = asm any: ("addiof; nip2" : 0xffff, 0x7fff_ffff);
+        assert (res isa int<32>);
+        assert (res as int<32> == 1);
+      }
+  },
+  PkTest {
+    name = "addlof",
+    func = lambda (string name) void:
+      {
+        var res = asm any: ("addlof; nip2" : 2L, 3L);
+        assert (res isa int<32>);
+        assert (res as int<32> == 0);
+        res = asm any: ("addlof; nip2" : 0x7fff_ffff_ffff_ffff, 1L);
+        assert (res isa int<32>);
+        assert (res as int<32> == 1);
+      }
+  },
+  PkTest {
+    name = "subiof",
+    func = lambda (string name) void:
+      {
+        var res = asm any: ("subiof; nip2" : 3, 2);
+        assert (res isa int<32>);
+        assert (res as int<32> == 0);
+        res = asm any: ("subiof; nip2" : 0b0111 as int<4>, 0b1010 as int<4>);
+        assert (res isa int<32>);
+        assert (res as int<32> == 1);
+      }
+  },
+  PkTest {
+    name = "sublof",
+    func = lambda (string name) void:
+      {
+        var res = asm any: ("sublof; nip2" : 2L, 3L);
+        assert (res isa int<32>);
+        assert (res as int<32> == 0);
+        res = asm any: ("sublof; nip2" : 0x8000_0000_0000_0000LU as int<64>,
+                                         1L);
+        assert (res isa int<32>);
+        assert (res as int<32> == 1);
+      }
+  },
+  PkTest {
+    name = "muliof",
+    func = lambda (string name) void:
+      {
+        var res = asm any: ("muliof; nip2" : 2, 3);
+        assert (res isa int<32>);
+        assert (res as int<32> == 0);
+        res = asm any: ("muliof; nip2" : 0xffff, 0x7fff_ffff);
+        assert (res isa int<32>);
+        assert (res as int<32> == 1);
+      }
+  },
+  PkTest {
+    name = "mullof",
+    func = lambda (string name) void:
+      {
+        var res = asm any: ("mullof; nip2" : 2L, 3L);
+        assert (res isa int<32>);
+        assert (res as int<32> == 0);
+        res = asm any: ("mullof; nip2" : 0x7fff_ffff_ffff_ffff, 2L);
+        assert (res isa int<32>);
+        assert (res as int<32> == 1);
+      }
+  },
+  PkTest {
+    name = "diviof",
+    func = lambda (string name) void:
+      {
+        var res = asm any: ("diviof; nip2" : 10, 2);
+        assert (res isa int<32>);
+        assert (res as int<32> == 0);
+        res = asm any: ("diviof; nip2" : 0x8000_0000U as int<32>, -1);
+        assert (res isa int<32>);
+        assert (res as int<32> == 1);
+      }
+  },
+  PkTest {
+    name = "divlof",
+    func = lambda (string name) void:
+      {
+        var res = asm any: ("divlof; nip2" : 2L, 3L);
+        assert (res isa int<32>);
+        assert (res as int<32> == 0);
+        res = asm any: ("divlof; nip2" : 0x8000_0000_0000_0000LU as int<64>, -1L);
+        assert (res isa int<32>);
+        assert (res as int<32> == 1);
+      }
+  },
+  PkTest {
+    name = "modiof",
+    func = lambda (string name) void:
+      {
+        var res = asm any: ("modiof; nip2" : 10, 2);
+        assert (res isa int<32>);
+        assert (res as int<32> == 0);
+        res = asm any: ("modiof; nip2" : 0x8000_0000U as int<32>, -1);
+        assert (res isa int<32>);
+        assert (res as int<32> == 1);
+      }
+  },
+  PkTest {
+    name = "modlof",
+    func = lambda (string name) void:
+      {
+        var res = asm any: ("modlof; nip2" : 2L, 3L);
+        assert (res isa int<32>);
+        assert (res as int<32> == 0);
+        res = asm any: ("modlof; nip2" : 0x8000_0000_0000_0000LU as int<64>, -1L);
+        assert (res isa int<32>);
+        assert (res as int<32> == 1);
+      }
+  },
+  PkTest {
+    name = "negiof",
+    func = lambda (string name) void:
+      {
+        var res = asm any: ("negiof; nip" : 10);
+        assert (res isa int<32>);
+        assert (res as int<32> == 0);
+        res = asm any: ("negiof; nip" : 0x8000_0000U as int<32>);
+        assert (res isa int<32>);
+        assert (res as int<32> == 1);
+      }
+  },
+  PkTest {
+    name = "neglof",
+    func = lambda (string name) void:
+      {
+        var res = asm any: ("neglof; nip" : 2L);
+        assert (res isa int<32>);
+        assert (res as int<32> == 0);
+        res = asm any: ("neglof; nip" : 0x8000_0000_0000_0000LU as int<64>);
+        assert (res isa int<32>);
+        assert (res as int<32> == 1);
+      }
+  },
+  PkTest {
+    name = "powiof",
+    func = lambda (string name) void:
+      {
+        var res = asm any: ("powiof; nip2" : 2, 6U);
+        assert (res isa int<32>);
+        assert (res as int<32> == 0);
+        res = asm any: ("powiof; nip2" : 2, 31);
+        assert (res isa int<32>);
+        assert (res as int<32> == 1);
+      }
+  },
+  PkTest {
+    name = "powlof",
+    func = lambda (string name) void:
+      {
+        var res = asm any: ("powlof; nip2" : 2L, 3U);
+        assert (res isa int<32>);
+        assert (res as int<32> == 0);
+        res = asm any: ("powlof; nip2" : 2L, 63);
+        assert (res isa int<32>);
+        assert (res as int<32> == 1);
       }
   },
   /* Arithmetic instructions.  */

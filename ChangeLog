@@ -1,3 +1,34 @@
+2023-02-07  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pvm.jitter (addiof): New instruction.
+	(addlof): Likewise.
+	(subiof): Likewise.
+	(sublof): Likewise.
+	(muliof): Likewise.
+	(mullof): Likewise.
+	(diviof): Likewise.
+	(divlof): Likewise.
+	(modiof): Likewise.
+	(modlof): Likewise.
+	(negiof): Likewise.
+	(neglof): Likewise.
+	(powiof): Likewise.
+	(powlof): Likewise.
+	* testsuite/poke.pvm/pvm-insns-test.pk (addiof): New test.
+	(addlof): Likewise.
+	(subiof): Likewise.
+	(sublof): Likewise.
+	(muliof): Likewise.
+	(mullof): Likewise.
+	(diviof): Likewise.
+	(divlof): Likewise.
+	(modiof): Likewise.
+	(modlof): Likewise.
+	(negiof): Likewise.
+	(neglof): Likewise.
+	(powiof): Likewise.
+	(powlof): Likewise.
+
 2023-02-06  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* pickles/search.pk (search_type): Fix `mapper' invocation.

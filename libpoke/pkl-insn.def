@@ -105,6 +105,23 @@ PKL_DEF_INSN(PKL_INSN_LUTOIU,"n","lutoiu")
 PKL_DEF_INSN(PKL_INSN_LUTOL,"n","lutol")
 PKL_DEF_INSN(PKL_INSN_LUTOLU,"n","lutolu")
 
+/* Integer overflow checking instructions.  */
+
+PKL_DEF_INSN(PKL_INSN_ADDIOF,"","addiof")
+PKL_DEF_INSN(PKL_INSN_ADDLOF,"","addlof")
+PKL_DEF_INSN(PKL_INSN_SUBIOF,"","subiof")
+PKL_DEF_INSN(PKL_INSN_SUBLOF,"","sublof")
+PKL_DEF_INSN(PKL_INSN_MULIOF,"","muliof")
+PKL_DEF_INSN(PKL_INSN_MULLOF,"","mullof")
+PKL_DEF_INSN(PKL_INSN_DIVIOF,"","diviof")
+PKL_DEF_INSN(PKL_INSN_DIVLOF,"","divlof")
+PKL_DEF_INSN(PKL_INSN_MODIOF,"","modiof")
+PKL_DEF_INSN(PKL_INSN_MODLOF,"","modlof")
+PKL_DEF_INSN(PKL_INSN_NEGIOF,"","negiof")
+PKL_DEF_INSN(PKL_INSN_NEGLOF,"","neglof")
+PKL_DEF_INSN(PKL_INSN_POWIOF,"","powiof")
+PKL_DEF_INSN(PKL_INSN_POWLOF,"","powlof")
+
 /* Integer arithmetic instructions.  */
 
 PKL_DEF_INSN(PKL_INSN_NEGI,"","negi")

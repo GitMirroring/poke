@@ -2850,6 +2850,294 @@ instruction atr ()
 end
 
 
+## Integer overflow checking instructions.
+
+# The following instructions check for overflow conditions
+# in signed integer operations.
+
+# Instruction: addiof
+#
+# Push 1 on the stack if adding the given two signed integer
+# values would overflow.  Push 0 on the stack otherwise.
+#
+# Stack: ( INT INT -- INT INT INT )
+
+instruction addiof ()
+  code
+    int32_t a = PVM_VAL_INT (JITTER_UNDER_TOP_STACK ());
+    int32_t b = PVM_VAL_INT (JITTER_TOP_STACK ());
+    int size = PVM_VAL_INT_SIZE (JITTER_TOP_STACK ());
+    int64_t a64 = ((uint64_t)(int64_t) a) << (64 - size);
+    int64_t b64 = ((uint64_t)(int64_t) b) << (64 - size);
+
+    JITTER_PUSH_STACK (pvm_make_int (INT_ADD_OVERFLOW (a64, b64),32));
+  end
+end
+
+# Instruction: addlof
+#
+# Push 1 on the stack if adding the given two signed long
+# values would overflow.  Push 0 on the stack otherwise.
+#
+# Stack: ( LONG LONG -- LONG LONG INT )
+
+instruction addlof ()
+  code
+    int64_t a = PVM_VAL_LONG (JITTER_UNDER_TOP_STACK ());
+    int64_t b = PVM_VAL_LONG (JITTER_TOP_STACK ());
+    int size = PVM_VAL_LONG_SIZE (JITTER_TOP_STACK ());
+    int64_t a64 = ((uint64_t)(int64_t) a) << (64 - size);
+    int64_t b64 = ((uint64_t)(int64_t) b) << (64 - size);
+
+    JITTER_PUSH_STACK (pvm_make_int (INT_ADD_OVERFLOW (a64, b64),32));
+  end
+end
+
+# Instruction: subiof
+#
+# Push 1 on the stack if subtracting the given two signed integer
+# values would overflow.  Push 0 on the stack otherwise.
+#
+# Stack: ( INT INT -- INT INT INT )
+
+instruction subiof ()
+  code
+    int32_t a = PVM_VAL_INT (JITTER_UNDER_TOP_STACK ());
+    int32_t b = PVM_VAL_INT (JITTER_TOP_STACK ());
+    int size = PVM_VAL_INT_SIZE (JITTER_TOP_STACK ());
+    int64_t a64 = ((uint64_t)(int64_t) a) << (64 - size);
+    int64_t b64 = ((uint64_t)(int64_t) b) << (64 - size);
+
+    JITTER_PUSH_STACK (pvm_make_int (INT_SUBTRACT_OVERFLOW (a64, b64),32));
+  end
+end
+
+# Instruction: sublof
+#
+# Push 1 on the stack if subtracting the given two signed long
+# values would overflow.  Push 0 on the stack otherwise.
+#
+# Stack: ( LONG LONG -- LONG LONG INT )
+
+instruction sublof ()
+  code
+    int64_t a = PVM_VAL_LONG (JITTER_UNDER_TOP_STACK ());
+    int64_t b = PVM_VAL_LONG (JITTER_TOP_STACK ());
+    int size = PVM_VAL_LONG_SIZE (JITTER_TOP_STACK ());
+    int64_t a64 = ((uint64_t)(int64_t) a) << (64 - size);
+    int64_t b64 = ((uint64_t)(int64_t) b) << (64 - size);
+
+    JITTER_PUSH_STACK (pvm_make_int (INT_SUBTRACT_OVERFLOW (a64, b64), 32));
+  end
+end
+
+# Instruction: muliof
+#
+# Push 1 on the stack if multiplying the given two signed integer
+# values would overflow.  Push 0 on the stack otherwise.
+#
+# Stack: ( INT INT -- INT INT INT )
+
+instruction muliof ()
+  code
+    int32_t a = PVM_VAL_INT (JITTER_UNDER_TOP_STACK ());
+    int32_t b = PVM_VAL_INT (JITTER_TOP_STACK ());
+    int size = PVM_VAL_INT_SIZE (JITTER_TOP_STACK ());
+    int64_t a64 = ((uint64_t)(int64_t) a) << (64 - size);
+
+    JITTER_PUSH_STACK (pvm_make_int (INT_MULTIPLY_OVERFLOW (a64, b),32));
+  end
+end
+
+# Instruction: mullof
+#
+# Push 1 on the stack if multiplying the given two signed long
+# values would overflow.  Push 0 on the stack otherwise.
+#
+# Stack: ( LONG LONG -- LONG LONG INT )
+
+instruction mullof ()
+  code
+    int64_t a = PVM_VAL_LONG (JITTER_UNDER_TOP_STACK ());
+    int64_t b = PVM_VAL_LONG (JITTER_TOP_STACK ());
+    int size = PVM_VAL_LONG_SIZE (JITTER_TOP_STACK ());
+    int64_t a64 = ((uint64_t)(int64_t) a) << (64 - size);
+
+    JITTER_PUSH_STACK (pvm_make_int (INT_MULTIPLY_OVERFLOW (a64, b), 32));
+  end
+end
+
+# Instruction: diviof
+#
+# Push 1 on the stack if dividing the given two signed integer
+# values would overflow.  Push 0 on the stack otherwise.
+#
+# Stack: ( INT INT -- INT INT INT )
+
+instruction diviof ()
+  code
+    int32_t a = PVM_VAL_INT (JITTER_UNDER_TOP_STACK ());
+    int32_t b = PVM_VAL_INT (JITTER_TOP_STACK ());
+    int size = PVM_VAL_INT_SIZE (JITTER_TOP_STACK ());
+    int64_t a64 = ((uint64_t)(int64_t) a) << (64 - size);
+
+    JITTER_PUSH_STACK (pvm_make_int (INT_DIVIDE_OVERFLOW (a64, b),32));
+  end
+end
+
+# Instruction: divlof
+#
+# Push 1 on the stack if dividing the given two signed long
+# values would overflow.  Push 0 on the stack otherwise.
+#
+# Stack: ( LONG LONG -- LONG LONG INT )
+
+instruction divlof ()
+  code
+    int64_t a = PVM_VAL_LONG (JITTER_UNDER_TOP_STACK ());
+    int64_t b = PVM_VAL_LONG (JITTER_TOP_STACK ());
+    int size = PVM_VAL_LONG_SIZE (JITTER_TOP_STACK ());
+    int64_t a64 = ((uint64_t)(int64_t) a) << (64 - size);
+
+    JITTER_PUSH_STACK (pvm_make_int (INT_DIVIDE_OVERFLOW (a64, b), 32));
+  end
+end
+
+# Instruction: modiof
+#
+# Push 1 on the stack if calculating the remainder of the given two
+# signed integer values would overflow.  Push 0 on the stack otherwise.
+#
+# Stack: ( INT INT -- INT INT INT )
+
+instruction modiof ()
+  code
+    int32_t a = PVM_VAL_INT (JITTER_UNDER_TOP_STACK ());
+    int32_t b = PVM_VAL_INT (JITTER_TOP_STACK ());
+    int size = PVM_VAL_INT_SIZE (JITTER_TOP_STACK ());
+    int64_t a64 = ((uint64_t)(int64_t) a) << (64 - size);
+
+    JITTER_PUSH_STACK (pvm_make_int (INT_DIVIDE_OVERFLOW (a64, b),32));
+  end
+end
+
+# Instruction: modlof
+#
+# Push 1 on the stack if calculating the remainder of the given two signed long
+# values would overflow.  Push 0 on the stack otherwise.
+#
+# Stack: ( LONG LONG -- LONG LONG INT )
+
+instruction modlof ()
+  code
+    int64_t a = PVM_VAL_LONG (JITTER_UNDER_TOP_STACK ());
+    int64_t b = PVM_VAL_LONG (JITTER_TOP_STACK ());
+    int size = PVM_VAL_LONG_SIZE (JITTER_TOP_STACK ());
+    int64_t a64 = ((uint64_t)(int64_t) a) << (64 - size);
+
+    JITTER_PUSH_STACK (pvm_make_int (INT_DIVIDE_OVERFLOW (a64, b), 32));
+  end
+end
+
+# Instruction: negiof
+#
+# Push 1 on the stack if calculating the negation of the given
+# signed integer value would overflow.  Push 0 on the stack otherwise.
+#
+# Stack: ( INT -- INT INT )
+
+instruction negiof ()
+  code
+    int32_t a = PVM_VAL_INT (JITTER_TOP_STACK ());
+    int size = PVM_VAL_INT_SIZE (JITTER_TOP_STACK ());
+    int64_t a64 = ((uint64_t)(int64_t) a) << (64 - size);
+
+    JITTER_PUSH_STACK (pvm_make_int (INT_NEGATE_OVERFLOW (a64), 32));
+  end
+end
+
+# Instruction: neglof
+#
+# Push 1 on the stack if calculating the negation of the given
+# value would overflow.  Push 0 on the stack otherwise.
+#
+# Stack: ( LONG -- LONG INT )
+
+instruction neglof ()
+  code
+    int64_t a = PVM_VAL_LONG (JITTER_TOP_STACK ());
+    int size = PVM_VAL_LONG_SIZE (JITTER_TOP_STACK ());
+    int64_t a64 = ((uint64_t)(int64_t) a) << (64 - size);
+
+    JITTER_PUSH_STACK (pvm_make_int (INT_NEGATE_OVERFLOW (a64), 32));
+  end
+end
+
+# Instruction: powiof
+#
+# Push 1 on the stack if calculating the power of the first value
+# by the second would overflow.  Push 0 on the stack otherwise.
+#
+# Stack: ( INT INT -- INT INT INT )
+
+instruction powiof ()
+  code
+    int overflow_p;
+    uint32_t i;
+    uint64_t size = PVM_VAL_INT_SIZE (JITTER_UNDER_TOP_STACK ());
+    int32_t a = PVM_VAL_INT (JITTER_UNDER_TOP_STACK ());
+    uint32_t b = PVM_VAL_UINT (JITTER_TOP_STACK ());
+    int64_t res64 = ((uint64_t) 1) << (64 - size);
+
+    overflow_p = 0;
+    for (i = 0; i < b; ++i)
+      {
+       if (INT_MULTIPLY_OVERFLOW (res64, a))
+         {
+           overflow_p = 1;
+           break;
+         }
+
+       res64 *= a;
+      }
+
+    JITTER_PUSH_STACK (pvm_make_int (overflow_p, 32));
+  end
+end
+
+# Instruction: powlof
+#
+# Push 1 on the stack if calculating the power of the first value
+# by the second would overflow.  Push 0 on the stack otherwise.
+#
+# Stack: ( LONG LONG -- LONG LONG INT )
+
+instruction powlof ()
+  code
+    int overflow_p;
+    uint64_t i;
+    uint64_t size = PVM_VAL_LONG_SIZE (JITTER_UNDER_TOP_STACK ());
+    int64_t a = PVM_VAL_LONG (JITTER_UNDER_TOP_STACK ());
+    uint32_t b = PVM_VAL_UINT (JITTER_TOP_STACK ());
+    int64_t res64 = ((uint64_t) 1) << (64 - size);
+
+    overflow_p = 0;
+    for (i = 0; i < b; ++i)
+      {
+       if (INT_MULTIPLY_OVERFLOW (res64, a))
+         {
+           overflow_p = 1;
+           break;
+         }
+
+       res64 *= a;
+      }
+
+    JITTER_PUSH_STACK (pvm_make_int (overflow_p, 32));
+  end
+end
+
+
 ## Arithmetic instructions
 
 # The following instructions assume that both operands have the same
