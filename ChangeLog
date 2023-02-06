@@ -1,3 +1,11 @@
+2023-02-06  Nikolaos Chatzikonstantinou  <nchatz314@gmail.com>
+
+	* libpoke/std.pk (stoca): Add support for returning the converted
+	value.
+	* doc/poke.texi (stoca): Update accordingly.
+	* testsuite/poke.std/std-test.pk: Add stoca-catos idempotence
+	test.
+
 2023-02-06  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* testsuite/poke.pvm/pvm.exp: New file.

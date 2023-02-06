@@ -3165,6 +3165,8 @@ string.  For example:
 array to the characters composing the string.  For example:
 
 @example
+(poke) stoca("abc")
+[0x61UB,0x62UB,0x63UB]
 (poke) var a = char[3]()
 (poke) stoca ("abc", a)
 (poke) a
@@ -15603,14 +15605,17 @@ Sometimes we want to store strings in character arrays.  The standard
 function @code{stoca} provides the following interface:
 
 @example
-fun stoca = (string s, char[] ca, char fill = 0) void: @{ @dots{} @}
+fun stoca = (string s, uint<8>[] ca = uint<8>[](), uint<8> fill = 0) uint<8>[]: @{ @dots{} @}
 @end example
 
-It fills the given array @var{ca} with the contents of the string
-@var{s}.  If the string doesn't fit in the array, then
-@code{E_out_of_bounds} is raised.  If the length of the string is less
-than the length of the array, the extra characters are set to the
-@var{fill} character, which defaults to @code{\0}.
+If @var{ca} has zero length (for example, if the parameter is
+omitted), the function returns an array with the contents of the
+string @var{s}, excluding the terminating NULL. Otherwise, it fills
+the given array @var{ca} with the contents of the string @var{s}.  If
+the string doesn't fit in the array, then @code{E_out_of_bounds} is
+raised.  If the length of the string is less than the length of the
+array, the extra characters are set to the @var{fill} character, which
+defaults to @code{\0}. The array @var{ca} is also returned.
 
 @node strtoi
 @subsection @code{strtoi}

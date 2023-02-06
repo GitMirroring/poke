@@ -94,9 +94,12 @@ var tests = [
     name = "catos",
     func = lambda (string name) void:
       {
-        assert (catos (['a','b','c']) == "abc");
+        var a = ['a', 'b', 'c'];
+        assert (catos (a) == "abc");
         assert (catos (['\0']) == "");
         assert (catos (['a','\0','b']) == "a");
+        /* Test idempotence invariant with stoca */
+        assert (a == stoca(catos(a)));
       },
   },
   PkTest {
@@ -116,6 +119,10 @@ var tests = [
         array = A[:];
         stoca ("foo", array, 'x');
         assert (array == [102UB,111UB,111UB,120UB]);
+
+        /* Test idempotence invariant with catos */
+        var s = "hello world";
+        assert (s == catos(stoca(s)));
 
         try
           {

@@ -62,12 +62,12 @@ fun catos = (uint<8>[] chars) string:
 fun stoca = (string s, uint<8>[] ca = uint<8>[](), uint<8> fill = 0) uint<8>[]:
   {
     if (ca'length == 0)
-    {
-      var res = uint<8>[]();
-      for (c in s)
-        res += [c];
-      return res;
-    }
+      {
+        var ret = uint<8>[s'length]();
+        for (var i = 0; i < s'length; i++)
+          ret[i] = s[i];
+        return ret;
+      }
 
     if (s'length > ca'length)
       raise E_out_of_bounds;
