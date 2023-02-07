@@ -754,6 +754,29 @@ pkl_asm_insn_binop (pkl_asm pasm,
           pkl_asm_label (pasm, div_by_zero_ok);
         }
 
+      /* In left-shift instructions, the shift count operand is checked
+         to make sure it doesn't cause UB in the PVM.  */
+      if (insn == PKL_INSN_SL)
+        {
+          pvm_program_label count_is_ok
+            = pvm_program_fresh_label (pasm->program);
+
+          /* VAL UINT */
+          pkl_asm_insn (pasm, PKL_INSN_IUTOL, 64); /* VAL UINT ULONG */
+          pkl_asm_insn (pasm, PKL_INSN_ROT);       /* UINT ULONG VAL */
+          pkl_asm_insn (pasm, PKL_INSN_SIZ);       /* UINT ULONG VAL SIZ */
+          pkl_asm_insn (pasm, PKL_INSN_QUAKE);     /* UINT VAL ULONG SIZ */
+          pkl_asm_insn (pasm, PKL_INSN_LTLU);      /* UINT VAL ULONG SIZ (ULONG<SIZ) */
+          pkl_asm_insn (pasm, PKL_INSN_BNZI, count_is_ok);
+          pkl_asm_insn (pasm, PKL_INSN_PUSH,
+                        pvm_make_exception (PVM_E_OUT_OF_BOUNDS, PVM_E_OUT_OF_BOUNDS_NAME,
+                                            PVM_E_OUT_OF_BOUNDS_ESTATUS, NULL, NULL));
+          pkl_asm_insn (pasm, PKL_INSN_RAISE);
+          pkl_asm_label (pasm, count_is_ok);
+          pkl_asm_insn (pasm, PKL_INSN_DROP3); /* UINT VAL */
+          pkl_asm_insn (pasm, PKL_INSN_SWAP);  /* VAL UINT */
+        }
+
       /* Check for overflow before signed arithmetic instructions
          that may overflow.  */
       if (signed_p)

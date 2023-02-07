@@ -327,26 +327,6 @@ late-header-c
       JITTER_PUSH_STACK (res);                                               \
     } while (0)
 
-/* Same, but for left-shifts, which includes an overflow check on the
-   bit count.  */
-# define PVM_BINOP_SL(TYPEA, TYPEB,TYPER, OP)                                \
-   {                                                                         \
-     pvm_val type = pvm_typeof (JITTER_UNDER_TOP_STACK ());                  \
-     uint64_t size = PVM_VAL_INTEGRAL (PVM_VAL_TYP_I_SIZE (type));           \
-                                                                             \
-     if (PVM_VAL_##TYPEB (JITTER_TOP_STACK ()) >= size)                      \
-     {                                                                       \
-        PVM_RAISE_DFL (PVM_E_OUT_OF_BOUNDS);                                 \
-     }                                                                       \
-     else                                                                    \
-     {                                                                       \
-        int size = PVM_VAL_##TYPER##_SIZE (JITTER_UNDER_TOP_STACK ());       \
-        pvm_val res = PVM_MAKE_##TYPER ((uint64_t) PVM_VAL_##TYPEA (JITTER_UNDER_TOP_STACK ()) \
-                                        << PVM_VAL_##TYPEB (JITTER_TOP_STACK ()), size); \
-        JITTER_PUSH_STACK (res);                                             \
-     }                                                                       \
-   }
-
 /* Unsigned exponentiation.  */
 
 # define PVM_POWOP(TYPE,TYPEC,TYPELC)                                       \
@@ -4174,15 +4154,14 @@ end
 # bits indicated by the unsigned int at the top of the stack.
 #
 # If the bit count is equal or bigger than the size of the left
-# operand, then raise PVM_E_OUT_OF_BOUNDS.
+# operand, then UB happens.
 #
 # Stack: ( INT UINT -- INT UINT INT )
 # Exceptions: PVM_E_OUT_OF_BOUNDS
 
 instruction bsli () # ( INT UINT -- INT UINT INT )
-  branching # because of PVM_RAISE_DIRECT
   code
-    PVM_BINOP_SL (INT, UINT, INT, <<);
+    PVM_BINOP (INT, UINT, INT, <<);
   end
 end
 
@@ -4193,15 +4172,14 @@ end
 # stack.
 #
 # If the bit count is equal or bigger than the size of the left
-# operand, then raise PVM_E_OUT_OF_BOUNDS.
+# operand, then UB happens.
 #
 # Stack: ( UINT UINT -- UINT UINT UINT )
 # Exceptions: PVM_E_OUT_OF_BOUNDS
 
 instruction bsliu () # ( UINT UINT -- UINT UINT UINT )
-  branching # because of PVM_RAISE_DIRECT
   code
-    PVM_BINOP_SL (UINT, UINT, UINT, <<);
+    PVM_BINOP (UINT, UINT, UINT, <<);
   end
 end
 
@@ -4211,15 +4189,14 @@ end
 # indicated by the unsigned int at the top of the stack.
 #
 # If the bit count is equal or bigger than the size of the left
-# operand, then raise PVM_E_OUT_OF_BOUNDS.
+# operand, then UB happens.
 #
 # Stack: ( LONG UINT -- LONG UINT LONG )
 # Exceptions: PVM_E_OUT_OF_BOUNDS
 
 instruction bsll () # ( LONG UINT -- LONG UINT LONG )
-  branching # because of PVM_RAISE_DIRECT
   code
-    PVM_BINOP_SL (LONG, UINT, LONG, <<);
+    PVM_BINOP (LONG, UINT, LONG, <<);
   end
 end
 
@@ -4230,15 +4207,14 @@ end
 # stack.
 #
 # If the bit count is equal or bigger than the size of the left
-# operand, then raise PVM_E_OUT_OF_BOUNDS.
+# operand, then UB happens.
 #
 # Stack: ( ULONG UINT -- ULONG UINT ULONG )
 # Exceptions: PVM_E_OUT_OF_BOUNDS
 
 instruction bsllu () # ( ULONG UINT -- ULONG UINT ULONG )
-  branching # because of PVM_RAISE_DIRECT
   code
-    PVM_BINOP_SL (ULONG, UINT, ULONG, <<);
+    PVM_BINOP (ULONG, UINT, ULONG, <<);
   end
 end
 
