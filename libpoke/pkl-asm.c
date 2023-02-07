@@ -739,6 +739,21 @@ pkl_asm_insn_binop (pkl_asm pasm,
       int signed_p = PKL_AST_TYPE_I_SIGNED_P (type);
       int tl = !!((size - 1) & ~0x1f);
 
+      /* Check for division-by-zero before operations that require
+         it.  */
+      if (insn == PKL_INSN_DIV || insn == PKL_INSN_MOD)
+        {
+          pvm_program_label div_by_zero_ok
+            = pvm_program_fresh_label (pasm->program);
+
+          pkl_asm_insn (pasm, PKL_INSN_BNZ, type, div_by_zero_ok);
+          pkl_asm_insn (pasm, PKL_INSN_PUSH,
+                        pvm_make_exception (PVM_E_DIV_BY_ZERO, PVM_E_DIV_BY_ZERO_NAME,
+                                            PVM_E_DIV_BY_ZERO_ESTATUS, NULL, NULL));
+          pkl_asm_insn (pasm, PKL_INSN_RAISE);
+          pkl_asm_label (pasm, div_by_zero_ok);
+        }
+
       /* Check for overflow before signed arithmetic instructions
          that may overflow.  */
       if (signed_p)
@@ -763,7 +778,7 @@ pkl_asm_insn_binop (pkl_asm pasm,
             case PKL_INSN_DIV:
               pkl_asm_insn (pasm, PKL_INSN_DIVOF, type);
               break;
-            case PKL_INSN_MOD:    
+            case PKL_INSN_MOD:
               pkl_asm_insn (pasm, PKL_INSN_MODOF, type);
               break;
             case PKL_INSN_POW:

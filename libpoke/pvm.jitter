@@ -327,17 +327,6 @@ late-header-c
       JITTER_PUSH_STACK (res);                                               \
     } while (0)
 
-/* Same, but with division by zero run-time check.  */
-# define PVM_CHECKED_BINOP(TYPEA,TYPEB,TYPER,OP)                             \
-   if (PVM_VAL_##TYPEB (JITTER_TOP_STACK ()) == 0)                           \
-   {                                                                         \
-      PVM_RAISE_DFL (PVM_E_DIV_BY_ZERO);                                     \
-   }                                                                         \
-   else                                                                      \
-   {                                                                         \
-      PVM_BINOP (TYPEA, TYPEB, TYPER, OP);                                   \
-   }
-
 /* Same, but for left-shifts, which includes an overflow check on the
    bit count.  */
 # define PVM_BINOP_SL(TYPEA, TYPEB,TYPER, OP)                                \
@@ -3179,14 +3168,15 @@ end
 # Note that this instruction does NOT check for signed overflow, and
 # in case it occurs, the result contents are UB.
 #
+# Likewise, this instruction does NOT check for division by zero, so
+# if it is attempted, the poke process will be aborted.
+#
 # Stack: ( INT INT -- INT INT INT )
 # Exceptions: PVM_E_DIV_BY_ZERO
 
 instruction divi ()
-  non-relocatable
-  branching # because of PVM_RAISE_DIRECT
   code
-    PVM_CHECKED_BINOP (INT, INT, INT, /);
+    PVM_BINOP (INT, INT, INT, /);
   end
 end
 
@@ -3196,14 +3186,15 @@ end
 # at the top of the stack.  If the denominator is zero, raise
 # PVM_E_DIV_BY_ZERO.
 #
+# This instruction does NOT check for division by zero, so
+# if it is attempted, the poke process will be aborted.
+#
 # Stack: ( UINT UINT -- UINT UINT UINT )
 # Exceptions: PVM_E_DIV_BY_ZERO
 
 instruction diviu ()
-  non-relocatable
-  branching # because of PVM_RAISE_DIRECT
   code
-    PVM_CHECKED_BINOP (UINT, UINT, UINT, /);
+    PVM_BINOP (UINT, UINT, UINT, /);
   end
 end
 
@@ -3215,14 +3206,15 @@ end
 # Note that this instruction does NOT check for signed overflow, and
 # in case it occurs, the result contents are UB.
 #
+# Likewise, this instruction does NOT check for division by zero, so
+# if it is attempted, the poke process will be aborted.
+#
 # Stack: ( LONG LONG -- LONG LONG LONG )
 # Exceptions: PVM_E_DIV_BY_ZERO
 
 instruction divl ()
-  non-relocatable
-  branching # because of PVM_RAISE_DIRECT
   code
-    PVM_CHECKED_BINOP (LONG, LONG, LONG, /);
+    PVM_BINOP (LONG, LONG, LONG, /);
   end
 end
 
@@ -3232,14 +3224,15 @@ end
 # longs at the top of the stack.  If the denominator is zero,
 # raise PVM_E_DIV_BY_ZERO.
 #
+# This instruction does NOT check for division by zero, so
+# if it is attempted, the poke process will be aborted.
+#
 # Stack: ( ULONG ULONG -- ULONG ULONG ULONG )
 # Exceptions: PVM_E_DIV_BY_ZERO
 
 instruction divlu ()
-  non-relocatable
-  branching # because of PVM_RAISE_DIRECT
   code
-    PVM_CHECKED_BINOP (ULONG, ULONG, ULONG, /);
+    PVM_BINOP (ULONG, ULONG, ULONG, /);
   end
 end
 
@@ -3251,14 +3244,15 @@ end
 # Note that this instruction does NOT check for signed overflow, and
 # in case it occurs, the result contents are UB.
 #
+# Likewise, this instruction does NOT check for division by zero, so
+# if it is attempted, the poke process will be aborted.
+#
 # Stack: ( INT INT -- INT INT INT )
 # Exceptions: PVM_E_DIV_BY_ZERO
 
 instruction modi ()
-  non-relocatable
-  branching # because of PVM_RAISE_DIRECT
   code
-    PVM_CHECKED_BINOP (INT, INT, INT, %);
+    PVM_BINOP (INT, INT, INT, %);
   end
 end
 
@@ -3268,14 +3262,15 @@ end
 # top of the stack.  If the denominator is zero, raise
 # PVM_E_DIV_BY_ZERO.
 #
+# This instruction does NOT check for division by zero, so
+# if it is attempted, the poke process will be aborted.
+#
 # Stack: ( UINT UINT -- UINT UINT UINT )
 # Exceptions: PVM_E_DIV_BY_ZERO
 
 instruction modiu ()
-  non-relocatable
-  branching # because of PVM_RAISE_DIRECT
   code
-    PVM_CHECKED_BINOP (UINT, UINT, UINT, %);
+    PVM_BINOP (UINT, UINT, UINT, %);
   end
 end
 
@@ -3287,14 +3282,15 @@ end
 # Note that this instruction does NOT check for signed overflow, and
 # in case it occurs, the result contents are UB.
 #
+# This instruction does NOT check for division by zero, so
+# if it is attempted, the poke process will be aborted.
+#
 # Stack: ( LONG LONG -- LONG LONG LONG )
 # Exceptions: PVM_E_DIV_BY_ZERO
 
 instruction modl ()
-  non-relocatable
-  branching # because of PVM_RAISE_DIRECT
   code
-    PVM_CHECKED_BINOP (LONG, LONG, LONG, %);
+    PVM_BINOP (LONG, LONG, LONG, %);
   end
 end
 
@@ -3303,14 +3299,15 @@ end
 # Push the result of the modulus of the two unsigned longs at the top
 # of the stack.  If the denominator is zero, raise PVM_E_DIV_BY_ZERO.
 #
+# This instruction does NOT check for division by zero, so
+# if it is attempted, the poke process will be aborted.
+#
 # Stack: ( ULONG ULONG -- ULONG ULONG ULONG )
 # Exceptions: PVM_E_DIV_BY_ZERO
 
 instruction modlu ()
-  non-relocatable
-  branching # because of PVM_RAISE_DIRECT
   code
-    PVM_CHECKED_BINOP (ULONG, ULONG, ULONG, %);
+    PVM_BINOP (ULONG, ULONG, ULONG, %);
   end
 end
 

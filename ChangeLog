@@ -1,5 +1,19 @@
 2023-02-07  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-asm.c (pkl_asm_insn_binop): Check for division by
+	zero before div and mod.
+	* libpoke/pvm.jitter (PVM_CHECKED_BINOP): Remove macro.
+	(divi): Do not raise division by zero exception.
+	(diviu): Likewise.
+	(divl): Likewise.
+	(divlu): Likewise.
+	(modi): Likewise.
+	(modiu): Likewise.
+	(modl): Likewise.
+	(modlu): Likewise.
+
+2023-02-07  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pvm.jitter (PVM_NEG_SIGNED): Do not check for overflow.
 	(negi): Remove jitter `branching' annotation, and use PVM_UNOP.
 	(negl): Likewise.
