@@ -605,6 +605,9 @@ pkl_asm_insn_poked (pkl_asm pasm, pkl_ast_node type)
 /* Macro-instruction: NEG type
    ( VAL -- VAL )
 
+   Macro-instruction: NEGOF type
+   ( VAL -- VAL )
+
    Macro-instruction: ADD type
    ( VAL VAL -- VAL VAL VAL )
 
@@ -641,11 +644,29 @@ pkl_asm_insn_poked (pkl_asm pasm, pkl_ast_node type)
    Macro-instruction: POW type
    ( VAL VAL -- VAL VAL VAL )
 
+   Macro-instruction: ADDOF type
+   ( VAL VAL -- VAL VAL VAL )
+
+   Macro-instruction: SUBOF type
+   ( VAL VAL -- VAL VAL VAL )
+
+   Macro-instruction: MULOF type
+   ( VAL VAL -- VAL VAL VAL )
+
+   Macro-instruction: DIVOF type
+   ( VAL VAL -- VAL VAL VAL )
+
+   Macro-instruction: MODOF type
+   ( VAL VAL -- VAL VAL VAL )
+
+   Macro-instruction: POWOF type
+   ( VAL VAL -- VAL VAL VAL )
+
    Generate code for performing negation, addition, subtraction,
    multiplication, division, remainder and bit shift to integral and
-   offset operands.  Also exponentiation.  INSN identifies the
-   operation to perform, and TYPE the type of the operands and the
-   result.  */
+   offset operands.  Also exponentiation.  Also overflow-checking
+   instructions.  INSN identifies the operation to perform, and TYPE
+   the type of the operands and the result.  */
 
 static void
 pkl_asm_insn_binop (pkl_asm pasm,
@@ -693,6 +714,27 @@ pkl_asm_insn_binop (pkl_asm pasm,
       static const int pow_table[2][2] = {{ PKL_INSN_POWIU, PKL_INSN_POWI },
                                     { PKL_INSN_POWLU, PKL_INSN_POWL }};
 
+      static const int negof_table[2][2] = {{ PKL_INSN_NEGIU, PKL_INSN_NEGIOF },
+                                            { PKL_INSN_NEGLU, PKL_INSN_NEGLOF }};
+
+      static const int addof_table[2][2] = {{ PKL_INSN_NOP, PKL_INSN_ADDIOF },
+                                            { PKL_INSN_NOP, PKL_INSN_ADDLOF }};
+
+      static const int subof_table[2][2] = {{ PKL_INSN_NOP, PKL_INSN_SUBIOF },
+                                            { PKL_INSN_NOP, PKL_INSN_SUBLOF }};
+
+      static const int mulof_table[2][2] = {{ PKL_INSN_NOP, PKL_INSN_MULIOF },
+                                            { PKL_INSN_NOP, PKL_INSN_MULLOF }};
+
+      static const int divof_table[2][2] = {{ PKL_INSN_NOP, PKL_INSN_DIVIOF },
+                                            { PKL_INSN_NOP, PKL_INSN_DIVLOF }};
+
+      static const int modof_table[2][2] = {{ PKL_INSN_NOP, PKL_INSN_MODIOF },
+                                            { PKL_INSN_NOP, PKL_INSN_MODLOF }};
+
+      static const int powof_table[2][2] = {{ PKL_INSN_NOP, PKL_INSN_POWIOF },
+                                            { PKL_INSN_NOP, PKL_INSN_POWLOF }};
+
       uint64_t size = PKL_AST_TYPE_I_SIZE (type);
       int signed_p = PKL_AST_TYPE_I_SIGNED_P (type);
       int tl = !!((size - 1) & ~0x1f);
@@ -737,6 +779,34 @@ pkl_asm_insn_binop (pkl_asm pasm,
           break;
         case PKL_INSN_POW:
           pkl_asm_insn (pasm, pow_table[tl][signed_p]);
+          break;
+        case PKL_INSN_NEGOF:
+          assert (signed_p);
+          pkl_asm_insn (pasm, negof_table[tl][signed_p]);
+          break;
+        case PKL_INSN_ADDOF:
+          assert (signed_p);
+          pkl_asm_insn (pasm, addof_table[tl][signed_p]);
+          break;
+        case PKL_INSN_SUBOF:
+          assert (signed_p);
+          pkl_asm_insn (pasm, subof_table[tl][signed_p]);
+          break;
+        case PKL_INSN_MULOF:
+          assert (signed_p);
+          pkl_asm_insn (pasm, mulof_table[tl][signed_p]);
+          break;
+        case PKL_INSN_DIVOF:
+          assert (signed_p);
+          pkl_asm_insn (pasm, divof_table[tl][signed_p]);
+          break;
+        case PKL_INSN_MODOF:
+          assert (signed_p);
+          pkl_asm_insn (pasm, modof_table[tl][signed_p]);
+          break;
+        case PKL_INSN_POWOF:
+          assert (signed_p);
+          pkl_asm_insn (pasm, powof_table[tl][signed_p]);
           break;
         default:
           assert (0);
