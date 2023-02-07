@@ -19,8 +19,8 @@
 /* SFrame format.
 
    SFrame format is the Simple Frame format, which is can be used to represent
-   information needed for vanilla backtracing.  SFrame format keeps track of
-   minimal necessary information needed for backtracing:
+   information needed for vanilla stack tracing.  SFrame format keeps track of
+   minimal necessary information needed for generating stack traces:
      - Canonical Frame Address (CFA)
      - Frame Pointer (FP)
      - Return Address (RA)
@@ -29,6 +29,10 @@
    repository in :
      - include/sframe.h header file, and
      - libsframe/doc/sframe-spec.texi.
+
+  SFrame format specification is also available in the GNU Binutils
+  documentation.  As of 2.40:
+  https://sourceware.org/binutils/docs/sframe-spec.html
 */
 
 /* SFrame format versions.  */
@@ -57,6 +61,11 @@ type SFrame_Preamble =
     byte sfp_flags;
   };
 
+/* Two possible keys for signing executable (instruction) pointers.  Used in
+   AARCH64.  */
+var SFRAME_AARCH64_PAUTH_KEY_A = 0 as uint<1>,
+    SFRAME_AARCH64_PAUTH_KEY_B = 1 as uint<1>;
+
 /* SFrame FRE types.  */
 var SFRAME_FRE_TYPE_ADDR1 = 0 as uint<4>,
     SFRAME_FRE_TYPE_ADDR2 = 1 as uint<4>,
@@ -64,8 +73,8 @@ var SFRAME_FRE_TYPE_ADDR1 = 0 as uint<4>,
 
 /* SFrame FDE types.
    The SFrame format has two possible representations for functions.  The
-   choice of which type to use is made according to the instruction patterns
-   in the relevant program stub.  */
+   choice of which FDE type to use is made according to the instruction
+   patterns in the relevant program stub.  */
 
 /* Unwinders perform a (PC >= FRE_START_ADDR) to look up a matching FRE.  */
 var SFRAME_FDE_TYPE_PCINC = 0 as uint<1>,
@@ -77,7 +86,9 @@ var SFRAME_FDE_TYPE_PCINC = 0 as uint<1>,
 type SFrame_Func_Info =
   struct
   {
-    uint<3> unused;
+    uint<2> unused;
+    uint<1> aarch64_pauth_key : aarch64_pauth_key in [SFRAME_AARCH64_PAUTH_KEY_A,
+                                                      SFRAME_AARCH64_PAUTH_KEY_B];
     uint<1> fde_type : fde_type in [SFRAME_FDE_TYPE_PCINC,
                                     SFRAME_FDE_TYPE_PCMASK];
     uint<4> fre_type : fre_type in [SFRAME_FRE_TYPE_ADDR1,
@@ -90,9 +101,9 @@ var SFRAME_ABI_AARCH64_ENDIAN_BIG = 1 as byte, /* AARCH64 little endian.  */
     SFRAME_ABI_AARCH64_ENDIAN_LITTLE = 2 as byte, /* AARCH64 big endian.  */
     SFRAME_ABI_AMD64_ENDIAN_LITTLE = 3 as byte; /* AMD64 little endian.  */
 
-/* Currently auxilliary header is not being generated and used.  The pickle will
+/* Currently auxiliary header is not being generated and used.  The pickle will
    need updates when the SFrame format uses a non-zero number of bytes in
-   the auxilliary header.  */
+   the auxiliary header.  */
 var SFRAME_HEADER_AUXHDR_LEN_ZERO = 0 as uint<8>;
 
 type SFrame_Header =
@@ -127,7 +138,7 @@ var SFRAME_BASE_REG_BP = 0 as uint<1>,
 type SFrame_FRE_Info =
   struct byte
   {
-    uint<1> unused;
+    uint<1> mangled_ra_p;
     uint<2> offset_size : offset_size in [SFRAME_FRE_OFFSET_1B,
                                           SFRAME_FRE_OFFSET_2B,
                                           SFRAME_FRE_OFFSET_4B];
