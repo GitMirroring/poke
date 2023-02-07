@@ -1107,24 +1107,20 @@ end
 #
 # This instructions pops a signed integer from the stack and uses it
 # to set the new output base to be used when printing PVM values.
-# Valid values are 2, 8, 10 and 16.
-#
-# If an invalid obase is specified then this instruction raises
-# PVM_E_INVAL.
+# Valid values are 2, 8, 10 and 16.  If an invalid value is provided
+# then the instruction is a NOP.
 #
 # Stack: ( INT -- )
-# Exceptions: PVM_E_INVAL
 
 instruction popob ()
-  branching # because of PVM_RAISE_DIRECT
   code
     int obase = PVM_VAL_INT (JITTER_TOP_STACK ());
 
-    if (obase != 2 && obase != 8 && obase != 10 && obase != 16)
-      PVM_RAISE (PVM_E_INVAL, pvm_literal_inval_obase, PVM_E_INVAL_ESTATUS);
-
-    PVM_STATE_RUNTIME_FIELD (obase) = obase;
-    JITTER_DROP_STACK ();
+    if (obase == 2 || obase == 8 || obase == 10 || obase == 16)
+    {
+      PVM_STATE_RUNTIME_FIELD (obase) = obase;
+      JITTER_DROP_STACK ();
+    }
   end
 end
 
@@ -1151,24 +1147,20 @@ end
 #
 # This instructions pops a signed integer from the stack and uses it
 # to set the new output mode to be used when printing PVM values.
-# Valid values are 0 for flat mode and 1 for tree mode.
-#
-# If an invalid omode is specified then this instruction raises
-# PVM_E_INVAL.
+# Valid values are 0 for flat mode and 1 for tree mode.  If an invalid
+# value is provided then this instruction is a no-op.
 #
 # Stack: ( INT -- )
-# Exceptions: PVM_E_INVAL
 
 instruction popom ()
-  branching # because of PVM_RAISE_DIRECT
   code
     int omode = PVM_VAL_INT (JITTER_TOP_STACK ());
 
-    if (omode != PVM_PRINT_FLAT && omode != PVM_PRINT_TREE)
-      PVM_RAISE (PVM_E_INVAL, pvm_literal_inval_obase, PVM_E_INVAL_ESTATUS);
-
-    PVM_STATE_RUNTIME_FIELD (omode) = omode;
-    JITTER_DROP_STACK ();
+    if (omode == PVM_PRINT_FLAT || omode == PVM_PRINT_TREE)
+    {
+      PVM_STATE_RUNTIME_FIELD (omode) = omode;
+      JITTER_DROP_STACK ();
+    }
   end
 end
 

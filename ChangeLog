@@ -1,5 +1,12 @@
 2023-02-07  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-rt.pk (vm_set_obase): Check for valid values.
+	(vm_set_omode): Likewise.
+	* libpoke/pvm.jitter (popob): Do not raise exceptions.
+	(popom): Likewise.
+
+2023-02-07  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-asm.c (pkl_asm_insn_binop): Check for division by
 	zero before div and mod.
 	* libpoke/pvm.jitter (PVM_CHECKED_BINOP): Remove macro.

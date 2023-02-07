@@ -225,6 +225,8 @@ immutable fun vm_obase = int<32>:
 
 immutable fun vm_set_obase = (int<32> obase) void:
 {
+  if (!(obase in [2, 8, 10, 16]))
+    raise E_inval;
   asm ("popob" :: obase);
 }
 
@@ -283,8 +285,15 @@ immutable fun vm_omode = int<32>:
   return asm int<32>: ("pushom");
 }
 
+/* Please keep the following two variables in sync with enum pvm_omode
+   in pvm.h.  */
+immutable var VM_OMODE_PLAIN = 0;
+immutable var VM_OMODE_TREE = 1;
+
 immutable fun vm_set_omode = (int<32> omode) void:
 {
+  if (!(omode in [VM_OMODE_PLAIN, VM_OMODE_TREE]))
+    raise E_inval;
   asm ("popom" :: omode);
 }
 
@@ -311,11 +320,6 @@ immutable fun vm_set_autoremap = (int<32> autoremap) void:
 
 immutable var ENDIAN_LITTLE = 0;
 immutable var ENDIAN_BIG = 1;
-
-/* Please keep the following two variables in sync with enum pvm_omode
-   in pvm.h.  */
-immutable var VM_OMODE_PLAIN = 0;
-immutable var VM_OMODE_TREE = 1;
 
 /* IOS flags and modes.
 
