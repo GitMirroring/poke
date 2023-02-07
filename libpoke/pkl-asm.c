@@ -739,6 +739,53 @@ pkl_asm_insn_binop (pkl_asm pasm,
       int signed_p = PKL_AST_TYPE_I_SIGNED_P (type);
       int tl = !!((size - 1) & ~0x1f);
 
+      /* Check for overflow before signed arithmetic instructions
+         that may overflow.  */
+      if (signed_p)
+        {
+          pvm_program_label of_check_done
+            = pvm_program_fresh_label (pasm->program);
+
+          switch (insn)
+            {
+            case PKL_INSN_NEG:
+              pkl_asm_insn (pasm, PKL_INSN_NEGOF, type);
+              break;
+            case PKL_INSN_ADD:
+              pkl_asm_insn (pasm, PKL_INSN_ADDOF, type);
+              break;
+            case PKL_INSN_SUB:
+              pkl_asm_insn (pasm, PKL_INSN_SUBOF, type);
+              break;
+            case PKL_INSN_MUL:
+              pkl_asm_insn (pasm, PKL_INSN_MULOF, type);
+              break;
+            case PKL_INSN_DIV:
+              pkl_asm_insn (pasm, PKL_INSN_DIVOF, type);
+              break;
+            case PKL_INSN_MOD:    
+              pkl_asm_insn (pasm, PKL_INSN_MODOF, type);
+              break;
+            case PKL_INSN_POW:
+              pkl_asm_insn (pasm, PKL_INSN_POWOF, type);
+              break;
+            default:
+              pkl_asm_insn (pasm, PKL_INSN_PUSH, pvm_make_int (0, 32));
+              break;
+            }
+
+          /* Emit an exception if the operation would result on
+             overflow.  Otherwise, continue with the operation.  */
+          pkl_asm_insn (pasm, PKL_INSN_BZI, of_check_done);
+          pkl_asm_insn (pasm, PKL_INSN_PUSH,
+                        pvm_make_exception (PVM_E_OVERFLOW, PVM_E_OVERFLOW_NAME,
+                                            PVM_E_OVERFLOW_ESTATUS, NULL, NULL));
+          pkl_asm_insn (pasm, PKL_INSN_RAISE);
+          pkl_asm_label (pasm, of_check_done);
+          pkl_asm_insn (pasm, PKL_INSN_DROP);
+        }
+
+      /* Now assemble the instruction.  */
       switch (insn)
         {
         case PKL_INSN_NEG:
@@ -1629,6 +1676,13 @@ pkl_asm_insn (pkl_asm pasm, enum pkl_asm_insn insn, ...)
         case PKL_INSN_SL:
         case PKL_INSN_SR:
         case PKL_INSN_POW:
+        case PKL_INSN_NEGOF:
+        case PKL_INSN_ADDOF:
+        case PKL_INSN_SUBOF:
+        case PKL_INSN_MULOF:
+        case PKL_INSN_DIVOF:
+        case PKL_INSN_MODOF:
+        case PKL_INSN_POWOF:
           {
             pkl_ast_node type;
 
