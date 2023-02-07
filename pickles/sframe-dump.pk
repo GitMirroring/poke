@@ -22,7 +22,7 @@ load sframe;
 
 /* Dump each FDE in the SFrame section.  */
 
-fun sframe_dump_fdes = (SFrame_section sframe_arg) void:
+fun sframe_dump_fdes = (SFrame_Section sframe_arg) void:
 {
   var i = 0;
   for (index in sframe_arg.funcidx)
@@ -31,7 +31,7 @@ fun sframe_dump_fdes = (SFrame_section sframe_arg) void:
 
 /* Dump SFrame FREs.  */
 
-fun sframe_dump_fres = (SFrame_section sframe_arg) void:
+fun sframe_dump_fres = (SFrame_Section sframe_arg) void:
 {
   var i = 0;
 

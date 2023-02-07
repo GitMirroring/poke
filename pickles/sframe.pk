@@ -148,7 +148,7 @@ type SFrame_FRE_Info =
   };
 
 /* SFRAME FRE with 8-bit start address offsets.  */
-type SFrame_FRE_addr1 =
+type SFrame_FRE_Addr1 =
   struct
   {
     uint<8> fre_start_address;
@@ -165,7 +165,7 @@ type SFrame_FRE_addr1 =
   };
 
 /* SFRAME FRE with 16-bit start address offsets.  */
-type SFrame_FRE_addr2 =
+type SFrame_FRE_Addr2 =
   struct
   {
     uint<16> fre_start_address;
@@ -182,7 +182,7 @@ type SFrame_FRE_addr2 =
   };
 
 /* SFRAME FRE with 32-bit start address offsets.  */
-type SFrame_FRE_addr4=
+type SFrame_FRE_Addr4=
   struct
   {
     uint<32> fre_start_address;
@@ -209,26 +209,26 @@ type SFrame_Func_Desc_Entry =
     SFrame_Func_Info func_info;
 
     method get_sframe_fre_addr1s
-      = (offset<uint32,B> hdr_freoff) SFrame_FRE_addr1[]:
+      = (offset<uint32,B> hdr_freoff) SFrame_FRE_Addr1[]:
       {
         var off = hdr_freoff + func_freoff;
-        return SFrame_FRE_addr1[func_num_fres] @ off;
+        return SFrame_FRE_Addr1[func_num_fres] @ off;
       }
     method get_sframe_fre_addr2s
-      = (offset<uint32,B> hdr_freoff) SFrame_FRE_addr2[]:
+      = (offset<uint32,B> hdr_freoff) SFrame_FRE_Addr2[]:
       {
         var off = hdr_freoff + func_freoff;
-        return SFrame_FRE_addr2[func_num_fres] @ off;
+        return SFrame_FRE_Addr2[func_num_fres] @ off;
       }
     method get_sframe_fre_addr4s
-      = (offset<uint32,B> hdr_freoff) SFrame_FRE_addr4[]:
+      = (offset<uint32,B> hdr_freoff) SFrame_FRE_Addr4[]:
       {
         var off = hdr_freoff + func_freoff;
-        return SFrame_FRE_addr4[func_num_fres] @ off;
+        return SFrame_FRE_Addr4[func_num_fres] @ off;
       }
   };
 
-type SFrame_section =
+type SFrame_Section =
   struct
   {
     SFrame_Header header;
