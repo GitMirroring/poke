@@ -1,5 +1,30 @@
 2023-02-07  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pvm.jitter (PVM_NEG_SIGNED): Do not check for overflow.
+	(negi): Remove jitter `branching' annotation, and use PVM_UNOP.
+	(negl): Likewise.
+	(addi): Likewise.
+	(addl): Likewise.
+	(subi): Likewise.
+	(subl): Likewise.
+	(muli): Likewise.
+	(mull): Likewise.
+	(divi): Likewise.
+	(divl): Likewise.
+	(modi): Likewise.
+	(modl): Likewise.
+	(powi): Likewise.
+	(powl): Likewise.
+	(PVM_NEG_SIGNED): Remove macro.
+	(PVM_ADD_SIGNED): Likewise.
+	(PVM_SUB_SIGNED): Likewise.
+	(PVM_MUL_SIGNED): Likewise.
+	(PVM_DIV_SIGNED): Likewise.
+	(PVM_MOD_SIGNED): Likewise.
+	(PVM_POWOP_SIGNED): Likewise.
+
+2023-02-07  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-asm.c (pkl_asm_insn_binop): Check for signed
 	overflow whenever appropriate.
 	(pkl_asm_insn): Handle signed overflow macro-instructions.

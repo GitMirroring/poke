@@ -316,121 +316,6 @@ late-header-c
       JITTER_PUSH_STACK (res);                                               \
     } while (0)
 
-/* Signed negation.
-   We check for overflow, raising E_overflow whenever appropriate.  */
-
-# define PVM_NEG_SIGNED(TYPE,CTYPE)                                          \
-  do                                                                         \
-  {                                                                          \
-    CTYPE a = PVM_VAL_##TYPE (JITTER_TOP_STACK ());                          \
-    int size = PVM_VAL_##TYPE##_SIZE (JITTER_TOP_STACK ());                  \
-    int64_t a64 = ((uint64_t)(int64_t) a) << (64 - size);                    \
-                                                                             \
-    if (INT_NEGATE_OVERFLOW (a64))                                           \
-      PVM_RAISE_DFL (PVM_E_OVERFLOW);                                        \
-    else                                                                     \
-      JITTER_PUSH_STACK (PVM_MAKE_##TYPE (-a, size));                        \
-  } while (0)
-
-
-/* Signed addition.
-   The two operands and the result are assumed to be PVM integers, having
-   the same bit size.
-   We check for overflow, raising E_overflow whenever appropriate.  */
-
-# define PVM_ADD_SIGNED(TYPE,CTYPE)                                          \
-  do                                                                         \
-  {                                                                          \
-    CTYPE a = PVM_VAL_##TYPE (JITTER_UNDER_TOP_STACK ());                    \
-    CTYPE b = PVM_VAL_##TYPE (JITTER_TOP_STACK ());                          \
-    int size = PVM_VAL_##TYPE##_SIZE (JITTER_TOP_STACK ());                  \
-    int64_t a64 = ((uint64_t)(int64_t) a) << (64 - size);                    \
-    int64_t b64 = ((uint64_t)(int64_t) b) << (64 - size);                    \
-                                                                             \
-    if (INT_ADD_OVERFLOW (a64, b64))                                         \
-      PVM_RAISE_DFL (PVM_E_OVERFLOW);                                        \
-    else                                                                     \
-      JITTER_PUSH_STACK (PVM_MAKE_##TYPE (a + b, size));                     \
-  } while (0)
-
-/* Signed subtraction.
-   The two operands and the result are assumed to be PVM integers, having
-   the same bit size.
-   We check for overflow, raising E_overflow whenever appropriate.  */
-
-# define PVM_SUB_SIGNED(TYPE,CTYPE)                                          \
-  do                                                                         \
-  {                                                                          \
-    CTYPE a = PVM_VAL_##TYPE (JITTER_UNDER_TOP_STACK ());                    \
-    CTYPE b = PVM_VAL_##TYPE (JITTER_TOP_STACK ());                          \
-    int size = PVM_VAL_##TYPE##_SIZE (JITTER_TOP_STACK ());                  \
-    int64_t a64 = ((uint64_t)(int64_t) a) << (64 - size);                    \
-    int64_t b64 = ((uint64_t)(int64_t) b) << (64 - size);                    \
-                                                                             \
-    if (INT_SUBTRACT_OVERFLOW (a64, b64))                                    \
-      PVM_RAISE_DFL (PVM_E_OVERFLOW);                                        \
-    else                                                                     \
-      JITTER_PUSH_STACK (PVM_MAKE_##TYPE (a - b, size));                     \
-  } while (0)
-
-/* Signed multiplication.
-   The two operands and the result are assumed to be PVM integers, having
-   the same bit size.
-   We check for overflow, raising E_overflow whenever appropriate.  */
-
-# define PVM_MUL_SIGNED(TYPE,CTYPE)                                          \
-  do                                                                         \
-  {                                                                          \
-    CTYPE a = PVM_VAL_##TYPE (JITTER_UNDER_TOP_STACK ());                    \
-    CTYPE b = PVM_VAL_##TYPE (JITTER_TOP_STACK ());                          \
-    int size = PVM_VAL_##TYPE##_SIZE (JITTER_TOP_STACK ());                  \
-    int64_t a64 = ((uint64_t)(int64_t) a) << (64 - size);                    \
-                                                                             \
-    if (INT_MULTIPLY_OVERFLOW (a64, b))                                      \
-      PVM_RAISE_DFL (PVM_E_OVERFLOW);                                        \
-    else                                                                     \
-      JITTER_PUSH_STACK (PVM_MAKE_##TYPE (a * b, size));                     \
-  } while (0)
-
-/* Signed division.
-   We check for overflow, raising E_overflow whenever appropriate.  */
-
-# define PVM_DIV_SIGNED(TYPE,CTYPE)                                          \
-   if (PVM_VAL_##TYPE (JITTER_TOP_STACK ()) == 0)                            \
-   {                                                                         \
-      PVM_RAISE_DFL (PVM_E_DIV_BY_ZERO);                                     \
-   }                                                                         \
-   else                                                                      \
-   {                                                                         \
-    CTYPE a = PVM_VAL_##TYPE (JITTER_UNDER_TOP_STACK ());                    \
-    CTYPE b = PVM_VAL_##TYPE (JITTER_TOP_STACK ());                          \
-    int size = PVM_VAL_##TYPE##_SIZE (JITTER_TOP_STACK ());                  \
-    int64_t a64 = ((uint64_t)(int64_t) a) << (64 - size);                    \
-                                                                             \
-    if (INT_DIVIDE_OVERFLOW (a64, b))                                        \
-      PVM_RAISE_DFL (PVM_E_OVERFLOW);                                        \
-    else                                                                     \
-      JITTER_PUSH_STACK (PVM_MAKE_##TYPE (a / b, size));                     \
-   }
-
-# define PVM_MOD_SIGNED(TYPE,CTYPE)                                          \
-   if (PVM_VAL_##TYPE (JITTER_TOP_STACK ()) == 0)                            \
-   {                                                                         \
-      PVM_RAISE_DFL (PVM_E_DIV_BY_ZERO);                                     \
-   }                                                                         \
-   else                                                                      \
-   {                                                                         \
-    CTYPE a = PVM_VAL_##TYPE (JITTER_UNDER_TOP_STACK ());                    \
-    CTYPE b = PVM_VAL_##TYPE (JITTER_TOP_STACK ());                          \
-    int size = PVM_VAL_##TYPE##_SIZE (JITTER_TOP_STACK ());                  \
-    int64_t a64 = ((uint64_t) (int64_t) a) << (64 - size);                   \
-                                                                             \
-    if (INT_DIVIDE_OVERFLOW (a64, b))                                        \
-      PVM_RAISE_DFL (PVM_E_OVERFLOW);                                        \
-    else                                                                     \
-      JITTER_PUSH_STACK (PVM_MAKE_##TYPE (a % b, size));                     \
-   }
-
 /* Binary numeric operations.
   ( TYPE TYPE -- TYPE TYPE TYPE ) */
 # define PVM_BINOP(TYPEA,TYPEB,TYPER,OP)                                     \
@@ -486,41 +371,6 @@ late-header-c
      JITTER_PUSH_STACK (pvm_make_##TYPELC (res, size));                     \
   }                                                                         \
   while (0)
-
-/* Signed exponentiation, with overflow check.  */
-
-# define PVM_POWOP_SIGNED(TYPE,TYPEC,TYPELC)                                \
-  do                                                                        \
-  {                                                                         \
-     int overflow_p;                                                        \
-     uint32_t i;                                                            \
-     TYPEC res;                                                             \
-     uint64_t size = PVM_VAL_##TYPE##_SIZE (JITTER_UNDER_TOP_STACK ());     \
-     TYPEC a = PVM_VAL_##TYPE (JITTER_UNDER_TOP_STACK ());                  \
-     uint32_t b = PVM_VAL_UINT (JITTER_TOP_STACK ());                       \
-     int64_t res64 = ((uint64_t) 1) << (64 - size);                         \
-                                                                            \
-     overflow_p = 0;                                                        \
-     for (i = 0; i < b; ++i)                                                \
-       {                                                                    \
-         if (INT_MULTIPLY_OVERFLOW (res64, a))                              \
-           {                                                                \
-             PVM_RAISE_DFL (PVM_E_OVERFLOW);                                \
-             overflow_p = 1;                                                \
-             break;                                                         \
-           }                                                                \
-                                                                            \
-         res64 *= a;                                                        \
-        }                                                                   \
-                                                                            \
-     if (!overflow_p)                                                       \
-       {                                                                    \
-         res = res64 >> (64 - size);                                        \
-         JITTER_PUSH_STACK (pvm_make_##TYPELC (res, size));                 \
-       }                                                                    \
-  }                                                                         \
-  while (0)
-
 
 /* Conversion instructions.
    ( TYPE -- TYPE RTYPE )  */
@@ -3148,13 +2998,15 @@ end
 # Push the result of adding the two integers at the top of the stack.
 # If the operation would result in overflow, raise PVM_E_OVERFLOW.
 #
+# Note that this instruction does NOT check for signed overflow, and
+# in case it occurs, the result contents are UB.
+#
 # Stack: ( INT INT -- INT INT INT )
 # Exceptions: PVM_E_OVERFLOW
 
 instruction addi ()
-  branching # because of PVM_RAISE_DIRECT
   code
-    PVM_ADD_SIGNED (INT,int);
+    PVM_BINOP (INT, INT, INT, +);
   end
 end
 
@@ -3166,7 +3018,6 @@ end
 # Stack: ( UINT UINT -- UINT UINT UINT )
 
 instruction addiu ()
-  # branching # because of PVM_RAISE_DIRECT
   code
     PVM_BINOP (UINT, UINT, UINT, +);
   end
@@ -3177,13 +3028,15 @@ end
 # Push the result of adding the two longs at the top of the stack.
 # If the operation would result in overflow, raise PVM_E_OVERFLOW.
 #
+# Note that this instruction does NOT check for signed overflow, and
+# in case it occurs, the result contents are UB.
+#
 # Stack: ( LONG LONG -- LONG LONG LONG )
 # Exceptions: PVM_E_OVERFLOW
 
 instruction addl ()
-  branching # because of PVM_RAISE_DIRECT
   code
-    PVM_ADD_SIGNED (LONG, int64_t);
+    PVM_BINOP (LONG, LONG, LONG, +);
   end
 end
 
@@ -3195,7 +3048,6 @@ end
 # Stack: ( ULONG ULONG -- ULONG ULONG ULONG )
 
 instruction addlu ()
-  # branching # because of PVM_RAISE_DIRECT
   code
     PVM_BINOP (ULONG, ULONG, ULONG, +);
   end
@@ -3206,12 +3058,14 @@ end
 # Push the result of subtracting the two integers at the top of
 # the stack.
 #
+# Note that this instruction does NOT check for signed overflow, and
+# in case it occurs, the result contents are UB.
+#
 # Stack: ( INT INT -- INT INT INT )
 
 instruction subi ()
-  branching # because of PVM_RAISE_DIRECT
   code
-    PVM_SUB_SIGNED (INT, int);
+    PVM_BINOP (INT, INT, INT, -);
   end
 end
 
@@ -3223,7 +3077,6 @@ end
 # Stack: ( UINT UINT -- UINT UINT UINT )
 
 instruction subiu ()
-  # branching # because of PVM_RAISE_DIRECT
   code
     PVM_BINOP (UINT, UINT, UINT, -);
   end
@@ -3234,12 +3087,14 @@ end
 # Push the result of subtracting the two longs at the top
 # of the stack.
 #
+# Note that this instruction does NOT check for signed overflow, and
+# in case it occurs, the result contents are UB.
+#
 # Stack: ( LONG LONG -- LONG LONG LONG )
 
 instruction subl ()
-  branching # because of PVM_RAISE_DIRECT
   code
-    PVM_SUB_SIGNED (LONG, int64_t);
+    PVM_BINOP (LONG, LONG, LONG, -);
   end
 end
 
@@ -3251,7 +3106,6 @@ end
 # Stack: ( ULONG ULONG -- ULONG ULONG ULONG )
 
 instruction sublu ()
-  # branching # because of PVM_RAISE_DIRECT
   code
     PVM_BINOP (ULONG, ULONG, ULONG, -);
   end
@@ -3262,12 +3116,14 @@ end
 # Push the result of multiplying the two integers at the top of the
 # stack.
 #
+# Note that this instruction does NOT check for signed overflow, and
+# in case it occurs, the result contents are UB.
+#
 # Stack: ( INT INT -- INT INT INT )
 
 instruction muli ()
-  branching # because of PVM_RAISE_DIRECT
   code
-    PVM_MUL_SIGNED (INT, int);
+    PVM_BINOP (INT, INT, INT, *);
   end
 end
 
@@ -3279,7 +3135,6 @@ end
 # Stack: ( UINT UINT -- UINT UINT UINT )
 
 instruction muliu ()
-  # branching # because of PVM_RAISE_DIRECT
   code
     PVM_BINOP (UINT, UINT, UINT, *);
   end
@@ -3290,12 +3145,14 @@ end
 # Push the result of multiplying the two longs at the top of the
 # stack.
 #
+# Note that this instruction does NOT check for signed overflow, and
+# in case it occurs, the result contents are UB.
+#
 # Stack: ( LONG LONG -- LONG LONG LONG )
 
 instruction mull ()
-  branching # because of PVM_RAISE_DIRECT
   code
-    PVM_MUL_SIGNED (LONG, int64_t);
+    PVM_BINOP (LONG, LONG, LONG, *);
   end
 end
 
@@ -3319,6 +3176,9 @@ end
 # top of the stack.  If the denominator is zero, raise
 # PVM_E_DIV_BY_ZERO.
 #
+# Note that this instruction does NOT check for signed overflow, and
+# in case it occurs, the result contents are UB.
+#
 # Stack: ( INT INT -- INT INT INT )
 # Exceptions: PVM_E_DIV_BY_ZERO
 
@@ -3326,7 +3186,7 @@ instruction divi ()
   non-relocatable
   branching # because of PVM_RAISE_DIRECT
   code
-    PVM_DIV_SIGNED (INT, int);
+    PVM_CHECKED_BINOP (INT, INT, INT, /);
   end
 end
 
@@ -3352,6 +3212,9 @@ end
 # Push the result of the integer division of the two longs at the top
 # of the stack.  If the denominator is zero, raise PVM_E_DIV_BY_ZERO.
 #
+# Note that this instruction does NOT check for signed overflow, and
+# in case it occurs, the result contents are UB.
+#
 # Stack: ( LONG LONG -- LONG LONG LONG )
 # Exceptions: PVM_E_DIV_BY_ZERO
 
@@ -3359,7 +3222,7 @@ instruction divl ()
   non-relocatable
   branching # because of PVM_RAISE_DIRECT
   code
-    PVM_DIV_SIGNED (LONG, int64_t);
+    PVM_CHECKED_BINOP (LONG, LONG, LONG, /);
   end
 end
 
@@ -3385,6 +3248,9 @@ end
 # Push the result of the modulus of the two integers at the top of the
 # stack.  If the denominator is zero, raise PVM_E_DIV_BY_ZERO.
 #
+# Note that this instruction does NOT check for signed overflow, and
+# in case it occurs, the result contents are UB.
+#
 # Stack: ( INT INT -- INT INT INT )
 # Exceptions: PVM_E_DIV_BY_ZERO
 
@@ -3392,7 +3258,7 @@ instruction modi ()
   non-relocatable
   branching # because of PVM_RAISE_DIRECT
   code
-    PVM_MOD_SIGNED (INT, int);
+    PVM_CHECKED_BINOP (INT, INT, INT, %);
   end
 end
 
@@ -3418,6 +3284,9 @@ end
 # Push the result of the modulus of the two longs at the top of the
 # stack.  If the denominator is zero, raise PVM_E_DIV_BY_ZERO.
 #
+# Note that this instruction does NOT check for signed overflow, and
+# in case it occurs, the result contents are UB.
+#
 # Stack: ( LONG LONG -- LONG LONG LONG )
 # Exceptions: PVM_E_DIV_BY_ZERO
 
@@ -3425,7 +3294,7 @@ instruction modl ()
   non-relocatable
   branching # because of PVM_RAISE_DIRECT
   code
-    PVM_MOD_SIGNED (LONG, int64_t);
+    PVM_CHECKED_BINOP (LONG, LONG, LONG, %);
   end
 end
 
@@ -3450,12 +3319,14 @@ end
 # Push the result of the negation of the integer at the top of the
 # stack.
 #
+# Note that this instruction does NOT check for signed overflow, and
+# in case it occurs, the result contents are UB.
+#
 # Stack: ( INT -- INT INT )
 
 instruction negi ()
-  branching # because of PVM_RAISE_DIRECT
   code
-    PVM_NEG_SIGNED (INT, int);
+    PVM_UNOP (INT, INT, int, -);
   end
 end
 
@@ -3467,7 +3338,6 @@ end
 # Stack: ( UINT -- UINT UINT UINT )
 
 instruction negiu ()
-  branching # because of PVM_RAISE_DIRECT
   code
     PVM_UNOP (UINT, UINT, uint, -);
   end
@@ -3478,12 +3348,14 @@ end
 # Push the result of the negation of the long at the top of the
 # stack.
 #
+# Note that this instruction does NOT check for signed overflow, and
+# in case it occurs, the result contents are UB.
+#
 # Stack: ( LONG -- LONG LONG )
 
 instruction negl ()
-  branching # because of PVM_RAISE_DIRECT
   code
-    PVM_NEG_SIGNED (LONG, int64_t);
+    PVM_UNOP (LONG, LONG, long, -);
   end
 end
 
@@ -3495,7 +3367,6 @@ end
 # Stack: ( ULONG -- ULONG ULONG )
 
 instruction neglu ()
-  branching # because of PVM_RAISE_DIRECT
   code
     PVM_UNOP (ULONG, ULONG, ulong, -);
   end
@@ -3507,12 +3378,14 @@ end
 # stack.  The exponent is the unsigned integer at the top of the
 # stack.  If the exponent is 0, the result is 1.
 #
+# Note that this instruction does NOT check for signed overflow, and
+# in case it occurs, the result contents are UB.
+#
 # Stack: ( INT UINT -- INT UINT INT )
 
 instruction powi ()
-  branching # because of PVM_RAISE_DIRECT
   code
-    PVM_POWOP_SIGNED (INT,int64_t,int);
+    PVM_POWOP (INT,int32_t,int);
   end
 end
 
@@ -3525,7 +3398,6 @@ end
 # Stack: ( UINT UINT -- UINT UINT UINT )
 
 instruction powiu ()
-  branching # because of PVM_RAISE_DIRECT
   code
     PVM_POWOP (UINT,uint64_t,uint);
   end
@@ -3537,12 +3409,14 @@ end
 # stack.  The exponent is the unsigned integer at the top of the
 # stack.  If the exponent is 0, the result is 1.
 #
+# Note that this instruction does NOT check for signed overflow, and
+# in case it occurs, the result contents are UB.
+#
 # Stack: ( LONG UINT -- LONG UINT LONG )
 
 instruction powl ()
-  branching # because of PVM_RAISE_DIRECT
   code
-    PVM_POWOP_SIGNED (LONG,int64_t,long);
+    PVM_POWOP (LONG,int64_t,long);
   end
 end
 
@@ -3555,7 +3429,6 @@ end
 # Stack: ( ULONG UINT -- ULONG UINT ULONG )
 
 instruction powlu ()
-  branching # because of PVM_RAISE_DIRECT
   code
     PVM_POWOP (ULONG,uint64_t,ulong);
   end
