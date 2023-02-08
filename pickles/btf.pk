@@ -232,7 +232,7 @@ type BTF_Header =
     offset<uint<32>,B> type_off;
     offset<uint<32>,B> type_len;
     offset<uint<32>,B> str_off;
-    offset<uint<32>,B> str_len;
+    offset<uint<32>,B> str_len : hdr_len == OFFSET + str_len'size;
   };
 
 type BTF_Section =
