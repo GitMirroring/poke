@@ -150,7 +150,7 @@
         nton @unit_type, @to_base_type          ; OFF (OFFMC*OFFUC/TOUNIT) OFFC
         nip2                                    ; OFFC
         pushvar $tounit                         ; OFFC TOUNIT
-        mko                                     ; OFFC
+        mkoq                                    ; OFFC XXX this should really use mko but that requires subpassing
         popf 1
         .end
 
@@ -200,7 +200,7 @@
         add @base_type
         nip2                    ; OFF1 OFF2 (OFF2M+OFF1M)
         push #unit              ; OFF1 OFF2 (OFF2M+OFF1M) UNIT
-        mko                     ; OFF1 OFF2 OFFR
+        mkoq                    ; OFF1 OFF2 OFFR
         .end
 
 ;;; SUBO unit_type base_type
@@ -224,7 +224,7 @@
         sub @base_type
         nip2                    ; OFF1 OFF2 (OFF1M+OFF2M)
         push #unit              ; OFF1 OFF2 (OFF1M+OFF2M) UNIT
-        mko                     ; OFF1 OFF2 OFFR
+        mkoq                    ; OFF1 OFF2 OFFR
         .end
 
 ;;; MULO base_type
@@ -248,7 +248,7 @@
         swap                    ; (OFFM*VAL) OFF
         ogetu                   ; (OFFM*VAL) OFF UNIT
         quake                   ; OFF (OFFM*VAL) UNIT
-        mko                     ; OFF OFFR
+        mkoq                    ; OFF OFFR
         fromr                   ; OFF OFFR VAL
         swap                    ; OFF VAL OFFR
         .end
@@ -296,7 +296,7 @@
         mod @base_type
         nip2                    ; OFF1 OFF2 (OFF1M%OFF2M)
         push #unit              ; OFF1 OFF2 (OFF1M%OFF2M) UNIT
-        mko                     ; OFF1 OFF2 OFFR
+        mkoq                    ; OFF1 OFF2 OFFR
         .end
 
 ;;; ACAT

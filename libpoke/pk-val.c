@@ -92,7 +92,11 @@ pk_make_offset (pk_val magnitude, pk_val unit)
       || PVM_VAL_ULONG_SIZE (unit) != 64)
     return PK_NULL;
   else
-    return pvm_make_offset (magnitude, unit);
+    {
+      pvm_val type = pvm_make_offset_type (pvm_typeof (magnitude),
+                                           unit);
+      return pvm_make_offset (magnitude, type);
+    }
 }
 
 pk_val
@@ -104,7 +108,8 @@ pk_offset_magnitude (pk_val val)
 pk_val
 pk_offset_unit (pk_val val)
 {
-  return PVM_VAL_OFF_UNIT (val);
+  pvm_val val_type = PVM_VAL_OFF_TYPE (val);
+  return PVM_VAL_TYP_O_UNIT (val_type);
 }
 
 int
@@ -169,10 +174,10 @@ pk_val_offset (pk_val val)
   /* XXX "upunit" properly so we get a nice unit, not just bytes or
      bits.  */
   if (bit_offset % 8 == 0)
-    return pvm_make_offset (pvm_make_ulong (bit_offset / 8, 64),
-                            pvm_make_ulong (8, 64));
+    return pk_make_offset (pvm_make_ulong (bit_offset / 8, 64),
+                           pvm_make_ulong (8, 64));
   else
-    return pvm_make_offset (val_offset, pvm_make_ulong (1, 64));
+    return pk_make_offset (val_offset, pvm_make_ulong (1, 64));
 }
 
 void
@@ -180,12 +185,14 @@ pk_val_set_offset (pk_val val, pk_val off)
 {
   uint64_t boff;
 
-  if (!PVM_IS_OFF (off))
-    return;
+  if (PVM_IS_OFF (off))
+    {
+      pvm_val off_type = PVM_VAL_OFF_TYPE (off);
 
-  boff = PVM_VAL_INTEGRAL (PVM_VAL_OFF_MAGNITUDE (off))
-         * PVM_VAL_ULONG (PVM_VAL_OFF_UNIT (off));
-  PVM_VAL_SET_OFFSET (val, pvm_make_ulong (boff, 64));
+      boff = PVM_VAL_INTEGRAL (PVM_VAL_OFF_MAGNITUDE (off))
+        * PVM_VAL_ULONG (PVM_VAL_TYP_O_UNIT (off_type));
+      PVM_VAL_SET_OFFSET (val, pvm_make_ulong (boff, 64));
+    }
 }
 
 pk_val

@@ -2215,7 +2215,12 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_offset)
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_MAPPER | PKL_GEN_CTX_IN_CONSTRUCTOR))
     {
       PKL_PASS_SUBPASS (PKL_AST_TYPE_O_BASE_TYPE (PKL_PASS_NODE)); /* VAL */
-      PKL_PASS_SUBPASS (PKL_AST_TYPE_O_UNIT (PKL_PASS_NODE));      /* VAL UNIT */
+
+      PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPE);
+      PKL_PASS_SUBPASS (PKL_AST_TYPE_O_BASE_TYPE (PKL_PASS_NODE)); /* VAL BASE_TYPE */
+      PKL_GEN_POP_CONTEXT;
+      PKL_PASS_SUBPASS (PKL_AST_TYPE_O_UNIT (PKL_PASS_NODE));      /* VAL BASE_TYPE UNIT */
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MKTYO);                  /* VAL TYPE */
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MKO);                    /* OFF */
       PKL_PASS_BREAK;
     }
@@ -2253,7 +2258,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_offset)
 PKL_PHASE_END_HANDLER
 
 /*
- * | TYPE
  * | MAGNITUDE
  * | UNIT
  * OFFSET
@@ -2262,7 +2266,13 @@ PKL_PHASE_END_HANDLER
 PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_offset)
 {
   pkl_asm pasm = PKL_GEN_ASM;
+  pkl_ast_node offset_type = PKL_AST_TYPE (PKL_PASS_NODE);
 
+  PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPE);
+  PKL_PASS_SUBPASS (PKL_AST_TYPE_O_BASE_TYPE (offset_type)); /* MAGNITUDE UNIT BASE_TYPE */
+  PKL_GEN_POP_CONTEXT;
+  pkl_asm_insn (pasm, PKL_INSN_SWAP); /* MAGNITUDE BASE_TYPE UNIT */
+  pkl_asm_insn (pasm, PKL_INSN_MKTYO); /* MAGNITUDE TYPE */
   pkl_asm_insn (pasm, PKL_INSN_MKO);
 }
 PKL_PHASE_END_HANDLER
@@ -4134,12 +4144,12 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_op_div)
         pkl_asm_insn (pasm, PKL_INSN_SWAP); /* OP2 OP1 */
         pkl_asm_insn (pasm, PKL_INSN_OGETM); /* OP2 OP1 OMAG1 */
         pkl_asm_insn (pasm, PKL_INSN_SWAP);
-        pkl_asm_insn (pasm, PKL_INSN_OGETU);
-        pkl_asm_insn (pasm, PKL_INSN_NIP); /* OP2 OMAG1 UNIT */
-        pkl_asm_insn (pasm, PKL_INSN_NROT); /* UNIT OP2 OMAG1 */
-        pkl_asm_insn (pasm, PKL_INSN_SWAP); /* UNIT OMAG1 OP2 */
+        pkl_asm_insn (pasm, PKL_INSN_TYPOF);
+        pkl_asm_insn (pasm, PKL_INSN_NIP); /* OP2 OMAG1 TYP */
+        pkl_asm_insn (pasm, PKL_INSN_NROT); /* TYP OP2 OMAG1 */
+        pkl_asm_insn (pasm, PKL_INSN_SWAP); /* TYP OMAG1 OP2 */
         pkl_asm_insn (pasm, div_insn, op2_type);
-        pkl_asm_insn (pasm, PKL_INSN_NIP2); /* UNIT (OMAG1/OP2) */
+        pkl_asm_insn (pasm, PKL_INSN_NIP2); /* TYP (OMAG1/OP2) */
         pkl_asm_insn (pasm, PKL_INSN_SWAP);
         pkl_asm_insn (pasm, PKL_INSN_MKO);
         break;

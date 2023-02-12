@@ -50,7 +50,7 @@
    .c }
         siz
         push ulong<64>1
-        mko
+        mkoq
         nip
         .end
 
@@ -83,7 +83,7 @@
         mgeto                   ; VAL BOFF
         nip                     ; BOFF
         push ulong<64>1
-        mko                     ; OFF
+        mkoq                    ; OFF
         .end
 
 ;;; RAS_MACRO_ATTR_IOS @type
@@ -192,7 +192,7 @@
         nip                     ; BOFF
         ;; Build an offset value from the bit-offset.
         push ulong<64>1         ; VAL BOFF UNIT
-        mko                     ; VAL OFF
+        mkoq                    ; VAL OFF
         .end
 
 ;;; RAS_MACRO_ATTR_ESIZE
@@ -243,13 +243,13 @@
         nip                     ; SIZ
         ;; Build an offset value from the bit-offset.
         push ulong<64>1         ; VAL SIZ UNIT
-        mko                     ; VAL OFF
+        mkoq                    ; VAL OFF
         ba .reallydone
 .isabsent:
         drop3                   ; _
         push ulong<64>0
         push ulong<64>1
-        mko                     ; 0#b
+        mkoq                    ; 0#b
 .reallydone:
         .end
 

@@ -670,7 +670,7 @@
         push ulong<64>3         ; EVENT BOFF ARGS 3UL
         rot                     ; EVENT ARGS 3UL BOFF
         push ulong<64>1
-        mko                     ; EVENT ARGS 3UL OFF
+        mkoq                    ; EVENT ARGS 3UL OFF
         ains                    ; EVENT ARGS
         .call _pkl_dispatch_tv  ; null
         drop                    ; _
@@ -960,9 +960,10 @@
         ;; or an integral struct.
    .c if (PKL_AST_TYPE_CODE (@field_type) == PKL_TYPE_OFFSET)
    .c {
-        .let @offset_unit = PKL_AST_TYPE_O_UNIT (@field_type)
-        .let #unit = pvm_make_ulong (PKL_AST_INTEGER_VALUE (@offset_unit), 64)
-        push #unit                      ; STRICT BOFF MVALC UNIT
+        .c PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPE);
+        .c PKL_PASS_SUBPASS (@field_type);
+        .c PKL_GEN_POP_CONTEXT;
+                                        ; STRICT BOFF MVALC TYP
         mko                             ; STRICT BOFF VALC
    .c }
    .c else if (PKL_AST_TYPE_CODE (@field_type) == PKL_TYPE_STRUCT)
@@ -1191,7 +1192,7 @@
         regvar $ivalue
         push ulong<64>0
         push ulong<64>1
-        mko
+        mkoq
         regvar $OFFSET
         pushvar $boff           ; BOFF
         dup                     ; BOFF BOFF
@@ -1301,7 +1302,7 @@
         sublu
         nip2
         push ulong<64>1
-        mko
+        mkoq
         popvar $OFFSET
  .c   if (PKL_AST_TYPE_S_UNION_P (@type_struct))
  .c   {
@@ -1665,7 +1666,7 @@
         regvar $unused2
         push ulong<64>0
         push ulong<64>1
-        mko
+        mkoq
         regvar $OFFSET
         ;; This is the offset of struct (used in mksct instruction at
         ;; the end of this function), and because the struct is
@@ -1915,7 +1916,7 @@
         ;; Update OFFSET
         dup                    ; ... ENAME EVAL NEBOFF NEBOFF
         push ulong<64>1
-        mko                    ; ... ENAME EVAL NEBOFF NOFFSET
+        mkoq                   ; ... ENAME EVAL NEBOFF NOFFSET
         popvar $OFFSET
         popvar $boff           ; ... ENAME EVAL NEBOFF
         nrot                   ; ... NEBOFF ENAME EVAL
@@ -2490,9 +2491,9 @@
         nip
  .c if (PKL_AST_TYPE_CODE (@field_type) == PKL_TYPE_OFFSET)
  .c {
-        .let @offset_unit = PKL_AST_TYPE_O_UNIT (@field_type)
-        .let #unit = pvm_make_ulong (PKL_AST_INTEGER_VALUE (@offset_unit), 64)
-        push #unit
+        .c PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPE);
+        .c PKL_PASS_SUBPASS (@field_type);
+        .c PKL_GEN_POP_CONTEXT;
         mko
  .c }
  .c else if (PKL_AST_TYPE_CODE (@field_type) == PKL_TYPE_STRUCT)
@@ -2666,8 +2667,10 @@
         nton @itype, @btype
         nip                     ; IVAL NUM
         .let @ounit = PKL_AST_TYPE_O_UNIT (@field_type)
-        .let #unit = pvm_make_ulong (PKL_AST_INTEGER_VALUE (@ounit), 64)
-        push #unit              ; IVAL MAG UNIT
+        .c PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPE);
+        .c PKL_PASS_SUBPASS (@field_type);
+        .c PKL_GEN_POP_CONTEXT;
+                                ; IVAL MAG TYP
         mko                     ; IVAL OFF
   .c  }
   .c  else if (PKL_AST_TYPE_CODE (@field_type) == PKL_TYPE_STRUCT)

@@ -1626,9 +1626,13 @@ instruction iosize ()
 
     if (io == NULL)
       PVM_RAISE_DFL (PVM_E_NO_IOS);
-
-    JITTER_PUSH_STACK (pvm_make_offset (PVM_MAKE_ULONG (ios_size (io), 64),
-                                        PVM_MAKE_ULONG (8, 64)));
+    else
+      {
+        pvm_val magnitude = PVM_MAKE_ULONG (ios_size (io), 64);
+        pvm_val type = pvm_make_offset_type (pvm_typeof (magnitude),
+                                             PVM_MAKE_ULONG (8, 64));
+        JITTER_PUSH_STACK (pvm_make_offset (PVM_MAKE_ULONG (ios_size (io), 64), type));
+      }
   end
 end
 
@@ -1711,6 +1715,7 @@ instruction iogetb ()
   non-relocatable
   branching # because of PVM_RAISE_DIRECT
   code
+    pvm_val type, magnitude, unit;
     ios io = ios_search_by_id (PVM_VAL_INT (JITTER_TOP_STACK ()));
 
     if (io == NULL)
@@ -1718,11 +1723,18 @@ instruction iogetb ()
 
     uint64_t bias = ios_get_bias (io);
     if (bias % 8 == 0)
-      JITTER_PUSH_STACK (pvm_make_offset (PVM_MAKE_ULONG (bias/8, 64),
-                                          PVM_MAKE_ULONG (8, 64)));
+    {
+      magnitude = PVM_MAKE_ULONG (bias/8, 64);
+      unit = PVM_MAKE_ULONG (8, 64);
+    }
     else
-      JITTER_PUSH_STACK (pvm_make_offset (PVM_MAKE_ULONG (bias, 64),
-                                          PVM_MAKE_ULONG (1, 64)));
+    {
+      magnitude = PVM_MAKE_ULONG (bias, 64);
+      unit = PVM_MAKE_ULONG (1, 64);
+    }
+
+    type = pvm_make_offset_type (pvm_typeof (magnitude), unit);
+    JITTER_PUSH_STACK (pvm_make_offset (magnitude, type));
   end
 end
 
@@ -1743,6 +1755,7 @@ instruction iosetb ()
   branching # because of PVM_RAISE_DIRECT
   code
     pvm_val bias = JITTER_UNDER_TOP_STACK();
+    pvm_val bias_type = PVM_VAL_OFF_TYPE (bias);
     ios io = ios_search_by_id (PVM_VAL_INT (JITTER_TOP_STACK ()));
 
     JITTER_DROP_STACK ();
@@ -1752,7 +1765,7 @@ instruction iosetb ()
 
     ios_set_bias (io,
                   (PVM_VAL_INTEGRAL (PVM_VAL_OFF_MAGNITUDE (bias))
-                   * PVM_VAL_INTEGRAL (PVM_VAL_OFF_UNIT (bias))));
+                   * PVM_VAL_INTEGRAL (PVM_VAL_TYP_O_UNIT (bias_type))));
   end
 end
 
@@ -5487,15 +5500,34 @@ end
 
 # Instruction: mko
 #
-# Given an integral magnitude VAL and an unit expressed in an ULONG,
-# make an offset value and push it on the stack.
+# Given an integral magnitude VAL and an offset type,
+# make an offset value of that type and push it on the stack.
 #
-# Stack: ( VAL ULONG -- OFF )
+# Stack: ( VAL TYP -- OFF )
 
 instruction mko ()
   code
+   PVM_ASSERT (PVM_IS_TYP (JITTER_TOP_STACK ())); /* XXX */
+
    pvm_val res = pvm_make_offset (JITTER_UNDER_TOP_STACK (),
                                   JITTER_TOP_STACK ());
+   JITTER_DROP_STACK ();
+   JITTER_TOP_STACK () = res;
+  end
+end
+
+# Instruction: mkoq
+#
+# Given an integral magnitude VAL and an unit in an ULONG,
+# make an offset type and create an offset value with that type.
+#
+# Stack: ( VAL ULONG -- OFF )
+
+instruction mkoq ()
+  code
+   pvm_val type = pvm_make_offset_type (pvm_typeof (JITTER_UNDER_TOP_STACK ()),
+                                        JITTER_TOP_STACK ());
+   pvm_val res = pvm_make_offset (JITTER_UNDER_TOP_STACK (), type);
    JITTER_DROP_STACK ();
    JITTER_TOP_STACK () = res;
   end
@@ -5536,7 +5568,8 @@ end
 
 instruction ogetu ()
   code
-    JITTER_PUSH_STACK (PVM_VAL_OFF_UNIT (JITTER_TOP_STACK ()));
+    pvm_val otype = PVM_VAL_OFF_TYPE (JITTER_TOP_STACK ());
+    JITTER_PUSH_STACK (PVM_VAL_TYP_O_UNIT (otype));
   end
 end
 
@@ -5548,7 +5581,8 @@ end
 
 instruction ogetbt ()
   code
-    JITTER_PUSH_STACK (PVM_VAL_OFF_BASE_TYPE (JITTER_TOP_STACK ()));
+    pvm_val otype = PVM_VAL_OFF_TYPE (JITTER_TOP_STACK ());
+    JITTER_PUSH_STACK (PVM_VAL_TYP_O_BASE_TYPE (otype));
   end
 end
 
@@ -6152,11 +6186,11 @@ end
 
 # Instruction: mktyo
 #
-# Given a base integral type and an integer denoting an offset unit
+# Given a base integral type and an ulong denoting an offset unit
 # (multiple of the base unit) construct an offset type having these
 # features, and push it on the stack.
 #
-# Stack: ( TYPE INT -- TYPE )
+# Stack: ( TYPE ULONG -- TYPE )
 
 instruction mktyo ()
   code

@@ -910,7 +910,7 @@ pkl_asm_insn_binop (pkl_asm pasm,
           pkl_asm_insn (pasm, PKL_INSN_PUSH,
                         pvm_make_ulong (PKL_AST_INTEGER_VALUE (unit), 64));
                                                       /* OFF NOMAG RUNIT */
-          pkl_asm_insn (pasm, PKL_INSN_MKO);          /* OFF ROFF */
+          pkl_asm_insn (pasm, PKL_INSN_MKOQ);         /* OFF ROFF */
         }
       else if (insn == PKL_INSN_SL
                || insn == PKL_INSN_SR
@@ -926,7 +926,7 @@ pkl_asm_insn_binop (pkl_asm pasm,
           pkl_asm_insn (pasm, PKL_INSN_PUSH,
                         pvm_make_ulong (PKL_AST_INTEGER_VALUE (unit), 64));
                                                       /* OFF UINT NOMAG RUNIT */
-          pkl_asm_insn (pasm, PKL_INSN_MKO);          /* OFF1 OFF2 ROFF */
+          pkl_asm_insn (pasm, PKL_INSN_MKOQ);         /* OFF1 OFF2 ROFF */
         }
       else
         {
@@ -943,7 +943,7 @@ pkl_asm_insn_binop (pkl_asm pasm,
           pkl_asm_insn (pasm, PKL_INSN_PUSH,
                         pvm_make_ulong (PKL_AST_INTEGER_VALUE (unit), 64));
                                                       /* OFF1 OFF2 RMAG RUNIT */
-          pkl_asm_insn (pasm, PKL_INSN_MKO);          /* OFF1 OFF2 ROFF */
+          pkl_asm_insn (pasm, PKL_INSN_MKOQ);         /* OFF1 OFF2 ROFF */
         }
     }
   else
@@ -1379,12 +1379,6 @@ pkl_asm_new (pkl_ast ast, pkl_compiler compiler,
 
       /* Install the stack canary.  */
       pkl_asm_insn (pasm, PKL_INSN_CANARY);
-
-      /* Initialize the IO base register to [0 b].  */
-      pkl_asm_insn (pasm, PKL_INSN_PUSH,
-                    pvm_make_offset (pvm_make_int (0, 32),
-                                     pvm_make_ulong (1, 64)));
-      pkl_asm_insn (pasm, PKL_INSN_POPR, 0);
 
       /* Install the default exception handler.  */
       pkl_asm_insn (pasm, PKL_INSN_PUSH,

@@ -517,9 +517,8 @@ typedef struct pvm_cls *pvm_cls;
 
 #define PVM_VAL_OFF(V) (PVM_VAL_BOX_OFF (PVM_VAL_BOX ((V))))
 
+#define PVM_VAL_OFF_TYPE(V) (PVM_VAL_OFF((V))->type)
 #define PVM_VAL_OFF_MAGNITUDE(V) (PVM_VAL_OFF((V))->magnitude)
-#define PVM_VAL_OFF_UNIT(V) (PVM_VAL_OFF((V))->unit)
-#define PVM_VAL_OFF_BASE_TYPE(V) (PVM_VAL_OFF((V))->base_type)
 
 #define PVM_VAL_OFF_UNIT_BITS 1
 #define PVM_VAL_OFF_UNIT_NIBBLES 4
@@ -541,9 +540,8 @@ typedef struct pvm_cls *pvm_cls;
 
 struct pvm_off
 {
-  pvm_val base_type;
+  pvm_val type;
   pvm_val magnitude;
-  pvm_val unit;
 };
 
 typedef struct pvm_off *pvm_off;

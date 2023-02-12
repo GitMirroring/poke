@@ -229,12 +229,12 @@ pvm_val pvm_make_string_nodup (char *value);
 
 /* Make an offset PVM value.
 
-   MAGNITUDE is a PVM integral value.
+   MAGNITUDE is a PVM integral value.  It shall be of the same type
+   than the base type specified by TYPE.
 
-   UNIT is an ulong<64> PVM value specifying the unit of the offset,
-   in terms of the basic unit which is the bit.  */
+   TYPE is an offset PVM type.  */
 
-pvm_val pvm_make_offset (pvm_val magnitude, pvm_val unit);
+pvm_val pvm_make_offset (pvm_val magnitude, pvm_val type);
 
 /* Make an array PVM value.
 

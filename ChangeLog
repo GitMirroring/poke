@@ -1,3 +1,54 @@
+2023-02-12  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-gen-attrs.pks (attr_size): Use mkoq.
+	(attr_offset): Likewise.
+	(attr_eoffset): Likewise.
+	(attr_esize): Likewise.
+	* libpoke/pkl-gen.pks (emit_tv_field_event): Likewise.
+	(struct_mapper): Likewise.
+	(struct_constructor): Likewise.
+	(struct_field_extractor): Create offset type explicitly.
+	(deint_extract_field_value): Likewise.
+	(union_deintegrator): Likewise.
+	* libpoke/pkl-gen.c (pkl_gen_pr_type_offset): Create offset type
+	explicitly.
+	(pkl_gen_ps_offset): Likewise.
+	(pkl_gen_ps_op_div): Likewise.
+	* libpoke/pkl-asm.c (pkl_asm_insn_binop): Use mkoq instead of mko.
+	* libpoke/pkl-asm.pks (addo): Likewise.
+	(subo): Likewise.
+	(mulo): Likewise.
+	(modo): Likewise.
+	(offset_cast): Likewise.
+	* libpoke/pkl-insn.def (PKL_INSN_MKOQ): New instruction.
+	* libpoke/pvm.jitter (mkoq): New instruction.
+
+2023-02-12  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pvm-val.h (PVM_VAL_OFF_UNIT): Remove.
+	(PVM_VAL_OFF_BASE_TYPE): Likewise.
+	* libpoke/pvm-val.c (pvm_make_offset): Get an offset type as an
+	argument.
+	(pvm_typeof): Adjust accordingly.
+	(pvm_val_equal_p): Likewise.
+	(pvm_print_val_1): Likewise.
+	* libpoke/pvm.jitter (iosetb): Likewise.
+	(ogetu): Likewise.
+	(ogetbt): Likewise.
+	(iosize): Likewise.
+	(iogetb): Likewise.
+	* libpoke/pk-val.c (pk_offset_unit): Likewise.
+	(pk_val_set_offset): Likewise.
+	(pk_make_offset): Likewise.
+	(pk_val_offset): Likewise.
+	* libpoke/pkl-asm.c (pkl_asm_new): Remove old code involving the
+	IO base register.
+
+2023-02-12  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pvm.jitter (mktyo): Get the unit of the offset as an
+	ulong instead of an int.
+
 2023-02-08  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* pickles/btf.pk (BTF_Header): Add constraint to check hdr_len.

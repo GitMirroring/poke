@@ -581,14 +581,13 @@ pvm_make_cls (pvm_program program)
 }
 
 pvm_val
-pvm_make_offset (pvm_val magnitude, pvm_val unit)
+pvm_make_offset (pvm_val magnitude, pvm_val type)
 {
   pvm_val_box box = pvm_make_box (PVM_VAL_TAG_OFF);
   pvm_off off = pvm_alloc (sizeof (struct pvm_off));
 
-  off->base_type = pvm_typeof (magnitude);
+  off->type = type;
   off->magnitude = magnitude;
-  off->unit = unit;
 
   PVM_VAL_BOX_OFF (box) = off;
   return PVM_BOX (box);
@@ -615,12 +614,14 @@ pvm_val_equal_p (pvm_val val1, pvm_val val2)
     return STREQ (PVM_VAL_STR (val1), PVM_VAL_STR (val2));
   else if (PVM_IS_OFF (val1) && PVM_IS_OFF (val2))
     {
+      pvm_val val1_type = PVM_VAL_OFF_TYPE (val1);
+      pvm_val val2_type = PVM_VAL_OFF_TYPE (val2);
       int pvm_off_mag_equal, pvm_off_unit_equal;
 
       pvm_off_mag_equal = pvm_val_equal_p (PVM_VAL_OFF_MAGNITUDE (val1),
                                            PVM_VAL_OFF_MAGNITUDE (val2));
-      pvm_off_unit_equal = pvm_val_equal_p (PVM_VAL_OFF_UNIT (val1),
-                                            PVM_VAL_OFF_UNIT (val2));
+      pvm_off_unit_equal = pvm_val_equal_p (PVM_VAL_TYP_O_UNIT (val1_type),
+                                            PVM_VAL_TYP_O_UNIT (val2_type));
 
       return pvm_off_mag_equal && pvm_off_unit_equal;
     }
@@ -1569,10 +1570,12 @@ pvm_print_val_1 (pvm vm, int depth, int mode, int base, int indent,
     }
   else if (PVM_IS_OFF (val))
     {
+      pvm_val val_type = PVM_VAL_OFF_TYPE (val);
+
       pk_term_class ("offset");
       PVM_PRINT_VAL_1 (PVM_VAL_OFF_MAGNITUDE (val), ndepth);
       pk_puts ("#");
-      print_unit_name (PVM_VAL_ULONG (PVM_VAL_OFF_UNIT (val)));
+      print_unit_name (PVM_VAL_ULONG (PVM_VAL_TYP_O_UNIT (val_type)));
       pk_term_end_class ("offset");
     }
   else if (PVM_IS_CLS (val))
@@ -1640,8 +1643,7 @@ pvm_typeof (pvm_val val)
   else if (PVM_IS_STR (val))
     type = pvm_make_string_type ();
   else if (PVM_IS_OFF (val))
-    type = pvm_make_offset_type (PVM_VAL_OFF_BASE_TYPE (val),
-                                 PVM_VAL_OFF_UNIT (val));
+    type = PVM_VAL_OFF_TYPE (val);
   else if (PVM_IS_ARR (val))
     type = PVM_VAL_ARR_TYPE (val);
   else if (PVM_IS_SCT (val))
