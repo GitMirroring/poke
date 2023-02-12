@@ -1557,8 +1557,6 @@ pkl_asm_insn (pkl_asm pasm, enum pkl_asm_insn insn, ...)
               pkl_asm_insn_nton (pasm, from_type, to_type);
             else if (insn == PKL_INSN_ATOA)
               pkl_asm_insn_atoa (pasm, from_type, to_type);
-            else
-              pkl_asm_insn_oto (pasm, from_type, to_type);
             break;
           }
         case PKL_INSN_PEEK:
