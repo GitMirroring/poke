@@ -2236,8 +2236,14 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_offset)
     {
     /* Just build an offset type.  */
       PKL_PASS_SUBPASS (PKL_AST_TYPE_O_BASE_TYPE (PKL_PASS_NODE)); /* BASE_TYPE */
-      PKL_PASS_SUBPASS (PKL_AST_TYPE_O_UNIT (PKL_PASS_NODE));      /* UNIT */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MKTYO);
+      PKL_PASS_SUBPASS (PKL_AST_TYPE_O_UNIT (PKL_PASS_NODE));      /* BASE_TYPE UNIT */
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MKTYO);                  /* TYPE */
+      if (PKL_AST_TYPE_O_REF_TYPE (PKL_PASS_NODE))
+        {
+          PKL_PASS_SUBPASS (PKL_AST_TYPE_O_REF_TYPE (PKL_PASS_NODE));  /* TYPE REF_TYPE */
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_TYOSETRT);               /* TYPE */
+        }
+
       PKL_PASS_BREAK;
     }
 

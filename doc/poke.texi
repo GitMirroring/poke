@@ -9950,9 +9950,11 @@ entirely.  To denote one kilobyte, for example, we can write
 @node Offset Types
 @subsection Offset Types
 
-Offset types are denoted as @code{offset<@var{base_type},@var{unit}>},
-where @var{base_type} is an integer type and @var{unit} the
-specification of an unit.
+Offset types are denoted as
+@code{offset<@var{base_type},@var{unit}[,@var{ref_type}]>}, where
+@var{base_type} is an integer type, @var{unit} the specification of an
+unit, and @var{ref_type} is an optional type of a @dfn{referred
+value}.
 
 The offset base type is the type of the magnitude part of the united
 value.  It can be any integer type, signed or unsigned, of any size.
@@ -9960,6 +9962,10 @@ value.  It can be any integer type, signed or unsigned, of any size.
 The unit specification should be one of the unit identifiers that are
 allowed in offset literals (see above), a constant positive integer or
 the name of a Poke type whose size is known at compile time.
+
+If a referred type is specified, this tells poke that the offset may
+be used in order to refer to a value stored on some IO space.  This is
+similar to the notion of a pointer in other programming languages.
 
 @cindex kilobits
 Let's see some examples.  A signed 32-bit offset expressed in bytes
@@ -9969,6 +9975,10 @@ type can also be written using an explicit integer unit like in
 @code{offset<uint<12>,1024>}.  Finally, a signed 64-bit offset in units
 of ``packets'', where a packet is denoted with a Poke type
 @code{Packet} has type @code{offset<uint<64>,Packet>}.
+
+An offset whose purpose is to refer to some data structure of type
+@code{Packet} stored in some IO space could have type
+@code{offset<uint<64>,B,Packet>}.
 
 @node Casting Offsets
 @subsection Casting Offsets
@@ -10014,7 +10024,7 @@ Examples:
 @end example
 
 The unit of the result is the greatest common divisor of the units of
-the operands.
+the operands.  The result offset is not a referring offset.
 
 The operators @code{++} and @code{--}, in their prefix and suffix
 versions, can be applied to offsets as well.  The step used in the
@@ -10032,8 +10042,8 @@ Examples:
 0#MB
 @end example
 
-The unit of the result is the same as the unit of the offset
-operand.
+The unit of the result is the same as the unit of the offset operand.
+The result offset is not a referring offset.
 
 Note that multiplying two offsets is not supported.  This makes sense,
 since computer memory is linear, and therefore it wouldn't make any
@@ -10081,6 +10091,9 @@ Dividing an offset by an integer gives you an offset.  Example:
 4#B
 @end example
 
+The unit of the result is the unit of the offset operand.  The result
+offset is not a referring offset.
+
 @subsubsection Modulus
 @cindex modulus
 The modulus of two offsets gives you another offset with the expected
@@ -10094,7 +10107,7 @@ semantics.  Examples:
 @end example
 
 The unit of the result is the greatest common divisor of the units of
-the operands.
+the operands.  The result offset is not a referring offset.
 
 @node Offset Attributes
 @subsection Offset Attributes

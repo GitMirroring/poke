@@ -823,8 +823,10 @@ pvm_type_to_ast_type (pkl_ast ast, pvm_val type)
           = pvm_type_to_ast_type (ast, PVM_VAL_TYP_O_BASE_TYPE (type));
         pkl_ast_node unit
           = pkl_ast_make_integer (ast, PVM_VAL_ULONG (PVM_VAL_TYP_O_UNIT (type)));
+        pkl_ast_node ref_type
+          = pvm_type_to_ast_type (ast, PVM_VAL_TYP_O_REF_TYPE (type));
 
-        return pkl_ast_make_offset_type (ast, base_type, unit);
+        return pkl_ast_make_offset_type (ast, base_type, unit, ref_type);
         break;
       }
     case PVM_TYPE_VOID:

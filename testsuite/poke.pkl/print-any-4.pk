@@ -1,0 +1,11 @@
+/* { dg-do run } */
+
+type Pointer_To_Exception = offset<int<32>,B,Exception>;
+var x = 23#B;
+
+/* { dg-command {asm any: ("typof; nip" : x as Pointer_To_Exception)} } */
+/* { dg-output "offset<int<32>,8,Exception>" } */
+
+/* For constant folding: */
+/* { dg-command {asm any: ("typof; nip" : 23#B as Pointer_To_Exception)} } */
+/* { dg-output "\noffset<int<32>,8,Exception>" } */

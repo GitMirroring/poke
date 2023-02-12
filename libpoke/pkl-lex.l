@@ -458,7 +458,7 @@ S ::
             /* Build the offset value itself.  */
             offset_type = pkl_ast_make_offset_type (yyextra->ast,
                                                     magnitude_type,
-                                                    unit);
+                                                    unit, NULL /* ref_type */);
             yylval->ast = pkl_ast_make_offset (yyextra->ast,
                                                magnitude, unit);
             PKL_AST_TYPE (yylval->ast) = ASTREF (offset_type);

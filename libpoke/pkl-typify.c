@@ -338,6 +338,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_neg_pos_bnot)
   pkl_ast_node exp = PKL_PASS_NODE;
   pkl_ast_node op1 = PKL_AST_EXP_OPERAND (exp, 0);
   pkl_ast_node op1_type = PKL_AST_TYPE (op1);
+  pkl_ast_node type = NULL;
 
   /* Handle an integral struct operand.  */
   if (PKL_AST_TYPE_CODE (op1_type) == PKL_TYPE_STRUCT
@@ -347,13 +348,22 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_neg_pos_bnot)
   switch (PKL_AST_TYPE_CODE (op1_type))
     {
     case PKL_TYPE_INTEGRAL:
+      type = op1_type;
+      break;
     case PKL_TYPE_OFFSET:
+      /* The type of the result has the same magnitude and unit
+         than the operand, but some attributes of the type are
+         not propagated.  */
+      type = pkl_ast_make_offset_type (PKL_PASS_AST,
+                                       PKL_AST_TYPE_O_BASE_TYPE (op1_type),
+                                       PKL_AST_TYPE_O_UNIT (op1_type),
+                                       NULL /* ref_type */);
       break;
     default:
       INVALID_OPERAND (op1, "expected integral or offset");
     }
 
-  PKL_AST_TYPE (exp) = ASTREF (op1_type);
+  PKL_AST_TYPE (exp) = ASTREF (type);
 }
 PKL_PHASE_END_HANDLER
 
@@ -601,20 +611,24 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_bin)
               INVALID_OPERAND (op2, "expected integral or offset");
 
             /* For OFFSET / INTEGRAL the type of the result is the
-               type of the first operand.  */
+               type of the first operand.  But note that ref_type is
+               not propagated.  */
             if (op2_type_code == PKL_TYPE_INTEGRAL)
               {
-                type = op1_type;
-                break;
+                type = pkl_ast_make_offset_type (PKL_PASS_AST,
+                                                 PKL_AST_TYPE_O_BASE_TYPE (op1_type),
+                                                 PKL_AST_TYPE_O_UNIT (op1_type),
+                                                 NULL /* ref_type */);
               }
-
-            /* For OFFSET / OFFSET the type of the result is an
-               integral as promoted by the base types of the offset
-               operands.  */
-
-            type = pkl_type_integral_promote (PKL_PASS_AST,
-                                              PKL_AST_TYPE_O_BASE_TYPE (op1_type),
-                                              PKL_AST_TYPE_O_BASE_TYPE (op2_type));
+            else
+              {
+                /* For OFFSET / OFFSET the type of the result is an
+                   integral as promoted by the base types of the
+                   offset operands.  */
+                type = pkl_type_integral_promote (PKL_PASS_AST,
+                                                  PKL_AST_TYPE_O_BASE_TYPE (op1_type),
+                                                  PKL_AST_TYPE_O_BASE_TYPE (op2_type));
+              }
             break;
           case PKL_AST_OP_MOD:
             {
@@ -646,7 +660,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_bin)
               PKL_AST_TYPE (unit) = ASTREF (unit_type);
 
               type = pkl_ast_make_offset_type (PKL_PASS_AST,
-                                               base_type_1, unit);
+                                               base_type_1, unit,
+                                               NULL /* ref_type */);
               break;
             }
           default:
@@ -687,7 +702,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_bin)
               PKL_AST_TYPE (unit) = ASTREF (unit_type);
               type = pkl_ast_make_offset_type (PKL_PASS_AST,
                                                base_type,
-                                               unit);
+                                               unit, NULL /* ref_type */);
               break;
             }
           }
@@ -776,7 +791,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_bshift_pow)
         pkl_ast_node unit = PKL_AST_TYPE_O_UNIT (op1_type);
 
         type = pkl_ast_make_offset_type (PKL_PASS_AST,
-                                         base_type, unit);
+                                         base_type, unit, NULL /* ref_type */);
         break;
       }
     default:
@@ -846,7 +861,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_mul)
                                                    op2_type);
         type = pkl_ast_make_offset_type (PKL_PASS_AST,
                                          res_base_type,
-                                         PKL_AST_TYPE_O_UNIT (op1_type));
+                                         PKL_AST_TYPE_O_UNIT (op1_type),
+                                         NULL /* ref_type */);
         break;
       }
     case PKL_TYPE_INTEGRAL:
@@ -867,7 +883,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_mul)
                                            op1_type);
             type = pkl_ast_make_offset_type (PKL_PASS_AST,
                                              res_base_type,
-                                             PKL_AST_TYPE_O_UNIT (op2_type));
+                                             PKL_AST_TYPE_O_UNIT (op2_type),
+                                             NULL /* ref_type */);
             break;
           }
         default:
@@ -986,7 +1003,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_op_sizeof)
     = pkl_ast_make_integer (PKL_PASS_AST, PKL_AST_OFFSET_UNIT_BITS);
 
   pkl_ast_node type
-    = pkl_ast_make_offset_type (PKL_PASS_AST, itype, unit);
+    = pkl_ast_make_offset_type (PKL_PASS_AST, itype, unit, NULL /* ref_type */);
 
   PKL_AST_TYPE (unit) = ASTREF (itype);
   PKL_AST_TYPE (PKL_PASS_NODE) = ASTREF (type);
@@ -1045,7 +1062,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_offset)
     }
 
   type = pkl_ast_make_offset_type (PKL_PASS_AST,
-                                   magnitude_type, unit);
+                                   magnitude_type, unit,
+                                   NULL /* ref_type */);
   PKL_AST_TYPE (offset) = ASTREF (type);
 }
 PKL_PHASE_END_HANDLER
@@ -2560,7 +2578,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_attr)
       PKL_AST_TYPE (offset_unit) = ASTREF (offset_unit_type);
 
       exp_type = pkl_ast_make_integral_type (PKL_PASS_AST, 64, 0);
-      exp_type = pkl_ast_make_offset_type (PKL_PASS_AST, exp_type, offset_unit);
+      exp_type = pkl_ast_make_offset_type (PKL_PASS_AST, exp_type, offset_unit,
+                                           NULL /* ref_type */);
 
       PKL_AST_TYPE (exp) = ASTREF (exp_type);
       break;
@@ -2611,7 +2630,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_attr)
       PKL_AST_TYPE (offset_unit) = ASTREF (offset_unit_type);
 
       exp_type = pkl_ast_make_integral_type (PKL_PASS_AST, 64, 0);
-      exp_type = pkl_ast_make_offset_type (PKL_PASS_AST, exp_type, offset_unit);
+      exp_type = pkl_ast_make_offset_type (PKL_PASS_AST, exp_type, offset_unit,
+                                           NULL /* ref_type */);
 
       PKL_AST_TYPE (exp) = ASTREF (exp_type);
       break;
@@ -2678,7 +2698,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_attr)
             PKL_AST_TYPE (offset_unit) = ASTREF (offset_unit_type);
 
             exp_type = pkl_ast_make_integral_type (PKL_PASS_AST, 64, 0);
-            exp_type = pkl_ast_make_offset_type (PKL_PASS_AST, exp_type, offset_unit);
+            exp_type = pkl_ast_make_offset_type (PKL_PASS_AST, exp_type, offset_unit,
+                                                 NULL /* ref_type */);
           }
 
         PKL_AST_TYPE (exp) = ASTREF (exp_type);
@@ -2886,7 +2907,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_struct_type_field)
       pkl_ast_node offset_type
         = pkl_ast_make_offset_type (PKL_PASS_AST,
                                     pkl_ast_make_integral_type (PKL_PASS_AST, 64, 0),
-                                    pkl_ast_make_integer (PKL_PASS_AST, 1));
+                                    pkl_ast_make_integer (PKL_PASS_AST, 1),
+                                    NULL /* ref_type */);
 
 
       if (!pkl_ast_type_promoteable_p (label_type, offset_type,

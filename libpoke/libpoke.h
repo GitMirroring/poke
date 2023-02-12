@@ -966,9 +966,12 @@ pk_val pk_make_any_type (void) LIBPOKE_API;
    of the offset.
 
    UNIT is an uint<64> with the unit of the offset type.  The unit is
-   a multiple of the base unit, which is the bit.  */
+   a multiple of the base unit, which is the bit.
 
-pk_val pk_make_offset_type (pk_val base_type, pk_val unit) LIBPOKE_API;
+   REF_TYPE is either PK_NULL or the type of the referenced type if the
+   offset is also a reference or pointer.  */
+
+pk_val pk_make_offset_type (pk_val base_type, pk_val unit, pk_val ref_type) LIBPOKE_API;
 
 /* Get the base type of a given offset type.  */
 

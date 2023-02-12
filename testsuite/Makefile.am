@@ -706,6 +706,7 @@ EXTRA_DIST = \
   poke.pkl/add-offsets-9.pk \
   poke.pkl/add-offsets-diag-1.pk \
   poke.pkl/add-offsets-10.pk \
+  poke.pkl/add-offsets-11.pk \
   poke.pkl/add-strings-1.pk \
   poke.pkl/add-strings-diag-1.pk \
   poke.pkl/adda-int-1.pk \
@@ -1031,6 +1032,7 @@ EXTRA_DIST = \
   poke.pkl/bnot-integers-4.pk \
   poke.pkl/bnot-int-struct-1.pk \
   poke.pkl/bnot-offsets-1.pk \
+  poke.pkl/bnot-offsets-2.pk \
   poke.pkl/break-diag-1.pk \
   poke.pkl/break-for-1.pk \
   poke.pkl/break-while-1.pk \
@@ -1257,6 +1259,7 @@ EXTRA_DIST = \
   poke.pkl/div-offsets-2.pk \
   poke.pkl/div-offsets-3.pk \
   poke.pkl/div-offsets-4.pk \
+  poke.pkl/div-offsets-5.pk \
   poke.pkl/div-offsets-diag-1.pk \
   poke.pkl/div-offsets-diag-2.pk \
   poke.pkl/div-offsets-diag-3.pk \
@@ -1813,6 +1816,7 @@ EXTRA_DIST = \
   poke.pkl/mod-offsets-3.pk \
   poke.pkl/mod-offsets-4.pk \
   poke.pkl/mod-offsets-5.pk \
+  poke.pkl/mod-offsets-6.pk \
   poke.pkl/mod-offsets-diag-1.pk \
   poke.pkl/mod-offsets-diag-2.pk \
   poke.pkl/moda-int-1.pk \
@@ -1845,6 +1849,7 @@ EXTRA_DIST = \
   poke.pkl/mul-offsets-9.pk \
   poke.pkl/mul-offsets-10.pk \
   poke.pkl/mul-offsets-11.pk \
+  poke.pkl/mul-offsets-12.pk \
   poke.pkl/mul-strings-1.pk \
   poke.pkl/mul-strings-2.pk \
   poke.pkl/mul-strings-3.pk \
@@ -1913,6 +1918,7 @@ EXTRA_DIST = \
   poke.pkl/offset-arg-2.pk \
   poke.pkl/offset-diag-1.pk \
   poke.pkl/offset-type-1.pk \
+  poke.pkl/offset-type-2.pk \
   poke.pkl/offset-type-diag-1.pk \
   poke.pkl/offset-type-diag-2.pk \
   poke.pkl/offset-type-diag-3.pk \
@@ -2038,6 +2044,7 @@ EXTRA_DIST = \
   poke.pkl/print-any-1.pk \
   poke.pkl/print-any-2.pk \
   poke.pkl/print-any-3.pk \
+  poke.pkl/print-any-4.pk \
   poke.pkl/print-diag-1.pk \
   poke.pkl/preincr-field-1.pk \
   poke.pkl/preincr-diag-2.pk \
@@ -2535,6 +2542,7 @@ EXTRA_DIST = \
   poke.pkl/sub-offsets-6.pk \
   poke.pkl/sub-offsets-7.pk \
   poke.pkl/sub-offsets-8.pk \
+  poke.pkl/sub-offsets-9.pk \
   poke.pkl/suba-int-1.pk \
   poke.pkl/suba-offset-1.pk \
   poke.pkl/term-class-1.pk \

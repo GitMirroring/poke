@@ -447,6 +447,8 @@ pkl_do_pass_1 (pkl_compiler compiler,
           case PKL_TYPE_OFFSET:
             PKL_PASS (PKL_AST_TYPE_O_BASE_TYPE (node));
             PKL_PASS (PKL_AST_TYPE_O_UNIT (node));
+            if (PKL_AST_TYPE_O_REF_TYPE (node))
+              PKL_PASS (PKL_AST_TYPE_O_REF_TYPE (node));
 
             break;
           case PKL_TYPE_INTEGRAL:

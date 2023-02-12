@@ -1,0 +1,14 @@
+/* { dg-do run } */
+
+/* The ref_type attribute of offset types must not be propagated
+   in bnot expressions.  */
+
+type Pointer_To_Exception = offset<int<32>,B,Exception>;
+var a = 1#B as Pointer_To_Exception;
+
+/* { dg-command { asm any: ("typof; nip" : ~a) } } */
+/* { dg-output "offset<int<32>,8>" } */
+
+/* For constant folding: */
+/* { dg-command { asm any: ("typof; nip" : ~(1#B as Pointer_To_Exception)) } } */
+/* { dg-output "\noffset<int<32>,8>" } */

@@ -94,7 +94,7 @@ pk_make_offset (pk_val magnitude, pk_val unit)
   else
     {
       pvm_val type = pvm_make_offset_type (pvm_typeof (magnitude),
-                                           unit);
+                                           unit, PVM_NULL /* ref_type */);
       return pvm_make_offset (magnitude, type);
     }
 }
@@ -385,9 +385,9 @@ pk_make_string_type (void)
 }
 
 pk_val
-pk_make_offset_type (pk_val base_type, pk_val unit)
+pk_make_offset_type (pk_val base_type, pk_val unit, pk_val ref_type)
 {
-  return pvm_make_offset_type (base_type, unit);
+  return pvm_make_offset_type (base_type, unit, ref_type);
 }
 
 pk_val

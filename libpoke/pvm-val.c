@@ -517,12 +517,13 @@ pvm_make_void_type (void)
 }
 
 pvm_val
-pvm_make_offset_type (pvm_val base_type, pvm_val unit)
+pvm_make_offset_type (pvm_val base_type, pvm_val unit, pvm_val ref_type)
 {
   pvm_val otype = pvm_make_type (PVM_TYPE_OFFSET);
 
   PVM_VAL_TYP_O_BASE_TYPE (otype) = base_type;
   PVM_VAL_TYP_O_UNIT (otype) = unit;
+  PVM_VAL_TYP_O_REF_TYPE (otype) = ref_type;
   return otype;
 }
 

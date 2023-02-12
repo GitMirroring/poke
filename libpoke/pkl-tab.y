@@ -566,7 +566,7 @@ load_module (struct pkl_parser *parser,
 %type <ast> typename type_specifier simple_type_specifier cons_type_specifier
 %type <ast> integral_type_specifier offset_type_specifier array_type_specifier
 %type <ast> function_type_specifier function_type_arg_list function_type_arg
-%type <ast> struct_type_specifier string_type_specifier
+%type <ast> struct_type_specifier string_type_specifier ref_type
 %type <ast> struct_type_elem_list struct_type_field struct_type_field_identifier
 %type <ast> struct_type_field_label struct_type_computed_field
 %type <field_const_init> struct_type_field_constraint_and_init
@@ -1596,8 +1596,13 @@ integral_type_sign:
         | UINTCONSTR        { $$ = 0; }
         ;
 
+ref_type:
+          %empty                      { $$ = NULL; }
+        | ',' simple_type_specifier { $$ = $2; }
+        ;
+
 offset_type_specifier:
-          OFFSETCONSTR simple_type_specifier ',' identifier '>'
+          OFFSETCONSTR simple_type_specifier ',' identifier ref_type '>'
                 {
                   pkl_ast_node decl
                     = pkl_env_lookup (pkl_parser->env,
@@ -1623,15 +1628,16 @@ offset_type_specifier:
 
                   $$ = pkl_ast_make_offset_type (pkl_parser->ast,
                                                  $2,
-                                                 PKL_AST_DECL_INITIAL (decl));
+                                                 PKL_AST_DECL_INITIAL (decl),
+                                                 $5);
 
                   $4 = ASTREF ($4); pkl_ast_node_free ($4);
                   PKL_AST_LOC ($$) = @$;
                 }
-        | OFFSETCONSTR simple_type_specifier ',' integer '>'
+        | OFFSETCONSTR simple_type_specifier ',' integer ref_type '>'
                 {
                     $$ = pkl_ast_make_offset_type (pkl_parser->ast,
-                                                   $2, $4);
+                                                   $2, $4, $5);
                     PKL_AST_LOC (PKL_AST_TYPE ($4)) = @4;
                     PKL_AST_LOC ($4) = @4;
                     PKL_AST_LOC ($$) = @$;
@@ -1757,7 +1763,8 @@ struct_type_specifier:
                                                   offset_unit);
                     type = pkl_ast_make_offset_type (pkl_parser->ast,
                                                      type,
-                                                     offset_unit);
+                                                     offset_unit,
+                                                     NULL /* ref_type */);
                     PKL_AST_TYPE (offset) = ASTREF (type);
 
                     decl = pkl_ast_make_decl (pkl_parser->ast,

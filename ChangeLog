@@ -1,3 +1,89 @@
+2023-02-12  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-ast.h (struct pkl_ast_type): New field ref_type in
+	offset types.
+	(PKL_AST_TYPE_O_REF_TYPE): Define.
+	* libpoke/pkl-ast.c (pkl_ast_make_offset_type): Get a ref_type
+	argument.
+	(pkl_ast_node_free_1): Free ref_type.
+	(pkl_ast_print_1): Print ref_type.
+	(pkl_type_append_to): Include ref_type in printed representation.
+	(pkl_ast_type_equal_p): Handle referred types.
+	* libpoke/pkl-tab.y (ref_type): New rule.
+	* libpoke/pkl-typify.c: Pass ref_type argument to calls to
+	pkl_ast_make_offset_type.
+	* libpoke/pkl-promo.c (promote_offset): Likewise.
+	* libpoke/pkl-trans.c: Likewise.
+	* libpoke/pkl-promo.c (promote_offset): Handle ref_type.
+	(promote_node): Likewise.
+	* libpoke/pkl-pass.c (pkl_do_pass_1): Traverse ref_type in offset
+	type nodes.
+	* libpoke/pkl-lex.l: Likewise.
+	* libpoke/pkl-gen.c (pkl_gen_pr_type_offset): Use ref_type.
+	* libpoke/pkl-rt.pk (_pkl_print_format_any): Print ref_type in
+	offset types.
+	* libpoke/pvm-val.h (PVM_VAL_TYP_O_REF_TYPE): Define.
+	* libpoke/pvm-val.c (pvm_make_offset_type): Get an argument
+	ref_type.
+	* libpoke/pvm.jitter (tyosetrt): New instruction.
+	(tyogetrt): Likewise.
+	* libpoke/pkl-insn.def: New instructions PKL_INSN_TYOSETRT and
+	PKL_INSN_TYOGETRT.
+	* libpoke/pk-val.c (pk_make_offset_type): Likewise.
+	* doc/poke.texi (Offset Types): Document referred types in offset
+	types.
+	* testsuite/poke.pkl/offset-type-2.pk: New test.
+	* testsuite/poke.pkl/print-any-4.pk: Likewise.
+	* testsuite/poke.pkl/add-offset-11.pk: Likewise.
+	* testsuite/poke.pkl/sub-offsets-9.pk: Likewise.
+	* testsuite/poke.pkl/mul-offsets-12.pk: Likewise.
+	* testsuite/poke.pkl/div-offsets-5.pk: Likewise.
+	* testsuite/poke.pkl/bnot-offsets-2.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+
+2023-02-12  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-ast.h (struct pkl_ast_type): New field ref_type in
+	offset types.
+	(PKL_AST_TYPE_O_REF_TYPE): Define.
+	* libpoke/pkl-ast.c (pkl_ast_make_offset_type): Get a ref_type
+	argument.
+	(pkl_ast_node_free_1): Free ref_type.
+	(pkl_ast_print_1): Print ref_type.
+	(pkl_type_append_to): Include ref_type in printed representation.
+	(pkl_ast_type_equal_p): Handle referred types.
+	* libpoke/pkl-tab.y (ref_type): New rule.
+	* libpoke/pkl-typify.c: Pass ref_type argument to calls to
+	pkl_ast_make_offset_type.
+	* libpoke/pkl-promo.c (promote_offset): Likewise.
+	* libpoke/pkl-trans.c: Likewise.
+	* libpoke/pkl-promo.c (promote_offset): Handle ref_type.
+	(promote_node): Likewise.
+	* libpoke/pkl-pass.c (pkl_do_pass_1): Traverse ref_type in offset
+	type nodes.
+	* libpoke/pkl-lex.l: Likewise.
+	* libpoke/pkl-gen.c (pkl_gen_pr_type_offset): Use ref_type.
+	* libpoke/pkl-rt.pk (_pkl_print_format_any): Print ref_type in
+	offset types.
+	* libpoke/pvm-val.h (PVM_VAL_TYP_O_REF_TYPE): Define.
+	* libpoke/pvm-val.c (pvm_make_offset_type): Get an argument
+	ref_type.
+	* libpoke/pvm.jitter (tyosetrt): New instruction.
+	(tyogetrt): Likewise.
+	* libpoke/pkl-insn.def: New instructions PKL_INSN_TYOSETRT and
+	PKL_INSN_TYOGETRT.
+	* libpoke/pk-val.c (pk_make_offset_type): Likewise.
+	* doc/poke.texi (Offset Types): Document referred types in offset
+	types.
+	* testsuite/poke.pkl/offset-type-2.pk: New test.
+	* testsuite/poke.pkl/print-any-4.pk: Likewise.
+	* testsuite/poke.pkl/add-offset-11.pk: Likewise.
+	* testsuite/poke.pkl/sub-offsets-9.pk: Likewise.
+	* testsuite/poke.pkl/mul-offsets-11.pk: Likewise.
+	* testsuite/poke.pkl/div-offsets-5.pk: Likewise.
+	* testsuite/poke.pkl/bnot-offsets-2.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+
 2023-04-21  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-tab.y (primary): Add new rule for `format' with no

@@ -1130,10 +1130,12 @@ PKL_PHASE_BEGIN_HANDLER (pkl_fold_ps_cast)
       pkl_ast_node to_unit = PKL_AST_TYPE_O_UNIT (to_type);
       pkl_ast_node from_base_type = PKL_AST_TYPE_O_BASE_TYPE (from_type);
       pkl_ast_node to_base_type = PKL_AST_TYPE_O_BASE_TYPE (to_type);
+      pkl_ast_node to_ref_type = PKL_AST_TYPE_O_REF_TYPE (to_type);
 
       if (PKL_AST_CODE (magnitude) != PKL_AST_INTEGER
           || PKL_AST_CODE (unit) != PKL_AST_INTEGER
-          || PKL_AST_CODE (to_unit) != PKL_AST_INTEGER)
+          || PKL_AST_CODE (to_unit) != PKL_AST_INTEGER
+          || to_ref_type != NULL) /* XXX why?? */
         /* We can't fold this cast.  */
         PKL_PASS_DONE;
 
