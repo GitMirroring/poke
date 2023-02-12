@@ -3454,3 +3454,50 @@
         .macro stroref @index_type
         .call _pkl_stroref
         .end
+
+;;; RAS_MACRO_OFFSET_CAST
+;;; ( OFF TOUNIT -- OFF )
+;;;
+;;; This macro generates code that converts an offset of a given type
+;;; into an offset of another given type.
+;;;
+;;; Macro arguments:
+;;; @from_type
+;;;    pkl_ast_node reflecting the offset type of OFF.
+;;; @to_type
+;;;    pkl_ast_node reflecting the offset type we are casting to.
+
+        .macro offset_cast @from_type @to_type
+        ;; Note that we have to do the arithmetic in unit_types, then
+        ;; convert to to_base_type, to assure that to_base_type can hold
+        ;; the to_base_unit.  Otherwise weird division by zero occurs.
+        pushf 2
+        regvar $tounit                          ; OFF
+        ogetu                                   ; OFF FROMUNIT
+        regvar $fromunit                        ; OFF
+        ;; Get the magnitude of the offset and convert it to the
+        ;; unit type, which is uint<64>.
+        ogetm                                   ; OFF OFFM
+        .let @unit_type = PKL_AST_TYPE (PKL_AST_TYPE_O_UNIT (@from_type))
+        .let @from_base_type = PKL_AST_TYPE_O_BASE_TYPE (@from_type)
+        nton @from_base_type, @unit_type        ; OFF OFFM OFFMC
+        nip                                     ; OFF OFFMC
+        ;; Now do the same for the unit.
+        pushvar $fromunit                       ; OFF OFFMC OFFU
+        mul @unit_type                          ; OFF OFFMC OFFU (OFFMC*OFFUC)
+        nip2                                    ; OFF (OFFMC*OFFUC)
+        ;; Convert the new unit.
+        pushvar $tounit                         ; OFF (OFFMC*OFFUC) TOUNIT
+        div @unit_type
+        nip2                                    ; OFF (OFFMC*OFFUC/TOUNIT)
+        ;; Convert to the new unit
+        .let @to_base_type = PKL_AST_TYPE_O_BASE_TYPE (@to_type)
+        nton @unit_type, @to_base_type          ; OFF (OFFMC*OFFUC/TOUNIT) OFFC
+        nip2                                    ; OFFC
+     .c PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPE);
+     .c PKL_PASS_SUBPASS (@to_type);
+     .c PKL_GEN_POP_CONTEXT;
+                                                ; OFFC TYPE
+        mko                                     ; OFFC
+        popf 1
+        .end

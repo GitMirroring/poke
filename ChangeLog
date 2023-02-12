@@ -1,5 +1,14 @@
 2023-02-12  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-insn.def: Remove instruction PKL_INSN_OTO.
+	* libpoke/pkl-asm.c (pkl_asm_insn_oto): Remove.
+	(pkl_asm_insn): Do not handle PKL_INSN_OTO.
+	* libpoke/pkl-asm.pks: Move RAS_MACRO_OFFSET_CAST from here..
+	* libpoke/pkl-gen.pks: ... to here.
+	* libpoke/pkl-gen.c (pkl_gen_pr_cast): Use RAS_MACRO_OFFSET_CAST.
+
+2023-02-12  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-gen-attrs.pks (attr_size): Use mkoq.
 	(attr_offset): Likewise.
 	(attr_eoffset): Likewise.

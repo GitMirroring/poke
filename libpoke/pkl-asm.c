@@ -166,25 +166,6 @@ pkl_asm_poplevel (pkl_asm pasm)
   pasm->level = level->parent;
 }
 
-/* Macro-instruction: OTO from_type, to_type
-   ( OFF(from_type) TOUNIT -- OFF(to_type) )
-
-   Generate code to convert an offset value from FROM_TYPE to
-   TO_TYPE.  */
-
-static void
-pkl_asm_insn_oto (pkl_asm pasm,
-                  pkl_ast_node from_type,
-                  pkl_ast_node to_type)
-{
-  pkl_ast_node from_base_type = PKL_AST_TYPE_O_BASE_TYPE (from_type);
-  pkl_ast_node from_base_unit = PKL_AST_TYPE_O_UNIT (from_type);
-  pkl_ast_node to_base_type = PKL_AST_TYPE_O_BASE_TYPE (to_type);
-  pkl_ast_node unit_type = PKL_AST_TYPE (from_base_unit);
-
-  RAS_MACRO_OFFSET_CAST (from_base_type, to_base_type, unit_type);
-}
-
 /* Macro-instruction: ATOA from_type to_type
   ( ARR(from_type) -- ARR(to_type) )
 
@@ -1562,7 +1543,6 @@ pkl_asm_insn (pkl_asm pasm, enum pkl_asm_insn insn, ...)
             break;
           }
         case PKL_INSN_NTON:
-        case PKL_INSN_OTO:
         case PKL_INSN_ATOA:
           {
             pkl_ast_node from_type;

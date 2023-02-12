@@ -110,50 +110,6 @@
         drop                    ; VAL
         .end
 
-;;; RAS_MACRO_OFFSET_CAST
-;;; ( OFF TOUNIT -- OFF )
-;;;
-;;; This macro generates code that converts an offset of a given type
-;;; into an offset of another given type.  This is the implementation of
-;;; the PKL_INSN_OTO macro-instruction.
-;;;
-;;; Macro arguments:
-;;; @from_base_type
-;;;    pkl_ast_node reflecting the type of the source offset magnitude.
-;;; @to_base_type
-;;;    pkl_ast_node reflecting the type of the result offset magnitude.
-;;; @unit_type
-;;;    pkl_ast_node reflecting the type of an unit, i.e. uint<64>.
-
-        .macro offset_cast @from_base_type @to_base_type @unit_type
-        ;; Note that we have to do the arithmetic in unit_types, then
-        ;; convert to to_base_type, to assure that to_base_type can hold
-        ;; the to_base_unit.  Otherwise weird division by zero occurs.
-        pushf 2
-        regvar $tounit                          ; OFF
-        ogetu                                   ; OFF FROMUNIT
-        regvar $fromunit                        ; OFF
-        ;; Get the magnitude of the offset and convert it to the
-        ;; unit type, which is uint<64>.
-        ogetm                                   ; OFF OFFM
-        nton @from_base_type, @unit_type        ; OFF OFFM OFFMC
-        nip                                     ; OFF OFFMC
-        ;; Now do the same for the unit.
-        pushvar $fromunit                       ; OFF OFFMC OFFU
-        mul @unit_type                          ; OFF OFFMC OFFU (OFFMC*OFFUC)
-        nip2                                    ; OFF (OFFMC*OFFUC)
-        ;; Convert the new unit.
-        pushvar $tounit                         ; OFF (OFFMC*OFFUC) TOUNIT
-        div @unit_type
-        nip2                                    ; OFF (OFFMC*OFFUC/TOUNIT)
-        ;; Convert to the new unit
-        nton @unit_type, @to_base_type          ; OFF (OFFMC*OFFUC/TOUNIT) OFFC
-        nip2                                    ; OFFC
-        pushvar $tounit                         ; OFFC TOUNIT
-        mkoq                                    ; OFFC XXX this should really use mko but that requires subpassing
-        popf 1
-        .end
-
 ;;; GCD type
 ;;; ( VAL VAL -- VAL VAL VAL )
 ;;;

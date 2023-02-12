@@ -2373,7 +2373,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_cast)
 
       pkl_asm_insn (pasm, PKL_INSN_PUSH,
                     pvm_make_ulong (PKL_AST_INTEGER_VALUE (to_unit), 64));
-      pkl_asm_insn (pasm, PKL_INSN_OTO, from_type, to_type);
+      RAS_MACRO_OFFSET_CAST (from_type, to_type);
     }
   else if (PKL_AST_TYPE_CODE (to_type) == PKL_TYPE_STRING)
     {
