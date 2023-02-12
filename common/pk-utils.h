@@ -23,6 +23,7 @@
 
 #include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 /* Macros to avoid using strcmp directly.  */
 
@@ -63,5 +64,14 @@ char *pk_str_replace (const char *in, const char *search, const char *replace);
 
 /* Left and rigth trim the given string from whitespaces.  */
 void pk_str_trim (char **str);
+
+/* Diagnoses reaching unreachable code, and aborts.  */
+#define PK_UNREACHABLE() \
+  do                                                    \
+    {                                                   \
+      assert (0 && "Reached unreachable code.");        \
+      abort ();                                         \
+    }                                                   \
+  while (0)
 
 #endif /* ! PK_UTILS_H */

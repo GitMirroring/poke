@@ -326,7 +326,7 @@ map_entry:
                       else if (!offset)
                         pk_map_printf_error (map_parser, @$, "entry lacks an %%offset\n");
                       else
-                        assert (0);
+                        PK_UNREACHABLE ();
 
                       YYERROR;
                     }

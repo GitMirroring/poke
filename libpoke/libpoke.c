@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include "pk-utils.h"
 #include "pkt.h"
 #include "pkl.h"
 #include "pkl-ast.h" /* XXX */
@@ -966,7 +967,7 @@ pk_omode (pk_compiler pkc)
     case PVM_PRINT_FLAT: omode = PK_PRINT_FLAT; break;
     case PVM_PRINT_TREE: omode = PK_PRINT_TREE; break;
     default:
-      assert (0);
+      PK_UNREACHABLE ();
     }
   pkc->status = PK_OK;
   return omode;
@@ -982,7 +983,7 @@ pk_set_omode (pk_compiler pkc, enum pk_omode omode)
     case PK_PRINT_FLAT: mode = PVM_PRINT_FLAT; break;
     case PK_PRINT_TREE: mode = PVM_PRINT_TREE; break;
     default:
-      assert (0);
+      PK_UNREACHABLE ();
     }
   pvm_set_omode (pkc->vm, mode);
   pkc->status = PK_OK;
@@ -1012,7 +1013,7 @@ pk_endian (pk_compiler pkc)
     case IOS_ENDIAN_LSB: endian = PK_ENDIAN_LSB; break;
     case IOS_ENDIAN_MSB: endian = PK_ENDIAN_MSB; break;
     default:
-      assert (0);
+      PK_UNREACHABLE ();
     }
   pkc->status = PK_OK;
   return endian;
@@ -1028,7 +1029,7 @@ pk_set_endian (pk_compiler pkc, enum pk_endian endian)
     case PK_ENDIAN_LSB: ios_endian = IOS_ENDIAN_LSB; break;
     case PK_ENDIAN_MSB: ios_endian = IOS_ENDIAN_MSB; break;
     default:
-      assert (0);
+      PK_UNREACHABLE ();
     }
   pvm_set_endian (pkc->vm, ios_endian);
   pkc->status = PK_OK;
@@ -1044,7 +1045,7 @@ pk_nenc (pk_compiler pkc)
     case IOS_NENC_1: nenc = PK_NENC_1; break;
     case IOS_NENC_2: nenc = PK_NENC_2; break;
     default:
-      assert (0);
+      PK_UNREACHABLE ();
     }
   pkc->status = PK_OK;
   return nenc;
@@ -1060,7 +1061,7 @@ pk_set_nenc (pk_compiler pkc, enum pk_nenc nenc)
     case PK_NENC_1: ios_nenc = IOS_NENC_1; break;
     case PK_NENC_2: ios_nenc = IOS_NENC_2; break;
     default:
-      assert (0);
+      PK_UNREACHABLE ();
     }
   pvm_set_nenc (pkc->vm, ios_nenc);
   pkc->status = PK_OK;

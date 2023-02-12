@@ -801,7 +801,7 @@ poke_handle_exception (pk_val exception)
   assert (handler != PK_NULL);
   if (pk_call (poke_compiler, handler, NULL, NULL, 1, exception)
       == PK_ERROR)
-    assert (0);
+    PK_UNREACHABLE ();
 }
 
 void

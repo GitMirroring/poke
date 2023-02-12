@@ -26,6 +26,7 @@
 
 #include "poke.h"
 #include "pk-ios.h"
+#include "pk-utils.h"
 #include "pk-map.h"
 
 int
@@ -210,7 +211,7 @@ pk_open_proc_maps (int ios_id, uint64_t pid, int all_p)
                           ios_id,
                           range_begin, range_end - range_begin,
                           map_name) == -1)
-              assert (0);
+              PK_UNREACHABLE ();
 
             if (pk_ios_open (poke_compiler, handler, flags, 0) == PK_IOS_NOID)
               continue;

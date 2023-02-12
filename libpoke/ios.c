@@ -722,7 +722,7 @@ ios_read_int_common (ios io, ios_off offset, int flags,
     return IOS_OK;
 
   default:
-    assert (0);
+    PK_UNREACHABLE ();
   }
 }
 
@@ -1190,7 +1190,7 @@ ios_write_int_fast (ios io, ios_off offset, int flags,
       break;
 
     default:
-      assert (0);
+      PK_UNREACHABLE ();
       break;
     }
 
@@ -1504,7 +1504,7 @@ ios_write_int_common (ios io, ios_off offset, int flags,
     return IOS_OK;
 
   default:
-    assert (0);
+    PK_UNREACHABLE ();
   }
 }
 

@@ -1769,7 +1769,7 @@ struct_type_specifier:
                                            PKL_ENV_NS_MAIN,
                                            PKL_AST_IDENTIFIER_POINTER (offset_identifier),
                                            decl))
-                      assert (0);
+                      PK_UNREACHABLE ();
                   }
                 }
           struct_type_elem_list '}'
@@ -2462,7 +2462,7 @@ stmt:
                                          PKL_AST_IDENTIFIER_POINTER ($3),
                                          $<ast>$))
                     /* This should never happen.  */
-                    assert (0);
+                    PK_UNREACHABLE ();
                 }
           ')' stmt
                 {
@@ -2512,7 +2512,7 @@ stmt:
                                          PKL_AST_IDENTIFIER_POINTER ($3),
                                          $<ast>$))
                     /* This should never happen.  */
-                    assert (0);
+                    PK_UNREACHABLE ();
                 }
           WHERE expression ')' stmt
                 {

@@ -496,7 +496,7 @@ pk_cmd_exec_1 (const char *str, struct pk_trie *cmds_trie, char *prefix)
                   }
                 default:
                   /* This should NOT happen.  */
-                  assert (0);
+                  PK_UNREACHABLE ();
                 }
 
               if (match)

@@ -523,10 +523,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_decl)
     case PKL_AST_DECL_KIND_TYPE:
       if (PKL_AST_TYPE_CODE (initial) == PKL_TYPE_STRUCT
           || PKL_AST_TYPE_CODE (initial) == PKL_TYPE_ARRAY)
-        assert (0);
+        PK_UNREACHABLE ();
       break;
     default:
-      assert (0);
+      PK_UNREACHABLE ();
       break;
     }
 }
@@ -734,7 +734,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_comp_stmt)
           RAS_MACRO_BUILTIN_SET_COLOR_BGCOLOR;
           break;
         default:
-          assert (0);
+          PK_UNREACHABLE ();
         }
     }
   else
@@ -1296,7 +1296,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_loop_stmt)
         break;
       }
     default:
-      assert (0);
+      PK_UNREACHABLE ();
     }
 
   PKL_PASS_BREAK;
@@ -2444,7 +2444,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_cast)
       pkl_asm_insn (pasm, PKL_INSN_NIP);  /* IVAL */
     }
   else
-    assert (0);
+    PK_UNREACHABLE ();
 
   PKL_PASS_BREAK;
 }
@@ -2478,7 +2478,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_cons)
       PKL_GEN_POP_CONTEXT;
       break;
     default:
-      assert (0);
+      PK_UNREACHABLE ();
     }
 }
 PKL_PHASE_END_HANDLER
@@ -2685,7 +2685,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_trimmer)
         break;
       }
     default:
-      assert (0);
+      PK_UNREACHABLE ();
     }
 
   PKL_PASS_BREAK;
@@ -2768,7 +2768,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_indexer)
             RAS_MACRO_STROREF (index_type);
           break;
         default:
-          assert (0);
+          PK_UNREACHABLE ();
         }
     }
 
@@ -3020,7 +3020,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_type_integral)
                         IOS_NENC_2, IOS_ENDIAN_MSB);
           break;
         default:
-          assert (0);
+          PK_UNREACHABLE ();
         }
     }
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_MAPPER))
@@ -3040,7 +3040,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_type_integral)
                         IOS_NENC_2, IOS_ENDIAN_MSB);
           break;
         default:
-          assert (0);
+          PK_UNREACHABLE ();
         }
 
       pkl_asm_insn (pasm, PKL_INSN_NIP); /* STRICT is not used.  */
@@ -3993,7 +3993,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_op_add)
       }
       break;
     default:
-      assert (0);
+      PK_UNREACHABLE ();
       break;
     }
 }
@@ -4021,7 +4021,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_op_sub)
       }
       break;
     default:
-      assert (0);
+      PK_UNREACHABLE ();
       break;
     }
 }
@@ -4072,7 +4072,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_op_mul)
       }
       break;
     default:
-      assert (0);
+      PK_UNREACHABLE ();
       break;
     }
 }
@@ -4143,7 +4143,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_op_div)
         break;
       }
     default:
-      assert (0);
+      PK_UNREACHABLE ();
       break;
     }
 }
@@ -4172,7 +4172,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_op_mod)
         break;
       }
     default:
-      assert (0);
+      PK_UNREACHABLE ();
       break;
     }
 }
@@ -4202,7 +4202,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_op_binexp)
     case PKL_AST_OP_SR: insn = PKL_INSN_SR; break;
     case PKL_AST_OP_POW: insn = PKL_INSN_POW; break;
     default:
-      assert (0);
+      PK_UNREACHABLE ();
       break;
     }
 
@@ -4218,7 +4218,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_op_binexp)
         pkl_asm_insn (pasm, PKL_INSN_NIP);
       break;
     default:
-      assert (0);
+      PK_UNREACHABLE ();
       break;
     }
 }
@@ -4422,7 +4422,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_op_rela)
     case PKL_AST_OP_LE: rela_insn = PKL_INSN_LE; break;
     case PKL_AST_OP_GE: rela_insn = PKL_INSN_GE; break;
     default:
-      assert (0);
+      PK_UNREACHABLE ();
       break;
     }
 
@@ -4443,7 +4443,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_op_rela)
       pkl_asm_insn (pasm, PKL_INSN_NIP2);
       break;
     default:
-      assert (0);
+      PK_UNREACHABLE ();
       break;
     }
 }

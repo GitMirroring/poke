@@ -2205,7 +2205,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_cons)
       PKL_AST_CONS_KIND (cons) = PKL_AST_CONS_KIND_ARRAY;
       break;
     default:
-      assert (0);
+      PK_UNREACHABLE ();
     }
 
   PKL_AST_TYPE (cons) = ASTREF (cons_type);

@@ -830,11 +830,11 @@ pvm_type_to_ast_type (pkl_ast ast, pvm_val type)
       break;
     case PVM_TYPE_STRUCT:
       /* XXX writeme */
-      assert (0);
+      PK_UNREACHABLE ();
       break;
     case PVM_TYPE_CLOSURE:
       /* XXX writeme */
-      assert (0);
+      PK_UNREACHABLE ();
       break;
     default:
       break;
@@ -932,7 +932,7 @@ pkl_constant_fold (pkl_compiler compiler, pkl_ast ast, pkl_ast_node node)
   tmp_ast->ast = ASTREF (node);
   tmp_ast->uid = ast->uid;
   if (!pkl_do_pass (compiler, tmp_ast, fold_phases, fold_payloads, 0, 1))
-    assert (0);
+    PK_UNREACHABLE ();
 
   return tmp_ast->ast;
 }

@@ -24,6 +24,7 @@
 #include "tmpdir.h"
 #include "tempname.h"
 
+#include "pk-utils.h"
 #include "pkt.h"
 #include "pkl.h"
 #include "pkl-diag.h"
@@ -135,7 +136,7 @@ pkl_detailed_location (pkl_ast ast, pkl_ast_loc loc,
         }
     }
   else
-    assert (0);
+    PK_UNREACHABLE ();
 
   pk_puts ("\n");
 

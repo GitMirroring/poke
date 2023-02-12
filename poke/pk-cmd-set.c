@@ -39,7 +39,7 @@ pk_cmd_set_dump (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
   if (pk_call (poke_compiler, registry_printer, &retval, &exit_exception,
                0) == PK_ERROR
       || exit_exception != PK_NULL)
-    assert (0); /* This shouldn't happen.  */
+    PK_UNREACHABLE (); /* This shouldn't happen.  */
 
 #if HAVE_HSERVER
   {
@@ -84,7 +84,7 @@ pk_cmd_set (int int_p,
           == PK_ERROR
           || exit_exception != PK_NULL)
         /* This shouldn't happen.  */
-        assert (0);
+        PK_UNREACHABLE ();
 
       if (int_p)
         pk_printf ("%" PRId64 "\n", pk_int_value (retval));
@@ -111,7 +111,7 @@ pk_cmd_set (int int_p,
           || exit_exception != PK_NULL)
         /* This shouldn't happen, since we know `newval' is of the
            right type.  */
-        assert (0);
+        PK_UNREACHABLE ();
 
       /* `retval' is a string.  If it is empty, everything went ok, if
          it is not it is an explicative message on what went
@@ -153,7 +153,7 @@ pk_cmd_set_error_on_warning (int argc, struct pk_cmd_arg argv[],
      checking whether the passed string is empty or not.  */
 
   if (argc != 2)
-    assert (0);
+    PK_UNREACHABLE ();
 
   arg = PK_CMD_ARG_STR (argv[1]);
 

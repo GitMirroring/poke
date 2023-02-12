@@ -18,6 +18,7 @@
 
 #include <config.h>
 
+#include "pk-utils.h"
 #include "pkl-pass.h"
 
 #define PKL_CALL_PHASES(CLASS,ORDER,DISCR)                              \
@@ -171,7 +172,7 @@ pkl_call_node_handlers (pkl_compiler compiler,
 #undef PKL_DEF_OP
             default:
               /* Unknown operation code.  */
-              assert (0);
+              PK_UNREACHABLE ();
             }
         }
 
@@ -219,7 +220,7 @@ pkl_call_node_handlers (pkl_compiler compiler,
 #undef PKL_DEF_OP
             default:
               /* Unknown operation code.  */
-              assert (0);
+              PK_UNREACHABLE ();
             }
         }
 
@@ -233,7 +234,7 @@ pkl_call_node_handlers (pkl_compiler compiler,
         }
     }
   else
-    assert (0);
+    PK_UNREACHABLE ();
 
  newnode:
  restart:
@@ -456,7 +457,7 @@ pkl_do_pass_1 (pkl_compiler compiler,
             break;
           default:
             /* Unknown type code.  */
-            assert (0);
+            PK_UNREACHABLE ();
           }
         break;
       }
@@ -616,7 +617,7 @@ pkl_do_pass_1 (pkl_compiler compiler,
       break;
     default:
       /* Unknown node code.  This kills the poke :'( */
-      assert (0);
+      PK_UNREACHABLE ();
     }
 
   /* Call the post-order handlers from registered phases.  */
