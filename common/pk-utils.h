@@ -24,6 +24,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <assert.h>
 
 /* Macros to avoid using strcmp directly.  */
 

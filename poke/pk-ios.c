@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <regex.h>
 #include <inttypes.h>
-#include <assert.h>
 
 #include "poke.h"
 #include "pk-ios.h"
