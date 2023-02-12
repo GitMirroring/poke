@@ -25,7 +25,6 @@
 #include <errno.h>
 #include <limits.h>
 #include <fcntl.h>
-#include <assert.h>
 #include <glob.h> /* For tilde-expansion.  */
 #include <xalloc.h>
 #include <xstrndup.h>

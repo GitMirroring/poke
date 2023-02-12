@@ -1,3 +1,10 @@
+2023-02-12  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* common/pk-utils.h: Include assert.h.
+	* libpoke/libpoke.c: Do not include assert.h.
+	* poke/pk-cmd.c: Likewise.
+	* poke/pk-ios.c: Likewise.
+
 2023-02-06  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* pickles/search.pk (search_type): Fix `mapper' invocation.
