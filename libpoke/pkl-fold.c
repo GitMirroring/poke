@@ -134,7 +134,7 @@ EMUL_UUU (ge) { return op1 >= op2; }
 EMUL_III (ge) { return op1 >= op2; }
 
 EMUL_UUU (gcd) { return fold_gcd (op1, op2); }
-EMUL_III (gcd) { assert (0); return 0; }
+EMUL_III (gcd) { PK_UNREACHABLE (); return 0; }
 
 EMUL_UUU (sl) { return op1 << op2; }
 EMUL_III (sl) { return op1 << op2; }

@@ -21,6 +21,7 @@
 
 #include "poke.h"
 #include "pk-cmd.h"
+#include "pk-utils.h"
 #include "pk-repl.h" /* For poke_completion_function */
 
 #define PK_VM_DIS_UFLAGS "n"
@@ -115,7 +116,7 @@ pk_cmd_vm_dispatch (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
   if (pk_call (poke_compiler, vm_dispatch, &retval, &exception, 0)
                == PK_ERROR
       || exception != PK_NULL)
-    assert (0); /* This shouldn't happen.  */
+    PK_UNREACHABLE (); /* This shouldn't happen.  */
   return 1;
 }
 

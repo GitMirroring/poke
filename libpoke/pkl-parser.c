@@ -24,6 +24,7 @@
 #include "pkl-ast.h"
 #include "pkl-parser.h"
 #include "pkl-tab.h"
+#include "pk-utils.h"
 #define YYSTYPE PKL_TAB_STYPE
 #define YYLTYPE PKL_TAB_LTYPE
 #include "pkl-lex.h"
@@ -160,7 +161,7 @@ pkl_parse_buffer (pkl_compiler compiler, pkl_env *env,
   else if (what == PKL_PARSE_STATEMENT)
     parser->start_token = START_STMT;
   else
-    assert (0);
+    PK_UNREACHABLE ();
 
   yybuffer = pkl_tab__scan_string (buffer, parser->scanner);
 

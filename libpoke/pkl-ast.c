@@ -1097,7 +1097,7 @@ pkl_ast_sizeof_type (pkl_ast ast, pkl_ast_node type)
                                           * PKL_AST_INTEGER_VALUE (unit));
           }
         else
-          assert (0);
+          PK_UNREACHABLE ();
         PKL_AST_TYPE (res) = ASTREF (res_type);
         break;
       }
@@ -1204,7 +1204,7 @@ pkl_ast_sizeof_type (pkl_ast ast, pkl_ast_node type)
       break;
     case PKL_TYPE_STRING:
     default:
-      assert (0);
+      PK_UNREACHABLE ();
       break;
     }
 
@@ -1231,7 +1231,7 @@ pkl_ast_sizeof_integral_type (pkl_ast_node type)
       return PKL_AST_TYPE_I_SIZE (itype);
     }
   else
-    assert (0);
+    PK_UNREACHABLE ();
 }
 
 /* Return 1 if the given TYPE can be mapped in IO.  0 otherwise.  */
@@ -1529,14 +1529,14 @@ pkl_type_append_to (pkl_ast_node type, int use_given_name,
         else if (PKL_AST_CODE (unit) == PKL_AST_INTEGER)
           sb_appendf (buffer, "%" PRIu64, PKL_AST_INTEGER_VALUE (unit));
         else
-          assert (0);
+          PK_UNREACHABLE ();
 
         sb_append (buffer, ">");
         break;
       }
     case PKL_TYPE_NOTYPE:
     default:
-      assert (0);
+      PK_UNREACHABLE ();
       break;
     }
 }
@@ -2717,7 +2717,7 @@ pkl_ast_node_free_1 (gl_set_t visitations, pkl_ast_node ast)
       break;
 
     default:
-      assert (0);
+      PK_UNREACHABLE ();
     }
 
   PKL_AST_NODE_FREE (PKL_AST_TYPE (ast));

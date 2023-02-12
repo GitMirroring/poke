@@ -239,7 +239,7 @@ pkl_asm_insn_atoa (pkl_asm pasm,
           RAS_MACRO_ARRAY_CONV_SIZ (bounder);
           break;
         default:
-        assert (0);
+        PK_UNREACHABLE ();
         }
     }
 }
@@ -395,7 +395,7 @@ pkl_asm_insn_peek (pkl_asm pasm, pkl_ast_node type,
                       (unsigned int) size);
     }
   else
-    assert (0);
+    PK_UNREACHABLE ();
 }
 
 /* Macro-instruction: PEEKD type
@@ -426,7 +426,7 @@ pkl_asm_insn_peekd (pkl_asm pasm, pkl_ast_node type)
                     (unsigned int) size);
     }
   else
-    assert (0);
+    PK_UNREACHABLE ();
 }
 
 /* Macro-instruction: REV depth
@@ -472,7 +472,7 @@ pkl_asm_insn_format (pkl_asm pasm, pkl_ast_node type)
                     (unsigned int) size);
     }
   else
-    assert (0);
+    PK_UNREACHABLE ();
 }
 
 /* Macro-instruction: PRINT type
@@ -491,7 +491,7 @@ pkl_asm_insn_print (pkl_asm pasm, pkl_ast_node type)
     }
   else if (type_code == PKL_TYPE_ANY)
     {
-      assert (0);
+      PK_UNREACHABLE ();
     }
   else if (type_code == PKL_TYPE_INTEGRAL)
     {
@@ -510,7 +510,7 @@ pkl_asm_insn_print (pkl_asm pasm, pkl_ast_node type)
                     (unsigned int) size);
     }
   else
-    assert (0);
+    PK_UNREACHABLE ();
 }
 
 /* Macro-instruction: POKE type, endian, nenc
@@ -548,7 +548,7 @@ pkl_asm_insn_poke (pkl_asm pasm, pkl_ast_node type,
                       (unsigned int) size);
     }
   else
-    assert (0);
+    PK_UNREACHABLE ();
 }
 
 
@@ -580,7 +580,7 @@ pkl_asm_insn_poked (pkl_asm pasm, pkl_ast_node type)
                     (unsigned int) size);
     }
   else
-    assert (0);
+    PK_UNREACHABLE ();
 }
 
 /* Macro-instruction: NEG type
@@ -875,7 +875,7 @@ pkl_asm_insn_binop (pkl_asm pasm,
           pkl_asm_insn (pasm, powof_table[tl][signed_p]);
           break;
         default:
-          assert (0);
+          PK_UNREACHABLE ();
         }
     }
   else if (PKL_AST_TYPE_CODE (type) == PKL_TYPE_OFFSET)
@@ -928,7 +928,7 @@ pkl_asm_insn_binop (pkl_asm pasm,
         }
     }
   else
-    assert (0);
+    PK_UNREACHABLE ();
 }
 
 /*
@@ -1002,7 +1002,7 @@ pkl_asm_insn_cmp (pkl_asm pasm,
         case PKL_INSN_GE: oinsn = PKL_INSN_GES; break;
         case PKL_INSN_LE: oinsn = PKL_INSN_LES; break;
         default:
-          assert (0);
+          PK_UNREACHABLE ();
         }
 
       /* Assembly the instruction.  */
@@ -1040,7 +1040,7 @@ pkl_asm_insn_cmp (pkl_asm pasm,
         case PKL_INSN_GE: oinsn = ge_table[tl][signed_p]; break;
         case PKL_INSN_LE: oinsn = le_table[tl][signed_p]; break;
         default:
-          assert (0);
+          PK_UNREACHABLE ();
           break;
         }
 
@@ -1098,10 +1098,10 @@ pkl_asm_insn_cmp (pkl_asm pasm,
       else if (insn == PKL_INSN_NE)
         pkl_asm_insn (pasm, PKL_INSN_NEC);
       else
-        assert (0);
+        PK_UNREACHABLE ();
     }
   else
-    assert (0);
+    PK_UNREACHABLE ();
 }
 
 /* Macro-instruction: ASETC array_type
@@ -1488,7 +1488,7 @@ pkl_asm_insn (pkl_asm pasm, enum pkl_asm_insn insn, ...)
                    have hacks to prevent the assert below in both
                    pkl_asm_note and the push instructions.  */
 #if defined POKE_HOST_32BIT
-                assert (0);
+                PK_UNREACHABLE ();
 #endif
                 pvm_program_append_val_parameter (pasm->program, val);
                 break;
@@ -1515,7 +1515,7 @@ pkl_asm_insn (pkl_asm pasm, enum pkl_asm_insn insn, ...)
             case 'a':
               /* Fallthrough.  */
             case 'i':
-              assert (0);
+              PK_UNREACHABLE ();
               break;
             }
         }
@@ -1785,7 +1785,7 @@ pkl_asm_insn (pkl_asm pasm, enum pkl_asm_insn insn, ...)
             else if (insn == PKL_INSN_MODO)
               pkl_asm_insn_modo (pasm, base_type, unit);
             else
-              assert (0);
+              PK_UNREACHABLE ();
             break;
           }
         case PKL_INSN_REMAP:
@@ -1827,7 +1827,7 @@ pkl_asm_insn (pkl_asm pasm, enum pkl_asm_insn insn, ...)
           }
         case PKL_INSN_MACRO:
         default:
-          assert (0);
+          PK_UNREACHABLE ();
         }
     }
 }
@@ -2320,7 +2320,7 @@ pkl_asm_break_label_1 (struct pkl_asm_level *level)
     }
 
   /* The compiler must guarantee this does NOT happen.  */
-  assert (0);
+  PK_UNREACHABLE ();
 }
 
 pvm_program_label
@@ -2346,7 +2346,7 @@ pkl_asm_continue_label_1 (struct pkl_asm_level *level)
     }
 
   /* The compiler must guarantee this does NOT happen.  */
-  assert (0);
+  PK_UNREACHABLE ();
 }
 
 pvm_program_label

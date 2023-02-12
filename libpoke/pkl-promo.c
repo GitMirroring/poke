@@ -586,7 +586,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_promo_ps_op_mul)
       else if (PKL_AST_TYPE_CODE (op_type) == PKL_TYPE_STRING)
         ;
       else
-        assert (0);
+        PK_UNREACHABLE ();
     }
 
   PKL_PASS_DONE;
@@ -784,7 +784,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_promo_ps_op_bshiftpow)
         break;
       }
     default:
-      assert (0);
+      PK_UNREACHABLE ();
     }
 
   PKL_PASS_DONE;
@@ -1008,7 +1008,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_promo_ps_type_array)
         break;
       }
     default:
-      assert (0); /* This can't happen.  */
+      PK_UNREACHABLE (); /* This can't happen.  */
     }
 
   PKL_PASS_RESTART = restart;
@@ -1693,7 +1693,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_promo_ps_cons)
         break;
       }
     default:
-      assert (0);
+      PK_UNREACHABLE ();
     }
 
   PKL_PASS_DONE;

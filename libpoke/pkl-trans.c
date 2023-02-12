@@ -471,7 +471,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_string)
             }
           break;
         default:
-          assert (0);
+          PK_UNREACHABLE ();
         }
     }
   new_string_pointer[i] = '\0';

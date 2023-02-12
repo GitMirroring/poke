@@ -697,7 +697,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_anal1_ps_cons)
         break;
       }
     default:
-      assert (0);
+      PK_UNREACHABLE ();
     }
 }
 PKL_PHASE_END_HANDLER

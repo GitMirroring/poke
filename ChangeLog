@@ -336,6 +336,37 @@
 	* poked/poked.c (poked_options_init): Fix getopt_long to recognize
 	-S.
 
+2023-02-12  Arsen Arsenović  <arsen@aarsen.me>
+
+	Fix -Wreturn-type warnings on -DNDEBUG
+	* common/pk-utils.h (PK_UNREACHABLE): New macro.  Diagnoses
+	reaching unreachable code and aborts.
+	* libpoke/ios.c: Use PK_UNREACHABLE.
+	* libpoke/libpoke.c: Ditto.
+	* libpoke/pkl-anal.c: Ditto.
+	* libpoke/pkl-asm.c: Ditto.
+	* libpoke/pkl-ast.c: Ditto.
+	* libpoke/pkl-diag.c: Ditto.
+	* libpoke/pkl-env.c: Ditto.
+	* libpoke/pkl-fold.c: Ditto.
+	* libpoke/pkl-gen.c: Ditto.
+	* libpoke/pkl-lex.l: Ditto.
+	* libpoke/pkl-parser.c: Ditto.
+	* libpoke/pkl-pass.c: Ditto.
+	* libpoke/pkl-promo.c: Ditto.
+	* libpoke/pkl-tab.y: Ditto.
+	* libpoke/pkl-trans.c: Ditto.
+	* libpoke/pkl-typify.c: Ditto.
+	* libpoke/pkl.c: Ditto.
+	* libpoke/pvm-val.c: Ditto.
+	* poke/pk-cmd-help.c: Ditto.
+	* poke/pk-cmd-set.c: Ditto.
+	* poke/pk-cmd-vm.c: Ditto.
+	* poke/pk-cmd.c: Ditto.
+	* poke/pk-ios.c: Ditto.
+	* poke/pk-map-tab.y: Ditto.
+	* poke/poke.c: Ditto.
+
 2023-01-31  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/std.pk (Pk_Version): Add control fields.

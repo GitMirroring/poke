@@ -40,7 +40,7 @@ pk_cmd_help (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
   if (pk_call (poke_compiler, pk_help, &ret, &exit_exception,
                1 /* narg */, topic) == PK_ERROR
       || exit_exception != PK_NULL)
-    assert (0);
+    PK_UNREACHABLE ();
 
   return 1;
 }

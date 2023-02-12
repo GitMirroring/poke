@@ -991,7 +991,7 @@ pvm_sizeof (pvm_val val)
     /* By convention, PVM_NULL values have size zero.  */
     return 0;
 
-  assert (0);
+  PK_UNREACHABLE ();
   return 0;
 }
 
@@ -1141,7 +1141,7 @@ pvm_print_val_1 (pvm vm, int depth, int mode, int base, int indent,
       uint_fmt = "";
       break;
     default:
-      assert (0);
+      PK_UNREACHABLE ();
       break;
     }
 
@@ -1490,7 +1490,7 @@ pvm_print_val_1 (pvm vm, int depth, int mode, int base, int indent,
               case 16: pk_puts ("int16"); break;
               case 32: pk_puts ("int32"); break;
               case 64: pk_puts ("int64"); break;
-              default: assert (0); break;
+              default: PK_UNREACHABLE (); break;
               }
           }
           break;
@@ -1563,7 +1563,7 @@ pvm_print_val_1 (pvm vm, int depth, int mode, int base, int indent,
           break;
           }
         default:
-          assert (0);
+          PK_UNREACHABLE ();
         }
 
       pk_term_end_class ("type");
@@ -1585,7 +1585,7 @@ pvm_print_val_1 (pvm vm, int depth, int mode, int base, int indent,
       pk_term_end_class ("special");
     }
   else
-    assert (0);
+    PK_UNREACHABLE ();
 }
 
 #undef PVM_PRINT_VAL_1
@@ -1653,7 +1653,7 @@ pvm_typeof (pvm_val val)
   else if (PVM_IS_CLS (val))
     type = PVM_NULL;
   else
-    assert (0);
+    PK_UNREACHABLE ();
 
   return type;
 }
@@ -1715,7 +1715,7 @@ pvm_type_equal_p (pvm_val type1, pvm_val type2)
         return 1;
       }
     default:
-      assert (0);
+      PK_UNREACHABLE ();
     }
 }
 

@@ -174,7 +174,7 @@ get_ns_table (pkl_env env, int namespace)
       table = &env->units_hash_table;
       break;
     default:
-      assert (0);
+      PK_UNREACHABLE ();
     }
 
   return table;
@@ -245,7 +245,7 @@ pkl_env_register (pkl_env env,
           PKL_AST_DECL_ORDER (decl) = env->num_units++;
           break;
         default:
-          assert (0);
+          PK_UNREACHABLE ();
         }
       return 1;
     }

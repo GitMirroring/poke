@@ -42,6 +42,7 @@
 #include <ctype.h>
 #include <assert.h>
 #include <stdlib.h>
+#include "pk-utils.h"
 #include "pkl.h"
 #include "pkl-ast.h"
 #include "pkl-env.h"
@@ -472,7 +473,7 @@ S ::
             break;
           }
         default:
-          assert (0);
+          PK_UNREACHABLE ();
           break;
         }
     }
