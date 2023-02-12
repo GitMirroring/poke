@@ -1,0 +1,6 @@
+/* {dg-do run } */
+
+type Pointer_To_Exception = offset<int<32>,B,Exception>;
+
+/* { dg-command {23*8#b as Pointer_To_Exception} } */
+/* { dg-output {23#B} } */

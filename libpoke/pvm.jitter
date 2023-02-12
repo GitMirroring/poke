@@ -1628,7 +1628,7 @@ instruction iosize ()
       {
         pvm_val magnitude = PVM_MAKE_ULONG (ios_size (io), 64);
         pvm_val type = pvm_make_offset_type (pvm_typeof (magnitude),
-                                             PVM_MAKE_ULONG (8, 64));
+                                             PVM_MAKE_ULONG (8, 64), PVM_NULL /* ref_type */);
         JITTER_PUSH_STACK (pvm_make_offset (PVM_MAKE_ULONG (ios_size (io), 64), type));
       }
   end
@@ -1731,7 +1731,7 @@ instruction iogetb ()
       unit = PVM_MAKE_ULONG (1, 64);
     }
 
-    type = pvm_make_offset_type (pvm_typeof (magnitude), unit);
+    type = pvm_make_offset_type (pvm_typeof (magnitude), unit, PVM_NULL /* ref_type */);
     JITTER_PUSH_STACK (pvm_make_offset (magnitude, type));
   end
 end
@@ -5506,7 +5506,7 @@ end
 instruction mkoq ()
   code
    pvm_val type = pvm_make_offset_type (pvm_typeof (JITTER_UNDER_TOP_STACK ()),
-                                        JITTER_TOP_STACK ());
+                                        JITTER_TOP_STACK (), PVM_NULL /* ref_type */);
    pvm_val res = pvm_make_offset (JITTER_UNDER_TOP_STACK (), type);
    JITTER_DROP_STACK ();
    JITTER_TOP_STACK () = res;
@@ -6174,10 +6174,14 @@ end
 
 instruction mktyo ()
   code
-#define F(res, a, b) \
-  { res = pvm_make_offset_type (a, b); }
-    JITTER_BINARY_STACK(F);
-#undef F
+    pvm_val base_type, unit;
+
+    unit = JITTER_TOP_STACK ();
+    base_type = JITTER_UNDER_TOP_STACK ();
+    JITTER_DROP_STACK ();
+    JITTER_DROP_STACK ();
+    JITTER_PUSH_STACK (pvm_make_offset_type (base_type, unit,
+                                             PVM_NULL /* ref_type */));
   end
 end
 
@@ -6202,6 +6206,35 @@ end
 instruction tyogetu ()
   code
     JITTER_PUSH_STACK (PVM_VAL_TYP_O_UNIT (JITTER_TOP_STACK ()));
+  end
+end
+
+# Instruction: tyogetrt
+#
+# Given an offset type, push the referred type to the stack.
+# This can be PVM_NULL if the offset type isn't a reference.
+#
+# Stack: ( OTYPE -- OTYPE TYPE )
+
+instruction tyogetrt ()
+  code
+    JITTER_PUSH_STACK (PVM_VAL_TYP_O_REF_TYPE (JITTER_TOP_STACK ()));
+  end
+end
+
+# Instruction: tyosetrt
+#
+# Given an offset type and a referred type, make the offset type
+# a referring type.  The referred type can be PVM_NULL.  In this
+# case the resulting offset type is not a referring offset type.
+#
+# Stack: ( OTYPE TYPE -- OTYPE )
+
+instruction tyosetrt ()
+  code
+    PVM_VAL_TYP_O_REF_TYPE (JITTER_UNDER_TOP_STACK ())
+      = JITTER_TOP_STACK ();
+    JITTER_DROP_STACK ();
   end
 end
 

@@ -448,7 +448,8 @@ pkl_ast_make_void_type (pkl_ast ast)
 pkl_ast_node
 pkl_ast_make_offset_type (pkl_ast ast,
                           pkl_ast_node base_type,
-                          pkl_ast_node unit)
+                          pkl_ast_node unit,
+                          pkl_ast_node ref_type)
 {
   pkl_ast_node type = pkl_ast_make_type (ast);
 
@@ -459,6 +460,8 @@ pkl_ast_make_offset_type (pkl_ast ast,
     = PKL_AST_TYPE_COMPLETE_YES;
   PKL_AST_TYPE_O_UNIT (type) = ASTREF (unit);
   PKL_AST_TYPE_O_BASE_TYPE (type) = ASTREF (base_type);
+  if (ref_type)
+    PKL_AST_TYPE_O_REF_TYPE (type) = ASTREF (ref_type);
 
   return type;
 }
@@ -933,12 +936,22 @@ pkl_ast_type_equal_p (pkl_ast_node a, pkl_ast_node b)
       {
         pkl_ast_node a_unit = PKL_AST_TYPE_O_UNIT (a);
         pkl_ast_node b_unit = PKL_AST_TYPE_O_UNIT (b);
+        pkl_ast_node a_ref_type = PKL_AST_TYPE_O_REF_TYPE (a);
+        pkl_ast_node b_ref_type = PKL_AST_TYPE_O_REF_TYPE (b);
 
         /* If the units of the types are not known yet (because they
            are identifiers, or whatever then we cannot guarantee the
            types are the same.  */
         if (PKL_AST_CODE (a_unit) != PKL_AST_INTEGER
             || PKL_AST_CODE (b_unit) != PKL_AST_INTEGER)
+          return 0;
+
+        /* Offset types having different referred types are not
+           equal.  */
+        if (!((a_ref_type == NULL && b_ref_type == NULL)
+              || (a_ref_type
+                  && b_ref_type
+                  && pkl_ast_type_equal_p (a_ref_type, b_ref_type))))
           return 0;
 
         return (PKL_AST_INTEGER_VALUE (a_unit) == PKL_AST_INTEGER_VALUE (b_unit)
@@ -1530,6 +1543,13 @@ pkl_type_append_to (pkl_ast_node type, int use_given_name,
           sb_appendf (buffer, "%" PRIu64, PKL_AST_INTEGER_VALUE (unit));
         else
           PK_UNREACHABLE ();
+
+        if (PKL_AST_TYPE_O_REF_TYPE (type))
+          {
+            sb_append (buffer, ",");
+            pkl_type_append_to (PKL_AST_TYPE_O_REF_TYPE (type), 1,
+                                buffer);
+          }
 
         sb_append (buffer, ">");
         break;
@@ -2392,6 +2412,7 @@ pkl_ast_node_free_1 (gl_set_t visitations, pkl_ast_node ast)
         case PKL_TYPE_OFFSET:
           PKL_AST_NODE_FREE (PKL_AST_TYPE_O_UNIT (ast));
           PKL_AST_NODE_FREE (PKL_AST_TYPE_O_BASE_TYPE (ast));
+          PKL_AST_NODE_FREE (PKL_AST_TYPE_O_REF_TYPE (ast));
           break;
         case PKL_TYPE_INTEGRAL:
         case PKL_TYPE_STRING:
@@ -3292,6 +3313,7 @@ pkl_ast_print_1 (FILE *fp, pkl_ast_node ast, int indent)
             case PKL_TYPE_OFFSET:
               PRINT_AST_SUBAST (base_type, TYPE_O_BASE_TYPE);
               PRINT_AST_SUBAST (unit, TYPE_O_UNIT);
+              PRINT_AST_SUBAST (ref_type, TYPE_O_REF_TYPE);
               break;
             case PKL_TYPE_STRING:
             case PKL_TYPE_ANY:

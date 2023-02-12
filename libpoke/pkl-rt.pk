@@ -1298,7 +1298,8 @@ immutable type _Pkl_Print_Format_Ctx =
 immutable fun _pkl_print_format_any = (any val,
                                        _Pkl_Print_Format_Ctx ctx,
                                        int<32> depth,
-                                       int<32> obase = vm_obase) void:
+                                       int<32> obase = vm_obase,
+                                       int<32> only_struct_type_name = 0) void:
 {
   fun lutos = (uint<64> i, int<32> base, int<32> padbits = 0) string:
   {
@@ -1329,6 +1330,7 @@ immutable fun _pkl_print_format_any = (any val,
 
     return s;
   }
+
   fun handle_type = void:
   {
     ctx.begin_class ("type");
@@ -1349,10 +1351,17 @@ immutable fun _pkl_print_format_any = (any val,
       {
         var base_type = asm any: ("tyogetm; nip" : val),
             unit_in_bits = asm uint<64>: ("tyogetu; nip" : val);
+        var ref_type = asm any: ("tyogetrt; nip" : val);
 
         ctx.emit ("offset<");
         _pkl_print_format_any (base_type, ctx, depth);
-        ctx.emit ("," + lutos (unit_in_bits, 10) + ">");
+        ctx.emit ("," + lutos (unit_in_bits, 10));
+        if (asm int<32>: ("nn; nip" : ref_type))
+          {
+            ctx.emit (",");
+            _pkl_print_format_any (ref_type, ctx, depth, obase, 1);
+          }
+        ctx.emit (">");
       }
     else if (asm int<32>: ("tyiss; nip" : val))
       ctx.emit ("string");
@@ -1377,6 +1386,11 @@ immutable fun _pkl_print_format_any = (any val,
         var nfields = asm uint<64>: ("tysctgetnf; nip" : val);
 
         ctx.emit (name);
+        if (name != "struct" && only_struct_type_name)
+          {
+            ctx.end_class ("type");
+            return;
+          }
         ctx.emit (" {");
         for (var i = 0UL; i < nfields; ++i)
           {

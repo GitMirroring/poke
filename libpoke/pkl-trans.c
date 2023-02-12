@@ -1973,7 +1973,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans3_ps_op_sizeof)
 
     offset_type = pkl_ast_make_offset_type (PKL_PASS_AST,
                                             PKL_AST_TYPE (magnitude),
-                                            unit);
+                                            unit, NULL /* ref_type */);
     PKL_AST_TYPE (offset) = ASTREF (offset_type);
   }
 

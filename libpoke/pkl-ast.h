@@ -964,6 +964,7 @@ pkl_ast_node pkl_ast_make_func_type_arg (pkl_ast ast,
 #define PKL_AST_TYPE_S_ITYPE(AST) ((AST)->type.val.sct.itype)
 #define PKL_AST_TYPE_O_UNIT(AST) ((AST)->type.val.off.unit)
 #define PKL_AST_TYPE_O_BASE_TYPE(AST) ((AST)->type.val.off.base_type)
+#define PKL_AST_TYPE_O_REF_TYPE(AST) ((AST)->type.val.off.ref_type)
 #define PKL_AST_TYPE_F_RTYPE(AST) ((AST)->type.val.fun.rtype)
 #define PKL_AST_TYPE_F_NARG(AST) ((AST)->type.val.fun.narg)
 #define PKL_AST_TYPE_F_ARGS(AST) ((AST)->type.val.fun.args)
@@ -1020,6 +1021,7 @@ struct pkl_ast_type
     {
       union pkl_ast_node *unit;
       union pkl_ast_node *base_type;
+      union pkl_ast_node *ref_type;
     } off;
 
     struct
@@ -1051,7 +1053,7 @@ pkl_ast_node pkl_ast_make_struct_type (pkl_ast ast, size_t nelem, size_t nfield,
                                        int pinned_p, int union_p);
 
 pkl_ast_node pkl_ast_make_offset_type (pkl_ast ast, pkl_ast_node base_type,
-                                       pkl_ast_node unit);
+                                       pkl_ast_node unit, pkl_ast_node ref_type);
 
 pkl_ast_node pkl_ast_make_function_type (pkl_ast ast, pkl_ast_node rtype,
                                          size_t narg, pkl_ast_node args);

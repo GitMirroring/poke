@@ -433,6 +433,7 @@ typedef struct pvm_struct *pvm_struct;
 #define PVM_VAL_TYP_S_FTYPE(V,I) (PVM_VAL_TYP_S_FTYPES((V))[(I)])
 #define PVM_VAL_TYP_O_UNIT(V) (PVM_VAL_TYP((V))->val.off.unit)
 #define PVM_VAL_TYP_O_BASE_TYPE(V) (PVM_VAL_TYP((V))->val.off.base_type)
+#define PVM_VAL_TYP_O_REF_TYPE(V) (PVM_VAL_TYP((V))->val.off.ref_type)
 #define PVM_VAL_TYP_C_RETURN_TYPE(V) (PVM_VAL_TYP((V))->val.cls.return_type)
 #define PVM_VAL_TYP_C_NARGS(V) (PVM_VAL_TYP((V))->val.cls.nargs)
 #define PVM_VAL_TYP_C_ATYPES(V) (PVM_VAL_TYP((V))->val.cls.atypes)
@@ -479,6 +480,7 @@ struct pvm_type
     {
       pvm_val base_type;
       pvm_val unit;
+      pvm_val ref_type;
     } off;
 
     struct
