@@ -778,6 +778,9 @@
         swap                    ; VAL SEL ELEM IDX [ARR RES]
         tor                     ; VAL SEL ELEM [ARR RES IDX]
         rot                     ; SEL ELEM VAL [ARR RES IDX]
+        push "===\n"
+        prints
+        strace 0
         eq @etype               ; SEL ELEM VAL (ELEM==VAL) [ARR RES IDX]
         fromr                   ; SEL ELEM VAL (ELEM==VAL) IDX [ARR RES]
         fromr                   ; SEL ELEM VAL (ELEM==VAL) IDX RES [ARR]
