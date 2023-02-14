@@ -1661,10 +1661,6 @@ pkl_ast_node pkl_ast_make_incrdecr (pkl_ast ast,
 #define PKL_AST_COMP_STMT_FRAMELESS_P(AST) ((AST)->comp_stmt.frameless_p)
 
 #define PKL_AST_BUILTIN_NONE 0
-#define PKL_AST_BUILTIN_TERM_GET_COLOR 14
-#define PKL_AST_BUILTIN_TERM_SET_COLOR 15
-#define PKL_AST_BUILTIN_TERM_GET_BGCOLOR 16
-#define PKL_AST_BUILTIN_TERM_SET_BGCOLOR 17
 
 struct pkl_ast_comp_stmt
 {

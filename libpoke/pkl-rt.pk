@@ -190,13 +190,28 @@ immutable fun strace = void:
 }
 
 immutable fun term_get_color = int<32>[3]:
-  __PKL_BUILTIN_TERM_GET_COLOR__;
+{
+  var r = 0, g = 0, b = 0;
+  asm ("pushoc" : r, g, b);
+  return [r, g, b];
+}
+
 immutable fun term_set_color = (int<32>[3] color) void:
-  __PKL_BUILTIN_TERM_SET_COLOR__;
+{
+  asm ("popoc" :: color[0], color[1], color[2]);
+}
+
 immutable fun term_get_bgcolor = int<32>[3]:
-  __PKL_BUILTIN_TERM_GET_BGCOLOR__;
+{
+  var r = 0, g = 0, b = 0;
+  asm ("pushobc" : r, g, b);
+  return [r, g, b];
+}
+
 immutable fun term_set_bgcolor = (int<32>[3] color) void:
-  __PKL_BUILTIN_TERM_SET_BGCOLOR__;
+{
+  asm ("popobc" :: color[0], color[1], color[2]);
+}
 
 immutable fun term_begin_class = (string class) void:
 {

@@ -125,7 +125,6 @@
   })
 
 #include "pkl-gen.pkc"
-#include "pkl-gen-builtins.pkc"
 #include "pkl-gen-attrs.pkc"
 
 /*
@@ -725,14 +724,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_comp_stmt)
     {
       switch (comp_stmt_builtin)
         {
-        case PKL_AST_BUILTIN_TERM_GET_COLOR:
-        case PKL_AST_BUILTIN_TERM_GET_BGCOLOR:
-          RAS_MACRO_BUILTIN_GET_COLOR_BGCOLOR;
-          break;
-        case PKL_AST_BUILTIN_TERM_SET_COLOR:
-        case PKL_AST_BUILTIN_TERM_SET_BGCOLOR:
-          RAS_MACRO_BUILTIN_SET_COLOR_BGCOLOR;
-          break;
         default:
           PK_UNREACHABLE ();
         }

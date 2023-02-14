@@ -47,8 +47,8 @@ libpoke_la_SOURCES = libpoke.h libpoke.c \
                      pkl-asm.h pkl-asm.c \
                      pkl-diag.h pkl-diag.c \
                      pkl-parser.h pkl-parser.c \
-                     pkl-gen.pks pkl-asm.pks pkl-gen-builtins.pks pkl-gen-attrs.pks \
-                     pkl-gen.pkc pkl-asm.pkc pkl-gen-builtins.pkc pkl-gen-attrs.pkc \
+                     pkl-gen.pks pkl-asm.pks pkl-gen-attrs.pks \
+                     pkl-gen.pkc pkl-asm.pkc pkl-gen-attrs.pkc \
                      pkl-insn.def pkl-ops.def pkl-attrs.def \
                      pvm.h pvm.c \
                      pvm-val.c pvm-val.h \

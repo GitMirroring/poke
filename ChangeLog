@@ -1,5 +1,23 @@
 2023-02-14  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-gen-builtins.pks: Remove.
+	* libpoke/Makefile.am (libpoke_la_SOURCES): Update accordingly.
+	* libpoke/pkl-ast.h (PKL_AST_BUILTIN_TERM_GET_COLOR): Remove.
+	(PKL_AST_BUILTIN_TERM_SET_COLOR): Likewise.
+	(PKL_AST_BUILTIN_TERM_GET_BGCOLOR): Likewise.
+	(PKL_AST_BUILTIN_TERM_SET_BGCOLOR): Likewise.
+	* libpoke/pkl-gen.c (pkl_gen_ps_comp_stmt): Do not handle
+	builtins.
+	* libpoke/pkl-lex.l: Remove rules for
+	__PKL_BUILTIN_TERM_{GET,SET}_[BG]COLOR__ tokens.
+	* libpoke/pkl-tab.y (builtin): Remove rule.
+	* libpoke/pkl-rt.pk (term_get_color): Rewrite using inline asm.
+	(term_get_bgcolor): Likewise.
+	(term_set_color): Likewise.
+	(term_set_bgcolor): Likewise.
+
+2023-02-14  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-gen.pks (union_deintegrator): Remove unused
 	variable.
 

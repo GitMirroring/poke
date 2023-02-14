@@ -303,15 +303,6 @@ S ::
 "computed"      { return COMPUTED; }
 "immutable"     { return IMMUTABLE; }
 
-"__PKL_BUILTIN_TERM_GET_COLOR__" {
-   if (yyextra->bootstrapped) { RESTORE_LOC; REJECT; } return BUILTIN_TERM_GET_COLOR; }
-"__PKL_BUILTIN_TERM_SET_COLOR__" {
-   if (yyextra->bootstrapped) { RESTORE_LOC; REJECT; } return BUILTIN_TERM_SET_COLOR; }
-"__PKL_BUILTIN_TERM_GET_BGCOLOR__" {
-   if (yyextra->bootstrapped) { RESTORE_LOC; REJECT; } return BUILTIN_TERM_GET_BGCOLOR; }
-"__PKL_BUILTIN_TERM_SET_BGCOLOR__" {
-   if (yyextra->bootstrapped) { RESTORE_LOC; REJECT; } return BUILTIN_TERM_SET_BGCOLOR; }
-
 "uint<"         { return UINTCONSTR; }
 "int<"          { return INTCONSTR; }
 "offset<"       { return OFFSETCONSTR; }

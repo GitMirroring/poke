@@ -465,8 +465,6 @@ load_module (struct pkl_parser *parser,
 %token FORMAT            _("keyword `format'")
 %token COMPUTED          _("keyword `computed'")
 %token IMMUTABLE
-%token BUILTIN_TERM_GET_COLOR BUILTIN_TERM_SET_COLOR
-%token BUILTIN_TERM_GET_BGCOLOR BUILTIN_TERM_SET_BGCOLOR
 
 /* Compiler builtins.  */
 
@@ -581,7 +579,7 @@ load_module (struct pkl_parser *parser,
 %type <ast> funcall_stmt funcall_stmt_arg_list funcall_stmt_arg
 %type <ast> integral_struct
 %type <integer> struct_type_pinned integral_type_sign struct_or_union
-%type <integer> builtin endianness defun_or_method ass_exp_op mapop
+%type <integer> endianness defun_or_method ass_exp_op mapop
 
 /* The following two tokens are used in order to support several start
    rules: one is for parsing an expression, declaration or sentence,
@@ -2243,21 +2241,6 @@ comp_stmt:
               /* Pop the frame pushed by the `pushlevel' above.  */
               pkl_parser->env = pkl_env_pop_frame (pkl_parser->env);
             }
-        | pushlevel builtin
-        {
-          $$ = pkl_ast_make_builtin (pkl_parser->ast, $2);
-          PKL_AST_LOC ($$) = @$;
-
-          /* Pop the frame pushed by the `pushlevel' above.  */
-          pkl_parser->env = pkl_env_pop_frame (pkl_parser->env);
-        }
-        ;
-
-builtin:
-          BUILTIN_TERM_GET_COLOR { $$ = PKL_AST_BUILTIN_TERM_GET_COLOR; }
-        | BUILTIN_TERM_SET_COLOR { $$ = PKL_AST_BUILTIN_TERM_SET_COLOR; }
-        | BUILTIN_TERM_GET_BGCOLOR { $$ = PKL_AST_BUILTIN_TERM_GET_BGCOLOR; }
-        | BUILTIN_TERM_SET_BGCOLOR { $$ = PKL_AST_BUILTIN_TERM_SET_BGCOLOR; }
         ;
 
 stmt_decl_list:
