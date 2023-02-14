@@ -42,6 +42,8 @@
 #include <ctype.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <setjmp.h>
+
 #include "pk-utils.h"
 #include "pkl.h"
 #include "pkl-ast.h"
@@ -65,9 +67,9 @@
     {                                                   \
      YYLTYPE *loc = yyget_lloc (yyscanner);             \
      YY_EXTRA_TYPE extra = yyget_extra (yyscanner);     \
-     pkl_ice (extra->compiler, extra->ast, *loc, "%s",  \
-              msg);                                     \
-     abort ();                                          \
+     pkl_error (extra->compiler, extra->ast, *loc, "%s",  \
+                msg);                                     \
+     longjmp (extra->toplevel, 1);                      \
      /* kludge to avoid compiler warning */             \
      void *x = yy_fatal_error; x = x;                   \
     }                                                   \
