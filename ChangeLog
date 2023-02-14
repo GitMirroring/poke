@@ -1,3 +1,7 @@
+2023-02-14  Hannes Domani  <ssbssa@yahoo.de>
+
+	* pickles/pe.pk: Add size_of_stack_reserve.
+
 2023-02-14  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-parser.h (struct pkl_parser): New field `toplevel'.

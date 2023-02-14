@@ -987,9 +987,16 @@ type PE_Opt_Hdr =
     {
       offset<uint<64>,B> s64 : pe32p;
       offset<uint<32>,B> s32;
+    } size_of_stack_reserve;
+
+    /* The size of the stack to commit.  */
+    union
+    {
+      offset<uint<64>,B> s64 : pe32p;
+      offset<uint<32>,B> s32;
     } size_of_stack_commit;
 
-    /* The size of the local heap space to reere.  */
+    /* The size of the local heap space to reserve.  */
     union
     {
       offset<uint<64>,B> s64 : pe32p;
