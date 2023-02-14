@@ -222,3 +222,12 @@ pk_str_trim (char **str)
   while (isspace (*--end));
   *(end + 1) = '\0';
 }
+
+void
+pk_unreachable (const char *funcname, const char *filename, int line)
+{
+  fprintf (stderr, "unreachable reached in function %s (%s:%d)\n", funcname,
+           filename, line);
+  fflush (NULL);
+  abort ();
+}

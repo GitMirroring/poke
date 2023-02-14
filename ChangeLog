@@ -1,3 +1,9 @@
+2023-02-14  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* common/pk-utils.h (pk_unreachable): New function declaration.
+	(PK_UNREACHABLE): Changed the macro to use `pk_unreachable'.
+	* common/pk-utils.c (pk_unreachable): New function definition.
+
 2023-02-14  Hannes Domani  <ssbssa@yahoo.de>
 
 	* pickles/pe.pk: Add size_of_stack_reserve.

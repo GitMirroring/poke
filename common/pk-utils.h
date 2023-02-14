@@ -66,13 +66,16 @@ char *pk_str_replace (const char *in, const char *search, const char *replace);
 /* Left and rigth trim the given string from whitespaces.  */
 void pk_str_trim (char **str);
 
+/* This function is called when the program reaches a supposedly
+   unreachable point; print an error message and abort the execution.
+
+   FUNCNAME is the name of function in which PK_UNREACHABLE is invoked.
+   FILENAME and LINE are the location information of invocation
+   of this function.  */
+void pk_unreachable (const char *funcname, const char *filename, int line)
+    __attribute__ ((noreturn));
+
 /* Diagnoses reaching unreachable code, and aborts.  */
-#define PK_UNREACHABLE() \
-  do                                                    \
-    {                                                   \
-      assert (0 && "Reached unreachable code.");        \
-      abort ();                                         \
-    }                                                   \
-  while (0)
+#define PK_UNREACHABLE() pk_unreachable (__func__, __FILE__, __LINE__)
 
 #endif /* ! PK_UTILS_H */
