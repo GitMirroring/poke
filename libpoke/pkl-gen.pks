@@ -2666,7 +2666,6 @@
         .let @btype = PKL_AST_TYPE_O_BASE_TYPE (@field_type)
         nton @itype, @btype
         nip                     ; IVAL NUM
-        .let @ounit = PKL_AST_TYPE_O_UNIT (@field_type)
         .c PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPE);
         .c PKL_PASS_SUBPASS (@field_type);
         .c PKL_GEN_POP_CONTEXT;

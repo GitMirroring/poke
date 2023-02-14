@@ -1,5 +1,10 @@
 2023-02-14  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-gen.pks (union_deintegrator): Remove unused
+	variable.
+
+2023-02-14  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-asm.pks (ais): Rewrite.
 	(eqa): Do not revert argument arrays.
 	* testsuite/poke.pkl/in-10.pk: New test.
