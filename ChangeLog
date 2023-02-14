@@ -1,5 +1,14 @@
 2023-02-14  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-parser.h (struct pkl_parser): New field `toplevel'.
+	* libpoke/pkl-parser.c (pkl_parse_buffer): Set a longjmp return
+	point for out-of-memory and other recoverable error conditions.
+	(pkl_parse_file): Likewise.
+	* libpoke/pkl-lex.l (YY_FATAL_ERROR): Longjump to parser->toplevel
+	instead of aborting.
+
+2023-02-14  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-asm.pks (ais): Rewrite.
 	(eqa): Do not revert argument arrays.
 	* testsuite/poke.pkl/in-10.pk: New test.

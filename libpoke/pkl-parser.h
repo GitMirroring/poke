@@ -21,6 +21,7 @@
 
 #include <config.h>
 #include <stdio.h>
+#include <setjmp.h>
 
 #include "pkl.h"
 #include "pkl-env.h"
@@ -53,6 +54,7 @@ struct pkl_parser
   pkl_ast_loc prev_loc;
   uint32_t init_line;
   uint32_t init_column;
+  jmp_buf toplevel;
 };
 
 /* Public interface.  */

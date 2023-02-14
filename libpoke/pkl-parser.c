@@ -99,7 +99,10 @@ pkl_parse_file (pkl_compiler compiler, pkl_env *env,
   parser->ast->file = fp;
   parser->ast->filename = ast_filename;
   pkl_tab_set_in (fp, parser->scanner);
-  ret = pkl_tab_parse (parser);
+  if (setjmp (parser->toplevel) == 0)
+    ret = pkl_tab_parse (parser);
+  else
+    goto out_of_memory;
   *ast = parser->ast;
   *env = parser->env;
 
@@ -169,7 +172,11 @@ pkl_parse_buffer (pkl_compiler compiler, pkl_env *env,
   /* pkl_tab_debug = 1; */
   parser->env = *env;
   parser->ast->buffer = buffer_dup;
-  ret = pkl_tab_parse (parser);
+  if (setjmp (parser->toplevel) == 0)
+    ret = pkl_tab_parse (parser);
+  else
+    goto out_of_memory;
+
   *ast = parser->ast;
   *env = parser->env;
   if (end != NULL)
