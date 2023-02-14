@@ -801,60 +801,43 @@
 ;;;   AST node containing the type of the elements of ARR.
 
         .macro ais @etype
-        sel                     ; VAL ARR SEL
-        swap                    ; VAL SEL ARR
-        tor                     ; VAL SEL [ARR]
-        push ulong<64>0         ; VAL SEL IDX [ARR]
-        push int<32>0           ; VAL SEL IDX RES [ARR]
-        tor                     ; VAL SEL IDX [ARR RES]
+        pushf 1
+        push ulong<64>0
+        regvar $idx
 .loop:
-        gtlu                    ; VAL SEL IDX (SEL>IDX) [ARR RES]
+        sel                     ; VAL ARR SEL
+        pushvar $idx            ; VAL ARR SEL IDX
+        gtlu                    ; VAL ARR SEL IDX (SEL>IDX)
         bzi .endloop
-        drop                    ; VAL SEL IDX [ARR RES]
-        fromr                   ; VAL SEL IDX RES [ARR]
-        fromr                   ; VAL SEL IDX RES ARR
-        rot                     ; VAL SEL RES ARR IDX
-        aref                    ; VAL SEL RES ARR IDX ELEM
-        rot                     ; VAL SEL RES IDX ELEM ARR
-        tor                     ; VAL SEL RES IDX ELEM [ARR]
-        rot                     ; VAL SEL IDX ELEM RES [ARR]
-        tor                     ; VAL SEL IDX ELEM [ARR RES]
-        swap                    ; VAL SEL ELEM IDX [ARR RES]
-        tor                     ; VAL SEL ELEM [ARR RES IDX]
-        rot                     ; SEL ELEM VAL [ARR RES IDX]
-        push "===\n"
-        prints
-        strace 0
-        eq @etype               ; SEL ELEM VAL (ELEM==VAL) [ARR RES IDX]
-        fromr                   ; SEL ELEM VAL (ELEM==VAL) IDX [ARR RES]
-        fromr                   ; SEL ELEM VAL (ELEM==VAL) IDX RES [ARR]
-        rot                     ; SEL ELEM VAL IDX RES (ELEM==VAL) [ARR]
-        or                      ; SEL ELEM VAL IDX RES (ELEM==VAL) NRES [ARR]
-        nip2                    ; SEL ELEM VAL IDX NRES [ARR]
-        bnzi .foundit           ; SEL ELEM VAL IDX NRES [ARR]
-        tor                     ; SEL ELEM VAL IDX [ARR NRES]
-        push ulong<64>1
-        addlu                   ; SEL ELEM VAL IDX 1UL (IDX+1UL) [ARR NRES]
-        nip2                    ; SEL ELEM VAL NIDX [ARR NRES]
-        tor                     ; SEL ELEM VAL [ARR NRES NIDX]
-        nip                     ; SEL VAL [ARR NRES NIDX]
-        swap                    ; VAL SEL [ARR NRES NIDX]
-        fromr                   ; VAL SEL NIDX [ARR NRES]
+        drop                    ; VAL ARR SEL IDX
+        nip                     ; VAL ARR IDX
+        ;; Get element
+        aref                    ; VAL ARR IDX ELEM
+        ;; Update index
+        swap                    ; VAL ARR ELEM IDX
+        push ulong<64>1         ; VAL ARR ELEM IDX 1UL
+        addlu
+        nip2                    ; VAL ARR ELEM (IDX+1UL)
+        popvar $idx             ; VAL ARR ELEM
+        ;; Compare element
+        rot                     ; ARR ELEM VAL
+        eq @etype               ; ARR ELEM VAL (ELEM==VAL)
+        bnzi .foundit
+        drop                    ; ARR ELEM VAL
+        nip                     ; ARR VAL
+        swap                    ; VAL ARR
         ba .loop
-.foundit:
-        tor                     ; SEL ELEM VAL IDX [ARR NRES]
-        tor                     ; SEL ELEM VAL [ARR NRES IDX]
-        nip                     ; SEL VAL [ARR NRES IDX]
-        swap                    ; VAL SEL [ARR NRES IDX]
-        fromr                   ; VAL SEL IDX [ARR NRES]
-        dup                     ; VAL SEL IDX IDX [ARR NRES]
 .endloop:
-        drop                    ; VAL SEL IDX [ARR RES]
-        drop                    ; VAL SEL [ARR RES]
-        drop                    ; VAL [ARR RES]
-        fromr                   ; VAL RES [ARR]
-        fromr                   ; VAL RES ARR
-        swap                    ; VAL ARR RES
+        drop3
+        push int<32>0           ; VAL ARR 0
+        ba .done
+.foundit:
+        drop                    ; ARR ELEM VAL
+        nip                     ; ARR VAL
+        swap                    ; VAL ARR
+        push int<32>1           ; VAL ARR 1
+.done:
+        popf 1
         .end
 
 ;;; RAS_MACRO_BCONC
@@ -939,9 +922,9 @@
         quake                   ; ARR2 ARR1 VAL2 VAL1
         eq @type_elem
         nip2                    ; ARR2 ARR1 (VAL2==VAL1)
+        quake                   ; ARR1 ARR2 (VAL2==VAL1)
         bzi .done
-        drop                    ; ARR2 ARR1
-        swap                    ; ARR1 ARR2
+        drop                    ; ARR1 ARR2
         ;; Update the index.
         pushvar $idx            ; ARR1 ARR2 IDX
         push ulong<64>1         ; ARR1 ARR2 IDX 1UL
