@@ -1594,6 +1594,8 @@ EXTRA_DIST = \
   poke.pkl/in-7.pk \
   poke.pkl/in-8.pk \
   poke.pkl/in-9.pk \
+  poke.pkl/in-10.pk \
+  poke.pkl/in-11.pk \
   poke.pkl/in-diag-1.pk \
   poke.pkl/in-diag-2.pk \
   poke.pkl/in-diag-3.pk \
