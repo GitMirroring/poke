@@ -272,7 +272,7 @@ pk_map_tab_error (YYLTYPE *llocp, struct pk_map_parser *map_parser, char const *
 
 /* Tokens.  */
 
-%token ERROR SEP
+%token ERR SEP
 %token ENTRY
 %token <integer> TAG
 %token <string> DATA
