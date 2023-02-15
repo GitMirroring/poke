@@ -336,6 +336,7 @@ S ::
 ".>>"                { return SR; }
 "++"                { return INC; }
 "--"                { return DEC; }
+"->"                { return IND; }
 
 "["                { return '['; }
 "]"                { return ']'; }

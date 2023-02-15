@@ -2489,6 +2489,7 @@ pkl_ast_node_free_1 (gl_set_t visitations, pkl_ast_node ast)
 
       PKL_AST_NODE_FREE (PKL_AST_STRUCT_REF_STRUCT (ast));
       PKL_AST_NODE_FREE (PKL_AST_STRUCT_REF_IDENTIFIER (ast));
+      PKL_AST_NODE_FREE (PKL_AST_STRUCT_REF_ORIG_TYPE (ast));
       break;
 
     case PKL_AST_STRUCT_FIELD:
@@ -3393,6 +3394,8 @@ pkl_ast_print_1 (FILE *fp, pkl_ast_node ast, int indent)
       PRINT_AST_SUBAST (type, TYPE);
       PRINT_AST_SUBAST (struct, STRUCT_REF_STRUCT);
       PRINT_AST_SUBAST (identifier, STRUCT_REF_IDENTIFIER);
+      if (PKL_AST_STRUCT_REF_ORIG_TYPE (ast))
+        PRINT_AST_SUBAST (orig_type, STRUCT_REF_ORIG_TYPE);
       break;
 
     case PKL_AST_DECL:

@@ -513,6 +513,7 @@ load_module (struct pkl_parser *parser,
 %token AS               _("cast operator")
 %token ISA              _("type identification operator")
 %token '.'              _("dot operator")
+%token IND              _("indirection operator")
 %token <ast> ATTR       _("attribute")
 %token UNMAP            _("unmap operator")
 %token REMAP            _("remap operator")
@@ -551,7 +552,7 @@ load_module (struct pkl_parser *parser,
 %right AS ISA
 %right UNARY
 %left HYPERUNARY
-%left '.'
+%left '.' IND
 %left ATTR
 
 %type <opcode> unary_operator
@@ -1149,6 +1150,13 @@ primary:
         | primary '.' identifier
                 {
                     $$ = pkl_ast_make_struct_ref (pkl_parser->ast, $1, $3);
+                    PKL_AST_LOC ($3) = @3;
+                    PKL_AST_LOC ($$) = @$;
+                }
+        | primary IND identifier
+                {
+                    $$ = pkl_ast_make_struct_ref (pkl_parser->ast, $1, $3);
+                    PKL_AST_STRUCT_REF_INDIRECTION_P ($$) = 1;
                     PKL_AST_LOC ($3) = @3;
                     PKL_AST_LOC ($$) = @$;
                 }

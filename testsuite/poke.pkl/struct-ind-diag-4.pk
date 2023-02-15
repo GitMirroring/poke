@@ -1,0 +1,9 @@
+/* { dg-do compile } */
+
+type Foo =
+  struct
+  {
+    offset<int<32>,B,int> foo;
+  };
+
+(Foo {})->foo + 2#B; /* { dg-error "invalid operand.*\n.*expected integral" } */

@@ -1649,7 +1649,11 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_struct_field)
 PKL_PHASE_END_HANDLER
 
 /* The type of a STRUCT_REF is the type of the referred element in the
-   struct.  */
+   struct.
+
+   But if the STRUCT_REF is an indirection, then the type of the
+   indirected field should be a referring offset, and the type of
+   the STRUCT_REF is the type of the referred value.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_struct_ref)
 {
@@ -1709,6 +1713,23 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_struct_ref)
                  PKL_AST_IDENTIFIER_POINTER (field_name));
       PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
+    }
+
+  if (PKL_AST_STRUCT_REF_INDIRECTION_P (struct_ref))
+    {
+      if (PKL_AST_TYPE_CODE (type) != PKL_TYPE_OFFSET
+          || !PKL_AST_TYPE_O_REF_TYPE (type))
+        {
+          PKL_ERROR (PKL_AST_LOC (field_name),
+                     "field `%s' should be a referring offset",
+                     PKL_AST_IDENTIFIER_POINTER (field_name));
+          PKL_TYPIFY_PAYLOAD->errors++;
+          PKL_PASS_ERROR;
+        }
+
+      PKL_AST_STRUCT_REF_ORIG_TYPE (struct_ref)
+        = ASTREF (type);
+      type = PKL_AST_TYPE_O_REF_TYPE (type);
     }
 
   PKL_AST_TYPE (struct_ref) = ASTREF (type);

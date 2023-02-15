@@ -1,0 +1,7 @@
+/* { dg-do run } */
+
+type Foo = struct { offset<int<32>,B,uint<8>> ptr; };
+
+/* { dg-command { var foo = Foo{}; } } */
+/* { dg-command { try foo->ptr = 3; catch if E_map { print "caught\n"; } } } */
+/* { dg-output "caught" } */

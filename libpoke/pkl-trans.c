@@ -1689,8 +1689,7 @@ PKL_PHASE_END_HANDLER
    Also, struct references that refer to parameterless methods are
    transformed into funcalls to these methods, but only if the struct
    references are not part of funcall themselves.  This is similar to
-   what is done with variable nodes. */
-
+   what is done with variable nodes.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans2_ps_struct_ref)
 {
