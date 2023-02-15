@@ -1,3 +1,8 @@
+2023-02-15  Hannes Domani  <ssbssa@yahoo.de>
+
+	* poke/pk-map-lex.l: Rename ERROR to ERR.
+	* poke/pk-map-tab.y: Likewise.
+
 2023-02-14  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* common/pk-utils.h (pk_unreachable): New function declaration.
