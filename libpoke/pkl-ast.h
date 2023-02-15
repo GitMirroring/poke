@@ -744,11 +744,17 @@ pkl_ast_node pkl_ast_make_indexer (pkl_ast ast,
                                      pkl_ast_node index);
 
 /* PKL_AST_STRUCT_REF nodes represent references to a struct
-   element.  */
+   element.
+
+   If INDIRECTION_P is nonzero, then this node represents the indirection
+   of the struct element instead of a reference to the field itself.  In
+   these cases, the element must be of type referring offset.  */
 
 #define PKL_AST_STRUCT_REF_STRUCT(AST) ((AST)->sref.sct)
 #define PKL_AST_STRUCT_REF_IDENTIFIER(AST) ((AST)->sref.identifier)
 #define PKL_AST_STRUCT_REF_IS_PARENTHESIZED(AST) ((AST)->sref.is_parenthesized)
+#define PKL_AST_STRUCT_REF_INDIRECTION_P(AST) ((AST)->sref.indirection_p)
+#define PKL_AST_STRUCT_REF_ORIG_TYPE(AST) ((AST)->sref.orig_type)
 
 struct pkl_ast_struct_ref
 {
@@ -756,7 +762,9 @@ struct pkl_ast_struct_ref
 
   union pkl_ast_node *sct;
   union pkl_ast_node *identifier;
+  union pkl_ast_node *orig_type;
   int is_parenthesized;
+  int indirection_p;
 };
 
 pkl_ast_node pkl_ast_make_struct_ref (pkl_ast ast,

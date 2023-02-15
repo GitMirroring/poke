@@ -835,6 +835,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
   pkl_ast_node exp = PKL_AST_ASS_STMT_EXP (ass_stmt);
   pvm_program_label done = pkl_asm_fresh_label (PKL_GEN_ASM);
   int assigning_computed_field_p = 0;
+  int assigning_to_indirection_p = 0;
   const char *computed_field_name = NULL;
 
   if (exp)
@@ -846,6 +847,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
 
   /* At this point the r-value, generated from executing EXP, is in
      the stack.  */
+
+  /* Determine whether we are assigning to an indirection.  */
+  assigning_to_indirection_p = (PKL_AST_CODE (lvalue) == PKL_AST_STRUCT_REF
+                                && PKL_AST_STRUCT_REF_INDIRECTION_P (lvalue));
 
   /* Determine whether we are assigning to a computed field in a
      struct.  */
@@ -883,6 +888,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
      to reflect the effect of the assignment in the corresponding IO
      space.  */
   if (!assigning_computed_field_p
+      && !assigning_to_indirection_p
       && (PKL_AST_CODE (lvalue) == PKL_AST_INDEXER
           || PKL_AST_CODE (lvalue) == PKL_AST_STRUCT_REF)
       && (PKL_AST_TYPE_CODE (lvalue_type) == PKL_TYPE_ARRAY
@@ -1044,6 +1050,56 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
               }
 
             free (setter);
+          }
+        else if (assigning_to_indirection_p)
+          {
+            /* SCT->ID = VAL */
+            /* Stack: VAL SCT ID */
+
+            pvm_program_label mapped = pkl_asm_fresh_label (PKL_GEN_ASM);
+
+            /* The referred field contains the offset where to write
+               VAL.  */
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SREF);
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP); /* VAL SCT OFF */
+
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP); /* VAL OFF SCT */
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MM);   /* VAL OFF SCT MAPPED_P */
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BNZI, mapped);
+
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                          pvm_make_exception (PVM_E_MAP, PVM_E_MAP_NAME,
+                                              PVM_E_MAP_ESTATUS, NULL, NULL));
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_RAISE);
+
+            pkl_asm_label (PKL_GEN_ASM, mapped);
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* VAL OFF SCT */
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MGETIOS); /* VAL OFF SCT IOS */
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP); /* VAL OFF IOS */
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP); /* VAL IOS OFF */
+
+            /* We need a bit-offset.  */
+            {
+              pkl_ast_node ref_orig_type = PKL_AST_STRUCT_REF_ORIG_TYPE (lvalue);
+              pkl_ast_node u64t = pkl_ast_make_integral_type (PKL_PASS_AST, 64, 0);
+
+              assert (PKL_AST_TYPE_CODE (ref_orig_type) == PKL_TYPE_OFFSET);
+
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_OGETM); /* ... OFF MAGNITUDE */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NTON,
+                            PKL_AST_TYPE_O_BASE_TYPE (ref_orig_type),
+                            u64t);
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP); /* ... OFF NMAGNITUDE */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP); /* ... NMAGNITUDE OFF */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_OGETU);
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP); /* ... NMAGNITUDE UNIT */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MULLU);
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP2); /* (NMAGNITUDE*UNIT) */
+              u64t = ASTREF (u64t); pkl_ast_node_free (u64t);
+            }
+
+            /* VAL IOS BOFF */
+            LMAP (PKL_AST_TYPE (lvalue)); /* _ */
           }
         else
           {
@@ -2938,13 +2994,68 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_struct_ref)
         {
           /* This is either a field or a method.  */
           pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SREF);
-          /* If the parent is a funcall and the referred field is a struct
-             method, then leave both the struct and the closure.  */
-          if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_FUNCALL)
-              && !PKL_PASS_PARENT && !is_field_p)
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP);
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP); /* STRUCT ELEM */
+
+          /* If this is an indirecting struct_ref, now we have to map
+             the value using the offset that is on top of the stack,
+             using the mapping attributes of the containing struct.
+             If the struct value is not mapped, then we raise
+             E_no_map.  */
+          if (PKL_AST_STRUCT_REF_INDIRECTION_P (struct_ref))
+            {
+              pvm_program_label mapped = pkl_asm_fresh_label (PKL_GEN_ASM);
+
+                                                         /* STRUCT ELEM */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_TOR);  /* STRUCT [ELEM] */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MM);   /* STRUCT MAPPED_P [ELEM] */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BNZI, mapped);
+
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                            pvm_make_exception (PVM_E_MAP, PVM_E_MAP_NAME,
+                                                PVM_E_MAP_ESTATUS, NULL, NULL));
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_RAISE);
+
+              pkl_asm_label (PKL_GEN_ASM, mapped);
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* STRUCT [ELEM] */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MGETS); /* STRUCT STRICT [ELEM] */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP);  /* STRICT STRUCT [ELEM] */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MGETIOS); /* STRICT STRUCT IOS [ELEM] */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP); /* STRICT IOS [ELEM] */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_FROMR); /* STRICT IOS ELEM */
+              /* We need a bit offset.  */
+              {
+                pkl_ast_node ref_orig_type = PKL_AST_STRUCT_REF_ORIG_TYPE (struct_ref);
+                pkl_ast_node u64t = pkl_ast_make_integral_type (PKL_PASS_AST, 64, 0);
+
+                assert (PKL_AST_TYPE_CODE (ref_orig_type) == PKL_TYPE_OFFSET);
+
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_OGETM); /* STRICT IOS ELEM MAGNITUDE */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NTON,
+                              PKL_AST_TYPE_O_BASE_TYPE (ref_orig_type),
+                              u64t);
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP); /* STRICT IOS ELEM NMAGNITUDE */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP); /* STRICT IOS NMAGNITUDE ELEM */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_OGETU);
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP); /* STRICT IOS NMAGNITUDE UNIT */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MULLU);
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP2); /* STRICT IOS (NMAGNITUDE*UNIT) */
+                u64t = ASTREF (u64t); pkl_ast_node_free (u64t);
+              }
+              /* Ok, map.  */
+              PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_MAPPER);
+              PKL_PASS_SUBPASS (struct_ref_type);
+              PKL_GEN_POP_CONTEXT;
+            }
           else
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP2);
+            {
+                                                   /* STRUCT ELEM */
+              /* If the parent is a funcall and the referred field was
+                 a struct method, then leave both the struct and the
+                 closure.  */
+              if (!(PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_FUNCALL)
+                    && !PKL_PASS_PARENT && !is_field_p))
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP);
+            }
         }
 
       /* To cover cases where the referenced struct is not mapped, but

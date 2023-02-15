@@ -884,6 +884,8 @@ EXTRA_DIST = \
   poke.pkl/ass-diag-9.pk \
   poke.pkl/ass-diag-10.pk \
   poke.pkl/ass-function-1.pk \
+  poke.pkl/ass-ind-1.pk \
+  poke.pkl/ass-ind-2.pk \
   poke.pkl/ass-offset-1.pk \
   poke.pkl/ass-struct-int-1.pk \
   poke.pkl/ass-struct-int-2.pk \
@@ -2448,6 +2450,14 @@ EXTRA_DIST = \
   poke.pkl/struct-field-pretty-print-1.pk \
   poke.pkl/struct-field-pretty-print-diag-1.pk \
   poke.pkl/struct-field-pretty-print-diag-2.pk \
+  poke.pkl/struct-ind-1.pk \
+  poke.pkl/struct-ind-2.pk \
+  poke.pkl/struct-ind-3.pk \
+  poke.pkl/struct-ind-4.pk \
+  poke.pkl/struct-ind-diag-1.pk \
+  poke.pkl/struct-ind-diag-2.pk \
+  poke.pkl/struct-ind-diag-3.pk \
+  poke.pkl/struct-ind-diag-4.pk \
   poke.pkl/struct-method-1.pk \
   poke.pkl/struct-method-2.pk \
   poke.pkl/struct-method-3.pk \

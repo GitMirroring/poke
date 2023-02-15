@@ -1,0 +1,9 @@
+/* { dg-do compile } */
+
+type Foo =
+  struct
+  {
+    offset<uint<32>,B> foo;
+  };
+
+(Foo {})->foo; /* { dg-error "referring offset" } */
