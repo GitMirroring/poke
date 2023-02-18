@@ -155,7 +155,6 @@ wrapped-globals
   pvm_literal_c
   pvm_literal_code
   pvm_literal_enomem
-  pvm_literal_inval_obase
   pvm_literal_no_toplevel_var
   pvm_literal_nohyperlink
   pvm_literal_invalid_class
@@ -745,7 +744,6 @@ late-c
 
     static const char *pvm_literal_code = "code";
     static const char *pvm_literal_enomem = "out of memory";
-    static const char *pvm_literal_inval_obase = "invalid output base";
     static const char *pvm_literal_no_toplevel_var = "no top-level variable found";
     static const char *pvm_literal_nohyperlink = "no current hyperlink";
     static const char *pvm_literal_invalid_class = "invalid class";

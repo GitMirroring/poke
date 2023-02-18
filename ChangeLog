@@ -1,3 +1,9 @@
+2023-02-18  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pvm.jitter (wrapped-globals): Remove
+	`pvm_literal_inval_obase'.
+	(late-c): Likewise.
+
 2023-02-15  Hannes Domani  <ssbssa@yahoo.de>
 
 	* poke/pk-map-lex.l: Rename ERROR to ERR.
