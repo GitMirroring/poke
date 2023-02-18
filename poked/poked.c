@@ -31,6 +31,7 @@
 #include "pk-utils.h"
 #include "usock.h"
 #include "libpoke.h"
+#include "configmake.h"
 
 pk_compiler pkc;
 struct usock *srv;

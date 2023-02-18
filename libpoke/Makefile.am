@@ -187,7 +187,6 @@ LTV_AGE=0
 libpoke_la_CPPFLAGS = -I$(top_builddir)/gl-libpoke -I$(top_srcdir)/gl-libpoke \
                       -I$(top_srcdir)/common \
                       -DPKL_DEBUG \
-                      -DPKGDATADIR=\"$(pkgdatadir)\" \
                       -DPKGINFODIR=\"$(infodir)\" \
                       -DLOCALEDIR=\"$(localedir)\" \
                       $(CFLAG_VISIBILITY) \

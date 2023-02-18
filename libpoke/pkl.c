@@ -45,6 +45,8 @@
 #include "pkl-fold.h"
 #include "pkl-env.h"
 
+#include "configmake.h"
+
 #define PKL_COMPILING_EXPRESSION 0
 #define PKL_COMPILING_PROGRAM    1
 #define PKL_COMPILING_STATEMENT  2

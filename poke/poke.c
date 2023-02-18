@@ -38,6 +38,7 @@
 #include "pk-utils.h"
 #include "pk-map.h"
 #include "pk-ios.h"
+#include "configmake.h"
 
 /* poke can be run either interactively (from a tty) or in batch mode.
    The following predicate records this.  */

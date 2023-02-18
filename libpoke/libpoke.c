@@ -30,6 +30,7 @@
 #include "pvm-val.h" /* XXX */
 #include "libpoke.h"
 #include "ios-dev.h" /* for struct ios_dev_if */
+#include "configmake.h"
 
 struct _pk_compiler
 {

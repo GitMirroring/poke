@@ -27,7 +27,6 @@ endif
 COMMON_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl \
                   -I$(top_srcdir)/common \
                   -DTESTDIR=\"$(abs_srcdir)\" \
-                  -DPKGDATADIR=\"$(pkgdatadir)\" \
                   -I$(top_srcdir)/libpoke -I$(top_builddir)/libpoke
 # Old DejaGnu versions need a specific old interpretation of 'inline'.
 COMMON_CFLAGS = -fgnu89-inline

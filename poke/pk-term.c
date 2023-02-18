@@ -34,6 +34,7 @@
 
 #include "poke.h"
 #include "pk-utils.h"
+#include "configmake.h"
 
 /* Several variables related to the pager.  */
 
