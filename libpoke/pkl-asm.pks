@@ -668,8 +668,10 @@
         raise
 .bound_ok:
         drop3                   ; ARR
-        push #bounder           ; ARR BOUNDER
-        asettb                  ; ARR
+        typof                   ; ARR TYP
+        push #bounder           ; ARR TYP BOUNDER
+        tyasetb                 ; ARR TYP
+        drop                    ; ARR
         .end
 
 ;;; RAS_MACRO_ARRAY_CONV_SIZ
@@ -697,8 +699,10 @@
         raise
 .bound_ok:
         drop2                   ; ARR
-        push #bounder           ; ARR BOUNDER
-        asettb                  ; ARR
+        typof                   ; ARR TYP
+        push #bounder           ; ARR TYP BOUNDER
+        tyasetb                 ; ARR TYP
+        drop                    ; ARR
         .end
 
 ;;; RAS_MACRO_CDIV

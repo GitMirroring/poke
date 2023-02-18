@@ -293,7 +293,6 @@ PKL_DEF_INSN(PKL_INSN_AREM,"","arem")
 PKL_DEF_INSN(PKL_INSN_AREF,"","aref")
 PKL_DEF_INSN(PKL_INSN_AREFO,"","arefo")
 PKL_DEF_INSN(PKL_INSN_ASET,"","aset")
-PKL_DEF_INSN(PKL_INSN_ASETTB,"","asettb")
 
 /* Struct instructions.  */
 
@@ -384,6 +383,7 @@ PKL_DEF_INSN(PKL_INSN_MKTYA,"","mktya")
 PKL_DEF_INSN(PKL_INSN_TYAGETN,"","tyagetn")
 PKL_DEF_INSN(PKL_INSN_TYAGETT,"","tyagett")
 PKL_DEF_INSN(PKL_INSN_TYAGETB,"","tyagetb")
+PKL_DEF_INSN(PKL_INSN_TYASETB,"","tyasetb")
 PKL_DEF_INSN(PKL_INSN_TYISA,"","tyisa")
 
 /* Branch instructions.  */

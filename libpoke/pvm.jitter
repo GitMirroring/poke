@@ -5143,24 +5143,6 @@ instruction arefo ()
   end
 end
 
-# Instruction: asettb
-#
-# Given an array ARR and a closure BOUND, set the later as the array's
-# bounder function.  This is a function that, once executed with no
-# arguments, returns the size of the array.
-#
-# Stack: ( ARR BOUND -- ARR )
-
-instruction asettb () # ( ARR BOUND -- ARR )
-  code
-    pvm_val type = PVM_VAL_ARR_TYPE (JITTER_UNDER_TOP_STACK ());
-
-    PVM_ASSERT (PVM_VAL_TYP_CODE (type) == PVM_TYPE_ARRAY);
-    PVM_VAL_TYP_A_BOUND (type) = JITTER_TOP_STACK ();
-    JITTER_DROP_STACK ();
-  end
-end
-
 
 ## Struct instructions
 
@@ -6263,6 +6245,24 @@ end
 instruction tyagetb ()
   code
     JITTER_PUSH_STACK (PVM_VAL_TYP_A_BOUND (JITTER_TOP_STACK ()));
+  end
+end
+
+# Instruction: tyasetb
+#
+# Given an array ARR and a closure BOUND, set the later as the array's
+# bounder function.  This is a function that, once executed with no
+# arguments, returns the size of the array or null.
+#
+# Stack: ( TYPE BOUND -- TYPE )
+
+instruction tyasetb ()
+  code
+    pvm_val type = JITTER_UNDER_TOP_STACK ();
+
+    PVM_ASSERT (PVM_VAL_TYP_CODE (type) == PVM_TYPE_ARRAY);
+    PVM_VAL_TYP_A_BOUND (type) = JITTER_TOP_STACK ();
+    JITTER_DROP_STACK ();
   end
 end
 

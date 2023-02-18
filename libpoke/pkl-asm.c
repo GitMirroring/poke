@@ -231,8 +231,10 @@ pkl_asm_insn_atoa (pkl_asm pasm,
          the array.  */
       bounder = PKL_AST_TYPE_A_BOUNDER (to_type);
 
-      pkl_asm_insn (pasm, PKL_INSN_PUSH, bounder);  /* ARR CLS */
-      pkl_asm_insn (pasm, PKL_INSN_ASETTB);         /* ARR */
+      pkl_asm_insn (pasm, PKL_INSN_TYPOF);          /* ARR TYP */
+      pkl_asm_insn (pasm, PKL_INSN_PUSH, bounder);  /* ARR TYP CLS */
+      pkl_asm_insn (pasm, PKL_INSN_TYASETB);        /* ARR TYP */
+      pkl_asm_insn (pasm, PKL_INSN_DROP);           /* ARR */
     }
   else
     {

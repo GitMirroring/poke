@@ -1,5 +1,15 @@
 2023-02-18  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pkl-insn.def (asettb): Remove instruction.
+	(tyasetb): New instruction.
+	* libpoke/pvm.jitter (asettb): Remove.
+	(tyasetb): New instruction to update the array's type bounder.
+	* libpoke/pkl-asm.c (pkl_asm_insn_atoa): Use new instruction.
+	* libpoke/pkl-asm.pks (array_conv_sel): Likewise.
+	(array_conv_siz): Likewise.
+
+2023-02-18  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-asm.c (pkl_asm_insn_atoa): Do not use `PVM_NULL' as
 	the bounder in the type of array.  Use a closure that returns
 	`PVM_NULL'.
