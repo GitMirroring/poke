@@ -225,19 +225,26 @@ MAINTAINERCLEANFILES += $(srcdir)/pvm-vm.h $(srcdir)/pvm-vm1.c $(srcdir)/pvm-vm2
 # <https://lists.gnu.org/archive/html/bug-make/2020-09/msg00008.html>, so that
 # it works also in parallel 'make'.
 generate-vm-files:
-	$(JITTER) $(srcdir)/pvm.jitter --output $(builddir) \
-	&& { test $(builddir) = $(srcdir) \
-	     || { mv pvm-vm.h $(srcdir)/pvm-vm.h \
-	          && mv pvm-vm1.c $(srcdir)/pvm-vm1.c \
-	          && mv pvm-vm2.c $(srcdir)/pvm-vm2.c; \
-	        }; \
-	   } \
-	|| { rm -f pvm-vm.h pvm-vm1.c pvm-vm2.c; false; }
+	if $(JITTER) --help >/dev/null 2>/dev/null; then \
+	  $(JITTER) $(srcdir)/pvm.jitter --output $(builddir) \
+	  && { test $(builddir) = $(srcdir) \
+	       || { mv pvm-vm.h $(srcdir)/pvm-vm.h \
+	            && mv pvm-vm1.c $(srcdir)/pvm-vm1.c \
+	            && mv pvm-vm2.c $(srcdir)/pvm-vm2.c; \
+	          }; \
+	     } \
+	  || { rm -f pvm-vm.h pvm-vm1.c pvm-vm2.c; false; }; \
+	else \
+	  echo "warning: not regenerating pvm-vm.h, pvm-vm[12].c since we are cross-compiling" 1>&2; \
+	fi
 .PHONY: generate-vm-files
 # The above rule will generate files with time-stamp order
 # pvm.jitter <= pvm-vm.h <= pvm-vm1.c <= pvm-vm2.c
-pvm-vm.h: pvm.jitter
-	@{ test -f $(srcdir)/pvm-vm.h && test ! $(srcdir)/pvm-vm.h -ot $(srcdir)/pvm.jitter; } || $(MAKE) generate-vm-files
+pvm-vm.h: pvm.jitter $(JITTER)
+	@{ test -f $(srcdir)/pvm-vm.h \
+	   && test ! $(srcdir)/pvm-vm.h -ot $(srcdir)/pvm.jitter \
+	   && test ! $(srcdir)/pvm-vm.h -ot $(JITTER); \
+	} || $(MAKE) generate-vm-files
 pvm-vm1.c: pvm-vm.h
 	@{ test -f $(srcdir)/pvm-vm1.c && test ! $(srcdir)/pvm-vm1.c -ot $(srcdir)/pvm-vm.h; } || $(MAKE) generate-vm-files
 pvm-vm2.c: pvm-vm1.c

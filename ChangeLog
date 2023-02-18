@@ -1,5 +1,12 @@
 2023-02-19  Bruno Haible  <bruno@clisp.org>
 
+	build: Regenerate pvm-vm.h, pvm-vm1.c, pvm-vm2.c when jitter has changed.
+	* libpoke/Makefile.am (generate-vm-files): When cross-compiling, don't
+	fail, just emit a warning.
+	(pvm-vm.h): Depend also on $(JITTER).
+
+2023-02-19  Bruno Haible  <bruno@clisp.org>
+
 	Allow accessing the installed files in a Cygwin-based mingw environment.
 	* bootstrap.conf (gnulib_modules, libpoke_modules): Add configmake.
 	* libpoke/Makefile.am (libpoke_la_CPPFLAGS): Don't define PKGDATADIR.
