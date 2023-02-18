@@ -1,0 +1,9 @@
+/* { dg-do run } */
+
+var a = [1,2,3] as int[],
+    bounder_non_null_p =
+        asm int<32>: ("typof; nip; tyagetb; nip; nn; nip" : a);
+
+/* { dg-command {.set obase 10} } */
+/* { dg-command {bounder_non_null_p} } */
+/* { dg-output "1" } */

@@ -1046,6 +1046,7 @@ EXTRA_DIST = \
   poke.pkl/cast-array-5.pk \
   poke.pkl/cast-array-6.pk \
   poke.pkl/cast-array-7.pk \
+  poke.pkl/cast-array-8.pk \
   poke.pkl/cast-array-diag-1.pk \
   poke.pkl/cast-array-diag-2.pk \
   poke.pkl/cast-array-diag-3.pk \
