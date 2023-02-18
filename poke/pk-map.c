@@ -31,6 +31,7 @@
 #include "pk-term.h"
 #include "pk-map.h"
 #include "pk-map-parser.h"
+#include "configmake.h"
 
 /* Unique map ID.
    This number is unique per map in a poke session.  */

@@ -1,3 +1,20 @@
+2023-02-19  Bruno Haible  <bruno@clisp.org>
+
+	Allow accessing the installed files in a Cygwin-based mingw environment.
+	* bootstrap.conf (gnulib_modules, libpoke_modules): Add configmake.
+	* libpoke/Makefile.am (libpoke_la_CPPFLAGS): Don't define PKGDATADIR.
+	* libpoke/libpoke.c: Instead, include configmake.h.
+	* libpoke/pkl.c: Likewise.
+	* poke/Makefile.am (poke_CPPFLAGS): Don't define PKGDATADIR.
+	* poke/pk-map.c: Instead, include configmake.h.
+	* poke/pk-term.c: Likewise.
+	* poke/poke.c: Likewise.
+	* poked/Makefile.am (poked_CPPFLAGS): Remove useless -I options. Don't
+	define PKGDATADIR. Add -I options to find the common gl/ directories.
+	* poked/poked.c: Include configmake.h.
+	* testsuite/poke.libpoke/Makefile.am (COMMON_CPPFLAGS): Don't define
+	PKGDATADIR.
+
 2023-02-18  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-insn.def (asettb): Remove instruction.

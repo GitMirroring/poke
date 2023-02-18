@@ -51,7 +51,6 @@ poke_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl \
                 -I$(top_srcdir)/common \
                 -I$(top_srcdir)/libpoke -I$(top_builddir)/libpoke \
                 -DJITTER_VERSION=\"$(JITTER_VERSION)\" \
-                -DPKGDATADIR=\"$(pkgdatadir)\" \
                 -DPKGINFODIR=\"$(infodir)\" \
                 -DLOCALEDIR=\"$(localedir)\"
 poke_CFLAGS = -Wall
