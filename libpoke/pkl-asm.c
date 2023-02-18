@@ -215,6 +215,8 @@ pkl_asm_insn_atoa (pkl_asm pasm,
   /* Now process the array itself.  */
   if (bound == NULL)
     {
+      pvm_val bounder;
+
       if (from_type && from_bound == NULL)
         /* Both array types are unbounded, hence they are identical =>
            no need to do anything.  */
@@ -222,7 +224,14 @@ pkl_asm_insn_atoa (pkl_asm pasm,
 
       /* No checks are due in this case, but the value itself
          should be typed as an unbound array.  */
-      pkl_asm_insn (pasm, PKL_INSN_PUSH, PVM_NULL); /* ARR NULL */
+
+      /* Because `bound' is NULL, the bounder closure for `to_type'
+         will do the right thing (which is returning PVM_NULL on
+         invocation).  We set this bounder in the PVM type of
+         the array.  */
+      bounder = PKL_AST_TYPE_A_BOUNDER (to_type);
+
+      pkl_asm_insn (pasm, PKL_INSN_PUSH, bounder);  /* ARR CLS */
       pkl_asm_insn (pasm, PKL_INSN_ASETTB);         /* ARR */
     }
   else
