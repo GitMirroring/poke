@@ -1,5 +1,9 @@
 2023-02-20  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pvm.jitter: Use pvm_strcat instead of strcat.
+
+2023-02-20  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-asm.c (pkl_asm_insn_cmp): Support values of type
 	any.
 	* testsuite/poke.pkl/eq-any-array-3.pk: New test.
