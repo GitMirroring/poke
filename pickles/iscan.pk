@@ -1,0 +1,246 @@
+/* iscan.pk - Scanning ala Icon.  */
+
+/* Copyright (C) 2023 Jose E. Marchesi.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* The Icon programming language from Ralph Griswold supports the
+   notion of "string scanning", in the form of a string scanning
+   operator that sets a scanning context, plus a set of Icon
+   generators (or functions) that can be used to move in the string
+   subject.
+
+   This pickle generalizes this mechanism so it can be used in order
+   to scan binary data structures mapped at some IO space.
+
+   In the same way than Icon generators may fail, the corresponding
+   IScan methods raise an exception E_iscan.  This can be used along
+   with the Poke try-catch, try-until and ?! constructions. */
+
+
+var EC_iscan = exception_code;
+var E_iscan = Exception { code = EC_iscan, name = "iscan", exit_status = 1 };
+
+type IScan_Pos = offset<uint<64>,b>;
+
+type IScan =
+  struct
+  {
+    int<32> ios;
+    IScan_Pos pos;
+    int<32> strict = 1;
+    IScan_Pos step = 1#b : step > 0#b;
+    (int<32>,int<32>,uint<64>)any mapper;
+
+    /* Auxiliary function used in the methods below.  */
+
+    fun any_in = (any a, any[] set) int<32>:
+    {
+      for (v in set where v == a)
+        return 1;
+      return 0;
+    }
+
+    /* Return POS + STEP if S[POS] exists and S[POS] is in the set S.
+       Otherwise raise E_iscan.  */
+
+    method anyof = (any[] s) IScan_Pos:
+    {
+      try
+        {
+          if (any_in (mapper (strict, ios, pos/#b), s))
+            return pos + step;
+
+        }
+      catch if E_eof {}
+      raise E_iscan;
+    }
+
+    /* Returns the position in IOS following the longest initial
+       substring of values in S beginning at position POS and not
+       extending beyond position J.  Returns J if all the mapped
+       values are in C.  Raises E_iscan if the value at POS is not
+       in S.  */
+
+    method manyof = (any[] s,
+                     IScan_Pos j = iosize (ios)) IScan_Pos:
+    {
+      if (!any_in (mapper (strict, ios, pos/#b), s))
+        raise E_iscan;
+
+      var p = pos;
+      try
+        {
+          p += step;
+          if (p > j
+              || !any_in (mapper (strict, ios, p/#b), s))
+            break;
+        }
+      until E_eof;
+
+      return p;
+    }
+
+    /* Returns the positions in the IOS from position POS to position
+       J which contain values in the set S.  */
+
+    method upto = (any[] s, IScan_Pos j = iosize (ios)) IScan_Pos[]:
+    {
+      var res = IScan_Pos[]();
+      var p = pos;
+      try
+        {
+          if (any_in (mapper (strict, ios, p/#b), s))
+            apush (res, p);
+          p += step;
+          if (p > j)
+            break;
+        }
+      until E_eof;
+
+      return res;
+    }
+
+    /* Returns POS + S'size if the values mapped at POS are equal to
+       the values in S.  Raise E_iscan otherwise.  */
+
+    method match = (any[] s) IScan_Pos:
+    {
+      try
+        {
+          var values = any[]();
+          var p = pos;
+          for (v in s)
+            {
+              var m = mapper (strict, ios, p/#b);
+              apush (values, m);
+              p += m'size;
+            }
+
+          if (values == s)
+            return pos + s'size;
+        }
+      catch if E_eof { }
+      raise E_iscan;
+    }
+
+    /* Returns the positions in the IOS from POS to J at which the
+       values in S occur in the same sequence.  */
+
+    method find = (any[] s,
+                   IScan_Pos j = iosize (ios)) IScan_Pos[]:
+    {
+      var res = IScan_Pos[]();
+      var p = pos;
+      try
+        {
+          var q = p;
+          var found = 1;
+          for (v in s)
+            {
+              var m = mapper (strict, ios, q/#b);
+              if (m != v)
+                {
+                  found = 0;
+                  break;
+                }
+              q += m'size;
+            }
+
+          if (found)
+            apush (res, p);
+
+          p += step;
+          if (p > j)
+            break;
+        }
+      until E_eof;
+
+      return res;
+    }
+
+    /* Return the positions in the IOS between POS and J where the
+       stored value is in S1, provided the preceding values are
+       "balanced" with respect to values in S2 and S3.  */
+
+    method bal = (any[] s1, any[] s2, any[] s3,
+                  IScan_Pos j = iosize (ios)) IScan_Pos[]:
+    {
+      var res = IScan_Pos[]();
+      var p = pos;
+      var count = 0L;
+      try
+        {
+          var val = mapper (strict, ios, p/#b);
+
+          if (count == 0 && any_in (val, s1))
+            apush (res, p);
+          else if (any_in (val, s2))
+            count++;
+          else if (any_in (val, s3))
+            count--;
+
+          if (count < 0)
+            raise E_iscan;
+
+          p += step;
+          if (p > j)
+            break;
+        }
+      until E_eof;
+
+      if (count > 0)
+        raise E_iscan;
+      return res;
+    }
+
+    /* Moves POS to position POS+I in the IOS and returns the values
+       between the original position of POS and its new position.  If
+       I is out of bounds, raises E_iscan.  */
+
+    method move = (IScan_Pos i) any[]:
+    {
+      try
+        {
+          var res = any[]();
+          for (var p = pos; p < pos + i; p = p + step)
+            apush (res, mapper (strict, ios, p/#b));
+          pos = pos + i;
+          return res;
+        } catch if E_eof {}
+
+      raise E_iscan;
+    }
+
+    /* Moves POS to position I in the IOS and returns the values
+       between the original position of POS and its new position.  If
+       I is out of bounds, raises E_iscan. */
+
+    method tab = (IScan_Pos i) any[]:
+    {
+      try
+        {
+          var res = any[]();
+          for (var p = pos; p < i; p = p + step)
+            apush (res, mapper (strict, ios, p/#b));
+          pos = i;
+          return res;
+        } catch if E_eof {}
+
+      raise E_iscan;
+    }
+  };
+
+load "iscan-str.pk";

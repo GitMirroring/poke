@@ -1,5 +1,14 @@
 2023-02-20  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* pickles/iscan.pk: New file.
+	* pickles/iscan-str.pk: Likewise.
+	* pickles/Makefile.am (dist_pickles_DATA): Add iscan.pk and
+	iscan-str.pk.
+	* testsuite/poke.pickles/iscan-test.pk: New testsuite.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
+
+2023-02-20  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pvm.jitter: Use pvm_strcat instead of strcat.
 
 2023-02-20  Jose E. Marchesi  <jemarch@gnu.org>

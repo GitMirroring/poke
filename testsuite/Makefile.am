@@ -585,6 +585,7 @@ EXTRA_DIST = \
   poke.map/write-unions-3.pk \
   poke.map/write-structs-1.pk \
   poke.pickles/pickles.exp \
+  poke.pickles/iscan-test.pk \
   poke.pickles/argp-test.pk \
   poke.pickles/asn1-ber-test.pk \
   poke.pickles/bmp-test.pk \

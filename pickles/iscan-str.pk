@@ -1,0 +1,135 @@
+/* iscan-str.pk - Scanning strings ala Icon.  */
+
+/* Copyright (C) 2023 Jose E. Marchesi.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* This pickle provides facilities to scan strings (sequences of
+   characters) stored in some IO space.  This is inspired by the
+   string scanning generators provided by the Icon programming
+   language.  */
+
+type IScan_String =
+  struct
+  {
+    fun iscan_str_mapper = (int<32> strict, int<32> ios, uint<64> boff) any:
+    {
+      return uint<8> @ ios : boff#b;
+    }
+
+    IScan iscan = IScan { mapper = iscan_str_mapper, step = 1#B };
+
+    computed int<32> ios;
+    method get_ios = int<32>: { return iscan.ios; }
+    method set_ios = (int<32> ios) void: { iscan.ios = ios; }
+
+    computed IScan_Pos pos;
+    method get_pos = IScan_Pos: { return iscan.pos; }
+    method set_pos = (IScan_Pos p) void: { iscan.pos = p; }
+
+    /* Return POS + STEP if the character at POS exists and is in the
+       set S.  Otherwise raise E_iscan.  */
+
+    method anyof = (string s) IScan_Pos:
+    {
+      var cs = stoca (s);
+      return iscan.anyof (cs);
+    }
+
+    /* Returns the position in IOS following the longest initial
+       substring of characters in S beginning at position POS and not
+       extending beyond position J.  Returns J if all the characters
+       are in C.  Raises E_iscan if the value at POS is not in S.  */
+
+    method manyof = (string s, IScan_Pos j = iosize (iscan.ios)) IScan_Pos:
+    {
+      var cs = stoca (s);
+      return iscan.manyof (cs, j);
+    }
+
+    /* Returns the positions in the IOS from position POS to position
+       J which contain characters in the set S.  Raises E_iscan if no
+       such character is found.  */
+
+    method upto = (string s, IScan_Pos j = iosize (iscan.ios)) IScan_Pos[]:
+    {
+      var cs = stoca (s);
+      return iscan.upto (cs, j);
+    }
+
+    /* Returns POS + S'size if the values mapped at POS are equal to
+       the values in S.  Raise E_iscan otherwise.  */
+
+    method match = (string s) IScan_Pos:
+    {
+      var cs = stoca (s);
+      return iscan.match (cs);
+    }
+
+    /* Moves POS to position POS+I in the IOS and returns the
+       substring between the original position of POS and its new
+       position, exclusive.  If I is out of bounds, raises E_iscan.
+       */
+
+    method move = (IScan_Pos i) string:
+    {
+      var values = iscan.move (i);
+      var res = "";
+
+      for (v in values)
+        res += v as uint<8> as string;
+      return res;
+    }
+
+    /* Moves POS to position I in the IOS and returns the substring
+       between the original position of POS and its new position.  If
+       I is out of bounds, raises E_iscan. */
+
+    method tab = (IScan_Pos i) string:
+    {
+      var values = iscan.tab (i);
+      var res = "";
+
+      for (v in values)
+        res += v as uint<8> as string;
+      return res;
+    }
+
+    /* Returns the positions in the IOS from POS to J at which the
+       substring S occurs.  */
+
+    method find = (string s,
+                   IScan_Pos j = iosize (iscan.ios)) IScan_Pos[]:
+    {
+      var cs = stoca (s);
+      return iscan.find (cs, j);
+    }
+
+    /* Return the positions in the IOS between POS and J where the
+       stored character is in S1, provided the preceding values are
+       "balanced" with respect to characters in S2 and S3.  If S2 and
+       S3 are not specified they default to "(" and ")" respectively.
+       */
+
+    method bal = (string s1, string s2 = "(", string s3 = ")",
+                  IScan_Pos j = iosize (iscan.ios)) IScan_Pos[]:
+    {
+      var cs1 = stoca (s1);
+      var cs2 = stoca (s2);
+      var cs3 = stoca (s3);
+
+      return iscan.bal (cs1, cs2, cs3, j);
+    }
+  };

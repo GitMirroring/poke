@@ -1,0 +1,237 @@
+/* iscan-test.pk - Tests for the iscan pickle.  */
+
+/* Copyright (C) 2023 Jose E. Marchesi.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+load pktest;
+load iscan;
+
+var tests = [
+  PkTest {
+    name = "load iscan pickle",
+  },
+  PkTest {
+    name = "anyof1",
+    func = lambda (string name) void:
+      {
+        with_temp_ios
+          :do lambda void:
+            {
+              string @ 10#B = "abbaxaba";
+
+              var iscan = IScan_String {};
+              iscan.ios = get_ios;
+              iscan.pos = 10#B;
+              assert (iscan.anyof ("ab") == 11#B);
+            };
+      },
+  },
+  PkTest {
+    name = "anyof2",
+    func = lambda (string name) void:
+      {
+        with_temp_ios
+          :do lambda void:
+            {
+              string @ 10#B = "abbaxaba";
+              var raised = 0;
+
+              var iscan = IScan_String {};
+              iscan.ios = get_ios;
+              iscan.pos = 10#B;
+              try iscan.anyof ("x"); catch if E_iscan { raised = 1; }
+              assert (raised);
+            };
+      },
+  },
+  PkTest {
+    name = "manyof1",
+    func = lambda (string name) void:
+      {
+        with_temp_ios
+          :do lambda void:
+            {
+              string @ 10#B = "abbaxaba";
+
+              var iscan = IScan_String {};
+              iscan.ios = get_ios;
+              iscan.pos = 10#B;
+              assert (iscan.manyof ("ab") == 14#B);
+            };
+      },
+  },
+  PkTest {
+    name = "manyof2",
+    func = lambda (string name) void:
+      {
+        with_temp_ios
+          :do lambda void:
+            {
+              string @ 10#B = "abbaxaba";
+              var raised = 0;
+
+              var iscan = IScan_String {};
+              iscan.ios = get_ios;
+              iscan.pos = 10#B;
+              try iscan.manyof ("x"); catch if E_iscan { raised = 1; }
+              assert (raised);
+            };
+      },
+  },
+  PkTest {
+    name = "bal1",
+    func = lambda (string name) void:
+      {
+        with_temp_ios
+          :do lambda void:
+            {
+              string @ 10#B = "((2*x)+3)+(5*y)";
+
+              var iscan = IScan_String {};
+              iscan.ios = get_ios;
+              iscan.pos = 10#B;
+              assert (iscan.tab (iscan.bal ("+","(",")",30#B)[0]) == "((2*x)+3)");
+            };
+      },
+  },
+  PkTest {
+    name = "upto1",
+    func = lambda (string name) void:
+      {
+        with_temp_ios
+          :do lambda void:
+            {
+              string @ 10#B = "aybaxabz";
+
+              var iscan = IScan_String {};
+              iscan.ios = get_ios;
+              iscan.pos = 10#B;
+              var pos = iscan.upto ("xyz", 17#B);
+              assert (pos'length == 3);
+              assert (pos[0] == 11UL#B && pos[1] == 14UL#B && pos[2] == 17UL#B);
+            };
+      },
+  },
+  PkTest {
+    name = "match1",
+    func = lambda (string name) void:
+      {
+        with_temp_ios
+          :do lambda void:
+            {
+              string @ 10#B = "aybaxabz";
+
+              var iscan = IScan_String {};
+              iscan.ios = get_ios;
+              iscan.pos = 10#B;
+              var pos = iscan.match ("ay");
+              assert (pos == 12#B);
+            };
+      },
+  },
+  PkTest {
+    name = "match2",
+    func = lambda (string name) void:
+      {
+        with_temp_ios
+          :do lambda void:
+            {
+              string @ 10#B = "aybaxabz";
+              var raised = 0;
+
+              var iscan = IScan_String {};
+              iscan.ios = get_ios;
+              iscan.pos = 10#B;
+              try iscan.match ("ab"); catch if E_iscan { raised = 1; }
+              assert (raised);
+            };
+      },
+  },
+  PkTest {
+    name = "move1",
+    func = lambda (string name) void:
+      {
+        with_temp_ios
+          :do lambda void:
+            {
+              string @ 10#B = "aybaxabz";
+
+              var iscan = IScan_String {};
+              iscan.ios = get_ios;
+              iscan.pos = 10#B;
+              var str = iscan.move (3#B);
+              assert (str == "ayb");
+            };
+      },
+  },
+  PkTest {
+    name = "tab1",
+    func = lambda (string name) void:
+      {
+        with_temp_ios
+          :do lambda void:
+            {
+              string @ 10#B = "aybaxabz";
+
+              var iscan = IScan_String {};
+              iscan.ios = get_ios;
+              iscan.pos = 10#B;
+              var str = iscan.tab (13#B);
+              assert (str == "ayb");
+            };
+      },
+  },
+  PkTest {
+    name = "bal2",
+    func = lambda (string name) void:
+      {
+        with_temp_ios
+          :do lambda void:
+            {
+              string @ 10#B = "([a+b)+c]";
+
+              var iscan = IScan_String {};
+              iscan.ios = get_ios;
+              iscan.pos = 10#B;
+              assert (iscan.bal ("+","([","])", 30#B)'length == 0);
+            };
+      },
+  },
+  PkTest {
+    name = "find1",
+    func = lambda (string name) void:
+      {
+        with_temp_ios
+          :do lambda void:
+            {
+              uint<8>[] @ 10#B = stoca ("foo");
+              uint<8>[] @ 20#B = stoca ("foo");
+              uint<8>[] @ 100#B = stoca ("foo");
+
+              var iscan = IScan_String {};
+              iscan.ios = get_ios;
+              iscan.pos = 0#B;
+              var res = iscan.find ("foo", 30#B);
+              assert (res'length == 2);
+              assert (res[0] == 10#B);
+              assert (res[1] == 20#B);
+            };
+      },
+  },
+];
+
+var ok = pktest_run (tests);
+exit (ok ? 0 : 1);
