@@ -1263,6 +1263,7 @@ EXTRA_DIST = \
   poke.pkl/diva-offset-diag-1.pk \
   poke.pkl/eq-any-array-1.pk \
   poke.pkl/eq-any-array-2.pk \
+  poke.pkl/eq-any-array-3.pk \
   poke.pkl/eq-any-integral-1.pk \
   poke.pkl/eq-any-integral-2.pk \
   poke.pkl/eq-any-integral-3.pk \
@@ -1876,6 +1877,7 @@ EXTRA_DIST = \
   poke.pkl/neg-offsets-1.pk \
   poke.pkl/neq-any-array-1.pk \
   poke.pkl/neq-any-array-2.pk \
+  poke.pkl/neq-any-array-3.pk \
   poke.pkl/neq-any-offset-1.pk \
   poke.pkl/neq-any-offset-2.pk \
   poke.pkl/neq-any-offset-3.pk \

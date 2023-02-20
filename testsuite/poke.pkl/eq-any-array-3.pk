@@ -1,0 +1,9 @@
+/* { dg-do run } */
+
+fun foo = (any[] a, any[] b) int<32>: { return a == b; }
+
+/* { dg-command { foo ([1,2],[3,4]) } } */
+/* { dg-output "0" } */
+
+/* { dg-command { foo ([1,2],[1,2]) } } */
+/* { dg-output "\n1" } */

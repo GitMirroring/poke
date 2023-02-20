@@ -1111,6 +1111,19 @@ pkl_asm_insn_cmp (pkl_asm pasm,
       else
         PK_UNREACHABLE ();
     }
+  else if (PKL_AST_TYPE_CODE (type) == PKL_TYPE_ANY)
+    {
+      assert (insn == PKL_INSN_EQ || insn == PKL_INSN_NE);
+
+      pkl_asm_insn (pasm, PKL_INSN_OVER);
+      pkl_asm_insn (pasm, PKL_INSN_OVER);
+      pkl_asm_call (pasm, pkl_get_env (pasm->compiler), "_pkl_eq_any");
+      if (insn == PKL_INSN_NE)
+        {
+          pkl_asm_insn (pasm, PKL_INSN_NOT);
+          pkl_asm_insn (pasm, PKL_INSN_NIP);
+        }
+    }
   else
     PK_UNREACHABLE ();
 }
