@@ -658,7 +658,7 @@ late-header-c
     if ((BASE) == 10)                                                       \
     {                                                                       \
       iformat = SIGNED_P ? PRIi32 : PRIu32;                                 \
-      strcat (fmt, iformat);                                                \
+      pvm_strcat (fmt, iformat);                                            \
     }                                                                       \
     else                                                                    \
     {                                                                       \
@@ -692,8 +692,8 @@ late-header-c
       fmt[2] = '0' + (prec / 10);                                           \
       fmt[3] = '0' + prec - (prec / 10 * 10);                               \
       fmt[4] = '\0';                                                        \
-      strcat (fmt, iformat);                                                \
-      strcat (fmt, basefmt);                                                \
+      pvm_strcat (fmt, iformat);                                            \
+      pvm_strcat (fmt, basefmt);                                            \
     }                                                                       \
                                                                             \
     pk_printf (fmt, (BASE) == 10 ? val : val & mask);                       \
@@ -717,7 +717,7 @@ late-header-c
     if ((BASE) == 10)                                                       \
     {                                                                       \
       iformat = SIGNED_P ? PRIi64 : PRIu64;                                 \
-      strcat (fmt, iformat);                                                \
+      pvm_strcat (fmt, iformat);                                            \
     }                                                                       \
     else                                                                    \
     {                                                                       \
@@ -745,8 +745,8 @@ late-header-c
       fmt[2] = '0' + (prec / 10);                                           \
       fmt[3] = '0' + prec - (prec / 10 * 10);                               \
       fmt[4] = '\0';                                                        \
-      strcat (fmt, iformat);                                                \
-      strcat (fmt, basefmt);                                                \
+      pvm_strcat (fmt, iformat);                                            \
+      pvm_strcat (fmt, basefmt);                                            \
     }                                                                       \
                                                                             \
     pk_printf (fmt, (BASE) == 10 ? val : val & mask);                       \
@@ -773,7 +773,7 @@ late-header-c
     if ((BASE) == 10)                                                       \
     {                                                                       \
       iformat = SIGNED_P ? PRIi32 : PRIu32;                                 \
-      strcat (fmt, iformat);                                                \
+      pvm_strcat (fmt, iformat);                                            \
     }                                                                       \
     else                                                                    \
     {                                                                       \
@@ -809,8 +809,8 @@ late-header-c
       fmt[2] = '0' + (prec / 10);                                           \
       fmt[3] = '0' + prec - (prec / 10 * 10);                               \
       fmt[4] = '\0';                                                        \
-      strcat (fmt, iformat);                                                \
-      strcat (fmt, basefmt);                                                \
+      pvm_strcat (fmt, iformat);                                            \
+      pvm_strcat (fmt, basefmt);                                            \
     }                                                                       \
                                                                             \
     n = pvm_snprintf ((OUT), (OUTLEN), fmt,  (BASE) == 10 ? val : val & mask);  \
@@ -837,7 +837,7 @@ late-header-c
     if ((BASE) == 10)                                                       \
     {                                                                       \
       iformat = SIGNED_P ? PRIi64 : PRIu64;                                 \
-      strcat (fmt, iformat);                                                \
+      pvm_strcat (fmt, iformat);                                            \
     }                                                                       \
     else                                                                    \
     {                                                                       \
@@ -867,8 +867,8 @@ late-header-c
       fmt[2] = '0' + (prec / 10);                                           \
       fmt[3] = '0' + prec - (prec / 10 * 10);                               \
       fmt[4] = '\0';                                                        \
-      strcat (fmt, iformat);                                                \
-      strcat (fmt, basefmt);                                                \
+      pvm_strcat (fmt, iformat);                                            \
+      pvm_strcat (fmt, basefmt);                                            \
     }                                                                       \
                                                                             \
     n = pvm_snprintf ((OUT), (OUTLEN), fmt,  (BASE) == 10 ? val : val & mask);  \
