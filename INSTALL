@@ -44,13 +44,3 @@ Finally:
   $ make
   $ make check
   $ make install
-
-
-Building the GUI
-================
-
-The poke GUI is optional and it is built by default, provided the required
-dependencies (see the file DEPENDENCIES) are found at configure time.
-
-To disable building the GUI, pass the '--disable-gui' option at configure
-time.
