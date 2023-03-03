@@ -3674,14 +3674,13 @@ pixel occupies 3 bytes, so calculating@dots{}
 @example
 (poke) var ppl = byte @@ 3#B
 (poke) var lines = byte @@ 4#B
-(poke) save :from 0#B :size 5#B + ppl#B * lines#B :file "p.sbm"
+(poke) save :from 0#B :size 5#B + ppl#B * lines :file "p.sbm"
 @end example
 
 @noindent
-Note how we expressed ``ppl bytes'' as @code{ppl#B}, and ``lines
-bytes'' as @code{lines#B}.  This is the same than expressing ``10
-bytes'' as @code{10#B}.  We will talk more about these united values
-later.
+Note how we expressed ``ppl bytes'' as @code{ppl#B}.
+This is the same than expressing ``10 bytes'' as @code{10#B}.
+We will talk more about these united values later.
 
 There is another way of getting the size of the stream of pixels.
 Recall that we have the entire set of pixels, structured as lines,

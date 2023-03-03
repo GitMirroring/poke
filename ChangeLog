@@ -1,3 +1,8 @@
+2023-03-03  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* doc/poke.texi (Poking a SBM Image :: Saving the Image): Fix
+	the example.
+
 2023-02-27  Frederic Cambus <fred@statdns.com>
 
 	* INSTALL: Remove section about building the GUI.
