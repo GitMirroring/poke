@@ -1,0 +1,12 @@
+/* { dg-do run } */
+
+/* Poke constructs uint<32>0 values for type `any'.  */
+
+type Foo =
+  struct
+  {
+    ()any f;
+  };
+
+/* { dg-command {Foo{}.f} } */
+/* { dg-output "0" } */
