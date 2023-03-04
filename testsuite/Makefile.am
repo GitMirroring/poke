@@ -1843,6 +1843,7 @@ EXTRA_DIST = \
   poke.pkl/mul-offsets-8.pk \
   poke.pkl/mul-offsets-9.pk \
   poke.pkl/mul-offsets-10.pk \
+  poke.pkl/mul-offsets-11.pk \
   poke.pkl/mul-strings-1.pk \
   poke.pkl/mul-strings-2.pk \
   poke.pkl/mul-strings-3.pk \

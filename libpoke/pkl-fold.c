@@ -515,7 +515,6 @@ EMUL_UU (bnoto) { return ~op; }
           pkl_ast_node op_unit = PKL_AST_OFFSET_UNIT (off_op);          \
           pkl_ast_node magnitude;                                       \
           uint64_t result;                                              \
-          uint64_t op_magnitude_bits;                                   \
                                                                         \
           if (PKL_AST_CODE (off_op) != PKL_AST_OFFSET                   \
               || PKL_AST_CODE (int_op) != PKL_AST_INTEGER               \
@@ -524,19 +523,31 @@ EMUL_UU (bnoto) { return ~op; }
             /* We cannot fold this expression.  */                      \
             PKL_PASS_DONE;                                              \
                                                                         \
-          op_magnitude_bits = (PKL_AST_INTEGER_VALUE (op_magnitude)     \
-                               * PKL_AST_INTEGER_VALUE (op_unit));      \
+          if (PKL_AST_INTEGER_VALUE (type_unit) > 1)                    \
+            {                                                           \
+              uint64_t op_magnitude_bits = (PKL_AST_INTEGER_VALUE (op_magnitude) \
+                                            * PKL_AST_INTEGER_VALUE (op_unit)); \
                                                                         \
-          if (PKL_AST_TYPE_I_SIGNED_P (op_type))                        \
-            result = emul_s_##OP (op_magnitude_bits,                    \
-                                  PKL_AST_INTEGER_VALUE (int_op));      \
+                                                                        \
+              if (PKL_AST_TYPE_I_SIGNED_P (op_type))                    \
+                result = emul_s_##OP (op_magnitude_bits,                \
+                                      PKL_AST_INTEGER_VALUE (int_op));  \
+              else                                                      \
+                result = emul_u_##OP (op_magnitude_bits,                \
+                                      PKL_AST_INTEGER_VALUE (int_op));  \
+                                                                        \
+              /* Convert bits to the result unit.  */                   \
+              result = result / PKL_AST_INTEGER_VALUE (type_unit);      \
+            }                                                           \
           else                                                          \
-            result = emul_u_##OP (op_magnitude_bits,                    \
-                                  PKL_AST_INTEGER_VALUE (int_op));      \
-                                                                        \
-          /* Convert bits to the result unit.  */                       \
-          assert (PKL_AST_INTEGER_VALUE (type_unit) != 0);              \
-          result = result / PKL_AST_INTEGER_VALUE (type_unit);          \
+            {                                                           \
+              if (PKL_AST_TYPE_I_SIGNED_P (op_type))                    \
+                result = emul_s_##OP (PKL_AST_INTEGER_VALUE (op_magnitude), \
+                                      PKL_AST_INTEGER_VALUE (int_op));  \
+              else                                                      \
+                result = emul_u_##OP (PKL_AST_INTEGER_VALUE (op_magnitude), \
+                                      PKL_AST_INTEGER_VALUE (int_op));  \
+            }                                                           \
                                                                         \
           magnitude = pkl_ast_make_integer (PKL_PASS_AST, result);      \
           PKL_AST_TYPE (magnitude) = ASTREF (type_base_type);           \

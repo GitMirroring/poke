@@ -1,0 +1,11 @@
+/* { dg-do run } */
+
+type Foo = struct {};
+var x = 2;
+
+/* { dg-command {  x * 12#Foo } } */
+/* { dg-output "24#0" } */
+
+/* For constant folding: */
+/* { dg-command {  2 * 12#Foo } } */
+/* { dg-output "\n24#0" } */
