@@ -2433,16 +2433,18 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_cast)
   else if (PKL_AST_TYPE_CODE (from_type) == PKL_TYPE_ARRAY
            && PKL_AST_TYPE_CODE (to_type) == PKL_TYPE_INTEGRAL)
     {
+      pkl_ast_node u64t = pkl_ast_make_integral_type (PKL_PASS_AST, 64, 0);
+
       PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_INTEGRATOR);
       PKL_PASS_SUBPASS (from_type);
       PKL_GEN_POP_CONTEXT;
 
                                           /* IVAL(ULONG) WIDTH(UINT) */
       pkl_asm_insn (pasm, PKL_INSN_DROP); /* IVAL(ULONG) */
-      pkl_asm_insn (pasm, PKL_INSN_NTON,
-                    pkl_ast_make_integral_type (PKL_PASS_AST, 64, 0),
-                    to_type);             /* IVAL(ULONG) IVAL */
+      pkl_asm_insn (pasm, PKL_INSN_NTON, u64t, to_type);
+                                          /* IVAL(ULONG) IVAL */
       pkl_asm_insn (pasm, PKL_INSN_NIP);  /* IVAL */
+      u64t = ASTREF (u64t); pkl_ast_node_free (u64t);
     }
   else if (PKL_AST_TYPE_CODE (to_type) == PKL_TYPE_ANY)
     /* Do nothing in casts to `any'.  */;
