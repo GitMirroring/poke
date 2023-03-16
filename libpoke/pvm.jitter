@@ -2513,7 +2513,7 @@ end
 #
 # Stack: ( -- VAL )
 
-instruction push32 (?nl pvm_literal_printer, ?nl pvm_literal_printer)
+instruction push32 (?nl pvm_literal_printer_hi, ?nl pvm_literal_printer_lo)
   code
     pvm_val k = ((pvm_val) JITTER_ARGN0 << 32) | JITTER_ARGN1;
     JITTER_PUSH_STACK (k);
