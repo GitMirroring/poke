@@ -2506,53 +2506,16 @@ instruction revn (?n 3 4 popf_printer)
   end
 end
 
-# Instruction: pushhi VAL
+# Instruction: push32 HI LO
 #
-# Push the high 32 bits of the value passed as an argument to the main
-# stack.  This instruction shall be completed with a `pushlo'.
-#
-# This instruction is a workaround to a limitation of Jitter.
-#
-# Stack: ( -- HI32(VAL) )
-
-instruction pushhi (?nl pvm_literal_printer_hi)
-  code
-     PVM_STATE_RUNTIME_FIELD (push_hi)
-       = JITTER_ARGN0;
-  end
-end
-
-# Instruction: pushlo VAL
-#
-# Push the low 32 bits of the value passed as an argument to the main
-# stack.  This instruction shall be preceded by a `pushhi'.
-#
-# This instruction is a workaround to a limitation of Jitter.
-#
-# Stack: ( -- LO32(VAL) )
-
-instruction pushlo (?nl pvm_literal_printer_lo)
-  code
-     pvm_val k
-       = ((pvm_val) PVM_STATE_RUNTIME_FIELD (push_hi) << 32)
-         | JITTER_ARGN0;
-     JITTER_PUSH_STACK (k);
-  end
-end
-
-# Instruction: push32 VAL
-#
-# Push the value passed as an argument on the stack.  This assumes
-# that the internal representation of VAL doesn't require more than
-# 32-bit.
-#
+# Push the value passed as two arguments on the stack.
 # This instruction is a workaround to a limitation of Jitter.
 #
 # Stack: ( -- VAL )
 
-instruction push32 (?nl pvm_literal_printer)
+instruction push32 (?nl pvm_literal_printer, ?nl pvm_literal_printer)
   code
-    pvm_val k = JITTER_ARGN0;
+    pvm_val k = ((pvm_val) JITTER_ARGN0 << 32) | JITTER_ARGN1;
     JITTER_PUSH_STACK (k);
   end
 end

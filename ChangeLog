@@ -1,3 +1,15 @@
+2023-03-16  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pvm.jitter (pushlo): Remove.
+	(pushhi): Likewise.
+	(push32): Changed to accept two arguments.
+	* libpoke/pvm-program.c (pvm_program_append_push_instruction):
+	Adapt accordingly.
+
+2023-03-16  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* etc/poke.rec (Support #foo within string literals): New bug.
+
 2023-03-05  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-gen.c (pkl_gen_pr_cast): Fix memory leak.

@@ -166,19 +166,17 @@ pvm_program_append_push_instruction (pvm_program program,
 
   if (val & ~0xffffffffLL)
     {
-      PVM_ROUTINE_APPEND_INSTRUCTION (routine, pushhi);
+      PVM_ROUTINE_APPEND_INSTRUCTION (routine, push32);
       pvm_routine_append_unsigned_literal_parameter (routine,
                                                      ((jitter_uint)
                                                       (val >> 32)));
-
-      PVM_ROUTINE_APPEND_INSTRUCTION (routine, pushlo);
       pvm_routine_append_unsigned_literal_parameter (routine,
                                                      ((jitter_uint)
                                                       (val & 0xffffffff)));
     }
   else
     {
-      PVM_ROUTINE_APPEND_INSTRUCTION (routine, push32);
+      PVM_ROUTINE_APPEND_INSTRUCTION (routine, push);
       pvm_routine_append_unsigned_literal_parameter (routine,
                                                      ((jitter_uint)
                                                       (val & 0xffffffff)));
