@@ -501,6 +501,43 @@ var tests = [
         assert (pk_version_parse (s).to_string == s);
       },
   },
+  PkTest {
+    name = "string to floating-point conversion",
+    func = lambda (string name) void:
+      {
+        var pi1 = stof ("3.14159265359"),
+            pi2 = stod ("3.14159265359"),
+            pi3 = stof ("+3.1415"),
+            pi4 = stod ("+3.1415");
+
+        assert (pi1 isa uint<32>);
+        assert (pi1 == 0x40490fdbU);
+
+        assert (pi2 isa uint<64>);
+        assert (pi2 == 0x400921fb54442eeaUL);
+
+        assert (pi3 isa uint<32>);
+        assert (pi3 == 0x40490e56U);
+
+        assert (pi4 isa uint<64>);
+        assert (pi4 == 0x400921cac083126fUL);
+
+        /* Valid conversions.  */
+        assert (!(stof ("") ?! E_conv));
+        assert (!(stof (" 3") ?! E_conv));
+        assert (!(stod ("") ?! E_conv));
+        assert (!(stod (" 3") ?! E_conv));
+        assert (!(stod ("+1e9") ?! E_conv));
+
+        /* Invalid conversions.  */
+        assert (stof (" ") ?! E_conv);
+        assert (stof ("3 ") ?! E_conv);
+        assert (stof ("+ 3") ?! E_conv);
+        assert (stod (" ") ?! E_conv);
+        assert (stod ("3 ") ?! E_conv);
+        assert (stod ("+ 3") ?! E_conv);
+      }
+  },
 ];
 
 exit (pktest_run (tests) ? 0 : 1);

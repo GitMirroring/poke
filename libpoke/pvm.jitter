@@ -148,6 +148,8 @@ wrapped-functions
   pvm_strcat
   pvm_nanosleep
   pvm_snprintf
+  pvm_stof
+  pvm_stod
 end
 
 wrapped-globals
@@ -2277,6 +2279,59 @@ instruction formatf64 (?n 0 1 2)
     PVM_FORMATF (result, num, precision, style, double);
     JITTER_TOP_STACK () = pvm_make_string (result);
     pvm_free (result);
+  end
+end
+
+
+## Floating-point conversion instructions
+
+# Instruction: stof
+#
+# Given a string containing only a floating-point number, push the
+# corresponding 32-bit floating-point number to the stack,
+# represented as a UINT.  On conversion failure, push NULL.
+#
+# Note that leading (not trailing) whitespaces will be ignored.
+#
+# Stack: ( STR -- UINT )
+
+instruction stof ()
+  code
+    union
+    {
+      float f32;
+      uint32_t u32;
+    } u;
+
+    if (pvm_stof (PVM_VAL_STR (JITTER_TOP_STACK()), &u.f32) == 0)
+      JITTER_TOP_STACK () = PVM_MAKE_UINT (u.u32, 32);
+    else
+      JITTER_TOP_STACK () = PVM_NULL;
+  end
+end
+
+# Instruction: stod
+#
+# Given a string containing only a floating-point number, push the
+# corresponding 64-bit floating-point number to the stack,
+# represented as a ULONG.  On conversion failure, push NULL.
+#
+# Note that leading (not trailing) whitespaces will be ignored.
+#
+# Stack: ( STR -- ULONG )
+
+instruction stod ()
+  code
+    union
+    {
+      double f64;
+      uint64_t u64;
+    } u;
+
+    if (pvm_stod (PVM_VAL_STR (JITTER_TOP_STACK()), &u.f64) == 0)
+      JITTER_TOP_STACK () = PVM_MAKE_ULONG (u.u64, 64);
+    else
+      JITTER_TOP_STACK () = PVM_NULL;
   end
 end
 

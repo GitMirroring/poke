@@ -105,6 +105,9 @@ PKL_DEF_INSN(PKL_INSN_LUTOIU,"n","lutoiu")
 PKL_DEF_INSN(PKL_INSN_LUTOL,"n","lutol")
 PKL_DEF_INSN(PKL_INSN_LUTOLU,"n","lutolu")
 
+PKL_DEF_INSN(PKL_INSN_STOF,"","stof")
+PKL_DEF_INSN(PKL_INSN_STOD,"","stod")
+
 /* Integer overflow checking instructions.  */
 
 PKL_DEF_INSN(PKL_INSN_ADDIOF,"","addiof")

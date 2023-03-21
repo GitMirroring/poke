@@ -15565,6 +15565,8 @@ useful conversions.
 * strtoi::		convert numeric prefix to integer.
 * atoi::		converting strings to integers.
 * ltos::		converting integers to strings.
+* stof::                converting strings to 32-bit floating-points.
+* stod::                converting strings to 64-bit floating-points.
 @end menu
 
 @node catos
@@ -15702,6 +15704,30 @@ fun ltos = (long @var{i}, uint @var{base} = 10) string:
 @noindent
 where @var{i} is the number for which to calculate the printed
 representation, and @var{base} is a number between 0 and 16.
+
+@node stof
+@subsection @code{stof}
+@cindex @code{stof}
+
+The @code{stof} standard function converts a given string into
+a 32-bit floating-point number represented as a @code{uint<32>}
+integer.  It has the following prototype:
+
+@example
+fun stof = (string s) uint<32>:
+@end example
+
+@node stod
+@subsection @code{stod}
+@cindex @code{stod}
+
+The @code{stod} standard function converts a given string into
+a 64-bit floating-point number represented as a @code{uint<64>}
+integer.  It has the following prototype:
+
+@example
+fun stod = (string s) uint<64>:
+@end example
 
 @node Array Functions
 @section Array Functions

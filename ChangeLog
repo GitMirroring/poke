@@ -1,3 +1,24 @@
+2023-03-23  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* common/pk-utils.h (pvm_stof): New declaration.
+	(pvm_stod): Likewise.
+	* common/pk-utils.c (pvm_stof): Definition of string to `float'
+	conversion function.
+	(pvm_stod): Definition of string to `double' conversion function.
+	* libpoke/pkl-insn.def (PKL_INSN_STOF): New instruction.
+	(PKL_INSN_STOD): Likewise.
+	* libpoke/pvm.jitter (wrapped-functions): Add `pvm_stof' and
+	`pvm_stod'.
+	(stof): New instruction to convert string to float32 number
+	represented as a `uint<32>'.
+	(stod): New instruction to convert string to float64 number
+	represented as a `uint<64>'.
+	* libpoke/std.pk (stof): New function to wrap `stof' instruction.
+	(stod): Likewise.
+	* testsuite/poke.pvm/pvm-insns-test.pk (tests): Add entries for
+	`stof' and `stod'.
+	* testsuite/poke.std/std-test.pk (tests): Likewise.
+
 2023-03-16  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pvm.jitter (push32): Fix printers.

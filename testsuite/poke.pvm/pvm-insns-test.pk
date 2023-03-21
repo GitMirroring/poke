@@ -321,6 +321,51 @@ var tests = [
         assert (u35 isa uint<35> && u35 == 3LU);
       }
   },
+  /* Floating-point instructions.  */
+  PkTest {
+    name = "stof",
+    func = lambda (string name) void:
+      {
+        var pi1 = asm any: ("stof" : "3.14159265359");
+
+        assert (pi1 isa uint<32>);
+        assert (pi1 as uint<32> == 0x40490fdbU);
+
+        /* Non-OK cases.  */
+        assert (asm int<32>: ("stof; nnn; nip" : "  "));
+        assert (asm int<32>: ("stof; nnn; nip" : "+"));
+        assert (asm int<32>: ("stof; nnn; nip" : "  +"));
+        assert (asm int<32>: ("stof; nnn; nip" : "  +1 "));
+        assert (asm int<32>: ("stof; nnn; nip" : "a"));
+
+        /* OK cases.  */
+        assert (asm int<32>: ("stof; nn; nip" : "  +1"));
+        assert (asm int<32>: ("stof; nn; nip" : ""));
+        assert (asm int<32>: ("stof; nn; nip" : "-1E9"));
+      }
+  },
+  PkTest {
+    name = "stod",
+    func = lambda (string name) void:
+      {
+        var pi1 = asm any: ("stod" : "3.14159265359");
+
+        assert (pi1 isa uint<64>);
+        assert (pi1 as uint<64> == 0x400921fb54442eeaUL);
+
+        /* Non-OK cases.  */
+        assert (asm int<32>: ("stod; nnn; nip" : "  "));
+        assert (asm int<32>: ("stod; nnn; nip" : "+"));
+        assert (asm int<32>: ("stod; nnn; nip" : "  +"));
+        assert (asm int<32>: ("stod; nnn; nip" : "  +1 "));
+        assert (asm int<32>: ("stod; nnn; nip" : "a"));
+
+        /* OK cases.  */
+        assert (asm int<32>: ("stod; nn; nip" : "  +1"));
+        assert (asm int<32>: ("stod; nn; nip" : ""));
+        assert (asm int<32>: ("stod; nn; nip" : "-1E9"));
+      }
+  },
 ];
 
 var ok = pktest_run (tests);

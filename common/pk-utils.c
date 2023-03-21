@@ -223,6 +223,30 @@ pk_str_trim (char **str)
   *(end + 1) = '\0';
 }
 
+int pvm_stof (const char *str, float *f)
+{
+  char *end;
+
+  assert (str);
+  assert (f);
+  errno = 0;
+  *f = strtof (str, &end);
+  /* No ERANGE and it should consume the whole string.  */
+  return errno != 0 || *end != '\0';
+}
+
+int pvm_stod (const char *str, double *d)
+{
+  char *end;
+
+  assert (str);
+  assert (d);
+  errno = 0;
+  *d = strtod (str, &end);
+  /* No ERANGE and it should consume the whole string.  */
+  return errno != 0 || *end != '\0';
+}
+
 void
 pk_unreachable (const char *funcname, const char *filename, int line)
 {

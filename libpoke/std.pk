@@ -861,3 +861,37 @@ fun pk_vercmp = (any _a, any _b) int<32>:
   diff = cmp (a.offset, b.offset);
   return diff;
 }
+
+/* String conversion to 32-bit floating-point number represented
+   as `uint<32>'.  */
+
+fun stof = (string s) uint<32>:
+{
+  var f = asm any: ("stof" : s);
+
+  if (asm int<32>: ("nn; nip" : f))
+    return f as uint<32>;
+  raise Exception {
+    code = EC_conv,
+    name = "conversion error",
+    msg = format ("string '%s' is not a valid floating-point number", s),
+    exit_status = 1,
+  };
+}
+
+/* String conversion to 64-bit floating-point number represented
+   as `uint<64>'.  */
+
+fun stod = (string s) uint<64>:
+{
+  var d = asm any: ("stod" : s);
+
+  if (asm int<32>: ("nn; nip" : d))
+    return d as uint<64>;
+  raise Exception {
+    code = EC_conv,
+    name = "conversion error",
+    msg = format ("string '%s' is not a valid floating-point number", s),
+    exit_status = 1,
+  };
+}
