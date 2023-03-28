@@ -10146,7 +10146,15 @@ Examples:
 @item mapped
 Always 0 for offsets.  (@pxref{Mapping}).
 @item length
-Always @code{1UL} for integers.
+Always @code{1UL} for offsets.
+@item ref ([IOS])
+If the value is a referring offset, then the application of the
+@code{'ref} attribute implies the mapping of the referred value.
+
+The attribute gets an optional argument which is the IO space to use
+when mapping the referred value.  If this argument is not provided
+then the current IO space is assumed.  The application of this
+attribute may result in a @code{E_no_ios} exception.
 @end table
 
 

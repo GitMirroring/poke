@@ -1,0 +1,3 @@
+/* { dg-do compile } */
+
+var a = (23#B as offset<int<32>,B,string>)'ref ("foo", 2); /* { dg-error "unexpected" } */

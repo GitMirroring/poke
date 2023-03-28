@@ -4632,6 +4632,13 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_op_attr)
     case PKL_AST_ATTR_STRICT:
       RAS_MACRO_ATTR_STRICT (operand_type);
       break;
+    case PKL_AST_ATTR_REF:
+      assert (PKL_AST_TYPE_CODE (operand_type) == PKL_TYPE_OFFSET
+              && PKL_AST_TYPE_O_REF_TYPE (operand_type) != NULL);
+      if (PKL_AST_EXP_NUMOPS (exp) == 1)
+        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL);
+      RAS_MACRO_ATTR_REF (exp);
+      break;
     case PKL_AST_ATTR_ELEM:
       RAS_MACRO_ATTR_ELEM;
       break;

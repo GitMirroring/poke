@@ -1,0 +1,6 @@
+/* { dg-do compile } */
+
+type Pointer = offset<int<32>,B,string>;
+
+var a =
+  (2#B as Pointer + 3#B as Pointer)'ref; /* { dg-error "" } */

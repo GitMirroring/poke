@@ -365,3 +365,60 @@
 .done:
         nip                     ; ELEM
         .end
+
+;;; RAS_MACRO_ATTR_REF @exp @referred_type
+;;; ( OFF (IOS|null) -- VAL )
+;;;
+;;; Given a referring offset and an IO space identifier on the stack, map
+;;; the value referred by the offset at the given IO space.  The IO space
+;;; may be null, and in that case the IO space to use is the current one.
+;;;
+;;; Macro-arguments:
+;;; @exp
+;;;   AST node with the expression node for the attribute.  The first
+;;;   operand in the expression is the referring offset.  The second
+;;;   operand in the expression may be absent or be an int<32> with
+;;;   the IO space to use.
+
+        .macro attr_ref @exp
+        ;; XXX for the moment, we support only strict mapping here.
+        push int<32>1           ; OFF IOS|null STRICT_P
+        nrot                    ; STRICT_P OFF IOS|null
+        ;; This attribute gets an optional argument which is an int<32>
+        ;; IO space identifier.  If the argument is not provided then it
+        ;; defaults to the current IO space.  If there is no current IO
+        ;; space, E_no_ios is raised.
+    .c if (PKL_AST_EXP_NUMOPS (exp) < 2)
+    .c {
+        drop                    ; STRICT_P OFF
+        pushios                 ; STRICT_P OFF IOS
+        push int<32>0           ; STRICT_P OFF IOS 0
+        lti                     ; STRICT_P OFF IOS 0 (IOS<0)
+        nip                     ; STRICT_P OFF IOS (IOS<0)
+        bzi .got_ios
+        push PVM_E_NO_IOS
+        push "msg"
+        push "evaluating a 'ref attribute"
+        sset
+        raise
+.got_ios:
+        drop                    ; STRICT_P OFF IOS
+    .c }
+        swap                    ; STRICT_P IOS OFF
+        ;; We need a bit-offset.
+        .let @u64t = pkl_ast_make_integral_type (PKL_PASS_AST, 64, 0)
+        .let @offset_type = PKL_AST_TYPE (PKL_AST_EXP_OPERAND (exp, 0))
+        .let @magnitude_type = PKL_AST_TYPE_O_BASE_TYPE (@offset_type)
+        ogetm                   ; ... OFF MAGNITUDE
+        nton @magnitude_type, @u64t
+        nip                     ; ... OFF NMAGNITUDE
+        swap                    ; ... NMAGNITUDE OFF
+        ogetu
+        nip                     ; ... NMAGNITUDE UNIT
+        mullu
+        nip2                    ; STRICT_P IOS (NMAGNITUDE*UNIT)
+        ;; Map the referred value.
+    .c  PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_MAPPER);
+    .c  PKL_PASS_SUBPASS (PKL_AST_TYPE (@exp));
+    .c  PKL_GEN_POP_CONTEXT;
+        .end

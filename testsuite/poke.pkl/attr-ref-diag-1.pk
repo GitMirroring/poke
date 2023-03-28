@@ -1,0 +1,3 @@
+/* { dg-do compile } */
+
+var a = 23#B'ref; /* { dg-error "not defined" } */

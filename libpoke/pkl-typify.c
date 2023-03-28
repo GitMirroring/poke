@@ -2662,6 +2662,42 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_attr)
       exp_type = pkl_ast_make_integral_type (PKL_PASS_AST, 32, 1);
       PKL_AST_TYPE (exp) = ASTREF (exp_type);
       break;
+    case PKL_AST_ATTR_REF:
+      /* 'ref is defined for offset values whose type has a
+         referred type.  */
+      if (PKL_AST_TYPE_CODE (operand_type) != PKL_TYPE_OFFSET
+          || PKL_AST_TYPE_O_REF_TYPE (operand_type) == NULL)
+        goto invalid_attribute;
+      /* If 'ref is binary then it requires an integral argument
+         encoding an IO space.  */
+      if (PKL_AST_EXP_NUMOPS (exp) == 2)
+      {
+        pkl_ast_node argument = PKL_AST_EXP_OPERAND (exp, 1);
+        pkl_ast_node argument_type = PKL_AST_TYPE (argument);
+
+        /* Integral structs shall be considered as integers in this
+           context.  */
+        if (PKL_AST_TYPE_CODE (argument_type) == PKL_TYPE_STRUCT
+            && PKL_AST_TYPE_S_ITYPE (argument_type))
+          argument_type = PKL_AST_TYPE_S_ITYPE (argument_type);
+
+        if (PKL_AST_TYPE_CODE (argument_type) != PKL_TYPE_INTEGRAL)
+          {
+            char *argument_type_str = pkl_type_str (argument_type, 1);
+
+            PKL_ERROR (PKL_AST_LOC (argument),
+                       "invalid argument to attribute\n"
+                       "expected integral, got %s",
+                       argument_type_str);
+            free (argument_type_str);
+            PKL_TYPIFY_PAYLOAD->errors++;
+            PKL_PASS_ERROR;
+          }
+      }
+      /* The type of 'ref is the referred type of the offset.  */
+      exp_type = PKL_AST_TYPE_O_REF_TYPE (operand_type);
+      PKL_AST_TYPE (exp) = ASTREF (exp_type);
+      break;
     case PKL_AST_ATTR_IOS:
       /* The type of 'mapped is an IOS descriptor, int<32>  */
       exp_type = pkl_ast_make_integral_type (PKL_PASS_AST, 32, 1);

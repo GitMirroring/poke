@@ -726,6 +726,15 @@ PKL_PHASE_BEGIN_HANDLER (pkl_anal1_ps_op_attr)
           PKL_PASS_ERROR;
         }
       break;
+    case PKL_AST_ATTR_REF:
+      if (PKL_AST_EXP_NUMOPS (exp) > 2)
+        {
+          PKL_ERROR (PKL_AST_LOC (exp),
+                     "too many arguments passed to attribute");
+          PKL_ANAL_PAYLOAD->errors++;
+          PKL_PASS_ERROR;
+        }
+      break;
     default:
       if (PKL_AST_EXP_NUMOPS (exp) != 1)
         {

@@ -968,6 +968,15 @@ EXTRA_DIST = \
   poke.pkl/attr-offset-diag-2.pk \
   poke.pkl/attr-offset-diag-3.pk \
   poke.pkl/attr-offset-diag-4.pk \
+  poke.pkl/attr-ref-1.pk \
+  poke.pkl/attr-ref-2.pk \
+  poke.pkl/attr-ref-3.pk \
+  poke.pkl/attr-ref-4.pk \
+  poke.pkl/attr-ref-5.pk \
+  poke.pkl/attr-ref-diag-1.pk \
+  poke.pkl/attr-ref-diag-2.pk \
+  poke.pkl/attr-ref-diag-3.pk \
+  poke.pkl/attr-ref-diag-4.pk \
   poke.pkl/attr-signed-1.pk \
   poke.pkl/attr-signed-2.pk \
   poke.pkl/attr-size-1.pk \

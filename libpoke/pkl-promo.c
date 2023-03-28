@@ -1603,11 +1603,29 @@ PKL_PHASE_BEGIN_HANDLER (pkl_promo_ps_op_attr)
 
   switch (attr)
     {
+    case PKL_AST_ATTR_REF:
+      /* The argument of the attribute, if any, must be promoted to a
+         signed 32-bit integer.  */
+      if (PKL_AST_EXP_NUMOPS (exp) < 2)
+        break;
+
+      if (!promote_integral (PKL_PASS_AST,
+                             32, 1,
+                             &PKL_AST_EXP_OPERAND (exp, 1),
+                             &restart))
+        {
+          PKL_ICE (PKL_AST_LOC (exp),
+                   "couldn't promote argument of attribute expression #%" PRIu64,
+                   PKL_AST_UID (exp));
+          PKL_PASS_ERROR;
+        }
+
+      PKL_PASS_RESTART = restart;
+      break;
     case PKL_AST_ATTR_ELEM:
     case PKL_AST_ATTR_EOFFSET:
     case PKL_AST_ATTR_ESIZE:
     case PKL_AST_ATTR_ENAME:
-
       /* The argument of the attribute must be promoted to an unsigned
          64-bit integer.  */
       if (!promote_integral (PKL_PASS_AST,
@@ -1616,7 +1634,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_promo_ps_op_attr)
                              &restart))
         {
           PKL_ICE (PKL_AST_LOC (exp),
-                   "couldn't pormote argument of attribute expression #%" PRIu64,
+                   "couldn't promote argument of attribute expression #%" PRIu64,
                    PKL_AST_UID (exp));
           PKL_PASS_ERROR;
         }
