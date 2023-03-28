@@ -87,8 +87,6 @@
 # task.
 %type: Requires line
 %type: SeeAlso line
-# Priorities go from 1 (least priority) to 5 (most priority).
-%type: Priority range 1 5
 %type: Assignee rec Hacker
 # A task that fixes a bug should refer to the corresponding bug in the
 # sourceware bugzilla.
@@ -98,12 +96,11 @@
 %type: Target rec Release
 # Whether this task requires discussion in the mailing list.
 %type: RFC bool
-%summary: Kind,Component,Priority,Summary
+%summary: Kind,Component,Summary
 
 Summary: Array deintegrators
 Component: PVM
 Component: Compiler
-Priority: 5
 Kind: ENH
 Description:
 + Integrators are already done.  Deintegrators are pending.
@@ -126,7 +123,6 @@ Description:
 
 Summary: Avoid mid-instruction PVM_RAISE
 Component: PVM
-Priority: 5
 Kind: OPT
 Description: Generate better code, branching to raise instructions
 + instead of using complex instructions containing PVM_RAISE inside.
@@ -164,7 +160,6 @@ Description: Generate better code, branching to raise instructions
 Summary: STRING ~ REGEXP operator
 Component: Language
 Kind: ENH
-Priority: 2
 Description:
 + How to express regular expressions?  Using strings for them is
 + cumbersome because of the escaping of special characters.
@@ -181,7 +176,6 @@ Description:
 Summary: struct patterns and matching operators
 Component: Language
 Kind: ENH
-Priority: 2
 Description:
 +    Foo {{ a == 2 }}
 +
@@ -268,7 +262,6 @@ Description:
 Summary: struct/union flattening
 Component: Language
 Kind: ENH
-Priority: 3
 Description:
 + Can happen both at compile and run-time.
 +
@@ -282,7 +275,6 @@ Description:
 Summary: Size attribute in struct types
 Component: Language
 Kind: ENH
-Priority: 3
 Description:
 + Also size (which is also an implicit constraint):
 + type Bar = struct { byte hdr_sz; byte[hdr_sz] hdr; byte sz; byte[sz] data; } size (128#B)
@@ -290,7 +282,6 @@ Description:
 Summary: Alignment attribute in struct types
 Component: Language
 Kind: ENH
-Priority: 3
 Description:
 + In order for searching to be more efficient, alignment constraints
 + should be used whenever possible.  For both the struct itself, and
@@ -318,7 +309,6 @@ Description:
 Summary: Named annotations in struct types
 Component: Language
 Kind: ENH
-Priority: 2
 Description:
 +   int foo : foo > 10;      /* Error constraint.  */
 +   int foo :fail foo > 10; /* Equivalent to the above.  */
@@ -337,7 +327,6 @@ Description:
 Summary: Operator to upunit an offset
 Component: Language
 Kind: ENH
-Priority: 3
 Description:
 + ^1024#B -> 1#Kb
 + or
@@ -347,7 +336,6 @@ Description:
 Summary: Support recursive definitions
 Component: Language
 Kind: ENH
-Priority: 2
 Description:
 + This is to support recursive definitions, like it happens in the BSON
 + format:
@@ -376,7 +364,6 @@ Description:
 Summary: Implement {beginning,end}-of-defun-function functions in poke-mode
 Component: Emacs
 Kind: ENH
-Priority: 2
 Description:
 + Having functions in poke-mode capable of locating the beginning and
 + end of functions and methods will allow us to navigate thru them, and
@@ -385,13 +372,11 @@ Description:
 Summary: Implement add-log-current-defun-function in poke-mode
 Component: Emacs
 Kind: ENH
-Priority: 2
 Requires: Implement {beginning,end}-of-defun-function functions in poke-mode
 
 Summary: Support for offline method definitions
 Component: Language
 Kind: ENH
-Priority: 2
 Description:
 + type Foo =
 +  struct
@@ -409,7 +394,6 @@ Description:
 Summary: struct _equal methods
 Component: Language
 Kind: ENH
-Priority: 2
 Description:
 + The default equal compares all fields, but the user may want to use a
 + different notion of equality.
@@ -434,7 +418,6 @@ Requires: Support for offline method definitions
 Summary: Support a pipe IOS
 Component: Language
 Kind: ENH
-Priority: 3
 Description:
 + Something like:
 +
@@ -455,7 +438,6 @@ RFC: yes
 Summary: Make endianness a type quality
 Component: Language
 Kind: ENH
-Priority: 2
 Description:
 + To: Bruno Haible <bruno@clisp.org>
 + Cc: poke-devel@gnu.org
@@ -528,7 +510,6 @@ RFC: yes
 Summary: Support for sets (enums and bitmasks)
 Component: Language
 Kind: ENH
-Priority: 2
 Description:
 + set NAME = enum { ... };
 + set NAME = bitmask { ... };
@@ -544,7 +525,6 @@ RFC: yes
 Summary: Variable-length integers
 Component: Language
 Kind: ENH
-Priority: 2
 Description:
 + - Similar syntax than fixed-width integers:
 +   int<EXP>, uint<EXP>, where EXP are non constant expressions.
@@ -556,7 +536,6 @@ RFC: yes
 Summary: Support for big numbers
 Component: Language
 Kind: ENH
-Priority: 2
 Description: Currently the PVM supports the following kind of integer values:
 +
 +    Integers up to 32-bit, signed and unsigned
@@ -581,7 +560,6 @@ RFC: yes
 Summary: Alien tokens for IO space names: $<path/to/file>
 Component: CLI
 Kind: ENH
-Priority: 3
 Description:
 + Currently the only way to refer to IO space is by either ID (a number)
 + or via a variable where the number is stored.  However, referring to
@@ -598,7 +576,6 @@ RFC: yes
 Summary: Support arguments in type constructors
 Component: Language
 Kind: ENH
-Priority: 2
 Description:
 + struct Packet (t1 f1, ..., tn fn) { ... }
 +
@@ -615,7 +592,6 @@ RFC: yes
 Summary: Add error recovery support to the compiler
 Component: Compiler
 Kind: ENH
-Priority: 2
 Description:
 + - Ability to emit more than one error message.
 + - Passes and phases can replace trees with ERROR_MARK nodes in the
@@ -628,43 +604,35 @@ Description:
 Summary: Constant-fold array trims
 Component: Compiler
 Kind: OPT
-Priority: 3
 
 Summary: Constant-fold array casts
 Component: Compiler
 Kind: OPT
-Priority: 3
 
 Summary: Constant-fold `isa' expressions
 Component: Compiler
 Kind: OPT
-Priority: 3
 
 Summary: Constant-fold array concatenation
 Component: Compiler
 Kind: OPT
-Priority: 4
 
 Summary: Constant-fold struct references
 Component: Compiler
 Kind: OPT
-Priority: 2
 
 Summary: Constant-fold struct integrations
 Component: Compiler
 Kind: OPT
-Priority: 3
 
 Summary: Constant-fold operations with integral structs
 Component: Compiler
 Kind: OPT
-Priority: 3
 Description: such as +, -, etc
 
 Summary: Avoid subpasses by introducing additional AST nodes
 Component: Compiler
 Kind: ENH
-Priority: 3
 Description:
 + The presence of a subpass in a compiler phase handler sometimes
 + indicates a problem in the design of the AST.  These subpasses can be
@@ -677,7 +645,6 @@ RFC: yes
 Summary: Move checks from anal2 to anal1 whenever feasible
 Component: Compiler
 Kind: ENH
-Priority: 3
 Description:
 + In general checks in anal2 that rely on attributes of children nodes
 + can be moved to anal1.
@@ -688,12 +655,10 @@ Description:
 Summary: Do tail recursion optimization in the compiler
 Component: Compiler
 Kind: ENH
-Priority: 3
 
 Summary: Support lazy mapping
 Component: PVM
 Kind: ENH
-Priority: 2
 Description:
 + In complete arrays, the size of the elements is known at compile-time.
 + Then, it is not required to calculate it by peeking the element from
@@ -711,7 +676,6 @@ RFC: yes
 Summary: Save a nton instruction in pkl_asm_while
 Component: Compiler
 Kind: OPT
-Priority: 3
 Description:
 + - This also requires removing the promo for loop conditions
 + - Ditto for `where' conditions
@@ -807,7 +771,6 @@ Summary: Union fields should not refer to other fields
 Component: Compiler
 Kind: BUG
 BZ: 26884
-Priority: 4
 Description:
 + A field in an union type cannot refer to other union alternatives, in
 + any case.  This applies to constraints, array bounds, etc.
@@ -818,7 +781,6 @@ Summary: Remove call to `abort' in pkl-lex.l
 Component: Compiler
 Kind: BUG
 BZ: 26893
-Priority: 3
 Description:
 + Code in libpoke should not call `abort' nor `exit'.
 
@@ -827,7 +789,6 @@ Summary: Complete C and Poke printers for function types
 Component: PVM
 Kind: BUG
 BZ: 26895
-Priority: 3
 Description:
 + pvm_print_val should print valid type descriptors for function types,
 + including optional arguments, varargs, etc.
@@ -839,7 +800,6 @@ Summary: Function types are generated with its arguments reversed
 Component: Compiler
 Kind: BUG
 BZ: 26896
-Priority: 4
 Description:
 + Either mktyc should get its arguments reversed (ugly) or the compiler
 + should reverse them before calling the instruction.
@@ -848,14 +808,12 @@ Description:
 Summary: Validate u?int and u?long args in RAS
 Component: RAS
 Kind: ENH
-Priority: 2
 Description:
 + This should be reported as invalid by RAS: int<40>
 
 Summary: Support for string properties
 Component: PVM
 Kind: ENH
-Priority: 3
 Description:
 + In areas of a string:
 +
@@ -876,7 +834,6 @@ RFC: yes
 Summary: pvm_print_val should emit hyperlinks in collapsed structs
 Component: PVM
 Kind: ENH
-Priority: 2
 Description:
 +     > What about:
 +     >
@@ -949,7 +906,6 @@ Description:
 Summary: Location tracking in PVM
 Component: PVM
 Kind: ENH
-Priority: 2
 Description:
 + The PVM shall be expanded with new instructions for location tracking.
 + Something like::
@@ -964,7 +920,6 @@ Description:
 Summary: Make the PVM aware of units
 Component: PVM
 Kind: ENH
-Priority: 3
 Description:
 + The poke compiler allows the user to define her own units using the
 + ``unit`` construct.  The PVM, however, is oblivious of this, and it
@@ -995,7 +950,6 @@ Description:
 Summary: Unbox small strings in the PVM
 Component: PVM
 Kind: OPT
-Priority: 2
 Description:
 + String values are boxed in the PVM.  A cool optimization would be to,
 + somehow, treat small strings less than 7 or 8 characters as unboxed
@@ -1005,7 +959,6 @@ RFC: yes
 Summary: Add `strtok' to the standard library
 Component: Runtime
 Kind: ENH
-Priority: 3
 Description:
 + defun strok = (string s, string sep) char[]:
 + Returns an array of tokens.
@@ -1015,7 +968,6 @@ RFC: yes
 Summary: Support IO transactions
 Component: IO
 Kind: ENH
-Priority: 2
 Description:
 + (poke) ... poke something ...
 + (poke*) ... poke something more ...
@@ -1030,7 +982,6 @@ Description:
 Summary: Generalized endianness support
 Component: IO
 Kind: ENH
-Priority: 2
 Description:
 + .set word-size N (defaults to 1 byte)
 + .set group-size N (defaults to 0 with means infinite)
@@ -1041,7 +992,6 @@ Description:
 Summary: Support Poke IOS Translators
 Component: IO
 Kind: ENH
-Priority: 2
 Description:
 + This requires support for specifying method implementations in struct
 + constructors.
@@ -1081,7 +1031,6 @@ Description:
 Summary: Modeline and toolbar
 Component: CLI
 Kind: ENH
-Priority: 3
 Description:
 + -- ./foo.o [elf]
 + (poke)
@@ -1107,7 +1056,6 @@ RFC: yes
 Summary: pk-term-query
 Component: CLI
 Kind: ENH
-Priority: 3
 Description:
 + Query:
 +
@@ -1174,12 +1122,10 @@ RFC: yes
 Summary: Auto-complete map names in .map
 Component: CLI
 Kind: ENH
-Priority: 2
 
 Summary: Routine to get an unique memory IO space name
 Component: IO
 Kind: ENH
-Priority: 3
 Description: uniquify.el
 +
 +     forward
@@ -1199,7 +1145,6 @@ RFC: yes
 Summary: .vm time
 Component: CLI
 Kind: ENH
-Priority: 2
 Description:
 + This command will measure and show the time spent to execute some
 + given expression/statement.  The computed time shall be decomposed
@@ -1213,17 +1158,14 @@ Description:
 Summary: Write IEEE754 pickle
 Component: Pickles
 Kind: ENH
-Priority: 2
 
 Summary: Write RFC 8794 (ebml) pickle
 Component: Pickles
 Kind: ENH
-Priority: 2
 
 Summary: Write pickles for unicode
 Component: Pickles
 Kind: ENH
-Priority: 2
 Description: unicode.pk  (also handling ucs encodings)
 + utf8.pk
 + utf16.pk
@@ -1249,7 +1191,6 @@ RFC: yes
 Summary: Write pickle for mseed (geological formats)
 Component: Pickles
 Kind: ENH
-Priority: 2
 Description:
 + And data encodings for the payloads: GEOSCOPE, STEIM-1 and STEIM-2
 + encoded integers, etc.
@@ -1257,12 +1198,10 @@ Description:
 Summary: Write pickle for tar files (PAX)
 Component: Pickles
 Kind: ENH
-Priority: 2
 
 Summary: parallelize the dg testsuite
 Component: Testsuite
 Kind: ENH
-Priority: 2
 Description:
 + The dg testsuites are big.  We need to be able to run the tests in
 + parallel.  A good place where to look for inspiration for this task is
@@ -1272,17 +1211,14 @@ Description:
 Summary: Document poke CSS classes in the manual
 Component: Documentation
 Kind: ENH
-Priority: 2
 
 Summary: Complete PVM values and PKL nodes support in poke-gdb.scm
 Component: Other
 Kind: ENH
-Priority: 3
 
 Summary: Document "default values" in the poke manual
 Component: Documentation
 Kind: ENH
-Priority: 3
 Description:
 + These are the values generated by the constructors of the several
 + types (integers, offsets, strings, arrays, structs).  Refer to this
@@ -1292,7 +1228,6 @@ Target: 3.0
 Summary: add mutex to avoid concurrency crash with hyperlinks
 Component: POKE
 Kind: ENH
-Priority: 4
 Description:
 + Until we figure out how to implement concurrency in Poke, we have to
 + avoid running nested PVMs, which happens easily with hyperlinks:
@@ -1314,7 +1249,6 @@ Summary: support casts from `any' to function types
 Kind: ENH
 Component: Compiler
 Component: PVM
-Priority: 3
 Description:
 + Right now we are not allowing casting from `any' to a function type.
 + Supporting this requires to tag the PVM closure values with their
