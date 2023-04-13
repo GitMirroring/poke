@@ -1,3 +1,8 @@
+2023-04-13  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* doc/poke.texi (Integral Structs): s/little-endian/big-endian/
+	when talking about how gcc encodes bit fields.
+
 2023-03-28  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* etc/poke.rec: Remove priority fields.

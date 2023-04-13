@@ -11776,7 +11776,7 @@ defined, and ultimately what order to use is up to the compiler,
 @code{src_reg} in the most significant nibble of the byte and
 @code{dst_reg} in the least significant nibble of the byte when
 compiling for a little-endian target, and the other way around when
-compiling for a little-endian target. (I may have had that wrong, this
+compiling for a big-endian target. (I may have had that wrong, this
 always confuses me.)
 
 How could we encode the C struct regs in Poke?  Let's see.
