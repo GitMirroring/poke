@@ -240,7 +240,7 @@ generate-vm-files:
 .PHONY: generate-vm-files
 # The above rule will generate files with time-stamp order
 # pvm.jitter <= pvm-vm.h <= pvm-vm1.c <= pvm-vm2.c
-pvm-vm.h: pvm.jitter $(JITTER)
+pvm-vm.h: pvm.jitter
 	@{ test -f $(srcdir)/pvm-vm.h \
 	   && test ! $(srcdir)/pvm-vm.h -ot $(srcdir)/pvm.jitter \
 	   && test ! $(srcdir)/pvm-vm.h -ot $(JITTER); \
