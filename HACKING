@@ -239,20 +239,30 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   The standard target `make distcheck' builds a distributable sources
   tarball, and tests that it can be built and tested properly.
 
+  The version information the package gets built against is
+  automatically determined from git, based on `git describe' output and
+  the current branch.  The format for versions generated like this is:
+  `X.Y[.Z]-BRANCH-NN-gHASH' for an inter-version build, and `X.Y[.Z]'
+  for a release.  In either case, if the tree you're building is not
+  clean, you will get a `-dirty' suffix.
+
+  `X.Y[.Z]' gets computed from the latest annotated tag on your current
+  `HEAD' history.
+
   Note that if you're working on a checkout that is not fresh (i.e. it
   has had commits or tags since you last ran `./autogen.sh'), it is
   desirable to re-run `./autogen.sh', or otherwise regenerate
   `configure', to get updated version information.  This version will be
   stored in the newly-generated dist tarball.
 
-  Keep in mind that, when regenerating, a dirty tree, including
-  differently dated submodules, will cause the version to be suffixed
-  with `-dirty'.  Should this happen, and you want to go through with
-  the release anyway, `git stash' your changes and `git submodule
-  update' submodules, so that they get checked out to in-tree revisions.
-  This also ensures that you're testing the version of the tree that
-  will make it into a release, rather than something with a potentially
-  uncommitted fix, or suchlike.
+  Keep in mind that, when regenerating, a dirty (i.e. modified) tree,
+  including differently dated submodules, will cause the version to be
+  suffixed with `-dirty'.  Should this happen, and you want to go
+  through with the release anyway, `git stash' your changes and `git
+  submodule update' submodules, so that they get checked out to in-tree
+  revisions.  This also ensures that you're testing the version of the
+  tree that will make it into a release, rather than something with a
+  potentially uncommitted fix, or suchlike.
 
 
 2.7 Installing Obvious Changes
@@ -520,11 +530,13 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   `----
 
 
-  CI is also currently in the process of being deployed on the
-  Sourceware buildbot at <https://builder.sourceware.org/>.  The sources
-  for this are in the Sourceware `builder.git' repository at
+  We also have a set of "buildbots" hosted at Sourceware.  See
+  <https://builder.sourceware.org/>.  The sources for this are in the
+  Sourceware `builder.git' repository at
   <https://sourceware.org/git/?p=builder.git>. The README file contains
-  a good reference of how to hack on the build machinery.
+  a good reference of how to hack on the build machinery.  The poke
+  homepage contains little graphics indicating the last execution
+  results of these buildbots.
 
   Parts relevant to poke are named `/.*gnupoke.*/' in the Sourceware
   buildbot configuration.  Please see the repository linked above for
