@@ -1,0 +1,7 @@
+/* { dg-do run } */
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {format ""} } */
+/* { dg-command {"\n"} } */
+/* { dg-command {format "%i13x%s %u32x", -1, "Hello", 0xdeadbeef} } */
+/* { dg-command {"1fffHello deadbeef"} } */

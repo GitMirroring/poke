@@ -1,5 +1,12 @@
 2023-04-21  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pkl-tab.y (primary): Add new rule for `format' with no
+	parens.
+	* testsuite/poke.pkl/format-74.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
+2023-04-21  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-tab.y (primary): Remove typification of `format'.
 	Remove unnecessary `PKL_AST_LOC' invocations.
 	* libpoke/pkl-typify.c (pkl_typify1_ps_format): Typify the `format'.
