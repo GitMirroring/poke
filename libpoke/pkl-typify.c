@@ -2380,6 +2380,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_format)
 
   assert (format_fmt);
 
+  PKL_AST_TYPE (format) = ASTREF (pkl_ast_make_string_type (PKL_PASS_AST));
+
   /* Make sure the type of the ARGS match the types in TYPES.  */
 
   for (arg = format_args, type = format_types;

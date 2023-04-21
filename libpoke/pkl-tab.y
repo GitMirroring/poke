@@ -1218,13 +1218,9 @@ primary:
                 {
                   $$ = pkl_ast_make_format (pkl_parser->ast, $3, $4,
                                             0 /* printf_p */);
-                  PKL_AST_TYPE ($$)
-                      = ASTREF (pkl_ast_make_string_type (pkl_parser->ast));
                   PKL_AST_LOC ($3) = @3;
-                  if (PKL_AST_TYPE ($3))
-                    PKL_AST_LOC (PKL_AST_TYPE ($3)) = @3;
                   PKL_AST_LOC ($$) = @$;
-                  PKL_AST_LOC (PKL_AST_TYPE ($$)) = @$;
+
                 }
         | expression INC
                 {

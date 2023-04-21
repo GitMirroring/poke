@@ -1,3 +1,9 @@
+2023-04-21  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-tab.y (primary): Remove typification of `format'.
+	Remove unnecessary `PKL_AST_LOC' invocations.
+	* libpoke/pkl-typify.c (pkl_typify1_ps_format): Typify the `format'.
+
 2023-04-17  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* NEWS: Add entries for 3.1.
