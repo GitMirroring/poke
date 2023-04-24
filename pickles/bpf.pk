@@ -31,7 +31,7 @@ var BPF_INSN_CLASS_LD    = 0b000 as uint<3>,
     BPF_INSN_CLASS_JMP   = 0b101 as uint<3>,
     BPF_INSN_CLASS_ALU64 = 0b111 as uint<3>;
 
-fun bpf_class_is_alujmp = (uint<3> class) int:
+fun bpf_class_is_alujmp = (uint<3> class) int<32>:
   {
    return (class in [BPF_INSN_CLASS_ALU,
                      BPF_INSN_CLASS_ALU64,
@@ -199,7 +199,7 @@ type BPF_Insn_Opcode =
 
       /* Return a boolean indicating whether the instruction featuring
          this opcode uses a 64-bit immediate field.  */
-      method imm64_p = int:
+      method imm64_p = int<32>:
         {
           return (class == BPF_INSN_CLASS_LD
                   && ldst.mode == BPF_LDST_INSN_MODE_IMM

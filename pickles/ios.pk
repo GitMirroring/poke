@@ -64,7 +64,7 @@ fun ios_dump_bytes = (int<32> ios,
   {
     var o = 0#B;
 
-    fun itoa = (uint<8> x) char:
+    fun itoa = (uint<8> x) uint<8>:
     {
       if (x >= 0 && x <= 9) return x + '0';
       if (x >= 10 && x <= 15) return x + 'A' - 10;
@@ -114,7 +114,7 @@ fun ios_dump_bytes = (int<32> ios,
       {
         try
         {
-          var v = byte @ ios : (offset + o);
+          var v = uint<8> @ ios : (offset + o);
 
           if (v < ' ' || v > '~')
             printf "%<dump-ascii:%c%>", nonprintable_char;
@@ -151,7 +151,7 @@ fun ios_dump_bytes = (int<32> ios,
 	    {
               try
               {
-                var b = byte @ ios : (offset + o);
+                var b = uint<8> @ ios : (offset + o);
                 if (o % group_by == 0#B)
                      print " ";
                 printf ("%u8x", b);
@@ -253,7 +253,7 @@ fun ios_copy_bytes = (int<32> from_ios, int<32> to_ios,
      else if (step == 2#B)
        uint<16> @ to_ios : to = uint<16> @ from_ios : from;
      else
-       byte @ to_ios : to = byte @ from_ios : from;
+       uint<8> @ to_ios : to = uint<8> @ from_ios : from;
    }
 
  /* Cleanup.  */

@@ -30,24 +30,24 @@ var USTAR_FILE = '0',
 type USTAR_Sector =
   struct
   {
-    char[100] file_name;
+    uint<8>[100] file_name;
     uint<64> file_mode;
     uint<64> owner_user_id;
     uint<64> group_user_id;
-    char[12] file_size;
-    char[12] last_mod_time;
+    uint<8>[12] file_size;
+    uint<8>[12] last_mod_time;
     uint<64> checksum;
-    char type_flag : type_flag in [USTAR_FILE, USTAR_HARD_LINK, USTAR_SYM_LINK,
-                                   USTAR_CHAR_DEV, USTAR_BLOCK_DEV, USTAR_DIRECTORY,
-                                   USTAR_FIFO];
-    char[100] linked_file_name;
+    uint<8> type_flag : type_flag in [USTAR_FILE, USTAR_HARD_LINK, USTAR_SYM_LINK,
+                                      USTAR_CHAR_DEV, USTAR_BLOCK_DEV, USTAR_DIRECTORY,
+                                      USTAR_FIFO];
+    uint<8>[100] linked_file_name;
     uint<48> ustar;
-    char[2] ustar_version == ['0','0'];
-    char[32] owner_user_name;
-    char[32] owner_group_name;
+    uint<8>[2] ustar_version == ['0','0'];
+    uint<8>[32] owner_user_name;
+    uint<8>[32] owner_group_name;
     uint<64> device_major_number;
     uint<64> device_minor_number;
-    char[155] filename_prefix;
+    uint<8>[155] filename_prefix;
 
     /* Both file_size and last_mod_time are encoded as ASCII strings
        containing octal digits.  */

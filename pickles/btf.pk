@@ -206,7 +206,7 @@ type BTF_Type =
       struct {} nothing;
     } data;
 
-    method vararg_p = int:
+    method vararg_p = int<32>:
       {
         var last_param = data.func_proto.params[info.vlen - 1];
         return (last_param.name == 0#B && last_param.param_type == 0);

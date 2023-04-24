@@ -30,7 +30,7 @@ fun gettimeofday = Timespec:
 
 fun ptime = (uint<64> seconds) void:
 {
-    fun days_in_year = (int year) int:
+    fun days_in_year = (int<32> year) int<32>:
     {
       if (year % 400 == 0) return 366;
       if (year % 100 == 0) return 365;
@@ -38,7 +38,7 @@ fun ptime = (uint<64> seconds) void:
       return 365;
     }
 
-    fun days_in_month = (int year, int month) int:
+    fun days_in_month = (int<32> year, int<32> month) int<32>:
     {
       if (month < 0)
 	raise E_out_of_bounds;

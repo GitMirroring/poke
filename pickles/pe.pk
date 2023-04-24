@@ -262,7 +262,7 @@ type PE_Name =
        null. For longer names, this field contains a slash (/) that is
        followed by an ASCII representation of a decimal number that is
        an offset into the string table.  */
-    char[8] chars;
+    uint<8>[8] chars;
 
     /* Offset in the COFF string table for this name.  If the length
        of the name is 8 bytes or shorter, then return 0#B (which is
@@ -281,7 +281,7 @@ type PE_Name =
       stoca ("/" + format ("%i32d", offset'magnitude), chars);
     }
 
-    method match_p = (string s) int:
+    method match_p = (string s) int<32>:
     {
       return catos (chars) == s;
     }
@@ -499,7 +499,7 @@ type PE_Sym =
                                         && (sym.e_name.name ?! E_elem
                                             || sym.e_name.name[0] == '.');
       PE_CLR_Token clr_token          : sym.e_sclass == PE_SYM_CLASS_CLR_TOKEN;
-      char[18] file_name              : sym.e_sclass == PE_SYM_CLASS_FILE;
+      uint<8>[18] file_name           : sym.e_sclass == PE_SYM_CLASS_FILE;
       struct {} empty;
     } aux_sym;
   };
@@ -523,8 +523,8 @@ type PE_Attribute_Certificate =
 
     /* Note: we use internal padding here so we can map arrays of
        attribute certificates by total size.  */
-    byte[0] certificate_begin;
-    byte[0] certificate_end @ length + alignto (length, 8#B);
+    uint<8>[0] certificate_begin;
+    uint<8>[0] certificate_end @ length + alignto (length, 8#B);
   };
 
 /* PE delay import descriptors.  */
@@ -645,7 +645,7 @@ type PE_Load_Configuration_Layout =
     offset<uint<32>,B> guard_cf_function_table;
     uint<32> guard_cf_function_count;
     uint<32> guard_flags;
-    byte[12] code_integrity;
+    uint<8>[12] code_integrity;
     offset<uint<32>,B> guard_addr_taken_iat_entry_table;
     uint<32> guard_addr_taken_iat_entry_count;
     offset<uint<32>,B> guard_long_jump_target_table;
@@ -1034,7 +1034,7 @@ type PE_Opt_Hdr =
 type PE_File_Hdr =
   struct
   {
-    fun set_machine = (int mach) int: { pe_machine = mach; return 1; }
+    fun set_machine = (int<32> mach) int<32>: { pe_machine = mach; return 1; }
 
     uint<16>           machine = pe_machines[0] : machine in pe_machines
                                                   && set_machine (machine);
@@ -1053,7 +1053,7 @@ type PE_File =
   struct
   {
     offset<uint<32>,B> pe_offset @ 0x3C#B;
-    byte[4] signature == ['P','E','\0','\0'] @ pe_offset;
+    uint<8>[4] signature == ['P','E','\0','\0'] @ pe_offset;
 
     PE_File_Hdr hdr;
     var opt_hdr_offset = OFFSET;

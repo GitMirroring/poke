@@ -42,24 +42,24 @@ unit RedoxFS_BLKSZ = 4096UL * 8;  /* `4096*8` bits */
 type RedoxFS_Extent =
   struct
   {
-    offset<uint64,RedoxFS_BLKSZ> block;
-    offset<uint64,B> length;
+    offset<uint<64>,RedoxFS_BLKSZ> block;
+    offset<uint<64>,B> length;
 
-    method is_empty_p = int:
+    method is_empty_p = int<32>:
       {
         return block == 0#B && length == 0#B;  /* CHKME block ?= 0#B */
       }
-    method get_data = uint8[]:
+    method get_data = uint<8>[]:
       {
-        return uint8[length] @ block;
+        return uint<8>[length] @ block;
       }
   };
 
 type RedoxFS_Time =
   struct
   {
-    uint64 sec;
-    uint32 nsec;
+    uint<64> sec;
+    uint<32> nsec;
   };
 
 var RedoxFS_MODE_TYPE    = 0xF000UH,
@@ -79,26 +79,26 @@ type RedoxFS_EVisitor = (RedoxFS_Extent) void;
 type RedoxFS_Node =
   struct
   {
-    uint16 mode;
-    uint32 uid;
-    uint32 gid;
+    uint<16> mode;
+    uint<32> uid;
+    uint<32> gid;
     RedoxFS_Time ctime;
     RedoxFS_Time mtime;
     RedoxFS_Time atime;
-    uint8[226] name;
-    offset<uint64,RedoxFS_BLKSZ> parent;
-    offset<uint64,RedoxFS_BLKSZ> next;
+    uint<8>[226] name;
+    offset<uint<64>,RedoxFS_BLKSZ> parent;
+    offset<uint<64>,RedoxFS_BLKSZ> next;
     RedoxFS_Extent[#RedoxFS_BLKSZ - 288#B] extents;
 
-    method is_file_p = int:
+    method is_file_p = int<32>:
       {
         return (mode & RedoxFS_MODE_FILE) == RedoxFS_MODE_FILE;
       }
-    method is_dir_p = int:
+    method is_dir_p = int<32>:
       {
         return (mode & RedoxFS_MODE_DIR) == RedoxFS_MODE_DIR;
       }
-    method is_symlink_p = int:
+    method is_symlink_p = int<32>:
       {
         return (mode & RedoxFS_MODE_SYMLINK) == RedoxFS_MODE_SYMLINK;
       }
@@ -106,7 +106,7 @@ type RedoxFS_Node =
       {
         return catos (name);
       }
-    method visit_extents = (RedoxFS_EVisitor v) uint64:
+    method visit_extents = (RedoxFS_EVisitor v) uint<64>:
       {
         var c = 0;  /* counter */
 
@@ -164,7 +164,7 @@ type RedoxFS_Node =
  * `RedoxFS_Node`; because we need to map the `RedoxFS_Node` and we cannot
  * map an incomplete type.
  */
-fun redoxfs_visit_extents = (RedoxFS_Node n, RedoxFS_EVisitor v) uint64:
+fun redoxfs_visit_extents = (RedoxFS_Node n, RedoxFS_EVisitor v) uint<64>:
   {
     var counter = n.visit_extents (v);
 
@@ -180,18 +180,18 @@ type RedoxFS_Header =
   struct
   {
     string signature = "RedoxFS";
-    uint64 version = 4UL;
+    uint<64> version = 4UL;
 
     /* Disk ID, a 128-bit unique identifier */
     UUID uuid;
 
-    offset<uint64,B> size;
+    offset<uint<64>,B> size;
 
-    offset<uint64,RedoxFS_BLKSZ> root;  /* Block of root node */
-    offset<uint64,RedoxFS_BLKSZ> free;  /* Block of free space node */
+    offset<uint<64>,RedoxFS_BLKSZ> root;  /* Block of root node */
+    offset<uint<64>,RedoxFS_BLKSZ> free;  /* Block of free space node */
 
     /* Padding */
-    uint8[#RedoxFS_BLKSZ - 56#B];
+    uint<8>[#RedoxFS_BLKSZ - 56#B];
 
     method _print = void:
       {
@@ -210,7 +210,7 @@ assert ((RedoxFS_Header {})'size == #RedoxFS_BLKSZ);
  * PATH   Path of the parent directory
  * ES     Array of extents corresponding to the entity
  */
-type RedoxFS_Visitor = (char /*ftype*/,
+type RedoxFS_Visitor = (uint<8> /*ftype*/,
                         string /*name*/,
                         string /*path*/,
                         RedoxFS_Extent[] /*es*/)void;

@@ -25,7 +25,7 @@ type Argp_Option =
     string long_name;
     string summary;
     string arg_name;
-    int arg_required;
+    int<32> arg_required;
     Argp_Option_Handler handler;
   };
 
@@ -65,7 +65,7 @@ fun argp_parse = (string program,
                   string summary = "",
                   Argp_Option[] opts = Argp_Option[](),
                   string[] argv = string[](),
-                  int allow_unknown = 0) string[]:
+                  int<32> allow_unknown = 0) string[]:
 {
   var rest = string[]();
   var found_dashdash = 0;

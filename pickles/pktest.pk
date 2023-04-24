@@ -34,7 +34,7 @@ type PkTest = struct
     PkTestFn func;
   };
 
-fun pktest_run = (PkTest[] tests, string skip = "") int:
+fun pktest_run = (PkTest[] tests, string skip = "") int<32>:
   {
     var ok = 1;
     var i = 0UL;

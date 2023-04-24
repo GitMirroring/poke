@@ -1,3 +1,17 @@
+2023-04-24  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* pickles/bpf.pk: Do not use "standard" types.
+	* pickles/btf.pk: Likewise.
+	* pickles/sframe.pk: Likewise.
+	* pickles/time.pk: Likewise.
+	* pickles/coff.pk: Likewise.
+	* pickles/pe.pk: Likewise.
+	* pickles/ustar.pk: Likewise.
+	* pickles/pktest.pk: Likewise.
+	* pickles/redoxfs.pk: Likewise.
+	* pickles/ios.pk: Likewise.
+	* pickles/argp.pk: Likewise.
+
 2023-04-23  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-attrs.def: New attribute 'ref.

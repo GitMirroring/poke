@@ -38,7 +38,7 @@ var coff_arch = COFF_ARCH_I386;
 type COFF_Magic_Numbers =
   struct
   {
-    int arch;
+    int<32> arch;
     uint<16>[] numbers;
   };
 
@@ -54,7 +54,7 @@ fun coff_arch_magic = uint<16>[]:
                     msg = "no magic numbers found for selected COFF architecture" };
 }
 
-fun coff_magic_arch = (uint<16> magic) int:
+fun coff_magic_arch = (uint<16> magic) int<32>:
 {
   for (m in coff_magic_numbers)
     if (magic in m.numbers)
@@ -81,7 +81,7 @@ var COFF_TEXT = ".text",
 type COFF_File_Hdr =
   struct
   {
-    fun set_arch = (int arch) int: { coff_arch = arch; return 1; }
+    fun set_arch = (int<32> arch) int<32>: { coff_arch = arch; return 1; }
 
     uint<16>           magic = coff_arch_magic[0] : magic in coff_arch_magic
                                                     && set_arch (coff_magic_arch (magic));
@@ -99,7 +99,7 @@ type COFF_Opt_Hdr =
   struct
   {
     uint<16> magic;
-    char[2] vstamp;  /* Version stamp.  */
+    uint<8>[2] vstamp;  /* Version stamp.  */
     offset<uint<32>,B> tsize; /* Text size, padded to FW boundary. */
     offset<uint<32>,B> dsize; /* Initialized data size.  */
     offset<uint<32>,B> bsize; /* Uninitialized data size.  */
@@ -153,7 +153,7 @@ type COFF_LINENO = COFF_LINENO_16;
 type COFF_Name =
   union
   {
-    char[8] name : name[0] != 0;
+    uint<8>[8] name : name[0] != 0;
     struct
     {
       uint<32> zeroes = 0;

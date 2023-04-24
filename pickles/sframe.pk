@@ -1,6 +1,6 @@
 /* sframe.pk - SFrame implementation for GNU poke.  */
 
-/* Copyright (C) 2022 Free Software Foundation.  */
+/* Copyright (C) 2022, 2023 Free Software Foundation.  */
 
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,8 +57,8 @@ type SFrame_Preamble =
                            || (sfp_magic == 0xe2de && set_endian (!get_endian)))
                           = SFRAME_MAGIC;
 
-    byte sfp_version = SFRAME_VERSION_1;
-    byte sfp_flags;
+    uint<8> sfp_version = SFRAME_VERSION_1;
+    uint<8> sfp_flags;
   };
 
 /* Two possible keys for signing executable (instruction) pointers.  Used in
@@ -97,9 +97,9 @@ type SFrame_Func_Info =
 };
 
 /* Supported ABIs/Arch.  */
-var SFRAME_ABI_AARCH64_ENDIAN_BIG = 1 as byte, /* AARCH64 little endian.  */
-    SFRAME_ABI_AARCH64_ENDIAN_LITTLE = 2 as byte, /* AARCH64 big endian.  */
-    SFRAME_ABI_AMD64_ENDIAN_LITTLE = 3 as byte; /* AMD64 little endian.  */
+var SFRAME_ABI_AARCH64_ENDIAN_BIG = 1 as uint<8>, /* AARCH64 little endian.  */
+    SFRAME_ABI_AARCH64_ENDIAN_LITTLE = 2 as uint<8>, /* AARCH64 big endian.  */
+    SFRAME_ABI_AMD64_ENDIAN_LITTLE = 3 as uint<8>; /* AMD64 little endian.  */
 
 /* Currently auxiliary header is not being generated and used.  The pickle will
    need updates when the SFrame format uses a non-zero number of bytes in
@@ -110,18 +110,18 @@ type SFrame_Header =
   struct
   {
     SFrame_Preamble sfh_preamble;
-    byte sfh_abi_arch : sfh_abi_arch in [SFRAME_ABI_AARCH64_ENDIAN_BIG,
-                                         SFRAME_ABI_AARCH64_ENDIAN_LITTLE,
-                                         SFRAME_ABI_AMD64_ENDIAN_LITTLE];
+    uint<8> sfh_abi_arch : sfh_abi_arch in [SFRAME_ABI_AARCH64_ENDIAN_BIG,
+                                            SFRAME_ABI_AARCH64_ENDIAN_LITTLE,
+                                            SFRAME_ABI_AMD64_ENDIAN_LITTLE];
     int<8> sfh_cfa_fixed_bp_offset;
     int<8> sfh_cfa_fixed_ra_offset;
     uint<8> sfh_auxhdr_len = SFRAME_HEADER_AUXHDR_LEN_ZERO;
     uint<32> sfh_num_fdes;
     uint<32> sfh_num_fres;
-    offset<uint32,B> sfh_frelen;
+    offset<uint<32>,B> sfh_frelen;
 
-    offset<uint32,B> sfh_fdeoff;
-    offset<uint32,B> sfh_freoff;
+    offset<uint<32>,B> sfh_fdeoff;
+    offset<uint<32>,B> sfh_freoff;
   };
 
 var SFRAME_FRE_OFFSET_1B = 0 as uint<2>,
@@ -136,7 +136,7 @@ var SFRAME_BASE_REG_BP = 0 as uint<1>,
     SFRAME_BASE_REG_SP = 1 as uint<1>;
 
 type SFrame_FRE_Info =
-  struct byte
+  struct uint<8>
   {
     uint<1> mangled_ra_p;
     uint<2> offset_size : offset_size in [SFRAME_FRE_OFFSET_1B,
@@ -204,24 +204,24 @@ type SFrame_Func_Desc_Entry =
   {
     uint<32> func_start_address;
     uint<32> func_size;
-    offset<uint32,B> func_freoff;
+    offset<uint<32>,B> func_freoff;
     uint<32> func_num_fres;
     SFrame_Func_Info func_info;
 
     method get_sframe_fre_addr1s
-      = (offset<uint32,B> hdr_freoff) SFrame_FRE_Addr1[]:
+      = (offset<uint<32>,B> hdr_freoff) SFrame_FRE_Addr1[]:
       {
         var off = hdr_freoff + func_freoff;
         return SFrame_FRE_Addr1[func_num_fres] @ off;
       }
     method get_sframe_fre_addr2s
-      = (offset<uint32,B> hdr_freoff) SFrame_FRE_Addr2[]:
+      = (offset<uint<32>,B> hdr_freoff) SFrame_FRE_Addr2[]:
       {
         var off = hdr_freoff + func_freoff;
         return SFrame_FRE_Addr2[func_num_fres] @ off;
       }
     method get_sframe_fre_addr4s
-      = (offset<uint32,B> hdr_freoff) SFrame_FRE_Addr4[]:
+      = (offset<uint<32>,B> hdr_freoff) SFrame_FRE_Addr4[]:
       {
         var off = hdr_freoff + func_freoff;
         return SFrame_FRE_Addr4[func_num_fres] @ off;
@@ -239,5 +239,5 @@ type SFrame_Section =
     var fre_size = header.sfh_frelen;
 
     SFrame_Func_Desc_Entry[func_index_size] funcidx @ func_index_off;
-    byte[fre_size] fres_data_bytes @ fre_off;
+    uint<8>[fre_size] fres_data_bytes @ fre_off;
   };
