@@ -33,14 +33,14 @@ type Diff_Thunk =
     type Diff_Thunk_Line =
       struct
       {
-        int kind : kind in [DIFF_THUNK_ADD, DIFF_THUNK_REM];
+        int<32> kind : kind in [DIFF_THUNK_ADD, DIFF_THUNK_REM];
         string data;
         string name;
         string value;
       };
 
-    int emit_values_p;
-    offset<int,B> group_by = 1#B;
+    int<32> emit_values_p;
+    offset<int<32>,B> group_by = 1#B;
 
     var A = 0, B = 1;
     offset<uint<64>,B>[2] offset;
@@ -59,12 +59,12 @@ type Diff_Thunk =
       lines = Diff_Thunk_Line[]();
     }
 
-    method append_line = (int kind,
-                          byte[] bytes,
+    method append_line = (int<32> kind,
+                          uint<8>[] bytes,
                           string name = "",
                           string value = "") void:
     {
-      fun format_bytes = (byte[] bytes) string:
+      fun format_bytes = (uint<8>[] bytes) string:
       {
         var x = 1#B;
         var s = "";
@@ -111,7 +111,7 @@ type Diff_Thunk =
 
     method change = (offset<uint<64>,B> aoff, offset<uint<64>,B> asiz,
                      offset<uint<64>,B> boff, offset<uint<64>,B> bsiz,
-                     byte[] abytes, byte[] bbytes,
+                     uint<8>[] abytes, uint<8>[] bbytes,
                      string aname = "", string bname = "",
                      string avalue = "", string bvalue = "") void:
     {
@@ -131,9 +131,9 @@ type Diff_Thunk =
       append_line (DIFF_THUNK_ADD, bbytes, bname, bvalue);
     }
 
-    method addrem = (int what,
+    method addrem = (int<32> what,
                      offset<uint<64>,B> off, offset<uint<64>,B> siz,
-                     byte[] bytes, string name = "", string value = "") void:
+                     uint<8>[] bytes, string name = "", string value = "") void:
     {
       var to = what == DIFF_THUNK_ADD ? B : A;
 
@@ -175,7 +175,7 @@ type Diff_Thunk =
 
 fun diff_structured = (any a, any b,
                        string prefix_a = "a", string prefix_b = "b",
-                       int values = 1, offset<int,B> group_by = 1#B) void:
+                       int<32> values = 1, offset<int<32>,B> group_by = 1#B) void:
 {
   var thunk = Diff_Thunk { emit_values_p = values,
                            group_by = group_by };
@@ -188,19 +188,19 @@ fun diff_structured = (any a, any b,
       return "." + ename;
   }
 
-  fun get_bytes = (any v) byte[]:
+  fun get_bytes = (any v) uint<8>[]:
   {
-    try return byte[v'size] @ v'ios : v'offset;
+    try return uint<8>[v'size] @ v'ios : v'offset;
     catch if E_constraint { raise E_inval; }
   }
 
-  fun get_elem_bytes = (any v, uint<64> idx) byte[]:
+  fun get_elem_bytes = (any v, uint<64> idx) uint<8>[]:
   {
-    try return byte[v'esize (idx)] @ v'ios : v'eoffset (idx);
+    try return uint<8>[v'esize (idx)] @ v'ios : v'eoffset (idx);
     catch if E_constraint { raise E_inval; }
   }
 
-  fun elem_simple_p = (any elem, uint<64> idx) int:
+  fun elem_simple_p = (any elem, uint<64> idx) int<32>:
   {
     try { elem'elem(idx)'elem (0); return 0; }
     catch (Exception e)
@@ -213,7 +213,7 @@ fun diff_structured = (any a, any b,
     return 1;
   }
 
-  fun sdiff_addrem = (int what, any val,
+  fun sdiff_addrem = (int<32> what, any val,
                       string prefix, uint<64> idx) void:
   {
     for (; idx < val'length; ++idx)

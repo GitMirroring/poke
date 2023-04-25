@@ -62,14 +62,14 @@ type Poke_Setting =
         = (string s) int<32>: { return strchr (s, '\n') == s'length; }
 
       string name;
-      int kind : kind in [POKE_SETTING_INT,
-                          POKE_SETTING_BOOL,
-                          POKE_SETTING_STR];
+      int<32> kind : kind in [POKE_SETTING_INT,
+                              POKE_SETTING_BOOL,
+                              POKE_SETTING_STR];
       string summary : is_line_p (summary);
       string usage : is_line_p (usage);
       string description;
       ()any getter;
-      (any)int setter;
+      (any)int<32> setter;
     };
 
 /* The global settings registry.  */
@@ -174,7 +174,7 @@ Pretty-printers are defined as methods named `_print'.",
              {
                return vm_opprint;
              },
-           setter = lambda (any val) int:
+           setter = lambda (any val) int<32>:
              {
                vm_set_opprint (val as int<32>);
                return 1;
@@ -204,7 +204,7 @@ The entry above makes poke to automatically load the maps `elf.map'
 and `dwarf.map' when opening any file whose name ends in `.o',
 provided `auto-map' is set to `yes'.",
       getter = lambda any: { return pk_auto_map_p; },
-      setter = lambda (any val) int:
+      setter = lambda (any val) int<32>:
         {
           pk_auto_map_p = val as int<32>;
           return 1;
@@ -237,7 +237,7 @@ Example of a prompt with prompt-commented, map information, and `prompt-maps' se
 
 ",
     getter = lambda any: { return pk_prompt_commented_p; },
-    setter = lambda (any val) int:
+    setter = lambda (any val) int<32>:
       {
         pk_prompt_commented_p = val as int<32>;
         return 1;
@@ -263,7 +263,7 @@ Example of a prompt with map information and `prompt-maps' set to
 Which indicates that the opening of the IO space `foo.o' resulted in
 the `elf.map' and `dwarf.map' maps to be automatically loaded.",
     getter = lambda any: { return pk_prompt_maps_p; },
-    setter = lambda (any val) int:
+    setter = lambda (any val) int<32>:
       {
         pk_prompt_maps_p = val as int<32>;
         return 1;
@@ -289,7 +289,7 @@ Example:
 
 This setting defaults to `no'.",
     getter = lambda any: { return vm_omaps; },
-    setter = lambda (any val) int:
+    setter = lambda (any val) int<32>:
       {
         vm_set_omaps (val as int<32>);
         return 1;
@@ -311,7 +311,7 @@ for hexadecimal.",
              {
                return vm_obase;
              },
-           setter = lambda (any v) int:
+           setter = lambda (any v) int<32>:
              {
                var obase = v as int<32>;
 
@@ -344,7 +344,7 @@ Example:
 
 The default value is 0, which means no limit.",
     getter = lambda any: { return vm_oacutoff; },
-    setter = lambda (any val) int:
+    setter = lambda (any val) int<32>:
       {
         vm_set_oacutoff (val as int<32>);
         return 1;
@@ -372,7 +372,7 @@ Example:
 
 The default value for `odepth' is 0, which means infinite depth.",
     getter = lambda any: { return vm_odepth; },
-    setter = lambda (any val) int:
+    setter = lambda (any val) int<32>:
       {
         vm_set_odepth (val as int<32>);
         return 1;
@@ -401,7 +401,7 @@ Example:
 This setting defaults to 2.
 See also \".help omode\".",
     getter = lambda any: { return vm_oindent; },
-    setter = lambda (any val) int:
+    setter = lambda (any val) int<32>:
       {
         vm_set_oindent (val as int<32>);
         return 1;
@@ -448,7 +448,7 @@ The default value of `omode' is `flat'.",
 
         assert (0, "this point shouldn't be reached");
       },
-    setter = lambda (any val) int:
+    setter = lambda (any val) int<32>:
       {
         var s = val as string;
 
@@ -489,7 +489,7 @@ order to communicate with the network.",
                else
                   return "little";
              },
-           setter = lambda (any v) int:
+           setter = lambda (any v) int<32>:
              {
                var s = v as string;
                var endian = ENDIAN_LITTLE;
@@ -528,7 +528,7 @@ text version of the user manual.
 
 See also \".help .doc\".",
     getter = lambda any: { return pk_doc_viewer; },
-    setter = lambda (any val) int:
+    setter = lambda (any val) int<32>:
       {
         var s = val as string;
 
@@ -552,7 +552,7 @@ be paged or not.  Each page will have the height of the terminal.
 
 This setting is `no' by default.",
     getter = lambda any: { return pk_pager_p; },
-    setter = lambda (any val) int:
+    setter = lambda (any val) int<32>:
       {
         pk_pager_p = val as int<32>;
         return 1;
@@ -578,7 +578,7 @@ disabled once the debugging is done.
 
 This setting is `no' by default.",
       getter = lambda any: { return pk_tracer_p; },
-      setter = lambda (any val) int:
+      setter = lambda (any val) int<32>:
         {
           pk_tracer_p = val as int<32>;
           return 1;
@@ -603,7 +603,7 @@ force the re-mapping of any given value, explicitly.
 
 This setting is `yes' by default.",
       getter = lambda any: { return vm_autoremap; },
-      setter = lambda (any val) int:
+      setter = lambda (any val) int<32>:
         {
           vm_set_autoremap (val as int<32>);
           return 1;
@@ -657,9 +657,9 @@ fun pk_settings_dump = void:
         table.column (setting.name, "",
                       hserver_make_hyperlink ('e', ".help " + setting.name));
         table.column (setting.kind == POKE_SETTING_INT
-                      ? format ("%i32d", setting.getter as int)
+                      ? format ("%i32d", setting.getter as int<32>)
                       : setting.kind == POKE_SETTING_BOOL
-                      ? setting.getter as int ? "yes" : "no"
+                      ? setting.getter as int<32> ? "yes" : "no"
                       : setting.kind == POKE_SETTING_STR
                       ? setting.getter as string
                       : "<unknown>",
@@ -681,11 +681,11 @@ fun pk_settings_dump = void:
             var setting_setter = (setting.setter);
             fun toggle_setting = void:
               {
-                var newval = !(setting_getter as int);
+                var newval = !(setting_getter as int<32>);
 
                 print ("Toggling setting " + setting_name
                        + " to " + (newval ? "`yes'" : "`no'") + "\n");
-                setting_setter (!(setting_getter as int));
+                setting_setter (!(setting_getter as int<32>));
               }
 
             table.column ("[toggle]", "",

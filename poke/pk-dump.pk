@@ -89,19 +89,19 @@ type Pk_Dump_Offset =
   struct
   {
     int<32> ios;
-    off64 offset;
+    offset<int<64>,b> offset;
   };
 
 var pk_dump_offsets = Pk_Dump_Offset[]();
 
-fun pk_dump_get_offset = (int<32> ios) off64:
+fun pk_dump_get_offset = (int<32> ios) offset<int<64>,b>:
 {
   for (e in pk_dump_offsets where e.ios == ios)
     return e.offset;
   return 0#B;
 }
 
-fun pk_dump_set_offset = (int<32> ios, off64 offset) void:
+fun pk_dump_set_offset = (int<32> ios, offset<int<64>,b> offset) void:
 {
   for (e in pk_dump_offsets where e.ios == ios)
     {
@@ -115,12 +115,12 @@ fun pk_dump_set_offset = (int<32> ios, off64 offset) void:
 /* And the command itself.  */
 
 fun dump = (int<32> ios = get_ios,
-            off64 from = pk_dump_get_offset (ios),
-            off64 size = pk_dump_size,
-            off64 group_by = pk_dump_group_by,
-            int cluster_by = pk_dump_cluster_by,
-            int ruler = pk_dump_ruler,
-            int ascii = pk_dump_ascii) void:
+            offset<int<64>,b> from = pk_dump_get_offset (ios),
+            offset<int<64>,b> size = pk_dump_size,
+            offset<int<64>,b> group_by = pk_dump_group_by,
+            int<32> cluster_by = pk_dump_cluster_by,
+            int<32> ruler = pk_dump_ruler,
+            int<32> ascii = pk_dump_ascii) void:
 {
   ios_dump_bytes :ios ios :from from :size size :group_by group_by
                  :cluster_by cluster_by :ruler_p ruler :ascii_p ascii

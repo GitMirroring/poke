@@ -64,7 +64,7 @@ See `.doc sdiff' for more information.",
 fun sdiff = (any a, any b,
              string prefix_a = "a",
              string prefix_b = "b",
-             int values = pk_sdiff_print_values,
+             int<32> values = pk_sdiff_print_values,
              offset<uint<64>,B> group_by = pk_diff_group_by)
             void:
 {

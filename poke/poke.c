@@ -107,6 +107,11 @@ int poke_default_auto_map_p = 1;
 
 int poke_no_hserver_arg = 0;
 
+/* The following global determines whether the user specified to not
+   load "standard" types in the Poke incremental compiler.  */
+
+int poke_no_stdtypes_arg = 0;
+
 /* This is used by commands to indicate to the REPL that it must
    exit.  */
 
@@ -138,7 +143,8 @@ enum
   STYLE_DARK_ARG,
   STYLE_BRIGHT_ARG,
   NO_AUTO_MAP_ARG,
-  NO_HSERVER_ARG
+  NO_HSERVER_ARG,
+  NO_STDTYPES_ARG
 };
 
 static const struct option long_options[] =
@@ -156,6 +162,7 @@ static const struct option long_options[] =
   {"style-bright", no_argument, NULL, STYLE_BRIGHT_ARG},
   {"no-auto-map", no_argument, NULL, NO_AUTO_MAP_ARG},
   {"no-hserver", no_argument, NULL, NO_HSERVER_ARG},
+  {"no-stdtypes", no_argument, NULL, NO_STDTYPES_ARG},
   {NULL, 0, NULL, 0},
 };
 
@@ -202,6 +209,7 @@ print_help (void)
 #if HAVE_HSERVER
   puts (_("      --no-hserver                    do not run the hyperlinks server"));
 #endif
+  puts (_("      --no-stdtypes                   do not define standard types"));
   puts (_("      --quiet                         be as terse as possible"));
   puts (_("      --help                          print a help message and exit"));
   puts (_("      --version                       show version and exit"));
@@ -391,6 +399,9 @@ parse_args_1 (int argc, char *argv[])
         case NO_HSERVER_ARG:
           poke_no_hserver_arg = 1;
           break;
+        case NO_STDTYPES_ARG:
+          poke_no_stdtypes_arg = 1;
+          break;
         case 'q':
         case NO_INIT_FILE_ARG:
           poke_load_init_file = 0;
@@ -494,6 +505,7 @@ parse_args_2 (int argc, char *argv[])
           }
         case NO_AUTO_MAP_ARG:
         case NO_HSERVER_ARG:
+        case NO_STDTYPES_ARG:
         case 'q':
         case NO_INIT_FILE_ARG:
           /* These are handled in parse_args_1.  */
@@ -599,7 +611,8 @@ initialize (int argc, char *argv[])
   pk_term_init (argc, argv);
 
   /* Initialize the poke incremental compiler.  */
-  poke_compiler = pk_compiler_new (&poke_term_if);
+  poke_compiler = pk_compiler_new_with_flags (&poke_term_if,
+                                              poke_no_stdtypes_arg ? PK_F_NOSTDTYPES : 0);
   if (poke_compiler == NULL)
     pk_fatal ("creating the incremental compiler");
 

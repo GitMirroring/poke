@@ -554,6 +554,10 @@ Do not load map-files automatically when poke opens IO spaces.
 @item --no-hserver
 Do not run the terminal hyperlinks server.
 
+@item --no-stdtypes
+Do not define standard Poke types (such as @code{int}, @code{char},
+@i{etc}) in the Poke incremental compiler.
+
 @item --quiet
 Be as terse as possible.
 

@@ -35,9 +35,9 @@ type HServer_Callback = ()void;
 type HServer_Token =
   struct
   {
-    int used_p;
-    int id;
-    char kind;
+    int<32> used_p;
+    int<32> id;
+    uint<8> kind;
     string cmd;
     HServer_Callback function;
   };
@@ -45,35 +45,35 @@ type HServer_Token =
 var hserver_tokens = HServer_Token[hserver_max_tokens]();
 
 /* Get the kind of a given token.  */
-fun hserver_token_kind = (int token) char:
+fun hserver_token_kind = (int<32> token) uint<8>:
 {
   var index = token % hserver_max_tokens;
   return hserver_tokens[index].kind;
 }
 
 /* Get the command associated with a given token.  */
-fun hserver_token_cmd = (int token) string:
+fun hserver_token_cmd = (int<32> token) string:
 {
   var index = token % hserver_max_tokens;
   return hserver_tokens[index].cmd;
 }
 
 /* Get the function associated with a given token.  */
-fun hserver_token_function = (int token) HServer_Callback:
+fun hserver_token_function = (int<32> token) HServer_Callback:
 {
   var index = token % hserver_max_tokens;
   return (hserver_tokens[index].function);
 }
 
 /* Determine whether a given token exists.  */
-fun hserver_token_p = (int token) int:
+fun hserver_token_p = (int<32> token) int<32>:
 {
   var index = token % hserver_max_tokens;
   return hserver_tokens[index].used_p;
 }
 
 /* Allocate and get a random token.  */
-fun hserver_get_token = uint:
+fun hserver_get_token = uint<32>:
 {
   var index = hserver_cur_token % hserver_max_tokens;
 
@@ -87,7 +87,7 @@ fun hserver_get_token = uint:
 
 /* Build a hserver hyperlink.  */
 
-fun hserver_make_hyperlink = (char kind,
+fun hserver_make_hyperlink = (uint<8> kind,
                               string cmd = "",
                               HServer_Callback function = lambda void: {}) string:
 {
@@ -111,7 +111,7 @@ fun hserver_make_hyperlink = (char kind,
 
 /* Print an hserver-served hyperlink.  */
 
-fun hserver_print_hl = (char kind, string str, string cmd,
+fun hserver_print_hl = (uint<8> kind, string str, string cmd,
                         HServer_Callback function = lambda void: {}) void:
 {
   var url = hserver_make_hyperlink (kind, cmd, (function));

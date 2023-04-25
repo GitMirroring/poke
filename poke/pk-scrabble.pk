@@ -72,15 +72,15 @@ See `.doc scrabble' for more information.",
                          pk_scrabble_ent_size)
          };
 
-fun scrabble = (off64 from = pk_scrabble_from,
-                off64 size = pk_scrabble_size,
+fun scrabble = (offset<int<64>,b> from = pk_scrabble_from,
+                offset<int<64>,b> size = pk_scrabble_size,
                 string from_pattern = pk_scrabble_from_pattern,
                 string to_pattern = from_pattern,
-                off64 ent_size = pk_scrabble_ent_size,
-                int from_ios = get_ios,
-                int to_ios = from_ios) void:
+                offset<int<64>,b> ent_size = pk_scrabble_ent_size,
+                int<32> from_ios = get_ios,
+                int<32> to_ios = from_ios) void:
 {
-  type Entity = struct { char code; bit[ent_size] value; };
+  type Entity = struct { uint<8> code; uint<1>[ent_size] value; };
 
   var ent = Entity {};
   var to = from + size;
@@ -94,7 +94,7 @@ fun scrabble = (off64 from = pk_scrabble_from,
     {
       collected = Entity[]();
 
-      fun lookup_entity = (char code) Entity:
+      fun lookup_entity = (uint<8> code) Entity:
       {
         for (ent in collected where ent.code == code)
           return ent;
@@ -103,14 +103,14 @@ fun scrabble = (off64 from = pk_scrabble_from,
 
       for (var i = 0; i < from_pattern'length; i++, from += ent_size)
         collected += [Entity { code = from_pattern[i],
-                               value = unmap bit[ent_size] @ from_ios : from}];
+                               value = unmap uint<1>[ent_size] @ from_ios : from}];
 
       for (var i = 0; i < to_pattern'length; i++)
         {
           ent = lookup_entity (to_pattern[i]);
           if (ent.code != '\0')
              {
-               bit[ent_size] @ to_ios : end = ent.value;
+               uint<1>[ent_size] @ to_ios : end = ent.value;
                end += ent_size;
              }
         }

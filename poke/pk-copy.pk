@@ -62,11 +62,11 @@ See `.doc copy' for more information.",
                                 pk_copy_from, pk_copy_size)
          };
 
-fun copy = (int from_ios = get_ios,
-            int to_ios = get_ios,
-            off64 from = pk_copy_from,
-            off64 to = from,
-            off64 size = pk_copy_size) void:
+fun copy = (int<32> from_ios = get_ios,
+            int<32> to_ios = get_ios,
+            offset<int<64>,b> from = pk_copy_from,
+            offset<int<64>,b> to = from,
+            offset<int<64>,b> size = pk_copy_size) void:
 {
   ios_copy_bytes :from_ios from_ios :to_ios to_ios
                  :from from :to (to) :size size;

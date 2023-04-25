@@ -68,12 +68,12 @@ See `.doc save' for more information.",
                                 pk_save_append, pk_save_verbose)
          };
 
-fun save = (int ios = get_ios,
+fun save = (int<32> ios = get_ios,
             string file = "",
-            off64 from = pk_save_from,
-            off64 size = pk_save_size,
-            int append = pk_save_append,
-            int verbose = pk_save_verbose) void:
+            offset<int<64>,b> from = pk_save_from,
+            offset<int<64>,b> size = pk_save_size,
+            int<32> append = pk_save_append,
+            int<32> verbose = pk_save_verbose) void:
 {
   if (file == "" || size == 0#B)
     return;
