@@ -175,13 +175,13 @@ var tests = [
     name = "reverse",
     func = lambda (string name) void:
       {
-        var empty = int[]();
+        var empty = int<32>[]();
         var a = [1];
         var b = [1,2];
         var c = [1,2,3];
         var d = [[1],[2]];
 
-        reverse (empty); assert (empty == int[]());
+        reverse (empty); assert (empty == int<32>[]());
         reverse (a); assert (a == [1]);
         reverse (b); assert (b == [2,1]);
         reverse (c); assert (c == [3,2,1]);
@@ -201,8 +201,8 @@ var tests = [
                    :endian !end
                    :do lambda void: { int<32> @ 11#B = 0xdeadbeef; };
       assert (get_ios == ios2);
-      assert ((byte @ ios1 : 11#B) == (!end == ENDIAN_BIG ? 0xde : 0xef));
-      assert ((byte @ ios1 : 12#B) == (!end == ENDIAN_BIG ? 0xad : 0xbe));
+      assert ((uint<8> @ ios1 : 11#B) == (!end == ENDIAN_BIG ? 0xde : 0xef));
+      assert ((uint<8> @ ios1 : 12#B) == (!end == ENDIAN_BIG ? 0xad : 0xbe));
       close (ios2);
       close (ios1);
     }
@@ -229,8 +229,8 @@ var tests = [
         var ios = open ("*foo*");
         with_temp_ios :handler "*bar*"
                       :endian !end
-                      :do lambda void: { byte @ 0#B = 0xab;
-                                         byte @ 1#B = 0xcd;
+                      :do lambda void: { uint<8> @ 0#B = 0xab;
+                                         uint<8> @ 1#B = 0xcd;
                                          a = int<32> @ 0#B; };
         assert (get_ios == ios);
         assert (get_endian == end);
@@ -239,8 +239,8 @@ var tests = [
         /* Now with an exception return.  */
         try with_temp_ios :handler "*bar*"
                           :endian !end
-                          :do lambda void: { byte @ 0#B = 0xbe;
-                                             byte @ 1#B = 0xef;
+                          :do lambda void: { uint<8> @ 0#B = 0xbe;
+                                             uint<8> @ 1#B = 0xef;
                                              a = int<32> @ 0#B;
                                              raise E_inval; };
         catch if E_inval {};
@@ -255,10 +255,10 @@ var tests = [
     name = "qsort",
     func = lambda (string name) void:
       {
-        fun cmpints = (any a, any b) int:
+        fun cmpints = (any a, any b) int<32>:
           {
-            var ai = a as int;
-            var bi = b as int;
+            var ai = a as int<32>;
+            var bi = b as int<32>;
 
             if (ai == bi)
               return 0;
@@ -272,7 +272,7 @@ var tests = [
         {
           var data = open("*data*");
           var end = get_endian;
-          var a = int[4] @ 0#B;
+          var a = int<32>[4] @ 0#B;
 
           uint<8>[16] @ data : 0#B = [
             0x00UB, 0x00UB, 0x00UB, 0x30UB, 0x00UB, 0x00UB, 0x00UB, 0x00UB,
