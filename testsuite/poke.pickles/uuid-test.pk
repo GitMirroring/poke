@@ -36,7 +36,7 @@ var tests = [
           :endian ENDIAN_BIG
           :do lambda void:
             {
-              byte[128#b] @ 0#B = DATA_UUIDv1_1;
+              uint<8>[128#b] @ 0#B = DATA_UUIDv1_1;
 
               var uuid = UUID @ 0#B;
 
@@ -59,7 +59,7 @@ var tests = [
           :endian ENDIAN_LITTLE
           :do lambda void:
             {
-              byte[128#b] @ 0#B = DATA_UUIDv1_1;
+              uint<8>[128#b] @ 0#B = DATA_UUIDv1_1;
 
               var uuid = UUID @ 0#B;
 

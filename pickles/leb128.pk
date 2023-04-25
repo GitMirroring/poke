@@ -30,7 +30,7 @@ type ULEB128 =
   struct
   {
     LEB128_Byte[] variable;
-    byte last;
+    uint<8> last;
 
     method value = uint<64>:
       {
@@ -76,7 +76,7 @@ type LEB128 =
   struct
   {
     LEB128_Byte[] variable;
-    byte last;
+    uint<8> last;
 
     method value = int<64>:
       {

@@ -59,24 +59,24 @@ fun id3v1_search_genre = (string name) uint<8>:
 type ID3V1_Tag =
   struct
   {
-    char[3] id == ['T', 'A', 'G'];
+    uint<8>[3] id == ['T', 'A', 'G'];
 
-    char[30] title;
-    char[30] artist;
-    char[30] album;
-    char[4] year;
+    uint<8>[30] title;
+    uint<8>[30] artist;
+    uint<8>[30] album;
+    uint<8>[4] year;
 
     union
     {
       /* ID3v1.1  */
       struct
       {
-        char[28] comment;
-        byte zero = 0;
-        byte track : track != 0;
+        uint<8>[28] comment;
+        uint<8> zero = 0;
+        uint<8> track : track != 0;
       } extended;
       /* ID3v1  */
-      char[30] comment;
+      uint<8>[30] comment;
     } data;
 
     uint<8> genre;
@@ -86,7 +86,7 @@ type ID3V1_Tag =
     computed string title_str;
     computed string artist_str;
     computed string album_str;
-    computed int year_int;
+    computed int<32> year_int;
     computed string comment_str;
     computed string genre_str;
 
@@ -96,8 +96,8 @@ type ID3V1_Tag =
     method set_artist_str = (string val) void: { stoca (val, artist, ' '); }
     method get_album_str = string: { return rtrim (catos (album)); }
     method set_album_str = (string val) void: { stoca (val, album, ' '); }
-    method get_year_int = int: { return atoi (catos (year)); }
-    method set_year_int = (int val) void: { stoca (ltos (val), year, ' '); }
+    method get_year_int = int<32>: { return atoi (catos (year)); }
+    method set_year_int = (int<32> val) void: { stoca (ltos (val), year, ' '); }
 
     method get_comment_str = string:
       {

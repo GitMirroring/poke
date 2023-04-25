@@ -189,7 +189,7 @@ var tests = [
           :endian ENDIAN_LITTLE
           :do lambda void:
             {
-              byte[] @ 0#B = DNS_DATA;
+              uint<8>[] @ 0#B = DNS_DATA;
 
               var pcap = PCAP @ 0#B,
                   hdr = pcap.header,
@@ -209,7 +209,7 @@ var tests = [
           :endian ENDIAN_BIG
           :do lambda void:
             {
-              byte[] @ 0#B = DNS_DATA;
+              uint<8>[] @ 0#B = DNS_DATA;
 
               try PCAP @ 0#B;
               catch (Exception ex)

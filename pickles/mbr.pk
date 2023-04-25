@@ -21,13 +21,13 @@
 type MBR_CHS =
   struct
   {
-    byte head;
-    struct byte
+    uint<8> head;
+    struct uint<8>
       {
         uint<2> cylinder_hi;
         uint<6> sector;
       } cs;
-    byte cylinder_lo;
+    uint<8> cylinder_lo;
     computed uint<10> cylinder;
 
     method get_cylinder = uint<10>:
@@ -62,7 +62,7 @@ type MBR_CHS =
 type MBR_PTE =
   struct
   {
-    struct byte
+    struct uint<8>
     {
       uint<1> active;  /* bootable */
       uint<7>;
@@ -73,10 +73,10 @@ type MBR_PTE =
         }
     } attr;
     MBR_CHS start_chs;
-    byte part_type;  /* partition type*/
+    uint<8> part_type;  /* partition type*/
     MBR_CHS end_chs;
-    uint32 lba;
-    uint32 sector_count;
+    uint<32> lba;
+    uint<32> sector_count;
   };
 
 /*
@@ -96,9 +96,9 @@ type MBR_PTE =
 type MBR =
   struct
   {
-    byte[440#B] bootstrap;
-    uint32 signature;
-    byte[2] reserved;
+    uint<8>[440#B] bootstrap;
+    uint<32> signature;
+    uint<8>[2] reserved;
     MBR_PTE[4] pte;
-    uint16 magic == 0xaa55UH;
+    uint<16> magic == 0xaa55UH;
   };

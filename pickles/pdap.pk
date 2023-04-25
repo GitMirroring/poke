@@ -95,7 +95,7 @@ type PDAP_Out_Msg =
     var body_end_off = OFFSET;
 
     /* End-of-packet marker.  */
-    byte[0] eop : body_end_off - body_begin_off + command'size == length;
+    uint<8>[0] eop : body_end_off - body_begin_off + command'size == length;
   };
 
 fun pdap_out_msg_iter_begin = (uint<64> iter) PDAP_Out_Msg:
@@ -189,7 +189,7 @@ type PDAP_Vu_Msg =
     var body_end_off = OFFSET;
 
     /* End-of-packet marker.  */
-    byte[0] eop : body_end_off - body_begin_off + command'size == length;
+    uint<8>[0] eop : body_end_off - body_begin_off + command'size == length;
   };
 
 fun pdap_vu_msg_iter_begin = (string filter) PDAP_Vu_Msg:

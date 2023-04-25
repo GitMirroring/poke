@@ -48,8 +48,8 @@ fun pgp_packet_tag_name = (uint<8> tag) string:
 type PGP_Version =
   union
   {
-    char v3 == 3;
-    char v4 == 4;
+    uint<8> v3 == 3;
+    uint<8> v4 == 4;
   };
 
 type PGP_V3_Packet_Length =
@@ -151,7 +151,7 @@ type PGP_MPI =
   struct
   {
     big offset<uint<16>,b> len;
-    byte[len + alignto(len,1#B) ] num; /* Bytes are stored in big-endian.  */
+    uint<8>[len + alignto(len,1#B) ] num; /* Bytes are stored in big-endian.  */
 
     method _print = void:
     {
@@ -204,7 +204,7 @@ type PGP_Public_Key =
       } dsa : algo == PGP_ALGO_DSA;
 
       /* The remainder is picked up in PGP_Packet.extra below.  */
-      byte[0] unknown;
+      uint<8>[0] unknown;
   } asf;
 };
 
@@ -233,7 +233,7 @@ type PGP_Signature_Subpacket =
     PGP_V4_Packet_Length len;
     PGP_Subpacket_Header hdr;
 
-    type Data_Bytes = byte[len.get - hdr'size];
+    type Data_Bytes = uint<8>[len.get - hdr'size];
 
     union
     {
@@ -250,7 +250,7 @@ type PGP_Signature_Subpacket =
       struct
       {
         PGP_Version version;
-        byte[20] hash;
+        uint<8>[20] hash;
 
         method _print = void:
         {
@@ -273,9 +273,9 @@ type PGP_Signature =
     uint<8> pk_algo;
     uint<8> hash_algo;
     offset<uint<16>,B> hashed_subpacket_len;
-    byte[hashed_subpacket_len] hashed_subpackets;
+    uint<8>[hashed_subpacket_len] hashed_subpackets;
     uint<16> unhashed_subpacket_len;
-    byte[unhashed_subpacket_len] unhashed_subpackets;
+    uint<8>[unhashed_subpacket_len] unhashed_subpackets;
 
     /* "begin of digest" in gpg --list-packets
 
@@ -299,7 +299,7 @@ type PGP_Signature =
         PGP_MPI s;
       } dsa : pk_algo == PGP_ALGO_DSA;
 
-      byte[0] unknown : pk_algo;
+      uint<8>[0] unknown : pk_algo;
     } asf;
 };
 
@@ -311,7 +311,7 @@ type PGP_Packet =
     type UID =
       struct
       {
-        byte[header.get_length] uid;
+        uint<8>[header.get_length] uid;
         method _print = void:
         {
           print "#<uid:";
@@ -326,12 +326,12 @@ type PGP_Packet =
       PGP_Signature signature : header.get_tag == 2;
       PGP_Public_Key public   : header.get_tag == 6;
       UID uid                 : header.get_tag == 13;
-      byte[header.get_length] unknown;
+      uint<8>[header.get_length] unknown;
     } payload ; //: payload'size == header.get_length; // TODO commented out because "extraneous" catches it below.
 
     var extraneous = header.get_length - payload'size;
     if (payload'size'magnitude)
-      byte[extraneous] extra;
+      uint<8>[extraneous] extra;
   };
 
 type PGP_File =

@@ -38,7 +38,7 @@ var tests = [
         with_temp_ios
           :do lambda void:
             {
-              byte[] @ 0#B = data;
+              uint<8>[] @ 0#B = data;
 
               var typ = typeof (T1),
                   matches = (search_type :typ typ);

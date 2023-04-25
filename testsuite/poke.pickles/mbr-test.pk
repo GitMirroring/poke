@@ -28,7 +28,7 @@ var tests = [
     name = "magic number",
     func = lambda (string name) void:
       {
-        byte[512] @ data : 0#B = byte[512] ();
+        uint<8>[512] @ data : 0#B = uint<8>[512] ();
 
         try
           {
@@ -42,7 +42,7 @@ var tests = [
           }
 
         /* Fix the magic number */
-        byte[2] @ data : 510#B = [0x55UB, 0xaaUB];
+        uint<8>[2] @ data : 510#B = [0x55UB, 0xaaUB];
 
         var m = MBR @ data : 0#B;
       },
@@ -51,8 +51,8 @@ var tests = [
     name = "CHS",
     func = lambda (string name) void:
       {
-        byte[510] @ data : 0#B = byte[510] ();
-        byte[2] @ data : 510#B = [0x55UB, 0xaaUB];
+        uint<8>[510] @ data : 0#B = uint<8>[510] ();
+        uint<8>[2] @ data : 510#B = [0x55UB, 0xaaUB];
 
         var m = MBR @ data : 0#B;
         var chs = m.pte[0].start_chs;
@@ -62,7 +62,7 @@ var tests = [
         assert(chs.cs.sector == 0);
         assert(chs.cylinder_lo == 0);
         assert(chs.cylinder == 0);
-        assert((byte[chs'size] @ data : chs'offset) == [0UB, 0UB, 0UB]);
+        assert((uint<8>[chs'size] @ data : chs'offset) == [0UB, 0UB, 0UB]);
 
         chs.cylinder = 0x3ff;
         assert(chs.head == 0);
@@ -70,7 +70,7 @@ var tests = [
         assert(chs.cs.sector == 0);
         assert(chs.cylinder_lo == 0xff);
         assert(chs.cylinder == 0x3ff);
-        assert((byte[chs'size] @ data : chs'offset) == [0UB, 0xc0UB, 0xffUB]);
+        assert((uint<8>[chs'size] @ data : chs'offset) == [0UB, 0xc0UB, 0xffUB]);
 
         chs.cs.cylinder_hi = 1;
         assert(chs.head == 0);
@@ -78,7 +78,7 @@ var tests = [
         assert(chs.cs.sector == 0);
         assert(chs.cylinder_lo == 0xff);
         assert(chs.cylinder == 0x1ff);
-        assert((byte[chs'size] @ data : chs'offset) == [0UB, 0x40UB, 0xffUB]);
+        assert((uint<8>[chs'size] @ data : chs'offset) == [0UB, 0x40UB, 0xffUB]);
 
         chs.head = 0xa5;
         assert(chs.head == 0xa5);
@@ -86,7 +86,7 @@ var tests = [
         assert(chs.cs.sector == 0);
         assert(chs.cylinder_lo == 0xff);
         assert(chs.cylinder == 0x1ff);
-        assert((byte[chs'size] @ data : chs'offset) ==
+        assert((uint<8>[chs'size] @ data : chs'offset) ==
                [0xa5UB, 0x40UB, 0xffUB]);
 
         chs.cs.sector = 0xff;  /* Only the 6 LSBs are relevant */
@@ -95,7 +95,7 @@ var tests = [
         assert(chs.cs.sector == 0x3f);
         assert(chs.cylinder_lo == 0xff);
         assert(chs.cylinder == 0x1ff);
-        assert((byte[chs'size] @ data : chs'offset) ==
+        assert((uint<8>[chs'size] @ data : chs'offset) ==
                [0xa5UB, 0x7fUB, 0xffUB]);
 
         chs.cylinder_lo = 0x81;
@@ -104,7 +104,7 @@ var tests = [
         assert(chs.cs.sector == 0x3f);
         assert(chs.cylinder_lo == 0x81);
         assert(chs.cylinder == 0x181);
-        assert((byte[chs'size] @ data : chs'offset) ==
+        assert((uint<8>[chs'size] @ data : chs'offset) ==
                [0xa5UB, 0x7fUB, 0x81UB]);
       },
   },

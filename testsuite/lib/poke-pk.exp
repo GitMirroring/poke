@@ -47,7 +47,8 @@ proc tap_execute {pkfile_path} {
 
     # spawn the executable and look for the TAP output messages from the
     # test case.
-    spawn -noecho "${executable}" --no-hserver --color=no -q -L ${pkfile_path}
+    spawn -noecho "${executable}" --no-hserver --no-stdtypes \
+        --color=no -q -L ${pkfile_path}
     set txt "\[^\r\n\]*"
     set num "\[0-9\]\[0-9\]*"
     expect {

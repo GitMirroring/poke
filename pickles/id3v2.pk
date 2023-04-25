@@ -21,9 +21,9 @@
 type ID3V2_Hdr =
   struct
   {
-    char[3] head == ['I','D','3'];
-    byte ver_major : ver_major != 0xff;
-    byte ver_revision : ver_revision != 0xff;
+    uint<8>[3] head == ['I','D','3'];
+   uint<8> ver_major : ver_major != 0xff;
+   uint<8> ver_revision : ver_revision != 0xff;
 
     struct uint<8>
     {
@@ -33,7 +33,7 @@ type ID3V2_Hdr =
       uint<5>;
     } flags;
 
-    byte[4] size : (size[0] < 0x80
+    uint<8>[4] size : (size[0] < 0x80
                     && size[1] < 0x80
                     && size[2] < 0x80
                     && size[3] < 0x80);
@@ -54,7 +54,7 @@ type ID3V2_Ext_Hdr =
   struct
   {
     /* Size of this header, excluding this field.  */
-    uint32 size : size == 10;
+    uint<32> size : size == 10;
 
     struct uint<16>
     {
@@ -62,18 +62,18 @@ type ID3V2_Ext_Hdr =
       uint<15>;
     } flags;
 
-    uint32 padding_sz;
+    uint<32> padding_sz;
     if (flags.crc_present)
-      uint32 crc;
+      uint<32> crc;
   };
 
 type ID3V2_Frame =
   struct
   {
-    char[4] id : id[0] != 0;
+    uint<8>[4] id : id[0] != 0;
 
     /* Frame size without frame header.  */
-    uint32 size;
+    uint<32> size;
 
     struct uint<16>
     {
@@ -94,15 +94,15 @@ type ID3V2_Frame =
       {
         struct
         {
-          char id_asciiz_str = 0;
-          char[size - 1] frame_data;
+          uint<8> id_asciiz_str = 0;
+          uint<8>[size - 1] frame_data;
         } fd : size > 1;
 
-        char[size] frame_data;
+        uint<8>[size] frame_data;
       } fd : id[0] == 'T';
 
       /* Frame contains other data.  */
-      char[size] frame_data;
+      uint<8>[size] frame_data;
     } fd;
   };
 
@@ -115,5 +115,5 @@ type ID3V2_Tag =
     ID3V2_Frame[] frames;
 
     /* Padding.  */
-    byte[hdr.get_size - (frames'offset + (frames'size))/#B];
+    uint<8>[hdr.get_size - (frames'offset + (frames'size))/#B];
   };

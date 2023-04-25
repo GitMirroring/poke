@@ -29,7 +29,7 @@ var color_num_colors = 0;
    define her own colors using this function, after loading this file.
    These colors will be allocated at the end of the color space.  */
 
-fun color_register = int:
+fun color_register = int<32>:
   {
     var c = color_num_colors;
     color_num_colors++;
@@ -77,7 +77,7 @@ assert (color_std_names'length == color_num_colors);
 
 /* Return the printable name of the given color code.  */
 
-fun color_name = (int color) string:
+fun color_name = (int<32> color) string:
   {
     if (color < color_LAST)
       return color_std_names[color];

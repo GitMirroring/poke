@@ -184,7 +184,7 @@ type RV32_InsnFmt_R = struct uint<32>
 
     method get_name = string:
       { return name[funct3]; }
-    method as_poke = (int cmd_p = 1) string:
+    method as_poke = (int<32> cmd_p = 1) string:
       {
         return cmd_p ? format ("rv32_%s :rd %u5d :rs1 %u5d :rs2 %u5d",
                                name[funct3], rd, rs1, rs2)
@@ -264,7 +264,7 @@ type RV32_InsnFmt_I = struct uint<32>
 
     method get_name = string:
       { return name; }
-    method as_poke = (int cmd_p = 1) string:
+    method as_poke = (int<32> cmd_p = 1) string:
       {
         if (name != "")
           {
@@ -359,7 +359,7 @@ type RV32_InsnFmt_S = struct uint<32>
 
     method get_name = string:
       { return names[funct3]; }
-    method as_poke = (int cmd_p = 1) string:
+    method as_poke = (int<32> cmd_p = 1) string:
       {
         assert (+opcode == RV32_OPCODE_STORE);
         return cmd_p ? format ("rv32_%s :rs1 %u5d :rs2 %u5d :imm %i32d",
@@ -420,7 +420,7 @@ type RV32_InsnFmt_B = struct uint<32>
 
     method get_name = string:
       { return names[funct3]; }
-    method as_poke = (int cmd_p = 1) string:
+    method as_poke = (int<32> cmd_p = 1) string:
       {
         assert (+opcode == RV32_OPCODE_BRANCH);
         return cmd_p ? format("rv32_%s :rs1 %u5d :rs2 %u5d :imm %i32d",
@@ -457,7 +457,7 @@ type RV32_InsnFmt_U = struct uint<32>
 
     method get_name = string:
       { return +opcode == RV32_OPCODE_LUI ? "lui" : "auipc"; }
-    method as_poke = (int cmd_p = 1) string:
+    method as_poke = (int<32> cmd_p = 1) string:
       {
         assert (+opcode == RV32_OPCODE_LUI || +opcode == RV32_OPCODE_AUIPC);
 
@@ -507,7 +507,7 @@ type RV32_InsnFmt_J = struct uint<32>
 
     method get_name = string:
       { return "jal"; }
-    method as_poke = (int cmd_p = 1) string:
+    method as_poke = (int<32> cmd_p = 1) string:
       {
         assert (+opcode == RV32_OPCODE_JAL);
         return cmd_p ? format ("rv32_jal :rd %u5d :imm %i32d", rd, get_imm)
@@ -542,7 +542,7 @@ type RV32_Insn = union uint<32>
              : !(j ?! E_elem) ? j.get_name
              : "" /* impossible */;
       }
-    method as_poke = (int cmd_p = 1) string:
+    method as_poke = (int<32> cmd_p = 1) string:
       {
         return !(r ?! E_elem) ? r.as_poke (cmd_p)
              : !(i ?! E_elem) ? i.as_poke (cmd_p)

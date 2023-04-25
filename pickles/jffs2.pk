@@ -163,10 +163,10 @@ struct
     uint<8>[2];
     uint<32> node_crc; // crc of data from node magic to unused
     uint<32> name_crc; // crc of name[nsize]
-    char[nsize] name; // file name
+    uint<8>[nsize] name; // file name
 
     // padding
-    byte[0] @ total_len + alignto(total_len, JFFS2_ALIGNMENT);
+    uint<8>[0] @ total_len + alignto(total_len, JFFS2_ALIGNMENT);
 
     method get_name = string:
     {
@@ -216,9 +216,9 @@ struct
     var rel_data_offset = OFFSET;
 
     // end of data + padding for alignment
-    byte[0] @ total_len + alignto(total_len, JFFS2_ALIGNMENT);
+    uint<8>[0] @ total_len + alignto(total_len, JFFS2_ALIGNMENT);
 
-    method get_data_offset = uoff64:
+    method get_data_offset = offset<uint<64>,b>:
     {
         return rel_data_offset;
     }
@@ -245,12 +245,12 @@ struct
     uint<32> data_crc;
     uint<32> node_crc;
     if (name_len != 0#B)
-      char[name_len] name;
+      uint<8>[name_len] name;
 
     var rel_value_offset = OFFSET;
 
     // end of data + padding for alignment
-    byte[0] @ total_len + alignto(total_len, JFFS2_ALIGNMENT);
+    uint<8>[0] @ total_len + alignto(total_len, JFFS2_ALIGNMENT);
 
     method get_name = string:
     {
@@ -258,7 +258,7 @@ struct
         catch if E_elem { return ""; }
     }
 
-    method get_value_offset = uoff64:
+    method get_value_offset = offset<uint<64>,b>:
     {
         return rel_value_offset;
     }
@@ -307,7 +307,7 @@ struct
     uint<32> ino; /* == zero for unlink */
     offset<uint<8>, B> nsize; /* dirent name size */
     uint<8> dir_type; /* dirent type */
-    char[nsize] name; /* dirent name */
+    uint<8>[nsize] name; /* dirent name */
 
     method get_name = string:
     {
@@ -395,17 +395,17 @@ struct
     uint<32> node_crc;
 
     var rel_records_offset = OFFSET;
-    byte[0] records;
+    uint<8>[0] records;
 
     // records end + padding
-    byte[0] @ total_len + alignto(total_len, JFFS2_ALIGNMENT);
+    uint<8>[0] @ total_len + alignto(total_len, JFFS2_ALIGNMENT);
 
     method get_records = JFFS2_Sum_Rec[]:
     {
         return JFFS2_Sum_Rec[sum_num] @ records'offset;
     }
 
-    method get_records_offset = uoff64:
+    method get_records_offset = offset<uint<64>,b>:
     {
         return rel_records_offset;
     }
@@ -429,12 +429,12 @@ struct
     uint<16> node_type; // could be anything
     offset<uint<32>, B> total_len : total_len >= JFFS2_HEADER_SIZE;
     uint<32> node_header_crc;
-    byte[0] data;
+    uint<8>[0] data;
 
     // data + padding
-    byte[0] @ total_len + alignto(total_len, JFFS2_ALIGNMENT);
+    uint<8>[0] @ total_len + alignto(total_len, JFFS2_ALIGNMENT);
 
-    method get_data_offset = uoff64:
+    method get_data_offset = offset<uint<64>,b>:
     {
         return data'offset;
     }

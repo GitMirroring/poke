@@ -138,13 +138,13 @@ type BER_Identifier =
 type BER_Length =
   union
   {
-    offset<byte,B> short_form : short_form'magnitude < 0b1000_0000;
+    offset<uint<8>,B> short_form : short_form'magnitude < 0b1000_0000;
 
     struct
     {
       uint<1> first : first == 1;
       uint<7> len;
-      byte[len] octets;
+      uint<8>[len] octets;
     } long_form : long_form.first:::long_form.len != 0b1111_1111;
 
     method get = offset<uint<64>,B>:
@@ -183,16 +183,16 @@ type BER_Variable_Contents =
     type Datum =
       union
       {
-        byte[2] pair : pair[1] != 0UB;
-        byte single : single != 0UB;
+        uint<8>[2] pair : pair[1] != 0UB;
+        uint<8> single : single != 0UB;
       };
 
     Datum[] data;
-    byte[2] end : end == [0UB,0UB];
+    uint<8>[2] end : end == [0UB,0UB];
 
-    method get_bytes = byte[]:
+    method get_bytes = uint<8>[]:
     {
-      var bytes = byte[]();
+      var bytes = uint<8>[]();
       for (d in data)
         try bytes += d.pair;
         catch if E_elem { bytes += [d.single]; }
@@ -212,9 +212,9 @@ type BER_Data_Value =
     union
     {
       BER_Length definite;
-      byte indefinite : indefinite == 0b1000_0000;
+      uint<8> indefinite : indefinite == 0b1000_0000;
 
-      method is_indefinite = int:
+      method is_indefinite = int<32>:
       {
         return !(indefinite ?! E_elem);
       }
@@ -228,7 +228,7 @@ type BER_Data_Value =
     union
     {
       BER_Variable_Contents variable : !length.is_indefinite;
-      byte[length.get] fixed;
+      uint<8>[length.get] fixed;
     } contents;
 
     method _print = void:

@@ -1,5 +1,26 @@
 2023-04-25  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* testsuite/lib/poke-pk.exp (tap_execute): Pass --no-stdtypes to
+	poke.
+	* pickles/asn1-ber.pk: Do not use "standard" types.
+	* pickles/bmp.pk: Likewise.
+	* pickles/color.pk: Likewise.
+	* pickles/id3v2.pk: Likewise.
+	* pickles/id3v1.pk: Likewise.
+	* pickles/ieee754.pk: Likewise.
+	* pickles/leb128.pk: Likewise.
+	* pickles/mbr.pk: Likewise.
+	* pickles/openpgp.pk: Likewise.
+	* pickles/jffs2.pk: Likewise.
+	* pickles/pdap.pk: Likewise.
+	* pickles/pcap.pk: Likewise.
+	* pickles/riscv.pk: Likewise.
+	* testsuite/poke.pickles/mbr-test.pk: Likewise.
+	* testsuite/poke.pickles/uuid-test.pk: Likewise.
+	* testsuite/poke.pickles/search-test.pk: Likewise.
+
+2023-04-25  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* poke/poke.c (initialize): Use pk_compiler_new_with_flags.
 	(NO_STDTYPES_ARG): Define.
 	(parse_args_1): Handle NO_STDTYPES_ARG.

@@ -28,15 +28,15 @@ type PCAP_Header =
                                : magic in [[0xd4UB, 0xc3UB, 0xb2UB, 0xa1UB],
                                            [0xd4UB, 0x3cUB, 0xb2UB, 0xa1UB]];
 
-    uint16 version_major == 2;
-    uint16 version_minor == 4;
-    int32  thiszone; /* GMT to local correction */
-    uint32 sigfigs;  /* accuracy of timestamps */
-    uint32 snaplen;  /* max length of captured packets, in octets */
-    uint32 network;  /* data link type */
+    uint<16> version_major == 2;
+    uint<16> version_minor == 4;
+    int<32>  thiszone; /* GMT to local correction */
+    uint<32> sigfigs;  /* accuracy of timestamps */
+    uint<32> snaplen;  /* max length of captured packets, in octets */
+    uint<32> network;  /* data link type */
 
     /* Nano-second resolution file? */
-    method is_nsec_p = int:
+    method is_nsec_p = int<32>:
       {
         return magic in [
           [0xa1UB, 0xb2UB, 0x3cUB, 0xd4UB],
@@ -49,14 +49,14 @@ type PCAP_Header =
 type PCAP_PacketHeader =
   struct /* (int nsec_p) */
   {
-    uint32 ts_sec;   /* timestamp seconds */
-    uint32 ts_usec;  /* microseconds (or nanoseconds if `nsec_p`) */
-    offset<uint32,B> incl_len : /* number of octets of packet saved in file */
+    uint<32> ts_sec;   /* timestamp seconds */
+    uint<32> ts_usec;  /* microseconds (or nanoseconds if `nsec_p`) */
+    offset<uint<32>,B> incl_len : /* number of octets of packet saved in file */
       incl_len > 0#B;
-    offset<uint32,B> orig_len : /* actual length of packet */
+    offset<uint<32>,B> orig_len : /* actual length of packet */
       incl_len <= orig_len;
 
-    method is_sliced_p = int:
+    method is_sliced_p = int<32>:
       {
         return incl_len != orig_len;
       }
@@ -66,7 +66,7 @@ type PCAP_Packet =
   struct
   {
     PCAP_PacketHeader header;
-    byte[header.incl_len] body;
+    uint<8>[header.incl_len] body;
   };
 
 type PCAP =

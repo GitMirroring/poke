@@ -29,7 +29,7 @@ var IHS_BMP_V2 = 12U#B, IHS_BMP_V3 = 40U#B;
 type BMP_Header =
   struct
   {
-    byte[2] magic == ['B','M'];
+    uint<8>[2] magic == ['B','M'];
     offset<uint<32>,B> file_size;
     uint<16>; /* Reserved.  */
     uint<16>; /* Reserved.  */
@@ -46,7 +46,7 @@ type BMP_Info_Header =
     uint<16> planes;     /* Number of planes. (=1) XXX */
 
     uint<16> bits_per_pixel;
-    method num_colors = int: { return 2 ** bits_per_pixel; }
+    method num_colors = int<32>: { return 2 ** bits_per_pixel; }
 
     uint<32> compression; /* Type of compression.  */
 
@@ -62,18 +62,18 @@ type BMP_Info_Header =
 type BMP_RGB_Quad =
   struct
   {
-    byte blue;
-    byte green;
-    byte red;
-    byte; /* Reserved.  */
+    uint<8> blue;
+    uint<8> green;
+    uint<8> red;
+    uint<8>; /* Reserved.  */
   };
 
 type BMP_RGB_Triplet =
   struct
   {
-    byte blue;
-    byte green;
-    byte red;
+    uint<8> blue;
+    uint<8> green;
+    uint<8> red;
   };
 
 type BMP =
@@ -97,20 +97,20 @@ type BMP =
 
         union
         {
-          byte[bytes_per_line] image_data : info_header.bits_per_pixel < 8;
-          byte[info_header.width] color_index : info_header.bits_per_pixel == 8;
+          uint<8>[bytes_per_line] image_data : info_header.bits_per_pixel < 8;
+          uint<8>[info_header.width] color_index : info_header.bits_per_pixel == 8;
           BMP_RGB_Triplet[info_header.width] triplets : info_header.bits_per_pixel == 24;
           BMP_RGB_Quad[info_header.width] quads : info_header.bits_per_pixel == 32;
         } pixels;
 
-        byte[padding] pad_bytes;
+        uint<8>[padding] pad_bytes;
       };
 
     /* Data.  */
     union
     {
       /* Compressed: data is an array of bytes.  */
-      byte[info_header.image_size] rle_data : (info_header.compression > 0);
+      uint<8>[info_header.image_size] rle_data : (info_header.compression > 0);
       /* Not compressed: data is organized in lines.  */
       BMP_Line[info_header.height] lines;
     } data;
