@@ -260,6 +260,7 @@ S ::
   return STR;
  }
 
+  /* BEGINNING OF KEYWORDS */
 "asm"           { return ASM; }
 "pinned"        { return PINNED; }
 "struct"        { return STRUCT; }
@@ -304,6 +305,7 @@ S ::
 "enum"          { return ENUM; }
 "computed"      { return COMPUTED; }
 "immutable"     { return IMMUTABLE; }
+  /* END OF KEYWORDS */
 
 "uint<"         { return UINTCONSTR; }
 "int<"          { return INTCONSTR; }

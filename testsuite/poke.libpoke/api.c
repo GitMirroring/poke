@@ -98,6 +98,13 @@ test_pk_compiler_free (pk_compiler pkc)
   pk_compiler_free (pkc);
 }
 
+static void
+test_pk_keyword_p (pk_compiler pkc)
+{
+  T ("pk_keyword_p_1", pk_keyword_p (pkc, "if"));
+  T ("pk_keyword_p_2", !pk_keyword_p (pkc, "foo"));
+}
+
 int
 main ()
 {
@@ -106,6 +113,7 @@ main ()
   pkc = test_pk_compiler_new ();
 
   test_pk_compiler_free (pkc);
+  test_pk_keyword_p (pkc);
 
   return 0;
 }

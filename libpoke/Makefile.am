@@ -93,6 +93,20 @@ EXTRA_DIST = ras
 
 BUILT_SOURCES = pkl-gen.pkc pkl-gen-builtins.pkc pkl-gen-attrs.pkc pkl-asm.pkc
 
+# The pkl-keywords.def file is generated from the contents
+# of the flex input file pkl-lex.l
+
+pkl-keywords.def: $(srcdir)/pkl-lex.l
+	outfile=`basename "$@"`; \
+	$(AWK) \
+'/BEGINNING OF KEYWORDS/,/END OF KEYWORDS/ { if ($$1 != "/*") print "PKL_DEF_KEYWORD(" $$1 ")"; }' \
+          < $< > $$outfile.tmp \
+        && mv $$outfile.tmp $(srcdir)/$$outfile
+
+EXTRA_DIST += pkl-keywords.def
+MOSTLYCLEANFILES += pkl-keywords.def.tmp
+BUILT_SOURCES += pkl-keywords.def
+
 AM_LFLAGS = -d
 # The Automake generated .l.c rule is broken: When executed in a VPATH build,
 #   - The .c file gets generated in the build directory. But since it requires

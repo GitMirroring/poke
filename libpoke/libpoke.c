@@ -1117,3 +1117,24 @@ pk_register_iod (pk_compiler pkc, struct pk_iod_if *iod_if)
   (void) ios_register_foreign_iod (&foreign_iod_if);
   return pkc->status;
 }
+
+int
+pk_keyword_p (pk_compiler pkc, const char *str)
+{
+  static const char *keywords[] =
+    {
+#define PKL_DEF_KEYWORD(s) s,
+# include "pkl-keywords.def"
+#undef PKL_DEF_KEYWORD
+      NULL,
+    };
+  int i;
+
+  for (i = 0; keywords[i] != NULL; ++i)
+    {
+      if (STREQ (str, keywords[i]))
+        return 1;
+    }
+
+  return 0;
+}

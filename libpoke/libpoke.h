@@ -1294,4 +1294,10 @@ struct pk_iod_if
 int pk_register_iod (pk_compiler pkc, struct pk_iod_if *iod_if)
   LIBPOKE_API;
 
+/* Given a string, determine whether it corresponds to a Poke
+   keyword.  */
+
+int pk_keyword_p (pk_compiler pkc, const char *str)
+  LIBPOKE_API;
+
 #endif /* ! LIBPOKE_H */

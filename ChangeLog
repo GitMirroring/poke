@@ -1,3 +1,11 @@
+2023-04-26  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/libpoke.h: Prototype for pk_keyword_p.
+	* libpoke/libpoke.c (pk_keyword_p): New function.
+	* libpoke/Makefile.am: Generate $(srcdir)/pkl-keywords.def.
+	* testsuite/poke.libpoke/api.c (test_pk_keyword_p): New test.
+	* .gitignore: Add /libpoke/pkl-keywords.def.
+
 2023-04-25  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* testsuite/poke.std/std-test.pk: Do not use "standard" types.
