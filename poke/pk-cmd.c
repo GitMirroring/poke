@@ -777,7 +777,7 @@ pk_cmd_init (void)
   set_cmd.subcommands = set_cmds;
 
   /* Compile commands written in Poke.  */
-  if (!pk_load (poke_compiler, "pk-cmd"))
+  if (pk_load (poke_compiler, "pk-cmd") != PK_OK)
     pk_fatal ("unable to load the pk-cmd module");
 }
 

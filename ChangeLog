@@ -1,3 +1,9 @@
+2023-04-28  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/libpoke.c (pk_load): Fix returned value.
+	* poke/pk-cmd.c (pk_cmd_init): Fix call to pk_load.
+	* poke/poke.c (initialize): Likewise.
+
 2023-04-26  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/libpoke.h: Prototype for pk_keyword_p.

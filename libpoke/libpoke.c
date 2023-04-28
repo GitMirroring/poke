@@ -231,7 +231,7 @@ pk_compile_expression (pk_compiler pkc, const char *buffer,
 int
 pk_load (pk_compiler pkc, const char *module)
 {
-  PK_RETURN (pkl_load (pkc->compiler, module) == 0 ? PK_OK : PK_ERROR);
+  PK_RETURN (pkl_load (pkc->compiler, module) == 0 ? PK_ERROR : PK_OK);
 }
 
 void
