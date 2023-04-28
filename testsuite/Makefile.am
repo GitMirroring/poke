@@ -1474,7 +1474,6 @@ EXTRA_DIST = \
   poke.pkl/format-71.pk \
   poke.pkl/format-72.pk \
   poke.pkl/format-73.pk \
-  poke.pkl/format-74.pk \
   poke.pkl/format-diag-1.pk \
   poke.pkl/format-diag-2.pk \
   poke.pkl/format-diag-3.pk \

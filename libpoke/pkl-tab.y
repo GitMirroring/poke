@@ -1230,13 +1230,6 @@ primary:
                   PKL_AST_LOC ($$) = @$;
 
                 }
-        | FORMAT STR format_arg_list
-                {
-                  $$ = pkl_ast_make_format (pkl_parser->ast, $2, $3,
-                                            0 /* printf_p */);
-                  PKL_AST_LOC ($2) = @2;
-                  PKL_AST_LOC ($$) = @$;
-                }
         | expression INC
                 {
                   $$ = pkl_ast_make_incrdecr (pkl_parser->ast, $1,
