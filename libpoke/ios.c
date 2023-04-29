@@ -80,14 +80,17 @@ struct ios
   struct ios *next;
 };
 
-/* Next available IOS id.  */
+struct ios_context
+{
+  int next_id;         /* Next available IOS id.  */
+  struct ios *io_list; /* List of all IO spaces.  */
+  struct ios *cur_io;  /* Pointer to the current IOS.  */
+  void *foreign_dev_if_data; /* User-defined data for foreign device.  */
+};
 
-static int ios_next_id = 0;
-
-/* List of IO spaces, and pointer to the current one.  */
-
-static struct ios *io_list;
-static struct ios *cur_io;
+/* Only foreign device supports user-defined data.  */
+#define IOS_DEV_IF_DATA(dev_if)                                               \
+  ((dev_if) == ios_dev_ifs[0] ? ios_ctx.foreign_dev_if_data : NULL)
 
 /* The available backends are implemented in their own files, and
    provide the following interfaces.  */
@@ -122,6 +125,8 @@ static struct ios_dev_if *ios_dev_ifs[] =
    NULL,
   };
 
+static struct ios_context ios_ctx;
+
 void
 ios_init (void)
 {
@@ -132,8 +137,8 @@ void
 ios_shutdown (void)
 {
   /* Close and free all open IO spaces.  */
-  while (io_list)
-    ios_close (io_list);
+  while (ios_ctx.io_list)
+    ios_close (ios_ctx.io_list);
 }
 
 int
@@ -182,7 +187,7 @@ ios_open (const char *handler, uint64_t flags, int set_cur)
   io->dev_if = *dev_if;
 
   /* Do not re-open an already-open IO space.  */
-  for (ios i = io_list; i; i = i->next)
+  for (ios i = ios_ctx.io_list; i; i = i->next)
     if (STREQ (i->handler, io->handler))
       {
         error = IOS_EOPEN;
@@ -190,20 +195,21 @@ ios_open (const char *handler, uint64_t flags, int set_cur)
       }
 
   /* Open the device using the interface found above.  */
-  io->dev = io->dev_if->open (handler, flags, &iod_error, io->dev_if->data);
+  io->dev = io->dev_if->open (handler, flags, &iod_error,
+                              IOS_DEV_IF_DATA (io->dev_if));
   if (iod_error || io->dev == NULL)
     goto error;
 
   /* Increment the id counter after all possible errors are avoided.  */
-  io->id = ios_next_id++;
+  io->id = ios_ctx.next_id++;
 
   /* Add the newly created space to the list, and update the current
      space.  */
-  io->next = io_list;
-  io_list = io;
+  io->next = ios_ctx.io_list;
+  ios_ctx.io_list = io;
 
-  if (!cur_io || set_cur == 1)
-    cur_io = io;
+  if (!ios_ctx.cur_io || set_cur == 1)
+    ios_ctx.cur_io = io;
 
   return io->id;
 
@@ -231,23 +237,24 @@ ios_close (ios io)
   ret = io->dev_if->close (io->dev);
 
   /* Unlink the IOS from the list.  */
-  assert (io_list != NULL); /* The list contains at least this IO space.  */
-  if (io_list == io)
-    io_list = io_list->next;
+  /* The list contains at least this IO space.  */
+  assert (ios_ctx.io_list != NULL);
+  if (ios_ctx.io_list == io)
+    ios_ctx.io_list = ios_ctx.io_list->next;
   else
     {
-      for (tmp = io_list; tmp->next != io; tmp = tmp->next)
+      for (tmp = ios_ctx.io_list; tmp->next != io; tmp = tmp->next)
         ;
       tmp->next = io->next;
     }
 
   /* Set the new current IO.  */
-  if (io == cur_io)
-    cur_io = io_list;
+  if (io == ios_ctx.cur_io)
+    ios_ctx.cur_io = ios_ctx.io_list;
 
   /* Re-use the ID if this IOS was the most-recently opened IOS.  */
-  if (ios_next_id == io->id + 1)
-    --ios_next_id;
+  if (ios_ctx.next_id == io->id + 1)
+    --ios_ctx.next_id;
 
   if (io->num_sub_devs == 0)
     free (io);
@@ -272,13 +279,13 @@ ios_handler (ios io)
 ios
 ios_cur (void)
 {
-  return cur_io;
+  return ios_ctx.cur_io;
 }
 
 void
 ios_set_cur (ios io)
 {
-  cur_io = io;
+  ios_ctx.cur_io = io;
 }
 
 int
@@ -293,7 +300,7 @@ ios_search (const char *handler)
 {
   ios io;
 
-  for (io = io_list; io; io = io->next)
+  for (io = ios_ctx.io_list; io; io = io->next)
     if (STREQ (io->handler, handler))
       break;
 
@@ -305,7 +312,7 @@ ios_search_by_id (int id)
 {
   ios io;
 
-  for (io = io_list; io; io = io->next)
+  for (io = ios_ctx.io_list; io; io = io->next)
     if (io->id == id)
       break;
 
@@ -339,7 +346,7 @@ ios_set_bias (ios io, ios_off bias)
 ios
 ios_begin (void)
 {
-  return io_list;
+  return ios_ctx.io_list;
 }
 
 bool
@@ -360,7 +367,7 @@ ios_map (ios_map_fn cb, void *data)
   ios io;
   ios io_next;
 
-  for (io = io_list; io; io = io_next)
+  for (io = ios_ctx.io_list; io; io = io_next)
     {
       /* Note that the handler may close IO.  */
       io_next = io->next;
@@ -1656,12 +1663,13 @@ ios_foreign_iod (void)
 }
 
 int
-ios_register_foreign_iod (struct ios_dev_if *iod_if)
+ios_register_foreign_iod (struct ios_dev_if *iod_if, void *data)
 {
   if (ios_dev_ifs[0] != NULL)
     return IOS_ERROR;
 
   ios_dev_ifs[0] = iod_if;
+  ios_ctx.foreign_dev_if_data = data;
   return IOS_OK;
 }
 

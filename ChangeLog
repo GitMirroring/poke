@@ -1,3 +1,24 @@
+2023-04-29  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/ios-dev.h (struct ios_dev_if): Remove `data' field.
+	* libpoke/ios.h (ios_register_foreign_iod): Add new param: `data'.
+	* libpoke/ios.c (struct ios_context): New struct to put all
+	global states in one place.
+	(IOS_DEV_IF_DATA): New macro.
+	(ios_ctx): An instance of `struct ios_context' which contains
+	all global states.
+	(ios_shutdown): Adapt to use `ios_ctx' global variable.
+	(ios_open): Likewise.
+	(ios_close): Likewise.
+	(ios_cur): Likewise.
+	(ios_set_cur): Likewise.
+	(ios_search): Likewise.
+	(ios_search_by_id): Likewise.
+	(ios_set_bias): Likewise.
+	(ios_map): Likewise.
+	(ios_register_foreign_iod): Use new param.
+	* libpoke/libpoke.c (pk_register_iod): Update.
+
 2023-04-30  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/ios.h (ios_zombie_p): Fix typo in function declaration.

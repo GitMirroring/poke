@@ -366,7 +366,7 @@ struct ios_dev_if *ios_foreign_iod (void);
    Return IOS_OK otherwise.  */
 
 struct ios_dev_if;
-int ios_register_foreign_iod (struct ios_dev_if *iod_if);
+int ios_register_foreign_iod (struct ios_dev_if *iod_if, void *data);
 
 /* **************** Sub IO space **************** */
 
