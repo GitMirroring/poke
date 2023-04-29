@@ -68,8 +68,6 @@ struct pkl_compiler
   int error_on_warning;
   int quiet_p;
 #define PKL_MODULES_STEP 8
-  char **modules;
-  int num_modules;
   int lexical_cuckolding_p;
   pkl_alien_token_handler_fn alien_token_fn;
 };
@@ -117,10 +115,6 @@ pkl_new (pvm vm, const char *rt_path,
 
   /* Be verbose by default :) */
   compiler->quiet_p = 0;
-
-  /* No modules loaded initially.  */
-  compiler->modules = NULL;
-  compiler->num_modules = 0;
 
   /* Bootstrap the compiler.  An error bootstraping is an internal
      error and should be reported as such.  */
@@ -184,9 +178,6 @@ pkl_free (pkl_compiler compiler)
   size_t i;
 
   pkl_env_free (compiler->env);
-  for (i = 0; i < compiler->num_modules; ++i)
-    free (compiler->modules[i]);
-  free (compiler->modules);
   free (compiler);
 }
 
@@ -677,41 +668,6 @@ pkl_get_vm (pkl_compiler compiler)
   return compiler->vm;
 }
 
-void
-pkl_add_module (pkl_compiler compiler, const char *path)
-{
-  const char *module = last_component (path);
-
-  if (pkl_module_loaded_p (compiler, path))
-    return;
-
-  if (compiler->num_modules % PKL_MODULES_STEP == 0)
-    {
-      size_t size = ((compiler->num_modules + PKL_MODULES_STEP)
-                     * sizeof (char*));
-      compiler->modules = realloc (compiler->modules, size);
-      memset (compiler->modules + compiler->num_modules, 0,
-              PKL_MODULES_STEP * sizeof (char*));
-    }
-
-  compiler->modules[compiler->num_modules++] = strdup (module);
-}
-
-int
-pkl_module_loaded_p (pkl_compiler compiler, const char *path)
-{
-  const char *basename = last_component (path);
-  int i;
-
-  for (i = 0; i < compiler->num_modules; ++i)
-    {
-      if (STREQ (compiler->modules[i], basename))
-        return 1;
-    }
-
-  return 0;
-}
-
 char *
 pkl_resolve_module (pkl_compiler compiler,
                     const char *module,
@@ -785,7 +741,6 @@ pkl_load (pkl_compiler compiler, const char *module)
       || exit_exception != PVM_NULL)
     return 0;
 
-  pkl_add_module (compiler, module_filename);
   return 1;
 }
 

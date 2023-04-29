@@ -347,9 +347,6 @@ load_module (struct pkl_parser *parser,
       return 2;
     }
 
-  /* Add the module to the compiler's list of loaded modules.  */
-  pkl_add_module (parser->compiler, module_filename);
-
   /* However, the AST nodes shall be appended explicitly, which is
      achieved by returning them to the caller in the NODE
      argument.  */

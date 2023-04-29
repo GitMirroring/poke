@@ -301,18 +301,6 @@ int pkl_load (pkl_compiler compiler, const char *module);
 int pkl_defvar (pkl_compiler compiler,
                 const char *varname, pvm_val val);
 
-/* XXX the functions below are really internal to PKL.  */
-
-/* Given the path to a module file, determine the module is already
-   loaded in the given compiler.  */
-
-int pkl_module_loaded_p (pkl_compiler compiler, const char *path);
-
-/* Add the module in the given path to the list of modules loaded in
-   the compiler.  */
-
-void pkl_add_module (pkl_compiler compiler, const char *path);
-
 /* Given an AST node, run constant fold on it.  */
 
 pkl_ast_node pkl_constant_fold (pkl_compiler compiler, pkl_ast ast,
