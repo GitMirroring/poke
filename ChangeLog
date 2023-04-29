@@ -1,3 +1,28 @@
+2023-04-29  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/ios.h (ios_inc_sub_dev): New function to track sub
+	IO spaces.
+	(ios_dec_sub_dev): Likewise.
+	(ios_zombie_p): New function.
+	* libpoke/ios.c (struct ios): Add new fields `zombie_p` and
+	`num_sub_devs'.
+	(ios_inc_sub_dev): New function definition.
+	(ios_dec_sub_dev): Likewise.
+	(ios_zombie_p): Likewise.
+	(ios_open): Initialize new fields.
+	(ios_close): Instead of deallocating the IOS, it becomes a zombie,
+	if there's at least one sub-device that using this IOS.
+	* libpoke/ios-dev-sub.c (struct ios_dev_sub): Use `ios' instead of
+	ios id.
+	(ios_dev_sub_open): Update to track base IOS.
+	(ios_dev_sub_close): Likewise.
+	(ios_dev_sub_pread): Use base IOS directly instead of searching
+	using id.
+	(ios_dev_sub_pwrite): Likewise.
+	* testsuite/poke.pkl/open-sub-19.pk: New test.
+	* testusite/poke.pkl/open-sub-20.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
 2023-04-29  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-tab.y (format_arg_list): Reworked to avoid code

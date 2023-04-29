@@ -1968,6 +1968,8 @@ EXTRA_DIST = \
   poke.pkl/open-sub-16.pk \
   poke.pkl/open-sub-17.pk \
   poke.pkl/open-sub-18.pk \
+  poke.pkl/open-sub-19.pk \
+  poke.pkl/open-sub-20.pk \
   poke.pkl/open-sub-2.pk \
   poke.pkl/open-sub-3.pk \
   poke.pkl/open-sub-4.pk \

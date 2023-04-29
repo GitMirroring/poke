@@ -32,7 +32,7 @@
 
 struct ios_dev_sub
 {
-  int base_ios_id;
+  ios base_ios;
   ios_dev_off base;
   ios_dev_off size;
   char *name;
@@ -76,6 +76,7 @@ ios_dev_sub_open (const char *handler, uint64_t flags, int *error, void *data)
   struct ios_dev_sub *sub = malloc (sizeof (struct ios_dev_sub));
   const char *p;
   char *end;
+  int base_ios_id;
   int explicit_flags_p = (flags != 0);
 
   if (sub == NULL)
@@ -86,6 +87,7 @@ ios_dev_sub_open (const char *handler, uint64_t flags, int *error, void *data)
     }
 
   sub->name = NULL; /* To ease error management below.  */
+  sub->base_ios = NULL;
 
   /* Flags: only IOS_F_READ and IOS_F_WRITE are allowed.  */
   sub->flags = explicit_flags_p ? flags : IOS_F_READ | IOS_F_WRITE;
@@ -104,7 +106,7 @@ ios_dev_sub_open (const char *handler, uint64_t flags, int *error, void *data)
   p = handler + 6;
 
   /* Parse the Id of the base IOS.  This is an integer.  */
-  sub->base_ios_id = strtol (p, &end, 0);
+  base_ios_id = strtol (p, &end, 0);
   if (*p != '\0' && *end == '/')
     /* Valid integer found.  */;
   else
@@ -146,7 +148,7 @@ ios_dev_sub_open (const char *handler, uint64_t flags, int *error, void *data)
     uint64_t iflags;
 
     /* The referred IOS should exist.  */
-    base_ios = ios_search_by_id (sub->base_ios_id);
+    base_ios = ios_search_by_id (base_ios_id);
     if (base_ios == NULL)
       goto error;
 
@@ -170,6 +172,8 @@ ios_dev_sub_open (const char *handler, uint64_t flags, int *error, void *data)
         free (sub);
         return NULL;
       }
+    sub->base_ios = base_ios;
+    ios_inc_sub_dev (base_ios);
   }
 
   if (error)
@@ -189,6 +193,9 @@ ios_dev_sub_close (void *iod)
 {
   struct ios_dev_sub *sub = iod;
 
+  assert (sub->base_ios != NULL);
+
+  ios_dec_sub_dev (sub->base_ios);
   free (sub->name);
   free (sub);
   return IOD_OK;
@@ -201,18 +208,13 @@ ios_dev_sub_get_flags (void *iod)
   return sub->flags;
 }
 
-/* XXX search_by_id to get the base IOS in pread and pwrite is slow as
-   shit.  It would be good to cache the IOS at open time, but then we
-   have to make ios.c aware of subios so it will mark all sub-ios of a
-   given IOS when the later is closed.  */
-
 static int
 ios_dev_sub_pread (void *iod, void *buf, size_t count, ios_dev_off offset)
 {
   struct ios_dev_sub *sub = iod;
-  ios ios = ios_search_by_id (sub->base_ios_id);
+  ios ios = sub->base_ios;
 
-  if (ios == NULL || !(sub->flags & IOS_F_READ))
+  if (ios_zombie_p (ios) || !(sub->flags & IOS_F_READ))
     return IOD_ERROR;
 
   if (offset >= sub->size)
@@ -228,9 +230,9 @@ ios_dev_sub_pwrite (void *iod, const void *buf, size_t count,
                     ios_dev_off offset)
 {
   struct ios_dev_sub *sub = iod;
-  ios ios = ios_search_by_id (sub->base_ios_id);
+  ios ios = sub->base_ios;
 
-  if (ios == NULL || !(sub->flags & IOS_F_WRITE))
+  if (ios_zombie_p (ios) || !(sub->flags & IOS_F_WRITE))
     return IOD_ERROR;
 
   /* Sub-range IOS dot accept writes past the end of the IOS.  */

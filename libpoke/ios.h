@@ -238,6 +238,8 @@ ios_off ios_get_bias (ios io);
 
 void ios_set_bias (ios io, ios_off bias);
 
+int ios_zobmie_p (ios io);
+
 /* **************** Object read/write API ****************  */
 
 /* An integer with flags is passed to the read/write operations,
@@ -365,5 +367,13 @@ struct ios_dev_if *ios_foreign_iod (void);
 
 struct ios_dev_if;
 int ios_register_foreign_iod (struct ios_dev_if *iod_if);
+
+/* **************** Sub IO space **************** */
+
+/* Increase the number of sub-devices for IOS.  */
+void ios_inc_sub_dev (ios io);
+
+/* Decrease the number of sub-devices for IOS.  */
+void ios_dec_sub_dev (ios io);
 
 #endif /* ! IOS_H */

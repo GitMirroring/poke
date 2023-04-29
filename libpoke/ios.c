@@ -70,6 +70,8 @@
 struct ios
 {
   int id;
+  int zombie_p;
+  int num_sub_devs;
   char *handler;
   void *dev;
   struct ios_dev_if *dev_if;
@@ -146,6 +148,8 @@ ios_open (const char *handler, uint64_t flags, int set_cur)
   if (!io)
     return IOS_ENOMEM;
 
+  io->zombie_p = 0;
+  io->num_sub_devs = 0;
   io->handler = NULL;
   io->next = NULL;
   io->bias = 0;
@@ -245,7 +249,10 @@ ios_close (ios io)
   if (ios_next_id == io->id + 1)
     --ios_next_id;
 
-  free (io);
+  if (io->num_sub_devs == 0)
+    free (io);
+  else
+    io->zombie_p = 1;
 
   return IOD_ERROR_TO_IOS_ERROR (ret);
 }
@@ -272,6 +279,13 @@ void
 ios_set_cur (ios io)
 {
   cur_io = io;
+}
+
+int
+ios_zombie_p (ios io)
+{
+  assert (io);
+  return io->zombie_p;
 }
 
 ios
@@ -1649,4 +1663,19 @@ ios_register_foreign_iod (struct ios_dev_if *iod_if)
 
   ios_dev_ifs[0] = iod_if;
   return IOS_OK;
+}
+
+void
+ios_inc_sub_dev (ios io)
+{
+  ++io->num_sub_devs;
+}
+
+void
+ios_dec_sub_dev (ios io)
+{
+  assert (io->num_sub_devs != 0);
+  --io->num_sub_devs;
+  if (io->zombie_p && io->num_sub_devs == 0)
+    free (io);
 }
