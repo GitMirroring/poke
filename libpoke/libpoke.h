@@ -262,6 +262,10 @@ int pk_compile_expression_with_loc (pk_compiler pkc, const char *buffer,
 
 /* Load a module using the given compiler.
 
+   If the given module has been already be loaded, it is loaded again
+   and all the definitions are re-defined.  This is the same behavior
+   than the `load' Poke language construction.
+
    If the module cannot be loaded, return PK_ERROR.  Otherwise,
    return PK_OK.  */
 

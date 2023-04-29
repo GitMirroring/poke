@@ -1,3 +1,8 @@
+2023-04-29  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl.c (pkl_load): Allow loading modules more than once.
+	* libpoke/libpoke.h: Document this behavior.
+
 2023-04-28  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/libpoke.c (pk_load): Fix returned value.

@@ -780,9 +780,6 @@ pkl_load (pkl_compiler compiler, const char *module)
   if (!module_filename)
     return 0;
 
-  if (pkl_module_loaded_p (compiler, module_filename))
-    return 1;
-
   if (!pkl_execute_file (compiler, module_filename,
                          &exit_exception)
       || exit_exception != PVM_NULL)
