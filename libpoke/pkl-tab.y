@@ -1334,18 +1334,14 @@ format_arg_list:
           %empty
                 { $$ = NULL; }
         | format_arg
-        | format_arg_list ',' expression
+        | format_arg_list ',' format_arg
                 {
-                  pkl_ast_node arg
-                    = pkl_ast_make_format_arg (pkl_parser->ast, $3);
-                  PKL_AST_LOC (arg) = @3;
-
-                  $$ = pkl_ast_chainon ($1, arg);
+                  $$ = pkl_ast_chainon ($1, $3);
                 }
         ;
 
 format_arg:
-           expression
+          expression
                 {
                   $$ = pkl_ast_make_format_arg (pkl_parser->ast, $1);
                   PKL_AST_LOC ($$) = @$;

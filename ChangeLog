@@ -1,5 +1,10 @@
 2023-04-29  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-tab.y (format_arg_list): Reworked to avoid code
+	duplication.
+
+2023-04-29  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl.c (pkl_module_loaded_p): Remove function.
 	(pkl_add_module): Likewise.
 	* libpoke/pkl.h: ... and prototypes.
