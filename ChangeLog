@@ -1,3 +1,7 @@
+2023-04-29  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl.c (pkl_free): Remove unused variable.
+
 2023-04-29  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/ios.h (ios_inc_sub_dev): New function to track sub

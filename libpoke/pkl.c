@@ -175,8 +175,6 @@ out_of_memory:
 void
 pkl_free (pkl_compiler compiler)
 {
-  size_t i;
-
   pkl_env_free (compiler->env);
   free (compiler);
 }
