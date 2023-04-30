@@ -1,5 +1,85 @@
 2023-04-30  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/ios.h (ios_context): New type.
+	(ios_init): Returns `ios_context`.
+	(ios_shutdown): Add new `ios_context` param.
+	(ios_open): Likewise.
+	(ios_close): Likewise.
+	(ios_cur): Likewise.
+	(ios_set_cur): Likewise.
+	(ios_search): Likewise.
+	(ios_search_by_id): Likewise.
+	(ios_begin): Likewise.
+	(ios_map): Likewise.
+	(ios_register_foreign_iod): Likewise.
+	(ios_foreign_iod): Likewise.
+	* libpoke/ios-dev-sub.c (ios_dev_sub_open): Update.
+	* libpoke/ios.c (struct ios): Mark `dev_if' as const.
+	(struct ios_context): Add new field `foreign_dev_if'.
+	(IOS_DEV_IF_DATA): Remove macro.
+	(IOS_DEV_ZERO): New constant.
+	(IOS_DEV_MEM): Likewise.
+	(IOS_DEV_STREAM): Likewise.
+	(IOS_DEV_NBD): Likewise.
+	(IOS_DEV_PROC): Likewise.
+	(IOS_DEV_SUB): Likewise.
+	(IOS_DEV_FILE): Likewise.
+	(ios_dev_ifs): Update.
+	(ios_ctx): Remove.
+	(ios_dev_ifs_count): New constant.
+	(ios_context_data): New internal function.
+	(ios_init): Returns `ios_context'.
+	(ios_shutdown): Add new `ios_context' param.
+	(ios_open): Likewise.
+	(ios_close): Likewise.
+	(ios_cur): Likewise.
+	(ios_set_cur): Likewise.
+	(ios_search): Likewise.
+	(ios_search_by_id): Likewise.
+	(ios_begin): Likewise.
+	(ios_map): Likewise.
+	(ios_foreign_iod): Likewise.
+	(ios_register_foreign_iod): Likewise.
+	* libpoke/pvm.h (pvm_ios_context): New function.
+	* libpoke/pvm.c (pvm_ios_context): Likewise.
+	(PVM_STATE_IOS_CONTEXT): New macro.
+	(pvm_init): Add IOS initialization.
+	(pvm_shutdown): Add IOS finalization.
+	* libpoke/libpoke.c (struct _pk_compiler): Add `struct ios_dev_if`
+	for foreign IOD.
+	(pk_ios_completion_function): Update to use `ios_context'.
+	(pk_ios_cur): Likewise.
+	(pk_ios_set_cur): Likewise.
+	(pk_ios_search): Likewise.
+	(pk_ios_search_by_id): Likewise.
+	(pk_ios_open): Likewise.
+	(pk_ios_close): Likewise.
+	(pk_ios_map): Likewise.
+	(foreign_iod_if): Remove global variable.
+	(pk_register_iod): Rely on `pk_compiler' fields instead of global
+	variable. Use `ios_context'.
+	* libpoke/pvm.jitter (state-struct-backing-c): Add new
+	field `ios_context'.
+	(state-initialization-c): Initialize new field.
+	(PVM_PEEK): Update to use IOS context.
+	(PVM_POKE): Likewise.
+	(open): Likewise.
+	(close): Likewise.
+	(flush): Likewise.
+	(pushios): Likewise.
+	(popios): Likewise.
+	(ioflags): Likewise.
+	(iosize): Likewise.
+	(ionum): Likewise.
+	(ioref): Likewise.
+	(iohandler): Likewise.
+	(iogetb): Likewise.
+	(iosetb): Likewise.
+	(peeks): Likewise.
+	(pokes): Likewise.
+
+2023-04-30  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/ios.h (ios_get_dev_if): Add declaration.
 	(ios_get_dev): Likewise.
 	* libpoke/ios.c (ios_get_dev_if): Add `const' to function def.

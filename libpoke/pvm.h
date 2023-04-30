@@ -596,6 +596,10 @@ pvm pvm_init (void);
 
 void pvm_shutdown (pvm pvm);
 
+/* Get the IO space context.  */
+
+ios_context pvm_ios_context (pvm apvm);
+
 /* Get the current run-time environment of PVM.  */
 
 pvm_env pvm_get_env (pvm pvm);

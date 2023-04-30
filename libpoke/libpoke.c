@@ -38,6 +38,7 @@ struct _pk_compiler
   pvm vm;
 
   int status;  /* Status of last API function call. Initialized with PK_OK */
+  struct ios_dev_if foreign_iod_if;
   /* Data for completion machinery.  */
   pkl_ast_node complete_type;
   ios completion_ios;
@@ -462,7 +463,7 @@ pk_ios_completion_function (pk_compiler pkc, const char *text, int state)
 
   int len  = strlen (text);
 
-  IO = state == 0 ?  ios_begin () : ios_next (IO);
+  IO = state == 0 ?  ios_begin (pvm_ios_context (pkc->vm)) : ios_next (IO);
   while (1)
     {
       if (ios_end (IO))
@@ -571,14 +572,13 @@ pk_ios
 pk_ios_cur (pk_compiler pkc)
 {
   pkc->status = PK_OK;
-  return (pk_ios) ios_cur ();
+  return (pk_ios) ios_cur (pvm_ios_context (pkc->vm));
 }
 
 void
 pk_ios_set_cur (pk_compiler pkc, pk_ios io)
 {
-  /* XXX use pkc */
-  ios_set_cur ((ios) io);
+  ios_set_cur (pvm_ios_context (pkc->vm), (ios) io);
   pkc->status = PK_OK;
 }
 
@@ -598,16 +598,14 @@ pk_ios
 pk_ios_search (pk_compiler pkc, const char *handler)
 {
   pkc->status = PK_OK;
-  /* XXX use pkc */
-  return (pk_ios) ios_search (handler);
+  return (pk_ios) ios_search (pvm_ios_context (pkc->vm), handler);
 }
 
 pk_ios
 pk_ios_search_by_id (pk_compiler pkc, int id)
 {
   pkc->status = PK_OK;
-  /* XXX use pkc */
-  return (pk_ios) ios_search_by_id (id);
+  return (pk_ios) ios_search_by_id (pvm_ios_context (pkc->vm), id);
 }
 
 int
@@ -615,9 +613,9 @@ pk_ios_open (pk_compiler pkc,
              const char *handler, uint64_t flags, int set_cur_p)
 {
   int ret;
+  ios_context ios_ctx = pvm_ios_context (pkc->vm);
 
-  /* XXX use pkc */
-  if ((ret = ios_open (handler, flags, set_cur_p)) >= 0)
+  if ((ret = ios_open (ios_ctx, handler, flags, set_cur_p)) >= 0)
     return ret;
 
   switch (ret)
@@ -638,8 +636,7 @@ pk_ios_open (pk_compiler pkc,
 void
 pk_ios_close (pk_compiler pkc, pk_ios io)
 {
-  /* XXX use pkc */
-  ios_close ((ios) io);
+  ios_close (pvm_ios_context (pkc->vm), (ios) io);
   pkc->status = PK_OK;
 }
 
@@ -685,8 +682,7 @@ pk_ios_map (pk_compiler pkc,
             pk_ios_map_fn cb, void *data)
 {
   struct ios_map_fn_payload payload = { cb, data };
-  /* XXX use pkc */
-  ios_map (my_ios_map_fn, (void *) &payload);
+  ios_map (pvm_ios_context (pkc->vm), my_ios_map_fn, (void *) &payload);
   pkc->status = PK_OK;
 }
 
@@ -1094,14 +1090,14 @@ pk_print_val (pk_compiler pkc, pk_val val, pk_val *exit_exception)
     pkc->status = PK_OK;
 }
 
-static struct ios_dev_if foreign_iod_if;
-
 int
 pk_register_iod (pk_compiler pkc, struct pk_iod_if *iod_if)
 {
+  ios_context ios_ctx = pvm_ios_context (pkc->vm);
+
   pkc->status = PK_OK;
 
-#define CF(FN) foreign_iod_if.FN = iod_if->FN
+#define CF(FN) pkc->foreign_iod_if.FN = iod_if->FN
   CF (get_if_name);
   CF (handler_normalize);
   CF (open);
@@ -1113,7 +1109,7 @@ pk_register_iod (pk_compiler pkc, struct pk_iod_if *iod_if)
   CF (flush);
 #undef CF
 
-  (void) ios_register_foreign_iod (&foreign_iod_if, iod_if->data);
+  (void) ios_register_foreign_iod (ios_ctx, &pkc->foreign_iod_if, iod_if->data);
   return pkc->status;
 }
 

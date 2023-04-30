@@ -374,12 +374,13 @@ late-header-c
      IOTYPE##64_t value;                                                     \
      ios io;                                                                 \
      ios_off offset;                                                         \
+     ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);                \
                                                                              \
      offset = PVM_VAL_ULONG (JITTER_TOP_STACK ());                           \
      if (JITTER_UNDER_TOP_STACK () == PVM_NULL)                              \
-       io = ios_cur ();                                                      \
+       io = ios_cur (ios_ctx);                                               \
      else                                                                    \
-       io = ios_search_by_id (PVM_VAL_INT (JITTER_UNDER_TOP_STACK ()));      \
+       io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_UNDER_TOP_STACK ()));\
                                                                              \
      if (io == NULL)                                                         \
        PVM_RAISE_DFL (PVM_E_NO_IOS);                                         \
@@ -414,14 +415,15 @@ late-header-c
      pvm_val offset_val = JITTER_UNDER_TOP_STACK ();                         \
      ios io;                                                                 \
      ios_off offset;                                                         \
+     ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);                \
                                                                              \
      JITTER_DROP_STACK ();                                                   \
      JITTER_DROP_STACK ();                                                   \
                                                                              \
      if (JITTER_TOP_STACK () == PVM_NULL)                                    \
-       io = ios_cur ();                                                      \
+       io = ios_cur (ios_ctx);                                               \
      else                                                                    \
-       io = ios_search_by_id (PVM_VAL_INT (JITTER_TOP_STACK ()));            \
+       io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));   \
                                                                              \
      if (io == NULL)                                                         \
        PVM_RAISE_DFL (PVM_E_NO_IOS);                                         \
@@ -913,6 +915,7 @@ state-struct-backing-c
       jitter_stack_height canary_returnstack;
       jitter_stack_height canary_exceptionstack;
       pvm vm;
+      ios_context ios_ctx;
   end
 end
 
@@ -941,6 +944,7 @@ state-initialization-c
       jitter_state_backing->canary_exceptionstack = NULL;
       jitter_state_backing->exit_code = PVM_EXIT_OK;
       jitter_state_backing->result_value = PVM_NULL;
+      jitter_state_backing->ios_ctx = NULL;
       jitter_state_runtime->endian = IOS_ENDIAN_MSB;
       jitter_state_runtime->nenc = IOS_NENC_2;
       jitter_state_runtime->pretty_print = 0;
@@ -1484,8 +1488,9 @@ instruction open ()
   code
      char *filename = PVM_VAL_STR (JITTER_UNDER_TOP_STACK ());
      uint64_t flags = PVM_VAL_ULONG (JITTER_TOP_STACK ());
+     ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
 
-     int ret = ios_open (filename, flags, 0);
+     int ret = ios_open (ios_ctx, filename, flags, 0);
      JITTER_DROP_STACK ();
      JITTER_TOP_STACK () = PVM_MAKE_INT (ret, 32);
   end
@@ -1506,12 +1511,13 @@ instruction close ()
   branching # because of PVM_RAISE_DIRECT
   code
     int io_id = PVM_VAL_INT (JITTER_TOP_STACK ());
-    ios io = ios_search_by_id (io_id);
+    ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
+    ios io = ios_search_by_id (ios_ctx, io_id);
 
     if (io == NULL)
       PVM_RAISE_DFL (PVM_E_NO_IOS);
 
-    if (ios_close (io) != IOS_OK)
+    if (ios_close (ios_ctx, io) != IOS_OK)
       PVM_RAISE_DFL (PVM_E_IO);
 
     JITTER_DROP_STACK ();
@@ -1535,7 +1541,8 @@ instruction flush ()
   code
     ios_off offset = PVM_VAL_ULONG (JITTER_TOP_STACK ());
     int io_id = PVM_VAL_INT (JITTER_UNDER_TOP_STACK ());
-    ios io = ios_search_by_id (io_id);
+    ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
+    ios io = ios_search_by_id (ios_ctx, io_id);
 
     if (io == NULL)
       PVM_RAISE_DFL (PVM_E_IO);
@@ -1558,7 +1565,8 @@ end
 
 instruction pushios ()
   code
-    ios cur_io = ios_cur ();
+    ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
+    ios cur_io = ios_cur (ios_ctx);
 
     if (cur_io == NULL)
        JITTER_PUSH_STACK (PVM_MAKE_INT (-1, 32));
@@ -1579,11 +1587,12 @@ end
 instruction popios ()
   branching # because of PVM_RAISE_DIRECT
   code
-    ios io = ios_search_by_id (PVM_VAL_INT (JITTER_TOP_STACK ()));
+    ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
+    ios io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));
 
     if (io == NULL)
       PVM_RAISE_DFL (PVM_E_NO_IOS);
-    ios_set_cur (io);
+    ios_set_cur (ios_ctx, io);
     JITTER_DROP_STACK ();
   end
 end
@@ -1601,7 +1610,8 @@ end
 instruction ioflags ()
   branching # because of PVM_RAISE_DIRECT
   code
-    ios io = ios_search_by_id (PVM_VAL_INT (JITTER_TOP_STACK ()));
+    ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
+    ios io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));
 
     if (io == NULL)
       PVM_RAISE_DFL (PVM_E_NO_IOS);
@@ -1622,7 +1632,8 @@ end
 instruction iosize ()
   branching # because of PVM_RAISE_DIRECT
   code
-    ios io = ios_search_by_id (PVM_VAL_INT (JITTER_TOP_STACK ()));
+    ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
+    ios io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));
 
     if (io == NULL)
       PVM_RAISE_DFL (PVM_E_NO_IOS);
@@ -1645,9 +1656,10 @@ end
 instruction ionum ()
   code
     struct ionum_ctx ctx;
+    ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
 
     ctx.count = 0;
-    ios_map (ionum_callback, &ctx);
+    ios_map (ios_ctx, ionum_callback, &ctx);
     JITTER_PUSH_STACK (PVM_MAKE_ULONG (ctx.count, 64));
   end
 end
@@ -1666,11 +1678,12 @@ end
 instruction ioref ()
   branching # because of PVM_RAISE_DIRECT
   code
+    ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
     struct ioref_ctx ctx;
 
     ctx.index = PVM_VAL_ULONG (JITTER_TOP_STACK ());
     ctx.ios_id = -1;
-    ios_map (ioref_callback, &ctx);
+    ios_map (ios_ctx, ioref_callback, &ctx);
     if (ctx.ios_id == -1)
       PVM_RAISE_DIRECT (PVM_E_OUT_OF_BOUNDS);
     JITTER_PUSH_STACK (PVM_MAKE_INT (ctx.ios_id, 32));
@@ -1689,7 +1702,8 @@ end
 instruction iohandler ()
   branching # because of PVM_RAISE_DIRECT
   code
-    ios io = ios_search_by_id (PVM_VAL_INT (JITTER_TOP_STACK ()));
+    ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
+    ios io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));
 
     if (io == NULL)
       PVM_RAISE_DFL (PVM_E_NO_IOS);
@@ -1716,7 +1730,8 @@ instruction iogetb ()
   branching # because of PVM_RAISE_DIRECT
   code
     pvm_val type, magnitude, unit;
-    ios io = ios_search_by_id (PVM_VAL_INT (JITTER_TOP_STACK ()));
+    ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
+    ios io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));
 
     if (io == NULL)
       PVM_RAISE_DFL (PVM_E_NO_IOS);
@@ -1756,7 +1771,8 @@ instruction iosetb ()
   code
     pvm_val bias = JITTER_UNDER_TOP_STACK();
     pvm_val bias_type = PVM_VAL_OFF_TYPE (bias);
-    ios io = ios_search_by_id (PVM_VAL_INT (JITTER_TOP_STACK ()));
+    ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
+    ios io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));
 
     JITTER_DROP_STACK ();
 
@@ -6745,9 +6761,10 @@ instruction peeks ()
     ios_off offset;
     char *ios_str;
     int ret;
+    ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
 
     offset = PVM_VAL_ULONG (JITTER_TOP_STACK ());
-    io = ios_search_by_id (PVM_VAL_INT (JITTER_UNDER_TOP_STACK ()));
+    io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_UNDER_TOP_STACK ()));
 
     if (io == NULL)
       PVM_RAISE_DFL (PVM_E_NO_IOS);
@@ -6783,13 +6800,14 @@ instruction pokes ()
     ios_off offset;
     char *str;
     int ret;
+    ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
 
     str = PVM_VAL_STR (JITTER_TOP_STACK ());
     offset = PVM_VAL_ULONG (JITTER_UNDER_TOP_STACK ());
     JITTER_DROP_STACK();
     JITTER_DROP_STACK();
 
-    io = ios_search_by_id (PVM_VAL_INT (JITTER_TOP_STACK ()));
+    io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));
 
     if (io == NULL)
       PVM_RAISE_DFL (PVM_E_NO_IOS);

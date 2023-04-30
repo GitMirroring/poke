@@ -73,6 +73,7 @@ ios_dev_sub_handler_normalize (const char *handler, uint64_t flags, int* error)
 static void *
 ios_dev_sub_open (const char *handler, uint64_t flags, int *error, void *data)
 {
+  ios_context ios_ctx = (ios_context)data;
   struct ios_dev_sub *sub = malloc (sizeof (struct ios_dev_sub));
   const char *p;
   char *end;
@@ -148,7 +149,7 @@ ios_dev_sub_open (const char *handler, uint64_t flags, int *error, void *data)
     uint64_t iflags;
 
     /* The referred IOS should exist.  */
-    base_ios = ios_search_by_id (base_ios_id);
+    base_ios = ios_search_by_id (ios_ctx, base_ios_id);
     if (base_ios == NULL)
       goto error;
 

@@ -23,12 +23,14 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-/* The following two functions initialize and shutdown the IO poke
+typedef struct ios_context *ios_context;
+
+/* The following two functions intialize and shutdown the IO poke
    subsystem.  */
 
-void ios_init (void);
+ios_context ios_init (void);
 
-void ios_shutdown (void);
+void ios_shutdown (ios_context ios_ctx);
 
 /* "IO spaces" are the entities used in poke in order to abstract the
    heterogeneous devices that are suitable to be edited, such as
@@ -157,13 +159,14 @@ typedef int64_t ios_off;
    If no IOS_F_READ or IOS_F_WRITE flags are specified, then the IOS
    will be opened in whatever mode makes more sense.  */
 
-int ios_open (const char *handler, uint64_t flags, int set_cur);
+int ios_open (ios_context ios_ctx, const char *handler, uint64_t flags,
+              int set_cur);
 
 /* Close the given IO space, freing all used resources and flushing
    the space cache associated with the space.  Return IOS_OK on success
    and the error code on failure.  */
 
-int ios_close (ios io);
+int ios_close (ios_context ios_ctx, ios io);
 
 /* Return the flags which are active in a given IO.  Note that this
    doesn't necessarily correspond to the flags passed when opening the
@@ -179,21 +182,21 @@ const char *ios_handler (ios io);
 /* Return the current IO space, or NULL if there are no open
    spaces.  */
 
-ios ios_cur (void);
+ios ios_cur (ios_context ios_ctx);
 
 /* Set the current IO space to IO.  */
 
-void ios_set_cur (ios io);
+void ios_set_cur (ios_context ios_ctx, ios io);
 
 /* Return the IO space operating the given HANDLER.  Return NULL if no
    such space exists.  */
 
-ios ios_search (const char *handler);
+ios ios_search (ios_context ios_ctx, const char *handler);
 
 /* Return the IO space having the given ID.  Return NULL if no such
    space exists.  */
 
-ios ios_search_by_id (int id);
+ios ios_search_by_id (ios_context ios_ctx, int id);
 
 /* Return the ID of the given IO space.  */
 
@@ -218,7 +221,7 @@ void *ios_get_dev (ios ios);
 
 /* Return the first IO space.  */
 
-ios ios_begin (void);
+ios ios_begin (ios_context ios_ctx);
 
 /* Return the space following IO.  */
 
@@ -232,7 +235,7 @@ bool ios_end (const ios io);
 
 typedef void (*ios_map_fn) (ios io, void *data);
 
-void ios_map (ios_map_fn cb, void *data);
+void ios_map (ios_context ios_ctx, ios_map_fn cb, void *data);
 
 /* **************** IOS properties************************  */
 
@@ -369,7 +372,7 @@ int ios_flush (ios io, ios_off offset);
    If no forereign IO device is registered, return NULL.
    Otherwise return a pointer to the interface.  */
 
-struct ios_dev_if *ios_foreign_iod (void);
+struct ios_dev_if *ios_foreign_iod (ios_context ios_ctx);
 
 /* Register a foreign IO device.
 
@@ -379,7 +382,8 @@ struct ios_dev_if *ios_foreign_iod (void);
    Return IOS_OK otherwise.  */
 
 struct ios_dev_if;
-int ios_register_foreign_iod (struct ios_dev_if *iod_if, void *data);
+int ios_register_foreign_iod (ios_context ios_ctx,
+                              struct ios_dev_if *iod_if, void *data);
 
 /* **************** Sub IO space **************** */
 

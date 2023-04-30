@@ -40,6 +40,8 @@
   (PVM_STATE_BACKING_FIELD (& (PVM)->pvm_state, exit_code))
 #define PVM_STATE_VM(PVM)                               \
   (PVM_STATE_BACKING_FIELD (& (PVM)->pvm_state, vm))
+#define PVM_STATE_IOS_CONTEXT(PVM)                      \
+  (PVM_STATE_BACKING_FIELD (& (PVM)->pvm_state, ios_ctx))
 #define PVM_STATE_ENV(PVM)                              \
   (PVM_STATE_RUNTIME_FIELD (& (PVM)->pvm_state, env))
 #define PVM_STATE_ENDIAN(PVM)                           \
@@ -111,9 +113,20 @@ pvm_initialize_state (pvm apvm, struct pvm_state *state)
 pvm
 pvm_init (void)
 {
-  pvm apvm = calloc (1, sizeof (struct pvm));
+  pvm apvm;
+  ios_context ios_ctx;
+
+  apvm = calloc (1, sizeof (struct pvm));
   if (!apvm)
     return NULL;
+
+  /* Initialize the IO space.  */
+  ios_ctx = ios_init ();
+  if (!ios_ctx)
+    {
+      free (apvm);
+      return NULL;
+    }
 
   /* Initialize the memory allocation subsystem.  */
   pvm_alloc_initialize ();
@@ -126,6 +139,7 @@ pvm_init (void)
 
   /* Initialize the VM state.  */
   pvm_initialize_state (apvm, &apvm->pvm_state);
+  PVM_STATE_IOS_CONTEXT (apvm) = ios_ctx;
 
   /* Initialize pvm-program.  */
   pvm_program_init ();
@@ -241,6 +255,9 @@ pvm_shutdown (pvm apvm)
   /* Finalize values.  */
   pvm_val_finalize ();
 
+  /* Shutdown the IO space.  */
+  ios_shutdown (PVM_STATE_IOS_CONTEXT (apvm));
+
   /* Finalize the VM state.  */
   pvm_state_finalize (&apvm->pvm_state);
 
@@ -251,6 +268,14 @@ pvm_shutdown (pvm apvm)
 
   /* Finalize the memory allocator.  */
   pvm_alloc_finalize ();
+}
+
+ios_context
+pvm_ios_context (pvm apvm)
+{
+  assert (apvm);
+  assert (PVM_STATE_IOS_CONTEXT (apvm));
+  return PVM_STATE_IOS_CONTEXT (apvm);
 }
 
 enum ios_endian
