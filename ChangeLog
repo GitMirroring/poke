@@ -1,3 +1,7 @@
+2023-04-30  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/ios.h (ios_zombie_p): Fix typo in function declaration.
+
 2023-04-29  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl.c (pkl_free): Remove unused variable.

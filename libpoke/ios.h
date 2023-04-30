@@ -238,7 +238,7 @@ ios_off ios_get_bias (ios io);
 
 void ios_set_bias (ios io, ios_off bias);
 
-int ios_zobmie_p (ios io);
+int ios_zombie_p (ios io);
 
 /* **************** Object read/write API ****************  */
 
