@@ -203,6 +203,19 @@ int ios_get_id (ios io);
 
 const char *ios_get_dev_if_name (ios io);
 
+/* Return the IO device interface implementing the IO devices operated by
+   the given IO space.
+
+   Please keep this in-sync with declarations in `libpoke/ios-dev.h'.  */
+
+const struct ios_dev_if *ios_get_dev_if (ios ios);
+
+/* Return the IO device instance operated by the given IO space.
+
+   Please keep this in-sync with declarations in `libpoke/ios-dev.h'.  */
+
+void *ios_get_dev (ios ios);
+
 /* Return the first IO space.  */
 
 ios ios_begin (void);

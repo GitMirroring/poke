@@ -1650,7 +1650,7 @@ ios_get_dev (ios ios)
   return ios->dev;
 }
 
-struct ios_dev_if *
+const struct ios_dev_if *
 ios_get_dev_if (ios ios)
 {
   return ios->dev_if;

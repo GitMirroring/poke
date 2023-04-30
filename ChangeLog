@@ -1,3 +1,10 @@
+2023-04-30  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/ios.h (ios_get_dev_if): Add declaration.
+	(ios_get_dev): Likewise.
+	* libpoke/ios.c (ios_get_dev_if): Add `const' to function def.
+	* libpoke/ios-dev.h (ios_dev_if): Likewise.
+
 2023-04-29  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/ios-dev.h (struct ios_dev_if): Remove `data' field.

@@ -89,4 +89,4 @@ struct ios_dev_if
    used by IOD implementations.  */
 
 extern void *ios_get_dev (ios ios);
-extern struct ios_dev_if *ios_get_dev_if (ios ios);
+extern const struct ios_dev_if *ios_get_dev_if (ios ios);
