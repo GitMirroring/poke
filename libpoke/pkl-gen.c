@@ -874,7 +874,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
             {
               pkl_ast_node elem_name = PKL_AST_STRUCT_TYPE_FIELD_NAME (elem);
 
-              if (field_name
+              if (elem_name
                   && STREQ (PKL_AST_IDENTIFIER_POINTER (elem_name),
                             field_name_str))
                 {
