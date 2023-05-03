@@ -1,0 +1,8 @@
+/* { dg-do run } */
+
+type pkt = struct { uint<32> version; uint<2>; };
+
+/* { dg-command {var p = pkt {}} } */
+/* { dg-command {p.version = 3} } */
+/* { dg-command {p.version} } */
+/* { dg-output "3U" } */
