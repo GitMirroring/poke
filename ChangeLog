@@ -1,3 +1,20 @@
+2023-05-13  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pvm.jitter (PVM_MAKE_DFL_EXCEPTION): Define.
+	(PVM_POKE): Do not raise exceptions.
+	(pokei): Update description and remove branching jitter tag.
+	(pokeiu): Likewise.
+	(pokel): Likewise.
+	(pokelu): Likewise.
+	(pokedi): Likewise.
+	(pokediu): Likewise.
+	(pokedl): Likewise.
+	(pokedlu): Likewise.
+	(pokes): Likewise.
+	* libpoke/pkl-gen.c (pkl_gen_ps_type_integral): Check and handler
+	exceptions by poke* instructions.
+	(pkl_gen_ps_type_string): Likewise.
+
 2023-05-07  Patrick Trottier  <code@algolibre.net>
 
 	Various fixes in the manual.

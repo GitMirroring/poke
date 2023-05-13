@@ -288,6 +288,10 @@ late-header-c
    PVM_RAISE_DIRECT (exception);                                      \
  } while (0)
 
+#define PVM_MAKE_DFL_EXCEPTION(BASE)                                  \
+  pvm_make_exception (BASE,pvm_exception_names[BASE],BASE##_ESTATUS,  \
+                      NULL, NULL)
+
 #define PVM_RAISE_DFL(BASE)                                           \
  do                                                                   \
  {                                                                    \
@@ -403,7 +407,7 @@ late-header-c
    } while (0)
 
 /* Integral poke instructions.
-   ( IOS BOFF VAL -- )  */
+   ( IOS BOFF VAL -- EXCEPTION|null )  */
 #define PVM_POKE(TYPE,IOTYPE,NENC,ENDIAN,BITS,IOARGS)                        \
   do                                                                         \
    {                                                                         \
@@ -426,20 +430,22 @@ late-header-c
        io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));   \
                                                                              \
      if (io == NULL)                                                         \
-       PVM_RAISE_DFL (PVM_E_NO_IOS);                                         \
-     JITTER_DROP_STACK ();                                                   \
-                                                                             \
-     offset = PVM_VAL_ULONG (offset_val);                                    \
-     if ((ret = ios_write_##IOTYPE (IOARGS)) != IOS_OK)                      \
+       JITTER_TOP_STACK () = PVM_MAKE_DFL_EXCEPTION (PVM_E_NO_IOS);          \
+     else                                                                    \
        {                                                                     \
-         if (ret == IOS_EOF)                                                 \
-            PVM_RAISE_DFL (PVM_E_EOF);                                       \
+         JITTER_DROP_STACK ();                                               \
+                                                                             \
+         offset = PVM_VAL_ULONG (offset_val);                                \
+         if ((ret = ios_write_##IOTYPE (IOARGS)) == IOS_OK)                  \
+           JITTER_PUSH_STACK (PVM_NULL);                                     \
+         else if (ret == IOS_EOF)                                            \
+           JITTER_PUSH_STACK (PVM_MAKE_DFL_EXCEPTION (PVM_E_EOF));           \
          else if (ret == IOS_EPERM)                                          \
-            PVM_RAISE_DFL (PVM_E_PERM);                                      \
+           JITTER_PUSH_STACK (PVM_MAKE_DFL_EXCEPTION (PVM_E_PERM));          \
          else                                                                \
-            PVM_RAISE_DFL (PVM_E_IO);                                        \
-       }                                                                     \
-   } while (0)
+           JITTER_PUSH_STACK (PVM_MAKE_DFL_EXCEPTION (PVM_E_IO));            \
+      }                                                                      \
+ } while (0)
 
 /* Macro to call to a closure.  This is used in the instruction CALL,
    and also other instructions required to... call :D The argument
@@ -6626,10 +6632,12 @@ end
 # bits, poke it.  Use the negative encoding and endianness specified
 # in the instruction arguments.
 #
-# Stack: ( INT ULONG INT -- )
+# In case of an error, this instruction pushes an exception describing
+# the error condition.  Otherwise it pushes PVM_NULL.
+#
+# Stack: ( INT ULONG INT -- EXCEPTION|null )
 
 instruction pokei (?n nenc_printer,?n endian_printer,?n bits_printer)
-  branching # because of PVM_RAISE_DIRECT
   code
     PVM_POKE (INT, int, JITTER_ARGN0, JITTER_ARGN1, JITTER_ARGN2,
               PVM_IOS_ARGS_WRITE_INT);
@@ -6642,10 +6650,12 @@ end
 # of BITS bits, poke it.  Use the endianness specified in the
 # instruction arguments.
 #
-# Stack: ( INT ULONG INT -- )
+# In case of an error, this instruction pushes an exception describing
+# the error condition.  Otherwise it pushes PVM_NULL.
+#
+# Stack: ( INT ULONG INT -- EXCEPTION|null )
 
 instruction pokeiu (?n endian_printer,?n bits_printer)
-  branching # because of PVM_RAISE_DIRECT
   code
    PVM_POKE (UINT, uint, 0 /* unused */, JITTER_ARGN0, JITTER_ARGN1,
              PVM_IOS_ARGS_WRITE_UINT);
@@ -6658,10 +6668,12 @@ end
 # poke it.  Use the negative encoding and endianness specified in the
 # instruction arguments.
 #
-# Stack: ( INT ULONG LONG -- )
+# In case of an error, this instruction pushes an exception describing
+# the error condition.  Otherwise it pushes PVM_NULL.
+#
+# Stack: ( INT ULONG LONG -- EXCEPTION|null )
 
 instruction pokel (?n nenc_printer,?n endian_printer,?n bits_printer)
-  branching # because of PVM_RAISE_DIRECT
   code
     PVM_POKE (LONG, int, JITTER_ARGN0, JITTER_ARGN1, JITTER_ARGN2,
               PVM_IOS_ARGS_WRITE_INT);
@@ -6674,10 +6686,12 @@ end
 # BITS bits, poke it.  Use the endianness specified in the instruction
 # arguments.
 #
-# Stack: ( INT ULONG ULONG -- )
+# In case of an error, this instruction pushes an exception describing
+# the error condition.  Otherwise it pushes PVM_NULL.
+#
+# Stack: ( INT ULONG ULONG -- EXCEPTION|null)
 
 instruction pokelu (?n endian_printer,?n bits_printer)
-  branching # because of PVM_RAISE_DIRECT
   code
    PVM_POKE (ULONG, uint, 0 /* unused */, JITTER_ARGN0, JITTER_ARGN1,
              PVM_IOS_ARGS_WRITE_UINT);
@@ -6689,10 +6703,12 @@ end
 # Given an IOS descriptor, a bit-offset and an integer of BITS bits,
 # poke it.  Use the default negative encoding and endianness.
 #
-# Stack: ( INT ULONG INT -- )
+# In case of an error, this instruction pushes an exception describing
+# the error condition.  Otherwise it pushes PVM_NULL.
+#
+# Stack: ( INT ULONG INT -- EXCEPTION|null )
 
 instruction pokedi (?n bits_printer)
-  branching # because of PVM_RAISE_DIRECT
   code
     PVM_POKE (INT, int, PVM_STATE_RUNTIME_FIELD (nenc),
               PVM_STATE_RUNTIME_FIELD (endian),
@@ -6705,10 +6721,12 @@ end
 # Given an IOS descriptor, a bit-offset and an unsigned integer of BITS
 # bits, poke it.  Use the default endianness.
 #
-# Stack: ( INT ULONG UINT -- )
+# In case of an error, this instruction pushes an exception describing
+# the error condition.  Otherwise it pushes PVM_NULL.
+#
+# Stack: ( INT ULONG UINT -- EXCEPTION|null )
 
 instruction pokediu (?n bits_printer)
-  branching # because of PVM_RAISE_DIRECT
   code
     PVM_POKE (UINT, uint, PVM_STATE_RUNTIME_FIELD (nenc),
               PVM_STATE_RUNTIME_FIELD (endian),
@@ -6721,10 +6739,12 @@ end
 # Given an IOS descriptor, a bit-offset and a long of BITS bits, poke
 # it.  Use the default negative encoding and endianness.
 #
-# Stack: ( INT ULONG LONG -- )
+# In case of an error, this instruction pushes an exception describing
+# the error condition.  Otherwise it pushes PVM_NULL.
+#
+# Stack: ( INT ULONG LONG -- EXCEPTION|null )
 
 instruction pokedl (?n bits_printer)
-  branching # because of PVM_RAISE_DIRECT
   code
     PVM_POKE (LONG, int, PVM_STATE_RUNTIME_FIELD (nenc),
               PVM_STATE_RUNTIME_FIELD (endian),
@@ -6737,10 +6757,12 @@ end
 # Given an IOS descriptor, a bit-offset and an unsigned long of BITS
 # bits, poke it.  Use the default endianness.
 #
-# Stack: ( INT ULONG ULONG -- )
+# In case of an error, this instruction pushes an exception describing
+# the error condition.  Otherwise it pushes PVM_NULL.
+#
+# Stack: ( INT ULONG ULONG -- EXCEPTION|null )
 
 instruction pokedlu (?n bits_printer)
-  branching # because of PVM_RAISE_DIRECT
   code
     PVM_POKE (ULONG, uint, PVM_STATE_RUNTIME_FIELD (nenc),
               PVM_STATE_RUNTIME_FIELD (endian),
@@ -6791,10 +6813,12 @@ end
 #
 # Given an IOS descriptor, a bit-offset and a string, poke it.
 #
+# In case of an error, this instruction pushes an exception describing
+# the error condition.  Otherwise it pushes PVM_NULL.
+#
 # Stack: ( INT ULONG STR -- )
 
 instruction pokes ()
-  branching # because of PVM_RAISE_DIRECT
   code
     ios io;
     ios_off offset;
@@ -6810,18 +6834,20 @@ instruction pokes ()
     io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));
 
     if (io == NULL)
-      PVM_RAISE_DFL (PVM_E_NO_IOS);
+      JITTER_TOP_STACK () = PVM_MAKE_DFL_EXCEPTION (PVM_E_NO_IOS);
+    else
+      {
+        JITTER_DROP_STACK ();
 
-    JITTER_DROP_STACK ();
-    if ((ret = ios_write_string (io, offset, 0 /* flags */, str)) != IOS_OK)
-    {
-      if (ret == IOS_EOF)
-         PVM_RAISE_DFL (PVM_E_EOF);
-      else if (ret == IOS_EPERM)
-         PVM_RAISE_DFL (PVM_E_PERM);
-      else
-         PVM_RAISE_DFL (PVM_E_IO);
-    }
+        if ((ret = ios_write_string (io, offset, 0 /* flags */, str)) == IOS_OK)
+          JITTER_PUSH_STACK (PVM_NULL);
+        else if (ret == IOS_EOF)
+          JITTER_PUSH_STACK (PVM_MAKE_DFL_EXCEPTION (PVM_E_EOF));
+        else if (ret == IOS_EPERM)
+          JITTER_PUSH_STACK (PVM_MAKE_DFL_EXCEPTION (PVM_E_PERM));
+        else
+          JITTER_PUSH_STACK (PVM_MAKE_DFL_EXCEPTION (PVM_E_IO));
+     }
   end
 end
 
