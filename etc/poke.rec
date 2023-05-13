@@ -670,7 +670,8 @@ Description:
 +   struct { ... } size(24#B) 
 +
 + Because of data integrity, lazy mapping can only be done when mapping
-+ non-strict values.
++ non-strict values or for array types whose elements do not have
++ constraints in them.
 RFC: yes
 
 Summary: Save a nton instruction in pkl_asm_while
