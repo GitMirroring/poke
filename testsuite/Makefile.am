@@ -2259,6 +2259,7 @@ EXTRA_DIST = \
   poke.pkl/rla-offset-1.pk \
   poke.pkl/rtrace-1.pk \
   poke.pkl/rtrace-2.pk \
+  poke.pkl/rtrace-3.pk \
   poke.pkl/scons-1.pk \
   poke.pkl/scons-2.pk \
   poke.pkl/scons-3.pk \

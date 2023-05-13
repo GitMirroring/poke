@@ -1,5 +1,10 @@
 2023-05-13  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* testsuite/poke.pkl/rtrace-3.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
+
+2023-05-13  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pvm.jitter (RTRACE): New macro.
 	(rtrace): Call RTRACE.
 
