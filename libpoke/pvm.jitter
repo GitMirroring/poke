@@ -367,7 +367,7 @@ late-header-c
   io, offset, 0, bits, endian, value
 
 /* Integral peek instructions.
-   ( IOS BOFF -- VAL )  */
+   ( IOS BOFF -- [VAL] EXCEPTION|null )  */
 #define PVM_PEEK(TYPE,IOTYPE,NENC,ENDIAN,BITS,IOARGS)                        \
   do                                                                         \
    {                                                                         \
@@ -387,23 +387,26 @@ late-header-c
        io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_UNDER_TOP_STACK ()));\
                                                                              \
      if (io == NULL)                                                         \
-       PVM_RAISE_DFL (PVM_E_NO_IOS);                                         \
-                                                                             \
-     JITTER_DROP_STACK ();                                                   \
-     if ((ret = ios_read_##IOTYPE (IOARGS)) != IOS_OK)                       \
-       {                                                                     \
-         if (ret == IOS_EOF)                                                 \
-            PVM_RAISE_DFL (PVM_E_EOF);                                       \
-         else if (ret == IOS_ENOMEM)                                         \
-            PVM_RAISE (PVM_E_IO, pvm_literal_enomem, PVM_E_IO_ESTATUS);      \
-         else if (ret == IOS_EPERM)                                          \
-            PVM_RAISE_DFL (PVM_E_PERM);                                      \
-         else                                                                \
-            PVM_RAISE_DFL (PVM_E_IO);                                        \
-         JITTER_TOP_STACK () = PVM_NULL;                                     \
-       }                                                                     \
+       JITTER_TOP_STACK () = PVM_MAKE_DFL_EXCEPTION (PVM_E_NO_IOS);          \
      else                                                                    \
-       JITTER_TOP_STACK () = pvm_make_##TYPE (value, bits);                  \
+       {                                                                     \
+         JITTER_DROP_STACK ();                                               \
+         if ((ret = ios_read_##IOTYPE (IOARGS)) == IOS_OK)                   \
+           {                                                                 \
+             JITTER_TOP_STACK () = pvm_make_##TYPE (value, bits);            \
+             JITTER_PUSH_STACK (PVM_NULL);                                   \
+           }                                                                 \
+         else if (ret == IOS_EOF)                                            \
+           JITTER_TOP_STACK () = PVM_MAKE_DFL_EXCEPTION (PVM_E_EOF);         \
+         else if (ret == IOS_ENOMEM)                                         \
+           JITTER_TOP_STACK () = pvm_make_exception (PVM_E_IO,               \
+                                                     pvm_literal_enomem,     \
+                                                     PVM_E_IO_ESTATUS, NULL, NULL); \
+         else if (ret == IOS_EPERM)                                          \
+           JITTER_TOP_STACK () = PVM_MAKE_DFL_EXCEPTION (PVM_E_PERM);        \
+         else                                                                \
+           JITTER_TOP_STACK () = PVM_MAKE_DFL_EXCEPTION (PVM_E_IO);          \
+      }                                                                      \
    } while (0)
 
 /* Integral poke instructions.
@@ -6499,10 +6502,13 @@ end
 # width BITS bits.  The negative encoding and endianness to be used
 # are specified in the instruction arguments.
 #
-# Stack: ( INT ULONG -- INT )
+# If there is a problem performing the operation, this function
+# pushes an exception in the stack.  Otherwise, it pushes the
+# peeked value and PVM_NULL.
+#
+# Stack: ( INT ULONG -- [INT] EXCEPTION|null )
 
 instruction peeki (?n nenc_printer,?n endian_printer,?n bits_printer)
-  branching # because of PVM_RAISE_DIRECT
   code
     PVM_PEEK (int, int, JITTER_ARGN0, JITTER_ARGN1, JITTER_ARGN2,
               PVM_IOS_ARGS_INT);
@@ -6515,10 +6521,13 @@ end
 # value of width BITS bits.  The endianness to be used is specified in
 # the instruction arguments.
 #
-# Stack: ( INT ULONG -- INT )
+# If there is a problem performing the operation, this function
+# pushes an exception in the stack.  Otherwise, it pushes the
+# peeked value and PVM_NULL.
+#
+# Stack: ( INT ULONG -- [INT] EXCEPTION|null )
 
 instruction peekiu (?n endian_printer,?n bits_printer)
-  branching # because of PVM_RAISE_DIRECT
   code
    PVM_PEEK (uint, uint, 0 /* unused */, JITTER_ARGN0, JITTER_ARGN1,
              PVM_IOS_ARGS_UINT);
@@ -6531,10 +6540,13 @@ end
 # BITS bits.  The negative encoding and endianness to be used are
 # specified in the instruction arguments.
 #
-# Stack: ( INT ULONG -- LONG )
+# If there is a problem performing the operation, this function
+# pushes an exception in the stack.  Otherwise, it pushes the
+# peeked value and PVM_NULL.
+#
+# Stack: ( INT ULONG -- [LONG] EXCEPTION|null )
 
 instruction peekl (?n nenc_printer,?n endian_printer,?n bits_printer)
-  branching # because of PVM_RAISE_DIRECT
   code
     PVM_PEEK (long, int, JITTER_ARGN0, JITTER_ARGN1, JITTER_ARGN2,
               PVM_IOS_ARGS_INT);
@@ -6547,10 +6559,13 @@ end
 # of width BITS bits.  The endianness to be used is specified in the
 # instruction arguments.
 #
-# Stack: ( INT ULONG -- ULONG )
+# If there is a problem performing the operation, this function
+# pushes an exception in the stack.  Otherwise, it pushes the
+# peeked value and PVM_NULL.
+#
+# Stack: ( INT ULONG -- [ULONG] EXCEPTION|null )
 
 instruction peeklu (?n endian_printer,?n bits_printer)
-  branching # because of PVM_RAISE_DIRECT
   code
    PVM_PEEK (ulong, uint, 0 /* unused */, JITTER_ARGN0, JITTER_ARGN1,
              PVM_IOS_ARGS_UINT);
@@ -6562,10 +6577,13 @@ end
 # Given an IOS descriptor and a bit-offset, peek an integer value of
 # width BITS bits.  Use the default endianness and negative encoding.
 #
-# Stack: ( INT ULONG -- INT )
+# If there is a problem performing the operation, this function
+# pushes an exception in the stack.  Otherwise, it pushes the
+# peeked value and PVM_NULL.
+#
+# Stack: ( INT ULONG -- [INT] EXCEPTION|null )
 
 instruction peekdi (?n bits_printer)
-  branching # because of PVM_RAISE_DIRECT
   code
     PVM_PEEK (int, int, PVM_STATE_RUNTIME_FIELD (nenc),
               PVM_STATE_RUNTIME_FIELD (endian),
@@ -6578,10 +6596,13 @@ end
 # Given an IOS descriptor and a bit-offset, peek an unsigned integer
 # value of width BITS bits.  Use the default endianness.
 #
-# Stack: ( INT ULONG -- UINT )
+# If there is a problem performing the operation, this function
+# pushes an exception in the stack.  Otherwise, it pushes the
+# peeked value and PVM_NULL.
+#
+# Stack: ( INT ULONG -- [UINT] EXCEPTION|null )
 
 instruction peekdiu (?n bits_printer)
-  branching # because of PVM_RAISE_DIRECT
   code
     PVM_PEEK (uint, uint, PVM_STATE_RUNTIME_FIELD (nenc),
               PVM_STATE_RUNTIME_FIELD (endian),
@@ -6594,10 +6615,13 @@ end
 # Given an IOS descriptor and a bit-offset, peek a long value of width
 # BITS bits.  Use the default endianness and negative encoding.
 #
-# Stack: ( INT ULONG -- LONG )
+# If there is a problem performing the operation, this function
+# pushes an exception in the stack.  Otherwise, it pushes the
+# peeked value and PVM_NULL.
+#
+# Stack: ( INT ULONG -- [LONG] EXCEPTION|null )
 
 instruction peekdl (?n bits_printer)
-  branching # because of PVM_RAISE_DIRECT
   code
     PVM_PEEK (long, int, PVM_STATE_RUNTIME_FIELD (nenc),
               PVM_STATE_RUNTIME_FIELD (endian),
@@ -6610,10 +6634,13 @@ end
 # Given an IOS descriptor and a bit-offset, peek an unsigned long value
 # of width BITS bits.  Use the default endianness.
 #
-# Stack: ( INT ULONG -- ULONG )
+# If there is a problem performing the operation, this function
+# pushes an exception in the stack.  Otherwise, it pushes the
+# peeked value and PVM_NULL.
+#
+# Stack: ( INT ULONG -- [ULONG] EXCEPTION|null )
 
 instruction peekdlu (?n bits_printer)
-  branching # because of PVM_RAISE_DIRECT
   code
     PVM_PEEK (ulong, uint, PVM_STATE_RUNTIME_FIELD (nenc),
               PVM_STATE_RUNTIME_FIELD (endian),
@@ -6769,10 +6796,13 @@ end
 #
 # Given an IOS descriptor and a bit-offset, peek a string.
 #
-# Stack: ( INT ULONG -- STR )
+# If there is a problem performing the operation, this function
+# pushes an exception in the stack.  Otherwise, it pushes the
+# peeked value and PVM_NULL.
+#
+# Stack: ( INT ULONG -- [STR] EXCEPTION|null )
 
 instruction peeks ()
-  branching # because of PVM_RAISE_DIRECT
   code
     ios io;
     ios_off offset;
@@ -6784,24 +6814,27 @@ instruction peeks ()
     io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_UNDER_TOP_STACK ()));
 
     if (io == NULL)
-      PVM_RAISE_DFL (PVM_E_NO_IOS);
-
-    JITTER_DROP_STACK ();
-    if ((ret = ios_read_string (io, offset, 0 /* flags */, &ios_str)) != IOS_OK)
-    {
-      if (ret == IOS_EOF)
-         PVM_RAISE_DFL (PVM_E_EOF);
-      else if (ret == IOS_ENOMEM)
-         PVM_RAISE (PVM_E_IO, pvm_literal_enomem, PVM_E_IO_ESTATUS);
-      else if (ret == IOS_EPERM)
-         PVM_RAISE_DFL (PVM_E_PERM);
-      else
-         PVM_RAISE_DFL (PVM_E_IO);
-      JITTER_TOP_STACK () = PVM_NULL;
-    }
+      JITTER_TOP_STACK () = PVM_MAKE_DFL_EXCEPTION (PVM_E_NO_IOS);
     else
-      JITTER_TOP_STACK () = pvm_make_string (ios_str);
-  end
+      {
+        JITTER_DROP_STACK ();
+        if ((ret = ios_read_string (io, offset, 0 /* flags */, &ios_str)) == IOS_OK)
+          {
+            JITTER_TOP_STACK () = pvm_make_string (ios_str);
+            JITTER_PUSH_STACK (PVM_NULL);
+          }
+        else if (ret == IOS_EOF)
+          JITTER_TOP_STACK () = PVM_MAKE_DFL_EXCEPTION (PVM_E_EOF);
+        else if (ret == IOS_ENOMEM)
+          JITTER_TOP_STACK () = pvm_make_exception (PVM_E_IO,
+                                                    pvm_literal_enomem,
+                                                    PVM_E_IO_ESTATUS, NULL, NULL);
+        else if (ret == IOS_EPERM)
+          JITTER_TOP_STACK () = PVM_MAKE_DFL_EXCEPTION (PVM_E_PERM);
+        else
+          JITTER_TOP_STACK () = PVM_MAKE_DFL_EXCEPTION (PVM_E_IO);
+     }
+   end
 end
 
 # Instruction: pokes

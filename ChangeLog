@@ -1,5 +1,21 @@
 2023-05-13  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pvm.jitter (PVM_PEEK): Do not raise exceptions.
+	(peeki): Update description and remove branching jitter tag.
+	(peekiu): Likewise.
+	(peekl): Likewise.
+	(peeklu): Likewise.
+	(peekdi): Likewise.
+	(peekdiu): Likewise.
+	(peekdl): Likewise.
+	(peekdlu): Likewise.
+	(peeks): Likewise.
+	* libpoke/pkl-gen.c (pkl_gen_ps_type_integral): Check and handler
+	exceptions by peek* instructions.
+	(pkl_gen_ps_type_string): Likewise.
+
+2023-05-13  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pvm.jitter (close): Do not raise exceptions.
 	(flush): Likewise.
 	* libpoke/pkl-rt.pk (close): Adapt accordingly.

@@ -3156,6 +3156,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_type_integral)
     }
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_MAPPER))
     {
+      pvm_program_label label = pkl_asm_fresh_label (PKL_GEN_ASM);
+
       /* Stack: STRICT IOS BOFF */
       switch (PKL_GEN_PAYLOAD->endian)
         {
@@ -3173,6 +3175,12 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_type_integral)
         default:
           PK_UNREACHABLE ();
         }
+
+      /* Stack: EXCEPTION|null */
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BN, label);
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_RAISE);
+      pkl_asm_label (PKL_GEN_ASM, label);
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
 
       pkl_asm_insn (pasm, PKL_INSN_NIP); /* STRICT is not used.  */
     }
@@ -3699,8 +3707,16 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_type_string)
     }
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_MAPPER))
     {
+      pvm_program_label label = pkl_asm_fresh_label (PKL_GEN_ASM);
+
       /* Stack: STRICT IOS BOFF */
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEEKS);
+      /* Stack: EXCEPTION|null */
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BN, label);
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_RAISE);
+      pkl_asm_label (PKL_GEN_ASM, label);
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
+
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP); /* Get rid of STRICT */
     }
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_CONSTRUCTOR))
