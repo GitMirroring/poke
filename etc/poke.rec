@@ -1141,11 +1141,6 @@ Description:
 + - Time spent in the PVM.
 +  - Total amount of time.
 
-
-Summary: Write IEEE754 pickle
-Component: Pickles
-Kind: ENH
-
 Summary: Write RFC 8794 (ebml) pickle
 Component: Pickles
 Kind: ENH
