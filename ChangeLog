@@ -1,5 +1,10 @@
 2023-05-13  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pvm.jitter (RTRACE): New macro.
+	(rtrace): Call RTRACE.
+
+2023-05-13  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* doc/poke.texi (rtrace): New section.
 
 2023-05-13  Jose E. Marchesi  <jemarch@gnu.org>
