@@ -263,9 +263,11 @@ pvm_val pvm_make_array (pvm_val nelem, pvm_val type);
 pvm_val pvm_make_struct (pvm_val nfields, pvm_val nmethods, pvm_val type);
 
 /* Make a closure PVM value.
-   PROGRAM is a PVM program that conforms the body of the closure.  */
+   PROGRAM is a PVM program that conforms the body of the closure.
+   NAME is either PVM_NULL or a PVM string value containing the name of
+   the program value.  */
 
-pvm_val pvm_make_cls (pvm_program program);
+pvm_val pvm_make_cls (pvm_program program, pvm_val name);
 
 /* Compare two PVM values.
 

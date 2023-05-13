@@ -501,6 +501,7 @@ typedef struct pvm_type *pvm_type;
 #define PVM_VAL_CLS_PROGRAM(V) (PVM_VAL_CLS((V))->program)
 #define PVM_VAL_CLS_ENTRY_POINT(V) (PVM_VAL_CLS((V))->entry_point)
 #define PVM_VAL_CLS_ENV(V) (PVM_VAL_CLS((V))->env)
+#define PVM_VAL_CLS_NAME(V) (PVM_VAL_CLS((V))->name)
 
 /* A struct containing a PVM program.
    Defined elsewhere.  */
@@ -508,6 +509,7 @@ struct pvm_program;
 
 struct pvm_cls
 {
+  pvm_val name;
   struct pvm_program *program;
   pvm_program_program_point entry_point;
   struct pvm_env *env;

@@ -1974,7 +1974,8 @@ end
 instruction duc ()
   code
     pvm_val cls = JITTER_TOP_STACK ();
-    pvm_val new_cls = pvm_make_cls (PVM_VAL_CLS_PROGRAM (cls));
+    pvm_val new_cls = pvm_make_cls (PVM_VAL_CLS_PROGRAM (cls),
+                                    PVM_VAL_CLS_NAME (cls));
 
     JITTER_DROP_STACK ();
     JITTER_PUSH_STACK (new_cls);
@@ -4996,6 +4997,22 @@ end
 instruction spropc ()
   code
     /* FIXME not implemented yet */
+  end
+end
+
+
+## Closure instructions
+
+# Instruction: cgetn
+#
+# Push the name of the given closure value, or PVM_NULL if the
+# closure doesn't have a name.
+#
+# Stack: ( CLS -- CLS STR|null )
+
+instruction cgetn ()
+  code
+    JITTER_PUSH_STACK (PVM_VAL_CLS_NAME (JITTER_TOP_STACK ()));
   end
 end
 

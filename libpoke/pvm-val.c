@@ -567,11 +567,12 @@ pvm_make_closure_type (pvm_val rtype,
 }
 
 pvm_val
-pvm_make_cls (pvm_program program)
+pvm_make_cls (pvm_program program, pvm_val name)
 {
   pvm_val_box box = pvm_make_box (PVM_VAL_TAG_CLS);
   pvm_cls cls = pvm_alloc_cls ();
 
+  cls->name = name;
   cls->program = program;
   cls->entry_point = pvm_program_beginning (program);
   cls->env = NULL; /* This should be set by a PEC instruction before

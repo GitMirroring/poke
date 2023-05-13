@@ -9,4 +9,4 @@ fun lala = int: { return 10; }
 /* { dg-command {(lala())} } */
 /* { dg-output "\n10" } */
 /* { dg-command {(lala)} } */
-/* { dg-output "\n#<closure>" } */
+/* { dg-output "\n#<closure:lala>" } */

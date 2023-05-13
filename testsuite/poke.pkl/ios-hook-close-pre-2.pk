@@ -17,5 +17,5 @@ fun foo = (int<32> ios) void:
 /* { dg-command {try close (1); catch if E_inval { print "caught\n"; } } } */
 /* { dg-output "\ncaught" } */
 /* { dg-command {apop (ios_close_pre_hook) } } */
-/* { dg-output "\n#<closure>" } */
+/* { dg-output "\n#<closure:foo>" } */
 /* { dg-command {close (0); } } */

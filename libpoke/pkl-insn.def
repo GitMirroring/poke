@@ -312,6 +312,10 @@ PKL_DEF_INSN(PKL_INSN_SSET,"","sset")
 PKL_DEF_INSN(PKL_INSN_SSETI,"","sseti")
 PKL_DEF_INSN(PKL_INSN_SMODI,"","smodi")
 
+/* Closure instructions.  */
+
+PKL_DEF_INSN(PKL_INSN_CGETN,"","cgetn")
+
 /* Instructions to handle mapped values.  */
 
 PKL_DEF_INSN(PKL_INSN_MM,"","mm")

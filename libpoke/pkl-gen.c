@@ -458,6 +458,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
       {
         pvm_program program;
         pvm_val closure;
+        char *program_name = PKL_AST_FUNC_NAME (initial);
 
         if (PKL_AST_FUNC_PROGRAM (initial))
           program = PKL_AST_FUNC_PROGRAM (initial);
@@ -488,7 +489,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
             PKL_AST_FUNC_PROGRAM (initial) = program;
           }
 
-        closure = pvm_make_cls (program);
+        closure = pvm_make_cls (program,
+                                program_name ? pvm_make_string (program_name) : PVM_NULL);
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, closure);
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DUC);
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);
@@ -663,7 +665,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_lambda)
 
   PKL_GEN_POP_ASM;
   pvm_program_make_executable (program);
-  closure = pvm_make_cls (program);
+  closure = pvm_make_cls (program, PVM_NULL /* name */);
 
   pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, closure);
   pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DUC);
@@ -3326,7 +3328,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_function)
 
       /* Push the constructed closure and install the current lexical
          environment.  */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, pvm_make_cls (program));
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, pvm_make_cls (program,
+                                                              PVM_NULL));
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DUC);
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);
 

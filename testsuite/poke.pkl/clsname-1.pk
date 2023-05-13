@@ -1,0 +1,8 @@
+/* { dg-do run } */
+
+fun lala = (int i) void: {}
+
+/* { dg-command {lala} } */
+/* { dg-output "#<closure:lala>" } */
+/* { dg-command {lambda (int i) void: {} } } */
+/* { dg-output "\n#<closure>" } */

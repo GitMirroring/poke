@@ -1164,6 +1164,7 @@ EXTRA_DIST = \
   poke.pkl/close-1.pk \
   poke.pkl/close-2.pk \
   poke.pkl/close-diag-1.pk \
+  poke.pkl/clsname-1.pk \
   poke.pkl/compiler-passes-1.pk \
   poke.pkl/computed-diag-1.pk \
   poke.pkl/computed-diag-2.pk \

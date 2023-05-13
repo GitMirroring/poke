@@ -1,5 +1,26 @@
 2023-05-13  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pvm-val.h (PVM_VAL_CLS_NAME): Define.
+	(struct pvm_cls): New field `name'.
+	* libpoke/pvm-val.c (pvm_make_cls): Get a a `name' argument.
+	* libpoke/pkl-insn.def (PKL_INSN_CGETN): New instruction.
+	* libpoke/pvm.jitter (duc): Specify a name in pvm_make_cls.
+	(cgetn): New instruction.
+	* libpoke/pkl-gen.c (pkl_gen_pr_decl): Likewise.
+	(pkl_gen_ps_lambda): Likewise.
+	(pkl_gen_pr_type_function): Likewise.
+	* libpoke/ras: Likewise.
+	* libpoke/pkl-rt.pk (_pkl_print_format_any): Print closure names.
+	* testsuite/poke.pkl/clsname-1.pk: New test.
+	* testsuite/poke.pkl/arrays-15.pk: Update test.
+	* testsuite/poke.pkl/funcall-17.pk: Likewise.
+	* testsuite/poke.pkl/ios-hook-close-pre-2.pk: Likewise.
+	* testsuite/poke.pkl/scons-59.pk: Likewise.
+	* testsuite/poke.pkl/struct-method-17.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
+
+2023-05-13  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pvm.jitter (PVM_PEEK): Do not raise exceptions.
 	(peeki): Update description and remove branching jitter tag.
 	(peekiu): Likewise.
