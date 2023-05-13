@@ -3453,7 +3453,7 @@ Then to poke a foreground pixel would involve doing:
 (poke) byte @@ @var{offset}+2#B = fg3
 @end example
 
-At this point, you may feel that the perspective of mapping the pixels
+At this point, you may feel that the prospect of mapping the pixels
 of our image is not very appealing, considering we have 5x7 = 35
 pixels in our image. We will need to poke 35 * 3 = 105 bytes. We may
 feel tempted to, somehow, use a bigger integer to ``encapsulate'' the
@@ -3461,8 +3461,8 @@ bytes.  Using the bit-concatenation operator, we could do something
 like:
 
 @example
-(poke) var bg = 255UB::255UB::255UB
-(poke) var fg = 255UB::99UB::71UB
+(poke) var bg = 255UB:::255UB:::255UB
+(poke) var fg = 255UB:::99UB:::71UB
 (poke) bg
 (uint<24>) 0xffffff
 (poke) fg
