@@ -890,20 +890,6 @@ Description:
 +    ei_nident=0x0UB#B
 +  }
 
-Summary: PVM stack traces
-Component: PVM
-Kind: ENH
-Description:
-+ New instruction `rtrace N'
-+
-+ CALL can put the name of the called closure in the RETURNSTACK.
-+ RETURN pops it.
-+ RTRACE traverses the returnstack and DTRT.
-+
-+ The pvm_cls values should be expanded to hold the name of
-+ the closure (optional, can be "") and we can also use this
-+ name for disassemblying.
-
 Summary: Location tracking in PVM
 Component: PVM
 Kind: ENH

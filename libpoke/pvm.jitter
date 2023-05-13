@@ -457,6 +457,10 @@ late-header-c
 #define PVM_CALL(CLS)                                                        \
    do                                                                        \
     {                                                                        \
+       /* Push the name of the caller.  This can be PVM_NULL for */          \
+       /* anonymous functions.  */                                           \
+       JITTER_PUSH_RETURNSTACK (PVM_VAL_CLS_NAME ((CLS)));                   \
+                                                                             \
        /* Make place for the return address in the return stack.  */         \
        /* actual value will be written by the callee. */                     \
        JITTER_PUSH_UNSPECIFIED_RETURNSTACK();                                \
@@ -1848,6 +1852,9 @@ instruction return ()
     JITTER_DROP_RETURNSTACK();
 
     return_address = JITTER_TOP_RETURNSTACK();
+    JITTER_DROP_RETURNSTACK();
+
+    /* Drop the caller's name.  */
     JITTER_DROP_RETURNSTACK();
 
     JITTER_RETURN (return_address);
@@ -7010,6 +7017,41 @@ instruction strace (?n)
                                    NULL /* exit_exception */);
         pk_puts (pvm_literal_newline);
         i++;
+      }
+  end
+end
+
+# Instruction: rtrace DEPTH
+#
+# Print a debugging call trace.
+# The number of elements to print is specified in DEPTH.  A depth of
+# zero means to print the whole call trace.
+#
+# Stack: ( -- )
+
+instruction rtrace (?n)
+  non-relocatable
+  code
+    int i = 0;
+    int num_elems = (int) JITTER_ARGN0;
+    int num_elems_in_stack;
+
+    PVM_ASSERT (PVM_STATE_BACKING_FIELD (canary_stack) != NULL);
+
+    num_elems_in_stack = (pvm_val *)JITTER_HEIGHT_RETURNSTACK ()
+                         - (pvm_val *)PVM_STATE_BACKING_FIELD (canary_returnstack);
+    if (num_elems == 0 || num_elems > num_elems_in_stack)
+      num_elems = num_elems_in_stack;
+
+    PVM_ASSERT (num_elems_in_stack % 3 == 0);
+    for (i = 2; i < num_elems; i += 3)
+      {
+        pvm_val name = JITTER_AT_DEPTH_RETURNSTACK (i);
+
+        if (name == PVM_NULL)
+          pk_printf ("<lambda>\n");
+        else
+          pk_printf ("%s\n", PVM_VAL_STR (name));
       }
   end
 end

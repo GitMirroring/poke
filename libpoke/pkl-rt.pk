@@ -195,6 +195,11 @@ immutable fun strace = void:
   asm ("strace 0");
 }
 
+immutable fun rtrace = void:
+{
+  asm ("rtrace 0");
+}
+
 immutable fun term_get_color = int<32>[3]:
 {
   var r = 0, g = 0, b = 0;

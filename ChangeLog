@@ -1,5 +1,17 @@
 2023-05-13  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-insn.def (PKL_INSN_RTRACE): New instruction.
+	* libpoke/pvm.jitter (PVM_CALL): Push the caller's name in the
+	returnstack.
+	(return): Drop the caller's name from the returnstack.
+	(rtrace): New instruction.
+	* libpoke/pkl-rt.pk (rtrace): New function.
+	* testsuite/poke.pkl/rtrace-1.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
+	* etc/poke.rec (PVM stack traces): Remove as done.
+
+2023-05-13  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pvm-val.h (PVM_VAL_CLS_NAME): Define.
 	(struct pvm_cls): New field `name'.
 	* libpoke/pvm-val.c (pvm_make_cls): Get a a `name' argument.

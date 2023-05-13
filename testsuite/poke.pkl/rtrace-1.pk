@@ -1,0 +1,7 @@
+/* { dg-do run } */
+
+fun foo = void: { fun bar = void: { rtrace; } bar; }
+
+
+/* { dg-command { foo } } */
+/* { dg-output "rtrace\nbar\nfoo" } */
