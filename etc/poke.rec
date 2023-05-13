@@ -324,15 +324,6 @@ Description:
 + and also registered in the IOS as "problematic" areas, to be displayed
 + (and listed) as such.
 
-Summary: Operator to upunit an offset
-Component: Language
-Kind: ENH
-Description:
-+ ^1024#B -> 1#Kb
-+ or
-+ upunit (1024#B)
-
-
 Summary: Support recursive definitions
 Component: Language
 Kind: ENH
