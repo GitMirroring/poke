@@ -1,5 +1,25 @@
 2023-05-13  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-ast.h (PKL_AST_TYPE_FALLIBLE_UNKNOWN): Define.
+	(PKL_AST_TYPE_FALLIBLE_YES): Likewise.
+	(PKL_AST_TYPE_FALLIBLE_NO): Likewise.
+	(PKL_AST_TYPE_FALLIBLE): Likewise.
+	(struct pkl_ast_type): New field `fallible'.
+	* libpoke/pkl-ast.c (pkl_ast_make_type): Initialize newly created
+	types with unknown fallible.
+	(pkl_ast_make_integral_type): Initialize fallible.
+	(pkl_ast_make_string_type): Likewise.
+	(pkl_ast_make_void_type): Likewise.
+	(pkl_ast_make_offset_type): Likewise.
+	(pkl_ast_make_any_type): Likewise.
+	(pkl_ast_dup_type): Handle fallible.
+	(pkl_ast_type_is_fallible): New function.
+	(pkl_ast_print_1): Print fallible.
+	* libpoke/pkl-typify.c (pkl_typify2_ps_type): Set fallibility of
+	type nodes.
+
+2023-05-13  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* testsuite/poke.pkl/rtrace-3.pk: New test.
 	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
 

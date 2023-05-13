@@ -368,6 +368,8 @@ pkl_ast_make_type (pkl_ast ast)
   PKL_AST_TYPE_NAME (type) = NULL;
   PKL_AST_TYPE_COMPLETE (type)
     = PKL_AST_TYPE_COMPLETE_UNKNOWN;
+  PKL_AST_TYPE_FALLIBLE (type)
+    = PKL_AST_TYPE_FALLIBLE_UNKNOWN;
   return type;
 }
 
@@ -390,8 +392,8 @@ pkl_ast_make_integral_type (pkl_ast ast, size_t size, int signed_p)
   assert (signed_p == 0 || signed_p == 1);
 
   PKL_AST_TYPE_CODE (type) = PKL_TYPE_INTEGRAL;
-  PKL_AST_TYPE_COMPLETE (type)
-    = PKL_AST_TYPE_COMPLETE_YES;
+  PKL_AST_TYPE_COMPLETE (type) = PKL_AST_TYPE_COMPLETE_YES;
+  PKL_AST_TYPE_FALLIBLE (type) = PKL_AST_TYPE_FALLIBLE_NO;
   PKL_AST_TYPE_I_SIGNED_P (type) = signed_p;
   PKL_AST_TYPE_I_SIZE (type) = size;
   return type;
@@ -429,8 +431,8 @@ pkl_ast_make_string_type (pkl_ast ast)
   pkl_ast_node type = pkl_ast_make_type (ast);
 
   PKL_AST_TYPE_CODE (type) = PKL_TYPE_STRING;
-  PKL_AST_TYPE_COMPLETE (type)
-    = PKL_AST_TYPE_COMPLETE_NO;
+  PKL_AST_TYPE_COMPLETE (type) = PKL_AST_TYPE_COMPLETE_NO;
+  PKL_AST_TYPE_FALLIBLE (type) = PKL_AST_TYPE_FALLIBLE_NO;
   return type;
 }
 
@@ -440,8 +442,8 @@ pkl_ast_make_void_type (pkl_ast ast)
   pkl_ast_node type = pkl_ast_make_type (ast);
 
   PKL_AST_TYPE_CODE (type) = PKL_TYPE_VOID;
-  PKL_AST_TYPE_COMPLETE (type)
-    = PKL_AST_TYPE_COMPLETE_NO;
+  PKL_AST_TYPE_COMPLETE (type) = PKL_AST_TYPE_COMPLETE_NO;
+  PKL_AST_TYPE_FALLIBLE (type) = PKL_AST_TYPE_FALLIBLE_NO;
   return type;
 }
 
@@ -456,8 +458,8 @@ pkl_ast_make_offset_type (pkl_ast ast,
   assert (base_type && unit);
 
   PKL_AST_TYPE_CODE (type) = PKL_TYPE_OFFSET;
-  PKL_AST_TYPE_COMPLETE (type)
-    = PKL_AST_TYPE_COMPLETE_YES;
+  PKL_AST_TYPE_COMPLETE (type) = PKL_AST_TYPE_COMPLETE_YES;
+  PKL_AST_TYPE_FALLIBLE (type) = PKL_AST_TYPE_FALLIBLE_NO;
   PKL_AST_TYPE_O_UNIT (type) = ASTREF (unit);
   PKL_AST_TYPE_O_BASE_TYPE (type) = ASTREF (base_type);
   if (ref_type)
@@ -565,8 +567,8 @@ pkl_ast_make_any_type (pkl_ast ast)
 {
   pkl_ast_node type = pkl_ast_make_type (ast);
   PKL_AST_TYPE_CODE (type) = PKL_TYPE_ANY;
-  PKL_AST_TYPE_COMPLETE (type)
-    = PKL_AST_TYPE_COMPLETE_NO;
+  PKL_AST_TYPE_COMPLETE (type) = PKL_AST_TYPE_COMPLETE_NO;
+  PKL_AST_TYPE_FALLIBLE (type) = PKL_AST_TYPE_FALLIBLE_YES;
   return type;
 }
 
@@ -597,6 +599,7 @@ pkl_ast_dup_type (pkl_ast_node type)
 
   PKL_AST_TYPE_CODE (new) = PKL_AST_TYPE_CODE (type);
   PKL_AST_TYPE_COMPLETE (new) = PKL_AST_TYPE_COMPLETE (type);
+  PKL_AST_TYPE_FALLIBLE (new) = PKL_AST_TYPE_FALLIBLE (type);
 
   switch (PKL_AST_TYPE_CODE (type))
     {
@@ -1286,20 +1289,97 @@ pkl_ast_type_mappable_p (pkl_ast_node type)
   return 0;
 }
 
+/* Return PKL_AST_TYPE_FALLIBLE_YES if the given TYPE is fallible.
+   Return PKL_AST_TYPE_FALLIBLE_NO otherwise.  */
+
+int
+pkl_ast_type_is_fallible (pkl_ast_node type)
+{
+  int fallible = PKL_AST_TYPE_FALLIBLE_UNKNOWN;
+
+  /* The failability may have already be determined.  */
+  if (PKL_AST_TYPE_FALLIBLE (type) != PKL_AST_TYPE_FALLIBLE_UNKNOWN)
+    return PKL_AST_TYPE_FALLIBLE (type);
+
+  switch (PKL_AST_TYPE_CODE (type))
+    {
+      /* Certain types are never fallible.  */
+    case PKL_TYPE_INTEGRAL:
+    case PKL_TYPE_OFFSET:
+    case PKL_TYPE_FUNCTION:
+    case PKL_TYPE_STRING:
+    case PKL_TYPE_VOID:
+      fallible = PKL_AST_TYPE_FALLIBLE_NO;
+      break;
+      /* Certain other types are always fallible.  */
+    case PKL_TYPE_ANY:
+      fallible = PKL_AST_TYPE_FALLIBLE_YES;
+      break;
+      /* Structs may or not be fallible.  */
+    case PKL_TYPE_STRUCT:
+      {
+        pkl_ast_node elem;
+
+        fallible = PKL_AST_TYPE_FALLIBLE_NO;
+
+        /* Unions are always fallible. */
+        if (PKL_AST_TYPE_S_UNION_P (type))
+          {
+            fallible = PKL_AST_TYPE_FALLIBLE_YES;
+            break;
+          }
+
+        /* If any of the field types is fallible, or if any of the
+           fields have constraint expressions, then the struct type is
+           fallible.  */
+        for (elem = PKL_AST_TYPE_S_ELEMS (type);
+             elem;
+             elem = PKL_AST_CHAIN (elem))
+          {
+            pkl_ast_node elem_type;
+
+            if (PKL_AST_CODE (elem) != PKL_AST_STRUCT_TYPE_FIELD
+                || PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (elem))
+              continue;
+
+            elem_type = PKL_AST_STRUCT_TYPE_FIELD_TYPE (elem);
+            if (pkl_ast_type_is_fallible (elem_type)
+                || PKL_AST_STRUCT_TYPE_FIELD_CONSTRAINT (elem) != NULL)
+              {
+                fallible = PKL_AST_TYPE_FALLIBLE_YES;
+                break;
+              }
+          }
+        break;
+      }
+      /* Array types are fallible if their element type is
+         fallible.  */
+    case PKL_TYPE_ARRAY:
+      fallible = pkl_ast_type_is_fallible (PKL_AST_TYPE_A_ETYPE (type));
+      break;
+    default:
+      break;
+    }
+
+  assert (fallible != PKL_AST_TYPE_FALLIBLE_UNKNOWN);
+  return fallible;
+}
+
 /* Return PKL_AST_TYPE_COMPLETE_YES if the given TYPE is a complete
-   type.  Return PKL_AST_TYPE_COMPLETE_NO otherwise.  This function
-   assumes that the children of TYPE have correct completeness
-   annotations.  */
+   type.  Return PKL_AST_TYPE_COMPLETE_NO otherwise.  */
 
 int
 pkl_ast_type_is_complete (pkl_ast_node type)
 {
   int complete = PKL_AST_TYPE_COMPLETE_UNKNOWN;
 
+  /* The type completeness may have already be determined.  */
+  if (PKL_AST_TYPE_COMPLETE (type) != PKL_AST_TYPE_COMPLETE_UNKNOWN)
+    return PKL_AST_TYPE_COMPLETE (type);
+
   switch (PKL_AST_TYPE_CODE (type))
     {
-      /* Integral, offset, function and struct types are always
-         complete.  */
+      /* Integral, offset and function types are always complete.  */
     case PKL_TYPE_INTEGRAL:
     case PKL_TYPE_OFFSET:
     case PKL_TYPE_FUNCTION:
@@ -3285,6 +3365,7 @@ pkl_ast_print_1 (FILE *fp, pkl_ast_node ast, int indent)
               break;
             }
           PRINT_AST_IMM (complete, TYPE_COMPLETE, "%d");
+          PRINT_AST_IMM (fallible, TYPE_FALLIBLE, "%d");
           switch (PKL_AST_TYPE_CODE (ast))
             {
             case PKL_TYPE_INTEGRAL:

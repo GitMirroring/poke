@@ -3475,13 +3475,15 @@ struct pkl_phase pkl_phase_typify1 =
 
 
 
-/* Determine the completeness of a type node.  */
+/* Determine the completeness of a type node and whether the type is
+   fallible.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_typify2_ps_type)
 {
   pkl_ast_node type = PKL_PASS_NODE;
 
   PKL_AST_TYPE_COMPLETE (type) = pkl_ast_type_is_complete (type);
+  PKL_AST_TYPE_FALLIBLE (type) = pkl_ast_type_is_fallible (type);
 }
 PKL_PHASE_END_HANDLER
 

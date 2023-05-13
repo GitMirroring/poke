@@ -938,11 +938,17 @@ pkl_ast_node pkl_ast_make_func_type_arg (pkl_ast ast,
    When the size of a value of a given type can be determined at
    compile time, we say that such type is "complete".  Otherwise, we
    say that the type is "incomplete" and should be completed at
-   run-time.  */
+   run-time.
+
+   When a given type contains some sort of constraint that may fail at
+   either mapping or construction time, we say that such type is
+   "fallible".  Examples of such constraints are constraint
+   expressions in struct type fields or size bounders in arrays.  */
 
 #define PKL_AST_TYPE_CODE(AST) ((AST)->type.code)
 #define PKL_AST_TYPE_NAME(AST) ((AST)->type.name)
 #define PKL_AST_TYPE_COMPLETE(AST) ((AST)->type.complete)
+#define PKL_AST_TYPE_FALLIBLE(AST) ((AST)->type.fallible)
 #define PKL_AST_TYPE_COMPILED(AST) ((AST)->type.compiled)
 #define PKL_AST_TYPE_I_SIZE(AST) ((AST)->type.val.integral.size)
 #define PKL_AST_TYPE_I_SIGNED_P(AST) ((AST)->type.val.integral.signed_p)
@@ -983,6 +989,10 @@ pkl_ast_node pkl_ast_make_func_type_arg (pkl_ast ast,
 #define PKL_AST_TYPE_COMPLETE_YES 1
 #define PKL_AST_TYPE_COMPLETE_NO 2
 
+#define PKL_AST_TYPE_FALLIBLE_UNKNOWN 0
+#define PKL_AST_TYPE_FALLIBLE_YES 1
+#define PKL_AST_TYPE_FALLIBLE_NO 2
+
 struct pkl_ast_type
 {
   struct pkl_ast_common common;
@@ -991,6 +1001,7 @@ struct pkl_ast_type
   enum pkl_ast_type_code code;
   int complete;
   int compiled;
+  int fallible;
 
   union
   {
@@ -1086,6 +1097,7 @@ pkl_ast_node pkl_ast_sizeof_type (pkl_ast ast, pkl_ast_node type);
 size_t pkl_ast_sizeof_integral_type (pkl_ast_node type);
 
 int pkl_ast_type_is_complete (pkl_ast_node type);
+int pkl_ast_type_is_fallible (pkl_ast_node type);
 
 void pkl_print_type (FILE *out, pkl_ast_node type, int use_given_name);
 
