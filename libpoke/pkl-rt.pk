@@ -173,7 +173,13 @@ immutable fun set_endian = (int<32> endian) int<32>:
 
 immutable fun flush = (int<32> ios, offset<uint<64>,1> offset) void:
 {
-  asm ("ogetm; nip; flush" :: ios, offset);
+  asm ("ogetm
+        nip
+        flush
+        bn .done
+        raise
+      .done:
+        drop" :: ios, offset);
 }
 
 immutable fun gettime = int<64>[2]:
@@ -969,7 +975,11 @@ immutable fun open = (string handler, uint<64> flags = 0) int<32>:
 immutable fun close = (int<32> ios) void:
 {
   _pkl_run_ios_close_pre_hook (ios);
-  asm ("close" :: ios);
+  asm ("close
+        bn .done
+        raise
+      .done:
+        drop" :: ios);
   _pkl_run_ios_close_hook (ios);
 }
 

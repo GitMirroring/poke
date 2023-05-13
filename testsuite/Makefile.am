@@ -1378,6 +1378,7 @@ EXTRA_DIST = \
   poke.pkl/field-init-diag-5.pk \
   poke.pkl/field-init-diag-6.pk \
   poke.pkl/field-init-diag-7.pk \
+  poke.pkl/flush-1.pk \
   poke.pkl/for-1.pk \
   poke.pkl/for-2.pk \
   poke.pkl/for-3.pk \

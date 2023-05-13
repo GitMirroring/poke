@@ -1507,26 +1507,24 @@ end
 # Close an IO space.  The descriptor of the space to close is provided
 # on the stack as a signed integer.
 #
-# If the specified IO space doesn't exist, this instruction raises
-# PVM_E_NO_IOS. If the operation fails, it raises PVM_E_IO.
+# If the specified IO space doesn't exist, this instruction pushes
+# PVM_E_NO_IOS. If the operation fails, it pushes PVM_E_IO.  Otherwise,
+# it pushes PVM_NULL
 #
-# Stack: ( INT -- )
-# Exceptions: PVM_E_NO_IOS, PVM_E_IO
+# Stack: ( INT -- EXCEPTION|null )
 
 instruction close ()
-  branching # because of PVM_RAISE_DIRECT
   code
     int io_id = PVM_VAL_INT (JITTER_TOP_STACK ());
     ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
     ios io = ios_search_by_id (ios_ctx, io_id);
 
     if (io == NULL)
-      PVM_RAISE_DFL (PVM_E_NO_IOS);
-
-    if (ios_close (ios_ctx, io) != IOS_OK)
-      PVM_RAISE_DFL (PVM_E_IO);
-
-    JITTER_DROP_STACK ();
+      JITTER_TOP_STACK () = PVM_MAKE_DFL_EXCEPTION (PVM_E_NO_IOS);
+    else if (ios_close (ios_ctx, io) != IOS_OK)
+      JITTER_TOP_STACK () = PVM_MAKE_DFL_EXCEPTION (PVM_E_IO);
+    else
+      JITTER_TOP_STACK () = PVM_NULL;
   end
 end
 
@@ -1536,28 +1534,25 @@ end
 # Flush an IO space.  The descriptor of the space to flush, and the
 # bit-offset up to which perform the flushing are provided on the stack.
 #
-# If the specified IO space doesn't exist, this instruction raises
-# PVM_E_IO.
+# If the specified IO space doesn't exist, this instruction pushes
+# PVM_E_NO_IOS. If the operation fails, it pushes PVM_E_IO.  Otherwise,
+# it pushes PVM_NULL
 #
-# Stack: ( INT ULONG -- )
-# Exceptions: PVM_E_IO
+# Stack: ( INT ULONG -- EXCEPTION|null )
 
 instruction flush ()
-  branching # because of PVM_RAISE_DIRECT
   code
     ios_off offset = PVM_VAL_ULONG (JITTER_TOP_STACK ());
     int io_id = PVM_VAL_INT (JITTER_UNDER_TOP_STACK ());
     ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
     ios io = ios_search_by_id (ios_ctx, io_id);
 
+    JITTER_DROP_STACK ();
+
     if (io == NULL)
-      PVM_RAISE_DFL (PVM_E_IO);
-
-    if (ios_flush (io, offset) != IOS_OK)
-      PVM_RAISE_DFL (PVM_E_IO);
-
-    JITTER_DROP_STACK ();
-    JITTER_DROP_STACK ();
+      JITTER_TOP_STACK () = PVM_MAKE_DFL_EXCEPTION (PVM_E_NO_IOS);
+    else if (ios_flush (io, offset) != IOS_OK)
+      JITTER_TOP_STACK () = PVM_MAKE_DFL_EXCEPTION (PVM_E_IO);
   end
 end
 

@@ -1,5 +1,14 @@
 2023-05-13  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pvm.jitter (close): Do not raise exceptions.
+	(flush): Likewise.
+	* libpoke/pkl-rt.pk (close): Adapt accordingly.
+	(flush): Likewise.
+	* testsuite/poke.pkl/flush-1.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
+
+2023-05-13  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pvm.jitter (PVM_MAKE_DFL_EXCEPTION): Define.
 	(PVM_POKE): Do not raise exceptions.
 	(pokei): Update description and remove branching jitter tag.
