@@ -7,6 +7,14 @@ See the manual for detailed information.
   are permitted in any medium without royalty provided the copyright
   notice and this notice are preserved.
 
+ Version 3.2 (13 May 2023)
+* Bug fixes
+
+   - Fix value returned by the libpoke function pk_load.
+
+   - Fix a very annoying regression that resulted in a segfault when
+     doing l-value maps of struct values having anonymous fields.
+
  Version 3.1 (17 April 2023)
 * Bug fixes
 

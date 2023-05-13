@@ -1,5 +1,10 @@
 2023-05-13  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* NEWS: Add entries for 3.2.
+	* doc/gendocs_template (For version 3.2): Update version to 3.2.
+
+2023-05-13  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* testsuite/poke.pvm/pvm-insns-test.pk: Add tests for cgetn, nn,
 	nnn, eqi, eqiu, eql, eqlu, eqs, nei, neiu, nel, nelu, nes, lti,
 	ltiu, ltl, ltlu, lts, gti, gtiu, gtl, gtlu, gts.
