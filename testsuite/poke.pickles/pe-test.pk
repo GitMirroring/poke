@@ -54,11 +54,6 @@ var tests = [
     name = "PE_Name.set_offset",
     func = lambda (string name) void:
       {
-        fun makechars = (string s) uint<8>[]:
-        {
-          return stoca (s) + uint<8>[8 - s'length]();
-        }
-
         /* Less than 8 chars.  */
         var name = PE_Name { };
         name.set_offset (9999999#B);
