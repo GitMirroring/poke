@@ -3,7 +3,8 @@
 	* pickles/base64.pk: New file.
 	* testsuite/poke.pickles/base64-test.pk: Likewise.
 	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
-	* doc/poke.texi (base64): New section.
+	* testsuite/poke.pickles/pe-test.pk: Add tests for PE names
+	encoding and decoding.
 
 2023-05-14  Jose E. Marchesi  <jemarch@gnu.org>
 

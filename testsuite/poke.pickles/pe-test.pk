@@ -17,12 +17,58 @@
  */
 
 load pktest;
+load base64;
 load pe;
 
 var tests = [
   PkTest {
     name = "load pe pickle",
-  },];
+  },
+  PkTest {
+    name = "PE_Name.get_offset",
+    func = lambda (string name) void:
+      {
+        fun makechars = (string s) uint<8>[]:
+        {
+          return stoca (s) + uint<8>[8 - s'length]();
+        }
+
+        /* Less than 8 chars.  */
+        var name = PE_Name { chars = makechars ("foo") };
+        assert (name.get_offset == 0#B);
+        /* Exactly 8 chars.  */
+        name = PE_Name { chars = makechars ("abcdefgh") };
+        assert (name.get_offset == 0#B);
+        /* More than 8 chars but less than 7 digits.  */
+        name = PE_Name { chars = makechars ("/1234") };
+        assert (name.get_offset == 1234#B);
+        /* More than 8 chars and exactly 7 digits.  */
+        name = PE_Name { chars = makechars ("/9999999") };
+        assert (name.get_offset == 9999999#B);
+        /* More than 8 chars and bigger than 7 digits.  */
+        name = PE_Name { chars = makechars ("//AJiWgA") };
+        assert (name.get_offset == 10000000#B);
+      }
+  },
+  PkTest {
+    name = "PE_Name.set_offset",
+    func = lambda (string name) void:
+      {
+        fun makechars = (string s) uint<8>[]:
+        {
+          return stoca (s) + uint<8>[8 - s'length]();
+        }
+
+        /* Less than 8 chars.  */
+        var name = PE_Name { };
+        name.set_offset (9999999#B);
+        assert (catos (name.chars) == "/9999999");
+        /* More than 8 chars.  */
+        name.set_offset (10000000#B);
+        assert (catos (name.chars) == "//AJiWgA");
+      }
+  },
+];
 
 var ok = pktest_run (tests);
 exit (ok ? 0 : 1);

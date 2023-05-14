@@ -17,6 +17,7 @@
  */
 
 load time; /* For POSIX_Time32 */
+load base64;
 load coff;
 
 /* Supported architectures/machines.  */
@@ -251,8 +252,9 @@ var PE_SEC_F_TYPE_NO_PAD = 0x0008U,
 
 /* PE names.
 
-   COFF names are sort of ugly (see COFF_Name in coff.pk) but the
-   PE/COFF variant is an atrocity.  */
+   COFF names are sort of ugly (see COFF_Name in coff.pk).
+   The PE/COFF variant /ASCII is an atrocity.
+   The Microsoft extension to support //BASE64 is unspeakable filth. */
 
 type PE_Name =
   struct
@@ -261,7 +263,10 @@ type PE_Name =
        string is exactly 8 characters long, there is no terminating
        null. For longer names, this field contains a slash (/) that is
        followed by an ASCII representation of a decimal number that is
-       an offset into the string table.  */
+       an offset into the string table.  But if that offset needs more
+       than 7 digits, the field contains two slashes (//) followed by
+       a mutilated base64 encoding of a 32-bit unsigned integer in big
+       endian, without the two trailing padding = characters!.  */
     uint<8>[8] chars;
 
     /* Offset in the COFF string table for this name.  If the length
@@ -273,12 +278,29 @@ type PE_Name =
     {
       if (chars[0] != '/')
         return 0#B;
-      return atoi (catos (chars[1:]))#B;
+      if (chars[1] == '/')
+        return (base64_decode (catos (chars[2:]) + "==") as uint<32>)#B;
+      else
+        return atoi (catos (chars[1:]))#B;
     }
 
     method set_offset = (offset<uint<32>,B> offset) void:
     {
-      stoca ("/" + format ("%i32d", offset'magnitude), chars);
+      /* Note 9999999 is the maximum number that can be encoded
+         with seven ASCII characters.  */
+      if (offset > 9999999#B)
+        {
+          // XXX This requires array deintegrators.
+          // stoca ("//" + base64_encode (offset'magnitude as uint<8>), chars);
+          var m = offset'magnitude;
+          stoca ("//" + base64_encode ([(m .>> 24 & 0xff) as uint<8>,
+                                        (m .>> 16 & 0xff) as uint<8>,
+                                        (m .>>  8 & 0xff) as uint<8>,
+                                        (m & 0xff) as uint<8>])[:6],
+                 chars);
+        }
+      else
+        stoca ("/" + format ("%i32d", offset'magnitude), chars);
     }
 
     method match_p = (string s) int<32>:
