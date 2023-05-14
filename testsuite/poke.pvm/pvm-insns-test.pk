@@ -576,6 +576,159 @@ var tests = [
       }
   },
   PkTest {
+    name = "lei",
+    func = lambda (string name) void:
+      {
+        assert (asm int<32>: ("lei; nip2" : 1, 2) == 1);
+        assert (asm int<32>: ("lei; nip2" : 100, 100) == 1);
+        assert (asm int<32>: ("lei; nip2" : -200, -200) == 1);
+        assert (asm int<32>: ("lei; nip2" : 1 as int<3>, 2 as int<3>) == 1);
+        assert (asm int<32>: ("lei; nip2" : 2 as int<3>, 1 as int<3>) == 0);
+      }
+  },
+  PkTest {
+    name = "leiu",
+    func = lambda (string name) void:
+      {
+        assert (asm int<32>: ("leiu; nip2" : 1U, 2U) == 1);
+        assert (asm int<32>: ("leiu; nip2" : 100U, 100U) == 1);
+        assert (asm int<32>: ("leiu; nip2" : 1 as uint<3>, 2 as uint<3>) == 1);
+        assert (asm int<32>: ("leiu; nip2" : 2 as uint<7>, 1 as uint<7>) == 0);
+      }
+  },
+  PkTest {
+    name = "lel",
+    func = lambda (string name) void:
+      {
+        assert (asm int<32>: ("lel; nip2" : 1L, 2L) == 1);
+        assert (asm int<32>: ("lel; nip2" : 100L, 100L) == 1);
+        assert (asm int<32>: ("lel; nip2" : -200L, -200L) == 1);
+        assert (asm int<32>: ("lel; nip2" : 1 as int<52>, 2 as int<52>) == 1);
+        assert (asm int<32>: ("lel; nip2" : 2 as int<33>, 1 as int<33>) == 0);
+      }
+  },
+  PkTest {
+    name = "lelu",
+    func = lambda (string name) void:
+      {
+        assert (asm int<32>: ("lelu; nip2" : 1UL, 2LU) == 1);
+        assert (asm int<32>: ("lelu; nip2" : 100LU, 100UL) == 1);
+        assert (asm int<32>: ("lelu; nip2" : 1 as uint<52>, 2 as uint<52>) == 1);
+        assert (asm int<32>: ("lelu; nip2" : 2 as uint<33>, 1 as uint<33>) == 0);
+      }
+  },
+  PkTest {
+    name = "les",
+    func = lambda (string name) void:
+      {
+        assert (asm int<32>: ("les; nip2" : "", "") == 1);
+        assert (asm int<32>: ("les; nip2" : "foo", "bar") == 0);
+        assert (asm int<32>: ("les; nip2" : "bar", "foo") == 1);
+      }
+  },
+  PkTest {
+    name = "gti",
+    func = lambda (string name) void:
+      {
+        assert (asm int<32>: ("gti; nip2" : 1, 2) == 0);
+        assert (asm int<32>: ("gti; nip2" : 100, 100) == 0);
+        assert (asm int<32>: ("gti; nip2" : -200, -200) == 0);
+        assert (asm int<32>: ("gti; nip2" : 1 as int<3>, 2 as int<3>) == 0);
+        assert (asm int<32>: ("gti; nip2" : 2 as int<3>, 1 as int<3>) == 1);
+      }
+  },
+  PkTest {
+    name = "gtiu",
+    func = lambda (string name) void:
+      {
+        assert (asm int<32>: ("gtiu; nip2" : 1U, 2U) == 0);
+        assert (asm int<32>: ("gtiu; nip2" : 100U, 100U) == 0);
+        assert (asm int<32>: ("gtiu; nip2" : 1 as uint<3>, 2 as uint<3>) == 0);
+        assert (asm int<32>: ("gtiu; nip2" : 2 as uint<7>, 1 as uint<7>) == 1);
+      }
+  },
+  PkTest {
+    name = "gtl",
+    func = lambda (string name) void:
+      {
+        assert (asm int<32>: ("gtl; nip2" : 1L, 2L) == 0);
+        assert (asm int<32>: ("gtl; nip2" : 100L, 100L) == 0);
+        assert (asm int<32>: ("gtl; nip2" : -200L, -200L) == 0);
+        assert (asm int<32>: ("gtl; nip2" : 1 as int<52>, 2 as int<52>) == 0);
+        assert (asm int<32>: ("gtl; nip2" : 2 as int<33>, 1 as int<33>) == 1);
+      }
+  },
+  PkTest {
+    name = "gtlu",
+    func = lambda (string name) void:
+      {
+        assert (asm int<32>: ("gtlu; nip2" : 1UL, 2LU) == 0);
+        assert (asm int<32>: ("gtlu; nip2" : 100LU, 100UL) == 0);
+        assert (asm int<32>: ("gtlu; nip2" : 1 as uint<52>, 2 as uint<52>) == 0);
+        assert (asm int<32>: ("gtlu; nip2" : 2 as uint<33>, 1 as uint<33>) == 1);
+      }
+  },
+  PkTest {
+    name = "gts",
+    func = lambda (string name) void:
+      {
+        assert (asm int<32>: ("gts; nip2" : "", "") == 0);
+        assert (asm int<32>: ("gts; nip2" : "foo", "bar") == 1);
+        assert (asm int<32>: ("gts; nip2" : "bar", "foo") == 0);
+      }
+  },
+  PkTest {
+    name = "gei",
+    func = lambda (string name) void:
+      {
+        assert (asm int<32>: ("gei; nip2" : 1, 2) == 0);
+        assert (asm int<32>: ("gei; nip2" : 100, 100) == 1);
+        assert (asm int<32>: ("gei; nip2" : -200, -200) == 1);
+        assert (asm int<32>: ("gei; nip2" : 1 as int<3>, 2 as int<3>) == 0);
+        assert (asm int<32>: ("gei; nip2" : 2 as int<3>, 1 as int<3>) == 1);
+      }
+  },
+  PkTest {
+    name = "geiu",
+    func = lambda (string name) void:
+      {
+        assert (asm int<32>: ("geiu; nip2" : 1U, 2U) == 0);
+        assert (asm int<32>: ("geiu; nip2" : 100U, 100U) == 1);
+        assert (asm int<32>: ("geiu; nip2" : 1 as uint<3>, 2 as uint<3>) == 0);
+        assert (asm int<32>: ("geiu; nip2" : 2 as uint<7>, 1 as uint<7>) == 1);
+      }
+  },
+  PkTest {
+    name = "gel",
+    func = lambda (string name) void:
+      {
+        assert (asm int<32>: ("gel; nip2" : 1L, 2L) == 0);
+        assert (asm int<32>: ("gel; nip2" : 100L, 100L) == 1);
+        assert (asm int<32>: ("gel; nip2" : -200L, -200L) == 1);
+        assert (asm int<32>: ("gel; nip2" : 1 as int<52>, 2 as int<52>) == 0);
+        assert (asm int<32>: ("gel; nip2" : 2 as int<33>, 1 as int<33>) == 1);
+      }
+  },
+  PkTest {
+    name = "gelu",
+    func = lambda (string name) void:
+      {
+        assert (asm int<32>: ("gelu; nip2" : 1UL, 2LU) == 0);
+        assert (asm int<32>: ("gelu; nip2" : 100LU, 100UL) == 1);
+        assert (asm int<32>: ("gelu; nip2" : 1 as uint<52>, 2 as uint<52>) == 0);
+        assert (asm int<32>: ("gelu; nip2" : 2 as uint<33>, 1 as uint<33>) == 1);
+      }
+  },
+  PkTest {
+    name = "ges",
+    func = lambda (string name) void:
+      {
+        assert (asm int<32>: ("ges; nip2" : "", "") == 1);
+        assert (asm int<32>: ("ges; nip2" : "foo", "bar") == 1);
+        assert (asm int<32>: ("ges; nip2" : "bar", "foo") == 0);
+      }
+  },
+  PkTest {
     name = "nn",
     func = lambda (string name) void:
       {
@@ -589,6 +742,28 @@ var tests = [
       {
         assert (asm int<32>: ("push 7; nnn; nip") == 1);
         assert (asm int<32>: ("nnn; nip" : 666) == 0);
+      }
+  },
+  PkTest {
+    name = "eqc",
+    func = lambda (string name) void:
+      {
+        fun lala = void: {}
+        fun other = void: {}
+        assert (asm int<32>: ("eqc; nip2" : (lala), (lala)) == 1);
+        assert (asm int<32>: ("eqc; nip2" : (lala), (other)) == 0);
+        assert (asm int<32>: ("eqc; nip2" : lambda void: {}, lambda void: {}) == 0);
+      }
+  },
+  PkTest {
+    name = "nec",
+    func = lambda (string name) void:
+      {
+        fun lala = void: {}
+        fun other = void: {}
+        assert (asm int<32>: ("nec; nip2" : (lala), (lala)) == 0);
+        assert (asm int<32>: ("nec; nip2" : (lala), (other)) == 1);
+        assert (asm int<32>: ("nec; nip2" : lambda void: {}, lambda void: {}) == 1);
       }
   },
   /* Closure instructions.  */

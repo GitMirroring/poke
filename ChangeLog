@@ -1,3 +1,8 @@
+2023-05-14  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* testsuite/poke.pvm/pvm-insns-test.pk: Add tests for gei, geiu,
+	gel, gelu, ges, lei, leiu, lel, lelu, les, eqc and nec.
+
 2023-05-13  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* NEWS: Add entries for 3.2.
