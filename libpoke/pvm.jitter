@@ -3068,7 +3068,7 @@ instruction addiu ()
   end
 end
 
-# Instruction addl
+# Instruction: addl
 #
 # Push the result of adding the two longs at the top of the stack.
 # If the operation would result in overflow, raise PVM_E_OVERFLOW.
