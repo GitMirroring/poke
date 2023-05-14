@@ -67,6 +67,7 @@ Using poke
 
 Pickles
 * IOS::                         Functions to work with IO spaces.
+* Data Encodings::              base 64 and friends.
 * Time::			Handling time.
 * Colors::			Editing colors.
 * Audio::			Poking audio files.
@@ -8054,10 +8055,10 @@ described by RFC
 4648@footnote{https://datatracker.ietf.org/doc/html/rfc4648}.  It
 provides the following pair of functions:
 
-@code
+@example
 fun base64_encode = (uint<8>[] @var{src}) string
 fun base64_decode = (string @var{src}) uint<8>
-@end
+@end example
 
 @node Time
 @chapter Time
