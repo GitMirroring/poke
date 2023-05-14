@@ -210,7 +210,7 @@ fun base64_decode = (string src) uint<8>[]:
                                   msg = "expected `=' in string passed to base64_decode"
                                         + format (" at position %i32d", (s - 1) as int<32>) };
             }
-          
+
               /* State 2 and 3.  */
             while (s < srclength)
               {
