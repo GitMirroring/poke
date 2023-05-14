@@ -1,0 +1,58 @@
+/* base64-test.pk - Tests for the base64 pickle.  */
+
+/* Copyright (C) 2023 Jose E. Marchesi.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+load pktest;
+load base64;
+
+var tests = [
+  PkTest {
+    name = "base64 encoder",
+    func = lambda (string name) void:
+      {
+        assert (base64_encode (stoca ("")) == "");
+        assert (base64_encode (stoca ("Many hands make light work."))
+                               == "TWFueSBoYW5kcyBtYWtlIGxpZ2h0IHdvcmsu");
+      }
+  },
+  PkTest {
+    name = "base64 decoder",
+    func = lambda (string name) void:
+      {
+        /* Empty string results in no bytes.  */
+        assert (base64_decode ("") == uint<8>[]());
+        /* Non base-64 character.  */
+        assert (base64_decode ("bad!bad") ?! E_inval);
+        /* Missing '=' in input string. */
+        assert (base64_decode ("YWJjZG=mZwxx") ?! E_inval);
+        /* Too many =s at the end.   Whitespaces are allowed.  */
+        assert (base64_decode ("abcdaQ===") ?! E_inval);
+        /* Working case with no padding.  */
+        assert (base64_decode ("TWFueSBoYW5kcyBtYWtlIGxpZ2h0IHdvcmsu")
+                == stoca ("Many hands make light work."));
+        /* White spaces should be ignored.  */
+        assert (base64_decode ("TWFueSBoY   W5kcyBtYWt   lIGxpZ2h0IHdvcmsu")
+                == stoca ("Many hands make light work."));
+        /* Working case with padding.  */
+        assert (base64_decode ("abcdaQ==") == [105UB,183UB,29UB,105UB]);
+      }
+  },
+
+];
+
+var ok = pktest_run (tests);
+exit (ok ? 0 : 1);

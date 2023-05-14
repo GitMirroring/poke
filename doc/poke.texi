@@ -178,6 +178,9 @@ Configuration
 * Load Path::			Determining location of modules.
 * Styling::			Changing the appearance of poke's output.
 
+Data Encodings
+* base64::                      Encoding and decoding data in base64.
+
 Time
 * POSIX Time::			Encoding POSIX dates.
 
@@ -8032,6 +8035,29 @@ the range of bytes to save.
 By default the output file is truncated if it already exists.  If
 @var{append_p} is true, then the data is instead appended at the end
 of the file.
+
+@node Data Encodings
+@chapter Data Encodings
+
+This chapter documents pickles that are related to encoding and
+decoding data in certain formats such as base64.
+
+@menu
+* base64::                      Encoding and decoding data in base64.
+@end menu
+
+@node base64
+@section base64
+
+The @file{base64} implements @dfn{base64} encoding and decoding as
+described by RFC
+4648@footnote{https://datatracker.ietf.org/doc/html/rfc4648}.  It
+provides the following pair of functions:
+
+@code
+fun base64_encode = (uint<8>[] @var{src}) string
+fun base64_decode = (string @var{src}) uint<8>
+@end
 
 @node Time
 @chapter Time

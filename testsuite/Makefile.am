@@ -588,6 +588,7 @@ EXTRA_DIST = \
   poke.pickles/iscan-test.pk \
   poke.pickles/argp-test.pk \
   poke.pickles/asn1-ber-test.pk \
+  poke.pickles/base64-test.pk \
   poke.pickles/bmp-test.pk \
   poke.pickles/bpf-test.pk \
   poke.pickles/btf-ext-test.pk \
