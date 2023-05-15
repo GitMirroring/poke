@@ -3677,6 +3677,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_array)
 
       PKL_PASS_SUBPASS (etype);
 
+      if (array_bounder == PVM_NULL)
+        pkl_ast_print (stdout, array_type);
       assert (array_bounder != PVM_NULL);
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, array_bounder);
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MKTYA);

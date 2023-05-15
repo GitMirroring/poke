@@ -117,6 +117,13 @@ fun base64_decode = (string src) uint<8>[]:
     return -1;
   }
 
+  fun invalid_input = (string cause, int<32> position) void:
+  {
+    raise Exception { code = EC_inval,
+                             name = "invalid argument",
+                             msg = cause + format (" at position %i32d", position) };
+  }
+
   var srclength = src'length;
   var targsize = (rtrim (src, "=")'length /^ 4) * 3;
   var target = uint<8>[targsize+1]();
@@ -142,9 +149,7 @@ fun base64_decode = (string src) uint<8>[]:
       var pos = strchr (base64_chars, ch);
 
       if (pos == -1) /* A non-base64 character.  */
-        raise Exception { code = EC_inval,
-                          msg = "non-base64 character passed to base64_decode"
-                                + format (" at position %i32d", (s - 1) as int<32>)};
+        invalid_input ("non-base64 character passed to base_64_decode", s - 1);
 
       if (state == 0)
         {
@@ -165,7 +170,7 @@ fun base64_decode = (string src) uint<8>[]:
           assert (tarindex + 1 < targsize);
           target[tarindex] |= pos .>> 2;
           target[tarindex + 1] = (pos & 0x03) <<. 6;
-          tarindex++;
+          tarindex += 1;
           state = 3;
         }
       else if (state == 3)
@@ -187,10 +192,8 @@ fun base64_decode = (string src) uint<8>[]:
       ch = src[s++];
       if (state == 0 || state == 1)
         {
-          raise Exception { code = EC_inval,
-                            name = "invalid argument",
-                            msg = "invalid `=' in string passed to base64_decode"
-                                  + format (" at position %i32d", (s - 1) as int<32>) };
+          invalid_input ("invalid `=' in string passed to base64_decode",
+                         s - 1);
         }
       else if (state == 2 || state == 3)
         {
@@ -205,10 +208,8 @@ fun base64_decode = (string src) uint<8>[]:
                 }
               /* Make sure there is another trailing = sign.  */
               if (ch != '=')
-                raise Exception { code = EC_inval,
-                                  name = "invalid argument",
-                                  msg = "expected `=' in string passed to base64_decode"
-                                        + format (" at position %i32d", (s - 1) as int<32>) };
+                invalid_input ("expected `=' in string passed to base64_decode",
+                               s - 1);
             }
 
               /* State 2 and 3.  */
@@ -216,10 +217,8 @@ fun base64_decode = (string src) uint<8>[]:
               {
                 ch = src[s++];
                 if (ch != ' ')
-                  raise Exception { code = EC_inval,
-                                    name = "invalid argument",
-                                    msg = "expected whitespace in string passed to base64_decode"
-                                          + format (" at position %i32d", (s - 1) as int<32>) };
+                  invalid_input ("expected whitespace in string passed to base64_decode",
+                                 s - 1);
               }
 
           if (target[tarindex] != 0)

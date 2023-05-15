@@ -1,3 +1,7 @@
+2023-05-16  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* pickles/base64.pk (base64_decode): Simplify.
+
 2023-05-15  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* pickles/base64.pk (base64_decode): Quote characters are optional
