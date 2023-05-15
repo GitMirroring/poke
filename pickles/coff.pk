@@ -278,8 +278,8 @@ type COFF_File =
   struct
   {
     COFF_File_Hdr hdr;
-    COFF_Opt_Hdr opt_hdr : opt_hdr'size == hdr.opthdr
-      if hdr.opthdr > 0#B;
+    if (hdr.opthdr > 0#B)
+      COFF_Opt_Hdr opt_hdr : opt_hdr'size == hdr.opthdr;
 
     if (hdr.nscns > 0)
       COFF_Shdr[hdr.nscns] sections;
