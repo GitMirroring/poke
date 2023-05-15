@@ -1,5 +1,13 @@
 2023-05-15  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* pickles/base64.pk (base64_decode): Quote characters are optional
+	as per RFC.
+	* testsuite/poke.pickles/pe-test.pk: Add tests for optional quote
+	characters.
+	* pickles/pe.pk (PE_Nam.get_offset): Simplify accordingly.
+
+2023-05-15  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* pickles/coff.pk (COFF_File): Use pre-condition for optional
 	field opt_hdr.
 

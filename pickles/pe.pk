@@ -279,7 +279,7 @@ type PE_Name =
       if (chars[0] != '/')
         return 0#B;
       if (chars[1] == '/')
-        return (base64_decode (catos (chars[2:]) + "==") as uint<32>)#B;
+        return (base64_decode (catos (chars[2:])) as uint<32>)#B;
       else
         return atoi (catos (chars[1:]))#B;
     }

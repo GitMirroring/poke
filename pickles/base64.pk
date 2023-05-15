@@ -226,13 +226,6 @@ fun base64_decode = (string src) uint<8>[]:
             raise E_inval;
         }
     }
-  else
-    {
-      if (state != 0)
-            raise Exception { code = EC_inval,
-                              name = "invalid argument",
-                              msg = "partial bytes in base64_decode" };
-    }
 
   return target[:tarindex];
 }

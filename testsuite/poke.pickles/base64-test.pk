@@ -49,6 +49,9 @@ var tests = [
                 == stoca ("Many hands make light work."));
         /* Working case with padding.  */
         assert (base64_decode ("abcdaQ==") == [105UB,183UB,29UB,105UB]);
+        /* Padding characters are optional for decoders as per RFC.  */
+        assert (base64_decode ("abcdaQ=") == [105UB,183UB,29UB,105UB]);
+        assert (base64_decode ("abcdaQ") == [105UB,183UB,29UB,105UB]);
       }
   },
 
