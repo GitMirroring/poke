@@ -47,7 +47,7 @@ var tests = [
         assert (name.get_offset == 9999999#B);
         /* More than 8 chars and bigger than 7 digits.  */
         name = PE_Name { chars = makechars ("//AJiWgA") };
-        assert (name.get_offset == 10000000#B);
+        assert (name.get_offset == 160000000#B);
       }
   },
   PkTest {
@@ -59,7 +59,7 @@ var tests = [
         name.set_offset (9999999#B);
         assert (catos (name.chars) == "/9999999");
         /* More than 8 chars.  */
-        name.set_offset (10000000#B);
+        name.set_offset (160000000#B);
         assert (catos (name.chars) == "//AJiWgA");
       }
   },

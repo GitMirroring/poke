@@ -1,5 +1,10 @@
 2023-05-16  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* pickles/pe.pk (PE_Name): //BASE64 is worse than I thought.
+	* testsuite/poke.pickles/pe-test.pk: Update.
+
+2023-05-16  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* pickles/Makefile.am (dist_pickles_DATA): Add base64.pk.
 
 2023-05-16  Jose E. Marchesi  <jemarch@gnu.org>
