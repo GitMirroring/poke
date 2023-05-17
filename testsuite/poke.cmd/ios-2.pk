@@ -1,0 +1,5 @@
+/* { dg-do run } */
+
+/* { dg-command { .mem foo } } */
+/* { dg-command { $<*foo*> } } */
+/* { dg-output "0" } */
