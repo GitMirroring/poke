@@ -1750,6 +1750,9 @@ EXTRA_DIST = \
   poke.pkl/ios-mem-4.pk \
   poke.pkl/ios-mem-5.pk \
   poke.pkl/ios-nbd-1.pk \
+  poke.pkl/iosearch-1.pk \
+  poke.pkl/iosearch-2.pk \
+  poke.pkl/iosearch-3.pk \
   poke.pkl/iosize-1.pk \
   poke.pkl/iosize-diag-1.pk \
   poke.pkl/isa-1.pk \

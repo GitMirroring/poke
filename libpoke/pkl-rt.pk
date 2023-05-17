@@ -934,7 +934,7 @@ immutable fun iobias = (int<32> ios = get_ios) offset<uint<64>,1>:
   return asm offset<uint<64>,1>: ("iogetb; nip" : ios);
 }
 
-immutable fun iolist = int<32>[2]:
+immutable fun iolist = int<32>[]:
 {
   var n = asm uint<64>: ("ionum"),
       a = int<32>[n] ();
@@ -942,6 +942,15 @@ immutable fun iolist = int<32>[2]:
   for (var i = 0UL; i < n; ++i)
     a[i] = asm int<32>: ("ioref; nip" : i);
   return a;
+}
+
+immutable fun iosearch = (string handler) int<32>:
+{
+  for (ios in iolist)
+    if (iohandler (ios) == handler)
+      return ios;
+
+  raise E_no_ios;
 }
 
 immutable fun iosetbias = (offset<uint<64>,1> bias = 0#1, int<32> ios = get_ios) void:

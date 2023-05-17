@@ -13651,6 +13651,7 @@ memory of some process.
 * flush::			Flushing IO spaces.
 * get_ios::			Getting the current IO space.
 * set_ios::			Setting the current IO space.
+* iosearch::                    Search for an IO space by name.
 * iolist::                      Getting a list of open IO spaces.
 * openset::                     Opening and setting combined.
 * iosize::			Getting the size of an IO space.
@@ -13847,6 +13848,21 @@ space.  If the IO space specified to @code{set_ios} doesn't exist,
 
 Note that @code{set_ios} always returns @code{1}.  This is to ease its
 usage in struct fields constraint expressions.
+
+@node iosearch
+@subsubsection @code{iosearch}
+@cindex @code{iosearch}
+
+The following builtin allows to search for an IO space by name, or
+handler.  It has the following prototype:
+
+@example
+fun iosearch = (string @var{handler}) int<32>
+@end example
+
+@noindent
+It returns the identifier of the IO space named @var{handler}.  If no
+such IO space is found, then the exception @code{E_no_ios} is raised.
 
 @node iolist
 @subsubsection @code{iolist}

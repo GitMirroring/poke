@@ -1,0 +1,7 @@
+/* { dg-do run } */
+
+/* { dg-command {.mem} } */
+/* { dg-command {.mem} } */
+/* { dg-command {.mem} } */
+/* { dg-command { iosearch("*1*") } } */
+/* { dg-output "1" } */
