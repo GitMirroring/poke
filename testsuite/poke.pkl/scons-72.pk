@@ -1,0 +1,6 @@
+/* { dg-do run } */
+
+type Foo = struct { int[3] a; };
+
+/* { dg-command {Foo { a = [1,2] as int[] + [3] }} } */
+/* { dg-output "Foo \{a=\\\[1,2,3\\]\}" } */
