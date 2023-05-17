@@ -1,5 +1,13 @@
 2023-05-17  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-lex.l: Support $<...> alien tokens.
+	* libpoke/libpoke.c (pk_set_alien_dtoken_fn): New function.
+	* libpoke/pkl.c (struct pkl_compiler): New field alien_dtoken_fn.
+	(pkl_alien_dtoken_fn): New function.
+	(pkl_set_alien_dtoken_fn): Likewise.
+
+2023-05-17  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-gen.pks (struct_constructor): Make sure the
 	destination type of a cast to an array has a bounder.
 	* libpoke/pkl-gen.c (pkl_gen_pr_type_array): Make sure the array

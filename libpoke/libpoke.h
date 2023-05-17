@@ -370,8 +370,18 @@ struct pk_alien_token
 
 typedef struct pk_alien_token *(*pk_alien_token_handler_fn) (const char *id,
                                                              char **errmsg);
+
+typedef struct pk_alien_token *(*pk_alien_dtoken_handler_fn) (char delim,
+                                                              const char *id,
+                                                              char **errmsg);
+
+/* Register a handler for simple $foo::bar alien tokens.  */
 void pk_set_alien_token_fn (pk_compiler pkc,
                             pk_alien_token_handler_fn cb) LIBPOKE_API;
+
+/* Register a handler for delimited $<...> alien tokens.  */
+void pk_set_alien_dtoken_fn (pk_compiler pkc,
+                             pk_alien_dtoken_handler_fn cb) LIBPOKE_API;
 
 /* Set the LEXICAL_CUCKOLDING_P flag in the compiler.  If this flag is
    set, alien tokens are recognized and processed by calling the

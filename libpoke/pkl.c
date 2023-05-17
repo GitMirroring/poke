@@ -57,7 +57,11 @@
    LEXICAL_CUCKOLDING_P is 1 if alien tokens are to be recognized.
 
    ALIEN_TOKEN_FN is the user-provided handler for alien tokens.  This
-   field is NULL if the user didn't register a handler.  */
+   field is NULL if the user didn't register a handler.
+
+   ALIEN_DTOKEN_FN is the user-provided handler for delimited alien
+   tokens.  This field is NULL if the user didn't register a
+   handler.  */
 
 struct pkl_compiler
 {
@@ -70,6 +74,7 @@ struct pkl_compiler
 #define PKL_MODULES_STEP 8
   int lexical_cuckolding_p;
   pkl_alien_token_handler_fn alien_token_fn;
+  pkl_alien_dtoken_handler_fn alien_dtoken_fn;
 };
 
 
@@ -627,11 +632,24 @@ pkl_alien_token_fn (pkl_compiler compiler)
   return compiler->alien_token_fn;
 }
 
+pkl_alien_dtoken_handler_fn
+pkl_alien_dtoken_fn (pkl_compiler compiler)
+{
+  return compiler->alien_dtoken_fn;
+}
+
 void
 pkl_set_alien_token_fn (pkl_compiler compiler,
                         pkl_alien_token_handler_fn cb)
 {
   compiler->alien_token_fn = cb;
+}
+
+void
+pkl_set_alien_dtoken_fn (pkl_compiler compiler,
+                         pkl_alien_dtoken_handler_fn cb)
+{
+  compiler->alien_dtoken_fn = cb;
 }
 
 pvm_program

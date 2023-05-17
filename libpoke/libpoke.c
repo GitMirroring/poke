@@ -256,6 +256,13 @@ pk_set_alien_token_fn (pk_compiler pkc, pk_alien_token_handler_fn cb)
   pkc->status = PK_OK;
 }
 
+void
+pk_set_alien_dtoken_fn (pk_compiler pkc, pk_alien_dtoken_handler_fn cb)
+{
+  pkl_set_alien_dtoken_fn (pkc->compiler, (pkl_alien_dtoken_handler_fn) cb);
+  pkc->status = PK_OK;
+}
+
 static char *
 complete_attribute (pk_compiler pkc, const char *x, int state)
 {

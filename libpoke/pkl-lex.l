@@ -205,6 +205,8 @@ L [a-zA-Z_]
 D [0-9]
 A $
 S ::
+LT <
+GT >
 
 %x C_COMMENT
 %x SHEBANG_COMMENT
@@ -369,16 +371,23 @@ S ::
 "@!"               { return NSMAP; }
 "@"                { return '@'; }
 
-{A}({L}|{D})({L}|{D}|({S}({L}|{D})))* {
+({A}({L}|{D})({L}|{D}|({S}({L}|{D})))*)|({A}{LT}[^{GT}]*{GT}) {
   char *errmsg;
-  pkl_alien_token_handler_fn cb
-    = pkl_alien_token_fn (yyextra->compiler);
+  pkl_alien_token_handler_fn cb = NULL;
+  pkl_alien_dtoken_handler_fn dcb = NULL;
+
+  if (yytext[1] == '<')
+    dcb = pkl_alien_dtoken_fn (yyextra->compiler);
+  else
+    cb = pkl_alien_token_fn (yyextra->compiler);
 
   if (pkl_lexical_cuckolding_p (yyextra->compiler)
-      && cb != NULL)
+      && (cb != NULL || dcb != NULL))
     {
       struct pkl_alien_token *token
-        = (*cb) (yytext + 1, &errmsg);
+        = (cb != NULL
+           ? (*cb) (yytext + 1, &errmsg)
+           : (*dcb) (yytext[1], yytext + 1, &errmsg));
 
       if (token == NULL)
         {
