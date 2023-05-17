@@ -1,5 +1,13 @@
 2023-05-18  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* etc/poke.rec (Auto-complete fields foo->bar): New entry.
+
+2023-05-18  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/libpoke.c (find_field_referrer): New function.
+
+2023-05-18  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* etc/poke.rec (Alien tokens for IO space names: $<path/to/file>):
 	Remove as done.
 	(Auto-complete $<...> in the prompt): New todo.

@@ -555,6 +555,14 @@ Description:
 + $<...> should auto-complete to the handler of some of the
 + open IO spaces.
 
+Summary: Auto-complete fields foo->bar
+Component: Library
+Kind: ENH
+Description:
++ libpoke.c:complete_struct shall be adapted in order
++ to auto-complete foo->bar in a similar way it auto-completes
++ foo.bar.
+
 Summary: Support arguments in type constructors
 Component: Language
 Kind: ENH
