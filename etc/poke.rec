@@ -548,21 +548,12 @@ Description: Currently the PVM supports the following kind of integer values:
 + - Adapt the code generator to use the new instructions.
 RFC: yes
 
-Summary: Alien tokens for IO space names: $<path/to/file>
+Summary: Auto-complete $<...> in the prompt
 Component: CLI
 Kind: ENH
 Description:
-+ Currently the only way to refer to IO space is by either ID (a number)
-+ or via a variable where the number is stored.  However, referring to
-+ them by name at the prompt is important.
-+
-+ With auto-complete.
-+
-+ Programmatically: iosearch ("*foo*")
-+
-+ Interactively: $<*foo*>
-+                $<foo.o>
-RFC: yes
++ $<...> should auto-complete to the handler of some of the
++ open IO spaces.
 
 Summary: Support arguments in type constructors
 Component: Language
@@ -658,7 +649,7 @@ Description:
 + Size annotations will be needed in structs in cases where it is not
 + possible for the compiler to determine the size by:
 +
-+   struct { ... } size(24#B) 
++   struct { ... } size(24#B)
 +
 + Because of data integrity, lazy mapping can only be done when mapping
 + non-strict values or for array types whose elements do not have
