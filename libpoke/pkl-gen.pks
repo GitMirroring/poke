@@ -1840,6 +1840,14 @@
         ;; environment.  See above.
    .c if (PKL_AST_TYPE_CODE (@field_type) == PKL_TYPE_ARRAY)
    .c {
+        ;; Make sure the array type has a bounder.
+   .c  if (PKL_AST_TYPE_A_BOUNDER (@field_type) == PVM_NULL)
+   .c   {
+   .c     assert (!PKL_AST_TYPE_NAME (@field_type));
+   .c     PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_ARRAY_BOUNDER);
+   .c     PKL_PASS_SUBPASS (@field_type);
+   .c     PKL_GEN_POP_CONTEXT;
+   .c   }
    .c   pkl_asm_insn (RAS_ASM, PKL_INSN_ATOA,
    .c                 NULL /* from_type */, @field_type);
    .c }

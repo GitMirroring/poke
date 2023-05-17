@@ -3677,9 +3677,17 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_array)
 
       PKL_PASS_SUBPASS (etype);
 
+      /* Make sure the array type has a bounder.  */
       if (array_bounder == PVM_NULL)
-        pkl_ast_print (stdout, array_type);
-      assert (array_bounder != PVM_NULL);
+        {
+          assert (!PKL_AST_TYPE_NAME (array_type));
+          PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_ARRAY_BOUNDER);
+          PKL_PASS_SUBPASS (array_type);
+          PKL_GEN_POP_CONTEXT;
+
+          array_bounder = PKL_AST_TYPE_A_BOUNDER (array_type);
+        }
+
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, array_bounder);
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MKTYA);
       PKL_PASS_BREAK;
