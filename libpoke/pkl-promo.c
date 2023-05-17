@@ -166,7 +166,10 @@ promote_array (pkl_ast ast,
 
   /* The case of static array types (bounded by constant number of
      elements) is handled in type equivalence.  No cast is needed.  */
-  if (bound && PKL_AST_CODE (bound) == PKL_AST_INTEGER)
+  if (bound
+      && PKL_AST_CODE (bound) == PKL_AST_INTEGER
+      && from_bound
+      && PKL_AST_CODE (from_bound) == PKL_AST_INTEGER)
     return 1;
 
   /* Unbounded array to unbounded array doesn't require of any

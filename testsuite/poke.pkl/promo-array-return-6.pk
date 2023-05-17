@@ -1,0 +1,10 @@
+/* { dg-do run } */
+
+var n = 2;
+fun lala = int[2]: { return int[n](); }
+
+/* { dg-command { lala } } */
+/* { dg-output "\\\[0,0\\\]" } */
+/* { dg-command { n = 4 } } */
+/* { dg-command { try lala; catch if E_conv { print "caught\n"; } } } */
+/* { dg-output "\ncaught" } */
