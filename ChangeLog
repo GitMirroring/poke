@@ -1,5 +1,13 @@
 2023-05-17  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-ios.c (pk_ios_init): New function.
+	(pk_ios_shutdown): Likewise.
+	(pk_ios_alien_token_handler): Likewise.
+	* poke/poke.c (initialize): Call pk_ios_init.
+	(finalize): Call pk_ios_shutdown.
+
+2023-05-17  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-lex.l: Support $<...> alien tokens.
 	* libpoke/libpoke.c (pk_set_alien_dtoken_fn): New function.
 	* libpoke/pkl.c (struct pkl_compiler): New field alien_dtoken_fn.

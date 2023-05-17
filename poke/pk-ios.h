@@ -21,6 +21,14 @@
 
 #include <config.h>
 
+/* Initialize the IOS stuff.  */
+
+void pk_ios_init (void);
+
+/* Free resources used by the IOS stuff.  */
+
+void pk_ios_shutdown (void);
+
 /* Open a file in the application and return its IOS id.
 
    HANDLER is the handler identifying the IO space.  This is typically

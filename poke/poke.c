@@ -286,6 +286,7 @@ finalize (void)
     pk_hserver_shutdown ();
 #endif
   pk_cmd_shutdown ();
+  pk_ios_shutdown ();
   pk_map_shutdown ();
   pk_compiler_free (poke_compiler);
   pk_term_shutdown ();
@@ -708,6 +709,9 @@ initialize (int argc, char *argv[])
 
   /* Initialize the global map.  */
   pk_map_init ();
+
+  /* Initialize ios stuff.  */
+  pk_ios_init ();
 
   /* Initialize the command subsystem.  This should be done even if
      called non-interactively.  */

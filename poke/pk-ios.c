@@ -22,6 +22,8 @@
 #include <stdlib.h>
 #include <regex.h>
 #include <inttypes.h>
+#include <string.h>
+#include "xalloc.h"
 
 #include "poke.h"
 #include "pk-ios.h"
@@ -229,4 +231,55 @@ pk_open_proc_maps (int ios_id, uint64_t pid, int all_p)
   if (mapfile != NULL)
     fclose (mapfile);
 #endif
+}
+
+static struct pk_alien_token alien_token;
+
+static struct pk_alien_token *
+pk_ios_alien_token_handler (char delimiter,
+                            const char *id, char **errmsg)
+{
+  pk_ios ios;
+  char *handler;
+  size_t id_len = strlen (id);
+
+  assert (delimiter == '<');
+
+  if (id_len == 3)
+    goto error;
+
+  /* Extract the IOS handler from the $<...> string.  */
+  handler = xmalloc (id_len - 2 + 1);
+  memcpy (handler, id + 1, id_len - 2);
+  handler[id_len - 2] = '\0';
+
+  ios = pk_ios_search (poke_compiler, handler);
+  if (ios)
+    {
+      /* The IO space alien token resolves to an int<32>.  */
+      alien_token.kind = PK_ALIEN_TOKEN_INTEGER;
+      alien_token.value.integer.width = 32;
+      alien_token.value.integer.signed_p = 1;
+      alien_token.value.integer.magnitude = pk_ios_get_id (ios);
+
+      return &alien_token;
+    }
+
+error:
+  *errmsg = xstrdup ("invalid IO space");
+  return NULL;
+}
+
+void
+pk_ios_init ()
+{
+  /* Install the handler for delimited alien tokens that recognizes IO
+     spaced by handler.  */
+  pk_set_alien_dtoken_fn (poke_compiler, pk_ios_alien_token_handler);
+}
+
+void
+pk_ios_shutdown ()
+{
+  /* Nothing to do there for now.  */
 }
