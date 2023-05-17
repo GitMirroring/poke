@@ -2,7 +2,7 @@
 
 fun qqq = int[]:
   {
-    var rs  = [0];
+    var rs  = [0] as int[];
     var len = 4;
     while (len > 0)
       {

@@ -2225,6 +2225,7 @@ EXTRA_DIST = \
   poke.pkl/promo-array-return-3.pk \
   poke.pkl/promo-array-return-4.pk \
   poke.pkl/promo-array-return-5.pk \
+  poke.pkl/promo-array-return-6.pk \
   poke.pkl/promo-array-return-diag-1.pk \
   poke.pkl/promo-array-return-diag-2.pk \
   poke.pkl/promo-array-scons-diag-1.pk \
