@@ -802,6 +802,56 @@ var tests = [
         assert (asm int<32>: ("nec; nip2" : lambda void: {}, lambda void: {}) == 1);
       }
   },
+  /* Concatenation instructions.  */
+  PkTest {
+    name = "sconc",
+    func = lambda (string name) void:
+      {
+        var res = asm any: ("sconc; nip2" : "foo", "bar");
+        assert (res isa string & res as string == "foobar");
+        assert (asm string: ("sconc; nip2" : "", "") == "");
+        assert (asm string: ("sconc; nip2" : "", "bleh") == "bleh");
+      }
+  },
+  /* Logical instructions.  */
+  PkTest {
+    name = "and",
+    func = lambda (string name) void:
+      {
+        var res = asm any: ("and; nip2" : 1, 1);
+        assert (res isa int<32> & res as int<32> == 1);
+        res = asm any: ("and; nip2" : 1, 0);
+        assert (res isa int<32> & res as int<32> == 0);
+        res = asm any: ("and; nip2" : 0, -2);
+        assert (res isa int<32> & res as int<32> == 0);
+        res = asm any: ("and; nip2" : 0, 0);
+        assert (res isa int<32> & res as int<32> == 0);
+      }
+  },
+  PkTest {
+    name = "or",
+    func = lambda (string name) void:
+      {
+        var res = asm any: ("or; nip2" : 1, 1);
+        assert (res isa int<32> & res as int<32> == 1);
+        res = asm any: ("or; nip2" : 1, 0);
+        assert (res isa int<32> & res as int<32> == 1);
+        res = asm any: ("or; nip2" : 0, -2);
+        assert (res isa int<32> & res as int<32> == 1);
+        res = asm any: ("or; nip2" : 0, 0);
+        assert (res isa int<32> & res as int<32> == 0);
+      }
+  },
+  PkTest {
+    name = "not",
+    func = lambda (string name) void:
+      {
+        var res = asm any: ("not; nip" : 1);
+        assert (res isa int<32> & res as int<32> == 0);
+        res = asm any: ("not; nip" : 0);
+        assert (res isa int<32> & res as int<32> == 1);
+      }
+  },
   /* Closure instructions.  */
   PkTest {
     name = "cgetn",

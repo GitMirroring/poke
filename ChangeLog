@@ -1,5 +1,11 @@
 2023-05-18  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* testsuite/poke.pvm/pvm-insns-test.pk: Add tests for instructions
+	`sconc', `and', `or', and `not'.
+
+
+2023-05-18  Jose E. Marchesi  <jemarch@gnu.org>a
+
 	* libpoke/pkl-promo.c (promote_array): Fix bounded array fast
 	path.
 	* testsuite/poke.pkl/promo-array-return-6.pk: New test.
