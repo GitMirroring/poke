@@ -1,6 +1,7 @@
 /* Jitter: custom contextual printing.
 
    Copyright (C) 2020, 2022 Luca Saiu
+   Updated in 2023 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -721,8 +722,7 @@ jitter_print_initialize (void);
 /* Internal functionality: struct definitions.
  * ************************************************************************** */
 
-/* What a context consists of in memory.  This type can be treated as opaque by
-   the final user, and even by users defining new context kinds. */
+/* What a context consists of in memory. */
 struct jitter_print_context_struct
 {
   /* The stack of currently active decorations, the most current on the top.
