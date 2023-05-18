@@ -6272,7 +6272,14 @@ of the mapping operator:
 @end example
 
 @noindent
-We can corrupt the header using this non-strict value:
+When mapping is performend in non-strict mode, the constraint
+expressions are still executed, but their resulting value is
+discarded.  The constraint expressions are executed regardless of
+strictness because it is fairly common for them to include
+side-effects that have a calculated impact in subsequent operations,
+such as for example setting the endianness or some other global state.
+
+We can now corrupt the header in the example above:
 
 @example
 (poke) ehdr_ns.e_version = 666

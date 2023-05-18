@@ -1,5 +1,19 @@
 2023-05-18  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-gen.pks (check_struct_field_constraint): Get STRICT
+	as an argument in the stack and use it after executing the
+	constraint.
+	(handle_struct_field_constraints): Let
+	check_struct_field_constraint handle STRICT.
+	(struct_constructor): Pass a STRICT to
+	check_struct_field_constraint.
+	* testsuite/poke.map/nsmap-7.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
+	* doc/poke.texi (Working with Incorrect Data): Document new
+	behavior.
+
+2023-05-18  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-promo.c (promote_array): Fix bounded array fast
 	path.
 	* testsuite/poke.pkl/promo-array-return-6.pk: New test.

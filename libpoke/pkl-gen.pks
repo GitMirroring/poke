@@ -743,7 +743,7 @@
         .end
 
 ;;; RAS_MACRO_CHECK_STRUCT_FIELD_CONSTRAINT @struct_type @field
-;;; ( -- )
+;;; ( STRICT -- )
 ;;;
 ;;; Evaluate the given struct field's constraint, raising an
 ;;; exception if not satisfied.
@@ -758,6 +758,20 @@
         .c PKL_GEN_PUSH_CONTEXT;
         .c PKL_PASS_SUBPASS (PKL_AST_STRUCT_TYPE_FIELD_CONSTRAINT (@field));
         .c PKL_GEN_POP_CONTEXT;
+                              ; STRICT VAL
+        ;; If not an union, honor STRICT
+   .c  if (PKL_AST_TYPE_S_UNION_P (@struct_type))
+   .c  {
+        nip                   ; VAL
+   .c  }
+   .c  else
+   .c  {
+        swap                  ; VAL STRICT
+        not
+        nip                   ; VAL !STRICT
+        or
+        nip2                  ; (VAL || !STRICT)
+   .c  }
         bnzi .constraint_ok
         drop
         push PVM_E_CONSTRAINT
@@ -792,6 +806,10 @@
         raise
 .constraint_ok:
         drop
+   .c }
+   .c else
+   .c {
+        drop                    ; The STRICT
    .c }
         .end
 
@@ -849,20 +867,13 @@
    .c }
 .optcond_ok:
         ;; Evaluate the field's constraint and raise
-        ;; an exception if not satisfied.  If not an union,
-        ;; honor STRICT.
+        ;; an exception if not satisfied.
         drop                    ; STRICT BOFF STR VAL
         tor                     ; STRICT BOFF STR [VAL]
         rot                     ; BOFF STR STRICT [VAL]
         fromr                   ; BOFF STR STRICT VAL
         swap                    ; BOFF STR VAL STRICT
-   .c if (!PKL_AST_TYPE_S_UNION_P (@struct_type))
-   .c {
-        bzi .constraint_done
-   .c }
         .e check_struct_field_constraint @struct_type, @field
-.constraint_done:
-        drop                    ; BOFF STR VAL
         ;; Calculate the offset marking the end of the field, which is
         ;; the field's offset plus it's size.
         quake                  ; STR BOFF VAL
@@ -1890,6 +1901,7 @@
         ;; Evaluate the constraint expression.
         push PVM_E_CONSTRAINT
         pushe .constraint_failed
+        push int<32>1           ; ENAME EVAL STRICT
         .e check_struct_field_constraint @type_struct, @field
         pope
         ba .constraint_ok

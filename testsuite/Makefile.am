@@ -558,6 +558,7 @@ EXTRA_DIST = \
   poke.map/nsmap-4.pk \
   poke.map/nsmap-5.pk \
   poke.map/nsmap-6.pk \
+  poke.map/nsmap-7.pk \
   poke.map/remap-1.pk \
   poke.map/strict-attr-1.pk \
   poke.map/strict-attr-2.pk \

@@ -1,0 +1,15 @@
+/* { dg-do run } */
+/* { dg-data {c*} {0x00 0x00 0x00 0x00  0x00 0x00 0x00 0x00   0x0d 0x0c 0x0b 0x0a} } */
+
+/* This tests makes sure that constraint expressions are
+   executed in non-strict mappings.  This is to assure that
+   side effects are performed.  */
+
+type Foo = struct { int i : lambda int<32>: { print "foo\n"; return 0; }(); };
+
+/* { dg-command {.set endian big} } */
+/* { dg-command {.set obase 16 } } */
+/* { dg-command {try Foo @ 0#B; catch if E_constraint {} } } */
+/* { dg-output "foo" } */
+/* { dg-command {Foo @! 0#B} } */
+/* { dg-output "\nfoo\nFoo \{i=0x00000000\}" } */

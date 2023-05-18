@@ -6606,7 +6606,7 @@ end
 # Given an Exception struct in the stack, push a handler for it on the
 # exceptions stack.  An exception code 0 means any exception.
 #
-# Stack: ( INT -- )
+# Stack: ( EXCEPTION -- )
 # Exceptions Stack: ( -- EXCEPTION_HANDLER )
 
 instruction pushe (?l)
