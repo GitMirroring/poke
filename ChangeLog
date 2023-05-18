@@ -1,3 +1,7 @@
+2023-05-19  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-rt.pk: Fix return type of `iolist'.
+
 2023-05-18  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-gen.pks (check_struct_field_constraint): Get STRICT

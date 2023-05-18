@@ -904,7 +904,7 @@ immutable fun iobias = (int<32> ios = get_ios) offset<uint<64>,1>:
   return asm offset<uint<64>,1>: ("iogetb; nip" : ios);
 }
 
-immutable fun iolist = int<32>[2]:
+immutable fun iolist = int<32>[]:
 {
   var n = asm uint<64>: ("ionum"),
       a = int<32>[n] ();
