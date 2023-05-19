@@ -1,5 +1,11 @@
 2023-05-19  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-tab.y: Adjust hack that workarounds bison problem to
+	field pre-conditions.
+	* testsuite/poke.pkl/int-union-type-diag-9.pk: Fix test.
+
+2023-05-19  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-gen.c (PKL_GEN_PUSH_CONTEXT): Emit error instead of
 	aborting if maximum nesting level is reached.
 	* libpoke/pkl-anal.c (PKL_ANAL_PUSH_CONTEXT): Likewise.
