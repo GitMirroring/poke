@@ -69,7 +69,12 @@
 #define PKL_GEN_PUSH_CONTEXT                                            \
   do                                                                    \
     {                                                                   \
-      assert (PKL_GEN_PAYLOAD->cur_context < PKL_GEN_MAX_CTX);          \
+      if (PKL_GEN_PAYLOAD->cur_context >= PKL_GEN_MAX_CTX)              \
+        {                                                               \
+          PKL_ERROR (PKL_AST_NOLOC,                                     \
+                     "maximum code nesting level reached");             \
+          PKL_PASS_ERROR;                                               \
+        }                                                               \
       PKL_GEN_PAYLOAD->context[PKL_GEN_PAYLOAD->cur_context + 1]        \
         = 0;                                                            \
       PKL_GEN_PAYLOAD->cur_context++;                                   \
