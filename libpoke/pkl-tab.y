@@ -1943,14 +1943,15 @@ struct_type_field:
                           = code;
                       }
 
-                    /* If endianness is empty, bison includes the
+                    /* If endianness is empty or there is no
+                       pre-condition in the field, bison includes the
                        blank characters before the type field as if
                        they were part of this rule.  Therefore the
                        location should be adjusted here.  */
-                    if ($2 == PKL_AST_ENDIAN_DFL)
+                    if ($2 == PKL_AST_ENDIAN_DFL || $1 == NULL)
                       {
-                        PKL_AST_LOC ($$).first_line = @3.first_line;
-                        PKL_AST_LOC ($$).first_column = @3.first_column;
+                        PKL_AST_LOC ($$).first_line = @4.first_line;
+                        PKL_AST_LOC ($$).first_column = @4.first_column;
                       }
 
                     if ($4 != NULL)
