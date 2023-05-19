@@ -994,10 +994,48 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
               pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_REVN, 3); /* SCT STR VAL */
             }
 
-            /* XXX Use SSETC if the struct is mapped with strict
-               mapping.  */
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SSET);  /* SCT */
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_WRITE);
+            /* Set the value in the struct using SETC if the struct is
+               mapped in non-strict mode. Othewrise, use SSET.  */
+            {
+              pvm_program_label use_sset = pkl_asm_fresh_label (PKL_GEN_ASM);
+              pvm_program_label use_ssetc = pkl_asm_fresh_label (PKL_GEN_ASM);
+              pvm_program_label done = pkl_asm_fresh_label (PKL_GEN_ASM);
+
+              /* If the struct is not mapped, always check integrity,
+                 since there is not such a thing as non-strict
+                 construction (yet).  */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ROT); /* STR VAL SCT */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MM);  /* STR VAL SCT MAPPED_P */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BNZI, use_ssetc);
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* STR VAL SCT */
+
+              /* The value is mapped.  Check the strictness of the mapping.  */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MGETS); /* STR VAL SCT STRICT_P */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BNZI, use_ssetc);
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* STR VAL SCT */
+
+              /* Set without integrity checks.  */
+              pkl_asm_label (PKL_GEN_ASM, use_sset);
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* STR VAL SCT */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NROT); /* SCT STR VAL */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SSET);  /* SCT */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BA, done);
+                            
+              /* Set with integrity checks.  */
+              pkl_asm_label (PKL_GEN_ASM, use_ssetc);
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* STR VAL SCT */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NROT); /* SCT STR VAL */
+              /* XXX we need the containing struct type!  */
+              /* But we are compiling it... */
+              /* SSETC needs the constructor, which may exist already.  NOTE THE SSET BELOW! */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SSET,
+                            PKL_AST_TYPE (lvalue));      /* SCT */
+              
+              pkl_asm_label (PKL_GEN_ASM, done);
+            }
+
+            /* In case the struct is mapped.  */
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_WRITE); /* SCT */
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);  /* _ */
           }
         else

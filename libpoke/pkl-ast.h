@@ -615,6 +615,7 @@ pkl_ast_node pkl_ast_make_enum (pkl_ast ast,
 #define PKL_AST_FUNC_NAME(AST) ((AST)->func.name)
 #define PKL_AST_FUNC_NARGS(AST) ((AST)->func.nargs)
 #define PKL_AST_FUNC_METHOD_P(AST) ((AST)->func.method_p)
+#define PKL_AST_FUNC_METHOD_STRUCT(AST) ((AST)->func.method_struct)
 #define PKL_AST_FUNC_PROGRAM(AST) ((AST)->func.program)
 
 struct pkl_ast_func
@@ -625,6 +626,7 @@ struct pkl_ast_func
   union pkl_ast_node *args;
   union pkl_ast_node *first_opt_arg;
   union pkl_ast_node *body;
+  union pkl_ast_node *method_struct;
 
   int nargs;
   char *name;
