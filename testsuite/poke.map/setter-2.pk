@@ -1,0 +1,9 @@
+/* { dg-do run } */
+/* { dg-data {c*} {0x00 0x00 0x00 0x00  0x00 0x00 0x00 0x00   0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00} } */
+
+type Bar = struct { int i; int j; int k; };
+type Foo = struct { Bar a; method set = void: { a = Bar {i = 1, j = 2, k = 3 }; } };
+
+/* { dg-command { (Foo @ 1#B).set } } */
+/* { dg-command { int[3] @ 1#B } } */
+/* { dg-output "\\\[1,2,3\\\]" } */

@@ -1,5 +1,13 @@
 2023-05-19  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-gen.c (pkl_gen_pr_ass_stmt): Perform a LMAP whenever
+	necessary when assigning to struct fields within methods.
+	* testsuite/poke.map/setter-1.pk: New test.
+	* testsuite/poke.map/setter-2.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+
+2023-05-19  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-tab.y: Adjust hack that workarounds bison problem to
 	field pre-conditions.
 	* testsuite/poke.pkl/int-union-type-diag-9.pk: Fix test.
