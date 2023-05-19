@@ -1,5 +1,19 @@
 2023-05-19  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-gen.c (PKL_GEN_PUSH_CONTEXT): Emit error instead of
+	aborting if maximum nesting level is reached.
+	* libpoke/pkl-anal.c (PKL_ANAL_PUSH_CONTEXT): Likewise.
+	* testsuite/poke.pkl/maxnest-diag-1.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
+
+2023-05-19  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-env.c (pkl_env_iter_next): Skip re-defined
+	declarations.
+	(pkl_env_iter_begin): Likewise.
+
+2023-05-19  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-tab.y (deftype): Do not share identifier node
 	between declaration and types.
 	* testsuite/poke.pkl/deftype-2.pk: New test.

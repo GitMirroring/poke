@@ -54,7 +54,12 @@
 #define PKL_ANAL_PUSH_CONTEXT(CTX)                                      \
   do                                                                    \
     {                                                                   \
-      assert (PKL_ANAL_PAYLOAD->next_context < PKL_ANAL_MAX_CONTEXT_NEST); \
+      if (PKL_ANAL_PAYLOAD->next_context >= PKL_ANAL_MAX_CONTEXT_NEST)  \
+        {                                                               \
+          PKL_ERROR (PKL_AST_NOLOC,                                     \
+                     "maximum code nesting level reached");             \
+          PKL_PASS_ERROR;                                               \
+        }                                                               \
       PKL_ANAL_PAYLOAD->context[PKL_ANAL_PAYLOAD->next_context++]       \
         = (CTX);                                                        \
     } while (0)

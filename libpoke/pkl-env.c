@@ -325,7 +325,9 @@ pkl_env_iter_begin (pkl_env env, struct pkl_ast_node_iter *iter)
 {
   iter->bucket = 0;
   iter->node = env->hash_table[iter->bucket];
-  while (iter->node == NULL)
+  /* Note that we skip re-defined declarations.  */
+  while (iter->node == NULL
+         || *PKL_AST_IDENTIFIER_POINTER (PKL_AST_DECL_NAME (iter->node)) == '\0')
     {
       iter->bucket++;
       if (iter->bucket >= HASH_TABLE_SIZE)
@@ -340,7 +342,9 @@ pkl_env_iter_next (pkl_env env, struct pkl_ast_node_iter *iter)
   assert (iter->node != NULL);
 
   iter->node = PKL_AST_CHAIN2 (iter->node);
-  while (iter->node == NULL)
+  /* Note that we skip re-defined declarations.  */
+  while (iter->node == NULL
+         || *PKL_AST_IDENTIFIER_POINTER (PKL_AST_DECL_NAME (iter->node)) == '\0')
     {
       iter->bucket++;
       if (iter->bucket >= HASH_TABLE_SIZE)
