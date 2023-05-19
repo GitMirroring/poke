@@ -962,10 +962,44 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
                           pvm_make_string (PKL_AST_IDENTIFIER_POINTER (var_name)));
                                                               /* VAL SCT STR */
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ROT);         /* SCT STR VAL */
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SSET);        /* SCT */
+            /* Do a L-MAP if the struct is mapped.  */
+            {
+              pvm_program_label not_mapped = pkl_asm_fresh_label (PKL_GEN_ASM);
+
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP); /* VAL STR SCT */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MM);  /* VAL STR SCT MAPPED_P */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BZI, not_mapped);
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* VAL STR SCT */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP); /* VAL SCT STR */
+
+              /* Mapped  */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ROT);   /* SCT STR VAL */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_TOR);   /* SCT STR [VAL] */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SREFO); /* SCT STR BOFF [VAL] */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_TOR);   /* SCT STR [VAL BOFF] */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_TOR);   /* SCT [VAL BOFF STR] */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MGETIOS); /* SCT IOS [VAL BOFF STR] */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_FROMR); /* SCT IOS STR [VAL BOFF] */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP);  /* SCT STR IOS [VAL BOFF] */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_FROMR); /* SCT STR IOS BOFF [VAL] */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_FROMR); /* SCT STR IOS BOFF VAL */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NROT);  /* SCT STR VAL IOS BOFF */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_OOVER); /* SCT STR VAL IOS BOFF VAL */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NROT);  /* SCT STR VAL VAL IOS BOFF */
+              LMAP (PKL_AST_TYPE (lvalue)); /* SCT STR VAL */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_REVN, 3); /* VAL STR SCT */
+
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL);
+              pkl_asm_label (PKL_GEN_ASM, not_mapped);
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* VAL STR SCT */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_REVN, 3); /* SCT STR VAL */
+            }
+
+            /* XXX Use SSETC if the struct is mapped with strict
+               mapping.  */
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SSET);  /* SCT */
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_WRITE);
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);  /* _ */
           }
         else
           /* Normal variable.  */
