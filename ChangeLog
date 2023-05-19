@@ -1,5 +1,13 @@
 2023-05-19  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-tab.y (deftype): Do not share identifier node
+	between declaration and types.
+	* testsuite/poke.pkl/deftype-2.pk: New test.
+	* testsuite/poke.pkl/deftype-3.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+
+2023-05-19  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-rt.pk: Fix return type of `iolist'.
 
 2023-05-18  Jose E. Marchesi  <jemarch@gnu.org>
