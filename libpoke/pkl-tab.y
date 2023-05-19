@@ -2168,7 +2168,16 @@ deftype:
             PKL_AST_LOC ($1) = @1;
             PKL_AST_LOC ($$) = @$;
 
-            PKL_AST_TYPE_NAME ($3) = ASTREF ($1);
+            /* Note how we cannot share the same name identifier node
+               with the declaration created above, because the name of
+               the declaration can be modified if the declaration gets
+               re-defined.  See pkl-env.c.  */
+            {
+              pkl_ast_node type_name
+                = pkl_ast_make_identifier (pkl_parser->ast,
+                                           PKL_AST_IDENTIFIER_POINTER ($1));
+              PKL_AST_TYPE_NAME ($3) = ASTREF (type_name);
+            }
 
             if (!pkl_env_register (pkl_parser->env,
                                    PKL_ENV_NS_MAIN,

@@ -1,0 +1,13 @@
+/* { dg-do run } */
+
+/* This test makes sure that the name associated with the type
+   Foo declared at **A** is not trashed when its declaration
+   node is renamed to "" in **B**.  */
+
+type Foo = struct { }; /* **A** */
+fun foo = (Foo a) void: { print "foo\n"; }
+type Foo = struct { }; /* **B** */
+
+/* { dg-command {var f = Foo {}} } */
+/* { dg-command {foo (f)} } */
+/* { dg-output "foo" } */
