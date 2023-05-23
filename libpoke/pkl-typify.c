@@ -2271,7 +2271,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_var)
   if (PKL_AST_TYPE (initial) == NULL)
     {
       PKL_ICE (PKL_AST_LOC (initial),
-               "the type of a variable initial is unknownx");
+               "the type of a variable initial is unknown");
       PKL_PASS_ERROR;
     }
   PKL_AST_TYPE (var) = ASTREF (PKL_AST_TYPE (initial));
