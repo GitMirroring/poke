@@ -120,9 +120,6 @@ struct pk_term_if
 
 /* Create and return a new Poke incremental compiler.
 
-   RTPATH should contain the name of a directory where the compiler
-   can find its run-time support files.
-
    TERM_IF is a pointer to a struct pk_term_if containing pointers to
    functions providing the output routines to be used by the
    incremental compiler.

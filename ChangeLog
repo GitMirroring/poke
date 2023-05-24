@@ -1,3 +1,8 @@
+2023-05-24  Constantin Nickel  <constantin.nickel@gmail.com>
+
+	* libpoke/libpoke.h (pk_compiler_new): Remove leftover comment
+	about RTPATH argument.
+
 2023-05-23  Constantin Nickel  <constantin.nickel@gmail.com>
 
 	* common/pk-utils.h: Fix spelling mistakes.
