@@ -1,8 +1,22 @@
-2023-05-19  Jose E. Marchesi  <jemarch@gnu.org>
+2023-05-20  Jose E. Marchesi  <jemarch@gnu.org>
 
-	* libpoke/pkl-ast.h (struct pkl_ast_func): New field
-	`method-struct'.
-	(PKL_AST_FUNC_METHOD_STRUCT): Define.
+	* libpoke/pvm-val.h (array): New field sct.constructor.
+	(PVM_VAL_TYP_S_CONSTRUCTOR): Define.
+	* libpoke/pvm-val.c (pvm_struct_type_constructor): New function.
+	(pvm_make_struct_type): Get a new `constructor' argument.
+	* libpoke/pkl-insn.def (PKL_INSN_TYSCTGETC): New instruction.
+	(PKL_INSN_TYSCTSETC): Likewise.
+	* libpoke/pk-val.c (pk_make_struct_type): Pass PVM_NULL for
+	constructor.
+	* libpoke/pvm-val.c (pvm_make_exception): Likewise.
+	* libpoke/pvm.jitter (mktysct): Likewise.
+	(tysctgetc): New instruction.
+	(tysctsetc): Likewise.
+	* libpoke/pkl-gen.c (pkl_gen_ps_type_struct): Install constructor
+	closure in the created PVM struct type.
+	(pkl_gen_pr_cons): Converted from pkl_gen_ps_cons.
+	* libpoke/pkl-asm.pks (ssetc): Use run-time consructor closure if
+	no struct_type AST node is provided.
 
 2023-05-28  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 

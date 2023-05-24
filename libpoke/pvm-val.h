@@ -426,6 +426,7 @@ typedef struct pvm_struct *pvm_struct;
 #define PVM_VAL_TYP_A_BOUND(V) (PVM_VAL_TYP((V))->val.array.bound)
 #define PVM_VAL_TYP_A_ETYPE(V) (PVM_VAL_TYP((V))->val.array.etype)
 #define PVM_VAL_TYP_S_NAME(V) (PVM_VAL_TYP((V))->val.sct.name)
+#define PVM_VAL_TYP_S_CONSTRUCTOR(V) (PVM_VAL_TYP((V))->val.sct.constructor)
 #define PVM_VAL_TYP_S_NFIELDS(V) (PVM_VAL_TYP((V))->val.sct.nfields)
 #define PVM_VAL_TYP_S_FNAMES(V) (PVM_VAL_TYP((V))->val.sct.fnames)
 #define PVM_VAL_TYP_S_FTYPES(V) (PVM_VAL_TYP((V))->val.sct.ftypes)
@@ -472,6 +473,7 @@ struct pvm_type
     {
       pvm_val name;
       pvm_val nfields;
+      pvm_val constructor;
       pvm_val *fnames;
       pvm_val *ftypes;
     } sct;

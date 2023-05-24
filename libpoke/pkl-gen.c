@@ -1020,17 +1020,14 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
               pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NROT); /* SCT STR VAL */
               pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SSET);  /* SCT */
               pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BA, done);
-                            
+
               /* Set with integrity checks.  */
               pkl_asm_label (PKL_GEN_ASM, use_ssetc);
               pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* STR VAL SCT */
               pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NROT); /* SCT STR VAL */
-              /* XXX we need the containing struct type!  */
-              /* But we are compiling it... */
-              /* SSETC needs the constructor, which may exist already.  NOTE THE SSET BELOW! */
-              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SSET,
-                            PKL_AST_TYPE (lvalue));      /* SCT */
-              
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SSETC, NULL);
+                                                         /* SCT */
+
               pkl_asm_label (PKL_GEN_ASM, done);
             }
 
@@ -4157,6 +4154,16 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_type_struct)
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL);
 
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MKTYSCT);
+
+      /* Install the constructor closure of the struct type.  This may
+         be PVM_NULL.  */
+      {
+        pvm_val constructor = PKL_AST_TYPE_S_CONSTRUCTOR (PKL_PASS_NODE);
+
+        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, constructor);
+        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_STRACE, 1);
+        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_TYSCTSETC);
+      }
     }
 }
 PKL_PHASE_END_HANDLER
