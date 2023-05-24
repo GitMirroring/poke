@@ -1236,7 +1236,7 @@ immutable fun _pkl_eq_any = (any v1, any v2) int<32>:
     var v1_len = asm uint<64>: ("sel; nip" : v1);
     var v2_len = asm uint<64>: ("sel; nip" : v2);
 
-    /* First check the lenght.  */
+    /* First check the length.  */
     if (v1_len != v2_len)
       return 0;
 
@@ -1271,7 +1271,7 @@ immutable fun _pkl_eq_any = (any v1, any v2) int<32>:
     if (struct_type_name (v1) != struct_type_name (v2))
       return 0;
 
-    /* Now check the lenght.  This accommodates optional
+    /* Now check the length.  This accommodates optional
        fields and the like.  */
     if (v1_len != v2_len)
       return 0;

@@ -1605,7 +1605,7 @@ pkl_ast_node pkl_ast_make_lambda (pkl_ast ast, pkl_ast_node function);
 
 /* PKL_AST_ASM nodes represent asm expressions.
 
-   TEMPLATE is a string node contaning assembler instructions.
+   TEMPLATE is a string node containing assembler instructions.
 
    TYPE is the type of the element that is left at the top of
    the stack once the program in TEMPLATE is executed.
@@ -2038,7 +2038,7 @@ pkl_ast_node pkl_ast_make_raise_stmt (pkl_ast ast, pkl_ast_node exp);
 /* PKL_AST_ASM nodes represent `asm' statements, which are used in
    order to inline PVM assembly in Poke programs.
 
-   TEMPLATE is a string node contaning assembler instructions.
+   TEMPLATE is a string node containing assembler instructions.
 
    INPUTS is a chain of expressions.  The result of these expressions
    will be pushed in the stack in the given order before executing

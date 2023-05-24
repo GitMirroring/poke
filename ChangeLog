@@ -1,3 +1,24 @@
+2023-05-23  Constantin Nickel  <constantin.nickel@gmail.com>
+
+	* common/pk-utils.h: Fix spelling mistakes.
+	* doc/poke.texi: Likewise.
+	* libpoke/ios.h: Likewise.
+	* libpoke/libpoke.h: Likewise.
+	* libpoke/pkl-ast.h: Likewise.
+	* libpoke/pkl-promo.c: Likewise.
+	* libpoke/pkl-rt.pk: Likewise.
+	* libpoke/pkl.h: Likewise.
+	* libpoke/pvm-val.h: Likewise.
+	* libpoke/pvm.jitter: Likewise.
+	* libpoke/ras: Likewise.
+	* pickles/pe.pk: Likewise.
+	* poke/pk-cmd-ios.c: Likewise.
+	* poke/pk-settings.pk: Likewise.
+	* testsuite/poke.pkl/eq-any-integral-1.pk: Likewise.
+	* testsuite/poke.pkl/eq-any-integral-2.pk: Likewise.
+	* testsuite/poke.pkl/eq-any-integral-3.pk: Likewise.
+	* testsuite/poke.pkl/eq-any-integral-4.pk: Likewise.
+
 2023-05-19  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-gen.c (pkl_gen_pr_ass_stmt): Perform a LMAP whenever

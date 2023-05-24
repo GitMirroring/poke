@@ -63,7 +63,7 @@ char *pk_str_concat (const char *s0, ...) __attribute__ ((sentinel));
 /* Replace all occurrences of SEARCH within IN by REPLACE. */
 char *pk_str_replace (const char *in, const char *search, const char *replace);
 
-/* Left and rigth trim the given string from whitespaces.  */
+/* Left and right trim the given string from whitespaces.  */
 void pk_str_trim (char **str);
 
 /* Convert floating-point number in input string STR and save the

@@ -454,7 +454,7 @@ pk_cmd_mem (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
   const char *arg_str = PK_CMD_ARG_STR (argv[1]);
   char *mem_name = NULL;
 
-  /* If the user didnt' specify a name for the memory IOS, search for
+  /* If the user didn't specify a name for the memory IOS, search for
      the first available *N*.  */
   if (*arg_str == '\0')
     {

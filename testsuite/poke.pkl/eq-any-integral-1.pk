@@ -1,6 +1,6 @@
 /* { dg-do run } */
 
-/* This test tests the any equality and unequality operators
+/* This test tests the any equality and inequality operators
    in the following integral configurations:
 
         int OP int

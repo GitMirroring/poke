@@ -523,7 +523,7 @@ manual.
 If `info' is selected, the GNU info standalone program is launched to
 show the info version of the user manual.
 
-If `less' is selected, the less utility is launched ot show a plain
+If `less' is selected, the less utility is launched to show a plain
 text version of the user manual.
 
 See also \".help .doc\".",
@@ -568,7 +568,7 @@ pk_settings.add_setting
       description = "\
 This setting determines whether the Poke compiler and runtime
 will generate tracing events or not.  This is mainly useful
-for debugging puposes.
+for debugging purposes.
 
 Beware that enabling tracer will undoubtly have an impact
 in performance, and that every type compiled when tracing is

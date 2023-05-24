@@ -595,7 +595,7 @@ type PE_Debug_Directory_Entry =
     /* Date and time that the debug data was created.  */
     POSIX_Time32 timestamp;
 
-    /* Version number of hte debug data format.  */
+    /* Version number of the debug data format.  */
     uint<16> major_version;
     uint<16> minor_version;
 

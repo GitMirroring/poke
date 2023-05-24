@@ -282,7 +282,7 @@ typedef struct pvm_array *pvm_array;
    how to obtain these values.
 
    OFFSET is an ulong<64> value holding the bit offset of the element,
-   relative to the beginnig of the IO space.  If the array is not
+   relative to the beginning of the IO space.  If the array is not
    mapped then this is PVM_NULL.
 
    OFFSET_BACK is a backup area used by the reloc instructions.

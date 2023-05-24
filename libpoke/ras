@@ -114,7 +114,7 @@
 # Splitting Long Lines
 # --------------------
 #
-# Logical long lines can be splitted into several physical lines by
+# Logical long lines can be split into several physical lines by
 # finishing them with the \ character.  This is an example:
 #
 #   .macro struct_field_extractor @struct_type @field @struct_itype \
@@ -242,7 +242,7 @@
 # Exception Arguments are written like PVM_E_*.  See the file pvm.h
 # for the set of valid exceptions.
 #
-# Tracing Events are written lke PK_TV_*.  See the file pkl.h
+# Tracing Events are written like PK_TV_*.  See the file pkl.h
 # for the set of valid tracing events.
 #
 # Endianness specifiers are written like IOS_ENDIAN_LSB, meaning

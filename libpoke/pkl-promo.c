@@ -234,7 +234,7 @@ promote_node (pkl_ast ast,
 
   /* Note how we call promote array even if pkl_ast_type_equal_p
      declares that both types are equal.  This is because
-     pkl_ast_type_equal_p doesnt' take into account the array
+     pkl_ast_type_equal_p doesn't take into account the array
      dimensions.  */
   if (!pkl_ast_type_equal_p (node_type, type)
       || PKL_AST_TYPE_CODE (type) == PKL_TYPE_ARRAY)

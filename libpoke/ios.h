@@ -25,7 +25,7 @@
 
 typedef struct ios_context *ios_context;
 
-/* The following two functions intialize and shutdown the IO poke
+/* The following two functions initialize and shutdown the IO poke
    subsystem.  */
 
 ios_context ios_init (void);

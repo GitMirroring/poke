@@ -75,7 +75,7 @@
    RT_PATH should contain the name of a directory where the compiler can
    find its run-time support files.
 
-   CONFIG_PATH should contain the name of a directoy where
+   CONFIG_PATH should contain the name of a directory where
    pkl-config.pk can be found.
 
    FLAGS is an ORed value of PKL_F_* values, or 0.

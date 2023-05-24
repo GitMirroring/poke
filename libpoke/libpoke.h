@@ -155,10 +155,10 @@ void pk_compiler_free (pk_compiler pkc) LIBPOKE_API;
 
 int pk_errno (pk_compiler pkc) LIBPOKE_API;
 
-/* Compile an execute a Poke program from the given file FILENAME.
+/* Compile and execute a Poke program from the given file FILENAME.
 
    EXIT_EXCEPTION is a pointer to a pk_val variable that is set to an
-   Exception value if the execution rsults in an unhandled exception,
+   Exception value if the execution results in an unhandled exception,
    PK_NULL otherwise.
 
    Return PK_ERROR in case of a compilation error.  Otherwise,
@@ -167,7 +167,7 @@ int pk_errno (pk_compiler pkc) LIBPOKE_API;
 int pk_compile_file (pk_compiler pkc, const char *filename,
                      pk_val *exit_exception) LIBPOKE_API;
 
-/* Compile an execute a Poke program from a memory buffer.
+/* Compile and execute a Poke program from a memory buffer.
 
    BUFFER is a NULL-terminated string.
 
@@ -178,7 +178,7 @@ int pk_compile_file (pk_compiler pkc, const char *filename,
    return PK_OK.
 
    EXIT_EXCEPTION is a pointer to a pk_val variable that is set to an
-   Exception value if the execution rsults in an unhandled exception,
+   Exception value if the execution results in an unhandled exception,
    PK_NULL otherwise.  */
 
 int pk_compile_buffer (pk_compiler pkc, const char *buffer,
@@ -207,7 +207,7 @@ int pk_compile_buffer_with_loc (pk_compiler pkc, const char *buffer,
    result value of an expression-statement, or to PK_NULL.
 
    EXIT_EXCEPTION is a pointer to a pk_val variable that is set to an
-   Exception value if the execution rsults in an unhandled exception,
+   Exception value if the execution results in an unhandled exception,
    PK_NULL otherwise.  */
 
 int pk_compile_statement (pk_compiler pkc, const char *buffer,
@@ -238,7 +238,7 @@ int pk_compile_statement_with_loc (pk_compiler pkc, const char *buffer,
    Return PK_ERROR in case of a compilation error, PK_OK otherwise.
 
    EXIT_EXCEPTION is a pointer to a pk_val variable that is set to an
-   Exception value if the execution rsults in an unhandled exception,
+   Exception value if the execution results in an unhandled exception,
    PK_NULL otherwise.  */
 
 int pk_compile_expression (pk_compiler pkc, const char *buffer,

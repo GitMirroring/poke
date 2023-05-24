@@ -8467,7 +8467,7 @@ socket.  This is very convenient for programs to interact with the
 poke incremental compiler.  The client programs that interact with
 @code{poked} are called @emph{pokelets}.
 
-This form of interaction is particularly userful to write user
+This form of interaction is particularly useful to write user
 interfaces to GNU poke, in the form of several pokelets.  Examples
 of such interfaces are
 @url{https://git.savannah.gnu.org/cgit/poke/poke-el.git,Emacs
@@ -11967,7 +11967,7 @@ violation exception is selected.
 
 It makes little sense to mark union types as pinned, since whatever
 alternative is chosen will always be located at the beginning of the
-union.  To avoid unnecesary confusion, the Poke compiler will emit an
+union.  To avoid unnecessary confusion, the Poke compiler will emit an
 error if you try to tag an union as pinned.
 
 Similarly, labels are not allowed in union alternatives.
@@ -13348,7 +13348,7 @@ asm (@var{template} [: @var{outputs} [: @var{inputs}]])
 
 @noindent
 where @var{template} is the written form of a PVM assembler program,
-@var{outputs} a comma separated list of l-values ans @var{inputs} a
+@var{outputs} a comma separated list of l-values and @var{inputs} a
 comma separated list of expressions.
 
 Before the assembler program in @var{template} is executed, the
@@ -15435,7 +15435,7 @@ fun vm_autoremap = int<32>:
 
 The pre-defined function @code{vm_set_autoremap} sets whether
 auto-remapping of mapped values is switched on.  It has the following
-protoype:
+prototype:
 
 @example
 fun vm_set_autoremap = (int<32)void:
@@ -16438,11 +16438,11 @@ The type of @var{a} and @var{b} must be either @code{string} or
 
 This function implements partial ordering, as it's not possible to
 distinguish some version numbers as greater or lower than each other,
-as some could be seen as ``lateral'' to eachother.  For instance,
+as some could be seen as ``lateral'' to each other.  For instance,
 consider the strings @samp{3.0-a-11-gabcdef} and
 @samp{3.0-b-11-gabcdef}.  They are both 11 commits ahead of the 3.0
 release, but they aren't on the same lineage, and so, they can't be
-considered as greater or lower than eachother.  In cases like these,
+considered as greater or lower than each other.  In cases like these,
 @code{pk_vercmp} will attempt to compare commit numbers as a crude
 measure.
 @end deftypefun
