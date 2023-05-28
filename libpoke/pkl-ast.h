@@ -1161,6 +1161,9 @@ pkl_ast_node pkl_ast_type_incr_step (pkl_ast ast, pkl_ast_node type);
    STRUCT_FIELD_P indicates whether this declaration is for a variable
    corresponding to a struct field.
 
+   IN_STRUCT_P indicates whether this declaration is declared in the
+   body of a struct type.
+
    IMMUTABLE_P indicates whether this declaration can be redefined.
    Used when bootstrapping the compiler.  */
 

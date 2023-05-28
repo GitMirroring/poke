@@ -1,3 +1,8 @@
+2023-05-28  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-ast.h (PKL_AST_DECL_IN_STRUCT_P): Add comment to
+	explain the field.
+
 2023-05-24  Constantin Nickel  <constantin.nickel@gmail.com>
 
 	* libpoke/libpoke.h (pk_compiler_new): Remove leftover comment
