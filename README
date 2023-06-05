@@ -6,6 +6,9 @@ to describe data structures and to operate on them.
 See the file COPYING in this source distribution for the terms under
 which you can redistribute and/or modify this program.
 
+See the file INSTALL for instructions on how to build and install this
+source distribution.
+
 If you are interested in helping in the development, please check out
 the source code repository (see https://savannah.gnu.org/git/?group=poke)
 and start by reading the file HACKING carefully.
