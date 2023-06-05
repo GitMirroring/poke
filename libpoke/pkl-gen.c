@@ -4156,10 +4156,21 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_type_struct)
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MKTYSCT);
 
       /* Install the constructor closure of the struct type.  This may
-         be PVM_NULL.  */
+         require to compile one.  */
       {
         pvm_val constructor = PKL_AST_TYPE_S_CONSTRUCTOR (PKL_PASS_NODE);
 
+#if 0
+        /* XXX this results into infinite loop in compiler, because the
+           struct constructor in gen.pks builds its struct type.  */
+        if (constructor == PVM_NULL)
+          {
+            PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_CONSTRUCTOR);
+            RAS_FUNCTION_STRUCT_CONSTRUCTOR (constructor, PKL_PASS_NODE);
+            PKL_GEN_POP_CONTEXT;
+            PKL_AST_TYPE_S_CONSTRUCTOR (PKL_PASS_NODE) = constructor;
+          }
+#endif
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, constructor);
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_STRACE, 1);
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_TYSCTSETC);
