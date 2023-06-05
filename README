@@ -3,6 +3,9 @@ limited to editing basic entities such as bits and bytes, it provides
 a full-fledged procedural, interactive programming language designed
 to describe data structures and to operate on them.
 
+See the file COPYING in this source distribution for the terms under
+which you can redistribute and/or modify this program.
+
 If you are interested in helping in the development, please check out
 the source code repository (see https://savannah.gnu.org/git/?group=poke)
 and start by reading the file HACKING carefully.
