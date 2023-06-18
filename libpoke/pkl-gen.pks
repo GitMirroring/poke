@@ -2033,13 +2033,9 @@
  .c }
         ;; Push the number of fields, create the struct and return it.
         pushvar $nfield        ; null [OFF STR VAL]... NMETHOD NFIELD
-        push "one\n"
-        prints
         .c PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPE);
         .c PKL_PASS_SUBPASS (@type_struct);
         .c PKL_GEN_POP_CONTEXT;
-        push "two\n"
-        prints
                                 ; SCT 0UL [OFF STR VAL]... NMETHOD NFIELD TYP
         mksct                   ; SCT SCT
         nip                     ; SCT

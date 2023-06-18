@@ -250,21 +250,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);           /* CLS */
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);          /* _ */
 
-            if (PKL_AST_TYPE_S_MAPPER (type_struct) == PVM_NULL)
-              {
-                pvm_val mapper_closure;
-
-                PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_MAPPER);
-                RAS_FUNCTION_STRUCT_MAPPER (mapper_closure, type_struct);
-                PKL_GEN_POP_CONTEXT;
-                PKL_AST_TYPE_S_MAPPER (type_struct) = mapper_closure;
-              }
-
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
-                          PKL_AST_TYPE_S_MAPPER (type_struct)); /* CLS */
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);           /* CLS */
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);          /* _ */
-
+            /* Note that it is important for the constructor to be
+               compiled before the mapper, because the first has to be
+               installed in the PVM struct type built by the second.
+              */
             if (PKL_AST_TYPE_S_CONSTRUCTOR (type_struct) == PVM_NULL)
               {
                 pvm_val constructor_closure;
@@ -279,6 +268,21 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
                           PKL_AST_TYPE_S_CONSTRUCTOR (type_struct)); /* CLS */
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);                /* CLS */
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);               /* _ */
+
+            if (PKL_AST_TYPE_S_MAPPER (type_struct) == PVM_NULL)
+              {
+                pvm_val mapper_closure;
+
+                PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_MAPPER);
+                RAS_FUNCTION_STRUCT_MAPPER (mapper_closure, type_struct);
+                PKL_GEN_POP_CONTEXT;
+                PKL_AST_TYPE_S_MAPPER (type_struct) = mapper_closure;
+              }
+
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                          PKL_AST_TYPE_S_MAPPER (type_struct)); /* CLS */
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);           /* CLS */
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);          /* _ */
 
             if (PKL_AST_TYPE_S_COMPARATOR (type_struct) == PVM_NULL)
               {
@@ -1006,7 +1010,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
                  construction (yet).  */
               pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ROT); /* STR VAL SCT */
               pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MM);  /* STR VAL SCT MAPPED_P */
-              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BNZI, use_ssetc);
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BZI, use_ssetc);
               pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* STR VAL SCT */
 
               /* The value is mapped.  Check the strictness of the mapping.  */
@@ -1015,6 +1019,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
               pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* STR VAL SCT */
 
               /* Set without integrity checks.  */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL);
               pkl_asm_label (PKL_GEN_ASM, use_sset);
               pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* STR VAL SCT */
               pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NROT); /* SCT STR VAL */
@@ -3921,6 +3926,17 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_struct)
              but this one is needed by ssetc.  */
           PKL_AST_TYPE_S_CONSTRUCTOR (type_struct) = type_struct_constructor;
         }
+
+#if 0
+      /* Make sure the type of the mapped struct has a constructor at
+         runtime.  This is required by SSETC.  */
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_TYPOF); /* VAL TYP */
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                    PKL_AST_TYPE_S_CONSTRUCTOR (type_struct)); /* VAL TYP CLS */
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_TYSCTSETC); /* VAL TYP */
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* VAL */
+#endif
+
       if (!PKL_AST_TYPE_NAME (type_struct))
         {
           pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, type_struct_constructor);
@@ -3990,6 +4006,14 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_struct)
 
       /* Call the constructor to get a new struct.  */
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_CALL);    /* NSCT */
+
+      /* Make sure the type of the constructed struct has a constructor at
+         runtime.  This is required by SSETC.  */
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_TYPOF); /* NSCT TYP */
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                    PKL_AST_TYPE_S_CONSTRUCTOR (type_struct)); /* NSCT TYP CLS */
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_TYSCTSETC); /* NSCT TYP */
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* NSCT */
 
       /* Compile a writer function and complete it using the current
          environment.  */
@@ -4172,7 +4196,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_type_struct)
           }
 #endif
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, constructor);
-        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_STRACE, 1);
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_TYSCTSETC);
       }
     }

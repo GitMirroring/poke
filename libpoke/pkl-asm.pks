@@ -396,6 +396,8 @@
         ;; Invoke the constructor of the struct in itself.  If it
         ;; raises E_constraint, then restore the original value
         ;; and re-raise the exception.
+        push PVM_E_CONSTRAINT
+        pushe .integrity_fucked
         dup                     ; OVAL STR SCT SCT
   .c if (@struct_type)
   .c {
@@ -415,8 +417,6 @@
         ba .integrity_ok
 .got_constructor:
   .c }
-        push PVM_E_CONSTRAINT
-        pushe .integrity_fucked
         call                    ; OVAL STR SCT SCT
         pope
         drop                    ; OVAL STR SCT

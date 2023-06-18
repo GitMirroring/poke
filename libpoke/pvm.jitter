@@ -6467,6 +6467,7 @@ instruction tysctgetc ()
     pvm_val type = JITTER_TOP_STACK ();
     pvm_val constructor = PVM_VAL_TYP_S_CONSTRUCTOR (type);
 
+    printf ("GOT constructor %lx for type %lx\n", constructor, type);
     JITTER_PUSH_STACK (constructor);
   end
 end
@@ -6483,6 +6484,7 @@ instruction tysctsetc ()
     pvm_val type = JITTER_UNDER_TOP_STACK ();
     pvm_val constructor = JITTER_TOP_STACK ();
 
+    printf ("SETTING constructor %lx to type %lx\n", constructor, type);
     PVM_VAL_TYP_S_CONSTRUCTOR (type) = constructor;
     JITTER_DROP_STACK ();
   end
