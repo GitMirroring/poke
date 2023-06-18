@@ -965,11 +965,54 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
                           pvm_make_string (PKL_AST_IDENTIFIER_POINTER (var_name)));
                                                               /* VAL SCT STR */
+
+            /* Set the value in the struct using SETC if the struct is
+               mapped in non-strict mode. Othewrise, use SSET.  */
+            {
+              pvm_program_label use_sset = pkl_asm_fresh_label (PKL_GEN_ASM);
+              pvm_program_label use_ssetc = pkl_asm_fresh_label (PKL_GEN_ASM);
+              pvm_program_label done = pkl_asm_fresh_label (PKL_GEN_ASM);
+
+              /* If the struct is not mapped, always check integrity,
+                 since there is not such a thing as non-strict
+                 construction (yet).  */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NROT); /* STR VAL SCT */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MM);  /* STR VAL SCT MAPPED_P */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BZI, use_ssetc);
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* STR VAL SCT */
+
+              /* The value is mapped.  Check the strictness of the mapping.  */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MGETS); /* STR VAL SCT STRICT_P */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BNZI, use_ssetc);
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* STR VAL SCT */
+
+              /* Set without integrity checks.  */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL);
+              pkl_asm_label (PKL_GEN_ASM, use_sset);
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* STR VAL SCT */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NROT); /* SCT STR VAL */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SSET);  /* SCT */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BA, done);
+
+              /* Set with integrity checks.  */
+              pkl_asm_label (PKL_GEN_ASM, use_ssetc);
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* STR VAL SCT */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_TOR); /* STR VAL [SCT] */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_OVER); /* STR VAL STR [SCT] */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_OVER); /* STR VAL STR VAL [SCT] */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_FROMR); /* STR VAL STR VAL SCT */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NROT); /* STR VAL SCT STR VAL */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SSETC, NULL);
+                                                         /* STR VAL SCT */
+
+              pkl_asm_label (PKL_GEN_ASM, done);
+            }
+
             /* Do a L-MAP if the struct is mapped.  */
             {
               pvm_program_label not_mapped = pkl_asm_fresh_label (PKL_GEN_ASM);
 
-              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP); /* VAL STR SCT */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_QUAKE); /* VAL STR SCT */
               pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MM);  /* VAL STR SCT MAPPED_P */
               pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BZI, not_mapped);
               pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* VAL STR SCT */
@@ -996,44 +1039,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
               pkl_asm_label (PKL_GEN_ASM, not_mapped);
               pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* VAL STR SCT */
               pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_REVN, 3); /* SCT STR VAL */
-            }
-
-            /* Set the value in the struct using SETC if the struct is
-               mapped in non-strict mode. Othewrise, use SSET.  */
-            {
-              pvm_program_label use_sset = pkl_asm_fresh_label (PKL_GEN_ASM);
-              pvm_program_label use_ssetc = pkl_asm_fresh_label (PKL_GEN_ASM);
-              pvm_program_label done = pkl_asm_fresh_label (PKL_GEN_ASM);
-
-              /* If the struct is not mapped, always check integrity,
-                 since there is not such a thing as non-strict
-                 construction (yet).  */
-              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ROT); /* STR VAL SCT */
-              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MM);  /* STR VAL SCT MAPPED_P */
-              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BZI, use_ssetc);
-              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* STR VAL SCT */
-
-              /* The value is mapped.  Check the strictness of the mapping.  */
-              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MGETS); /* STR VAL SCT STRICT_P */
-              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BNZI, use_ssetc);
-              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* STR VAL SCT */
-
-              /* Set without integrity checks.  */
-              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL);
-              pkl_asm_label (PKL_GEN_ASM, use_sset);
-              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* STR VAL SCT */
-              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NROT); /* SCT STR VAL */
-              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SSET);  /* SCT */
-              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BA, done);
-
-              /* Set with integrity checks.  */
-              pkl_asm_label (PKL_GEN_ASM, use_ssetc);
-              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* STR VAL SCT */
-              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NROT); /* SCT STR VAL */
-              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SSETC, NULL);
-                                                         /* SCT */
-
-              pkl_asm_label (PKL_GEN_ASM, done);
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP2); /* SCT */
             }
 
             /* In case the struct is mapped.  */
