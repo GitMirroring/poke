@@ -1,3 +1,33 @@
+2023-06-19  Jose E. Marchesi  <jemarch@gnu.org>
+2023-06-19  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pvm-val.h (array): New field sct.constructor.
+	(PVM_VAL_TYP_S_CONSTRUCTOR): Define.
+	* libpoke/pvm-val.c (pvm_struct_type_constructor): New function.
+	(pvm_make_struct_type): Get a new `constructor' argument.
+	* libpoke/pkl-insn.def (PKL_INSN_TYSCTGETC): New instruction.
+	(PKL_INSN_TYSCTSETC): Likewise.
+	* libpoke/pk-val.c (pk_make_struct_type): Pass PVM_NULL for
+	constructor.
+	* libpoke/pvm-val.c (pvm_make_exception): Likewise.
+	* libpoke/pvm.jitter (mktysct): Likewise.
+	(tysctgetc): New instruction.
+	(tysctsetc): Likewise.
+	* libpoke/pkl-gen.c (pkl_gen_ps_type_struct): Install constructor
+	closure in the created PVM struct type.
+	(pkl_gen_pr_cons): Converted from pkl_gen_ps_cons.
+	(pkl_gen_pr_decl): Moving mapper generation after the generation of
+	constructor.
+	(pkl_gen_pr_ass_stmt): fix field assignements within methods.
+	* libpoke/pkl-asm.pks (ssetc): Use run-time consructor closure if
+	no struct_type AST node is provided.
+	* testsuite/poke.map/maps-structs-methods-12.pk: New test.
+	* testsuite/poke.map/maps-structs-methods-13.pk: Likewise.
+	* testsuite/poke.map/maps-structs-methods-14.pk: Likewise.
+	* testsuite/poke.pkl/struct-method-20.pk: Likewise.
+	* testsuite/poke.pkl/struct-method-21.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+
 2023-05-28  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-ast.h (PKL_AST_DECL_IN_STRUCT_P): Add comment to

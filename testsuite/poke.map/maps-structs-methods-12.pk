@@ -1,0 +1,21 @@
+/* { dg-do run } */
+/* { dg-data {c*} {0x01 0x00 0x00 0x00  0x02 0x00 0x00 0x00   0x03 0x00 0x00 0x00} } */
+
+type Foo =
+  struct
+  {
+    int<32>[3] a;
+
+    method set = void: { a = [3,2,1]; }
+  };
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {.set endian little} } */
+/* { dg-command {var f = Foo @ 0#B} } */
+/* { dg-command {f.a} } */
+/* { dg-output {\[0x00000001,0x00000002,0x00000003\]} } */
+/* { dg-command {f.set} } */
+/* { dg-command {dump :ruler 0 :from 0#B :size 12#B :group_by 4#B} } */
+/* { dg-output "\n00000000: 03000000 02000000 01000000.*" } */
+/* { dg-command {f.a} } */
+/* { dg-output {\n\[0x00000003,0x00000002,0x00000001\]} } */

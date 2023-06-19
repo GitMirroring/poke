@@ -1,0 +1,18 @@
+/* { dg-do run } */
+
+type Foo =
+  struct
+  {
+    int<32>[3] a;
+
+    method set = void: { a = [3,2,1]; }
+  };
+
+var foo = Foo { a=[1,2,3] };
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command { foo.a } } */
+/* { dg-output {\[0x00000001,0x00000002,0x00000003\]} } */
+/* { dg-command { foo.set } } */
+/* { dg-command { foo.a } } */
+/* { dg-output {\n\[0x00000003,0x00000002,0x00000001\]} } */

@@ -397,6 +397,9 @@ EXTRA_DIST = \
   poke.map/maps-structs-methods-9.pk \
   poke.map/maps-structs-methods-10.pk \
   poke.map/maps-structs-methods-11.pk \
+  poke.map/maps-structs-methods-12.pk \
+  poke.map/maps-structs-methods-13.pk \
+  poke.map/maps-structs-methods-14.pk \
   poke.map/maps-structs-pinned-1.pk \
   poke.map/maps-structs-pinned-2.pk \
   poke.map/maps-structs-pinned-3.pk \
@@ -2505,6 +2508,8 @@ EXTRA_DIST = \
   poke.pkl/struct-method-17.pk \
   poke.pkl/struct-method-18.pk \
   poke.pkl/struct-method-19.pk \
+  poke.pkl/struct-method-20.pk \
+  poke.pkl/struct-method-21.pk \
   poke.pkl/struct-method-diag-1.pk \
   poke.pkl/struct-method-diag-2.pk \
   poke.pkl/struct-method-diag-3.pk \

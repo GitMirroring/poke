@@ -547,6 +547,7 @@ pvm_make_struct_type (pvm_val nfields, pvm_val name,
 
   PVM_VAL_TYP_S_NAME (stype) = name;
   PVM_VAL_TYP_S_NFIELDS (stype) = nfields;
+  PVM_VAL_TYP_S_CONSTRUCTOR (stype) = PVM_NULL;
   PVM_VAL_TYP_S_FNAMES (stype) = fnames;
   PVM_VAL_TYP_S_FTYPES (stype) = ftypes;
 

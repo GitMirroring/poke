@@ -6451,8 +6451,40 @@ instruction mktysct ()
       JITTER_DROP_STACK ();
     }
 
-    JITTER_PUSH_STACK (pvm_make_struct_type (nelem, name,
-                                             enames, etypes));
+    JITTER_PUSH_STACK (pvm_make_struct_type (nelem, name, enames, etypes));
+  end
+end
+
+# Instruction: tysctgetc
+#
+# Given a struct type, push its constructor closure to the stack. If
+# no constructor closure is installed in the type, push PVM_NULL.
+#
+# Stack: ( TYP -- TYP CLS|null )
+
+instruction tysctgetc ()
+  code
+    pvm_val type = JITTER_TOP_STACK ();
+    pvm_val constructor = PVM_VAL_TYP_S_CONSTRUCTOR (type);
+
+    JITTER_PUSH_STACK (constructor);
+  end
+end
+
+# Instruction: tysctsetc
+#
+# Given a struct type and a closure, install it as the type's
+# constructor.
+#
+# Stack: ( TYP CLS -- TYP )
+
+instruction tysctsetc ()
+  code
+    pvm_val type = JITTER_UNDER_TOP_STACK ();
+    pvm_val constructor = JITTER_TOP_STACK ();
+
+    PVM_VAL_TYP_S_CONSTRUCTOR (type) = constructor;
+    JITTER_DROP_STACK ();
   end
 end
 
@@ -6461,7 +6493,7 @@ end
 # Given a struct type, push its name to the stack.  If the struct
 # type is not named push PVM_NULL.
 #
-# Stack: ( SCT -- SCT STR )
+# Stack: ( TYP -- SCT STR )
 
 instruction tysctgetn ()
   code

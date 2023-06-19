@@ -396,11 +396,27 @@
         ;; Invoke the constructor of the struct in itself.  If it
         ;; raises E_constraint, then restore the original value
         ;; and re-raise the exception.
-        .let #constructor = PKL_AST_TYPE_S_CONSTRUCTOR (@struct_type)
         push PVM_E_CONSTRAINT
         pushe .integrity_fucked
-        dup                     ; OVAL STR SCT SCT CLS
+        dup                     ; OVAL STR SCT SCT
+  .c if (@struct_type)
+  .c {
+        .let #constructor = PKL_AST_TYPE_S_CONSTRUCTOR (@struct_type)
         push #constructor       ; OVAL STR SCT SCT CLS
+  .c }
+  .c else
+  .c {
+        typof                   ; OVAL STR SCT SCT TYP
+        tysctgetc               ; OVAL STR SCT SCT TYP CLS
+        nip                     ; OVAL STR SCT SCT CLS
+        bnn .got_constructor
+        ;; If no constructor, do not check constraint
+        drop                    ; OVAL STR SCT SCT
+        drop                    ; OVAL STR SCT
+        nip2                    ; SCT
+        ba .integrity_ok
+.got_constructor:
+  .c }
         call                    ; OVAL STR SCT SCT
         pope
         drop                    ; OVAL STR SCT
