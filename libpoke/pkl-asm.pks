@@ -355,8 +355,9 @@
 ;;; If the specified index is out of range, then PVM_E_OUT_OF_BOUNDS
 ;;; is raised.
 ;;;
-;;; If the array type is bounded by size and the new value makes
-;;; the total size of the array to change, then PVM_E_CONV is raised.
+;;; If the array type is bounded by size and the new value makes the
+;;; total size of the array to change, then PVM_E_CONSTRAINT is
+;;; raised.
 
         .macro asetc @array_type
         tor                     ; ARR IDX [VAL]
@@ -394,11 +395,11 @@
         nip2                    ; ... ARR (NSIZ==ASIZ)
         bnzi .size_ok
         drop                    ; OVAL IDX ARR
-        ;; Restore the old value and raise E_conv
+        ;; Restore the old value and raise E_constraint
         nrot                    ; ARR OVAL IDX
         swap                    ; ARR IDX OVAL
         aset                    ; ARR
-        push PVM_E_CONV
+        push PVM_E_CONSTRAINT
         raise
 .size_ok:
         drop
