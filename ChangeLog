@@ -1,3 +1,25 @@
+2023-06-23  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-gen.pks (struct_constructor): Re-raise an E_conv
+	from ATOA as an E_constraint.
+	* testsuite/poke.pkl/ass-19.pk: New test.
+	* testsuite/poke.pkl/ass-20.pk: Likewise.
+	* testsuite/poke.pkl/ass-21.pk: Likewise.
+	* testsuite/poke.pkl/scons-43.pk: Update test.
+	* libpoke/pkl-asm.pks (asetc): Raise E_constraint instead of
+	E_conv if the array type boundaries are violated.
+	* testsuite/poke.pkl/array-siz-diag-1.pk: Update test accordingly.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+
+2023-06-22  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* doc/poke.texi (From Bytes to Integers): Add missing word.
+
+2023-06-19  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-asm.pks (asetc): Raise E_constraint and not E_conv
+	if the new value makes the array to not fulfill its boundary.
+
 2023-06-19  Jose E. Marchesi  <jemarch@gnu.org>
 2023-06-19  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 

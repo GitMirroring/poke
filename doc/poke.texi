@@ -1624,8 +1624,8 @@ literals like @code{10UB} or @code{0x0aUB}.
 
 This very limited range of values have consequences when it comes to
 do arithmetic with bytes.  Suppose for example we wanted to calculate
-the average of the first byte values stored in @file{foo.o}.  We could
-do something like:
+the average of the first three byte values stored in @file{foo.o}.  We
+could do something like:
 
 @example
 (poke) a0 = byte @@ 0#B
@@ -1770,7 +1770,12 @@ more bytes.  Three bytes? sure:
 
 @noindent
 Note that in this case poke uses a prefix instead of a suffix to
-indicate that the given value is 24-bits long.  Four bytes?
+indicate that the given value is 24-bits long.  This is because only a
+limited number of suffixes (which are more concise and more readable
+than the prefix form) are available, corresponding to common or
+typical widths.
+
+Four bytes?
 
 @example
 (poke) uint<32> @@ 0#B
@@ -1809,9 +1814,9 @@ regardless of the numerical base used to denote the number.
 
 For example, the value of the number 123 (whose written form is
 @code{123}) is calculated as @code{1*10^2+2*10^1+3*10^0}.  If we swap
-the last two digits in the written form of the number, we have
-@code{1*10^2+3*10^1+2*10^0}, which results in a different value:
-@code{132}.  When we consider other numerical bases, the bases in the
+the last two digits in the written form of the number, @code{132}, we
+have @code{1*10^2+3*10^1+2*10^0}, which results in a different value:
+132.  When we consider other numerical bases, the bases in the
 polynomial change accordingly, but the correspondence between written
 form and value stands: for example, the value of 0x123 is calculated
 as @code{1*16^2+2*16^1+3*16^0}.
@@ -1976,9 +1981,9 @@ which is the biggest possible value for an unsigned integer of size 8
 bits: 0xff.
 
 When using type specifiers like @code{uint<8>} or @code{uint<16>} in a
-map, we get unsigned values such as 0UB.  It follows that we need
-other type specifiers to map signed values.  These look like
-@code{int<8>} and @code{int<16>}.
+map, we get unsigned values such as 0UB.  We need other type
+specifiers to map signed values.  These look like @code{int<8>} and
+@code{int<16>}.
 
 For example, let's map a signed 16-bit value from @file{foo.o}:
 
@@ -1990,8 +1995,9 @@ For example, let's map a signed 16-bit value from @file{foo.o}:
 
 @noindent
 Note how the suffix of the value is now @code{H} and not @code{UH}.
-This means that the value is signed!  But in this case it is still
-positive, so let's try to get an actual negative value:
+This means that the value is signed!  But in this case the mapped
+integer is still positive, so let's try to get an actual negative
+value:
 
 @example
 (poke) var h = int<16> @@ 0#B
@@ -2056,10 +2062,10 @@ The reason is that, given an integer of some particular size, the
 positive range that you can store in it is bigger when interpreted as
 an unsigned integer than when interpreted as a signed integer.
 Therefore, converting signed into unsigned before operating reduces
-the risk of positive overflow.  This of course assumes that we, as
-users, will be working with positive numbers more often than with
-negative numbers, but that is a reasonable assumption to do, as it is
-often the case!
+the risk of positive overflow, which by the way is not allowed in
+poke.  This of course assumes that we, as users, will be working with
+positive numbers more often than with negative numbers, but that is a
+reasonable assumption to do, as it is often the case!
 
 @node Weird Integers
 @section Weird Integers
@@ -2073,7 +2079,7 @@ which is the size of a byte.  So, why is this so?  Why is @code{N} not
 measured in bytes instead?
 
 The reason is that poke is not limited to integers composed of a whole
-number of bytes. You can actually have integers having @emph{any}
+number of bytes. You can actually have integers composed of @emph{any}
 number of bits, between 1 and 64.  So yes, @code{int<3>} is a type
 specifier for signed 3-bit integers, and @code{uint<17>} is a type
 specifier for unsigned 17-bit integers.
@@ -2088,10 +2094,10 @@ depend on the specific implementation of the language, and/or the
 characteristics of the system where you run your program.
 
 In poke, on the contrary, weird numbers are first class citizens, and
-they don't differ in any way from ``normal'' integers composed of a
-whole number of bytes.  Their interpretation is also well defined, and
-they keep the same semantics regardless of the characteristics of the
-computer on which poke is running.
+they don't differ in any way from ``normal'' integers which are
+composed of a whole number of bytes.  Their interpretation is also
+well defined, and they keep the same semantics regardless of the
+characteristics of the computer on which poke is running.
 
 @subsection Incomplete Bytes
 
@@ -2135,14 +2141,14 @@ this:
 @noindent
 Note how we decided to number the bits in descending order from left
 to right.  This is because these bits correspond to the base of the
-polynomial equivalent to the binary value of the byte, @i{i.e.} the value
-of the byte is
+polynomial equivalent to the binary value of the byte, @i{i.e.} the
+value of the byte is
 @code{b7*2^7+b6*2^6+b5*2^5+b4*2^4+b3*2^3+b2*2^2+b1*2^1+b0*2^0}.  In
 other words: at the bit level poke always uses a big endian
 interpretation, and the bit that ``comes first'' in this imaginary
 stream of bits is the most significant bit in the binary
 representation of the number.  Please note that this is just a
-convention, set by the poke authors: the opposite could have been
+convention imposed by the poke authors: the opposite could have been
 chosen, but it would have been a bit confusing, as we would have to
 picture binary numbers in reverse order!
 
@@ -2411,8 +2417,12 @@ work with unaligned data.  Imagine for example that you are poking
 packages in a network protocol that is bit-oriented.  This means that
 the packages will generally not be aligned to byte boundaries, but
 still the payload stored in the packages contains integers of several
-sizes.  poke allows you to directly map these integers as if they were
-aligned to byte boundaries, and work with them.
+sizes.  Other conventional binary editors or programming languages,
+that are almost always byte oriented, would require us to ``unpack''
+the network data to a different, byte oriented, representation before
+messing with it.  poke, on the contrary, allows you to directly map
+these integers as if they were aligned to byte boundaries, and work
+with them.
 
 However, when one tries to determine the correspondence between a
 given poke value and the underlying bytes in the IO device, things can
@@ -2440,8 +2450,9 @@ It is very important to understand that the IO space is an abstraction
 provided by poke.  The underlying file, or memory buffer, or whatever,
 is actually a sequence of bytes; poke translates the operations on
 integers, bits, bytes, @i{etc} into the corresponding byte operations,
-which are far from trivial.  Fortunately, you can let poke to do that
-dirty job for you, and abstract yourself from that complexity.
+and this translation is far from trivial.  Fortunately, we can let
+poke do the dirty job for us, and abstract ourselves from that
+complexity.
 
 @node Integers of Different Sizes
 @section Integers of Different Sizes
@@ -2476,8 +2487,8 @@ dilemma.
 
 Since the very beginning I had a pretty clear idea of what I wanted to
 achieve: a binary editor that would be capable of editing user defined
-data structures, besides bytes and bits.  I also knew I needed some
-sort of domain specific language to describe these structures and
+data structures, besides mere bytes and bits.  I also knew I needed
+some sort of domain specific language to describe these structures and
 operate on them.  How that language would look like, and what kind of
 abstractions it would provide, however, was not clear to me.  Not at
 all.
@@ -2490,7 +2501,7 @@ the implemented language would be expressive, complete and useful
 enough to fulfil my requirements.
 
 The first formats I implemented using my immature little language
-included ELF, FLV, MP3, BSON@dots{} of them describing structures
+included ELF, FLV, MP3, BSON@dots{} all of them describing structures
 based on whole bytes.  Even when they try to be compact, it is always
 by packing bit-fields in elements that are, invariably, sized as a
 multiple of bytes.  Consequently, the language I was evolving became
@@ -2500,8 +2511,10 @@ or as mere results of shifting and masking.
 
 This worked well.  The language evolved to be able to express many
 different aspects of these formats in a very nice way, like
-variable-length data and holes in structures.  Consider the following
-definition, which is @strong{not} valid in today's Poke:
+variable-length data and holes in structures.
+
+Consider the following definition, which is @strong{not} valid in
+today's Poke:
 
 @example
 type Data =
@@ -2520,8 +2533,8 @@ the data stored, in bytes, and then the data itself.  This data,
 however, doesn't start right after @code{dstart}: it starts at
 @code{dstart}, which is expressed as an offset, in bytes, since the
 beginning of the Data.  I conceived struct field labels to be any
-expression evaluating to an integer, which would be@dots{}, bytes
-obviously.
+expression evaluating to an integer, which would be interpreted as a
+number of bytes, obviously.
 
 @cindex deflate
 Then, one day, it was the turn for IETF RFC1951, which is the
@@ -2575,9 +2588,9 @@ bytes.  While this obviously gives the language maximum expressiveness
 power, and is ideal for expressing the few bit-oriented formats, it
 has the disadvantage of being very inconvenient for most situations.
 
-To see how annoying this is, let's revisit the little Data element we
-saw above.  In a bit-oriented description language, we would need to
-write something like:
+To see how annoying this is, let's revisit the little @code{BitData}
+structure we saw above.  In a bit-oriented description language, we
+would need to write something like:
 
 @example
 type BitData =
@@ -2616,9 +2629,15 @@ have units.
 It makes full sense when you come to think about it.  For a program
 like poke, it is only natural to talk about different memory units,
 like bits, bytes, kilobytes, megabits, and so on.  Bits and bytes are
-just two common units.  Apart from allowing me to express values in
-different units, this approach also has other benefits as we will see
-shortly.
+just two common units.
+
+The syntax that we eventually used to denote united values is to
+specify the @dfn{magnitude} part, a dash (@code{'#'} character, and
+then the @dfn{unit}.  For example, the size ``three bytes'' is
+expressed as @code{3#B}, and ``three bits'' as @code{3#b}.
+
+Apart from allowing me to express values in different units, this
+approach also has other benefits as we will see shortly.
 
 I'm really grateful to Bruno Haible, Luca Saiu and Nacho Gonzalez for
 putting me on the right track.

@@ -3,5 +3,5 @@
 var n = 2;
 type BAZ = struct { byte[n] d; };
 
-/* { dg-command { try BAZ { d = [1UB] }; catch if E_conv { printf "caught\n"; } } } */
+/* { dg-command { try BAZ { d = [1UB] }; catch if E_constraint { printf "caught\n"; } } } */
 /* { dg-output "caught" } */

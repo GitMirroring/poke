@@ -1859,8 +1859,22 @@
    .c     PKL_PASS_SUBPASS (@field_type);
    .c     PKL_GEN_POP_CONTEXT;
    .c   }
+        .label .cast_failed
+        .label .cast_done
+        ;; Note that ATOA may raise E_conv if the array-to-array
+        ;; cast fails due to a bounder mismatch.  In this context,
+        ;; this shall be raised as a constraint error instead.
+        push PVM_E_CONV
+        pushe .cast_failed
    .c   pkl_asm_insn (RAS_ASM, PKL_INSN_ATOA,
    .c                 NULL /* from_type */, @field_type);
+        pope
+        ba .cast_done
+.cast_failed:
+        drop                   ; The exception.
+        push PVM_E_CONSTRAINT
+        raise
+.cast_done:
    .c }
         rot                    ; ... ENAME EVAL SCT
         drop                   ; ... ENAME EVAL
