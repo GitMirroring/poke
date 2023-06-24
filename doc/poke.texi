@@ -2632,7 +2632,7 @@ like bits, bytes, kilobytes, megabits, and so on.  Bits and bytes are
 just two common units.
 
 The syntax that we eventually used to denote united values is to
-specify the @dfn{magnitude} part, a dash (@code{'#'} character, and
+specify the @dfn{magnitude} part, a hash (@code{'#'} character, and
 then the @dfn{unit}.  For example, the size ``three bytes'' is
 expressed as @code{3#B}, and ``three bits'' as @code{3#b}.
 
