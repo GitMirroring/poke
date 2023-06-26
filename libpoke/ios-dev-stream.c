@@ -20,7 +20,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -255,11 +254,8 @@ ios_dev_stream_flush (void *iod, ios_dev_off offset)
       && offset > ios_buffer_get_begin_offset (sio->buffer)
       && offset <= ios_buffer_get_end_offset (sio->buffer))
     return ios_buffer_forget_till (sio->buffer, offset);
-  else
-    {
-      assert (sio->flags & IOS_F_WRITE);
-      fflush (sio->file);
-    }
+  else if (sio->flags & IOS_F_WRITE)
+    fflush (sio->file);
   return IOS_OK;
 }
 

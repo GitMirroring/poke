@@ -1587,6 +1587,8 @@ instruction flush ()
       JITTER_TOP_STACK () = PVM_MAKE_DFL_EXCEPTION (PVM_E_NO_IOS);
     else if (ios_flush (io, offset) != IOS_OK)
       JITTER_TOP_STACK () = PVM_MAKE_DFL_EXCEPTION (PVM_E_IO);
+    else
+      JITTER_TOP_STACK () = PVM_NULL;
   end
 end
 

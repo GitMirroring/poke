@@ -1,0 +1,6 @@
+/* { dg-do run } */
+
+var mem = open ("*mem*");
+
+flush (mem, 0#B);
+close (mem);
