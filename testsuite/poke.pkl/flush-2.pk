@@ -1,0 +1,6 @@
+/* { dg-do run } */
+
+var stdout = open ("<stdout>");
+
+flush (stdout, 0#B);
+close (stdout);

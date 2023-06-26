@@ -1,3 +1,15 @@
+2023-06-26  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/ios-dev-stream.c (assert.h): Remove.
+	(ios_dev_stream_flush): Call `fflush' only on `<stdout>'/`<stderr>'
+	based on IOS flags.
+	* testsuite/poke.pkl/flush-1.pk: New test.
+	* testsuite/poke.pkl/flush-2.pk: Likewise.
+	* testsuite/poke.pkl/flush-3.pk: Likewise.
+	* testsuite/poke.pkl/flush-4.pk: Likewise.
+	* testsuite/poke.pkl/flush-5.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
 2023-06-23  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-gen.pks (struct_constructor): Re-raise an E_conv
