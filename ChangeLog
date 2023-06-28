@@ -1,3 +1,8 @@
+2023-06-28  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* poke/pk-ios.c (pk_open_proc_maps): Fix access to uninitialized
+	memory.
+
 2023-06-26  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/ios-dev-stream.c (assert.h): Remove.
