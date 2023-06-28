@@ -160,9 +160,10 @@ pk_open_proc_maps (int ios_id, uint64_t pid, int all_p)
      ignored.  */
   {
     char *line = NULL;
-    size_t linesize = 0;
+    ssize_t linesize = 0;
+    size_t nalloc;
 
-    while (getline (&line, &linesize, mapfile) != -1)
+    while ((linesize = getline (&line, &nalloc, mapfile)) != -1)
       {
         char *p, *end, *map_name;
         uint64_t range_begin, range_end;
@@ -198,7 +199,7 @@ pk_open_proc_maps (int ios_id, uint64_t pid, int all_p)
 
         /* Get the map name from the end of the file.  */
         p = line + linesize - 1;
-        while (*p != ' ' && *p != '\t')
+        while (p != line && *p != ' ' && *p != '\t')
           --p;
         map_name = p + 1;
         map_name[strlen (map_name) - 1] = '\0'; /* Remove newline. */
@@ -220,7 +221,6 @@ pk_open_proc_maps (int ios_id, uint64_t pid, int all_p)
 
         free (line);
         line = NULL;
-        linesize = 0;
       }
   }
 
