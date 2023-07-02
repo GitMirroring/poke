@@ -57,7 +57,7 @@
 
 typedef struct pkl_env *pkl_env;  /* Struct defined in pkl-env.c */
 
-/* Get an empty environment.  */
+/* Get an empty environment.  Return NULL in case of memory exhaustion.  */
 
 pkl_env pkl_env_new (void);
 
@@ -66,7 +66,7 @@ pkl_env pkl_env_new (void);
 void pkl_env_free (pkl_env env);
 
 /* Push a new frame to ENV and return the modified environment.  The
-   new frame is empty.  */
+   new frame is empty.  Return NULL in case of memory exhaustion.  */
 
 pkl_env pkl_env_push_frame (pkl_env env);
 
@@ -92,7 +92,7 @@ int pkl_env_register (pkl_env env,
 int pkl_env_toplevel_p (pkl_env env);
 
 /* Return a copy of ENV.  Note this only works for top-level
-   environments.  */
+   environments.  Return NULL in case of memory exhaustion.  */
 
 pkl_env pkl_env_dup_toplevel (pkl_env env);
 
