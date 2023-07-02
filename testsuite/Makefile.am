@@ -1222,6 +1222,7 @@ EXTRA_DIST = \
   poke.pkl/defun-diag-3.pk \
   poke.pkl/defun-diag-4.pk \
   poke.pkl/deftype-1.pk \
+  poke.pkl/deftype-2.pk \
   poke.pkl/defunit-1.pk \
   poke.pkl/defvar-1.pk \
   poke.pkl/defvar-2.pk \
@@ -2193,9 +2194,16 @@ EXTRA_DIST = \
   poke.pkl/redef-diag-1.pk \
   poke.pkl/redef-diag-2.pk \
   poke.pkl/redef-diag-3.pk \
+  poke.pkl/redef-diag-4.pk \
+  poke.pkl/redef-diag-5.pk \
+  poke.pkl/redef-diag-6.pk \
   poke.pkl/redef-1.pk \
   poke.pkl/redef-2.pk \
   poke.pkl/redef-3.pk \
+  poke.pkl/redef-4.pk \
+  poke.pkl/redef-5.pk \
+  poke.pkl/redef-6.pk \
+  poke.pkl/redef-7.pk \
   poke.pkl/reduce-array-1.pk \
   poke.pkl/reduce-array-2.pk \
   poke.pkl/return-1.pk \

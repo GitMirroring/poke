@@ -53,7 +53,15 @@
 
    There are no values bound to the entities being declared, as values
    are not generally available at compile-time.  However, the type
-   information is always available at compile-time.  */
+   information is always available at compile-time.
+
+   Re-definition of declarations are allowed for non-immutable entities
+   in the top-level (global) environment.  We implement re-definition by
+   re-naming the previous entity to a syntactically-invalid name.
+   Compiler needs to be able to rollback re-defiend declarations in the
+   presence of compile-time or run-time errors.  Rollback can be done by
+   calling `pkl_env_rollback_renames'.  In case of no error, the compiler
+   is expected to call `pkl_env_commit_renames'.  */
 
 typedef struct pkl_env *pkl_env;  /* Struct defined in pkl-env.c */
 
@@ -61,7 +69,8 @@ typedef struct pkl_env *pkl_env;  /* Struct defined in pkl-env.c */
 
 pkl_env pkl_env_new (void);
 
-/* Destroy ENV, freeing all resources.  */
+/* Destroy ENV, freeing all resources and rollback all uncommitted
+   re-defined declarations.  */
 
 void pkl_env_free (pkl_env env);
 
@@ -162,7 +171,12 @@ void pkl_env_map_decls (pkl_env env,
                         pkl_map_decl_fn cb,
                         void *data);
 
-/* Function to rollback/undo redefinitions/renames of global objects
+/* Function to commit the redefinitions/renames of global objects
+   in the given environment.  */
+
+void pkl_env_commit_renames (pkl_env env);
+
+/* Function to rollback/undo the redefinitions/renames of global objects
    in the given environment.  */
 
 void pkl_env_rollback_renames (pkl_env env);

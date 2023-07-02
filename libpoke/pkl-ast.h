@@ -1117,16 +1117,19 @@ pkl_ast_node pkl_ast_type_incr_step (pkl_ast ast, pkl_ast_node type);
    NAME is PKL_AST_IDENTIFIER node containing the name in the
    association.
 
-   PREV_NAME is used in order to cache the name in the declaration
-   when the later is set to "" in re-definition of non-immutable
-   global objects.  See pkl-env.c to see how this field is used.
-
    INITIAL is the initial value of the entity.  The kind of node
    depends on what is being declared:
    - An expression node for a variable.
    - A PKL_AST_TYPE for a type.
    - A PKL_AST_FUNC for a function.
    - A constant expression node for an unit.
+
+   PREV_DECL is used to keep track of previous declaration with the
+   same name.  See pkl-env.c to see how this field is used.
+
+   REDECL_CHAIN is used to form a transient sibling relationships among
+   re-declared non-immutable global entities in a compilation session.
+   See pkl-env to see how this field is used.
 
    ORDER is the order of the declaration in its containing
    compile-time environment.  It is filled up when the declaration is
@@ -1144,13 +1147,14 @@ pkl_ast_node pkl_ast_type_incr_step (pkl_ast ast, pkl_ast_node type);
 
 #define PKL_AST_DECL_KIND(AST) ((AST)->decl.kind)
 #define PKL_AST_DECL_NAME(AST) ((AST)->decl.name)
-#define PKL_AST_DECL_PREV_NAME(AST) ((AST)->decl.prev_name)
 #define PKL_AST_DECL_INITIAL(AST) ((AST)->decl.initial)
+#define PKL_AST_DECL_PREV_DECL(AST) ((AST)->decl.prev_decl)
 #define PKL_AST_DECL_ORDER(AST) ((AST)->decl.order)
 #define PKL_AST_DECL_SOURCE(AST) ((AST)->decl.source)
 #define PKL_AST_DECL_STRUCT_FIELD_P(AST) ((AST)->decl.struct_field_p)
 #define PKL_AST_DECL_IN_STRUCT_P(AST) ((AST)->decl.in_struct_p)
 #define PKL_AST_DECL_IMMUTABLE_P(AST) ((AST)->decl.immutable_p)
+#define PKL_AST_DECL_REDECL_CHAIN(AST) ((AST)->decl.redecl_chain)
 
 #define PKL_AST_DECL_KIND_ANY 0
 #define PKL_AST_DECL_KIND_VAR 1
@@ -1167,9 +1171,10 @@ struct pkl_ast_decl
   int in_struct_p;
   int immutable_p;
   char *source;
-  char *prev_name;
   union pkl_ast_node *name;
   union pkl_ast_node *initial;
+  union pkl_ast_node *prev_decl;
+  union pkl_ast_node *redecl_chain;
   int order;
 };
 

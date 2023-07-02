@@ -1,5 +1,48 @@
 2023-07-02  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pkl-ast.h (PKL_AST_DECL_PREV_DECL): New macro.
+	(PKL_AST_DECL_REDECL_CHAIN): Likewise.
+	(struct pkl_ast_decl): New fields.
+	* libpoke/pkl-ast.c (pkl_type_append_to): Don't report re-declared
+	names directly (because they contain the a dollar character and
+	a generation number which are implementation details). Use
+	user-defined name.
+	(pkl_ast_node_free_1): Handle `prev_decl' field.
+	(pkl_ast_print_1): Likewise.
+	* libpoke/pkl-env.h (pkl_env_commit_renames): New function and
+	comments.
+	* libpoke/pkl-env.c (struct pkl_env): Add new field `redecls' to
+	keep track of re-declarations.
+	(decl_rollback): New static function.
+	(env_redecls_free): Likewise.
+	(register_decl): Add new param `env'.  Change the logic of re-naming
+	for re-declarations.
+	(pkl_env_free): Handle `redecls'.
+	(pkl_env_register): Pass `env' to `register_decl'.
+	(decl_redefined_p): New static function.
+	(pkl_env_iter_begin): Updated to skip re-defined declarations.
+	(pkl_env_iter_next): Likewise.
+	(pkl_env_commit_renames): New function to commit new re-declarations
+	in the environment.
+	(pkl_env_rollback_renames): Rewrite to call `env_redecls_free'.
+	* libpoke/pkl.c (pkl_execute_buffer): Add
+	`pkl_env_{commit,rollback}_reanmes'.
+	(pkl_execute_statement): Likewise.
+	(pkl_compile_expression): Likewise.
+	(pkl_execute_expression): Likewise.
+	(pkl_execute_file): Likewise.
+	* testsuite/poke.pkl/redef-4.pk: New test.
+	* testsuite/poke.pkl/redef-5.pk: Likewise.
+	* testsuite/poke.pkl/redef-6.pk: Likewise.
+	* testsuite/poke.pkl/redef-7.pk: Likewise.
+	* testsuite/poke.pkl/redef-diag-4.pk: Likewise.
+	* testsuite/poke.pkl/redef-diag-5.pk: Likewise.
+	* testsuite/poke.pkl/redef-diag-6.pk: Likewise.
+	* testsuite/poke.pkl/deftype-2.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
+2023-07-02  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-env.h (pkl_env_new): Update comment to document
 	behavior on failure (return `NULL').
 	(pkl_env_push_frame): Likewise.

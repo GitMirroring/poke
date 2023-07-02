@@ -1,0 +1,10 @@
+/* { dg-do compile } */
+
+type Foo = struct { };
+fun foo = (Foo a) void: { print "foo\n"; }
+var f1 = Foo {};
+type Foo = struct { };
+var f2 = Foo {};
+
+foo (f1);
+foo (f2); /* { dg-error "invalid value for function argument.*\n.*expected a previous declaration of Foo, got Foo" } */
