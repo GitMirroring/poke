@@ -1500,7 +1500,18 @@ pkl_type_append_to (pkl_ast_node type, int use_given_name,
   if (use_given_name
       && PKL_AST_TYPE_NAME (type))
     {
-      sb_append (buffer, PKL_AST_IDENTIFIER_POINTER (PKL_AST_TYPE_NAME (type)));
+      char *name = PKL_AST_IDENTIFIER_POINTER (PKL_AST_TYPE_NAME (type));
+      char *dollar = strchr (name, '$');
+
+      if (dollar)
+        {
+          sb_append (buffer, "a previous declaration of ");
+          *dollar = '\0';
+          sb_append (buffer, name);
+          *dollar = '$';
+        }
+      else
+        sb_append (buffer, name);
       return;
     }
 
@@ -2608,7 +2619,7 @@ pkl_ast_node_free_1 (gl_set_t visitations, pkl_ast_node ast)
       VISIT_AND_FREE (PKL_AST_DECL_SOURCE (ast));
       PKL_AST_NODE_FREE (PKL_AST_DECL_NAME (ast));
       PKL_AST_NODE_FREE (PKL_AST_DECL_INITIAL (ast));
-      free (PKL_AST_DECL_PREV_NAME (ast));
+      PKL_AST_NODE_FREE (PKL_AST_DECL_PREV_DECL (ast));
       break;
 
     case PKL_AST_OFFSET:
@@ -3488,9 +3499,8 @@ pkl_ast_print_1 (FILE *fp, pkl_ast_node ast, int indent)
       if (PKL_AST_DECL_SOURCE (ast))
         PRINT_AST_IMM (source, DECL_SOURCE, "'%s'");
       PRINT_AST_SUBAST (name, DECL_NAME);
-      if (PKL_AST_DECL_PREV_NAME (ast))
-        PRINT_AST_IMM (prev_name, DECL_PREV_NAME, "'%s'");
       PRINT_AST_SUBAST (initial, DECL_INITIAL);
+      PRINT_AST_SUBAST (prev_decl, DECL_PREV_DECL);
       break;
 
     case PKL_AST_OFFSET:

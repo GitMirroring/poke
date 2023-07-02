@@ -1,0 +1,11 @@
+/* { dg-do run } */
+
+type Foo = struct { int<32> i32; };
+
+/* { dg-command {.set obase 10} } */
+/* { dg-command {.set omode flat} } */
+/* { dg-command {Foo {}} } */
+/* { dg-output "Foo {i32=0}" } */
+/* { dg-command {type Foo = struct { int<64> i64; }} } */
+/* { dg-command {Foo {}} } */
+/* { dg-output "\nFoo {i64=0L}" } */

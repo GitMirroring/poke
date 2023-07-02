@@ -39,16 +39,21 @@
    - A separated namespace for offset units.  UNITS_HASH_TABLE is used
      to store declarations for these.
 
+   REDECLS is used to keep track of re-defined declarations in order to
+   be able to rollback them.  See env_redecls_free function.
+
    UP is a link to the immediately enclosing frame.  This is NULL for
    the top-level frame.  */
 
 #define HASH_TABLE_SIZE 1008
 typedef pkl_ast_node pkl_hash[HASH_TABLE_SIZE];
 
+
 struct pkl_env
 {
   pkl_hash hash_table;
   pkl_hash units_hash_table;
+  pkl_ast_node redecls;
 
   int num_types;
   int num_vars;
@@ -119,20 +124,73 @@ get_registered (pkl_hash hash_table, const char *name)
   return NULL;
 }
 
+/* Rename the previous declaration of DECL from syntactically-invalid name
+   to the previous valid name.  */
+
+static void
+decl_rollback (pkl_ast_node decl)
+{
+  pkl_ast_node prev_decl, prev_decl_name;
+  char *name;
+
+  assert (decl != NULL);
+  prev_decl = PKL_AST_DECL_PREV_DECL (decl);
+  assert (prev_decl != NULL);
+  prev_decl_name = PKL_AST_DECL_NAME (prev_decl);
+
+  name = PKL_AST_IDENTIFIER_POINTER (prev_decl_name);
+  name = strchr (name, '$');
+  assert (name != NULL);
+  *name = '\0';
+
+  prev_decl = ASTDEREF (prev_decl);
+  PKL_AST_DECL_PREV_DECL (decl) = NULL;
+}
+
+/* Free re-defined declarations in the environment ENV.  If ROLLBACK_P
+   is non-zero, this will also discard new declarations and undo the
+   renames.  */
+
+static void
+env_redecls_free (pkl_env env, int rollback_p)
+{
+  pkl_ast_node t, n = env->redecls;
+
+  while (n)
+    {
+      if (rollback_p)
+        decl_rollback (n);
+
+      t = PKL_AST_DECL_REDECL_CHAIN (n);
+      PKL_AST_DECL_REDECL_CHAIN (n) = NULL;
+      n = t;
+    }
+  env->redecls = NULL;
+}
+
 static int
-register_decl (int top_level_p,
+register_decl (pkl_env env,
                pkl_hash hash_table,
                const char *name,
                pkl_ast_node decl)
 {
   int hash;
   pkl_ast_node found_decl;
+  int top_level_p = env->up == NULL;
 
   /* Check if DECL is already registered in the given hash table.
 
-     If we are in the global environment then we allow "redefining" by
-     changing the name of the previous declaration to "", provided
-     that previous declaration is _not_ declared as immutable.
+     If we are in the top-level environment, then "redefining" is
+     allowed for non-immutable declarations.
+     The trick is to rename the previous declaration to something
+     that is not accessible through the language; so the old
+     entities continue to work, and it's impossible for the Poke
+     user to combine unrelated entities together (despite the fact
+     that they were defined with the same name).
+
+     We rename the previous declaration to <name>$<generation>.
+     Because of '$' character, Poke user cannot refer to this
+     declaration anymore.  The <generation> is a number in base 10.
 
      Otherwise we don't register DECL, as it is already defined.  */
 
@@ -141,11 +199,32 @@ register_decl (int top_level_p,
     {
       if (top_level_p && !PKL_AST_DECL_IMMUTABLE_P (found_decl))
         {
-          pkl_ast_node decl_name = PKL_AST_DECL_NAME (found_decl);
+          int generation = 0;
+          char *new_name = NULL;
 
-          PKL_AST_DECL_PREV_NAME (found_decl)
-            = PKL_AST_IDENTIFIER_POINTER (decl_name);
-          PKL_AST_IDENTIFIER_POINTER (decl_name) = strdup ("");
+          /* Calculate the generation number for found_decl.  */
+          if (PKL_AST_DECL_PREV_DECL (found_decl))
+            {
+              pkl_ast_node prev_decl = PKL_AST_DECL_PREV_DECL (found_decl);
+              pkl_ast_node prev_decl_name = PKL_AST_DECL_NAME (prev_decl);
+              char *name = PKL_AST_IDENTIFIER_POINTER (prev_decl_name);
+              char *generation_str = strchr (name, '$');
+
+              assert (generation_str != NULL);
+              generation = atoi (generation_str + 1);
+              assert (generation != 0);
+            }
+
+          if (asprintf (&new_name, "%s$%d", name, generation + 1) == -1)
+            return 0;
+          free (PKL_AST_IDENTIFIER_POINTER (PKL_AST_DECL_NAME (found_decl)));
+          PKL_AST_IDENTIFIER_POINTER (PKL_AST_DECL_NAME (found_decl)) = new_name;
+
+          PKL_AST_DECL_PREV_DECL (decl) = ASTREF (found_decl);
+
+          /* Register DECL in re-defined declarations list.  */
+          PKL_AST_DECL_REDECL_CHAIN (decl) = env->redecls;
+          env->redecls = decl;
         }
       else
         return 0;
@@ -193,6 +272,7 @@ pkl_env_free (pkl_env env)
   if (env)
     {
       pkl_env_free (env->up);
+      env_redecls_free (env, /*rollback_p*/ 1);
       free_hash_table (env->hash_table);
       free_hash_table (env->units_hash_table);
       free (env);
@@ -230,7 +310,7 @@ pkl_env_register (pkl_env env,
 {
   pkl_hash *table = get_ns_table (env, namespace);
 
-  if (register_decl (env->up == NULL, *table, name, decl))
+  if (register_decl (env, *table, name, decl))
     {
       switch (PKL_AST_DECL_KIND (decl))
         {
@@ -320,14 +400,24 @@ pkl_env_toplevel_p (pkl_env env)
   return env->up == NULL;
 }
 
+/* Return non-zero value if DECL has already been re-defined, otherwise return
+   zero.  */
+
+static int
+decl_redefined_p (pkl_ast_node decl)
+{
+  pkl_ast_node name = PKL_AST_DECL_NAME (decl);
+
+  return strchr (PKL_AST_IDENTIFIER_POINTER (name), '$') != NULL;
+}
+
 void
 pkl_env_iter_begin (pkl_env env, struct pkl_ast_node_iter *iter)
 {
   iter->bucket = 0;
   iter->node = env->hash_table[iter->bucket];
   /* Note that we skip re-defined declarations.  */
-  while (iter->node == NULL
-         || *PKL_AST_IDENTIFIER_POINTER (PKL_AST_DECL_NAME (iter->node)) == '\0')
+  while (iter->node == NULL || decl_redefined_p (iter->node))
     {
       iter->bucket++;
       if (iter->bucket >= HASH_TABLE_SIZE)
@@ -343,8 +433,7 @@ pkl_env_iter_next (pkl_env env, struct pkl_ast_node_iter *iter)
 
   iter->node = PKL_AST_CHAIN2 (iter->node);
   /* Note that we skip re-defined declarations.  */
-  while (iter->node == NULL
-         || *PKL_AST_IDENTIFIER_POINTER (PKL_AST_DECL_NAME (iter->node)) == '\0')
+  while (iter->node == NULL || decl_redefined_p (iter->node))
     {
       iter->bucket++;
       if (iter->bucket >= HASH_TABLE_SIZE)
@@ -440,36 +529,14 @@ pkl_env_get_next_matching_decl (pkl_env env, struct pkl_ast_node_iter *iter,
   return NULL;
 }
 
-static void
-pkl_env_rollback_renames_1 (pkl_hash hash_table)
+void
+pkl_env_commit_renames (pkl_env env)
 {
-  int i;
-  for (i = 0; i < HASH_TABLE_SIZE; ++i)
-    {
-      pkl_ast_node t;
-      pkl_ast_node decl = hash_table[i];
-
-      for (t = decl; t; t = PKL_AST_CHAIN2 (t))
-        {
-          pkl_ast_node decl_name = PKL_AST_DECL_NAME (t);
-
-          if (PKL_AST_DECL_PREV_NAME (t))
-            {
-              assert (decl_name
-                      && STREQ (PKL_AST_IDENTIFIER_POINTER (decl_name), ""));
-
-              free (PKL_AST_IDENTIFIER_POINTER (decl_name));
-              PKL_AST_IDENTIFIER_POINTER (decl_name)
-                = PKL_AST_DECL_PREV_NAME (t);
-              PKL_AST_DECL_PREV_NAME (t) = NULL;
-            }
-        }
-    }
+  env_redecls_free (env, /*rollback_p*/ 0);
 }
 
 void
 pkl_env_rollback_renames (pkl_env env)
 {
-  pkl_env_rollback_renames_1 (env->hash_table);
-  pkl_env_rollback_renames_1 (env->units_hash_table);
+  env_redecls_free (env, /*rollback_p*/ 1);
 }

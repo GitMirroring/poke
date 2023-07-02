@@ -354,11 +354,13 @@ pkl_execute_buffer (pkl_compiler compiler,
     {
       pkl_env_free (compiler->env);
       compiler->env = env;
+      pkl_env_commit_renames (compiler->env);
     }
+  else
+    pkl_env_rollback_renames (env);
   return 1;
 
  error:
-  pkl_env_rollback_renames (compiler->env);
   pkl_env_free (env);
   return 0;
 }
@@ -411,11 +413,13 @@ pkl_execute_statement (pkl_compiler compiler,
     {
       pkl_env_free (compiler->env);
       compiler->env = env;
+      pkl_env_commit_renames (compiler->env);
     }
+  else
+    pkl_env_rollback_renames (env);
   return 1;
 
  error:
-  pkl_env_rollback_renames (compiler->env);
   pkl_env_free (env);
   return 0;
 }
@@ -455,12 +459,12 @@ pkl_compile_expression (pkl_compiler compiler,
 
    pkl_env_free (compiler->env);
    compiler->env = env;
+   pkl_env_commit_renames (compiler->env);
    pvm_program_make_executable (program);
 
    return program;
 
  error:
-   pkl_env_rollback_renames (compiler->env);
    pkl_env_free (env);
    return NULL;
 }
@@ -513,11 +517,13 @@ pkl_execute_expression (pkl_compiler compiler,
     {
       pkl_env_free (compiler->env);
       compiler->env = env;
+      pkl_env_commit_renames (compiler->env);
     }
+  else
+    pkl_env_rollback_renames (env);
   return 1;
 
  error:
-  pkl_env_rollback_renames (compiler->env);
   pkl_env_free (env);
   return 0;
 }
@@ -568,12 +574,14 @@ pkl_execute_file (pkl_compiler compiler, const char *fname,
     {
       pkl_env_free (compiler->env);
       compiler->env = env;
+      pkl_env_commit_renames (compiler->env);
     }
+  else
+    pkl_env_rollback_renames (env);
   return 1;
 
  error:
   fclose (fp);
-  pkl_env_rollback_renames (compiler->env);
   pkl_env_free (env);
   return 0;
 }

@@ -1,0 +1,13 @@
+/* { dg-do run } */
+
+type Foo = struct { int<32> i32; };
+
+/* { dg-command { .set obase 10 } } */
+/* { dg-command { .set omode flat } } */
+/* { dg-command { 2#Foo } } */
+/* { dg-output "2#32" } */
+/* { dg-command {unit Foo = 33} } */
+/* { dg-command {3#Foo} } */
+/* { dg-output "\n3#33" } */
+/* { dg-command {Foo {}} } */
+/* { dg-output "\nFoo {i32=0}" } */

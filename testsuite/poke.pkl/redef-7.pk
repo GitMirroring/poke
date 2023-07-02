@@ -1,0 +1,10 @@
+/* { dg-do run } */
+
+var x = "Hello";
+
+/* { dg-command {x} } */
+/* { dg-output {"Hello"} } */
+/* { dg-command {var x = 1, y = lambda string: {printf "x:%i32d\n", x; raise E_elem; return "";} ()} } */
+/* { dg-output {\nx:1\nunhandled .*} } */
+/* { dg-command {x} } */
+/* { dg-output {\n"Hello"} } */
