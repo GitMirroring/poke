@@ -19,7 +19,6 @@
 #include <config.h>
 
 #include <stdlib.h>
-#include <xalloc.h>
 #include <string.h>
 #include <assert.h>
 
@@ -185,7 +184,7 @@ get_ns_table (pkl_env env, int namespace)
 pkl_env
 pkl_env_new ()
 {
-  return xzalloc (sizeof (struct pkl_env));
+  return calloc (1, sizeof (struct pkl_env));
 }
 
 void
@@ -205,7 +204,8 @@ pkl_env_push_frame (pkl_env env)
 {
   pkl_env frame = pkl_env_new ();
 
-  frame->up = env;
+  if (frame)
+    frame->up = env;
   return frame;
 }
 
@@ -384,6 +384,8 @@ pkl_env_dup_toplevel (pkl_env env)
   assert (pkl_env_toplevel_p (env));
 
   new = pkl_env_new ();
+  if (!new)
+    return NULL;
 
   for (i = 0; i < HASH_TABLE_SIZE; ++i)
     {

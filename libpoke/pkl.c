@@ -106,13 +106,17 @@ pkl_new (pvm vm, const char *rt_path,
 {
   pkl_compiler compiler
     = calloc (1, sizeof (struct pkl_compiler));
+  pkl_env env;
 
   if (!compiler)
     goto out_of_memory;
 
   /* Create the top-level compile-time environment.  This will be used
      for as long as the incremental compiler lives.  */
-  compiler->env = pkl_env_new ();
+   env = pkl_env_new ();
+   if (!env)
+     goto out_of_memory;
+   compiler->env = env;
 
   /* Set the poke virtual machine that the compiler will be generating
      code for.  */
@@ -317,8 +321,10 @@ pkl_execute_buffer (pkl_compiler compiler,
   pkl_env env = NULL;
   pvm_val val;
 
-  compiler->compiling = PKL_COMPILING_PROGRAM;
   env = pkl_env_dup_toplevel (compiler->env);
+  if (!env)
+    goto error;
+  compiler->compiling = PKL_COMPILING_PROGRAM;
 
   /* Parse the input routine into an AST.  */
   ret = pkl_parse_buffer (compiler, &env, &ast,
@@ -371,8 +377,10 @@ pkl_execute_statement (pkl_compiler compiler,
   int ret;
   pkl_env env = NULL;
 
-  compiler->compiling = PKL_COMPILING_STATEMENT;
   env = pkl_env_dup_toplevel (compiler->env);
+  if (!env)
+    goto error;
+  compiler->compiling = PKL_COMPILING_STATEMENT;
 
   /* Parse the input routine into an AST.  */
   ret = pkl_parse_buffer (compiler, &env, &ast,
@@ -421,8 +429,10 @@ pkl_compile_expression (pkl_compiler compiler,
   int ret;
   pkl_env env = NULL;
 
-   compiler->compiling = PKL_COMPILING_EXPRESSION;
    env = pkl_env_dup_toplevel (compiler->env);
+   if (!env)
+     goto error;
+   compiler->compiling = PKL_COMPILING_EXPRESSION;
 
    /* Parse the input program into an AST.  */
    ret = pkl_parse_buffer (compiler, &env, &ast,
@@ -469,8 +479,10 @@ pkl_execute_expression (pkl_compiler compiler,
   int ret;
   pkl_env env = NULL;
 
-  compiler->compiling = PKL_COMPILING_EXPRESSION;
   env = pkl_env_dup_toplevel (compiler->env);
+  if (!env)
+    goto error;
+  compiler->compiling = PKL_COMPILING_EXPRESSION;
 
   /* Parse the input routine into an AST.  */
   ret = pkl_parse_buffer (compiler, &env, &ast,
@@ -531,6 +543,8 @@ pkl_execute_file (pkl_compiler compiler, const char *fname,
     }
 
   env = pkl_env_dup_toplevel (compiler->env);
+  if (!env)
+    goto error;
   ret = pkl_parse_file (compiler, &env,  &ast, fp, fname);
   if (ret == 1)
     /* Parse error.  */
