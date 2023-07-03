@@ -1222,8 +1222,6 @@ EXTRA_DIST = \
   poke.pkl/defun-diag-3.pk \
   poke.pkl/defun-diag-4.pk \
   poke.pkl/deftype-1.pk \
-  poke.pkl/deftype-2.pk \
-  poke.pkl/deftype-3.pk \
   poke.pkl/defunit-1.pk \
   poke.pkl/defvar-1.pk \
   poke.pkl/defvar-2.pk \
