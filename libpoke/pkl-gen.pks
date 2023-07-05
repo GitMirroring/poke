@@ -1392,7 +1392,8 @@
  .c     if (PKL_AST_CODE (@field) != PKL_AST_DECL
  .c         || PKL_AST_DECL_KIND (@field) != PKL_AST_DECL_KIND_TYPE)
  .c     {
- .c       if (!PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (@field))
+ .c       if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD
+ .c           || !PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (@field))
  .c         i++;
  .c     }
  .c     continue;
@@ -1697,10 +1698,9 @@
         .label .omitted_field
         .label .got_value
         .label .constructed_value
-        .let @field_initializer = PKL_AST_STRUCT_TYPE_FIELD_INITIALIZER (@field)
-        .let @field_type = PKL_AST_STRUCT_TYPE_FIELD_TYPE (@field)
  .c   if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD)
  .c   {
+ .c     assert (PKL_AST_CODE (@field) == PKL_AST_DECL);
  .c     /* This is a declaration.  Generate it.  */
  .c     PKL_GEN_PUSH_CONTEXT;
  .c     PKL_PASS_SUBPASS (@field);
@@ -1712,6 +1712,8 @@
  .c
  .c     continue;
  .c   }
+        .let @field_initializer = PKL_AST_STRUCT_TYPE_FIELD_INITIALIZER (@field)
+        .let @field_type = PKL_AST_STRUCT_TYPE_FIELD_TYPE (@field)
  .c     /* If this is a computed field, ignore it.  */
  .c   if (PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (@field))
  .c     continue;
@@ -2025,7 +2027,8 @@
  .c     if (PKL_AST_CODE (@field) != PKL_AST_DECL
  .c         || PKL_AST_DECL_KIND (@field) != PKL_AST_DECL_KIND_TYPE)
  .c     {
- .c       if (!PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (@field))
+ .c       if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD
+ .c           || !PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (@field))
  .c         i++;
  .c     }
  .c     continue;
