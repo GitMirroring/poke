@@ -1,3 +1,14 @@
+2023-07-12  David Faust  <david.faust@oracle.com>
+
+	* pickles/btf.pk (BTF_KIND_ENUM64): New.
+	(BTF_KIND_LAST): Update accordingly.
+	(btf_kind_names): Add "enum64".
+	(type BTF_Enum64): New type.
+	(type BTF_Type): Support BTF_Enum64 here.
+	* pickles/btf-dump.pk (btf_dump_enum64): New function.
+	(btf_dump_type_vdata): Call it here.
+
+
 2023-07-06  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-gen.pks (struct_mapper): Make sure `@field' is of

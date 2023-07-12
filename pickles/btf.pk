@@ -39,12 +39,14 @@ var BTF_KIND_UNKNOWN = 0 as uint<5>,
     BTF_KIND_FLOAT = 16 as uint<5>,
     BTF_KIND_DECL_TAG = 17 as uint<5>,
     BTF_KIND_TYPE_TAG = 18 as uint<5>,
-    BTF_KIND_LAST = BTF_KIND_TYPE_TAG;
+    BTF_KIND_ENUM64 = 19 as uint<5>,
+    BTF_KIND_LAST = BTF_KIND_ENUM64;
 
 var btf_kind_names =
   ["unkn", "int", "ptr", "array", "struct", "union", "enum",
    "fwd", "typedef", "volatile", "const", "restrict", "func",
-   "func_proto", "var", "datasec", "float", "decl_tag", "type_tag"];
+   "func_proto", "var", "datasec", "float", "decl_tag", "type_tag",
+   "enum64"];
 
 assert (btf_kind_names'length == BTF_KIND_LAST + 1);
 
@@ -93,6 +95,20 @@ type BTF_Enum =
   {
     offset<uint<32>,B> name;
     int<32> val;
+  };
+
+type BTF_Enum64 =
+  struct
+  {
+    offset<uint<32>,B> name;
+    int<32> val_lo32;           /* Low 32 bits of 64-bit value.  */
+    int<32> val_hi32;           /* High 32 bits of 64-bit value.  */
+
+    /* Convenience method to re-assemble the value.  */
+    method value = int<64>:
+    {
+        return (((val_hi32 as uint<64>) <<. 32) | (val_lo32 as uint<32>)) as int<64>;
+    }
   };
 
 type BTF_Param =
@@ -160,6 +176,7 @@ type BTF_Type =
       offset<uint<32>,B> size : (info.kind in [BTF_KIND_INT,
                                                BTF_KIND_FLOAT,
                                                BTF_KIND_ENUM,
+                                               BTF_KIND_ENUM64,
                                                BTF_KIND_STRUCT,
                                                BTF_KIND_UNION,
                                                BTF_KIND_DATASEC]);
@@ -196,6 +213,7 @@ type BTF_Type =
       BTF_Int integer                    : info.kind == BTF_KIND_INT;
       BTF_Array array                    : info.kind == BTF_KIND_ARRAY;
       BTF_Enum[info.vlen] _enum          : info.kind == BTF_KIND_ENUM;
+      BTF_Enum64[info.vlen] enum64       : info.kind == BTF_KIND_ENUM64;
       BTF_Func_Proto func_proto          : info.kind == BTF_KIND_FUNC_PROTO;
       BTF_Variable variable              : info.kind == BTF_KIND_VAR;
       BTF_Member[info.vlen] members      : (info.kind == BTF_KIND_UNION
