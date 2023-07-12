@@ -47,6 +47,17 @@ fun btf_dump_enum = (BTF_Section btf, BTF_Enum[] e) void:
               member.val);
   }
 
+/* Dump 64-bit enumerators.  */
+
+fun btf_dump_enum64 = (BTF_Section btf, BTF_Enum64[] e) void:
+  {
+    for (member in e)
+      printf ("\n\t '%s'(%v) value=%i64d",
+              btf.get_string (member.name),
+              member.name,
+              member.value ());
+  }
+
 /* Dump function prototype members.  */
 
 fun btf_dump_proto = (BTF_Section btf, BTF_Param[] ps) void:
@@ -119,6 +130,7 @@ fun btf_dump_type_vdata = (BTF_Section btf, BTF_Type t) void:
     ({ btf_dump_int (t.data.integer); } ?! E_elem)
       && ({ btf_dump_array (t.data.array); } ?! E_elem)
       && ({ btf_dump_enum (btf, t.data._enum); } ?! E_elem)
+      && ({ btf_dump_enum64 (btf, t.data.enum64); } ?! E_elem)
       && ({ btf_dump_proto (btf, t.data.func_proto.params); } ?! E_elem)
       && ({ btf_dump_var (t.data.variable); } ?! E_elem)
       && ({ btf_dump_sou (btf, t); } ?! E_elem)
