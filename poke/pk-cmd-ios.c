@@ -84,12 +84,13 @@ pk_cmd_sub (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
   assert (PK_CMD_ARG_TYPE (argv[3]) == PK_CMD_ARG_INT);
   size = PK_CMD_ARG_INT (argv[3]);
 
-  assert (PK_CMD_ARG_TYPE (argv[4]) == PK_CMD_ARG_STR);
-  name = PK_CMD_ARG_STR (argv[4]);
+  name = (PK_CMD_ARG_TYPE (argv[4]) == PK_CMD_ARG_STR
+          ? PK_CMD_ARG_STR (argv[4])
+          : NULL);
 
   /* Build the handler.  */
   if (asprintf (&handler, "sub://%d/0x%" PRIx64 "/0x%" PRIx64 "/%s",
-                ios, base, size, name) == -1)
+                ios, base, size, name ? name : "") == -1)
     return 0;
 
   /* Open the IOS.  */

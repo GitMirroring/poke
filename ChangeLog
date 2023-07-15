@@ -1,3 +1,11 @@
+2023-07-15  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* poke/pk-cmd-ios.c (pk_cmd_sub): Avoid assert when no name is
+	specified for the sub IO space.
+	* testsuite/poke.cmd/sub-1.pk: New test.
+	* testsuite/poke.cmd/sub-2.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+
 2023-07-12  David Faust  <david.faust@oracle.com>
 
 	* pickles/btf.pk (BTF_KIND_ENUM64): New.
