@@ -128,6 +128,8 @@ EXTRA_DIST = \
   poke.cmd/set-oindent.pk \
   poke.cmd/set-omaps-1.pk \
   poke.cmd/set-omode.pk \
+  poke.cmd/sub-1.pk \
+  poke.cmd/sub-2.pk \
   poke.map/map.exp \
   poke.map/ass-map-1.pk \
   poke.map/ass-map-2.pk \
