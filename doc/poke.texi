@@ -864,6 +864,7 @@ exec poke -L "$0" "$@@"
 !#
 
 load elf;
+open (argv[0]);
 printf ("%v\n", Elf64_Ehdr @@ 0#B);
 @end example
 
