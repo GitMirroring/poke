@@ -1,3 +1,7 @@
+2023-07-29  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-gen.pks (struct_field_extractor): Remove.
+
 2023-07-20  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* doc/poke.texi (Scripts): Add missing `open' to example.

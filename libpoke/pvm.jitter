@@ -1797,28 +1797,25 @@ end
 # operation.
 #
 # This instruction sets the bias associated to the given IO space.
-# The bias is specified as an offset.  If the given IO space doesn't
-# exist, the exception PVM_E_NO_IOS is raised.
+# The bias is specified as a signed 64-bit bit-offset.  If the given IO
+# space doesn't exist, the exception PVM_E_NO_IOS is raised.
 #
-# Stack: ( OFF INT -- OFF )
+# Stack: ( INT LONG -- INT )
 # Exceptions: PVM_E_NO_IOS
 
 instruction iosetb ()
   branching # because of PVM_RAISE_DIRECT
   code
-    pvm_val bias = JITTER_UNDER_TOP_STACK();
-    pvm_val bias_type = PVM_VAL_OFF_TYPE (bias);
+    pvm_val bias = JITTER_TOP_STACK();
     ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
-    ios io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));
+    ios io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_UNDER_TOP_STACK ()));
 
     JITTER_DROP_STACK ();
 
     if (io == NULL)
       PVM_RAISE_DFL (PVM_E_NO_IOS);
 
-    ios_set_bias (io,
-                  (PVM_VAL_INTEGRAL (PVM_VAL_OFF_MAGNITUDE (bias))
-                   * PVM_VAL_INTEGRAL (PVM_VAL_TYP_O_UNIT (bias_type))));
+    ios_set_bias (io, PVM_VAL_LONG (bias));
   end
 end
 
@@ -5703,13 +5700,13 @@ end
 
 # Instruction: reloc
 #
-# Given a value, a IO space expressed in an ulong, and a bit-offset
+# Given a value, a IO space expressed in an int<32>, and a bit-offset
 # expressed in an ulong, relocate the value to the given bit-offset at
 # the given IO space.
 #
 # If the given value is not map-able then raise PVM_E_INVAL.
 #
-# Stack: ( VAL ULONG ULONG -- VAL ULONG ULONG )
+# Stack: ( VAL INT ULONG -- VAL INT ULONG )
 # Exceptions: PVM_E_INVAL
 
 instruction reloc ()

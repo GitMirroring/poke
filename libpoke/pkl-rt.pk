@@ -953,9 +953,10 @@ immutable fun iosearch = (string handler) int<32>:
   raise E_no_ios;
 }
 
-immutable fun iosetbias = (offset<uint<64>,1> bias = 0#1, int<32> ios = get_ios) void:
+immutable fun iosetbias = (offset<int<64>,1> bias = 0#1,
+                           int<32> ios = get_ios) void:
 {
-  asm ("iosetb; drop" :: bias, ios);
+  asm ("iosetb; drop" :: ios, bias/#1);
 }
 
 immutable fun open = (string handler, uint<64> flags = 0) int<32>:

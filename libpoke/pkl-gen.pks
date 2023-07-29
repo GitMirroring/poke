@@ -887,143 +887,6 @@
 .omitted_field:
         .end
 
-;;; RAS_MACRO_STRUCT_FIELD_EXTRACTOR
-;;;               struct_type field struct_itype field_type ivalw fieldw
-;;; ( STRICT BOFF SBOFF IVAL -- BOFF STR VAL NBOFF )
-;;;
-;;; Given an integer large enough, extract the value of the given field
-;;; from it.
-;;;
-;;; STRICT determines whether to check for data integrity.
-;;; SBOFF is the bit-offset of the beginning of the struct.
-;;; NBOFF is the bit-offset marking the end of this field.
-;;; by this macro.  It is typically ulong<64>0 or ulong<64>1.
-;;;
-;;; Macro-arguments:
-;;;
-;;; @struct_type is a pkl_ast_node with the struct type being mapped.
-;;;
-;;; @field is a pkl_ast_node with the struct field being mapped.
-;;;
-;;; @struct_itype is the AST node with the type of the struct being
-;;; processed.
-;;;
-;;; @field_type is the AST node with the type of the field being
-;;; extracted.
-;;;
-;;; #ivalw is an ulong<64> value with the width (in bits) of the
-;;; integral value corresponding to the entire integral struct.
-;;;
-;;; #fieldw is an ulong<64> value with the width (in bits) of the
-;;; field being extracted.
-;;;
-;;; The C environment required is:
-;;;
-;;; `vars_registered' is a size_t that contains the number
-;;; of field-variables registered so far.
-
-        .macro struct_field_extractor @struct_type @field @struct_itype \
-                                      @field_type #ivalw #fieldw
-        nrot                            ; STRICT IVAL BOFF SBOFF
-        ;; Calculate the amount of bits that we have to right-shift
-        ;; IVAL in order to extract the portion of the value
-        ;; corresponding to this field.  The formula is:
-        ;;
-        ;; (ival_width - field_width) - (field_offset - struct_offset)
-        ;;
-        over                            ; STRICT IVAL BOFF SBOFF BOFF
-        swap                            ; STRICT IVAL BOFF BOFF SBOFF
-        sublu
-        nip2                            ; STRICT IVAL BOFF (BOFF-SBOFF)
-        push #ivalw                     ; STRICT IVAL BOFF (BOFF-SBOFF) IVALW
-        push #fieldw                    ; STRICT IVAL BOFF (BOFF-SBOFF) IVALW FIELDW
-        sublu
-        nip2                            ; STRICT IVAL BOFF (BOFF-SBOFF) (IVALW-FIELDW)
-        swap                            ; STRICT IVAL BOFF (IVALW-FIELDW) (BOFF-SBOFF)
-        sublu
-        nip2                            ; STRICT IVAL BOFF ((IVALW-FIELDW)-(BOFF-SBOFF))
-        quake                           ; STRICT BOFF IVAL SCOUNT
-        lutoiu 32
-        nip                             ; STRICT BOFF IVAL SCOUNT(U)
-        ;; Using the calculated bit-count, extract the value of the
-        ;; field from the struct ival.  The resulting value is converted
-        ;; to the type of the field. (base type if the field is offset,
-        ;; itype if the field is an integral struct.)
-        sr @struct_itype
-        nip2                            ; STRICT BOFF VAL
-   .c if (PKL_AST_TYPE_CODE (@field_type) == PKL_TYPE_OFFSET)
-   .c {
-        .let @base_type = PKL_AST_TYPE_O_BASE_TYPE (@field_type)
-        nton @struct_itype, @base_type
-   .c }
-   .c else if (PKL_AST_TYPE_CODE (@field_type) == PKL_TYPE_STRUCT)
-   .c {
-        .let @field_itype = PKL_AST_TYPE_S_ITYPE (@field_type)
-        nton @struct_itype, @field_itype
-   .c }
-   .c else
-   .c {
-        nton @struct_itype, @field_type
-   .c }
-        nip                             ; STRICT BOFF VALC
-        ;; At this point the value of the field is in the
-        ;; stack.  The field may be an integral or an offset
-        ;; or an integral struct.
-   .c if (PKL_AST_TYPE_CODE (@field_type) == PKL_TYPE_OFFSET)
-   .c {
-        .c PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPE);
-        .c PKL_PASS_SUBPASS (@field_type);
-        .c PKL_GEN_POP_CONTEXT;
-                                        ; STRICT BOFF MVALC TYP
-        mko                             ; STRICT BOFF VALC
-   .c }
-   .c else if (PKL_AST_TYPE_CODE (@field_type) == PKL_TYPE_STRUCT)
-   .c {
-        push PVM_E_CONSTRAINT
-        pushe .constraint_error
-        push PVM_E_EOF
-        pushe .eof
-        .c PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_DEINTEGRATOR);
-        .c PKL_PASS_SUBPASS (@field_type);
-        .c PKL_GEN_POP_CONTEXT;
-        pope
-        pope
-        ba .val_ok
-.eof:
-        ;; Set some location info in the exception's message
-   .c pkl_ast_node field_name = PKL_AST_STRUCT_TYPE_FIELD_NAME (@field);
-   .c if (field_name)
-   .c {
-        push "msg"
-        push "while mapping field "
-        .e field_location_str @struct_type, @field
-        sconc
-        nip2
-        sset
-   .c }
-        pope
-.constraint_error:
-        ;; This is to keep the right lexical environment in
-        ;; case the subpass above raises an exception.
-        push null
-        regvar $constrainterrorval
-        raise
-.val_ok:
-   .c }
-        dup                             ; STRICT BOFF VALC VALC
-        regvar $val                     ; STRICT BOFF VALC
-        .c vars_registered++;
-   .c if (PKL_AST_STRUCT_TYPE_FIELD_NAME (@field) == NULL)
-        push null
-   .c else
-        .c PKL_PASS_SUBPASS (PKL_AST_STRUCT_TYPE_FIELD_NAME (@field));
-                                        ; STRICT BOFF VALC STR
-        swap                            ; STRICT BOFF STR VALC
-        ;; Evaluate the field's opcond and constraints
-        .e handle_struct_field_constraints @struct_type, @field
-                                        ; BOFF STR VALC NBOFF
-        .end
-
 ;;; RAS_MACRO_STRUCT_FIELD_MAPPER
 ;;; ( STRICT IOS BOFF SBOFF -- BOFF STR VAL NBOFF )
 ;;;
@@ -1150,24 +1013,8 @@
 .omitted_field:
         .end
 
-;;; RAS_FUNCTION_STRUCT_MAPPER @type_struct
-;;; ( STRICT IOS BOFF EBOUND SBOUND -- SCT )
-;;;
-;;; Assemble a function that maps a struct value at the given offset
-;;; OFF.
-;;;
-;;; If STRICT is 0 then do not check data integrity while mapping.
-;;; Otherwise, perform data integrity checks.
-;;;
-;;; Both EBOUND and SBOUND are always null, and not used, i.e. struct maps
-;;; are not bounded by either number of fields or size.
-;;;
-;;; BOFF should be of type uint<64>.
-;;;
-;;; Macro-arguments:
-;;;
-;;; @type_struct is a pkl_ast_node with the struct type being
-;;; processed.
+;;; RAS_MACRO_STRUCT_MAPPER @type_struct
+;;; XXX
 
         ;; NOTE: please be careful when altering the lexical structure of
         ;; this code (and of the code in expanded macros). Every local
@@ -1176,8 +1023,7 @@
         ;; add/remove locals here, adjust accordingly in
         ;; pkl-tab.y:struct_type_specifier.  Thank you very mucho!
 
-        .function struct_mapper @type_struct
-        prolog
+        .macro struct_mapper @type_struct
         pushf 6
         drop                    ; sbound
         drop                    ; ebound
@@ -1189,12 +1035,9 @@
         ;; If the struct is integral, map the integer from which the
         ;; value of the fields will be derived.  Otherwise, just register
         ;; a dummy value that will never be used.
-  .c if (PKL_AST_TYPE_S_ITYPE (@type_struct))
+  .c if (0 && PKL_AST_TYPE_S_ITYPE (@type_struct))
   .c {
-        pushvar $strict
-        pushvar $ios
-        pushvar $boff
-  .c    PKL_PASS_SUBPASS (PKL_AST_TYPE_S_ITYPE (@type_struct));
+        ;; XXX
   .c }
   .c else
   .c {
@@ -1245,30 +1088,6 @@
         ;; handlers are installed.
         dup                      ; ...[EBOFF ENAME EVAL] [NEBOFF] NEBOFF
  .c   }
- .c   if (PKL_AST_TYPE_S_ITYPE (@type_struct))
- .c   {
-        .let @struct_itype = PKL_AST_TYPE_S_ITYPE (@type_struct);
-        .let @field_type = PKL_AST_STRUCT_TYPE_FIELD_TYPE (@field);
-        .let #ivalw = pvm_make_ulong (PKL_AST_TYPE_I_SIZE (@struct_itype), 64);
- .c     size_t field_type_size
- .c        = (PKL_AST_TYPE_CODE (@field_type) == PKL_TYPE_OFFSET
- .c           ? PKL_AST_TYPE_I_SIZE (PKL_AST_TYPE_O_BASE_TYPE (@field_type))
- .c           : PKL_AST_TYPE_CODE (@field_type) == PKL_TYPE_STRUCT
- .c           ? PKL_AST_TYPE_I_SIZE (PKL_AST_TYPE_S_ITYPE (@field_type))
- .c           : PKL_AST_TYPE_I_SIZE (@field_type));
-        .let #fieldw = pvm_make_ulong (field_type_size, 64);
-        ;; Note that at this point the field is assured to be
-        ;; an integral type, as per typify.
-        pushvar $strict
-        swap                     ; ...[EBOFF ENAME EVAL] [NEBOFF] STRICT NEBOFF
-        pushvar $boff
-        pushvar $ivalue          ; ...[EBOFF ENAME EVAL] [NEBOFF] STRICT NEBOFF OFF IVAL
-        .e struct_field_extractor @type_struct, @field, @struct_itype, \
-                                  @field_type, #ivalw, #fieldw
-                                 ; ...[EBOFF ENAME EVAL] [NEBOFF] EBOFF ENAME EVAL NEBOFF
- .c   }
- .c   else
- .c   {
         ;; Attempt the mapping.
         pushvar $strict          ; ...[EBOFF ENAME EVAL] [NEBOFF] NEBOFF STRICT
         swap                     ; ...[EBOFF ENAME EVAL] [NEBOFF] STRICT NEBOFF
@@ -1279,7 +1098,6 @@
         .e struct_field_mapper @type_struct, @field
                                 ; ...[NEBOFF] [EBOFF ENAME EVAL] NEBOFF
 .omitted_field:
- .c   }
  .c   if (PKL_AST_TYPE_S_UNION_P (@type_struct))
  .c   {
         ; Drop the value created from dup
@@ -1428,6 +1246,102 @@
         msets                   ; SCT
         map                     ; SCT
         popf 1
+        .end
+
+;;; RAS_FUNCTION_STRUCT_MAPPER @type_struct
+;;; ( STRICT IOS BOFF EBOUND SBOUND -- SCT )
+;;;
+;;; Assemble a function that maps a struct value at the given offset
+;;; OFF.
+;;;
+;;; If STRICT is 0 then do not check data integrity while mapping.
+;;; Otherwise, perform data integrity checks.
+;;;
+;;; Both EBOUND and SBOUND are always null, and not used, i.e. struct maps
+;;; are not bounded by either number of fields or size.
+;;;
+;;; BOFF should be of type uint<64>.
+;;;
+;;; Macro-arguments:
+;;;
+;;; @type_struct is a pkl_ast_node with the struct type being
+;;; processed.
+
+        .function struct_mapper @type_struct
+        prolog
+ .c {
+ .c   int endian = PKL_GEN_PAYLOAD->endian;
+ .c
+ .c   if (PKL_AST_TYPE_S_ITYPE (@type_struct))
+ .c   {
+        ;; The struct or union is integral.  We map an integral of the
+        ;; right type from the IO space in whatever current endianness
+        ;; and the write it into a temporary memory IOS in big-endian.
+        ;; Then we map the struct from that temporary IO space.
+
+                                ; STRICT IOS BOFF EBOUND SBOUND
+        drop
+        drop                    ; STRICT IOS BOFF
+        oover
+        oover
+        oover                   ; STRICT IOS BOFF STRICT IOS BOFF
+ .c     PKL_PASS_SUBPASS (PKL_AST_TYPE_S_ITYPE (@type_struct));
+                                ; STRICT IOS BOFF IVAL
+        tor                     ; STRICT IOS BOFF [IVAL]
+        rot                     ; IOS BOFF STRICT [IVAL]
+        swap                    ; IOS STRICT BOFF [IVAL]
+        nrot                    ; BOFF IOS STRICT [IVAL]
+        oover                   ; BOFF IOS STRICT BOFF [IVAL]
+        fromr                   ; BOFF IOS STRICT BOFF IVAL
+        ;; Create the temporary mem IO space with a negative bias
+        ;; -BOFF.
+        push "*___intstructmapper___*"
+        push ulong<64>0
+        open                    ; BOFF IOS STRICT BOFF IVAL TIOS
+        ;; Set -BOFF as a bias.
+        oover                   ; BOFF IOS STRICT BOFF IVAL TIOS BOFF
+        lutol 64                ; BOFF IOS STRICT BOFF IVAL TIOS BOFF IBOFF
+        nip                     ; BOFF IOS STRICT BOFF IVAL TIOS IBOFF
+        negl
+        nip                     ; BOFF IOS STRICT BOFF IVAL TIOS -IBOFF
+        iosetb                  ; BOFF IOS STRICT BOFF IVAL TIOS
+        ;; Write the integral there in big-endian at the given offset.
+        oover
+        oover
+        oover                   ; ... BOFF IVAL TIOS
+        nrot                    ; ... TIOS BOFF IVAL
+ .c     PKL_GEN_PAYLOAD->endian = PKL_AST_ENDIAN_MSB;
+ .c     PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_WRITER);
+ .c     PKL_PASS_SUBPASS (PKL_AST_TYPE_S_ITYPE (@type_struct));
+ .c     PKL_GEN_POP_CONTEXT;
+                                ; BOFF IOS STRICT BOFF IVAL TIOS
+        nip                     ; BOFF IOS STRICT BOFF TIOS
+        nrot                    ; BOFF IOS TIOS STRICT BOFF
+        oover                   ; BOFF IOS TIOS STRICT BOFF TIOS
+        swap                    ; BOFF IOS TIOS STRICT TIOS BOFF
+        push null               ; BOFF IOS TIOS STRICT TIOS BOFF EBOUND
+        push null               ; BOFF IOS TIOS STRICT TIOS BOFF EBOUND SBOUND
+ .c   }
+        .e struct_mapper @type_struct
+                                ; (BOFF IOS TIOS) SCT
+ .c   if (PKL_AST_TYPE_S_ITYPE (@type_struct))
+ .c   {
+                                ; BOFF IOS TIOS SCT
+        ;; Close the temporary IO space.
+        swap                    ; BOFF IOS SCT TIOS
+        close                   ; BOFF IOS SCT null
+        ;; We assume close didn't fail.
+        drop                    ; BOFF IOS SCT
+        ;; Relocate the mapped value to the original IO space.
+        nrot                    ; SCT BOFF IOS
+        swap                    ; SCT IOS BOFF
+        reloc                   ; SCT IOS BOFF
+        drop                    ; SCT IOS
+        drop                    ; SCT
+ .c   }
+ .c   PKL_GEN_PAYLOAD->endian = endian;
+
+ .c }
         return
         .end
 
