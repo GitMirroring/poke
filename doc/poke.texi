@@ -11918,18 +11918,11 @@ others to be lifted eventually:
 
 @itemize @minus
 @item
-There are no integral unions.  This is a fundamental limitation and
-will most likely stay like that.
-@item
 Integral structs can only have integral fields.  This includes
-offsets.
+offsets and integral structs.
 @item
 No labels are allowed in the fields of integral structs.  This is not
 a fundamental limitation, and may be supported at some point.
-@item
-No integral structs are supported inside other integral structs.  This
-is purely because of laziness on my part.  This will be eventually
-supported.
 @item
 No optional fields are supported in integral structs.  Support for
 this is actually partially implemented (the mapper supports them but
