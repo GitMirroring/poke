@@ -1335,7 +1335,7 @@ ios_write_int_common (ios io, ios_off offset, int flags,
       /* Convert to the little endian format. For example a 12-bit-long
          number's bits get reordered as 7-6-5-4-3-2-1-0-11-10-9-8
          with leading 0s.  */
-      if (bits <= 16)
+      if (bits < 16)
         value = ((value & 0xff) << (bits % 8))
                 | (value & 0xff00) >> 8;
       else
@@ -1362,7 +1362,7 @@ ios_write_int_common (ios io, ios_off offset, int flags,
       /* Convert to the little endian format. For example a 12-bit-long
          number's bits get reordered as 7-6-5-4-3-2-1-0-11-10-9-8
          with leading 0s.  */
-      if (bits <= 24)
+      if (bits < 24)
         value = ((value & 0xff) << (8 + bits % 8))
                 | (value & 0xff00) >> (8 - bits % 8)
                 | (value & 0xff0000) >> 16;
@@ -1392,7 +1392,7 @@ ios_write_int_common (ios io, ios_off offset, int flags,
       /* Convert to the little endian format. For example a 12-bit-long
          number's bits get reordered as 7-6-5-4-3-2-1-0-11-10-9-8
          with leading 0s.  */
-      if (bits <= 32)
+      if (bits < 32)
         value = ((value & 0xff) << (16 + bits % 8))
                 | (value & 0xff00) << (bits % 8)
                 | (value & 0xff0000) >> (16 - bits % 8)
@@ -1425,7 +1425,7 @@ ios_write_int_common (ios io, ios_off offset, int flags,
       /* Convert to the little endian format. For example a 12-bit-long
          number's bits get reordered as 7-6-5-4-3-2-1-0-11-10-9-8
          with leading 0s.  */
-      if (bits <= 40)
+      if (bits < 40)
         value = ((value & 0xff) << (24 + bits % 8))
                 | (value & 0xff00) << (8 + bits % 8)
                 | (value & 0xff0000) >> (8 - bits % 8)
@@ -1461,7 +1461,7 @@ ios_write_int_common (ios io, ios_off offset, int flags,
       /* Convert to the little endian format. For example a 12-bit-long
          number's bits get reordered as 7-6-5-4-3-2-1-0-11-10-9-8
          with leading 0s.  */
-      if (bits <= 48)
+      if (bits < 48)
         value = ((value & 0xff) << (32 + bits % 8))
                 | (value & 0xff00) << (16 + bits % 8)
                 | (value & 0xff0000) << (bits % 8)
@@ -1500,7 +1500,7 @@ ios_write_int_common (ios io, ios_off offset, int flags,
       /* Convert to the little endian format. For example a 12-bit-long
          number's bits get reordered as 7-6-5-4-3-2-1-0-11-10-9-8
          with leading 0s.  */
-      if (bits <= 56)
+      if (bits < 56)
         value = ((value & 0xff) << (40 + bits % 8))
                 | (value & 0xff00) << (24 + bits % 8)
                 | (value & 0xff0000) << (8 + bits % 8)
@@ -1542,14 +1542,20 @@ ios_write_int_common (ios io, ios_off offset, int flags,
       /* Convert to the little endian format. For example a 12-bit-long
          number's bits get reordered as 7-6-5-4-3-2-1-0-11-10-9-8
          with leading 0s.  */
-      value = ((value & 0xff) << (48 + bits % 8))
-              | (value & 0xff00) << (32 + bits % 8)
-              | (value & 0xff0000) << (16 + bits % 8)
-              | (value & 0xff000000) << (bits % 8)
-              | (value & 0xff00000000) >> (16 - bits % 8)
-              | (value & 0xff0000000000) >> (32 - bits % 8)
-              | (value & 0xff000000000000) >> (48 - bits % 8)
-              | (value & 0xff00000000000000) >> 56;
+      if (bits < 64)
+        value = ((value & 0xff) << (48 + bits % 8))
+                | (value & 0xff00) << (32 + bits % 8)
+                | (value & 0xff0000) << (16 + bits % 8)
+                | (value & 0xff000000) << (bits % 8)
+                | (value & 0xff00000000) >> (16 - bits % 8)
+                | (value & 0xff0000000000) >> (32 - bits % 8)
+                | (value & 0xff000000000000) >> (48 - bits % 8)
+                | (value & 0xff00000000000000) >> 56;
+      else
+        {
+          assert (bits == 64);
+          value = bswap_64 (value);
+        }
     }
     c[0] |= value >> (56 + lastbyte_bits);
     c[1] = (value >> (48 + lastbyte_bits)) & 0xff;
