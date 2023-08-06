@@ -1,0 +1,48 @@
+/* { dg-do run } */
+
+var m1 = -1UL as uint<40>;
+
+fun test = (offset<int<64>,b> off) int<32>:
+  {
+    var fd = open ("*mem*");
+
+    uint<40> @ fd : off = m1;
+
+    var ok = (uint<40> @ fd : off) == m1;
+
+    close (fd);
+    return ok;
+  }
+
+/* { dg-command {.set obase 10} } */
+/* { dg-command {.set endian little} } */
+
+/* { dg-command {test (1#b)} } */
+/* { dg-output "1\n" } */
+
+/* { dg-command {test (7#b)} } */
+/* { dg-output "1\n" } */
+
+/* { dg-command {test (9#b)} } */
+/* { dg-output "1\n" } */
+
+/* { dg-command {test (15#b)} } */
+/* { dg-output "1\n" } */
+
+/* { dg-command {test (23#b)} } */
+/* { dg-output "1\n" } */
+
+/* { dg-command {test (25#b)} } */
+/* { dg-output "1\n" } */
+
+/* { dg-command {test (31#b)} } */
+/* { dg-output "1\n" } */
+
+/* { dg-command {test (33#b)} } */
+/* { dg-output "1\n" } */
+
+/* { dg-command {test (39#b)} } */
+/* { dg-output "1\n" } */
+
+/* { dg-command {test (41#b)} } */
+/* { dg-output "1\n" } */

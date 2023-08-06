@@ -532,6 +532,13 @@ EXTRA_DIST = \
   poke.map/maps-uint-write-72.pk \
   poke.map/maps-uint-write-73.pk \
   poke.map/maps-uint-write-74.pk \
+  poke.map/maps-uint-write-75.pk \
+  poke.map/maps-uint-write-76.pk \
+  poke.map/maps-uint-write-77.pk \
+  poke.map/maps-uint-write-78.pk \
+  poke.map/maps-uint-write-79.pk \
+  poke.map/maps-uint-write-80.pk \
+  poke.map/maps-uint-write-81.pk \
   poke.map/maps-unions-1.pk \
   poke.map/maps-unions-2.pk \
   poke.map/maps-unions-3.pk \
