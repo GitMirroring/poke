@@ -73,7 +73,9 @@ gl_EARLY
 libpoke_EARLY
 
 LT_INIT
-AC_PROG_CC_C99
+AC_PROG_CC
+dnl AC_PROG_CC_C99 is to be used with autoconf < 2.70.
+m4_version_prereq([2.70], [:], [AC_PROG_CC_C99])
 AM_PROG_CC_C_O
 
 AC_ARG_VAR([LEX], [The flex implementation to use.])

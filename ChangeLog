@@ -1,3 +1,7 @@
+2023-08-20  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* configure.ac: Do not use AC_PROG_CC_C99 with autoconf >= 2.70.
+
 2023-08-06  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* liboke/ios.c (ios_write_int_common): Fix the function when `bits'
