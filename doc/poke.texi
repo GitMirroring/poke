@@ -5596,7 +5596,7 @@ using field labels:
 type Packet =
   struct
   @{
-    offset<uint<32>,B> payload_size;:
+    offset<uint<32>,B> payload_size;
     int flags @@ OFFSET + payload_size;
   @};
 @end example
@@ -5795,7 +5795,7 @@ type Inode =
     int perms;
     offset<uint<32>,B> data_size;
     byte[data_size] data;
-    byte[alignto (data_size, 128#B) padding;
+    byte[alignto (data_size, 128#B)] padding;
   @};
 @end example
 
