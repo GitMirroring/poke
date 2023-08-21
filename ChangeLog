@@ -1,3 +1,20 @@
+2023-08-23  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* poke/pk-dump.pk (pk_dump_max_line_width): New variable.
+	(dump): Pass val and max_line_width.
+	Document arguments :val and :max_line_width.
+	(dumpval): New function.
+	* doc/poke.texi (Information @command{dump} shows): Document dump
+	:val.
+
+2023-08-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* etc/poke-dark.css (.dump-val1): New class.
+	(.dump-val2): Likewise.
+	(.dump-val3): Likewise.
+	(.dump-val4): Likewise.
+	* pickles/ios.pk (ios_dumpval_styles): New global.
+
 2023-08-22  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-gen.c (pkl_gen_pr_ass_stmt): Fix assigning values to

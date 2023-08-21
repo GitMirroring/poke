@@ -26,6 +26,10 @@
 .dump-address { color : green; }
 .dump-ascii { color : brown; }
 .dump-unknown { color : yellow; }
+.dump-val1 { color : green; }
+.dump-val2 { color : red; }
+.dump-val3 { color : yellow; }
+.dump-val4 { color : brown; }
 
 .diff-thunk-header { font-weight: bold; }
 .diff-minus { color : red; }

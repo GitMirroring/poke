@@ -9115,7 +9115,8 @@ To do this, use the @command{dump} command.
 This command has the following synopsis.
 
 @example
-dump [:from @var{offset}] [:size @var{offset}] [:ios @var{int}] [:ruler @var{bool}]
+dump [:from @var{offset}] [:size @var{offset}] [:val @var{val}]
+     [:ios @var{int}] [:ruler @var{bool}]
      [:ascii @var{bool}] [:group_by @var{int}] [:cluster_by @var{int}]
 @end example
 
@@ -9135,7 +9136,6 @@ to simply type @command{dump}:
 00000060: e2eb 51d5 cb5b 5ba9 b890 9d7a 2746 72ad  ..Q..[[....z'Fr.
 00000070: 6cbd 6e27 1c7f a554 8d2e 77f9 315a 4415  l.n'...T..w.1ZD.
 @end example
-
 
 @noindent
 The first row is the @dfn{ruler} which serves as a heading for each
@@ -9202,6 +9202,71 @@ argument set to zero:
 00000020: 5a2f 7c3e 490b 18d8 d867 4b6f 2549 1f6c
 00000030: 34a9 a0d7 24d2 e9ac 9240 8247 10cb 4ba1
 @end example
+
+Instead of an explicit @code{from+size} range, a mapped value can be
+specified using the @code{val} argument.  In this case, @code{dump}
+will show the bytes corresponding to the given value, with visual
+indications on what bytes correspond to what element contained in the
+value.
+
+Let's first see an example with a struct:
+
+@example
+(poke) type Foo = struct @{ int<32> one; int<64> two; @}
+(poke) dump :val Foo @@ 0#B
+76543210  0011 2233 4455 6677 8899 aabb ccdd eeff  0123456789ABCDEF
+00000000: 0000 0000 0000 0000 0000 0000            ............     one two
+@end example
+
+@noindent
+Where both the bytes and the field names are colorized in order to
+establish a visual correspondence.
+
+Similarly, the bytes corresponding to array elements are also
+characterized:
+
+@example
+(poke) dump :val int[3] @@ 2#B
+76543210  0011 2233 4455 6677 8899 aabb ccdd eeff  0123456789ABCDEF
+00000000: 0000 0000 0000 0000 0000 0000 0000       ..............   [0] [1] [2]
+@end example
+
+If some of the elements contained in the value passed to
+@command{dump} is itself complex, then a number is printed right
+before its name.  For example:
+
+@example
+(poke) type Foo = struct @{ int<32> one; struct @{ int<64> three; @} two; @}
+(poke) dump :val Foo @@ 0#B
+76543210  0011 2233 4455 6677 8899 aabb ccdd eeff  0123456789ABCDEF
+00000000: 0000 0000 0000 0000 0000 0000            ............     one 1=two
+@end example
+
+@noindent
+This number can be used as an identifier in a subsequent invocation to
+@command{dump} to quickly refer to that value:
+
+@example
+(poke) dump :val 1
+76543210  0011 2233 4455 6677 8899 aabb ccdd eeff  0123456789ABCDEF
+00000000: 0000 0000 0000 0000 0000 0000            ............     three
+@end example
+
+Note that these indexes get reset every time @command{dump :val} gets
+executed.
+
+A function @code{dumpval} is also provided in order to ease accessing
+the values whose bytes we dump.  It has prototype:
+
+@example
+dumpval (int<32> @var{val} = -1) any
+@end example
+
+@noindent
+Where @var{val} is the index of a value whose bytes have been printed
+by the last @command{dump :val} command.  The function returns that
+value.  If no index is specified, then dumpval returns the value
+passed as @command{:val} instead of some of its constituents.
 
 @node  Presentation options for @command{dump}
 @subsection Presentation options for @command{dump}

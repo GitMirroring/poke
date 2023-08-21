@@ -28,6 +28,7 @@ var pk_dump_ruler = 1;
 var pk_dump_ascii = 1;
 var pk_dump_nonprintable_char = '.';
 var pk_dump_unknown_byte = "??";
+var pk_dump_max_line_width = 90;
 
 pk_help_add_topic
   :entry Poke_HelpEntry {
@@ -37,8 +38,8 @@ pk_help_add_topic
           description= format ("
 Synopsis:
 
-  dump [:from OFFSET] [:size OFFSET] [:ios INT] [:ruler BOOL] \\
-        [:ascii BOOL] [:group_by INT] [:cluster_by INT]
+  dump [:from OFFSET] [:size OFFSET] [:val VAL] [:ios INT] [:ruler BOOL] \\
+        [:ascii BOOL] [:group_by INT] [:cluster_by INT] [:max_line_width INT]
 
 Arguments:
 
@@ -50,6 +51,17 @@ Arguments:
   :size (offset)
          How much data to dump.  Defaults to `pk_dump_size', currently
          %v.
+
+  :val (any)
+         A mapped value whose constituent bytes are to be dumped.  If
+         a non-negative 32-bit integer, then it is used as an index
+         referring to a past result.  If a negative 32-bit integer
+         then this argument is ignored.  Note that if :var is used
+         then any specified :from and :size are ignored.
+
+         Quick access to the original value and its constituents can
+         be achieved by using the `dumpval' function.  See `.help
+         dumpval'.
 
   :ios (int)
          IO space from which dump bytes.  This defaults to the currently
@@ -73,12 +85,18 @@ Arguments:
          have been displayed.  Defaults to `pk_dump_cluster_by',
          currently %i32d.
 
+  :max_line_width (int)
+         Maximum size of lines to use in the byte dump.  If negative
+         then there is no limit.  Defaults to `pk_dump_max_line_width',
+         currently %i32d.
+
 If there is not a current IO space available `dump' raises an E_no_ios
 exception.
 
 See `.doc dump' for more information.",
                                pk_dump_size, pk_dump_ruler, pk_dump_ascii,
-                               pk_dump_group_by, pk_dump_cluster_by)
+                               pk_dump_group_by, pk_dump_cluster_by,
+                               pk_dump_max_line_width)
           };
 
 /* `pk_dump_offsets' keeps the last base offset used by `dump', per IO
@@ -112,18 +130,63 @@ fun pk_dump_set_offset = (int<32> ios, offset<int<64>,b> offset) void:
   pk_dump_offsets += [Pk_Dump_Offset { ios = ios, offset = offset }];
 }
 
+/* Accessor to dump :val saved values.  */
+
+pk_help_add_topic
+  :entry Poke_HelpEntry {
+      category = "poke functions",
+      topic = "dumpval",
+      summary = "quickly retrieve values shown by dump :val",
+      description = "
+Synopsis:
+
+  dumpval (int<32> VAL = -1) any
+
+Arguments:
+
+  val (int)
+        The index of a value whose bytes have been printed by the last
+        `dump :val' command."
+    };
+
+fun dumpval = (int<32> idx = -1) any:
+{
+  var val = ios_dumpval_last[0];
+
+  try
+    {
+      if (idx < 0)
+        {
+          if (ios_dumpval_last[0] isa int<32>)
+            raise E_out_of_bounds;
+          return ios_dumpval_last[0];
+        }
+      else
+        return ios_dumpval[idx];
+    }
+  catch if E_out_of_bounds
+    {
+      raise Exception { code = EC_inval,
+                        name = "invalid argument",
+                        msg = "no such dumpval" };
+    }
+}
+
 /* And the command itself.  */
 
 fun dump = (int<32> ios = get_ios,
             offset<int<64>,b> from = pk_dump_get_offset (ios),
             offset<int<64>,b> size = pk_dump_size,
+            any val = -1,
             offset<int<64>,b> group_by = pk_dump_group_by,
             int<32> cluster_by = pk_dump_cluster_by,
             int<32> ruler = pk_dump_ruler,
-            int<32> ascii = pk_dump_ascii) void:
+            int<32> ascii = pk_dump_ascii,
+            int<32> max_line_width = pk_dump_max_line_width) void:
 {
-  ios_dump_bytes :ios ios :from from :size size :group_by group_by
+  ios_dump_bytes :ios ios :from from :size size :group_by group_by :val val
                  :cluster_by cluster_by :ruler_p ruler :ascii_p ascii
-                 :unknown_byte pk_dump_unknown_byte;
+                 :unknown_byte pk_dump_unknown_byte
+                 :max_line_width pk_dump_max_line_width;
   pk_dump_set_offset (ios, from);
 }

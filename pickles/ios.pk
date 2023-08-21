@@ -18,6 +18,34 @@
 
 /* This pickle contains utilities related to poke IO spaces.  */
 
+var ios_dumpval_styles
+= ["dump-val1", "dump-val2", "dump-val3", "dump-val4"];
+
+type IOS_Dumpval_Info =
+  struct
+  {
+    string name;
+    int<32> index; /* 0 means non-mapped.  */
+    int<32> style;
+    offset<uint<64>,b> offset;
+    offset<uint<64>,b> size;
+  };
+
+/* The following variables get updated every time ios_dump_bytes gets
+   invoked with a VAL:
+
+   ios_dumpval holds the values of the elements contained in VAL
+   (struct fields, array elements).
+
+   ios_dumpval_info holds a descriptor for each element contained in
+   VAL, used by ios_dump_bytes to colorize the byte and ascii ranges.
+
+   ios_dumpval_last contains VAL.  */
+
+var ios_dumpval = any[]();
+var ios_dumpval_info = IOS_Dumpval_Info[]();
+var ios_dumpval_last = any[1](0);
+
 /* Print a byte dump of an area in a given IO space.
 
    IOS is the IO space from which dump bytes.
@@ -27,6 +55,13 @@
 
    SIZE is an offset specifying the amount of bytes to dump.  The
    offset is rounded up to the next byte.
+
+   VAL may be either a signed 32-bit integer or a mapped value.  If a
+   mapped value, the byte dump corresponds to the contents of the
+   value and field/element information is also printed with color
+   codes.  If VAL is a positive integer, then it is used to index the
+   ios_dumpval array to get the mapped value whose bytes are printed.
+   If VAL is a negative integer, then it is ignored.  Defaults to -1.
 
    GROUP_BY determines how the bytes are grouped together in the
    output.  Defaults to two bytes.
@@ -47,19 +82,39 @@
    NONPRINTABLE_CHAR is the character code to use to denote
    non-printable characters.  Defaults to '.'.
 
+   MAX_LINE_WIDTH is the maximum number of columns to use in the
+   terminal.  Additional lines are used whenever necessary.  If this
+   argument has a negative value then no limit applies.  Defaults to
+   -1.
+
    This function may raise E_io, E_perm, and E_eof on several error
    conditions.  */
 
 fun ios_dump_bytes = (int<32> ios,
                       offset<uint<64>,b> from,
                       offset<uint<64>,b> size,
+                      any val = -1,
                       offset<uint<64>,b> group_by = 2#B,
                       int<32> cluster_by = 8,
                       int<32> ruler_p = 0,
                       int<32> ascii_p = 0,
                       string unknown_byte = "??",
-                      uint<8> nonprintable_char = '.') void:
+                      uint<8> nonprintable_char = '.',
+                      int<32> max_line_width = -1) void:
 {
+  var print_val_p = 0;
+
+  fun get_val_style = (offset<uint<64>,b> offset) string:
+  {
+    for (var idx = 0; idx < ios_dumpval'length; ++idx)
+      {
+        var info = ios_dumpval_info[idx];
+        if (offset >= info.offset && offset < info.offset + info.size)
+          return ios_dumpval_styles[info.style % ios_dumpval_styles'length];
+      }
+    return "";
+  }
+
   fun print_ruler = (offset<uint<64>,b> offset) void:
   {
     var o = 0#B;
@@ -106,28 +161,94 @@ fun ios_dump_bytes = (int<32> ios,
                      offset<uint<64>,b> top,
                      offset<uint<64>,b> step,
                      offset<uint<64>,b> group_by,
-                     int<32> cluster_by) void:
+                     int<32> cluster_by) int<32>:
   {
+    var len = 0;
+    var style = "";
+    var unknown_byte_style = "";
     print("  ");
+    len += 2;
     var o = 0#B;
     while (o < step && offset + o < top)
       {
+        style = print_val_p ? get_val_style (offset + o) : "dump-ascii";
+        unknown_byte_style = print_val_p ? style : "dump-unknown";
+
         try
         {
           var v = uint<8> @ ios : (offset + o);
 
+          if (style != "")
+            term_begin_class (style);
           if (v < ' ' || v > '~')
-            printf "%<dump-ascii:%c%>", nonprintable_char;
+            printf "%c", nonprintable_char;
           else
-            printf "%<dump-ascii:%c%>", v;
+            printf "%c", v;
+          if (style != "")
+            term_end_class (style);
+          len += 1;
         }
         catch if E_io
         {
-            printf "%<dump-unknown:%c%>", nonprintable_char;
+          if (style != "")
+            term_begin_class (style);
+          printf "%c", nonprintable_char;
+          if (style != "")
+            term_end_class (style);
+          len += 1;
         }
         o++;
 	if (o < 16#B && (o % (cluster_by * group_by)) == 0#B)
-	   printf (" ");
+          {
+	    printf (" ");
+            len += 1;
+          }
+      }
+
+    return len;
+  }
+
+  fun print_values = (offset<uint<64>,b> offset,
+                      offset<uint<64>,b> step,
+                      offset<uint<64>,b> top,
+                      int<32> col) void:
+  {
+    var o = 0#b;
+    var c = col;
+    while (o < step && offset + o < top)
+      {
+        for (var idx = 0; idx < ios_dumpval'length; ++idx)
+          {
+            var info = ios_dumpval_info[idx];
+            if (info.offset == offset + o)
+              {
+                var val = ios_dumpval[idx];
+                var style = ios_dumpval_styles[info.style % ios_dumpval_styles'length];
+
+                if (max_line_width >= 0
+                    && c + info.name'length + 4 > max_line_width)
+                  {
+                    print "\n" + (" " * col);
+                    c = col;
+                  }
+
+                print " ";
+                if (info.index >= 0)
+                  {
+                    hserver_print_hl ('e',
+                                      format ("%i32d", idx),
+                                      format ("dump :val %i32d", idx));
+                    print ("=");
+                    c += 4;
+                  }
+                term_begin_class (style);
+                print (info.name);
+                c += info.name'length;
+                term_end_class (style);
+                break;
+              }
+          }
+        o += 4#b;
       }
   }
 
@@ -137,12 +258,19 @@ fun ios_dump_bytes = (int<32> ios,
                     offset<uint<64>,b> group_by,
                     int<32> cluster_by) void:
   {
+    var col = 0;
     for (; offset < top; offset += step)
       {
         if (offset > 0xffff_ffff#B)
-          printf ("%<dump-address:%u64x:%>", offset / #B);
+          {
+            printf ("%<dump-address:%u64x:%>", offset / #B);
+            col += 16 + 1;
+          }
         else
-          printf ("%<dump-address:%u32x:%>", offset / #B);
+          {
+            printf ("%<dump-address:%u32x:%>", offset / #B);
+            col += 8 + 1;
+          }
 
 	var o = 0#B;
 	try
@@ -153,40 +281,158 @@ fun ios_dump_bytes = (int<32> ios,
               {
                 var b = uint<8> @ ios : (offset + o);
                 if (o % group_by == 0#B)
-                     print " ";
-                printf ("%u8x", b);
-             }
+                  {
+                    print " ";
+                    col += 1;
+                  }
+
+                if (print_val_p)
+                  {
+                    /* Go down nibble level.  */
+                    var style = get_val_style (offset + o);
+
+                    if (style != "")
+                      term_begin_class (style);
+                    printf ("%u4x", b & 0xf .>> 4);
+                    if (style != "")
+                      term_end_class (style);
+
+                    style = get_val_style (offset + o + 4#b);
+
+                    if (style != "")
+                      term_begin_class (style);
+                    printf ("%u4x", b & 0xf);
+                    if (style != "")
+                      term_end_class (style);
+                  }
+                else
+                  printf ("%u8x", b);
+
+                col += 2;
+              }
               catch if E_io
               {
                 if (o % group_by == 0#B)
-                     print " ";
+                  {
+                    print " ";
+                    col += 1;
+                  }
                 printf ("%<dump-unknown:%s%>", unknown_byte);
+                col += 2;
               }
 
               o++;
 	      if (o < 16#B && (o % (cluster_by * group_by)) == 0#B)
-		printf (" ");
+                {
+		  printf (" ");
+                  col += 1;
+                }
 	    }
 	}
 	catch if E_eof {}
 	if (ascii_p)
 	  {
-	    while (o < step)
-	      {
-		if (o % group_by == 0#B)
-		  print " ";
-		print ("  ");
-                o++;
-	      }
-	    print_ascii (offset, top, step, group_by, cluster_by);
+            for (var t = o; t < step; ++t)
+              {
+                if (t % group_by == 0#B)
+                  {
+                    print " ";
+                    col += 1;
+                  }
+                print ("  ");
+                col += 2;
+              }
+	    col += print_ascii (offset, top, step, group_by, cluster_by);
+            if (print_val_p)
+              {
+                for (var t = o; t < step; ++t)
+                  {
+                    print " ";
+                    col += 1;
+                  }
+              }
 	  }
+        if (print_val_p)
+          {
+            if (!ascii_p)
+              {
+                for (var t = o; t < step; ++t)
+                  {
+		    if (o % group_by == 0#B)
+                      {
+		        print " ";
+                        col += 1;
+                      }
+                    print ("  ");
+                    col += 2;
+                  }
+	      }
+            print_values (offset, step, top, col);
+          }
 	print "\n";
+        col = 0;
       }
   }
 
   /* First of all, we require a readable IO space.  */
   if (! (ioflags (ios) & IOS_F_READ))
     raise E_perm;
+
+  /* If `val' is specified, it can be:
+     negative int<32> -> for "no value".
+     positive int<32> -> for a mapped value stored in ios_dumpval.
+     other   -> mapped value from which to derive `from'
+                and `size'.
+   */
+  if (val isa int<32>)
+    {
+      if (val as int<32> > 0 && val as int<32> > ios_dumpval'length)
+        raise Exception { code = EC_inval,
+                          name = "invalid argument",
+                          msg = "invalid VAL index" };
+
+      if (val as int<32> >= 0)
+        {
+          val = ios_dumpval[val as int<32>];
+
+          if (!val'mapped)
+            raise Exception { code = EC_inval,
+                              name = "invalid argument",
+                              msg = "indexed VAL is not mapped" };
+        }
+    }
+
+  if (val'mapped)
+    {
+      ios_dumpval_last[0] = val;
+      from = val'offset - (val'offset % 16#B);
+      size = val'size + (val'offset % 16#B);
+      print_val_p = 1;
+
+      /* Reset ios_dumpval and ios_dumpval_info.  */
+      ios_dumpval = any[]();
+      ios_dumpval_info = IOS_Dumpval_Info[]();
+
+      /* Populate the array with the fields of VAL.  */
+      for (var idx = 0UL, style = 0; idx < val'length; ++idx)
+        {
+          /* If the field is optional, check it is actually present.  If it
+             is not, do not add it to the array.  */
+          if (val'elem (idx) ?! E_inval)
+            continue;
+
+          /* Add the element and its info to the arrays.  */
+          var elem = val'elem (idx);
+          apush (ios_dumpval, val'elem (idx));
+          apush (ios_dumpval_info,
+                 IOS_Dumpval_Info {
+                   name = val'ename (idx) == "" ? "<anon>" : val'ename (idx),
+                   index = elem'mapped ? idx as int<32> : -1,
+                   offset = val'eoffset (idx),
+                   size = val'esize (idx),
+                   style = style++ });
+        }
+    }
 
   /* The `dump' command is byte-oriented.
      The base offset is truncated to bytes.
