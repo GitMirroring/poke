@@ -1,0 +1,7 @@
+/* { dg-do run } */
+
+var a = any[1](0);
+
+/* { dg-command {a[0] = "foo"} } */
+/* { dg-command {a[0]} } */
+/* { dg-output {"foo"} } */
