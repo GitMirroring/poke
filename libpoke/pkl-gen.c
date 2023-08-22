@@ -1021,10 +1021,14 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
         if (PKL_AST_TYPE_CODE (etype) == PKL_TYPE_ANY)
           {
             pvm_program_label label = pkl_asm_fresh_label (PKL_GEN_ASM);
+            pvm_program_label array_of_any = pkl_asm_fresh_label (PKL_GEN_ASM);
 
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NROT);  /* INDEX VAL ARRAY */
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_TYPOF); /* INDEX VAL ARRAY ATYPE */
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_TYAGETT); /* INDEX VAL ARRAY ATYPE ETYPE */
+            /* If this is an array of `any', it can contain
+               any value.  */
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BN, array_of_any);
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP);   /* INDEX VAL ARRAY ETYPE */
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ROT);   /* INDEX ARRAY ETYPE VAL */
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP);  /* INDEX ARRAY VAL ETYPE */
@@ -1036,6 +1040,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
                           pvm_make_exception (PVM_E_CONV, PVM_E_CONV_NAME,
                                               PVM_E_CONV_ESTATUS, NULL, NULL));
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_RAISE);
+
+            pkl_asm_label (PKL_GEN_ASM, array_of_any);
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* INDEX VAL ARRAY ATYPE */
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_QUAKE);  /* INDEX ARRAY VAL ATYPE */
 
             pkl_asm_label (PKL_GEN_ASM, label);
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);  /* INDEX ARRAY VAL */

@@ -1680,8 +1680,19 @@ pvm_type_equal_p (pvm_val type1, pvm_val type2)
     case PVM_TYPE_VOID:
       return 1;
     case PVM_TYPE_ARRAY:
-      return pvm_type_equal_p (PVM_VAL_TYP_A_ETYPE (type1),
-                               PVM_VAL_TYP_A_ETYPE (type2));
+      {
+        pvm_val etype1 = PVM_VAL_TYP_A_ETYPE (type1);
+        pvm_val etype2 = PVM_VAL_TYP_A_ETYPE (type2);
+
+        /* Note that arrays whose elements can be of any
+           type have etype PVM_NULL.  */
+        if (etype1 == PVM_NULL && etype2 == PVM_NULL)
+          return 1;
+        else if (etype1 == PVM_NULL || etype2 == PVM_NULL)
+          return 0;
+        else
+          return pvm_type_equal_p (etype1, etype2);
+      }
     case PVM_TYPE_STRUCT:
       return (STREQ (PVM_VAL_STR (PVM_VAL_TYP_S_NAME (type1)),
                      PVM_VAL_STR (PVM_VAL_TYP_S_NAME (type2))));
