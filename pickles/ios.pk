@@ -235,9 +235,24 @@ fun ios_dump_bytes = (int<32> ios,
                 print " ";
                 if (info.index >= 0)
                   {
-                    hserver_print_hl ('e',
+                    hserver_print_hl ('c',
                                       format ("%i32d", idx),
-                                      format ("dump :val %i32d", idx));
+                                      format ("dump :val %i32d", idx),
+                                      lambda void:
+                                        {
+                                          ios_dump_bytes :ios ios
+                                                         :from from
+                                                         :size size
+                                                         :val val
+                                                         :group_by group_by
+                                                         :cluster_by cluster_by
+                                                         :ruler_p ruler_p
+                                                         :ascii_p ascii_p
+                                                         :unknown_byte unknown_byte
+                                                         :nonprintable_char nonprintable_char
+                                                         :max_line_width max_line_width;
+                                        }
+                                     );
                     print ("=");
                     c += 4;
                   }
