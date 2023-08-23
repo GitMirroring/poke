@@ -426,3 +426,15 @@ pvm_assert (int expression, const char *expression_str,
 
 #endif
 }
+
+void
+pvm_register_thread ()
+{
+  pvm_alloc_register_thread ();
+}
+
+void
+pvm_unregister_thread ()
+{
+  pvm_alloc_unregister_thread ();
+}

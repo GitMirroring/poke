@@ -18,6 +18,7 @@
 
 #include <config.h>
 #include <gc/gc.h>
+#include <assert.h>
 
 #include "pvm.h"
 #include "pvm-val.h"
@@ -78,7 +79,10 @@ pvm_alloc_initialize ()
      been already initialized.  The later may happen if some other
      library or program uses the boehm GC.  */
   if (!GC_is_init_called ())
-    GC_INIT ();
+    {
+      GC_INIT ();
+      GC_allow_register_threads ();
+    }
 }
 
 void
@@ -99,4 +103,20 @@ pvm_alloc_remove_gc_roots (void *pointer, size_t nelems)
 {
   GC_remove_roots (pointer,
                    ((char*) pointer) + sizeof (void*) * nelems);
+}
+
+void
+pvm_alloc_register_thread ()
+{
+  const struct GC_stack_base sb;
+
+  assert (GC_get_stack_base (&sb) == GC_SUCCESS);
+  /* The following call may return GC_SUCCESS or GC_DUPLICATE.  */
+  GC_register_my_thread (&sb);
+}
+
+void
+pvm_alloc_unregister_thread ()
+{
+  assert (GC_unregister_my_thread () == GC_SUCCESS);
 }

@@ -797,4 +797,10 @@ void pvm_print_val_with_params (pvm vm, pvm_val val,
                                 uint32_t flags,
                                 pvm_val *exit_exception);
 
+/* Register/unregister a thread whose stack that may contain PVM
+   values.  This is used for memory management.  */
+
+void pvm_register_thread (void);
+void pvm_unregister_thread (void);
+
 #endif /* ! PVM_H */

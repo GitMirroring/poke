@@ -143,6 +143,13 @@ pk_compiler pk_compiler_new_with_flags (struct pk_term_if *term_if,
 
 void pk_compiler_free (pk_compiler pkc) LIBPOKE_API;
 
+/* Register/unregister a new thread (other than the thread that called
+   pk_compiler_new) that calls any of the services provided by the
+   library.  */
+
+void pk_register_thread (void) LIBPOKE_API;
+void pk_unregister_thread (void) LIBPOKE_API;
+
 /* Error code of last operation.
 
    This function returns the status corresponding to the given PK

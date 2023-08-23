@@ -1140,3 +1140,15 @@ pk_keyword_p (pk_compiler pkc, const char *str)
 
   return 0;
 }
+
+void
+pk_register_thread ()
+{
+  pvm_register_thread ();
+}
+
+void
+pk_unregister_thread ()
+{
+  pvm_unregister_thread ();
+}

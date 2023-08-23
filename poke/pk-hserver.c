@@ -291,6 +291,8 @@ hserver_thread_worker (void *data)
   struct sockaddr_in clientname;
   socklen_t size;
 
+  pk_register_thread ();
+
   /* Initialize the set of active sockets. */
   FD_ZERO (&active_fd_set);
   FD_SET (hserver_socket, &active_fd_set);
@@ -347,6 +349,8 @@ hserver_thread_worker (void *data)
         }
       pthread_mutex_unlock (&hserver_mutex);
     }
+
+  pk_unregister_thread ();
 }
 
 void
