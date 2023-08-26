@@ -84,9 +84,10 @@ char *pvm_alloc_strdup (const char *string)
 
 void pvm_alloc_gc (void);
 
-/* Register a new stack that may contain PVM values.  This is used for
-   memory management.  */
+/* Register/unregister a new thread whose stack that may contain PVM
+   values.  This is used for memory management.  */
 
-int pvm_alloc_register_stack (const char *stack_base);
+int pvm_alloc_register_thread (void);
+int pvm_alloc_unregister_thread (void);
 
 #endif /* ! PVM_ALLOC_H */
