@@ -17,8 +17,10 @@
  */
 
 #include <config.h>
-#include <gc/gc.h>
 #include <assert.h>
+
+#define GC_THREADS
+#include <gc/gc.h>
 
 #include "pvm.h"
 #include "pvm-val.h"
@@ -108,7 +110,7 @@ pvm_alloc_remove_gc_roots (void *pointer, size_t nelems)
 void
 pvm_alloc_register_thread ()
 {
-  const struct GC_stack_base sb;
+  struct GC_stack_base sb;
 
   assert (GC_get_stack_base (&sb) == GC_SUCCESS);
   /* The following call may return GC_SUCCESS or GC_DUPLICATE.  */
