@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in .
 # Copyright (C) 2016-2020, 2022 Luca Saiu
-# Updated in 2021 by Luca Saiu
+# Updated in 2021 and 2023 by Luca Saiu
 # Written by Luca Saiu
 
 # This file is part of GNU Jitter.
@@ -1937,6 +1937,9 @@ $(srcdir)/example-vms/jitterlisp/doc/fdl.texi: doc/fdl.texi
 # used here, but we have to distribute the files.
 EXTRA_DIST += \
   example-build-systems/bootstrap \
+  example-build-systems/bootstrap-funclib.sh \
+  example-build-systems/autopull.sh \
+  example-build-systems/autogen.sh \
   example-build-systems/NEWS \
   example-build-systems/ChangeLog \
   example-build-systems/README \

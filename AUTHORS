@@ -1,4 +1,4 @@
-Copyright (C) 2016-2021 Luca Saiu
+Copyright (C) 2016-2023 Luca Saiu
 Written by Luca Saiu
 
 GNU Jitter is free software: you can redistribute it and/or modify
@@ -15,9 +15,9 @@ You should have received a copy of the GNU General Public License
 along with GNU Jitter.  If not, see <https://www.gnu.org/licenses/>.
 
 
-bootstrap and bootstrap.conf come from GNUlib, for
+bootstrap, bootstrap.conf, autogen.sh, autopull.sh come from GNUlib, for
 which the following copyright holds:
-  Copyright (C) 2006-2017 Free Software Foundation, Inc.
+  Copyright (C) 2006-2022 Free Software Foundation, Inc.
 Those files are distributed under the GNU General Public License
 version 3 or later, like this package.
 
