@@ -9487,6 +9487,7 @@ The IO space to where write the scrabbled data.  Defaults to
 @chapter The Poke Language
 
 @menu
+* Source Code Encoding::        Encoding of Poke source file.
 * Integers::			Whole numbers.
 * Offsets::			Memory sizes and offsets.
 * Strings::			NULL-terminated strings.
@@ -9511,6 +9512,16 @@ The IO space to where write the scrabbled data.  Defaults to
 * VM::                          Accessing the PVM in Poke programs.
 * Debugging::                   Debugging Poke programs.
 @end menu
+
+@node Source Code Encoding
+@section Source Code Encoding
+@cindex source code encoding
+
+@code{poke} reads program source as UTF-8 encoded text.  Program sources
+can span over multiple lines.  A line is a sequence of characters
+terminated by an end-of-line.  End-of-line can be a signle new-line
+character (ASCII LF or @code{\n}), the UNIX form, or pair of ASCII CR
+and ASCII LF (@code{\r\n}) characters, the Windows form.
 
 @node Integers
 @section Integers

@@ -189,7 +189,7 @@ build_overflow_error_msg (uint64_t value, int width)
 
 %}
 
-NEWLINE            \n
+NEWLINE            (\r\n)|\n
 BLANK              [ \t]
 LETTER             [a-zA-Z]
 FIELD_NAME         {LETTER}[a-zA-Z0-9_]*
