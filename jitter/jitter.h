@@ -1,6 +1,7 @@
 /* Jitter: VM-independent library.
 
    Copyright (C) 2016, 2017, 2019, 2020, 2021, 2022 Luca Saiu
+   Updated in 2023 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -22,6 +23,9 @@
 #ifndef JITTER_H_
 #define JITTER_H_
 
+/* Include macros emulating missing GNU C features. */
+#include <jitter/jitter-missing.h>
+
 #include <stdlib.h> // for size_t .
 #include <limits.h> // for CHAR_BIT .
 #include <stdint.h>
@@ -34,9 +38,6 @@
 #ifndef JITTER_SIZEOF_VOID_P
 #  error "jitter/jitter-config.h is probably incorrect"
 #endif // #ifndef JITTER_SIZEOF_VOID_P
-
-/* Include macros emulating missing GNU C features. */
-#include <jitter/jitter-missing.h>
 
 /* We need some CPP machinery here, for conveninient stringification and token
    concatenation. */

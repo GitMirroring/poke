@@ -1,6 +1,7 @@
 /* Jitter: a header to be included early.
 
    Copyright (C) 2022 Luca Saiu
+   Updated in 2023 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -33,6 +34,21 @@
    Jitter-generated code.  If the user needs special provisions for using
    *standard* C features in her own code because of some stupid platform quirk,
    I would say it is her responsibility to make her code compatibile. */
+
+
+
+
+/* Use Gnulib if needed.
+ * ************************************************************************** */
+
+/* Use Gnulib, if available; in particular, if Gnulib is being used for this
+   compilation, #include the config.h file which then allows the user to include
+   standard headers in their replaced Gnulib version.
+   If there is no config.h to include do nothing: we will include the actual
+   standard headers instead of Gnulib's replacements. */
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif // #ifdef HAVE_CONFIG_H
 
 
 

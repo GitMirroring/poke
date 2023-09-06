@@ -1,7 +1,7 @@
 /* JitterLisp: s-expression header.
 
    Copyright (C) 2017, 2018, 2019, 2020 Luca Saiu
-   Updated in 2021 by Luca Saiu
+   Updated in 2021 and 2023 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of the JitterLisp language implementation, distributed as
@@ -28,11 +28,11 @@
 /* Include headers.
  * ************************************************************************** */
 
+/* We also need the jitter_int and jitter_uint types. */
+#include <jitter/jitter.h>
+
 #include <stdalign.h>
 #include <stdbool.h>
-
-/* We need the jitter_int and jitter_uint types. */
-#include <jitter/jitter.h>
 
 /* The macros in this header are based on the Jitter tagging subsystem. */
 #include <jitter/jitter-tagging.h>

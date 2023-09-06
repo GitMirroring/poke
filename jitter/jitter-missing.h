@@ -1,6 +1,6 @@
 /* Jitter: header supplying functions and macros which some systems lack.
    Copyright (C) 2017, 2019, 2020 Luca Saiu
-   Updated in 2021 and 2022 by Luca Saiu
+   Updated in 2021, 2022 and 2023 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of GNU Jitter.
@@ -23,6 +23,7 @@
 #define JITTER_MISSING_H_
 
 #include <jitter/jitter-config.h>
+#include <jitter/jitter-early-header.h>
 #include <stdio.h>
 #include <stddef.h> /* for offsetof, in case it is supported. */
 

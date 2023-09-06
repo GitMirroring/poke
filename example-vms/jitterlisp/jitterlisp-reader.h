@@ -1,6 +1,7 @@
 /* JitterLisp: reader header.
 
    Copyright (C) 2017, 2018 Luca Saiu
+   Updated in 2023 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of the JitterLisp language implementation, distributed as
@@ -22,6 +23,8 @@
 
 #ifndef JITTERLISP_READER_H_
 #define JITTERLISP_READER_H_
+
+#include <jitter/jitter.h>
 
 #include <stdio.h>
 

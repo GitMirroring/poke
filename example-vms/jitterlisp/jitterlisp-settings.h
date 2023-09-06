@@ -1,6 +1,7 @@
 /* JitterLisp: global settings: header.
 
    Copyright (C) 2017, 2018, 2019 Luca Saiu
+   Updated in 2023 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of the JitterLisp language implementation, distributed as
@@ -23,6 +24,7 @@
 #ifndef JITTERLISP_SETTINGS_H_
 #define JITTERLISP_SETTINGS_H_
 
+#include <jitter/jitter.h>
 #include <stdbool.h>
 
 #include <jitter/jitter-dynamic-buffer.h>

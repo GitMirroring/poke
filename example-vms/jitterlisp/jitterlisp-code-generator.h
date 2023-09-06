@@ -1,6 +1,7 @@
 /* JitterLisp: Jittery VM code generation header.
 
    Copyright (C) 2018 Luca Saiu
+   Updated in 2023 by Luca Saiu
    Written by Luca Saiu
 
    This file is part of the JitterLisp language implementation, distributed as
@@ -23,6 +24,7 @@
 #ifndef JITTERLISP_CODE_GENERATOR_H_
 #define JITTERLISP_CODE_GENERATOR_H_
 
+#include <jitter/jitter.h>
 #include "jitterlisp-sexpression.h"
 
 
