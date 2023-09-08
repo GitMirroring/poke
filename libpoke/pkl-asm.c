@@ -1187,18 +1187,6 @@ pkl_asm_insn_afill (pkl_asm pasm)
   RAS_MACRO_AFILL;
 }
 
-/* Macro-instruction: ATRIM array_type
-   ( ARR ULONG ULONG -- ARR ULONG ULONG ARR )
-
-   Given an array and two indexes, generate code to push the trim
-   of the array.  */
-
-static void
-pkl_asm_insn_atrim (pkl_asm pasm, pkl_ast_node array_type)
-{
-  RAS_MACRO_ATRIM (array_type);
-}
-
 /* Macro-instruction: GCD type
    ( VAL VAL -- VAL VAL )
 
@@ -1767,17 +1755,6 @@ pkl_asm_insn (pkl_asm pasm, enum pkl_asm_insn insn, ...)
             va_end (valist);
 
             pkl_asm_insn_gcd (pasm, type);
-            break;
-          }
-        case PKL_INSN_ATRIM:
-          {
-            pkl_ast_node array_type;
-
-            va_start (valist, insn);
-            array_type = va_arg (valist, pkl_ast_node);
-            va_end (valist);
-
-            pkl_asm_insn_atrim (pasm, array_type);
             break;
           }
         case PKL_INSN_ADDO:

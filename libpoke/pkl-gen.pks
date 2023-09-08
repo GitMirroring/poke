@@ -3537,3 +3537,156 @@
         mko                                     ; OFFC
         popf 1
         .end
+
+;;; ATRIM array_type
+;;; ( ARR ULONG ULONG -- ARR )
+;;;
+;;; Push a new array resulting from the trimming of ARR to indexes
+;;; [ULONG..ULONG].
+;;;
+;;; Macro arguments:
+;;; @array_type
+;;;    a pkl_ast_node with the type of ARR.
+
+        .macro atrim @array_type
+        pushf 4
+        regvar $to
+        regvar $from
+        regvar $array
+        ;; Check boundaries
+        pushvar $array          ; ARR
+        sel                     ; ARR NELEM
+        pushvar $to             ; ARR NELEM TO
+        ltlu                    ; ARR NELEM TO (NELEM<TO)
+        bnzi .ebounds
+        drop                    ; ARR NELEM TO
+        drop                    ; ARR NELEM
+        bnzlu .check_from
+        ;; The array has zero elements.  In this case we have to
+        ;; check FROM differently.
+        pushvar $from           ; ARR NELEM FROM
+        ltlu                    ; ARR NELEM FROM (NELEM<FROM)
+        bnzi .ebounds
+        drop3                   ; ARR
+        ba .bounds_ok
+.check_from:
+        pushvar $from           ; ARR NELEM FROM
+        lelu                    ; ARR NELEM FROM (NELEM<=FROM)
+        bnzi .ebounds
+        drop                    ; ARR NELEM FROM
+        drop                    ; ARR NELEM
+        drop                    ; ARR
+        pushvar $from           ; ARR FROM
+        pushvar $to             ; ARR TO
+        gtlu
+        nip2                    ; ARR (FROM>TO)
+        bnzi .ebounds
+        drop                    ; ARR
+        ba .bounds_ok
+.ebounds:
+        push PVM_E_OUT_OF_BOUNDS
+        raise
+.bounds_ok:
+        ;; Boundaries are ok.  Build the trimmed array with a
+        ;; subset of the elements of the array.
+        typof                   ; ARR ATYP
+        nip                     ; ATYP
+        ;; Calculate the length of the new array.
+        pushvar $to             ; ATYP TO
+        pushvar $from           ; ATYP TO FROM
+        sublu
+        nip2
+        push ulong<64>1
+        addlu
+        nip2                    ; ATYP (TO-FROM+1)
+        mka                     ; TARR
+        ;; Now add the elements to the new array.
+        pushvar $from
+        regvar $idx
+      .while
+        pushvar $idx            ; TARR IDX
+        pushvar $to             ; TARR IDX TO
+        ltlu                    ; TARR IDX TO (IDX<TO)
+        nip2                    ; TARR (IDX<=TO)
+      .loop
+        ;; Add the IDX-FROMth element of the new array.
+        pushvar $idx            ; TARR IDX
+        pushvar $array          ; TARR IDX ARR
+        over                    ; TARR IDX ARR IDX
+        aref                    ; TARR IDX ARR IDX EVAL
+        nip2                    ; TARR IDX EVAL
+        swap                    ; TARR EVAL IDX
+        pushvar $from           ; TARR EVAL IDX FROM
+        sublu
+        nip2                    ; TARR EVAL (IDX-FROM)
+        swap                    ; TARR (IDX-FROM) EVAL
+        ains                    ; TARR
+        ;; Increase index and loop.
+        pushvar $idx            ; TARR IDX
+        push ulong<64>1         ; TARR IDX 1UL
+        addlu
+        nip2                    ; TARR (IDX+1UL)
+        popvar $idx             ; TARR
+      .endloop
+        ;; If the trimmed array is mapped then the resulting array
+        ;; is mapped as well, with the following attributes:
+        ;;
+        ;;   OFFSET = original OFFSET + (OFF(FROM) - original OFFSET)
+        ;;   EBOUND = TO - FROM + 1
+        ;;
+        ;; The mapping of the resulting array is always
+        ;; bounded by number of elements, regardless of the
+        ;; characteristics of the mapping of the trimmed array.
+        pushvar $array          ; TARR ARR
+        mm                      ; TARR ARR MAPPED_P
+        bzi .notmapped
+        drop                    ; TARR ARR
+        ;; Calculate the new offset.
+        mgeto                   ; TARR ARR BOFFSET
+        swap                    ; TARR BOFFSET ARR
+        pushvar $from           ; TARR BOFFSET ARR FROM
+        arefo                   ; TARR BOFFSET ARR FROM BOFF(FROM)
+        nip                     ; TARR BOFFSET ARR BOFF(FROM)
+        rot                     ; TARR ARR BOFF(FROM) BOFFSET
+        dup                     ; TARR ARR BOFF(FROM) BOFFSET BOFFSET
+        quake                   ; TARR ARR BOFFSET BOFF(FROM) BOFFSET
+        sublu
+        nip2                    ; TARR ARR BOFFSET (BOFF(FROM)-BOFFSET)
+        addlu
+        nip2                    ; TARR ARR BOFFSET
+        rot                     ; ARR BOFFSET TARR
+        regvar $tarr
+        ;; Calculate the new EBOUND.
+        swap                    ; BOFFSET ARR
+        mgetm                   ; BOFFSET ARR MAPPER
+        swap                    ; BOFFSET MAPPER ARR
+        mgetw                   ; BOFFSET MAPPER ARR WRITER
+        nip                     ; BOFFSET MAPPER WRITER
+        pushvar $to
+        pushvar $from           ; BOFFSET MAPPER WRITER TO FROM
+        sublu
+        nip2                    ; BOFFSET MAPPER WRITER (TO-FROM)
+;        push ulong<64>1
+;        addlu
+;        nip2                    ; BOFFSET MAPPER WRITER (TO-FROM+1UL)
+        ;; Install mapper, writer, offset and ebound.
+        pushvar $tarr           ; BOFFSET MAPPER WRITER (TO-FROM) TARR
+        swap                    ; BOFFSET MAPPER WRITER TARR (TO-FROM)
+        msetsel                 ; BOFFSET MAPPER WRITER TARR
+        swap                    ; BOFFSET MAPPER TARR WRITER
+        msetw                   ; BOFFSET MAPPER TARR
+        swap                    ; BOFFSET TARR MAPPER
+        msetm                   ; BOFFSET TARR
+        swap                    ; TARR BOFFSET
+        mseto                   ; TARR
+        ;; Mark the new array as mapped.
+        map                     ; TARR
+        ;; Remap!!
+        aremap
+        push null
+        push null
+.notmapped:
+        drop
+        drop
+        popf 1
+        .end

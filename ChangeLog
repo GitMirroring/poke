@@ -1,3 +1,11 @@
+2023-09-08  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-insn.def: Remove PKL_INSN_ATRIM.
+	* libpoke/pkl-asm.c (pkl_asm_insn_atrim): Delete.
+	(pkl_asm_insn): Do not handle ATRIM.
+	* libpoke/pkl-asm.pks (atrim): Move macro from here...
+	* libpoke/pkl-gen.pks (atrim): ... to here.
+
 2023-09-06  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* doc/poke.texi (elfextractor): Fix example.
