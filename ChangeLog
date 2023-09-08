@@ -1,5 +1,14 @@
 2023-09-08  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-typify.c (pkl_typify1_ps_trimmer): The type of the
+	result of an array trim is an array bounded by number of elements.
+	* testsuite/poke.pkl/arrays-17.pk: Adapt test to the new type of
+	the trimmed value.
+	* testsuite/poke.pkl/trim-26.pk: Likewise.
+	* testsuite/poke.pkl/trim-32.pk: Likewise.
+
+2023-09-08  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-insn.def: Remove PKL_INSN_ATRIM.
 	* libpoke/pkl-asm.c (pkl_asm_insn_atrim): Delete.
 	(pkl_asm_insn): Do not handle ATRIM.

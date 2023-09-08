@@ -6,4 +6,4 @@ var a = [[1][:]];
 /* { dg-command {  [[1][:]] } } */
 /* { dg-output "\\\[\\\[1\\\]\\\]\n" } */
 /* { dg-command {  typeof (a).complete_p  } } */
-/* { dg-output "0" } */
+/* { dg-output "1" } */

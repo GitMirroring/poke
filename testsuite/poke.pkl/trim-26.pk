@@ -3,5 +3,5 @@
 var a = [1,2,3];
 var b = a[0:2];
 
-/* { dg-command { a == b } } */
+/* { dg-command { a as int[] == b as int[] } } */
 /* { dg-output "0" } */

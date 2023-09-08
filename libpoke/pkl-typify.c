@@ -1114,10 +1114,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_array)
 }
 PKL_PHASE_END_HANDLER
 
-/* The type of a trim is the type of the trimmed array, but unbounded.
-   For strings, the result is another string.  The trimmer indexes
-   should be unsigned 64-bit integrals, but this phase lets any
-   integral pass to promo.  */
+/* The type of a trim is the type of the trimmed array, bounded by
+   number of elements.  For strings, the result is another string.
+   The trimmer indexes should be unsigned 64-bit integrals, but this
+   phase lets any integral pass to promo.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_trimmer)
 {
@@ -1172,10 +1172,24 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_trimmer)
   if (PKL_AST_TYPE_CODE (entity_type) == PKL_TYPE_ARRAY)
   {
     pkl_ast_node new_type;
+    pkl_ast_node u64_type
+        = pkl_ast_make_integral_type (PKL_PASS_AST, 64, 0);
+    pkl_ast_node u64_from_idx
+      = pkl_ast_make_cast (PKL_PASS_AST, u64_type, from_idx);
+    pkl_ast_node u64_to_idx
+      = pkl_ast_make_cast (PKL_PASS_AST, u64_type, to_idx);
+    pkl_ast_node bound
+      = pkl_ast_make_binary_exp (PKL_PASS_AST, PKL_AST_OP_SUB,
+                                 u64_to_idx, u64_from_idx);
+
+    PKL_AST_LOC (bound) = PKL_AST_LOC (trimmer);
+    PKL_AST_TYPE (u64_from_idx) = ASTREF (u64_type);
+    PKL_AST_TYPE (u64_to_idx) = ASTREF (u64_type);
 
     new_type = pkl_ast_make_array_type (PKL_PASS_AST,
                                         PKL_AST_TYPE_A_ETYPE (entity_type),
-                                        NULL /* bound */);
+                                        bound);
+    PKL_AST_TYPE (bound) = ASTREF (u64_type);
     PKL_AST_TYPE (trimmer) = ASTREF (new_type);
     PKL_PASS_RESTART = 1;
   }
