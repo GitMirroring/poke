@@ -1,3 +1,13 @@
+2023-09-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* pickles/mbr.pk (MBR_SectorSize): New unit.
+	(MBR_PartitionType): Change it to integral struct.
+	(MBR_PTE): Change `lba' and `sector_count' to little-endian offset
+	type.  Add `lba_end' method.
+	(MBR): Mark `signature' and `magic' as little-endian.
+	* testsuite/poke.pickles/mbr-test.pk (SAMPLE_MBR): New sample data.
+	("Sample MBR verification"): New test to verify sample data.
+
 2023-09-09  Denis Maryin  <des.maryin@googlemail.com>
 
 	* pickles/Makefile.am (dist_pickles_DATA): Add new pickles.

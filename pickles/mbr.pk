@@ -16,8 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* set_endian(ENDIAN_LITTLE); */
-
 type MBR_CHS =
   struct
   {
@@ -81,7 +79,7 @@ var MBR_PT_Empty           = 0x00UB,
     MBR_PT_IBM_OS2         = 0xFBUB;
 
 type MBR_PartitionType =
-  struct
+  struct uint<8>
   {
     uint<8> p_type;
     method _print = void:
@@ -124,6 +122,7 @@ type MBR_PartitionType =
       }
   };
 
+unit MBR_SectorSize = 512 * 8;  /* 512 bytes (by convention).  */
 
 /* MBR Partition Table Entry (PTE)
  *
@@ -154,8 +153,11 @@ type MBR_PTE =
     MBR_CHS start_chs;
     MBR_PartitionType part_type;
     MBR_CHS end_chs;
-    uint<32> lba;
-    uint<32> sector_count;
+    little offset<uint<32>,MBR_SectorSize> lba;
+    little offset<uint<32>,MBR_SectorSize> sector_count;
+
+    method lba_end = offset<uint<32>,MBR_SectorSize>:
+      { return lba + sector_count; }
   };
 
 /*
@@ -176,8 +178,8 @@ type MBR =
   struct
   {
     uint<8>[440#B] bootstrap;
-    uint<32> signature;
+    little uint<32> signature;
     uint<8>[2] reserved;
     MBR_PTE[4] pte;
-    uint<16> magic == 0xaa55UH;
+    little uint<16> magic == 0xaa55UH;
   };
