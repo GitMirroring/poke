@@ -1,3 +1,17 @@
+2023-09-09  Denis Maryin  <des.maryin@googlemail.com>
+
+	* pickles/Makefile.am (dist_pickles_DATA): Add new pickles.
+	* pickles/gpt-partition-attrs.pk: New pickle.
+	* pickles/gpt-partition-types.pk: Likewise.
+	* pickles/gpt.pk: Liekwise.
+	* pickles/guid.pk: Likewise.
+	* pickles/mbr.pk (MBR_PT_*): New constants.
+	(MBR_PartitionType): New type.
+	(MBR_PTE): Use `MBR_PartitionType'.
+	* testsuite/poke.pickles/gpt-test.pk: New test.
+	* testsuite/poke.pickles/guid-test.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
 2023-09-09  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-lex.l (NEWLINE): Add `\r\n' sequence to newline

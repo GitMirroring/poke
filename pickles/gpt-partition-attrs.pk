@@ -1,0 +1,77 @@
+/* gpt-partition-attrs.pk - Common GUID partition attributes.   */
+
+/* Copyright (C) 2023 Denis Maryin.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* Implemented as per https://en.wikipedia.org/wiki/GUID_Partition_Table */
+
+var gpt_attr_show_chromeos_attrs = 0;
+
+var GPT_ATTR_VITAL                       = 0x0000_0000_0000_0001UL,
+    GPT_ATTR_EFIFW_IGNORE                = 0x0000_0000_0000_0002UL,
+    GPT_ATTR_LEGACY_BOOTABLE             = 0x0000_0000_0000_0004UL,
+    GPT_ATTR_RESERVED                    = 0x0000_ffff_ffff_fff8ul,
+    GPT_ATTR_MS_BASIC_DATA_READONLY      = 0x1000_0000_0000_0000UL,
+    GPT_ATTR_MS_BASIC_DATA_SHADOWCOPY    = 0x2000_0000_0000_0000UL,
+    GPT_ATTR_MS_BASIC_DATA_HIDDEN        = 0x4000_0000_0000_0000UL,
+    GPT_ATTR_MS_BASIC_DATA_NODRIVELETTER = 0x8000_0000_0000_0000UL,
+    GPT_ATTR_CHR_KRNL_BOOT_SUCCESS       = 0x0100_0000_0000_0000UL,
+    GPT_ATTR_CHR_KRNL_TRIES_REM          = 0x00f0_0000_0000_0000UL,
+    GPT_ATTR_CHR_KRNL_PRIORITY           = 0x000f_0000_0000_0000UL;
+
+var GPT_OFFS_CHR_KRNL_TRIES_REM          = 52,
+    GPT_OFFS_CHR_KRNL_PRIORITY           = 48;
+
+type GPT_Partition_Attributes =
+  struct
+  {
+    little uint<64> attribute_flags;
+    method _print = void:
+      {
+        print ("#<");
+        var s = "";
+        if (attribute_flags & GPT_ATTR_VITAL)
+          s += "VITAL,";
+        if (attribute_flags & GPT_ATTR_EFIFW_IGNORE)
+          s += "EFIFW_IGNORE,";
+        if (attribute_flags & GPT_ATTR_LEGACY_BOOTABLE)
+          s += "LEGACY_BOOTABLE,";
+        if (attribute_flags & GPT_ATTR_RESERVED)
+          s += "RESERVED,";
+        if (attribute_flags & GPT_ATTR_MS_BASIC_DATA_READONLY)
+          s += "MS_READONLY,";
+        if (attribute_flags & GPT_ATTR_MS_BASIC_DATA_SHADOWCOPY)
+          s += "MS_SHADOWCOPY,";
+        if (attribute_flags & GPT_ATTR_MS_BASIC_DATA_HIDDEN)
+          s += "MS_HIDDEN,";
+        if (attribute_flags & GPT_ATTR_MS_BASIC_DATA_NODRIVELETTER)
+          s += "MS_NODRIVELETTER,";
+        print (rtrim (s, ","));
+        if (gpt_attr_show_chromeos_attrs)
+          {
+            s = attribute_flags & GPT_ATTR_CHR_KRNL_BOOT_SUCCESS ? "OK"
+                                                                 : "FAILED";
+            var remaining = (attribute_flags & GPT_ATTR_CHR_KRNL_TRIES_REM);
+            remaining = remaining .>> GPT_OFFS_CHR_KRNL_TRIES_REM;
+            var priority = (attribute_flags & GPT_ATTR_CHR_KRNL_PRIORITY);
+            remaining = remaining .>> GPT_OFFS_CHR_KRNL_PRIORITY;
+            printf (
+                " CHROMEOS[Boot status=%s, Tries remaining=%u8d, Prio=%u8d]",
+                s, remaining, priority);
+          }
+        print (">");
+      }
+  };

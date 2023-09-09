@@ -26,6 +26,7 @@ dist_pickles_DATA = ctf.pk ctf-dump.pk leb128.pk \
                     pe.pk pe-amd64.pk pe-arm.pk pe-arm64.pk pe-i386.pk pe-ia64.pk \
                     pe-m32r.pk pe-mips.pk pe-ppc.pk pe-sh3.pk pe-riscv.pk pe-debug.pk \
 		    uuid.pk redoxfs.pk pcap.pk ieee754.pk pdap.pk \
-                    iscan.pk iscan-str.pk base64.pk
+                    iscan.pk iscan-str.pk base64.pk gpt-partition-attrs.pk \
+		    gpt-partition-types.pk guid.pk
 
 EXTRA_DIST = README.elf

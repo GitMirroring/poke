@@ -1,0 +1,90 @@
+/* gpt.pk - GUID Partition Table.  */
+
+/* Copyright (C) 2023 Denis Maryin.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* Implemented as per https://en.wikipedia.org/wiki/GUID_Partition_Table.  */
+
+
+load "mbr.pk";
+load "guid.pk";
+load "gpt-partition-types.pk";
+load "gpt-partition-attrs.pk";
+
+var GPT_SECTOR_SIZE = 512#B;
+
+type GPT_Header =
+  struct
+  {
+    uint<8>[8] signature == ['E', 'F', 'I', ' ', 'P', 'A', 'R', 'T'];
+    uint<8>[4] revision_magic;
+    little uint<32> header_size == 92;
+    little uint<32> header_crc;
+    little uint<32> reserved_zero1 == 0;
+    little uint<64> current_lba;
+    little uint<64> backup_lba;
+    little uint<64> first_usable_lba;
+    little uint<64> last_usable_lba;
+    GUID disk_guid;
+    little uint<64> partition_entries_start_lba;
+    little uint<32> partition_entries_count;
+    little uint<32> partition_entry_size;
+    little uint<32> partition_entries_crc;
+    uint<8>[GPT_SECTOR_SIZE - 92#B] padding : OFFSET == 92#B;
+  };
+
+assert ((GPT_Header {})'size == GPT_SECTOR_SIZE);
+
+type GPT_Partition_Name =
+  struct
+  {
+    little uint<16>[36] partition_name; // 36 UTF-16LE code units.
+
+    method _print = void:
+      {
+        var s = "";
+        for (utf16le_letter in partition_name)
+          {
+            s += utf16le_letter < 256 ? utf16le_letter as uint<8> as string
+               : "?";  /* FIXME.  */
+          }
+        print ("#<Name=\"" + s + "\">");
+      }
+  };
+
+assert (#GPT_Partition_Name == 72#B);
+
+type GPT_Partition_Entry =
+  struct
+  {
+    GPT_PartitionType_GUID pt_guid;
+    GUID this_partition_guid;
+    little uint<64> first_lba;
+    little uint<64> last_lba;
+    GPT_Partition_Attributes attribute_flags;
+    GPT_Partition_Name partition_name : OFFSET == 56#B;
+  };
+
+assert (#GPT_Partition_Entry == 128#B);
+
+type GPT =
+  struct
+  {
+    MBR protective_mbr;
+    GPT_Header header : OFFSET == GPT_SECTOR_SIZE;
+    GPT_Partition_Entry[header.partition_entries_count] partitions
+        @ GPT_SECTOR_SIZE * header.partition_entries_start_lba;
+  };

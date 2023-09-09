@@ -1,0 +1,1079 @@
+/* gpt-partition-types.pk - Common GUID partition types.  */
+
+/* Copyright (C) 2023 Denis Maryin.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* Implemented as per https://en.wikipedia.org/wiki/GUID_Partition_Table.  */
+
+/* Order preserved as is, ---- lines are first column horizontal separators.  */
+
+load "guid.pk";
+
+var GPT_PT_COMMON_UNUSED = GUID {
+      data1 = 0x00000000U, data2 = 0x0000UH, data3 = 0x0000UH,
+      data4 = [0x00UB, 0x00UB, 0x00UB, 0x00UB, 0x00UB, 0x00UB, 0x00UB, 0x00UB]
+    },
+    GPT_PT_COMMON_MBR_SCHEME = GUID {
+      data1 = 0x024DEE41U, data2 = 0x33E7UH, data3 = 0x11D3UH,
+      data4 = [0x9DUB, 0x69UB, 0x00UB, 0x08UB, 0xC7UB, 0x81UB, 0xF3UB, 0x9FUB]
+    },
+    GPT_PT_COMMON_EFI_SYSTEM = GUID {
+      data1 = 0xC12A7328U, data2 = 0xF81FUH, data3 = 0x11D2UH,
+      data4 = [0xBAUB, 0x4BUB, 0x00UB, 0xA0UB, 0xC9UB, 0x3EUB, 0xC9UB, 0x3BUB]
+    },
+    GPT_PT_COMMON_BIOS_BOOT = GUID {
+      data1 = 0x21686148U, data2 = 0x6449UH, data3 = 0x6E6FUH,
+      data4 = [0x74UB, 0x4EUB, 0x65UB, 0x65UB, 0x64UB, 0x45UB, 0x46UB, 0x49UB]
+    },
+    GPT_PT_COMMON_IFFS = GUID {
+      data1 = 0xD3BFE2DEU, data2 = 0x3DAFUH, data3 = 0x11DFUH,
+      data4 = [0xBAUB, 0x40UB, 0xE3UB, 0xA5UB, 0x56UB, 0xD8UB, 0x95UB, 0x93UB]
+    },
+    GPT_PT_COMMON_SONY_BOOT = GUID {
+      data1 = 0xF4019732U, data2 = 0x066EUH, data3 = 0x4E12UH,
+      data4 = [0x82UB, 0x73UB, 0x34UB, 0x6CUB, 0x56UB, 0x41UB, 0x49UB, 0x4FUB]
+    },
+    GPT_PT_COMMON_LENOVO_BOOT = GUID {
+      data1 = 0xBFBFAFE7U, data2 = 0xA34FUH, data3 = 0x448AUH,
+      data4 = [0x9AUB, 0x5BUB, 0x62UB, 0x13UB, 0xEBUB, 0x73UB, 0x6CUB, 0x22UB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_MS_RESERVED = GUID {
+      data1 = 0xE3C9E316U, data2 = 0x0B5CUH, data3 = 0x4DB8UH,
+      data4 = [0x81UB, 0x7DUB, 0xF9UB, 0x2DUB, 0xF0UB, 0x02UB, 0x15UB, 0xAEUB]
+    },
+    GPT_PT_MS_BASIC_DATA = GUID {
+      data1 = 0xEBD0A0A2U, data2 = 0xB9E5UH, data3 = 0x4433UH,
+      data4 = [0x87UB, 0xC0UB, 0x68UB, 0xB6UB, 0xB7UB, 0x26UB, 0x99UB, 0xC7UB]
+    },
+    GPT_PT_MS_LDM_METADATA = GUID {
+      data1 = 0x5808C8AAU, data2 = 0x7E8FUH, data3 = 0x42E0UH,
+      data4 = [0x85UB, 0xD2UB, 0xE1UB, 0xE9UB, 0x04UB, 0x34UB, 0xCFUB, 0xB3UB]
+    },
+    GPT_PT_MS_LDM_DATA = GUID {
+      data1 = 0xAF9B60A0U, data2 = 0x1431UH, data3 = 0x4F62UH,
+      data4 = [0xBCUB, 0x68UB, 0x33UB, 0x11UB, 0x71UB, 0x4AUB, 0x69UB, 0xADUB]
+    },
+    GPT_PT_MS_RECOVERY = GUID {
+      data1 = 0xDE94BBA4U, data2 = 0x06D1UH, data3 = 0x4D40UH,
+      data4 = [0xA1UB, 0x6AUB, 0xBFUB, 0xD5UB, 0x01UB, 0x79UB, 0xD6UB, 0xACUB]
+    },
+    GPT_PT_IBM_GPFS = GUID {
+      data1 = 0x37AFFC90U, data2 = 0xEF7DUH, data3 = 0x4E96UH,
+      data4 = [0x91UB, 0xC3UB, 0x2DUB, 0x7AUB, 0xE0UB, 0x55UB, 0xB1UB, 0x74UB]
+    },
+    GPT_PT_MS_STORAGE = GUID {
+      data1 = 0xE75CAF8FU, data2 = 0xF680UH, data3 = 0x4CEEUH,
+      data4 = [0xAFUB, 0xA3UB, 0xB0UB, 0x01UB, 0xE5UB, 0x6EUB, 0xFCUB, 0x2DUB]
+    },
+    GPT_PT_MS_STORAGE_REPLICA = GUID {
+      data1 = 0x558D43C5U, data2 = 0xA1ACUH, data3 = 0x43C0UH,
+      data4 = [0xAAUB, 0xC8UB, 0xD1UB, 0x47UB, 0x2BUB, 0x29UB, 0x23UB, 0xD1UB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_HP_DATA = GUID {
+      data1 = 0x75894C1EU, data2 = 0x3AEBUH, data3 = 0x11D3UH,
+      data4 = [0xB7UB, 0xC1UB, 0x7BUB, 0x03UB, 0xA0UB, 0x00UB, 0x00UB, 0x00UB]
+    },
+    GPT_PT_HP_SERVICE = GUID {
+      data1 = 0xE2A1E728U, data2 = 0x32E3UH, data3 = 0x11D6UH,
+      data4 = [0xA6UB, 0x82UB, 0x7BUB, 0x03UB, 0xA0UB, 0x00UB, 0x00UB, 0x00UB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_LINUX_FS_DATA = GUID {
+      data1 = 0x0FC63DAFU, data2 = 0x8483UH, data3 = 0x4772UH,
+      data4 = [0x8EUB, 0x79UB, 0x3DUB, 0x69UB, 0xD8UB, 0x47UB, 0x7DUB, 0xE4UB]
+    },
+    GPT_PT_LINUX_RAID = GUID {
+      data1 = 0xA19D880FU, data2 = 0x05FCUH, data3 = 0x4D3BUH,
+      data4 = [0xA0UB, 0x06UB, 0x74UB, 0x3FUB, 0x0FUB, 0x84UB, 0x91UB, 0x1EUB]
+    },
+    GPT_PT_LINUX_ROOT_X86 = GUID {
+      data1 = 0x44479540U, data2 = 0xF297UH, data3 = 0x41B2UH,
+      data4 = [0x9AUB, 0xF7UB, 0xD1UB, 0x31UB, 0xD5UB, 0xF0UB, 0x45UB, 0x8AUB]
+    },
+    GPT_PT_LINUX_ROOT_X86_64 = GUID {
+      data1 = 0x4F68BCE3U, data2 = 0xE8CDUH, data3 = 0x4DB1UH,
+      data4 = [0x96UB, 0xE7UB, 0xFBUB, 0xCAUB, 0xF9UB, 0x84UB, 0xB7UB, 0x09UB]
+    },
+    GPT_PT_LINUX_ROOT_ARM32 = GUID {
+      data1 = 0x69DAD710U, data2 = 0x2CE4UH, data3 = 0x4E3CUH,
+      data4 = [0xB1UB, 0x6CUB, 0x21UB, 0xA1UB, 0xD4UB, 0x9AUB, 0xBEUB, 0xD3UB]
+    },
+    GPT_PT_LINUX_ROOT_ARM64 = GUID {
+      data1 = 0xB921B045U, data2 = 0x1DF0UH, data3 = 0x41C3UH,
+      data4 = [0xAFUB, 0x44UB, 0x4CUB, 0x6FUB, 0x28UB, 0x0DUB, 0x3FUB, 0xAEUB]
+    },
+    GPT_PT_LINUX_BOOT = GUID {
+      data1 = 0xBC13C2FFU, data2 = 0x59E6UH, data3 = 0x4262UH,
+      data4 = [0xA3UB, 0x52UB, 0xB2UB, 0x75UB, 0xFDUB, 0x6FUB, 0x71UB, 0x72UB]
+    },
+    GPT_PT_LINUX_SWAP = GUID {
+      data1 = 0x0657FD6DU, data2 = 0xA4ABUH, data3 = 0x43C4UH,
+      data4 = [0x84UB, 0xE5UB, 0x09UB, 0x33UB, 0xC8UB, 0x4BUB, 0x4FUB, 0x4FUB]
+    },
+    GPT_PT_LINUX_LVM = GUID {
+      data1 = 0xE6D6D379U, data2 = 0xF507UH, data3 = 0x44C2UH,
+      data4 = [0xA2UB, 0x3CUB, 0x23UB, 0x8FUB, 0x2AUB, 0x3DUB, 0xF9UB, 0x28UB]
+    },
+    GPT_PT_LINUX_HOME = GUID {
+      data1 = 0x933AC7E1U, data2 = 0x2EB4UH, data3 = 0x4F13UH,
+      data4 = [0xB8UB, 0x44UB, 0x0EUB, 0x14UB, 0xE2UB, 0xAEUB, 0xF9UB, 0x15UB]
+    },
+    GPT_PT_LINUX_SERVER_DATA = GUID {
+      data1 = 0x3B8F8425U, data2 = 0x20E0UH, data3 = 0x4F3BUH,
+      data4 = [0x90UB, 0x7FUB, 0x1AUB, 0x25UB, 0xA7UB, 0x6FUB, 0x98UB, 0xE8UB]
+    },
+    GPT_PT_LINUX_DM_CRYPT = GUID {
+      data1 = 0x7FFEC5C9U, data2 = 0x2D00UH, data3 = 0x49B7UH,
+      data4 = [0x89UB, 0x41UB, 0x3EUB, 0xA1UB, 0x0AUB, 0x55UB, 0x86UB, 0xB7UB]
+    },
+    GPT_PT_LINUX_LUKS = GUID {
+      data1 = 0xCA7D7CCBU, data2 = 0x63EDUH, data3 = 0x4C53UH,
+      data4 = [0x86UB, 0x1CUB, 0x17UB, 0x42UB, 0x53UB, 0x60UB, 0x59UB, 0xCCUB]
+    },
+    GPT_PT_LINUX_RESERVED = GUID {
+      data1 = 0x8DA63339U, data2 = 0x0007UH, data3 = 0x60C0UH,
+      data4 = [0xC4UB, 0x36UB, 0x08UB, 0x3AUB, 0xC8UB, 0x23UB, 0x09UB, 0x08UB]
+    },
+    /* --------------------------------------------------------- */
+    // note duplicate with LINUX_FS_DATA
+    GPT_PT_HURD_LINUX_FS_DATA = GUID {
+      data1 = 0x0FC63DAFU, data2 = 0x8483UH, data3 = 0x4772UH,
+      data4 = [0x8EUB, 0x79UB, 0x3DUB, 0x69UB, 0xD8UB, 0x47UB, 0x7DUB, 0xE4UB]
+    },
+    // note duplicate with LINUX_SWAP
+    GPT_PT_HURD_LINUX_SWAP = GUID {
+      data1 = 0x0657FD6DU, data2 = 0xA4ABUH, data3 = 0x43C4UH,
+      data4 = [0x84UB, 0xE5UB, 0x09UB, 0x33UB, 0xC8UB, 0x4BUB, 0x4FUB, 0x4FUB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_FREEBSD_BOOT = GUID {
+      data1 = 0x83BD6B9DU, data2 = 0x7F41UH, data3 = 0x11DCUH,
+      data4 = [0xBEUB, 0x0BUB, 0x00UB, 0x15UB, 0x60UB, 0xB8UB, 0x4FUB, 0x0FUB]
+    },
+    GPT_PT_FREEBSD_DISKLABEL = GUID {
+      data1 = 0x516E7CB4U, data2 = 0x6ECFUH, data3 = 0x11D6UH,
+      data4 = [0x8FUB, 0xF8UB, 0x00UB, 0x02UB, 0x2DUB, 0x09UB, 0x71UB, 0x2BUB]
+    },
+    GPT_PT_FREEBSD_SWAP = GUID {
+      data1 = 0x516E7CB5U, data2 = 0x6ECFUH, data3 = 0x11D6UH,
+      data4 = [0x8FUB, 0xF8UB, 0x00UB, 0x02UB, 0x2DUB, 0x09UB, 0x71UB, 0x2BUB]
+    },
+    GPT_PT_FREEBSD_UFS = GUID {
+      data1 = 0x516E7CB6U, data2 = 0x6ECFUH, data3 = 0x11D6UH,
+      data4 = [0x8FUB, 0xF8UB, 0x00UB, 0x02UB, 0x2DUB, 0x09UB, 0x71UB, 0x2BUB]
+    },
+    GPT_PT_FREEBSD_VINUM = GUID {
+      data1 = 0x516E7CB8U, data2 = 0x6ECFUH, data3 = 0x11D6UH,
+      data4 = [0x8FUB, 0xF8UB, 0x00UB, 0x02UB, 0x2DUB, 0x09UB, 0x71UB, 0x2BUB]
+    },
+    GPT_PT_FREEBSD_ZFS = GUID {
+      data1 = 0x516E7CBAU, data2 = 0x6ECFUH, data3 = 0x11D6UH,
+      data4 = [0x8FUB, 0xF8UB, 0x00UB, 0x02UB, 0x2DUB, 0x09UB, 0x71UB, 0x2BUB]
+    },
+    GPT_PT_FREEBSD_NANDFS = GUID {
+      data1 = 0x74BA7DD9U, data2 = 0xA689UH, data3 = 0x11E1UH,
+      data4 = [0xBDUB, 0x04UB, 0x00UB, 0xE0UB, 0x81UB, 0x28UB, 0x6AUB, 0xCFUB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_HFS_PLUS = GUID {
+      data1 = 0x48465300U, data2 = 0x0000UH, data3 = 0x11AAUH,
+      data4 = [0xAAUB, 0x11UB, 0x00UB, 0x30UB, 0x65UB, 0x43UB, 0xECUB, 0xACUB]
+    },
+    GPT_PT_APFS_CONTAINER = GUID {
+      data1 = 0x7C3457EFU, data2 = 0x0000UH, data3 = 0x11AAUH,
+      data4 = [0xAAUB, 0x11UB, 0x00UB, 0x30UB, 0x65UB, 0x43UB, 0xECUB, 0xACUB]
+    },
+    GPT_PT_APPLE_UFS_CONTAINER = GUID {
+      data1 = 0x55465300U, data2 = 0x0000UH, data3 = 0x11AAUH,
+      data4 = [0xAAUB, 0x11UB, 0x00UB, 0x30UB, 0x65UB, 0x43UB, 0xECUB, 0xACUB]
+    },
+    GPT_PT_ZFS = GUID {
+      data1 = 0x6A898CC3U, data2 = 0x1DD2UH, data3 = 0x11B2UH,
+      data4 = [0x99UB, 0xA6UB, 0x08UB, 0x00UB, 0x20UB, 0x73UB, 0x66UB, 0x31UB]
+    },
+    GPT_PT_APPLE_RAID = GUID {
+      data1 = 0x52414944U, data2 = 0x0000UH, data3 = 0x11AAUH,
+      data4 = [0xAAUB, 0x11UB, 0x00UB, 0x30UB, 0x65UB, 0x43UB, 0xECUB, 0xACUB]
+    },
+    GPT_PT_APPLE_RAID_OFFLINE = GUID {
+      data1 = 0x52414944U, data2 = 0x5F4FUH, data3 = 0x11AAUH,
+      data4 = [0xAAUB, 0x11UB, 0x00UB, 0x30UB, 0x65UB, 0x43UB, 0xECUB, 0xACUB]
+    },
+    GPT_PT_APPLE_BOOT = GUID {
+      data1 = 0x426F6F74U, data2 = 0x0000UH, data3 = 0x11AAUH,
+      data4 = [0xAAUB, 0x11UB, 0x00UB, 0x30UB, 0x65UB, 0x43UB, 0xECUB, 0xACUB]
+    },
+    GPT_PT_APPLE_LABEL = GUID {
+      data1 = 0x4C616265U, data2 = 0x6C00UH, data3 = 0x11AAUH,
+      data4 = [0xAAUB, 0x11UB, 0x00UB, 0x30UB, 0x65UB, 0x43UB, 0xECUB, 0xACUB]
+    },
+    GPT_PT_APPLE_TV_RECOVERY = GUID {
+      data1 = 0x5265636FU, data2 = 0x7665UH, data3 = 0x11AAUH,
+      data4 = [0xAAUB, 0x11UB, 0x00UB, 0x30UB, 0x65UB, 0x43UB, 0xECUB, 0xACUB]
+    },
+    GPT_PT_APPLE_CORE_STORAGE_CONTAINER = GUID {
+      data1 = 0x53746F72U, data2 = 0x6167UH, data3 = 0x11AAUH,
+      data4 = [0xAAUB, 0x11UB, 0x00UB, 0x30UB, 0x65UB, 0x43UB, 0xECUB, 0xACUB]
+    },
+    GPT_PT_APFS_PREBOOT = GUID {
+      data1 = 0x69646961U, data2 = 0x6700UH, data3 = 0x11AAUH,
+      data4 = [0xAAUB, 0x11UB, 0x00UB, 0x30UB, 0x65UB, 0x43UB, 0xECUB, 0xACUB]
+    },
+    GPT_PT_APFS_RECOVERY = GUID {
+      data1 = 0x52637672U, data2 = 0x7900UH, data3 = 0x11AAUH,
+      data4 = [0xAAUB, 0x11UB, 0x00UB, 0x30UB, 0x65UB, 0x43UB, 0xECUB, 0xACUB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_SOLARIS_BOOT = GUID {
+      data1 = 0x6A82CB45U, data2 = 0x1DD2UH, data3 = 0x11B2UH,
+      data4 = [0x99UB, 0xA6UB, 0x08UB, 0x00UB, 0x20UB, 0x73UB, 0x66UB, 0x31UB]
+    },
+    GPT_PT_SOLARIS_ROOT = GUID {
+      data1 = 0x6A85CF4DU, data2 = 0x1DD2UH, data3 = 0x11B2UH,
+      data4 = [0x99UB, 0xA6UB, 0x08UB, 0x00UB, 0x20UB, 0x73UB, 0x66UB, 0x31UB]
+    },
+    GPT_PT_SOLARIS_SWAP = GUID {
+      data1 = 0x6A87C46FU, data2 = 0x1DD2UH, data3 = 0x11B2UH,
+      data4 = [0x99UB, 0xA6UB, 0x08UB, 0x00UB, 0x20UB, 0x73UB, 0x66UB, 0x31UB]
+    },
+    GPT_PT_SOLARIS_BACKUP = GUID {
+      data1 = 0x6A8B642BU, data2 = 0x1DD2UH, data3 = 0x11B2UH,
+      data4 = [0x99UB, 0xA6UB, 0x08UB, 0x00UB, 0x20UB, 0x73UB, 0x66UB, 0x31UB]
+    },
+    // note SOLARIS_USR vs ZFS
+    GPT_PT_SOLARIS_USR = GUID {
+      data1 = 0x6A898CC3U, data2 = 0x1DD2UH, data3 = 0x11B2UH,
+      data4 = [0x99UB, 0xA6UB, 0x08UB, 0x00UB, 0x20UB, 0x73UB, 0x66UB, 0x31UB]
+    },
+    GPT_PT_SOLARIS_VAR = GUID {
+      data1 = 0x6A8EF2E9U, data2 = 0x1DD2UH, data3 = 0x11B2UH,
+      data4 = [0x99UB, 0xA6UB, 0x08UB, 0x00UB, 0x20UB, 0x73UB, 0x66UB, 0x31UB]
+    },
+    GPT_PT_SOLARIS_HOME = GUID {
+      data1 = 0x6A90BA39U, data2 = 0x1DD2UH, data3 = 0x11B2UH,
+      data4 = [0x99UB, 0xA6UB, 0x08UB, 0x00UB, 0x20UB, 0x73UB, 0x66UB, 0x31UB]
+    },
+    GPT_PT_SOLARIS_ALT_SECTOR = GUID {
+      data1 = 0x6A9283A5U, data2 = 0x1DD2UH, data3 = 0x11B2UH,
+      data4 = [0x99UB, 0xA6UB, 0x08UB, 0x00UB, 0x20UB, 0x73UB, 0x66UB, 0x31UB]
+    },
+    GPT_PT_SOLARIS_RESERVED_1 = GUID {
+      data1 = 0x6A945A3BU, data2 = 0x1DD2UH, data3 = 0x11B2UH,
+      data4 = [0x99UB, 0xA6UB, 0x08UB, 0x00UB, 0x20UB, 0x73UB, 0x66UB, 0x31UB]
+    },
+    GPT_PT_SOLARIS_RESERVED_2 = GUID {
+      data1 = 0x6A9630D1U, data2 = 0x1DD2UH, data3 = 0x11B2UH,
+      data4 = [0x99UB, 0xA6UB, 0x08UB, 0x00UB, 0x20UB, 0x73UB, 0x66UB, 0x31UB]
+    },
+    GPT_PT_SOLARIS_RESERVED_3 = GUID {
+      data1 = 0x6A980767U, data2 = 0x1DD2UH, data3 = 0x11B2UH,
+      data4 = [0x99UB, 0xA6UB, 0x08UB, 0x00UB, 0x20UB, 0x73UB, 0x66UB, 0x31UB]
+    },
+    GPT_PT_SOLARIS_RESERVED_4 = GUID {
+      data1 = 0x6A96237FU, data2 = 0x1DD2UH, data3 = 0x11B2UH,
+      data4 = [0x99UB, 0xA6UB, 0x08UB, 0x00UB, 0x20UB, 0x73UB, 0x66UB, 0x31UB]
+    },
+    GPT_PT_SOLARIS_RESERVED_5 = GUID {
+      data1 = 0x6A8D2AC7U, data2 = 0x1DD2UH, data3 = 0x11B2UH,
+      data4 = [0x99UB, 0xA6UB, 0x08UB, 0x00UB, 0x20UB, 0x73UB, 0x66UB, 0x31UB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_NETBSD_SWAP = GUID {
+      data1 = 0x49F48D32U, data2 = 0xB10EUH, data3 = 0x11DCUH,
+      data4 = [0xB9UB, 0x9BUB, 0x00UB, 0x19UB, 0xD1UB, 0x87UB, 0x96UB, 0x48UB]
+    },
+    GPT_PT_NETBSD_FFS = GUID {
+      data1 = 0x49F48D5AU, data2 = 0xB10EUH, data3 = 0x11DCUH,
+      data4 = [0xB9UB, 0x9BUB, 0x00UB, 0x19UB, 0xD1UB, 0x87UB, 0x96UB, 0x48UB]
+    },
+    GPT_PT_NETBSD_LFS = GUID {
+      data1 = 0x49F48D82U, data2 = 0xB10EUH, data3 = 0x11DCUH,
+      data4 = [0xB9UB, 0x9BUB, 0x00UB, 0x19UB, 0xD1UB, 0x87UB, 0x96UB, 0x48UB]
+    },
+    GPT_PT_NETBSD_RAID = GUID {
+      data1 = 0x49F48DAAU, data2 = 0xB10EUH, data3 = 0x11DCUH,
+      data4 = [0xB9UB, 0x9BUB, 0x00UB, 0x19UB, 0xD1UB, 0x87UB, 0x96UB, 0x48UB]
+    },
+    GPT_PT_NETBSD_CONCAT = GUID {
+      data1 = 0x2DB519C4U, data2 = 0xB10FUH, data3 = 0x11DCUH,
+      data4 = [0xB9UB, 0x9BUB, 0x00UB, 0x19UB, 0xD1UB, 0x87UB, 0x96UB, 0x48UB]
+    },
+    GPT_PT_NETBSD_ENC = GUID {
+      data1 = 0x2DB519ECU, data2 = 0xB10FUH, data3 = 0x11DCUH,
+      data4 = [0xB9UB, 0x9BUB, 0x00UB, 0x19UB, 0xD1UB, 0x87UB, 0x96UB, 0x48UB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_CHROME_KERNEL = GUID {
+      data1 = 0xFE3A2A5DU, data2 = 0x4F32UH, data3 = 0x41A7UH,
+      data4 = [0xB7UB, 0x25UB, 0xACUB, 0xCCUB, 0x32UB, 0x85UB, 0xA3UB, 0x09UB]
+    },
+    GPT_PT_CHROME_ROOTFS = GUID {
+      data1 = 0x3CB8E202U, data2 = 0x3B7EUH, data3 = 0x47DDUH,
+      data4 = [0x8AUB, 0x3CUB, 0x7FUB, 0xF2UB, 0xA1UB, 0x3CUB, 0xFCUB, 0xECUB]
+    },
+    GPT_PT_CHROME_FIRMWARE = GUID {
+      data1 = 0xCAB6E88EU, data2 = 0xABF3UH, data3 = 0x4102UH,
+      data4 = [0xA0UB, 0x7AUB, 0xD4UB, 0xBBUB, 0x9BUB, 0xE3UB, 0xC1UB, 0xD3UB]
+    },
+    GPT_PT_CHROME_FUTURE = GUID {
+      data1 = 0x2E0A753DU, data2 = 0x9E48UH, data3 = 0x43B0UH,
+      data4 = [0x83UB, 0x37UB, 0xB1UB, 0x51UB, 0x92UB, 0xCBUB, 0x1BUB, 0x5EUB]
+    },
+    GPT_PT_CHROME_MINI_OS = GUID {
+      data1 = 0x09845860U, data2 = 0x705FUH, data3 = 0x4BB5UH,
+      data4 = [0xB1UB, 0x6CUB, 0x8AUB, 0x8AUB, 0x09UB, 0x9CUB, 0xAFUB, 0x52UB]
+    },
+    GPT_PT_CHROME_HIBERNATE = GUID {
+      data1 = 0x3F0F8318U, data2 = 0xF146UH, data3 = 0x4E6BUH,
+      data4 = [0x82UB, 0x22UB, 0xC2UB, 0x8CUB, 0x8FUB, 0x02UB, 0xE0UB, 0xD5UB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_COREOS_USR = GUID {
+      data1 = 0x5DFBF5F4U, data2 = 0x2848UH, data3 = 0x4BACUH,
+      data4 = [0xAAUB, 0x5EUB, 0x0DUB, 0x9AUB, 0x20UB, 0xB7UB, 0x45UB, 0xA6UB]
+    },
+    GPT_PT_COREOS_RESIZE = GUID {
+      data1 = 0x3884DD41U, data2 = 0x8582UH, data3 = 0x4404UH,
+      data4 = [0xB9UB, 0xA8UB, 0xE9UB, 0xB8UB, 0x4FUB, 0x2DUB, 0xF5UB, 0x0EUB]
+    },
+    GPT_PT_COREOS_RESERVED = GUID {
+      data1 = 0xC95DC21AU, data2 = 0xDF0EUH, data3 = 0x4340UH,
+      data4 = [0x8DUB, 0x7BUB, 0x26UB, 0xCBUB, 0xFAUB, 0x9AUB, 0x03UB, 0xE0UB]
+    },
+    GPT_PT_COREOS_ROOT_RAID = GUID {
+      data1 = 0xBE9067B9U, data2 = 0xEA49UH, data3 = 0x4F15UH,
+      data4 = [0xB4UB, 0xF6UB, 0xF3UB, 0x6FUB, 0x8CUB, 0x9EUB, 0x18UB, 0x18UB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_HAIKU_BFS = GUID {
+      data1 = 0x42465331U, data2 = 0x3BA3UH, data3 = 0x10F1UH,
+      data4 = [0x80UB, 0x2AUB, 0x48UB, 0x61UB, 0x69UB, 0x6BUB, 0x75UB, 0x21UB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_MIDNIGHT_BOOT = GUID {
+      data1 = 0x85D5E45EU, data2 = 0x237CUH, data3 = 0x11E1UH,
+      data4 = [0xB4UB, 0xB3UB, 0xE8UB, 0x9AUB, 0x8FUB, 0x7FUB, 0xC3UB, 0xA7UB]
+    },
+    GPT_PT_MIDNIGHT_DATA = GUID {
+      data1 = 0x85D5E45AU, data2 = 0x237CUH, data3 = 0x11E1UH,
+      data4 = [0xB4UB, 0xB3UB, 0xE8UB, 0x9AUB, 0x8FUB, 0x7FUB, 0xC3UB, 0xA7UB]
+    },
+    GPT_PT_MIDNIGHT_SWAP = GUID {
+      data1 = 0x85D5E45BU, data2 = 0x237CUH, data3 = 0x11E1UH,
+      data4 = [0xB4UB, 0xB3UB, 0xE8UB, 0x9AUB, 0x8FUB, 0x7FUB, 0xC3UB, 0xA7UB]
+    },
+    GPT_PT_MIDNIGHT_UFS = GUID {
+      data1 = 0x0394EF8BU, data2 = 0x237EUH, data3 = 0x11E1UH,
+      data4 = [0xB4UB, 0xB3UB, 0xE8UB, 0x9AUB, 0x8FUB, 0x7FUB, 0xC3UB, 0xA7UB]
+    },
+    GPT_PT_MIDNIGHT_VINUM = GUID {
+      data1 = 0x85D5E45CU, data2 = 0x237CUH, data3 = 0x11E1UH,
+      data4 = [0xB4UB, 0xB3UB, 0xE8UB, 0x9AUB, 0x8FUB, 0x7FUB, 0xC3UB, 0xA7UB]
+    },
+    GPT_PT_MIDNIGHT_ZFS = GUID {
+      data1 = 0x85D5E45DU, data2 = 0x237CUH, data3 = 0x11E1UH,
+      data4 = [0xB4UB, 0xB3UB, 0xE8UB, 0x9AUB, 0x8FUB, 0x7FUB, 0xC3UB, 0xA7UB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_CEPH_JOURNAL = GUID {
+      data1 = 0x45B0969EU, data2 = 0x9B03UH, data3 = 0x4F30UH,
+      data4 = [0xB4UB, 0xC6UB, 0xB4UB, 0xB8UB, 0x0CUB, 0xEFUB, 0xF1UB, 0x06UB]
+    },
+    GPT_PT_CEPH_CRYPT_JOURNAL = GUID {
+      data1 = 0x45B0969EU, data2 = 0x9B03UH, data3 = 0x4F30UH,
+      data4 = [0xB4UB, 0xC6UB, 0x5EUB, 0xC0UB, 0x0CUB, 0xEFUB, 0xF1UB, 0x06UB]
+    },
+    GPT_PT_CEPH_OSD = GUID {
+      data1 = 0x4FBD7E29U, data2 = 0x9D25UH, data3 = 0x41B8UH,
+      data4 = [0xAFUB, 0xD0UB, 0x06UB, 0x2CUB, 0x0CUB, 0xEFUB, 0xF0UB, 0x5DUB]
+    },
+    GPT_PT_CEPH_CRYPT_OSD = GUID {
+      data1 = 0x4FBD7E29U, data2 = 0x9D25UH, data3 = 0x41B8UH,
+      data4 = [0xAFUB, 0xD0UB, 0x5EUB, 0xC0UB, 0x0CUB, 0xEFUB, 0xF0UB, 0x5DUB]
+    },
+    GPT_PT_CEPH_DISK_CREATION = GUID {
+      data1 = 0x89C57F98U, data2 = 0x2FE5UH, data3 = 0x4DC0UH,
+      data4 = [0x89UB, 0xC1UB, 0xF3UB, 0xADUB, 0x0CUB, 0xEFUB, 0xF2UB, 0xBEUB]
+    },
+    GPT_PT_CEPH_CRYPT_DISK_CREATION = GUID {
+      data1 = 0x89C57F98U, data2 = 0x2FE5UH, data3 = 0x4DC0UH,
+      data4 = [0x89UB, 0xC1UB, 0x5EUB, 0xC0UB, 0x0CUB, 0xEFUB, 0xF2UB, 0xBEUB]
+    },
+    GPT_PT_CEPH_BLOCK = GUID {
+      data1 = 0xCAFECAFEU, data2 = 0x9B03UH, data3 = 0x4F30UH,
+      data4 = [0xB4UB, 0xC6UB, 0xB4UB, 0xB8UB, 0x0CUB, 0xEFUB, 0xF1UB, 0x06UB]
+    },
+    GPT_PT_CEPH_BLOCK_DB = GUID {
+      data1 = 0x30CD0809U, data2 = 0xC2B2UH, data3 = 0x499CUH,
+      data4 = [0x88UB, 0x79UB, 0x2DUB, 0x6BUB, 0x78UB, 0x52UB, 0x98UB, 0x76UB]
+    },
+    GPT_PT_CEPH_BLOCK_WAL = GUID {
+      data1 = 0x5CE17FCEU, data2 = 0x4087UH, data3 = 0x4169UH,
+      data4 = [0xB7UB, 0xFFUB, 0x05UB, 0x6CUB, 0xC5UB, 0x84UB, 0x73UB, 0xF9UB]
+    },
+    GPT_PT_CEPH_LOCKBOX = GUID {
+      data1 = 0xFB3AABF9U, data2 = 0xD25FUH, data3 = 0x47CCUH,
+      data4 = [0xBFUB, 0x5EUB, 0x72UB, 0x1DUB, 0x18UB, 0x16UB, 0x49UB, 0x6BUB]
+    },
+    GPT_PT_CEPH_MULTIPATH_OSD = GUID {
+      data1 = 0x4FBD7E29U, data2 = 0x8AE0UH, data3 = 0x4982UH,
+      data4 = [0xBFUB, 0x9DUB, 0x5AUB, 0x8DUB, 0x86UB, 0x7AUB, 0xF5UB, 0x60UB]
+    },
+    GPT_PT_CEPH_MULTIPATH_JOURNAL = GUID {
+      data1 = 0x45B0969EU, data2 = 0x8AE0UH, data3 = 0x4982UH,
+      data4 = [0xBFUB, 0x9DUB, 0x5AUB, 0x8DUB, 0x86UB, 0x7AUB, 0xF5UB, 0x60UB]
+    },
+    GPT_PT_CEPH_MULTIPATH_BLOCK = GUID {
+      data1 = 0xCAFECAFEU, data2 = 0x8AE0UH, data3 = 0x4982UH,
+      data4 = [0xBFUB, 0x9DUB, 0x5AUB, 0x8DUB, 0x86UB, 0x7AUB, 0xF5UB, 0x60UB]
+    },
+    GPT_PT_CEPH_MULTIPATH_BLOCK = GUID {
+      data1 = 0x7F4A666AU, data2 = 0x16F3UH, data3 = 0x47A2UH,
+      data4 = [0x84UB, 0x45UB, 0x15UB, 0x2EUB, 0xF4UB, 0xD0UB, 0x3FUB, 0x6CUB]
+    },
+    GPT_PT_CEPH_MULTIPATH_BLOCK_DB = GUID {
+      data1 = 0xEC6D6385U, data2 = 0xE346UH, data3 = 0x45DCUH,
+      data4 = [0xBEUB, 0x91UB, 0xDAUB, 0x2AUB, 0x7CUB, 0x8BUB, 0x32UB, 0x61UB]
+    },
+    GPT_PT_CEPH_MULTIPATH_BLOCK_WAL = GUID {
+      data1 = 0x01B41E1BU, data2 = 0x002AUH, data3 = 0x453CUH,
+      data4 = [0x9FUB, 0x17UB, 0x88UB, 0x79UB, 0x39UB, 0x89UB, 0xFFUB, 0x8FUB]
+    },
+    GPT_PT_CEPH_DM_CRYPT_BLOCK = GUID {
+      data1 = 0xCAFECAFEU, data2 = 0x9B03UH, data3 = 0x4F30UH,
+      data4 = [0xB4UB, 0xC6UB, 0x5EUB, 0xC0UB, 0x0CUB, 0xEFUB, 0xF1UB, 0x06UB]
+    },
+    GPT_PT_CEPH_DM_CRYPT_BLOCK_DB = GUID {
+      data1 = 0x93B0052DU, data2 = 0x02D9UH, data3 = 0x4D8AUH,
+      data4 = [0xA4UB, 0x3BUB, 0x33UB, 0xA3UB, 0xEEUB, 0x4DUB, 0xFBUB, 0xC3UB]
+    },
+    GPT_PT_CEPH_DM_CRYPT_BLOCK_WAL = GUID {
+      data1 = 0x306E8683U, data2 = 0x4FE2UH, data3 = 0x4330UH,
+      data4 = [0xB7UB, 0xC0UB, 0x00UB, 0xA9UB, 0x17UB, 0xC1UB, 0x69UB, 0x66UB]
+    },
+    GPT_PT_CEPH_DM_CRYPT_LUKS_JOURNAL = GUID {
+      data1 = 0x45B0969EU, data2 = 0x9B03UH, data3 = 0x4F30UH,
+      data4 = [0xB4UB, 0xC6UB, 0x35UB, 0x86UB, 0x5CUB, 0xEFUB, 0xF1UB, 0x06UB]
+    },
+    GPT_PT_CEPH_DM_CRYPT_LUKS_BLOCK = GUID {
+      data1 = 0xCAFECAFEU, data2 = 0x9B03UH, data3 = 0x4F30UH,
+      data4 = [0xB4UB, 0xC6UB, 0x35UB, 0x86UB, 0x5CUB, 0xEFUB, 0xF1UB, 0x06UB]
+    },
+    GPT_PT_CEPH_DM_CRYPT_LUKS_BLOCK_DB = GUID {
+      data1 = 0x166418DAU, data2 = 0xC469UH, data3 = 0x4022UH,
+      data4 = [0xADUB, 0xF4UB, 0xB3UB, 0x0AUB, 0xFDUB, 0x37UB, 0xF1UB, 0x76UB]
+    },
+    GPT_PT_CEPH_DM_CRYPT_LUKS_BLOCK_WAL = GUID {
+      data1 = 0x86A32090U, data2 = 0x3647UH, data3 = 0x40B9UH,
+      data4 = [0xBBUB, 0xBDUB, 0x38UB, 0xD8UB, 0xC5UB, 0x73UB, 0xAAUB, 0x86UB]
+    },
+    GPT_PT_CEPH_DM_CRYPT_LUKS_OSD = GUID {
+      data1 = 0x4FBD7E29U, data2 = 0x9D25UH, data3 = 0x41B8UH,
+      data4 = [0xAFUB, 0xD0UB, 0x35UB, 0x86UB, 0x5CUB, 0xEFUB, 0xF0UB, 0x5DUB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_OPENBSD_DATA = GUID {
+      data1 = 0x824CC7A0U, data2 = 0x36A8UH, data3 = 0x11E3UH,
+      data4 = [0x89UB, 0x0AUB, 0x95UB, 0x25UB, 0x19UB, 0xADUB, 0x3FUB, 0x61UB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_QNX6 = GUID {
+      data1 = 0xCEF5A9ADU, data2 = 0x73BCUH, data3 = 0x4601UH,
+      data4 = [0x89UB, 0xF3UB, 0xCDUB, 0xEEUB, 0xEEUB, 0xE3UB, 0x21UB, 0xA1UB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_PLAN9 = GUID {
+      data1 = 0xC91818F9U, data2 = 0x8025UH, data3 = 0x47AFUH,
+      data4 = [0x89UB, 0xD2UB, 0xF0UB, 0x30UB, 0xD7UB, 0x00UB, 0x0CUB, 0x2CUB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_VMWARE_VMFS = GUID {
+      data1 = 0xAA31E02AU, data2 = 0x400FUH, data3 = 0x11DBUH,
+      data4 = [0x95UB, 0x90UB, 0x00UB, 0x0CUB, 0x29UB, 0x11UB, 0xD1UB, 0xB8UB]
+    },
+    GPT_PT_VMWARE_RESERVED = GUID {
+      data1 = 0x9198EFFCU, data2 = 0x31C0UH, data3 = 0x11DBUH,
+      data4 = [0x8FUB, 0x78UB, 0x00UB, 0x0CUB, 0x29UB, 0x11UB, 0xD1UB, 0xB8UB]
+    },
+    GPT_PT_VMWARE_KCORE = GUID {
+      data1 = 0x9D275380U, data2 = 0x40ADUH, data3 = 0x11DBUH,
+      data4 = [0xBFUB, 0x97UB, 0x00UB, 0x0CUB, 0x29UB, 0x11UB, 0xD1UB, 0xB8UB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_ANDROID_X86_BOOTLOADER = GUID {
+      data1 = 0x2568845DU, data2 = 0x2332UH, data3 = 0x4675UH,
+      data4 = [0xBCUB, 0x39UB, 0x8FUB, 0xA5UB, 0xA4UB, 0x74UB, 0x8DUB, 0x15UB]
+    },
+    GPT_PT_ANDROID_X86_BOOTLOADER2 = GUID {
+      data1 = 0x114EAFFEU, data2 = 0x1552UH, data3 = 0x4022UH,
+      data4 = [0xB2UB, 0x6EUB, 0x9BUB, 0x05UB, 0x36UB, 0x04UB, 0xCFUB, 0x84UB]
+    },
+    GPT_PT_ANDROID_X86_BOOT = GUID {
+      data1 = 0x49A4D17FU, data2 = 0x93A3UH, data3 = 0x45C1UH,
+      data4 = [0xA0UB, 0xDEUB, 0xF5UB, 0x0BUB, 0x2EUB, 0xBEUB, 0x25UB, 0x99UB]
+    },
+    GPT_PT_ANDROID_X86_RECOVERY = GUID {
+      data1 = 0x4177C722U, data2 = 0x9E92UH, data3 = 0x4AABUH,
+      data4 = [0x86UB, 0x44UB, 0x43UB, 0x50UB, 0x2BUB, 0xFDUB, 0x55UB, 0x06UB]
+    },
+    GPT_PT_ANDROID_X86_MISC = GUID {
+      data1 = 0xEF32A33BU, data2 = 0xA409UH, data3 = 0x486CUH,
+      data4 = [0x91UB, 0x41UB, 0x9FUB, 0xFBUB, 0x71UB, 0x1FUB, 0x62UB, 0x66UB]
+    },
+    GPT_PT_ANDROID_X86_METADATA = GUID {
+      data1 = 0x20AC26BEU, data2 = 0x20B7UH, data3 = 0x11E3UH,
+      data4 = [0x84UB, 0xC5UB, 0x6CUB, 0xFDUB, 0xB9UB, 0x47UB, 0x11UB, 0xE9UB]
+    },
+    GPT_PT_ANDROID_X86_SYSTEM = GUID {
+      data1 = 0x38F428E6U, data2 = 0xD326UH, data3 = 0x425DUH,
+      data4 = [0x91UB, 0x40UB, 0x6EUB, 0x0EUB, 0xA1UB, 0x33UB, 0x64UB, 0x7CUB]
+    },
+    GPT_PT_ANDROID_X86_CACHE = GUID {
+      data1 = 0xA893EF21U, data2 = 0xE428UH, data3 = 0x470AUH,
+      data4 = [0x9EUB, 0x55UB, 0x06UB, 0x68UB, 0xFDUB, 0x91UB, 0xA2UB, 0xD9UB]
+    },
+    GPT_PT_ANDROID_X86_DATA = GUID {
+      data1 = 0xDC76DDA9U, data2 = 0x5AC1UH, data3 = 0x491CUH,
+      data4 = [0xAFUB, 0x42UB, 0xA8UB, 0x25UB, 0x91UB, 0x58UB, 0x0CUB, 0x0DUB]
+    },
+    GPT_PT_ANDROID_X86_PERSISTENT = GUID {
+      data1 = 0xEBC597D0U, data2 = 0x2053UH, data3 = 0x4B15UH,
+      data4 = [0x8BUB, 0x64UB, 0xE0UB, 0xAAUB, 0xC7UB, 0x5FUB, 0x4DUB, 0xB1UB]
+    },
+    GPT_PT_ANDROID_X86_VENDOR = GUID {
+      data1 = 0xC5A0AEECU, data2 = 0x13EAUH, data3 = 0x11E5UH,
+      data4 = [0xA1UB, 0xB1UB, 0x00UB, 0x1EUB, 0x67UB, 0xCAUB, 0x0CUB, 0x3CUB]
+    },
+    GPT_PT_ANDROID_X86_CONFIG = GUID {
+      data1 = 0xBD59408BU, data2 = 0x4514UH, data3 = 0x490DUH,
+      data4 = [0xBFUB, 0x12UB, 0x98UB, 0x78UB, 0xD9UB, 0x63UB, 0xF3UB, 0x78UB]
+    },
+    GPT_PT_ANDROID_X86_FACTORY = GUID {
+      data1 = 0x8F68CC74U, data2 = 0xC5E5UH, data3 = 0x48DAUH,
+      data4 = [0xBEUB, 0x91UB, 0xA0UB, 0xC8UB, 0xC1UB, 0x5EUB, 0x9CUB, 0x80UB]
+    },
+    GPT_PT_ANDROID_X86_FACTORY_ALT = GUID {
+      data1 = 0x9FDAA6EFU, data2 = 0x4B3FUH, data3 = 0x40D2UH,
+      data4 = [0xBAUB, 0x8DUB, 0xBFUB, 0xF1UB, 0x6BUB, 0xFBUB, 0x88UB, 0x7BUB]
+    },
+    GPT_PT_ANDROID_X86_FASTBOOT = GUID {
+      data1 = 0x767941D0U, data2 = 0x2085UH, data3 = 0x11E3UH,
+      data4 = [0xADUB, 0x3BUB, 0x6CUB, 0xFDUB, 0xB9UB, 0x47UB, 0x11UB, 0xE9UB]
+    },
+    GPT_PT_ANDROID_X86_OEM = GUID {
+      data1 = 0xAC6D7924U, data2 = 0xEB71UH, data3 = 0x4DF8UH,
+      data4 = [0xB4UB, 0x8DUB, 0xE2UB, 0x67UB, 0xB2UB, 0x71UB, 0x48UB, 0xFFUB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_ANDROID_ARM_META = GUID {
+      data1 = 0x19A710A2U, data2 = 0xB3CAUH, data3 = 0x11E4UH,
+      data4 = [0xB0UB, 0x26UB, 0x10UB, 0x60UB, 0x4BUB, 0x88UB, 0x9DUB, 0xCFUB]
+    },
+    GPT_PT_ANDROID_ARM_EXT = GUID {
+      data1 = 0x193D1EA4U, data2 = 0xB3CAUH, data3 = 0x11E4UH,
+      data4 = [0xB0UB, 0x75UB, 0x10UB, 0x60UB, 0x4BUB, 0x88UB, 0x9DUB, 0xCFUB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_ONIE_BOOT = GUID {
+      data1 = 0x7412F7D5U, data2 = 0xA156UH, data3 = 0x4B13UH,
+      data4 = [0x81UB, 0xDCUB, 0x86UB, 0x71UB, 0x74UB, 0x92UB, 0x93UB, 0x25UB]
+    },
+    GPT_PT_ONIE_CONFIG = GUID {
+      data1 = 0xD4E6E2CDU, data2 = 0x4469UH, data3 = 0x46F3UH,
+      data4 = [0xB5UB, 0xCBUB, 0x1BUB, 0xFFUB, 0x57UB, 0xAFUB, 0xC1UB, 0x49UB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_POWERPC_PREP_BOOT = GUID {
+      data1 = 0x9E1A2D38U, data2 = 0xC612UH, data3 = 0x4316UH,
+      data4 = [0xAAUB, 0x26UB, 0x8BUB, 0x49UB, 0x52UB, 0x1EUB, 0x5AUB, 0x8BUB]
+    },
+    /* --------------------------------------------------------- */
+    // note FREEDESKTOP equals to LINUX_BOOT
+    GPT_PT_FREEDESKTOP = GUID {
+      data1 = 0xBC13C2FFU, data2 = 0x59E6UH, data3 = 0x4262UH,
+      data4 = [0xA3UB, 0x52UB, 0xB2UB, 0x75UB, 0xFDUB, 0x6FUB, 0x71UB, 0x72UB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_ATARI_TOS_BASIC = GUID {
+      data1 = 0x734E5AFEU, data2 = 0xF61AUH, data3 = 0x11E6UH,
+      data4 = [0xBCUB, 0x64UB, 0x92UB, 0x36UB, 0x1FUB, 0x00UB, 0x26UB, 0x71UB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_VERACRYPT_ENCRYPTED = GUID {
+      data1 = 0x8C8F8EFFU, data2 = 0xAC95UH, data3 = 0x4770UH,
+      data4 = [0x81UB, 0x4AUB, 0x21UB, 0x99UB, 0x4FUB, 0x2DUB, 0xBCUB, 0x8FUB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_OS2_ARCAOS_TYPE1 = GUID {
+      data1 = 0x90B6FF38U, data2 = 0xB98FUH, data3 = 0x4358UH,
+      data4 = [0xA2UB, 0x1FUB, 0x48UB, 0xF3UB, 0x5BUB, 0x4AUB, 0x8AUB, 0xD3UB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_SPDK_BLOCK_DEVICE = GUID {
+      data1 = 0x7C5222BDU, data2 = 0x8F5DUH, data3 = 0x4087UH,
+      data4 = [0x9CUB, 0x00UB, 0xBFUB, 0x98UB, 0x43UB, 0xC7UB, 0xB5UB, 0x8CUB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_BAREBOX_STATE = GUID {
+      data1 = 0x4778ED65U, data2 = 0xBF42UH, data3 = 0x45FAUH,
+      data4 = [0x9CUB, 0x5BUB, 0x28UB, 0x7AUB, 0x1DUB, 0xC4UB, 0xAAUB, 0xB1UB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_UBOOT_ENVIRONMENT = GUID {
+      data1 = 0x3DE21764U, data2 = 0x95BDUH, data3 = 0x54BDUH,
+      data4 = [0xA5UB, 0xC3UB, 0x4AUB, 0xBEUB, 0x78UB, 0x6FUB, 0x38UB, 0xA8UB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_SOFTRAID_STATUS = GUID {
+      data1 = 0xB6FA30DAU, data2 = 0x92D2UH, data3 = 0x4A9AUH,
+      data4 = [0x96UB, 0xF1UB, 0x87UB, 0x1EUB, 0xC6UB, 0x48UB, 0x62UB, 0x00UB]
+    },
+    GPT_PT_SOFTRAID_SCRATCH = GUID {
+      data1 = 0x2E313465U, data2 = 0x19B9UH, data3 = 0x463FUH,
+      data4 = [0x81UB, 0x26UB, 0x8AUB, 0x79UB, 0x93UB, 0x77UB, 0x38UB, 0x01UB]
+    },
+    GPT_PT_SOFTRAID_VOLUME = GUID {
+      data1 = 0xFA709C7EU, data2 = 0x65B1UH, data3 = 0x4593UH,
+      data4 = [0xBFUB, 0xD5UB, 0xE7UB, 0x1DUB, 0x61UB, 0xDEUB, 0x9BUB, 0x02UB]
+    },
+    GPT_PT_SOFTRAID_CACHE = GUID {
+      data1 = 0xBBBA6DF5U, data2 = 0xF46FUH, data3 = 0x4A89UH,
+      data4 = [0x8FUB, 0x59UB, 0x87UB, 0x65UB, 0xB2UB, 0x72UB, 0x75UB, 0x03UB]
+    },
+    /* --------------------------------------------------------- */
+    GPT_PT_FUCHSIA_BOOTLOADER = GUID {
+      data1 = 0xFE8A2634U, data2 = 0x5E2EUH, data3 = 0x46BAUH,
+      data4 = [0x99UB, 0xE3UB, 0x3AUB, 0x19UB, 0x20UB, 0x91UB, 0xA3UB, 0x50UB]
+    },
+    GPT_PT_FUCHSIA_DM_SYSTEM_DATA = GUID {
+      data1 = 0xD9FD4535U, data2 = 0x106CUH, data3 = 0x4CECUH,
+      data4 = [0x8DUB, 0x37UB, 0xDFUB, 0xC0UB, 0x20UB, 0xCAUB, 0x87UB, 0xCBUB]
+    },
+    GPT_PT_FUCHSIA_DM_BOOTLOADER_DATA = GUID {
+      data1 = 0xA409E16BU, data2 = 0x78AAUH, data3 = 0x4ACCUH,
+      data4 = [0x99UB, 0x5CUB, 0x30UB, 0x23UB, 0x52UB, 0x62UB, 0x1AUB, 0x41UB]
+    },
+    GPT_PT_FUCHSIA_FP_RO_SYSTEM_DATA = GUID {
+      data1 = 0xF95D940EU, data2 = 0xCABAUH, data3 = 0x4578UH,
+      data4 = [0x9BUB, 0x93UB, 0xBBUB, 0x6CUB, 0x90UB, 0xF2UB, 0x9DUB, 0x3EUB]
+    },
+    GPT_PT_FUCHSIA_FP_RO_BOOTLOADER_DATA = GUID {
+      data1 = 0x10B8DBAAU, data2 = 0xD2BFUH, data3 = 0x42A9UH,
+      data4 = [0x98UB, 0xC6UB, 0xA7UB, 0xC5UB, 0xDBUB, 0x37UB, 0x01UB, 0xE7UB]
+    },
+    GPT_PT_FUCHSIA_VOLUME_MANAGER = GUID {
+      data1 = 0x49FD7CB8U, data2 = 0xDF15UH, data3 = 0x4E73UH,
+      data4 = [0xB9UB, 0xD9UB, 0x99UB, 0x20UB, 0x70UB, 0x12UB, 0x7FUB, 0x0FUB]
+    },
+    GPT_PT_FUCHSIA_VERIFIED_BOOT_METADATA = GUID {
+      data1 = 0x421A8BFCU, data2 = 0x85D9UH, data3 = 0x4D85UH,
+      data4 = [0xACUB, 0xDAUB, 0xB6UB, 0x4EUB, 0xECUB, 0x01UB, 0x33UB, 0xE9UB]
+    },
+    GPT_PT_FUCHSIA_ZIRCON_BOOT_IMAGE = GUID {
+      data1 = 0x9B37FFF6U, data2 = 0x2E58UH, data3 = 0x466AUH,
+      data4 = [0x98UB, 0x3AUB, 0xF7UB, 0x92UB, 0x6DUB, 0x0BUB, 0x04UB, 0xE0UB]
+    },
+    /* --------------------------------------------------------- */
+    // note FUCHSIA_L_ESP equals to COMMON_EFI_SYSTEM
+    GPT_PT_FUCHSIA_L_ESP = GUID {
+      data1 = 0xC12A7328U, data2 = 0xF81FUH, data3 = 0x11D2UH,
+      data4 = [0xBAUB, 0x4BUB, 0x00UB, 0xA0UB, 0xC9UB, 0x3EUB, 0xC9UB, 0x3BUB]
+    },
+    GPT_PT_FUCHSIA_L_SYSTEM = GUID {
+      data1 = 0x606B000BU, data2 = 0xB7C7UH, data3 = 0x4653UH,
+      data4 = [0xA7UB, 0xD5UB, 0xB7UB, 0x37UB, 0x33UB, 0x2CUB, 0x89UB, 0x9DUB]
+    },
+    GPT_PT_FUCHSIA_L_DATA = GUID {
+      data1 = 0x08185F0CU, data2 = 0x892DUH, data3 = 0x428AUH,
+      data4 = [0xA7UB, 0x89UB, 0xDBUB, 0xEEUB, 0xC8UB, 0xF5UB, 0x5EUB, 0x6AUB]
+    },
+    GPT_PT_FUCHSIA_L_INSTALL = GUID {
+      data1 = 0x48435546U, data2 = 0x4953UH, data3 = 0x2041UH,
+      data4 = [0x49UB, 0x4EUB, 0x53UB, 0x54UB, 0x41UB, 0x4CUB, 0x4CUB, 0x52UB]
+    },
+    GPT_PT_FUCHSIA_L_BLOB = GUID {
+      data1 = 0x2967380EU, data2 = 0x134CUH, data3 = 0x4CBBUH,
+      data4 = [0xB6UB, 0xDAUB, 0x17UB, 0xE7UB, 0xCEUB, 0x1CUB, 0xA4UB, 0x5DUB]
+    },
+    GPT_PT_FUCHSIA_L_FVM = GUID {
+      data1 = 0x41D0E340U, data2 = 0x57E3UH, data3 = 0x954EUH,
+      data4 = [0x8CUB, 0x1EUB, 0x17UB, 0xECUB, 0xACUB, 0x44UB, 0xCFUB, 0xF5UB]
+    },
+    GPT_PT_FUCHSIA_L_ZIRCON_BOOT_A = GUID {
+      data1 = 0xDE30CC86U, data2 = 0x1F4AUH, data3 = 0x4A31UH,
+      data4 = [0x93UB, 0xC4UB, 0x66UB, 0xF1UB, 0x47UB, 0xD3UB, 0x3EUB, 0x05UB]
+    },
+    GPT_PT_FUCHSIA_L_ZIRCON_BOOT_B = GUID {
+      data1 = 0x23CC04DFU, data2 = 0xC278UH, data3 = 0x4CE7UH,
+      data4 = [0x84UB, 0x71UB, 0x89UB, 0x7DUB, 0x1AUB, 0x4BUB, 0xCDUB, 0xF7UB]
+    },
+    GPT_PT_FUCHSIA_L_ZIRCON_BOOT_R = GUID {
+      data1 = 0xA0E5CF57U, data2 = 0x2DEFUH, data3 = 0x46BEUH,
+      data4 = [0xA8UB, 0x0CUB, 0xA2UB, 0x06UB, 0x7CUB, 0x37UB, 0xCDUB, 0x49UB]
+    },
+    GPT_PT_FUCHSIA_L_SYS_CONFIG = GUID {
+      data1 = 0x4E5E989EU, data2 = 0x4C86UH, data3 = 0x11E8UH,
+      data4 = [0xA1UB, 0x5BUB, 0x48UB, 0x0FUB, 0xCFUB, 0x35UB, 0xF8UB, 0xE6UB]
+    },
+    GPT_PT_FUCHSIA_L_FACTORY_CONFIG = GUID {
+      data1 = 0x5A3A90BEU, data2 = 0x4C86UH, data3 = 0x11E8UH,
+      data4 = [0xA1UB, 0x5BUB, 0x48UB, 0x0FUB, 0xCFUB, 0x35UB, 0xF8UB, 0xE6UB]
+    },
+    GPT_PT_FUCHSIA_L_BOOTLOADER = GUID {
+      data1 = 0x5ECE94FEU, data2 = 0x4C86UH, data3 = 0x11E8UH,
+      data4 = [0xA1UB, 0x5BUB, 0x48UB, 0x0FUB, 0xCFUB, 0x35UB, 0xF8UB, 0xE6UB]
+    },
+    GPT_PT_FUCHSIA_L_GUID_TEST = GUID {
+      data1 = 0x8B94D043U, data2 = 0x30BEUH, data3 = 0x4871UH,
+      data4 = [0x9DUB, 0xFAUB, 0xD6UB, 0x95UB, 0x56UB, 0xE8UB, 0xC1UB, 0xF3UB]
+    },
+    GPT_PT_FUCHSIA_L_VERIFIED_BOOT_A = GUID {
+      data1 = 0xA13B4D9AU, data2 = 0xEC5FUH, data3 = 0x11E8UH,
+      data4 = [0x97UB, 0xD8UB, 0x6CUB, 0x3BUB, 0xE5UB, 0x27UB, 0x05UB, 0xBFUB]
+    },
+    GPT_PT_FUCHSIA_L_VERIFIED_BOOT_B = GUID {
+      data1 = 0xA288ABF2U, data2 = 0xEC5FUH, data3 = 0x11E8UH,
+      data4 = [0x97UB, 0xD8UB, 0x6CUB, 0x3BUB, 0xE5UB, 0x27UB, 0x05UB, 0xBFUB]
+    },
+    GPT_PT_FUCHSIA_L_VERIFIED_BOOT_R = GUID {
+      data1 = 0x6A2460C3U, data2 = 0xCD11UH, data3 = 0x4E8BUH,
+      data4 = [0x80UB, 0xA8UB, 0x12UB, 0xCCUB, 0xE2UB, 0x68UB, 0xEDUB, 0x0AUB]
+    },
+    GPT_PT_FUCHSIA_L_MISC = GUID {
+      data1 = 0x1D75395DU, data2 = 0xF2C6UH, data3 = 0x476BUH,
+      data4 = [0xA8UB, 0xB7UB, 0x45UB, 0xCCUB, 0x1CUB, 0x97UB, 0xB4UB, 0x76UB]
+    },
+    GPT_PT_FUCHSIA_L_EMMC_BOOT1 = GUID {
+      data1 = 0x900B0FC5U, data2 = 0x90CDUH, data3 = 0x4D4FUH,
+      data4 = [0x84UB, 0xF9UB, 0x9FUB, 0x8EUB, 0xD5UB, 0x79UB, 0xDBUB, 0x88UB]
+    },
+    GPT_PT_FUCHSIA_L_EMMC_BOOT2 = GUID {
+      data1 = 0xB2B2E8D1U, data2 = 0x7C10UH, data3 = 0x4EBCUH,
+      data4 = [0xA2UB, 0xD0UB, 0x46UB, 0x14UB, 0x56UB, 0x82UB, 0x60UB, 0xADUB]
+    };
+
+type GPT_PartitionType_GUID =
+  struct
+  {
+    GUID guid;
+    method _print = void:
+      {
+        var s
+            = guid == GPT_PT_COMMON_UNUSED       ? "Unused Entry"
+              : guid == GPT_PT_COMMON_MBR_SCHEME ? "MBR Partition Scheme"
+              : guid == GPT_PT_COMMON_EFI_SYSTEM ? "EFI System Partition"
+              : guid == GPT_PT_COMMON_BIOS_BOOT  ? "BIOS Boot Partition"
+              : guid == GPT_PT_COMMON_IFFS
+                  ? "Intel Fast Flash (iFFS) Partition"
+              : guid == GPT_PT_COMMON_SONY_BOOT   ? "Sony Boot Partition"
+              : guid == GPT_PT_COMMON_LENOVO_BOOT ? "Lenovo Boot Partition"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_MS_RESERVED   ? "MS Reserved Partition (MSR)"
+              : guid == GPT_PT_MS_BASIC_DATA ? "MS Basic Data Partition"
+              : guid == GPT_PT_MS_LDM_METADATA
+                  ? "MS Logical Disk Manager (LDM) Metadata Partition"
+              : guid == GPT_PT_MS_LDM_DATA
+                  ? "MS Logical Disk Manager Data Partition"
+              : guid == GPT_PT_MS_RECOVERY ? "MS Windows Recovery Environment"
+              : guid == GPT_PT_IBM_GPFS
+                  ? "IBM General Parallel File System (GPFS) Partition"
+              : guid == GPT_PT_MS_STORAGE ? "MS Storage Spaces Partition"
+              : guid == GPT_PT_MS_STORAGE_REPLICA
+                  ? "MS Storage Replica Partition"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_HP_DATA    ? "HP-UX Data Partition"
+              : guid == GPT_PT_HP_SERVICE ? "HP-UX Service Partition"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_LINUX_FS_DATA  ? "Linux Filesystem Data"
+              : guid == GPT_PT_LINUX_RAID     ? "Linux RAID Partition"
+              : guid == GPT_PT_LINUX_ROOT_X86 ? "Linux Root Partition (x86)"
+              : guid == GPT_PT_LINUX_ROOT_X86_64
+                  ? "Linux Root Partition (x86-64)"
+              : guid == GPT_PT_LINUX_ROOT_ARM32
+                  ? "Linux Root Partition (32-bit ARM)"
+              : guid == GPT_PT_LINUX_ROOT_ARM64
+                  ? "Linux Root Partition (64-bit ARM/AArch64)"
+              : guid == GPT_PT_LINUX_BOOT ? "Linux /boot Partition"
+              : guid == GPT_PT_LINUX_SWAP ? "Linux Swap Partition"
+              : guid == GPT_PT_LINUX_LVM
+                  ? "Linux Logical Volume Manager (LVM) Partition"
+              : guid == GPT_PT_LINUX_HOME ? "Linux /home Partition"
+              : guid == GPT_PT_LINUX_SERVER_DATA
+                  ? "Linux /srv (Server Data) Partition"
+              : guid == GPT_PT_LINUX_DM_CRYPT
+                  ? "Linux Plain dm-crypt Partition"
+              : guid == GPT_PT_LINUX_LUKS     ? "Linux LUKS Partition"
+              : guid == GPT_PT_LINUX_RESERVED ? "Linux Reserved Partition"
+              /* --------------------------------------------------------- */
+              /* HURD_LINUX_FS_DATA equals to LINUX_FS_DATA.  */
+              // : guid == GPT_PT_HURD_LINUX_FS_DATA
+              //     ? "GNU/Hurd Linux Filesystem Data"
+              /* HURD_LINUX_SWAP equals to LINUX_SWAP.  */
+              // : guid == GPT_PT_HURD_LINUX_SWAP
+              //     ? "GNU/Hurd Linux Swap Partition"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_FREEBSD_BOOT ? "FreeBSD Boot Partition"
+              : guid == GPT_PT_FREEBSD_DISKLABEL
+                  ? "FreeBSD Disklabel Partition"
+              : guid == GPT_PT_FREEBSD_SWAP ? "FreeBSD Swap Partition"
+              : guid == GPT_PT_FREEBSD_UFS
+                  ? "FreeBSD Unix File System Partition"
+              : guid == GPT_PT_FREEBSD_VINUM
+                  ? "FreeBSD Vinum Volume Manager Partition"
+              : guid == GPT_PT_FREEBSD_ZFS    ? "FreeBSD ZFS Partition"
+              : guid == GPT_PT_FREEBSD_NANDFS ? "FreeBSD NANDFS Partition"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_HFS_PLUS
+                  ? "Hierarchical File System Plus (HFS+) Partition"
+              : guid == GPT_PT_APFS_CONTAINER
+                  ? "Apple APFS Container / APFS FileVault Volume Container"
+              : guid == GPT_PT_APPLE_UFS_CONTAINER ? "Apple UFS Container"
+              : guid == GPT_PT_ZFS                 ? "ZFS"
+              : guid == GPT_PT_APPLE_RAID          ? "Apple RAID Partition"
+              : guid == GPT_PT_APPLE_RAID_OFFLINE
+                  ? "Apple RAID Partition (Offline)"
+              : guid == GPT_PT_APPLE_BOOT
+                  ? "Apple Boot Partition (Recovery HD)"
+              : guid == GPT_PT_APPLE_LABEL ? "Apple Label"
+              : guid == GPT_PT_APPLE_TV_RECOVERY
+                  ? "Apple TV Recovery Partition"
+              : guid == GPT_PT_APPLE_CORE_STORAGE_CONTAINER
+                  ? "Apple Core Storage Container"
+              : guid == GPT_PT_APFS_PREBOOT  ? "Apple APFS Preboot Partition"
+              : guid == GPT_PT_APFS_RECOVERY ? "Apple APFS Recovery Partition"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_SOLARIS_BOOT   ? "Solaris Boot partition"
+              : guid == GPT_PT_SOLARIS_ROOT   ? "Solaris Root partition"
+              : guid == GPT_PT_SOLARIS_SWAP   ? "Solaris Swap partition"
+              : guid == GPT_PT_SOLARIS_BACKUP ? "Solaris Backup partition"
+              /* SOLARIS_USR equals to ZFS.  */
+              // : guid == GPT_PT_SOLARIS_USR ? "Solaris /usr partition"
+              : guid == GPT_PT_SOLARIS_VAR        ? "Solaris /var partition"
+              : guid == GPT_PT_SOLARIS_HOME       ? "Solaris /home partition"
+              : guid == GPT_PT_SOLARIS_ALT_SECTOR ? "Solaris Alternate sector"
+              : guid == GPT_PT_SOLARIS_RESERVED_1
+                  ? "Solaris Reserved partition 1"
+              : guid == GPT_PT_SOLARIS_RESERVED_2
+                  ? "Solaris Reserved partition 2"
+              : guid == GPT_PT_SOLARIS_RESERVED_3
+                  ? "Solaris Reserved partition 3"
+              : guid == GPT_PT_SOLARIS_RESERVED_4
+                  ? "Solaris Reserved partition 4"
+              : guid == GPT_PT_SOLARIS_RESERVED_5
+                  ? "Solaris Reserved partition 5"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_NETBSD_SWAP   ? "NetBSD Swap Partition"
+              : guid == GPT_PT_NETBSD_FFS    ? "NetBSD FFS Partition"
+              : guid == GPT_PT_NETBSD_LFS    ? "NetBSD LFS Partition"
+              : guid == GPT_PT_NETBSD_RAID   ? "NetBSD RAID Partition"
+              : guid == GPT_PT_NETBSD_CONCAT ? "NetBSD Concatenated Partition"
+              : guid == GPT_PT_NETBSD_ENC    ? "NetBSD Encrypted Partition"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_CHROME_KERNEL   ? "Chrome OS Kernel Partition"
+              : guid == GPT_PT_CHROME_ROOTFS   ? "Chrome OS RootFS Partition"
+              : guid == GPT_PT_CHROME_FIRMWARE ? "Chrome OS Firmware Partition"
+              : guid == GPT_PT_CHROME_FUTURE ? "Chrome OS Future Use Partition"
+              : guid == GPT_PT_CHROME_MINI_OS ? "Chrome OS MiniOS Partition"
+              : guid == GPT_PT_CHROME_HIBERNATE
+                  ? "Chrome OS Hibernate Partition"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_COREOS_USR ? "/usr Partition (coreos-usr)"
+              : guid == GPT_PT_COREOS_RESIZE
+                  ? "Resizable Rootfs (coreos-resize)"
+              : guid == GPT_PT_COREOS_RESERVED
+                  ? "OEM Customizations (coreos-reserved)"
+              : guid == GPT_PT_COREOS_ROOT_RAID
+                  ? "Root Filesystem on RAID (coreos-root-raid)"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_HAIKU_BFS ? "Haiku BFS Partition"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_MIDNIGHT_BOOT ? "MidnightBSD Boot Partition"
+              : guid == GPT_PT_MIDNIGHT_DATA ? "MidnightBSD Data Partition"
+              : guid == GPT_PT_MIDNIGHT_SWAP ? "MidnightBSD Swap Partition"
+              : guid == GPT_PT_MIDNIGHT_UFS
+                  ? "MidnightBSD Unix File System Partition"
+              : guid == GPT_PT_MIDNIGHT_VINUM
+                  ? "MidnightBSD Vinum Volume Manager Partition"
+              : guid == GPT_PT_MIDNIGHT_ZFS ? "MidnightBSD ZFS Partition"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_CEPH_JOURNAL ? "Ceph Journal Partition"
+              : guid == GPT_PT_CEPH_CRYPT_JOURNAL
+                  ? "Ceph Crypt Journal Partition"
+              : guid == GPT_PT_CEPH_OSD           ? "Ceph OSD Partition"
+              : guid == GPT_PT_CEPH_CRYPT_OSD     ? "Ceph Crypt OSD Partition"
+              : guid == GPT_PT_CEPH_DISK_CREATION ? "Ceph Disk in Creation"
+              : guid == GPT_PT_CEPH_CRYPT_DISK_CREATION
+                  ? "Ceph Crypt Disk in Creation"
+              : guid == GPT_PT_CEPH_BLOCK    ? "Ceph Block Partition"
+              : guid == GPT_PT_CEPH_BLOCK_DB ? "Ceph Block DB Partition"
+              : guid == GPT_PT_CEPH_BLOCK_WAL
+                  ? "Ceph Block Write-Ahead Log Partition"
+              : guid == GPT_PT_CEPH_LOCKBOX ? "Ceph Lockbox for dm-crypt keys"
+              : guid == GPT_PT_CEPH_MULTIPATH_OSD
+                  ? "Ceph Multipath OSD Partition"
+              : guid == GPT_PT_CEPH_MULTIPATH_JOURNAL
+                  ? "Ceph Multipath Journal Partition"
+              : guid == GPT_PT_CEPH_MULTIPATH_BLOCK
+                  ? "Ceph Multipath Block Partition"
+              : guid == GPT_PT_CEPH_MULTIPATH_BLOCK
+                  ? "Ceph Multipath Block Partition"
+              : guid == GPT_PT_CEPH_MULTIPATH_BLOCK_DB
+                  ? "Ceph Multipath Block DB Partition"
+              : guid == GPT_PT_CEPH_MULTIPATH_BLOCK_WAL
+                  ? "Ceph Multipath Block Write-Ahead Log Partition"
+              : guid == GPT_PT_CEPH_DM_CRYPT_BLOCK
+                  ? "Ceph dm-crypt Ceph Block Partition"
+              : guid == GPT_PT_CEPH_DM_CRYPT_BLOCK_DB
+                  ? "Ceph dm-crypt Ceph Block DB Partition"
+              : guid == GPT_PT_CEPH_DM_CRYPT_BLOCK_WAL
+                  ? "Ceph dm-crypt Ceph Block Write-Ahead Log Partition"
+              : guid == GPT_PT_CEPH_DM_CRYPT_LUKS_JOURNAL
+                  ? "Ceph dm-crypt LUKS Journal Partition"
+              : guid == GPT_PT_CEPH_DM_CRYPT_LUKS_BLOCK
+                  ? "Ceph dm-crypt LUKS Block Partition"
+              : guid == GPT_PT_CEPH_DM_CRYPT_LUKS_BLOCK_DB
+                  ? "Ceph dm-crypt LUKS Block DB Partition"
+              : guid == GPT_PT_CEPH_DM_CRYPT_LUKS_BLOCK_WAL
+                  ? "Ceph dm-crypt LUKS Block Write-Ahead Log Partition"
+              : guid == GPT_PT_CEPH_DM_CRYPT_LUKS_OSD
+                  ? "Ceph dm-crypt LUKS OSD Partition"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_OPENBSD_DATA ? "OpenBSD Data Partition"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_QNX6 ? "QNX6 File System Partition"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_PLAN9 ? "Plan 9 Partition"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_VMWARE_VMFS     ? "VMware VMFS Partition"
+              : guid == GPT_PT_VMWARE_RESERVED ? "VMware Reserved Partition"
+              : guid == GPT_PT_VMWARE_KCORE    ? "VMware KCore Crash Partition"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_ANDROID_X86_BOOTLOADER
+                  ? "Android x86 Bootloader Partition"
+              : guid == GPT_PT_ANDROID_X86_BOOTLOADER2
+                  ? "Android x86 Bootloader2 Partition"
+              : guid == GPT_PT_ANDROID_X86_BOOT ? "Android x86 Boot Partition"
+              : guid == GPT_PT_ANDROID_X86_RECOVERY
+                  ? "Android x86 Recovery Partition"
+              : guid == GPT_PT_ANDROID_X86_MISC ? "Android x86 Misc Partition"
+              : guid == GPT_PT_ANDROID_X86_METADATA
+                  ? "Android x86 Metadata Partition"
+              : guid == GPT_PT_ANDROID_X86_SYSTEM
+                  ? "Android x86 System Partition"
+              : guid == GPT_PT_ANDROID_X86_CACHE
+                  ? "Android x86 Cache Partition"
+              : guid == GPT_PT_ANDROID_X86_DATA ? "Android x86 Data Partition"
+              : guid == GPT_PT_ANDROID_X86_PERSISTENT
+                  ? "Android x86 Persistent Partition"
+              : guid == GPT_PT_ANDROID_X86_VENDOR
+                  ? "Android x86 Vendor Partition"
+              : guid == GPT_PT_ANDROID_X86_CONFIG
+                  ? "Android x86 Config Partition"
+              : guid == GPT_PT_ANDROID_X86_FACTORY
+                  ? "Android x86 Factory Partition"
+              : guid == GPT_PT_ANDROID_X86_FACTORY_ALT
+                  ? "Android x86 Factory (Alternate) Partition"
+              : guid == GPT_PT_ANDROID_X86_FASTBOOT
+                  ? "Android x86 Fastboot / Tertiary Partition"
+              : guid == GPT_PT_ANDROID_X86_OEM ? "Android x86 OEM Partition"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_ANDROID_ARM_META ? "Android ARM Meta Partition"
+              : guid == GPT_PT_ANDROID_ARM_EXT  ? "Android ARM EXT Partition"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_ONIE_BOOT   ? "ONIE Boot Partition"
+              : guid == GPT_PT_ONIE_CONFIG ? "ONIE Config Partition"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_POWERPC_PREP_BOOT ? "PowerPC PReP Boot"
+              /* --------------------------------------------------------- */
+              // FREEDESKTOP equals to LINUX_BOOT
+              // : guid == GPT_PT_FREEDESKTOP
+              //   ? "freedesktop.org Shared Boot Loader Configuration"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_ATARI_TOS_BASIC
+                  ? "Atari TOS Basic Data Partition (GEM, BGM, F32)"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_VERACRYPT_ENCRYPTED
+                  ? "VeraCrypt Encrypted Data Partition"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_OS2_ARCAOS_TYPE1 ? "OS/2 ArcaOS Type 1"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_SPDK_BLOCK_DEVICE
+                  ? "Storage Performance Development Kit (SPDK) Block Device"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_BAREBOX_STATE ? "barebox Bootloader State"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_UBOOT_ENVIRONMENT
+                  ? "U-Boot Bootloader Environment"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_SOFTRAID_STATUS  ? "SoftRAID Status"
+              : guid == GPT_PT_SOFTRAID_SCRATCH ? "SoftRAID Scratch"
+              : guid == GPT_PT_SOFTRAID_VOLUME  ? "SoftRAID Volume"
+              : guid == GPT_PT_SOFTRAID_CACHE   ? "SoftRAID Cache"
+              /* --------------------------------------------------------- */
+              : guid == GPT_PT_FUCHSIA_BOOTLOADER
+                  ? "Fuchsia Bootloader (slot A/B/R)"
+              : guid == GPT_PT_FUCHSIA_DM_SYSTEM_DATA
+                  ? "Fuchsia Durable Mutable Encrypted System Data"
+              : guid == GPT_PT_FUCHSIA_DM_BOOTLOADER_DATA
+                  ? "Fuchsia Durable Mutable Bootldr Data (incl. A/B/R metadata)"
+              : guid == GPT_PT_FUCHSIA_FP_RO_SYSTEM_DATA
+                  ? "Fuchsia Factory-Provisioned Read-Only System Data"
+              : guid == GPT_PT_FUCHSIA_FP_RO_BOOTLOADER_DATA
+                  ? "Fuchsia Factory-Provisioned Read-Only Bootloader Data"
+              : guid == GPT_PT_FUCHSIA_VOLUME_MANAGER
+                  ? "Fuchsia Volume Manager"
+              : guid == GPT_PT_FUCHSIA_VERIFIED_BOOT_METADATA
+                  ? "Fuchsia Verified Boot Metadata (slot A/B/R)"
+              : guid == GPT_PT_FUCHSIA_ZIRCON_BOOT_IMAGE
+                  ? "Zircon Boot Image (slot A/B/R)"
+              /* --------------------------------------------------------- */
+              /* FUCHSIA_L_ESP equals to COMMON_EFI_SYSTEM.  */
+              // : guid == GPT_PT_FUCHSIA_L_ESP  ? "Fuchsia Legacy ESP"
+              : guid == GPT_PT_FUCHSIA_L_SYSTEM  ? "Fuchsia Legacy System"
+              : guid == GPT_PT_FUCHSIA_L_DATA    ? "Fuchsia Legacy Data"
+              : guid == GPT_PT_FUCHSIA_L_INSTALL ? "Fuchsia Legacy Install"
+              : guid == GPT_PT_FUCHSIA_L_BLOB    ? "Fuchsia Legacy Blob"
+              : guid == GPT_PT_FUCHSIA_L_FVM     ? "Fuchsia Legacy FVM"
+              : guid == GPT_PT_FUCHSIA_L_ZIRCON_BOOT_A
+                  ? "Zircon Legacy Boot Image (slot A)"
+              : guid == GPT_PT_FUCHSIA_L_ZIRCON_BOOT_B
+                  ? "Zircon Legacy Boot Image (slot B)"
+              : guid == GPT_PT_FUCHSIA_L_ZIRCON_BOOT_R
+                  ? "Zircon Legacy Boot Image (slot R)"
+              : guid == GPT_PT_FUCHSIA_L_SYS_CONFIG
+                  ? "Fuchsia Legacy System Config"
+              : guid == GPT_PT_FUCHSIA_L_FACTORY_CONFIG
+                  ? "Fuchsia Legacy Factory Config"
+              : guid == GPT_PT_FUCHSIA_L_BOOTLOADER
+                  ? "Fuchsia Legacy Bootloader"
+              : guid == GPT_PT_FUCHSIA_L_GUID_TEST ? "Fuchsia Legacy GUID Test"
+              : guid == GPT_PT_FUCHSIA_L_VERIFIED_BOOT_A
+                  ? "Fuchsia Legacy Verified Boot Metadata (slot A)"
+              : guid == GPT_PT_FUCHSIA_L_VERIFIED_BOOT_B
+                  ? "Fuchsia Legacy Verified Boot Metadata (slot B)"
+              : guid == GPT_PT_FUCHSIA_L_VERIFIED_BOOT_R
+                  ? "Fuchsia Legacy Verified Boot Metadata (slot R)"
+              : guid == GPT_PT_FUCHSIA_L_MISC ? "Fuchsia Legacy Miscellaneous"
+              : guid == GPT_PT_FUCHSIA_L_EMMC_BOOT1
+                  ? "Fuchsia Legacy eMMC Boot1"
+              : guid == GPT_PT_FUCHSIA_L_EMMC_BOOT2
+                  ? "Fuchsia Legacy eMMC Boot2"
+                  : "UNRECOGNIZED";
+        print "#<" + s + ">";
+      }
+  };

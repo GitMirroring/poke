@@ -46,6 +46,85 @@ type MBR_CHS =
       }
   };
 
+var MBR_PT_Empty           = 0x00UB,
+    MBR_PT_FAT12           = 0x01UB,
+    MBR_PT_FAT16_32MB      = 0x04UB,
+    MBR_PT_Extended        = 0x05UB,
+    MBR_PT_FAT16           = 0x06UB,
+    MBR_PT_NTFS            = 0x07UB,
+    MBR_PT_FAT32           = 0x0BUB,
+    MBR_PT_FAT32_LBA       = 0x0CUB,
+    MBR_PT_Extended_LBA    = 0x0FUB,
+    MBR_PT_LinuxSwap       = 0x82UB,
+    MBR_PT_LinuxNative     = 0x83UB,
+    MBR_PT_LinuxExtended   = 0x85UB,
+    MBR_PT_LinuxLVM        = 0x8EUB,
+    MBR_PT_FreeBSD         = 0xA5UB,
+    MBR_PT_OpenBSD         = 0xA6UB,
+    MBR_PT_NetBSD          = 0xA9UB,
+    MBR_PT_HFS_HFSPlus     = 0xAFUB,
+    MBR_PT_Solaris         = 0xBEUB,
+    MBR_PT_SolarisBoot     = 0xBFUB,
+    MBR_PT_ChromeOSKernel  = 0xC1UB,
+    MBR_PT_ChromeOSRootFS  = 0xC2UB,
+    MBR_PT_ChromeOSFuture  = 0xC3UB,
+    MBR_PT_CP_M            = 0xDBUB,
+    MBR_PT_CTOS            = 0xE1UB,
+    MBR_PT_LinuxPlaintext  = 0xE2UB,
+    MBR_PT_LinuxLVM2       = 0xE3UB,
+    MBR_PT_DRDOS           = 0xE4UB,
+    MBR_PT_SpeedStor       = 0xE5UB,
+    MBR_PT_BeOS            = 0xEBUB,
+    MBR_PT_GPT_PROTECTIVE  = 0xEEUB,
+    MBR_PT_EFISystem       = 0xEFUB,
+    MBR_PT_SkyOS           = 0xF1UB,
+    MBR_PT_IBM_OS2         = 0xFBUB;
+
+type MBR_PartitionType =
+  struct
+  {
+    uint<8> p_type;
+    method _print = void:
+      {
+        var s = p_type == MBR_PT_Empty          ? "Empty"
+              : p_type == MBR_PT_FAT12          ? "FAT12"
+              : p_type == MBR_PT_FAT16_32MB     ? "FAT16 (32MB or smaller)"
+              : p_type == MBR_PT_Extended       ? "Extended"
+              : p_type == MBR_PT_FAT16          ? "FAT16"
+              : p_type == MBR_PT_NTFS           ? "NTFS"
+              : p_type == MBR_PT_FAT32          ? "FAT32"
+              : p_type == MBR_PT_FAT32_LBA      ? "FAT32 (LBA)"
+              : p_type == MBR_PT_Extended_LBA   ? "Extended (LBA)"
+              : p_type == MBR_PT_LinuxSwap      ? "Linux Swap"
+              : p_type == MBR_PT_LinuxNative    ? "Linux Native"
+              : p_type == MBR_PT_LinuxExtended  ? "Linux Extended"
+              : p_type == MBR_PT_LinuxLVM       ? "Linux LVM"
+              : p_type == MBR_PT_FreeBSD        ? "FreeBSD"
+              : p_type == MBR_PT_OpenBSD        ? "OpenBSD"
+              : p_type == MBR_PT_NetBSD         ? "NetBSD"
+              : p_type == MBR_PT_HFS_HFSPlus    ? "HFS / HFS+"
+              : p_type == MBR_PT_Solaris        ? "Solaris"
+              : p_type == MBR_PT_SolarisBoot    ? "Solaris Boot"
+              : p_type == MBR_PT_ChromeOSKernel ? "ChromeOS Kernel"
+              : p_type == MBR_PT_ChromeOSRootFS ? "ChromeOS Root FS"
+              : p_type == MBR_PT_ChromeOSFuture ? "ChromeOS Future"
+              : p_type == MBR_PT_CP_M           ? "CP/M"
+              : p_type == MBR_PT_CTOS           ? "CTOS"
+              : p_type == MBR_PT_LinuxPlaintext ? "Linux Plaintext"
+              : p_type == MBR_PT_LinuxLVM2      ? "Linux LVM2"
+              : p_type == MBR_PT_DRDOS          ? "DR-DOS"
+              : p_type == MBR_PT_SpeedStor      ? "SpeedStor"
+              : p_type == MBR_PT_BeOS           ? "BeOS"
+              : p_type == MBR_PT_GPT_PROTECTIVE ? "GPT Protective Partition"
+              : p_type == MBR_PT_EFISystem      ? "EFI System"
+              : p_type == MBR_PT_SkyOS          ? "SkyOS"
+              : p_type == MBR_PT_IBM_OS2        ? "IBM OS/2"
+              : "UNRECOGNIZED";
+        print "#<" + s + ">";
+      }
+  };
+
+
 /* MBR Partition Table Entry (PTE)
  *
  *  Offset  Size (bytes)  Description
@@ -73,7 +152,7 @@ type MBR_PTE =
         }
     } attr;
     MBR_CHS start_chs;
-    uint<8> part_type;  /* partition type*/
+    MBR_PartitionType part_type;
     MBR_CHS end_chs;
     uint<32> lba;
     uint<32> sector_count;

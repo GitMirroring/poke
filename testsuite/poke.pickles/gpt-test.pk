@@ -1,0 +1,72 @@
+/* gpt-test.pk - Tests for the gpt pickle.  */
+
+/* Copyright (C) 2023 Denis Maryin.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+load pktest;
+load gpt;
+
+var tests = [
+  PkTest {
+    name = "various magic numbers",
+    func = lambda (string name) void:
+      {
+        with_temp_ios
+          :endian ENDIAN_LITTLE
+          :do lambda void:
+            {
+              uint<8>[5120] @ 0#B = uint<8>[5120] ();
+              try
+                {
+                  var g = GPT @ 0#B;
+                  assert(0, "MBR shall fail constraint checking!");
+                }
+              catch if E_constraint
+                {
+                  assert(1, "expected exception");
+                }
+              /* Fix the MBR magic number.  */
+              uint<8>[2] @ 510#B = [0x55UB, 0xaaUB];
+              try
+                {
+                  var g = GPT @ 0#B;
+                  assert(0, "GPT header shall fail constraint checking!");
+                }
+              catch if E_constraint
+                {
+                  assert(1, "expected exception");
+                }
+              /* Fix GPT header magic.  */
+              uint<8>[8] @ 512#B = ['E', 'F', 'I', ' ', 'P', 'A', 'R', 'T'];
+              /* Fix GPT header size.  */
+              uint<32> @ (512 + 12)#B = 92U;
+              /* Fix GPT header reserved-must-be-zero.  */
+              uint<32> @ (512 + 20)#B = 0U;
+
+              /* Must not fail now.  */
+              var g = GPT @ 0#B;
+
+              /* Check for random field zero.  */
+              assert(g.header.partition_entry_size == 0,
+                     "Must be zero for uninitialized GPT");
+          };
+      },
+  },
+];
+
+var ec = pktest_run (tests) ? 0 : 1;
+
+exit (ec);

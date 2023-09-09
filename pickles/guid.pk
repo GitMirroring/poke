@@ -1,0 +1,35 @@
+/* guid.pk - GUID (Microsoft LE style).  */
+
+/* Copyright (C) 2023 Denis Maryin.   */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* Implemented as specified in
+   https://en.wikipedia.org/wiki/Universally_unique_identifier.  */
+
+type GUID =
+  struct
+  {
+    little uint<32>   data1;
+    little uint<16>   data2;
+    little uint<16>   data3;
+    uint<8>[8] data4;
+    method _print = void:
+      {
+        printf("#<{%u32x-%u16x-%u16x-%u8x%u8x-%u8x%u8x%u8x%u8x%u8x%u8x}>",
+               data1, data2, data3, data4[0], data4[1],
+               data4[2], data4[3], data4[4], data4[5], data4[6], data4[7]);
+      }
+  };
