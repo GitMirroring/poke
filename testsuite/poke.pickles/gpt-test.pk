@@ -55,13 +55,13 @@ var tests = [
               uint<32> @ (512 + 12)#B = 92U;
               /* Fix GPT header reserved-must-be-zero.  */
               uint<32> @ (512 + 20)#B = 0U;
+              /* Fix GPT header `partition_entry_size'.  */
+              offset<uint<32>,B> @ (512 + 84)#B = 128#B;
 
               /* Must not fail now.  */
               var g = GPT @ 0#B;
 
-              /* Check for random field zero.  */
-              assert(g.header.partition_entry_size == 0,
-                     "Must be zero for uninitialized GPT");
+              assert(g.header.partition_entry_size == 128#B);
           };
       },
   },

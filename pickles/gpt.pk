@@ -24,29 +24,33 @@ load "guid.pk";
 load "gpt-partition-types.pk";
 load "gpt-partition-attrs.pk";
 
-var GPT_SECTOR_SIZE = 512#B;
+unit GPT_SectorSize = 512 * 8;  /* 512 bytes (by convention).  */
+
+assert (#GPT_SectorSize == #MBR_SectorSize);
+
+type GPT_LBA = offset<uint<64>,GPT_SectorSize>;
 
 type GPT_Header =
   struct
   {
     uint<8>[8] signature == ['E', 'F', 'I', ' ', 'P', 'A', 'R', 'T'];
     uint<8>[4] revision_magic;
-    little uint<32> header_size == 92;
+    little offset<uint<32>,B> header_size == 92#B;
     little uint<32> header_crc;
     little uint<32> reserved_zero1 == 0;
-    little uint<64> current_lba;
-    little uint<64> backup_lba;
-    little uint<64> first_usable_lba;
-    little uint<64> last_usable_lba;
+    little GPT_LBA current_lba;
+    little GPT_LBA backup_lba;
+    little GPT_LBA first_usable_lba;
+    little GPT_LBA last_usable_lba;
     GUID disk_guid;
-    little uint<64> partition_entries_start_lba;
+    little GPT_LBA partition_entries_start_lba;
     little uint<32> partition_entries_count;
-    little uint<32> partition_entry_size;
+    little offset<uint<32>,B> partition_entry_size == 128#B;
     little uint<32> partition_entries_crc;
-    uint<8>[GPT_SECTOR_SIZE - 92#B] padding : OFFSET == 92#B;
+    uint<8>[1#GPT_SectorSize - 92#B] padding : OFFSET == 92#B;
   };
 
-assert ((GPT_Header {})'size == GPT_SECTOR_SIZE);
+assert (#GPT_Header == #GPT_SectorSize);
 
 type GPT_Partition_Name =
   struct
@@ -72,8 +76,8 @@ type GPT_Partition_Entry =
   {
     GPT_PartitionType_GUID pt_guid;
     GUID this_partition_guid;
-    little uint<64> first_lba;
-    little uint<64> last_lba;
+    little GPT_LBA first_lba;
+    little GPT_LBA last_lba;
     GPT_Partition_Attributes attribute_flags;
     GPT_Partition_Name partition_name : OFFSET == 56#B;
   };
@@ -84,7 +88,7 @@ type GPT =
   struct
   {
     MBR protective_mbr;
-    GPT_Header header : OFFSET == GPT_SECTOR_SIZE;
+    GPT_Header header;
     GPT_Partition_Entry[header.partition_entries_count] partitions
-        @ GPT_SECTOR_SIZE * header.partition_entries_start_lba;
+        @ header.partition_entries_start_lba;
   };

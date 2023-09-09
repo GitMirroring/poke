@@ -1,5 +1,15 @@
 2023-09-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* pickles/gpt.pk (GPT_SECTOR_SIZE): Remove.
+	(GPT_SectorSize): New unit.
+	(GPT_LBA): New type.
+	(GPT_Header): Change type of fields to offset when appropriate.
+	(GPT_Partition_Entry): Likewise.
+	(GPT): Update.
+	* testsuite/poke.pickles/gpt-test.pk (tests): Likewise.
+
+2023-09-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* pickles/mbr.pk (MBR_SectorSize): New unit.
 	(MBR_PartitionType): Change it to integral struct.
 	(MBR_PTE): Change `lba' and `sector_count' to little-endian offset
