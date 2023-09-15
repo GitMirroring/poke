@@ -180,6 +180,7 @@ pvm_array_insert (pvm_val arr, pvm_val idx, pvm_val val)
   size_t nelem = PVM_VAL_ULONG (PVM_VAL_ARR_NELEM (arr));
   size_t nallocated = PVM_VAL_ARR_NALLOCATED (arr);
   size_t nelem_to_add = index - nelem + 1;
+  size_t nelem_to_allocate = index >= nallocated ? index - nallocated + 1 : 0;
   size_t val_size = pvm_sizeof (val);
   size_t array_boffset = PVM_VAL_ULONG (PVM_VAL_ARR_OFFSET (arr));
   size_t elem_boffset
@@ -194,9 +195,9 @@ pvm_array_insert (pvm_val arr, pvm_val idx, pvm_val val)
   if (index < nelem)
     return 0;
 
-  /* We have a hard-limit in the number of elements to append, in
+  /* We have a hard-limit in the number of elements to allocate, in
      order to avoid malicious code or harmful bugs.  */
-  if (nelem_to_add > 1024)
+  if (nelem_to_allocate > 1024)
     return 0;
 
   /* Make sure there is enough room in the array for the new elements.

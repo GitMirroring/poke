@@ -1,3 +1,10 @@
+2023-09-15  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pvm-val.c (pvm_array_insert): Fix defensive check when
+	array allocation grows.
+	* testsuite/poke.pkl/array-3.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
+
 2023-09-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* pickles/gpt.pk (GPT_SECTOR_SIZE): Remove.
