@@ -1,3 +1,7 @@
+2023-09-16  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* pickles/Makefile.am (dist_pickles_DATA): Add gpt.pk.
+
 2023-09-15  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pvm-val.c (pvm_array_insert): Fix defensive check when
