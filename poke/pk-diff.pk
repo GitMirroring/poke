@@ -41,11 +41,11 @@ Arguments:
 
   :values (bool)
          Whether to include interpreted values in the output.
-         Defaults to `pk_sdiff_print_values', currently %v.
+         Defaults to `pk_sdiff_print_values', initially %v.
 
   :group_by (int)
          How are bytes grouped together in the output.  Defaults to
-         `pk_diff_group_by', currently %v.
+         `pk_diff_group_by', initially %v.
 
 Note that for the differences to make sense, both values A and B
 should be of the same type.
