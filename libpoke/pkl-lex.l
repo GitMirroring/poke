@@ -199,7 +199,7 @@ HEXCST                   0[xX][0-9a-fA-F][0-9a-fA-F_]*
 BINCST                   0[bB][01][01_]*
 OCTCST             0[oO][0-7][0-7_]*
 DECCST             [0-9][0-9_]*
-IS                   ((u|U)|(u|U)?(l|L|b|B|h|H|n|N)|(l|L|b|B|h|H|n|N)(u|U))
+IS                 ((u|U)|(u|U)?(l|L|b|B|h|H|n|N)|(l|L|b|B|h|H|n|N)(u|U)|(t|T))
 
 L [a-zA-Z_]
 D [0-9]
@@ -574,6 +574,9 @@ GT >
   if (*end == 'u' || *end == 'U'
       || (*end != '\0' && (*(end + 1) == 'u' || *(end + 1) == 'U')))
     signed_p = 0;
+  else if (*end == 't' || *end == 'T'
+      || ((*end != '\0') && (*(end + 1) == 't' || *(end + 1) == 'T')))
+    signed_p = 0;
 
   width = 0;
   if (*end == 'l' || *end == 'L'
@@ -588,6 +591,9 @@ GT >
   else if (*end == 'n' || *end == 'N'
       || ((*end != '\0') && (*(end + 1) == 'n' || *(end + 1) == 'N')))
     width = 4;
+  else if (*end == 't' || *end == 'T'
+      || ((*end != '\0') && (*(end + 1) == 't' || *(end + 1) == 'T')))
+    width = 1;
 
   if (width == 0)
     width = integer_literal_width (value, signed_p);

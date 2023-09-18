@@ -1446,6 +1446,7 @@ immutable fun _pkl_print_format_any = (any val,
                       : bits == 8 ? "B"
                       : bits == 16 ? "H"
                       : bits == 64 ? "L"
+                      : bits == 1 ? "T"
                       : "");
     var uval = 0UL;
 
@@ -1488,7 +1489,7 @@ immutable fun _pkl_print_format_any = (any val,
                        : asm uint<64>: ("iutolu 64; nip" : val));
 
         emit_int_prefix;
-        if (bits == 32 || int_suffix != "")
+        if (bits != 1 && (bits == 32 || int_suffix != ""))
           int_suffix = "U" + int_suffix;
       }
 

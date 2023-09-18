@@ -1734,6 +1734,10 @@ EXTRA_DIST = \
   poke.pkl/integers-10.pk \
   poke.pkl/integers-11.pk \
   poke.pkl/integers-12.pk \
+  poke.pkl/integers-13.pk \
+  poke.pkl/integers-14.pk \
+  poke.pkl/integers-15.pk \
+  poke.pkl/integers-16.pk \
   poke.pkl/integers-diag-1.pk \
   poke.pkl/integers-diag-2.pk \
   poke.pkl/integers-diag-3.pk \
