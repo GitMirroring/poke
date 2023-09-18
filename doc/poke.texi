@@ -9611,8 +9611,9 @@ A set of suffixes can be used to construct integer literals of certain
 types explicitly.  @code{L} or @code{l} is for 64-bit integers.
 @code{H} or @code{h} is for 16-bit integers (also known as
 @dfn{halves}), @code{B} or @code{b} is for 8-bit integers (also known
-as @dfn{bytes}) and @code{n} or @code{N} is for 4-bit integers (also
-known as @dfn{nibbles}).
+as @dfn{bytes}) @code{n} or @code{N} is for 4-bit integers (also known
+as @dfn{nibbles}) and @code{t} or @code{T} is for 1-bit integers (also
+known as @dfn{bits}).
 
 Thus, @code{10L} is a 64-bit integer with value
 @code{0x0000_0000_0000_000A}, @code{10H} is a 16-bit integer with
@@ -9623,9 +9624,11 @@ value @code{0x000A} and @code{10b} is a 8-bit integer with value
 Similarly, the signed or unsigned attribute of an integer can be
 explicitly specified using the suffix @code{u} or @code{U} (the
 default are signed types).  For example @code{0xffff_ffffU} has type
-@code{uint<32>} and @code{0ub} has type @code{uint<8>}.  It is possible
-to combine width-indicating suffixes with signedness suffixes:
-@code{10UL} denotes the same literal as @code{10LU}.
+@code{uint<32>} and @code{0ub} has type @code{uint<8>}.  It is
+possible to combine width-indicating suffixes with signedness
+suffixes: @code{10UL} denotes the same literal as @code{10LU}.  Note
+that bit constants (suffix @code{t} or @code{T}) are always unsigned
+and do not require @code{U}.
 
 The above rules guarantee that it is always possible to determine the
 width and signedness of an integer constant just by looking at it,

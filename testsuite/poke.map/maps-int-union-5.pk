@@ -18,6 +18,6 @@ type U = union int<32>
 /* { dg-command {.set endian big} } */
 /* { dg-command {.set omode flat} } */
 /* { dg-command {U @ 1#B } } */
-/* { dg-output "U {b=S {sign=\\(uint<1>\\) 0x0,\\(uint<31>\\) 0x20304050}}" } */
+/* { dg-output "U {b=S {sign=0x0T,\\(uint<31>\\) 0x20304050}}" } */
 /* { dg-command {+(U @ 1#B)} } */
 /* { dg-output "\\n0x20304050" } */

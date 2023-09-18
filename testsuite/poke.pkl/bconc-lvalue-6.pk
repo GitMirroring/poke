@@ -10,4 +10,4 @@ a:::b = 0xdeadbeef as uint<16>;
 /* { dg-command {a} } */
 /* { dg-output ".* 0x5f77" } */
 /* { dg-command {b} } */
-/* { dg-output "\n.* 0x1" } */
+/* { dg-output "\n0x1T" } */

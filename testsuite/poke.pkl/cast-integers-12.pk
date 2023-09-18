@@ -3,8 +3,8 @@
 var x = 0;
 
 /* { dg-command {  x as uint<1> } } */
-/* { dg-output "\\(uint<1>\\) 0" } */
+/* { dg-output "0T" } */
 
 /* For constant folding: */
 /* { dg-command {  0 as uint<1> } } */
-/* { dg-output "\n\\(uint<1>\\) 0" } */
+/* { dg-output "\n0T" } */
