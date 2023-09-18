@@ -277,6 +277,7 @@ AC_CONFIG_FILES(Makefile
                 libpoke/pkl-config.pk
                 poke/Makefile
                 poked/Makefile
+                pokefmt/Makefile
                 utils/Makefile
                 pickles/Makefile
                 maps/Makefile
