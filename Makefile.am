@@ -17,7 +17,7 @@
 
 ACLOCAL_AMFLAGS = -I m4 -I m4/libpoke
 SUBDIRS = jitter gl autoconf maps pickles gl-libpoke libpoke poke \
-          poked utils doc man testsuite etc po
+          poked pokefmt utils doc man testsuite etc po
 
 EXTRA_DIST = INSTALL.generic DEPENDENCIES $(top_srcdir)/.version
 BUILT_SOURCES = $(top_srcdir)/.version

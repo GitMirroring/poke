@@ -36,6 +36,7 @@ POKECONFIGDIR=$b/libpoke
 POKEINFODIR=$s/doc
 POKEAPPDIR=$s/poke
 POKEDAPPDIR=$s/poked
+POKEFMTAPPDIR=$s/pokefmt
 POKEPICKLESDIR=$s/pickles
 POKEMAPSDIR=$s/maps
 POKEDOCDIR=$s/doc

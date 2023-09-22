@@ -1,0 +1,115 @@
+# pokefmt.exp - Tests for pokefmt application.
+#
+#   Copyright (C) 2023 The poke authors
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, see <http://www.gnu.org/licenses/>.
+
+load_lib standard.exp
+load_lib dejagnu.exp
+
+global POKEFMT
+if ![info exists POKEFMT] {
+    set POKEFMT ${objdir}/../pokefmt/pokefmt
+}
+
+set tmpdir /tmp
+catch {
+    set tmpdir $::env(TMPDIR)
+}
+set SUBDIR [file join $tmpdir pokefmt-data.[pid]]
+if {! [file exists $SUBDIR]} {
+    file mkdir $SUBDIR
+}
+
+set timeout 3
+
+proc pokefmt_run {test input output} {
+    global POKEFMT
+    global SUBDIR
+
+    set fin $SUBDIR/input
+    set fout $SUBDIR/output
+
+    set in [open $fin w]
+    puts -nonewline $in $input
+    close $in
+
+    exec $POKEFMT < $fin > $fout
+
+    set out [open $fout r]
+    set actual_output [read $out]
+    close $out
+
+    if {[string equal "$output" "$actual_output"]} {
+        pass "pokefmt $test"
+    } else {
+        fail "pokefmt $test"
+        verbose "expected:'$output' != actual:'$actual_output'" 1
+    }
+}
+
+pokefmt_run 1 "Hi" "Hi"
+pokefmt_run 2 "Hi{}Bye" "Hi{}Bye"
+pokefmt_run 3 "Hi}%Bye" "Hi}%Bye"
+pokefmt_run 4 "Hi{}%Bye" "Hi{}%Bye"
+pokefmt_run 5 "Hi\\%{}%Bye" "Hi%{}%Bye"
+pokefmt_run 6 "Hi%{}%Bye" "HiBye"
+pokefmt_run 7 "Hi%{Bye" "Hi"
+pokefmt_run 8 "Hi()Bye" "Hi()Bye"
+pokefmt_run 9 "Hi)%Bye" "Hi)%Bye"
+pokefmt_run 10 "Hi()%Bye" "Hi()%Bye"
+pokefmt_run 11 "Hi\\%()%Bye" "Hi%()%Bye"
+pokefmt_run 12 "Hi%(0)%Bye" "Hi0Bye"
+pokefmt_run 13 "Hi%(Bye" "Hi"
+pokefmt_run 14 {Hi%{print "-";}%Bye} "Hi-Bye"
+pokefmt_run 15 {Hi%("-")%Bye} {Hi"-"Bye}
+pokefmt_run 16 "Hi%()Bye" "Hi"
+pokefmt_run 17 "%(0xff)%" "255"
+pokefmt_run 18 "%(1 + 3 + 4)% + %(1)% = %(1+3+4+1)%" "8 + 1 = 9"
+
+pokefmt_run 19 {
+#as: -march=rv32i
+#objdump: -dr
+%{
+  load riscv;
+  fun pokefmt_expr_printer = (any i32) void:
+  {
+    printf ("%u32x", i32 as uint<32>);
+  }
+}%
+.*:[    ]+file format .*
+
+
+Disassembly of section .text:
+
+0+000 <target>:
+#...
+[       ]+40:[  ]+%(+(rv32_auipc :rd 0 :imm 0))%[  ]+auipc[        ]+zero,0x0
+[       ]+44:[  ]+%(+(rv32_lw :rd 0 :rs1 0 :imm 0))%[  ]+lw[   ]+zero,0\(zero\) # 0 .*
+} {
+#as: -march=rv32i
+#objdump: -dr
+
+.*:[    ]+file format .*
+
+
+Disassembly of section .text:
+
+0+000 <target>:
+#...
+[       ]+40:[  ]+00000017[  ]+auipc[        ]+zero,0x0
+[       ]+44:[  ]+00002003[  ]+lw[   ]+zero,0\(zero\) # 0 .*
+}
+
+file delete -force $SUBDIR

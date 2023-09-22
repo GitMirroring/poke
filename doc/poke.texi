@@ -77,6 +77,9 @@ Pickles
 poked
 * poked::                       The poke daemon.
 
+pokefmt
+* pokefmt::                     The poke template system.
+
 poke and Emacs
 * Programming Emacs Modes::     Modes to write Poke and RAS programs.
 
@@ -8580,6 +8583,91 @@ The following variable is also available for pokelets to use:
 An array of callbacks to be run after executing the @emph{command}
 (received from input channel 2).  Callback signature: @code{()void}.
 @end table
+
+@node pokefmt
+@chapter pokefmt
+
+@code{pokefmt} is a template system to embed Poke code in files.
+It copies the content from standard input to standard output and
+replaces the Poke code with the result of execution.  You can write
+Poke code between @code{%@{} and @code{@}%} delimters.  To simplify
+printing of expressions, @code{pokefmt} also supports embedding of
+Poke expressions between @code{%(} and @code{%)} delimiters.
+
+
+As as example, @code{pokefmt} will transform the following text
+
+@example
+%@{
+  load riscv;
+
+  var a = 1, a = 2;
+@}%
+The encoding of ADD R3, R2, R1 instruction in RISC-V instruction set
+is %@{printf "0x%u32x", rv32_add (3, 2, 1);@}%.
+
+The result of %(a)% + %(b)% is %(a + b)%.
+@end example
+
+to this text:
+
+@example
+
+The encoding of ADD R3, R2, R1 instruction in RISC-V instruct set
+is 0x001101b3.
+
+The result of 1 + 2 is 3.
+@end example
+
+
+You can customize the printer for expressions by re-defining
+@code{pokefmt_expr_printer} function.  For example,
+
+
+@example
+#as: -march=rv32i
+#objdump: -dr
+%@{
+  load riscv;
+  fun pokefmt_expr_printer = (any i32) void:
+  @{
+    printf ("%u32x", i32 as uint<32>);
+  @}
+@}%
+.*:[    ]+file format .*
+
+
+Disassembly of section .text:
+
+0+000 <target>:
+#...
+[       ]+40:[  ]+%(+(rv32_auipc :rd 0 :imm 0))%[  ]+auipc[        ]+zero,0x0
+%@{
+  /* Change the expression printer to accept RV32_Insn.  */
+  fun pokefmt_expr_printer = (any rv32insn) void:
+  @{
+    printf ("%u32x", +(rv32insn as RV32_Insn));
+  @}
+@}%[       ]+44:[  ]+%(rv32_lw :rd 0 :rs1 0 :imm 0)%[  ]+lw[   ]+zero,0\(zero\) # 0 .*
+@end example
+
+will be transformed to:
+
+@example
+#as: -march=rv32i
+#objdump: -dr
+
+.*:[    ]+file format .*
+
+
+Disassembly of section .text:
+
+0+000 <target>:
+#...
+[       ]+40:[  ]+00000017[  ]+auipc[        ]+zero,0x0
+[       ]+44:[  ]+00002003[  ]+lw[   ]+zero,0\(zero\) # 0 .*
+@end example
+
 
 @node Programming Emacs Modes
 @chapter Programming Emacs Modes

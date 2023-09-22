@@ -36,6 +36,7 @@ if HAVE_DEJAGNU
           POKECMDSDIR="$(top_srcdir)/poke" \
           POKEDOCDIR="$(top_builddir)/doc" \
           POKE_LOAD_PATH="$(top_srcdir)/poke" \
+          POKEFMTAPPDIR="$(top_srcdir)/pokefmt" \
 		$$runtest --tool $(DEJATOOL) --srcdir $${srcdir} --objdir $(builddir) \
                         SHELL="$(SHELL)" \
 			$(RUNTESTFLAGS) || exit $$1; \
@@ -2798,6 +2799,7 @@ EXTRA_DIST = \
   poke.pktest/pktest-10.pk \
   poke.pktest/pktest-11.pk \
   poke.pktest/pktest-12.pk \
+  poke.pokefmt/pokefmt.exp \
   poke.pvm/pvm-insns-test.pk \
   poke.repl/repl.exp \
   poke.std/std.exp \

@@ -1,3 +1,17 @@
+2023-09-22  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* configure.ac (AC_CONFIG_FILES): Add `pokefmt/Makefile'.
+	* Makefile.am (SUBDIRS): Add `pokefmt'.
+	* pokefmt/pokefmt.l: New template system to embed Poke code in docs,
+	tests, etc.
+	* pokefmt/pokefmt.pk: Poke support code for `pokefmt' app.
+	* pokefmt/Makefile.am: New file.
+	* run.in (POKEFMTAPPDIR): New variable.
+	* poke.pokefmt/pokefmt.exp: New tests.
+	* testsuite/Makefile.am (check-DEJAGNU): Add `POKEFMTAPPDIR' env var.
+	(EXTRA_DIST): Update.
+	* doc/poke.texi (pokefmt): Add new chapter.
+
 2023-09-18  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-lex.l: Accept t and T suffix for uint<1> values.
