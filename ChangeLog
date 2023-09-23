@@ -1,3 +1,8 @@
+2023-09-23  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* etc/hacking.org (Maintainers): Update.
+	* HACKING: Regenerate.
+
 2023-09-22  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* configure.ac (AC_CONFIG_FILES): Add `pokefmt/Makefile'.

@@ -182,6 +182,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
         doc/learn-poke-language-in-y-minutes.pk
         pickles/riscv.pk
         pickles/pcap.pk
+        pokefmt
         poked                   Mohammad-Reza Nabipoor <mnabipoor@gnu.org>
 
 

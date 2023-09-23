@@ -63,6 +63,7 @@ etc/poke-mode.el        Aurélien Aptel <aaptel@suse.com>
 doc/learn-poke-language-in-y-minutes.pk
 pickles/riscv.pk
 pickles/pcap.pk
+pokefmt
 poked                   Mohammad-Reza Nabipoor <mnabipoor@gnu.org>
 #+END_VERSE
 
