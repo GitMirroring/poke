@@ -60,7 +60,9 @@ pk_compiler_new_with_flags (struct pk_term_if *term_if, uint32_t flags)
 
   if (!term_if->flush_fn || !term_if->puts_fn || !term_if->printf_fn
       || !term_if->indent_fn || !term_if->class_fn || !term_if->end_class_fn
-      || !term_if->hyperlink_fn || !term_if->end_hyperlink_fn)
+      || !term_if->hyperlink_fn || !term_if->end_hyperlink_fn
+      || !term_if->get_color_fn || !term_if->get_bgcolor_fn
+      || !term_if->set_color_fn || !term_if->set_bgcolor_fn)
     return NULL;
 
   pkc = calloc (1, sizeof (struct _pk_compiler));

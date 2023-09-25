@@ -83,8 +83,20 @@ test_pk_compiler_new (void)
   TT (10);
 
   tif.end_hyperlink_fn = poke_term_if.end_hyperlink_fn;
+  TT (11);
+
+  tif.get_color_fn = poke_term_if.get_color_fn;
+  TT (12);
+
+  tif.get_bgcolor_fn = poke_term_if.get_bgcolor_fn;
+  TT (13);
+
+  tif.set_color_fn = poke_term_if.set_color_fn;
+  TT (14);
+
+  tif.set_bgcolor_fn = poke_term_if.set_bgcolor_fn;
   pkc = pk_compiler_new (&tif);
-  T ("pk_compiler_new_11", pkc != NULL);
+  T ("pk_compiler_new_15", pkc != NULL);
 
 #undef TT
 
