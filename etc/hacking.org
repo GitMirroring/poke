@@ -89,6 +89,7 @@ Mohammad-Reza Nabipoor	<mnabipoor@gnu.org>
 David Faust             <david.faust@oracle.com>
 Indu Bhagat             <indu.bhagat@oracle.com>
 Arsen Arsenović		<arsen@aarsen.me>
+Vincenzo Palazzo    <vincenzopalazzodev@gmail.com>
 #+END_VERSE
 
 ** Personal Branches
