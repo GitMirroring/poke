@@ -158,9 +158,6 @@ pop_active_class (const char *name)
    codes, but not the other way around (since it is really a 1-N
    relationship.)  */
 
-static int default_color;
-static int default_bgcolor;
-
 struct color_entry
 {
   term_color_t code;
@@ -170,6 +167,11 @@ struct color_entry
 };
 
 static struct color_entry *color_registry;
+
+#if defined HAVE_TEXTSTYLE_ACCESSORS_SUPPORT
+
+static int default_color;
+static int default_bgcolor;
 
 static struct color_entry *
 lookup_color (int red, int green, int blue)
@@ -187,7 +189,6 @@ lookup_color (int red, int green, int blue)
   return entry;
 }
 
-#if defined HAVE_TEXTSTYLE_ACCESSORS_SUPPORT
 
 static struct color_entry *
 lookup_color_code (int code)
