@@ -1,3 +1,7 @@
+2023-10-02  Vincenzo Palazzo  <vincenzopalazzodev@gmail.com>
+
+	* etc/nix/default.nix: add a simple nix shell.
+
 2023-09-25  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/libpoke.c (pk_compiler_new_with_flags): Add checks for
