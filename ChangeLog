@@ -1,3 +1,7 @@
+2023-10-04  Vincenzo Palazzo  <vincenzopalazzodev@gmail.com>
+
+	* etc/nix/default.nix: remove the empty line at the EOF.
+
 2023-10-02  Vincenzo Palazzo  <vincenzopalazzodev@gmail.com>
 
 	* etc/nix/default.nix: add a simple nix shell.
