@@ -29,6 +29,13 @@
 #define LIBPOKE_API
 #endif
 
+#if (defined __GNUC__ && __GNUC__ + (__GNUC_MINOR__ >= 3) > 3)                \
+    || (defined __clang__ && __clang_major__ >= 3)
+#define LIBPOKE_NONNULL(...) __attribute__ ((nonnull (__VA_ARGS__)))
+#else
+#define LIBPOKE_NONNULL(...)
+#endif
+
 typedef struct _pk_compiler *pk_compiler;
 typedef struct _pk_ios *pk_ios;
 typedef uint64_t pk_val;
@@ -169,7 +176,8 @@ int pk_errno (pk_compiler pkc) LIBPOKE_API;
    return PK_OK.  */
 
 int pk_compile_file (pk_compiler pkc, const char *filename,
-                     pk_val *exit_exception) LIBPOKE_API;
+                     pk_val *exit_exception)
+    LIBPOKE_API LIBPOKE_NONNULL (1, 2, 3);
 
 /* Compile and execute a Poke program from a memory buffer.
 
@@ -186,7 +194,8 @@ int pk_compile_file (pk_compiler pkc, const char *filename,
    PK_NULL otherwise.  */
 
 int pk_compile_buffer (pk_compiler pkc, const char *buffer,
-                       const char **end, pk_val *exit_exception) LIBPOKE_API;
+                       const char **end, pk_val *exit_exception)
+    LIBPOKE_API LIBPOKE_NONNULL (1, 2, 4);
 
 /* Like pk_compile_buffer, but gets the following extra arguments.
 
@@ -201,7 +210,7 @@ int pk_compile_buffer_with_loc (pk_compiler pkc, const char *buffer,
                                 const char *source,
                                 uint32_t line, uint32_t column,
                                 const char **end, pk_val *exit_exception)
-  LIBPOKE_API;
+  LIBPOKE_API LIBPOKE_NONNULL (1, 2, 7);
 
 /* Like pk_compile_buffer but compile and execute a single Poke
    statement, which may evaluate to a value if it is an "expression
@@ -216,7 +225,8 @@ int pk_compile_buffer_with_loc (pk_compiler pkc, const char *buffer,
 
 int pk_compile_statement (pk_compiler pkc, const char *buffer,
                           const char **end, pk_val *val,
-                          pk_val *exit_exception) LIBPOKE_API;
+                          pk_val *exit_exception)
+    LIBPOKE_API LIBPOKE_NONNULL (1, 2, 5);
 
 /* Like pk_compile_statement, but gets the following extra arguments.
 
@@ -231,7 +241,8 @@ int pk_compile_statement_with_loc (pk_compiler pkc, const char *buffer,
                                    const char *source,
                                    uint32_t line, uint32_t column,
                                    const char **end, pk_val *val,
-                                   pk_val *exit_exception) LIBPOKE_API;
+                                   pk_val *exit_exception)
+    LIBPOKE_API LIBPOKE_NONNULL (1, 2, 8);
 
 /* Like pk_compile_buffer but compile and execute a single Poke
    expression, which evaluates to a value.
@@ -247,7 +258,8 @@ int pk_compile_statement_with_loc (pk_compiler pkc, const char *buffer,
 
 int pk_compile_expression (pk_compiler pkc, const char *buffer,
                            const char **end, pk_val *val,
-                           pk_val *exit_exception) LIBPOKE_API;
+                           pk_val *exit_exception)
+    LIBPOKE_API LIBPOKE_NONNULL (1, 2, 5);
 
 /* Like pk_compile_expression, but gets the following extra arguments.
 
@@ -262,7 +274,8 @@ int pk_compile_expression_with_loc (pk_compiler pkc, const char *buffer,
                                     const char *source,
                                     uint32_t line, uint32_t column,
                                     const char **end, pk_val *val,
-                                    pk_val *exit_exception) LIBPOKE_API;
+                                    pk_val *exit_exception)
+    LIBPOKE_API LIBPOKE_NONNULL (1, 2, 8);
 
 /* Load a module using the given compiler.
 

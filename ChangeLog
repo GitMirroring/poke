@@ -1,3 +1,15 @@
+2023-10-06  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/libpoke.h (LIBPOKE_NONNULL): New macro for nonnull attribute
+	for functions.
+	(pk_compile_file): Use `LIBPOKE_NONNULL'.
+	(pk_compile_buffer): Likewise.
+	(pk_compile_buffer_with_loc): Likewise.
+	(pk_compile_statement): Likewise.
+	(pk_compile_statement_with_loc): Likewise.
+	(pk_compile_expression): Likewise.
+	(pk_compile_expression_with_loc): Likewise.
+
 2023-10-06  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* etc/hacking.org: List Mohammad-Reza Nabipoor as GNU maintainer.
