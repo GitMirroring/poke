@@ -283,10 +283,15 @@ int pk_compile_expression_with_loc (pk_compiler pkc, const char *buffer,
    and all the definitions are re-defined.  This is the same behavior
    than the `load' Poke language construction.
 
-   If the module cannot be loaded, return PK_ERROR.  Otherwise,
+   EXIT_EXCEPTION is a pointer to a pk_val variable that is set to an
+   Exception value if the moudle load results in an unhandled exception,
+   PK_NULL otherwise.
+
+   Return PK_ERROR in case of a compilation error.  Otherwise,
    return PK_OK.  */
 
-int pk_load (pk_compiler pkc, const char *module) LIBPOKE_API;
+int pk_load (pk_compiler pkc, const char *module,
+             pk_val *exit_exception) LIBPOKE_API LIBPOKE_NONNULL (1, 2, 3);
 
 /* Print a disassembly of a named function.
 

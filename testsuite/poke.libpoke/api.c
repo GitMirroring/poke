@@ -117,6 +117,24 @@ test_pk_keyword_p (pk_compiler pkc)
   T ("pk_keyword_p_2", !pk_keyword_p (pkc, "foo"));
 }
 
+static void
+test_pk_load (pk_compiler pkc)
+{
+  /* An invalid value for pk_val, just to make sure pk_load is
+     modifying it.  */
+  pk_val exception = 0;
+
+  T ("pk_load_1", pk_load (pkc, "std", &exception) == PK_OK);
+  T ("pk_load_1 exception", exception == PK_NULL);
+
+  exception = 0;  /* Again resetting to an invalid value.  */
+
+  T ("pk_load_2", pk_load (pkc, "a-module_which-does_not-exist",
+                           &exception) == PK_ERROR);
+  /* Still has the invalid value.  */
+  T ("pk_load_1 exception", exception == 0);
+}
+
 int
 main ()
 {
@@ -124,8 +142,9 @@ main ()
 
   pkc = test_pk_compiler_new ();
 
-  test_pk_compiler_free (pkc);
   test_pk_keyword_p (pkc);
+  test_pk_load (pkc);
+  test_pk_compiler_free (pkc);
 
   return 0;
 }

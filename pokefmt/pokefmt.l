@@ -503,7 +503,9 @@ poke_init (struct poke *pk, const char *poke_src_file, FILE *output)
     free (user_load_path);
   }
 
-  if (pk_load (pk->compiler, "pokefmt") != PK_OK)
+  if (pk_load (pk->compiler, "pokefmt", &pexc) != PK_OK
+      || pexc != PK_NULL)
+    /* There's no default exception handler yet to handle `pexc'.  */
     errx (1, "pk_load() failed for pokefmt.pk");
 
   if (pk_decl_val (pk->compiler, "pokefmt_expr_printer") == PK_NULL)

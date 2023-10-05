@@ -295,10 +295,16 @@ char *pkl_resolve_module (pkl_compiler compiler, const char *module,
                           int filename_p);
 
 /* Load a module using the given compiler.
-   If the module cannot be loaded, return 0.
-   Otherwise, return 1.  */
 
-int pkl_load (pkl_compiler compiler, const char *module);
+   If the module cannot be loaded (either compile-time error or run-time
+   exception), return 0.  Otherwise, return 1.
+
+   *EXIT_EXCEPTION is set to an exception value if the loading of the
+   MODULE gets interrupted by an unhandled exception.
+   Otherwise *EXIT_EXCEPTION is set to PK_NULL.  */
+
+int pkl_load (pkl_compiler compiler, const char *module,
+              pvm_val *exit_exception);
 
 /* Declare a variable in the global environmnt.
 

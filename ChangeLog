@@ -1,5 +1,19 @@
 2023-10-06  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/libpoke.h (pk_load): Add `exit_exception' parameter.
+	* libpoke/libpoke.c (pk_load): Likewise.
+	* libpoke/pkl.h (pkl_load): Likewise.
+	* libpoke/pkl.c (pkl_load): Likewise.
+	* poke/pk-cmd.c (pk_cmd_init): Call default handler for loading
+	`pk-cmd' module.
+	* poke/poke.c (initialize): Update use of `pk_load'.
+	* pokefmt/pokefmt.l (poke_init): Likewise.
+	* testsuite/poke.libpoke/api.c (test_pk_load): New function for
+	`pk_load'-related tests.
+	(main): Call `test_pk_load'.
+
+2023-10-06  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/libpoke.h (LIBPOKE_NONNULL): New macro for nonnull attribute
 	for functions.
 	(pk_compile_file): Use `LIBPOKE_NONNULL'.

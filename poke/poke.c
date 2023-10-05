@@ -651,15 +651,23 @@ initialize (int argc, char *argv[])
     free (newpaths);
   }
 
-  /* The Poke hyperlinks facilities must be loaded before poke.pk and
-     the cmd subsystem.  This is done even if the hserver is
-     disabled.  */
-  if (pk_load (poke_compiler, "pk-hserver") != PK_OK)
-    pk_fatal ("unable to load the pk-hserver module");
+  {
+    pk_val exception;
 
-  /* Load poke.pk  */
-  if (pk_load (poke_compiler, "poke") != PK_OK)
-    pk_fatal ("unable to load the poke module");
+    /* The Poke hyperlinks facilities must be loaded before poke.pk and
+       the cmd subsystem.  This is done even if the hserver is
+       disabled.  */
+    if (pk_load (poke_compiler, "pk-hserver", &exception) != PK_OK
+        || exception != PK_NULL)
+      /* There's no default exception handler yet to handle `exception'.  */
+      pk_fatal ("unable to load the pk-hserver module");
+
+    /* Load poke.pk  */
+    if (pk_load (poke_compiler, "poke", &exception) != PK_OK
+        || exception != PK_NULL)
+      /* There's no default exception handler yet to handle `exception'.  */
+      pk_fatal ("unable to load the poke module");
+  }
 
   /* Set the values of a few global variables defined in poke.pk.  */
   {

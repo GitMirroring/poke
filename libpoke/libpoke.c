@@ -232,9 +232,10 @@ pk_compile_expression (pk_compiler pkc, const char *buffer,
 }
 
 int
-pk_load (pk_compiler pkc, const char *module)
+pk_load (pk_compiler pkc, const char *module, pk_val *exit_exception)
 {
-  PK_RETURN (pkl_load (pkc->compiler, module) == 0 ? PK_ERROR : PK_OK);
+  PK_RETURN (pkl_load (pkc->compiler, module, exit_exception) == 0 ? PK_ERROR
+                                                                   : PK_OK);
 }
 
 void

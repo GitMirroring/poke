@@ -765,21 +765,15 @@ pkl_resolve_module (pkl_compiler compiler,
 }
 
 int
-pkl_load (pkl_compiler compiler, const char *module)
+pkl_load (pkl_compiler compiler, const char *module, pvm_val *exit_exception)
 {
-  pvm_val exit_exception;
   char *module_filename = pkl_resolve_module (compiler,
                                               module,
                                               0 /* filename_p */);
+
   if (!module_filename)
     return 0;
-
-  if (!pkl_execute_file (compiler, module_filename,
-                         &exit_exception)
-      || exit_exception != PVM_NULL)
-    return 0;
-
-  return 1;
+  return pkl_execute_file (compiler, module_filename, exit_exception);
 }
 
 static pkl_ast_node

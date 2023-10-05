@@ -763,6 +763,8 @@ pk_cmd_exec_script (const char *filename)
 void
 pk_cmd_init (void)
 {
+  pk_val exception;
+
   cmds_trie = pk_trie_from_cmds (dot_cmds);
   info_trie = pk_trie_from_cmds (info_cmds);
   vm_trie = pk_trie_from_cmds (vm_cmds);
@@ -777,8 +779,13 @@ pk_cmd_init (void)
   set_cmd.subcommands = set_cmds;
 
   /* Compile commands written in Poke.  */
-  if (pk_load (poke_compiler, "pk-cmd") != PK_OK)
-    pk_fatal ("unable to load the pk-cmd module");
+  if (pk_load (poke_compiler, "pk-cmd", &exception) != PK_OK)
+    pk_fatal ("unable to load the pk-cmd module due to compile-time error");
+  else if (exception != PK_NULL)
+    {
+      poke_handle_exception (exception);
+      pk_fatal ("unable to load the pk-cmd module due to run-time exception");
+    }
 }
 
 void
