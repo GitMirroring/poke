@@ -1,5 +1,11 @@
 2023-10-06  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pkl.h (pkl_execute_file): Fix comment regarding
+	EXIT_EXCEPTION.
+	(pkl_execute_buffer): Likewise.
+
+2023-10-06  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/libpoke.h (pk_load): Add `exit_exception' parameter.
 	* libpoke/libpoke.c (pk_load): Likewise.
 	* libpoke/pkl.h (pkl_load): Likewise.

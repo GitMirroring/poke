@@ -93,8 +93,8 @@ void pkl_free (pkl_compiler compiler);
 /* Compile an execute a Poke program from the given file FNAME.
    Return 1 if the compilation was successful, 0 otherwise.
 
-   If not NULL, *EXIT_EXCEPTION is set to an exception value if the
-   execution of the program gets interrupted by an unhandled exception.
+   *EXIT_EXCEPTION is set to an exception value if the execution of
+   the program gets interrupted by an unhandled exception.
    Otherwise *EXIT_EXCEPTION is set to PK_NULL.  */
 
 int pkl_execute_file (pkl_compiler compiler, const char *fname,
@@ -112,8 +112,8 @@ int pkl_execute_file (pkl_compiler compiler, const char *fname,
    Both lines and columns start numbering at one, i.e. the first
    column/line is the column/line number 1.
 
-   If not NULL, *EXIT_EXCEPTION is set to an exception value if the
-   execution of the program gets interrupted by an unhandled exception.
+   *EXIT_EXCEPTION is set to an exception value if the execution of
+   the program gets interrupted by an unhandled exception.
    Otherwise *EXIT_EXCEPTION is set to PK_NULL.  */
 
 int pkl_execute_buffer (pkl_compiler compiler, const char *buffer,
