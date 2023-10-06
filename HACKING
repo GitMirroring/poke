@@ -155,7 +155,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
 2.1 GNU Maintainer
 ~~~~~~~~~~~~~~~~~~
 
-  Jose E. Marchesi <jemarch@gnu.org>
+  Jose E. Marchesi <jemarch@gnu.org> Mohammad-Reza Nabipoor
+  <mnabipoor@gnu.org>
 
 
 2.2 Global Maintainers
@@ -275,18 +276,17 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   includes typos in comments, renaming of variables, etc.
 
   If you commit and push an obvious change, you are still required to
-  send an email to the mailing list stating you installed the
-  change. Please include a suggestive tag in your email's subject,
-  something like `[COMMITTED]'.  Also, make sure to include the patch
-  itself.
+  send an email to the mailing list stating you installed the change.
+  Please include a suggestive tag in your email's subject, something
+  like `[COMMITTED]'.  Also, make sure to include the patch itself.
 
 
 2.8 The poke.rec database
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  We maintain a database in `etc/poke.rec', in the form of a
-  recfile. See <http://www.gnu.org/software/recutils> for more
-  information on recfiles.
+  We maintain a database in `etc/poke.rec', in the form of a recfile.
+  See <http://www.gnu.org/software/recutils> for more information on
+  recfiles.
 
   This database is kept up to date by the maintainer, and contains lots
   of information on the current tasks to do, bugs, release, asn so on.
@@ -302,17 +302,16 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   - You can open it in Emacs and run the `org-export-dispatch' function.
     Replace the current contents of HACKING with the output.
 
-  - You can run `make update-hacking' at the top build directory. This
+  - You can run `make update-hacking' at the top build directory.  This
     will execute Emacs in batch mode and update HACKING.
 
 
 2.10 The Bugzilla
 ~~~~~~~~~~~~~~~~~
 
-  We maintain a bugs database in
-  <https://www.sourceware.org/bugzilla>. Our product is `poke', which is
-  divided in several components corresponding to the several areas of
-  the program/project.
+  We maintain a bugs database in <https://www.sourceware.org/bugzilla>.
+  Our product is `poke', which is divided in several components
+  corresponding to the several areas of the program/project.
 
   If you find a bug and you don't want or you can't work on it, please
   file a bug there providing as much details as you can.
@@ -418,9 +417,9 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
 3.5 GNU Jitter
 ~~~~~~~~~~~~~~
 
-  In order to build and run poke, you need Luca Saiu's GNU
-  Jitter. Jitter's git source repository, publicly readable over HTTP,
-  is at <http://git.ageinghacker.net/jitter> and its home page is
+  In order to build and run poke, you need Luca Saiu's GNU Jitter.
+  Jitter's git source repository, publicly readable over HTTP, is at
+  <http://git.ageinghacker.net/jitter> and its home page is
   <https://www.gnu.org/software/jitter/>.
 
   The appropriate version of Jitter is downloaded and bootstrapped
@@ -465,8 +464,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   Usually issuing a `make' at the top build directory is enough to
-  rebuild poke after changes have been fetched from the source repo. The
-  Automake maintainer-mode rules will make sure that autoconf and
+  rebuild poke after changes have been fetched from the source repo.
+  The Automake maintainer-mode rules will make sure that autoconf and
   friends are run again and do the right thing.
 
   However, when the Jitter submodule is updated, you have to first
@@ -557,7 +556,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   <https://www.gnu.org/prep/standards/>.
 
   Additionally, we have a few conventions that we ask you to follow when
-  hacking poke, in order to keep a coherent style when possible. These
+  hacking poke, in order to keep a coherent style when possible.  These
   are documented in the following subsections.
 
 
@@ -694,7 +693,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   `----
 
 
-  Note how the compiler internal functions use the `_pkl_' prefix. Also
+  Note how the compiler internal functions use the `_pkl_' prefix.  Also
   note that `.call' can only invoke functions defined in the global
   environment.
 
@@ -732,7 +731,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   | make check RUNTESTFLAGS=pkl.exp
   `----
 
-  You can also select tests using `TESTS' environment variable. As an
+  You can also select tests using `TESTS' environment variable.  As an
   example, to run all test files which start with `array', you can run:
   ,----
   | make check TESTS=array*.pk
@@ -892,9 +891,9 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
 5.11 Writing tests that depend on a certain capability
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  Sometimes the presence of the functionality tested may be optional. An
-  example is testing the support for styling, which depends on poke to
-  be built with libtextstyle support.
+  Sometimes the presence of the functionality tested may be optional.
+  An example is testing the support for styling, which depends on poke
+  to be built with libtextstyle support.
 
   The dg-require directive can be used for this purpose.  For example,
   the following test will be skipped (with status UNSUPPORTED) if the
@@ -925,9 +924,9 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
 ~~~~~~~~~~~~~~~~~~~~~~~
 
   The `poke.repl' testsuite is intended to test features in the
-  interactive usage of poke.  Therefore, it is not dg-based. Instead, it
-  uses the services provided by `testsuite/lib/poke.exp'. In a nutshell,
-  these services are:
+  interactive usage of poke.  Therefore, it is not dg-based.  Instead,
+  it uses the services provided by `testsuite/lib/poke.exp'.  In a
+  nutshell, these services are:
 
   poke_start
         Run a new poke process and wait at the prompt.
@@ -1535,8 +1534,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
         there is only one phase in this category, that performs constant
         folding.
   gen
-        For phases whose main purpose is to generate PVM code. Currently
-        there is only one phase in this category.
+        For phases whose main purpose is to generate PVM code.
+        Currently there is only one phase in this category.
 
   The phases in category `NAME' are implemented in the source files
   `libpoke/pkl-NAME.[ch]'.
@@ -1611,9 +1610,9 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   `----
 
 
-  Then, add a new rule to the rule `comp_stmt' in the bison
-  parser. Built-ins are equivalent to compound statements.  For example,
-  this is the rule for the rand built-in:
+  Then, add a new rule to the rule `comp_stmt' in the bison parser.
+  Built-ins are equivalent to compound statements.  For example, this is
+  the rule for the rand built-in:
 
   ,----
   |  | pushlevel BUILTIN_RAND
@@ -1629,9 +1628,9 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
 
 
   Next step is to generate the code for the built-in.  This is done
-  expanding the `pkl_gen_ps_comp_stmt' rule in the code generation. Keep
-  in mind that the generated code should conform a valid function body.
-  For example, this is the code generation part for rand:
+  expanding the `pkl_gen_ps_comp_stmt' rule in the code generation.
+  Keep in mind that the generated code should conform a valid function
+  body.  For example, this is the code generation part for rand:
 
   ,----
   | case PKL_AST_BUILTIN_RAND:
@@ -1659,7 +1658,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   warnings to the poke compiler:
 
   - Make the diagnostic messages self-contained, i.e. do not rely on the
-    extra location information to make the error intelligible. This is
+    extra location information to make the error intelligible.  This is
     mainly for the sake of accessibility, and also for when poke is run
     in quiet mode.
 
@@ -1732,9 +1731,9 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
 
   1. Pop an exception handler from the exception handler stack.
   2. If the exception handler matches the raised exception type, then
-     i. Restore the heights of the main and return stacks. ii. Restore
-     the dynamic environment. iii. Push the cached exception type to the
-     stack. iv. Branch to the exception handler.
+     i. Restore the heights of the main and return stacks.  ii. Restore
+     the dynamic environment.  iii. Push the cached exception type to
+     the stack.  iv. Branch to the exception handler.
   3. Repeat.
 
   The default exception handler, which catches "unhandled" exceptions,
@@ -1771,9 +1770,9 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   instructions (`ogetm', `ogetu') are provided to access their
   components.
 
-  Many other PVM entities need to denote offsets in a way or
-  another. For example, struct fields in `pvm_struct' values need to
-  record their relative offset with respect the beginning of the struct.
+  Many other PVM entities need to denote offsets in a way or another.
+  For example, struct fields in `pvm_struct' values need to record their
+  relative offset with respect the beginning of the struct.
 
   It may come to mind, quite naturally, to use `pvm_off' values to
   denote these offsets.  It is very elegant.  However, we decided to use
@@ -1792,9 +1791,9 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
     fragile.
 
   So, the take-home message is: in the PVM, restrict the presence of
-  `pvm_off' values to the ones generated by the code generator. Whenever
-  an offset is needed in some internal PVM structure, use bit-offsets
-  instead encoded as `ulong<64>' values.
+  `pvm_off' values to the ones generated by the code generator.
+  Whenever an offset is needed in some internal PVM structure, use
+  bit-offsets instead encoded as `ulong<64>' values.
 
 
 12.5 Writing relocatable instructions
@@ -2032,9 +2031,9 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   | }
   `----
 
-  In this case, `mapper', `writer' and `bounder' are managed by
-  GC. However, the contained `struct pkl_ast_type' is not.  There is no
-  way the GC can find these nodes thru the AST node.
+  In this case, `mapper', `writer' and `bounder' are managed by GC.
+  However, the contained `struct pkl_ast_type' is not.  There is no way
+  the GC can find these nodes thru the AST node.
 
   The solution is to allocate memory for these values as
   "uncollectable".  This is done with =pvm_alloc_uncollectable.  For
@@ -2097,10 +2096,10 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
 
   - Handle output "classes", which are the base of styling.
 
-  Out terminal abstraction is implemented of top of GNU libtextstyle. In
-  case it is not available when building poke, a dummy stub is provided
-  by gnulib.  In that case output won't be styled, but poke will still
-  compile and run properly.
+  Out terminal abstraction is implemented of top of GNU libtextstyle.
+  In case it is not available when building poke, a dummy stub is
+  provided by gnulib.  In that case output won't be styled, but poke
+  will still compile and run properly.
 
 
 14.2 Styling Classes
@@ -2122,8 +2121,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   The `class' and `end_class' calls should be properly paired.
 
   The styling classes used in poke should be documented in the user
-  manual, so the user will know what is suitable to be configured. Also,
-  whenever possible a reasonable default shall be provided in
+  manual, so the user will know what is suitable to be configured.
+  Also, whenever possible a reasonable default shall be provided in
   `poke-default.css'.
 
 
@@ -2162,8 +2161,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   dispatch is `no-threading', which requires assembly support in Jitter
   for the specific architecture and a supported binary format.
   `minimal-threading' is more portable than `no-threading', even if less
-  efficient. Jitter supports two alternative dispatches, slower but very
-  stable, portable and friendly to debugging: `switch' and
+  efficient.  Jitter supports two alternative dispatches, slower but
+  very stable, portable and friendly to debugging: `switch' and
   `direct-threading'.
 
   Any dispatch can be selectively enabled or disabled from the Poke
@@ -2276,8 +2275,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   `----
 
 
-  Or, alternatively, the code may be written in RAS in a `.pks'
-  file. Like:
+  Or, alternatively, the code may be written in RAS in a `.pks' file.
+  Like:
 
   ,----
   | .loop:
@@ -2293,11 +2292,11 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   generated code.  Typical cases are when a PVM value doesn't contain
   what it's supposed to contain, and accessing the wrong boxed value
   causes a segmentation fault (if we are lucky) or a non-crashing
-  invalid memory access (if we are very unlucky.) Whenever that kind of
+  invalid memory access (if we are very unlucky.)  Whenever that kind of
   crap happens, we find ourselves in the need of debugging the PVM code,
   which is a big PITA.
 
-  Bad news are: we don't have a PVM debugger (yet). Good news are: we
+  Bad news are: we don't have a PVM debugger (yet).  Good news are: we
   have a couple of tools that may help.
 
   The first of such tools is the `prints' instruction.  This
@@ -2329,7 +2328,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   in the stack and something is going banana.  It is also useful to
   determine what kind of value is being accessed by a given instruction.
 
-  For example, lets say that we are hunting some segmentation fault. We
+  For example, lets say that we are hunting some segmentation fault.  We
   highly suspect the code generated in the first example in this
   section, above.  Of the three instructions, `mullu' is the only one
   that could conceivably generate a segfault, so we add a stack trace
@@ -2354,7 +2353,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   When using advanced Jitter dispatches it becomes important that every
   C function or global variable accessed by a relocatable VM instruction
   is "wrapped": see the Jitter documentation [not yet existing at the
-  time of writing] for more information. Non-relocatable instructions
+  time of writing] for more information.  Non-relocatable instructions
   can access any global without need for wrapping: the problem is
   strictly with VM instruction whose native executable code gets copied
   to different memory addresses, therefore breaking PC-relative access
