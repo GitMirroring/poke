@@ -91,6 +91,7 @@ David Faust             <david.faust@oracle.com>
 Indu Bhagat             <indu.bhagat@oracle.com>
 Arsen Arsenović		<arsen@aarsen.me>
 Vincenzo Palazzo    <vincenzopalazzodev@gmail.com>
+Martin Cermak		<marticak@gmx.com>
 #+END_VERSE
 
 ** Personal Branches
