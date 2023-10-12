@@ -7971,6 +7971,7 @@ It has the following prototype:
 fun ios_dump_bytes = (int<32> @var{ios},
                       offset<uint<64>,b> @var{from},
                       offset<uint<64>,b> @var{size},
+                      any @var{val} = -1,
                       offset<uint<64>, b> @var{group_by} = 2#B,
                       int<32> @var{cluster_by} = 8,
                       int<32> @var{ruler} = 0,
@@ -7987,6 +7988,12 @@ is truncated to bytes.
 
 @var{size} is an offset specifying the amount of bytes to dump.  The
 offset is rounded up to the next byte.
+
+@var{val} Instead of an explicit @code{from+size} range, a mapped value
+can be specified using the @code{val} argument.  In this case, @code{dump}
+will show the bytes corresponding to the given value, with visual
+indications on what bytes correspond to what element contained in the
+value.
 
 @var{group_by} determines how the bytes are grouped together in the
 output.  Defaults to two bytes.
