@@ -1,3 +1,9 @@
+2023-10-22  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* pickles/gcov.pk: New file.
+	* testsuite/poke.pickles/bmp-test.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
+
 2023-10-09  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* doc/poke.texi (pokefmt): Fix typo in example code.

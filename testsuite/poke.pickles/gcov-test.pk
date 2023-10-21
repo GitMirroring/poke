@@ -1,0 +1,37 @@
+/* gcov-test.pk - Tests for the GCOV pickle.  */
+
+/* Copyright (C) 2023 Jose E. Marchesi.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+load pktest;
+load gcov;
+
+var tests =
+[
+  PkTest {
+    name = "GCOV_Length",
+    func = lambda (string name) void:
+      {
+        var l = GCOV_Length { _length = -2 };
+        assert (l.get_value == 0#32);
+        l = GCOV_Length { _length = 2 };
+        assert (l.get_value == 2#32);
+      },
+  },
+];
+
+var ok = pktest_run (tests);
+exit (ok ? 0 : 1);

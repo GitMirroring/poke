@@ -1,0 +1,463 @@
+/* gcov.pk - Support for poking at gcov data files.  */
+
+/* Copyright (C) 2023 Jose E. Marchesi.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* gcov uses three different kind of files or elements in a stream,
+   each file or section characterized by the magic numbers below.
+   These magic numbers are not palindromes and are used to deduce the
+   endianness of the data that follows.  */
+
+type GCOV_Magic =
+  struct int<32>
+  {
+    uint<8> c1;
+    uint<8> c2;
+    uint<8> c3;
+    uint<8> c4;
+
+    method _print = void:
+    {
+      printf ("#<magic:%c%c%c%c>", c1, c2, c3, c4);
+    }
+  };
+
+var GCOV_DATA_MAGIC     = GCOV_Magic { c1 = 'g', c2 = 'c', c3 = 'd', c4 = 'a' },
+    GCOV_NOTE_MAGIC     = GCOV_Magic { c1 = 'g', c2 = 'c', c3 = 'n', c4 = 'o' },
+    GCOV_FILENAME_MAGIC = GCOV_Magic { c1 = 'g', c2 = 'c', c3 = 'f', c4 = 'n' };
+
+/* Recent GCOV versions are stored as 32-bit integers, whose contents
+   determine the value of four ASCII characters.
+
+   The first character in the major number starts with 'A', so this
+   versioning schema doesn't collide with a previous used one.
+
+   The status version character is `e' for "experimental", `p' for
+   "prerelease" and `r' for "release". Some GCC versions
+   generate '*'.  */
+
+type GCOV_Version =
+  struct int<32>
+  {
+    uint<8> major1 : major1 >= 'A' = 'A';
+    uint<8> major2 = '0';
+    uint<8> minor = '0';
+    uint<8> status : status in ['e','p','r','*'] = 'e';
+
+    method _print = void:
+    {
+      printf ("#<ver:%c%c%c%c>", major1, major2, minor, status);
+    }
+  };
+
+/* In GCOV 32-bit integers are stored as signed 32 bit numbers encoded
+   in whatever endianness used by the machine generating the files.
+   The endianness can be determined by looking at the value of the
+   magic number characterising the data.  We just use the Poke int<32>
+   type for this.  */
+
+/* In GCOV 64-bit integers in are stored as two consecutive 32-bit
+   integers, where the low part is stored first regardless of
+   endianness.  */
+
+type GCOV_Int64 =
+  struct
+  {
+    uint<32> low;
+    int<32> high;
+
+    method _print = void:
+    {
+      printf ("#<int64:%v>", high:::low);
+    }
+  };
+
+/* In old GCC compilers character strings are stored as a size encoded
+   in a 32-bit number, which denotes the number of 32-bit words
+   composing the string.  Then a NULL-terminated string follows, which
+   may be padded by zero or more null bytes to the next word size.  */
+
+type GCOV_Legacy_String =
+  struct
+  {
+    offset<int<32>,32> size;
+
+    if (size > 0#B)
+      string data : data'size <= (size - 1#B) * 4;
+
+    uint<8>[0] top @ size - 4#B;
+
+    method get_string = string:
+    {
+      return size > 0#B ? data : "";
+    }
+
+    method _print = void:
+    {
+      printf ("#<string:%s>", size <= 0#B ? "" : data);
+    }
+  };
+
+/* In GCOV character strings are stored as a length encoded in a
+   32-bit number, which denotes the length of the string not counting
+   the trailing NULL character, followed by the NULL-terminated
+   string, but only if the length is bigger than zero.  */
+
+type GCOV_String =
+  struct
+    {
+      int<32> length;
+      if (length > 0)
+        string data : data'length == length;
+
+      method get_string = string:
+      {
+        return length > 0 ? data : "";
+      }
+
+      method _print = void:
+      {
+        printf ("#<string:%s>", length <= 0 ? "" : data);
+      }
+  };
+
+/* This is a little registry for tag metadata used for pretty-printing
+   and documentation purposes.  It is filled below where the tags are
+   defined.  */
+
+type GCOV_Tag_Info =
+  struct
+  {
+    uint<32> tag;
+    string name;
+    string doc;
+  };
+
+var gcov_tag_info = GCOV_Tag_Info[]();
+
+/* Record tags are stored as 32-bit integers, composed by four 8 bit
+   fields, each field defining one of four possible "levels".  These
+   levels define a hierarchy.  Levels are used from l1 to l4.  Levels
+   with value 0 are unused. Levels with non zero values are used, and
+   the value is always odd to guarantee the LSB is always 1, in order
+   to ease calculating and using masks when processing GCOV data.
+   Also, there must no be intermediate unused levels.  */
+
+type GCOV_Tag =
+  struct int<32>
+  {
+    uint<8> l1 : l1 == 0 || l1 % 2;
+    uint<8> l2 : (l2 == 0 || l2 % 2)
+                  && l2 != 0 => l1 != 0;
+    uint<8> l3 : (l3 == 0 || l3 % 2)
+                  && l3 != 0 => l1 != 0 && l2 != 0;
+    uint<8> l4 : (l4 == 0 || l4 % 2)
+                  && l4 != 0 => l1 != 0 && l2 != 0 && l3 != 0;
+
+    method _print = void:
+    {
+      var tname = "";
+
+      for (tc in gcov_tag_info)
+        if (tc.tag == l1:::l2:::l3:::l4)
+          {
+            tname = tc.name;
+            break;
+          }
+
+      printf ("#<%s:%u8x,%u8x,%u8x,%u8x>",
+              tname == "" ? "tag" : tname, l1, l2, l3, l4);
+    }
+  };
+
+/* These are the currently supported GCOV tags.  Note the hierarchy
+   implied by the levels.  */
+
+var GCOV_TAG_ZERO               = GCOV_Tag {},
+    GCOV_TAG_FUNCTION           = GCOV_Tag { l1 = 1UB },
+    GCOV_TAG_BLOCKS             = GCOV_Tag { l1 = 1UB, l2 = 0x41UB },
+    GCOV_TAG_ARCS               = GCOV_Tag { l1 = 1UB, l2 = 0x43UB },
+    GCOV_TAG_LINES              = GCOV_Tag { l1 = 1UB, l2 = 0x45UB },
+    GCOV_TAG_COUNTER_ARCS       = GCOV_Tag { l1 = 1UB, l2 = 0xa1UB + 0 },
+    GCOV_TAG_COUNTER_V_INTERVAL = GCOV_Tag { l1 = 1UB, l2 = 0xa1UB + 1 },
+    GCOV_TAG_COUNTER_V_POW2     = GCOV_Tag { l1 = 1UB, l2 = 0xa1UB + 2 },
+    GCOV_TAG_COUNTER_V_TOPN     = GCOV_Tag { l1 = 1UB, l2 = 0xa1UB + 3 },
+    GCOV_TAG_COUNTER_V_INDIR    = GCOV_Tag { l1 = 1UB, l2 = 0xa1UB + 4 },
+    GCOV_TAG_COUNTER_AVERAGE    = GCOV_Tag { l1 = 1UB, l2 = 0xa1UB + 5 },
+    GCOV_TAG_COUNTER_IOR        = GCOV_Tag { l1 = 1UB, l2 = 0xa1UB + 6 },
+    GCOV_TAG_TIME_PROFILER      = GCOV_Tag { l1 = 1UB, l2 = 0xa1UB + 7 },
+    GCOV_TAG_OBJECT_SUMMARY     = GCOV_Tag { l1 = 0xa1 },
+    GCOV_TAG_PROGRAM_SUMMARY    = GCOV_Tag { l1 = 0xa3UB };
+
+gcov_tag_info = [GCOV_Tag_Info { tag = GCOV_TAG_FUNCTION as int<32>,
+                                 name = "function" },
+                 GCOV_Tag_Info { tag = GCOV_TAG_BLOCKS as int<32>,
+                                 name = "blocks" },
+                 GCOV_Tag_Info { tag = GCOV_TAG_ARCS as int<32>,
+                                 name = "arcs" },
+                 GCOV_Tag_Info { tag = GCOV_TAG_COUNTER_ARCS as int<32>,
+                                 name = "counter:arcs",
+                                 doc = "Arc transitions." },
+                 GCOV_Tag_Info { tag = GCOV_TAG_COUNTER_V_INTERVAL as int<32>,
+                                 name = "counter:interval",
+                                 doc = "Histogram of value inside an interval." },
+                 GCOV_Tag_Info { tag = GCOV_TAG_COUNTER_V_POW2 as int<32>,
+                                 name = "counter:pow2",
+                                 doc = "Histogram of exact power2 logarithm of a value." },
+                 GCOV_Tag_Info { tag = GCOV_TAG_COUNTER_V_TOPN as int<32>,
+                                 name = "counter:topn",
+                                 doc = "The most common value of expression." },
+                 GCOV_Tag_Info { tag = GCOV_TAG_COUNTER_V_INDIR as int<32>,
+                                 name = "counter:indirect_call",
+                                 doc = "The most common indirect address." },
+                 GCOV_Tag_Info { tag = GCOV_TAG_COUNTER_AVERAGE as int<32>,
+                                 name = "counter:average",
+                                 doc = "Compute average values passed to the counter." },
+                 GCOV_Tag_Info { tag = GCOV_TAG_COUNTER_IOR as int<32>,
+                                 name = "counter:ior",
+                                 doc = "IOR of all the values passed to counter." },
+                 GCOV_Tag_Info { tag = GCOV_TAG_TIME_PROFILER as int<32>,
+                                 name = "counter:time_profiler",
+                                 doc = "Time profile collecting first fun of a function." },
+                 GCOV_Tag_Info { tag = GCOV_TAG_OBJECT_SUMMARY as int<32>,
+                                 name = "object-summary"},
+                 GCOV_Tag_Info { tag = GCOV_TAG_PROGRAM_SUMMARY as int<32>,
+                                 name = "program-summary.  Obsolete."}];
+
+/* GCOV encodes the length of records as number of 4 byte words stored
+   in a signed 32-bit integers, but negative values are to be
+   interpreted as zero.  The lenght of a record depends on its tag.  */
+
+type GCOV_Length =
+  struct
+  {
+    int<32> _length;
+
+    computed offset<int<32>,32> value;
+    method get_value = offset<int<32>,32>: { return _length < 0 ? 0#32 : _length#32; }
+    method set_value = (offset<int<32>,32> o) void: { _length = o'magnitude; }
+
+    method _print = void:
+    {
+      printf ("#<length:%v>", _length < 0 ? 0#32 : _length#32);
+    }
+  };
+
+/* Simple and extended function descriptors are the payload of
+   FUNCTION records.  */
+
+type GCOV_Function =
+  struct
+  {
+    int<32> ident;
+    int<32> lineno_checksum;
+    int<32> cfg_checksum;
+  };
+;
+type GCOV_Ext_Function =
+  struct
+  {
+    int<32> ident;
+    int<32> lineno_checksum;
+    int<32> cfg_checksum;
+    GCOV_String name;
+    int<32> is_artificial;
+    GCOV_String source;
+    int<32> line_start;
+    int<32> column_start;
+    int<32> line_end;
+    int<32> column_end;
+
+    method _print = void:
+    {
+      printf ("#<function:%s,%s,%i32d:%i32d-%i32d:%i32d%s>",
+              name.get_string, source.get_string,
+              line_start, column_start, line_end, column_end,
+              is_artificial ? ",artificial" : "");
+    }
+  };
+
+/* Line information per block is the payload of LINES records.  */
+
+type GCOV_Lines =
+  struct
+  {
+    type Line =
+      struct
+      {
+        int<32> lineno;
+        if (lineno == 0)
+          GCOV_String source;
+      };
+
+    int<32> blockno;
+    Line[] lines;
+    int<32> zero = 0;
+    GCOV_String empty : empty.get_string == "";
+  };
+
+/* GCOV arcs connect two blocks identified by their Ids.  */
+
+var GCOV_ARC_F_ON_TREE = 0x1,
+    GCOV_ARC_F_FAKE = 0x2,
+    GCOV_ARC_F_FALLTHROUGH = 0x4;
+
+type GCOV_Arc =
+  struct
+  {
+    int<32> dest_block;
+    int<32> flags;
+
+    method _print = void:
+    {
+      printf ("#<arc:%i32d", dest_block);
+      if (flags)
+        {
+          if (flags & GCOV_ARC_F_ON_TREE)
+            print ",tree";
+          if (flags & GCOV_ARC_F_FAKE)
+            print ",fake";
+          if (flags & GCOV_ARC_F_FALLTHROUGH)
+            print ",fall";
+        }
+      print ">";
+    }
+  };
+
+/* GCOV records contain several kinds of information in both data
+   (gcda) and notes (gcno) files.  They are constitued by a tag that
+   determines the nature of the record, the length of a variable part,
+   and the variable part itself.  */
+
+type GCOV_Record =
+  struct
+  {
+    GCOV_Tag tag : tag != GCOV_TAG_ZERO;
+    GCOV_Length length = tag == GCOV_TAG_FUNCTION ? GCOV_Length { _length = 4 * 3 }
+                                : tag == GCOV_TAG_ARCS ? GCOV_Length { _length = 1 }
+                                : GCOV_Length {};
+
+    union
+    {
+      GCOV_Function function : tag == GCOV_TAG_FUNCTION
+                               && length.get_value == 1#GCOV_Function;
+      GCOV_Ext_Function ext_function
+                             : tag == GCOV_TAG_FUNCTION;
+      struct
+      {
+        int<32> block_no;
+        GCOV_Arc[length.get_value - 4#B] arcs;
+      } arcs                 : tag == GCOV_TAG_ARCS;
+
+      struct
+      {
+        int<32> runs;
+        int<32> sum_max;
+      } object_summary       : tag == GCOV_TAG_OBJECT_SUMMARY;
+
+      GCOV_Lines lines       : tag == GCOV_TAG_LINES;
+      int<32> blocks         : tag == GCOV_TAG_BLOCKS;
+
+      int<64>[length.get_value] counters
+                             : tag in [GCOV_TAG_COUNTER_ARCS,
+                                       GCOV_TAG_COUNTER_V_INTERVAL,
+                                       GCOV_TAG_COUNTER_V_POW2,
+                                       GCOV_TAG_COUNTER_V_TOPN,
+                                       GCOV_TAG_COUNTER_V_INDIR,
+                                       GCOV_TAG_COUNTER_AVERAGE,
+                                       GCOV_TAG_COUNTER_IOR,
+                                       GCOV_TAG_TIME_PROFILER];
+
+      /* For unknown tags.  */
+      uint<8>[length.get_value] bytes;
+    } data : data'size == length.get_value;
+  };
+
+/* The following function checks whether the tags stored in the given
+   GCOV file actually pertain there, based on the file's magic
+   number.  */
+
+fun gcov_check_file_tags = (GCOV_Magic magic, GCOV_Record[] records) int<32>:
+{
+  fun check_tag = (GCOV_Tag tag) int<32>:
+  {
+    fun check_level = (uint<8> level) int<32>:
+    {
+      if (level >= 0x1UB && level <= 0x3fUB)
+        /* Common tags.  */
+        return 1;
+      else if (level >= 0x41UB && level <= 0x9fUB)
+        /* Notes tags.  */
+        return magic == GCOV_NOTE_MAGIC;
+      else if (level >= 0xa1UB && level <= 0xffUB)
+        /* Data tags.  */
+        return magic == GCOV_DATA_MAGIC;
+      else
+        /* Invalid tag, or zero.  */
+        return level == 0;
+    }
+
+    return (check_level (tag.l1) && check_level (tag.l2)
+            && check_level (tag.l3) && check_level (tag.l4));
+  }
+
+  for (r in records)
+    if (!check_tag (r.tag))
+      return 0;
+  return 1;
+}
+
+/* GCOV note files (.gcno) are generated by compilers.  */
+
+type GCOV_Notes_File =
+  struct
+  {
+    GCOV_Magic magic == GCOV_NOTE_MAGIC;
+    GCOV_Version version;
+    int<32> stamp;
+
+    GCOV_String cwd;
+    int<32> support_unexecuted_blocks;
+
+    GCOV_Record[] records : gcov_check_file_tags (magic, records);
+    GCOV_Tag eof if eof == GCOV_TAG_ZERO;
+  };
+
+/* GCOV data files (.gcda) are generated by instrumentalized programs.  */
+
+type GCOV_Data_File =
+  struct
+  {
+    GCOV_Magic magic == GCOV_DATA_MAGIC;
+    GCOV_Version version;
+    int<32> stamp;
+
+    GCOV_Record[] records : gcov_check_file_tags (magic, records);
+    GCOV_Tag eof if eof == GCOV_TAG_ZERO;
+  };
+
+/* In environments where GCOV data is generated in a "freestanding"
+   environment, i.e. where the data comes in a continuous stream
+   instead of discrete files, the following headers can be intermixed
+   in order to provide file names.  */
+
+type GCOV_Filename_Header =
+  struct
+  {
+    GCOV_Magic magic == GCOV_FILENAME_MAGIC;
+    GCOV_Version version;
+    GCOV_String filename;
+  };
