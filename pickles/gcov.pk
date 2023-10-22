@@ -112,16 +112,16 @@ type GCOV_Legacy_String =
   };
 
 /* In GCOV character strings are stored as a length encoded in a
-   32-bit number, which denotes the length of the string not counting
-   the trailing NULL character, followed by the NULL-terminated
-   string, but only if the length is bigger than zero.  */
+   32-bit number, which denotes the length of the string counting the
+   trailing NULL character, followed by the NULL-terminated string,
+   but only if the length is bigger than zero.  */
 
 type GCOV_String =
   struct
     {
       int<32> length;
       if (length > 0)
-        string data : data'length == length;
+        string data : data'length == length - 1;
 
       method get_string = string:
       {
@@ -428,6 +428,7 @@ type GCOV_Notes_File =
     GCOV_Magic magic == GCOV_NOTE_MAGIC;
     GCOV_Version version;
     int<32> stamp;
+    int<32> checksum;
 
     GCOV_String cwd;
     int<32> support_unexecuted_blocks;

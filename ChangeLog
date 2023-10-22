@@ -1,6 +1,7 @@
 2023-10-23  Jose E. Marchesi  <jemarch@gnu.org>
 
-	* pickles/gcov.pk: Allow ' ' as status character in GCOV_Version.
+	* pickles/gcov.pk (GCOV_Version): Allow ' ' as status character.
+	(GCOV_String): Fix length constraint.
 
 2023-10-22  Jose E. Marchesi  <jemarch@gnu.org>
 
