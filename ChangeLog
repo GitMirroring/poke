@@ -1,3 +1,7 @@
+2023-10-23  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* pickles/gcov.pk: Allow ' ' as status character in GCOV_Version.
+
 2023-10-22  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* pickles/gcov.pk: New file.

@@ -47,7 +47,7 @@ var GCOV_DATA_MAGIC     = GCOV_Magic { c1 = 'g', c2 = 'c', c3 = 'd', c4 = 'a' },
 
    The status version character is `e' for "experimental", `p' for
    "prerelease" and `r' for "release". Some GCC versions
-   generate '*'.  */
+   generate '*' and also ' '.  */
 
 type GCOV_Version =
   struct int<32>
@@ -55,7 +55,7 @@ type GCOV_Version =
     uint<8> major1 : major1 >= 'A' = 'A';
     uint<8> major2 = '0';
     uint<8> minor = '0';
-    uint<8> status : status in ['e','p','r','*'] = 'e';
+    uint<8> status : status in ['e','p','r','*',' '] = 'e';
 
     method _print = void:
     {
