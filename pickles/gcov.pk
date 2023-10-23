@@ -346,9 +346,7 @@ type GCOV_Record =
   struct
   {
     GCOV_Tag tag : tag != GCOV_TAG_ZERO;
-    GCOV_Length length = tag == GCOV_TAG_FUNCTION ? GCOV_Length { _length = 4 * 3 }
-                                : tag == GCOV_TAG_ARCS ? GCOV_Length { _length = 1 }
-                                : GCOV_Length {};
+    GCOV_Length length;
 
     union
     {
