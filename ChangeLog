@@ -2,6 +2,7 @@
 
 	* pickles/gcov.pk: GCOV_Length now stores length in number of
 	bytes and not in number of words.
+	(GCOV_Record): counters use GCOV_Int64, not int<64>.
 
 2023-10-23  Jose E. Marchesi  <jemarch@gnu.org>
 

@@ -371,7 +371,7 @@ type GCOV_Record =
       GCOV_Lines lines       : tag == GCOV_TAG_LINES;
       int<32> blocks         : tag == GCOV_TAG_BLOCKS;
 
-      int<64>[length.get_value] counters
+      GCOV_Int64[length.get_value] counters
                              : tag in [GCOV_TAG_COUNTER_ARCS,
                                        GCOV_TAG_COUNTER_V_INTERVAL,
                                        GCOV_TAG_COUNTER_V_POW2,
