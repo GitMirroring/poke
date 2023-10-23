@@ -351,13 +351,13 @@ type GCOV_Record =
     union
     {
       GCOV_Function function : tag == GCOV_TAG_FUNCTION
-                               && length.get_value == 1#GCOV_Function;
+                               && length.value == 1#GCOV_Function;
       GCOV_Ext_Function ext_function
                              : tag == GCOV_TAG_FUNCTION;
       struct
       {
         int<32> block_no;
-        GCOV_Arc[length.get_value - 4#B] arcs;
+        GCOV_Arc[length.value - 4#B] arcs;
       } arcs                 : tag == GCOV_TAG_ARCS;
 
       struct
@@ -369,7 +369,7 @@ type GCOV_Record =
       GCOV_Lines lines       : tag == GCOV_TAG_LINES;
       int<32> blocks         : tag == GCOV_TAG_BLOCKS;
 
-      GCOV_Int64[length.get_value] counters
+      GCOV_Int64[length.value] counters
                              : tag in [GCOV_TAG_COUNTER_ARCS,
                                        GCOV_TAG_COUNTER_V_INTERVAL,
                                        GCOV_TAG_COUNTER_V_POW2,
@@ -380,8 +380,8 @@ type GCOV_Record =
                                        GCOV_TAG_TIME_PROFILER];
 
       /* For unknown tags.  */
-      uint<8>[length.get_value] bytes;
-    } data : data'size == length.get_value;
+      uint<8>[length.value] bytes;
+    } data : data'size == length.value;
   };
 
 /* The following function checks whether the tags stored in the given
