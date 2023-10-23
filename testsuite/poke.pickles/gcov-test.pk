@@ -26,9 +26,9 @@ var tests =
     func = lambda (string name) void:
       {
         var l = GCOV_Length { _length = -2 };
-        assert (l.get_value == 0#32);
+        assert (l.get_value == 0#B);
         l = GCOV_Length { _length = 2 };
-        assert (l.get_value == 2#32);
+        assert (l.get_value == 2#B);
       },
   },
 ];
