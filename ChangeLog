@@ -1,5 +1,14 @@
 2023-10-23  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* pickles/gcov.pk: GCOV_Length now stores length in number of
+	bytes and not in number of words.
+
+2023-10-23  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* pickles/Makefile.am (dist_pickles_DATA): Distribute gcov.pk.
+
+2023-10-23  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* pickles/gcov.pk (GCOV_Version): Allow ' ' as status character.
 	(GCOV_String): Fix length constraint.
 
