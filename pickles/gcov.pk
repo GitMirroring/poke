@@ -85,32 +85,6 @@ type GCOV_Int64 =
     }
   };
 
-/* In old GCC compilers character strings are stored as a size encoded
-   in a 32-bit number, which denotes the number of 32-bit words
-   composing the string.  Then a NULL-terminated string follows, which
-   may be padded by zero or more null bytes to the next word size.  */
-
-type GCOV_Legacy_String =
-  struct
-  {
-    offset<int<32>,32> size;
-
-    if (size > 0#B)
-      string data : data'size <= (size - 1#B) * 4;
-
-    uint<8>[0] top @ size - 4#B;
-
-    method get_string = string:
-    {
-      return size > 0#B ? data : "";
-    }
-
-    method _print = void:
-    {
-      printf ("#<string:%s>", size <= 0#B ? "" : data);
-    }
-  };
-
 /* In GCOV character strings are stored as a length encoded in a
    32-bit number, which denotes the length of the string counting the
    trailing NULL character, followed by the NULL-terminated string,
