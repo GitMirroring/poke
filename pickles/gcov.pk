@@ -240,7 +240,7 @@ type GCOV_Function =
     int<32> lineno_checksum;
     int<32> cfg_checksum;
   };
-;
+
 type GCOV_Ext_Function =
   struct
   {
