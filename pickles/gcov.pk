@@ -331,7 +331,7 @@ type GCOV_Record =
       struct
       {
         int<32> block_no;
-        GCOV_Arc[length.value - 4#B] arcs;
+        GCOV_Arc[length.value >= 4#B ? length.value - 4#B : 0#B] arcs;
       } arcs                 : tag == GCOV_TAG_ARCS;
 
       struct
