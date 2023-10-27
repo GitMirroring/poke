@@ -1,3 +1,8 @@
+2023-10-27  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* poke/pk-info.pk (pk_info_type): Do not list computed field
+	setters and getters nor pretty printers as methods.
+
 2023-10-23  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* pickles/gcov.pk: GCOV_Length now stores length in number of
