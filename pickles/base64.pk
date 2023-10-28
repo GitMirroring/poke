@@ -103,20 +103,6 @@ fun base64_encode = (uint<8>[] src) string:
 
 fun base64_decode = (string src) uint<8>[]:
 {
-  /* XXX move strchr to std  */
-  fun strchr = (string s, uint<8> c) uint<32>:
-  {
-    var res = 0UL;
-    for (t in s)
-      {
-        if (t == c)
-          return res;
-        res += 1;
-      }
-
-    return -1;
-  }
-
   fun invalid_input = (string cause, int<32> position) void:
   {
     raise Exception { code = EC_inval,
@@ -148,7 +134,7 @@ fun base64_decode = (string src) uint<8>[]:
 
       var pos = strchr (base64_chars, ch);
 
-      if (pos == -1) /* A non-base64 character.  */
+      if (pos == base64_chars'length) /* A non-base64 character.  */
         invalid_input ("non-base64 character passed to base_64_decode", s - 1);
 
       if (state == 0)
