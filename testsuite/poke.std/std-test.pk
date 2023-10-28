@@ -146,6 +146,20 @@ var tests = [
       },
   },
   PkTest {
+    name = "strstr",
+    func = lambda (string name) void:
+      {
+        assert (strstr ("", "") == 0);
+        assert (strstr ("", "x") == 0);
+        assert (strstr ("foo", "foo") == 0);
+        assert (strstr ("foo", "f") == 0);
+        assert (strstr ("foo", "fo") == 0);
+        assert (strstr ("foo", "o") == 1);
+        assert (strstr ("foo", "oo") == 1);
+        assert (strstr ("foo", "ooo") == 3);
+      },
+  },
+  PkTest {
     name = "crc32",
     func = lambda (string name) void:
       {

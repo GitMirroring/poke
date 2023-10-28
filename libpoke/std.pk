@@ -234,6 +234,24 @@ fun strrchr = (string s, uint<8> c) int<32>:
     return i;
   }
 
+/* Return the index in the string HAYSTACK of the first occurrence of
+   the string NEEDLE.  If NEEDLE is not in HAYSTACK then return the
+   size of S.  */
+
+fun strstr = (string haystack, string needle) int<32>:
+  {
+    var i = 0UL;
+    var haystack_len = haystack'length;
+    var needle_len = needle'length;
+
+    for (; i < haystack_len; ++i)
+      if (haystack[i:]'length >= needle_len
+          && haystack[i+:needle_len] == needle)
+        break;
+
+    return i;
+  }
+
 /* Return S with leading characters belonging to the given set
    omitted.  By default the omitted characters are whitespaces.  */
 

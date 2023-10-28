@@ -16040,6 +16040,7 @@ work on strings:
 * rtrim::		Remove trailing characters.
 * strchr::		Locate a character in a string, from the beginning.
 * strrchr::		Locate a character in a string, from the end.
+* strstr::              Locate a string in a string, from the beginning.
 * strtok::		String tokenization.
 @end menu
 
@@ -16096,6 +16097,21 @@ fun strrchr = (string s, uint<8> c) int<32>: @{ @dots{} @}
 It returns the index of the last occurrence of the character @var{c}
 in the string @var{s}.  If the character is not found in the string,
 this function returns -1.
+
+@node strstr
+@subsection @code{strstr}
+@cindex @code{strstr}
+@cindex string, locating in a string
+The standard function @code{strstr} provides the following interface:
+
+@example
+fun strstr = (string haystack, string needle) int<32>: @{ @dots{} @}
+
+It returns the index of the first occurrence of the string
+@var{needle} in the string @var{haystack}.  If the needle is not found
+in the haystack, this function returns the length of the string
+@var{haystack}.
+@end example
 
 @node strtok
 @subsection @code{strtok}

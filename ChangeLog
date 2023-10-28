@@ -1,3 +1,9 @@
+2023-10-28  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/std.pk (strstr): New function.
+	* testsuite/poke.std/std-test.pk: Add tests for strstr.
+	* doc/poke.texi (strstr): New section.
+
 2023-10-27  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* poke/pk-info.pk (pk_info_type): Do not list computed field
