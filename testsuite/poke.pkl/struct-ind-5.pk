@@ -18,6 +18,6 @@ type Foo =
 /* { dg-command { var yyy = Bar @ 4#B } } */
 /* { dg-command { var xxx = Foo @ 0#B } } */
 /* { dg-command { xxx.ptr = 4#B } } */
-/* { dcg-command { xxx->ptr.bar = 3 } } */
+/* { dg-command { xxx->ptr.bar = 3 } } */
 /* { dg-command { yyy.bar } } */
 /* { dg-output "3" } */
