@@ -2519,6 +2519,7 @@ EXTRA_DIST = \
   poke.pkl/struct-ind-2.pk \
   poke.pkl/struct-ind-3.pk \
   poke.pkl/struct-ind-4.pk \
+  poke.pkl/struct-ind-5.pk \
   poke.pkl/struct-ind-diag-1.pk \
   poke.pkl/struct-ind-diag-2.pk \
   poke.pkl/struct-ind-diag-3.pk \
