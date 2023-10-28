@@ -291,7 +291,7 @@ print_info_ios (pk_ios io, void *data)
       asprintf (&string, "0x%08" PRIx64 "#B", bias / 8);
     else
       asprintf (&string, "0x%08" PRIx64 "#b", bias);
-    pk_table_column_cl (table, string, "offset");
+    pk_table_column (table, string);
     free (string);
   }
 
@@ -299,7 +299,7 @@ print_info_ios (pk_ios io, void *data)
   {
     char *size;
     asprintf (&size, "0x%08" PRIx64 "#B", pk_ios_size (io));
-    pk_table_column_cl (table, size, "offset");
+    pk_table_column (table, size);
     free (size);
   }
 

@@ -1,5 +1,10 @@
 2023-10-28  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-cmd-ios.c (print_info_ios): Do not style `size' and
+	`bias' entries as offsets.
+
+2023-10-28  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* poke/pk-settings.pk (pk_settings_dump): Do not emit hyperlinks
 	for setting headers, but style it.
 	* poke/pk-cmd-set.c (pk_cmd_set_dump): Likewise.
