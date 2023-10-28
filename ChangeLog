@@ -1,5 +1,14 @@
 2023-10-28  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-hserver.pk (hserver_print_hl): Make it possible to style
+	hyperlinks.
+	* pickles/pk-table.pk (PK_Table.print_table): Likewise.
+	* poke/pk-table.c (pk_table_print): Likewise.
+	* poke/pk-repl.c (banner): Likewise.
+	* poke/pk-cmd-set.c (pk_cmd_set_dump): Likewise.
+
+2023-10-28  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* pickles/ios.pk (ios_dump_bytes): Restore the proper style in the
 	ascii area once dump :val is done with the value range.
 

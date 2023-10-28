@@ -99,7 +99,10 @@ type Pk_Table =
          if (entry.style != "" && printer == pk_table_default_printer)
            term_begin_class (entry.style);
          if (entry.hyperlink != "" && printer == pk_table_default_printer)
-           term_begin_hyperlink (entry.hyperlink);
+           {
+             term_begin_class ("hyperlink");
+             term_begin_hyperlink (entry.hyperlink);
+           }
 
          printer (" " * indent);
          if (max_column_size == 0 || entry.str'length < max_column_size)
@@ -109,7 +112,10 @@ type Pk_Table =
              printer (entry.str[i] as string);
 
          if (entry.hyperlink != "" && printer == pk_table_default_printer)
-           term_end_hyperlink;
+           {
+             term_end_hyperlink;
+             term_end_class ("hyperlink");
+           }
          if (entry.style != "" && printer == pk_table_default_printer)
            term_end_class (entry.style);
 

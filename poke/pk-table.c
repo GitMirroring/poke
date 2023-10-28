@@ -232,7 +232,10 @@ pk_table_print (pk_table table)
           if (class)
             pk_term_class (class);
           if (hyperlink)
-            pk_term_hyperlink (hyperlink, NULL);
+            {
+              pk_term_class ("hyperlink");
+              pk_term_hyperlink (hyperlink, NULL);
+            }
 
           if (str)
             pk_puts (str);
@@ -240,7 +243,10 @@ pk_table_print (pk_table table)
             pk_print_val (poke_compiler, val, NULL /* exit_exception */);
 
           if (hyperlink)
-            pk_term_end_hyperlink ();
+            {
+              pk_term_end_hyperlink ();
+              pk_term_end_class ("hyperlink");
+            }
           if (class)
             pk_term_end_class (class);
 

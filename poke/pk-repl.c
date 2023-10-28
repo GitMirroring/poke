@@ -196,8 +196,12 @@ banner (void)
 
           pk_puts (_("For help, type: "));
           pk_puts ("\"");
+          pk_term_class ("hyperlink");
           pk_term_hyperlink (help_hyperlink, NULL);
+          pk_term_end_class ("hyperlink");
+          pk_term_class ("hyperlink");
           pk_puts (".help");
+          pk_term_end_class ("hyperlink");
           pk_term_end_hyperlink ();
           pk_puts ("\".\n");
           free (help_hyperlink);

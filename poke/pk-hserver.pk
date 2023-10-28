@@ -116,7 +116,9 @@ fun hserver_print_hl = (uint<8> kind, string str, string cmd,
 {
   var url = hserver_make_hyperlink (kind, cmd, (function));
 
+  term_begin_class ("hyperlink");
   term_begin_hyperlink (url, "");
   print str;
   term_end_hyperlink;
+  term_end_class ("hyperlink");
 }

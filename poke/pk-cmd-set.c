@@ -46,6 +46,7 @@ pk_cmd_set_dump (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
     char *hyperlink;
 
     hyperlink = pk_hserver_make_hyperlink ('e', ".help error-on-warning", PK_NULL);
+    pk_term_class ("hyperlink");
     pk_term_hyperlink (hyperlink, NULL);
   }
 #endif
@@ -54,6 +55,7 @@ pk_cmd_set_dump (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 
 #if HAVE_HSERVER
   pk_term_end_hyperlink ();
+  pk_term_end_class ("hyperlink");
 #endif
   pk_printf (" %s\n", pk_error_on_warning (poke_compiler) ? "yes" : "no");
 
