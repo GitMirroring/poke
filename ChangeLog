@@ -1,5 +1,11 @@
 2023-10-28  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-settings.pk (pk_settings_dump): Do not emit hyperlinks
+	for setting headers, but style it.
+	* poke/pk-cmd-set.c (pk_cmd_set_dump): Likewise.
+
+2023-10-28  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* poke/pk-hserver.pk (hserver_print_hl): Make it possible to style
 	hyperlinks.
 	* pickles/pk-table.pk (PK_Table.print_table): Likewise.

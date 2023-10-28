@@ -654,8 +654,7 @@ fun pk_settings_dump = void:
     for (setting in pk_settings.entries)
       {
         table.row;
-        table.column (setting.name, "",
-                      hserver_make_hyperlink ('e', ".help " + setting.name));
+        table.column (setting.name, "setting-header");
         table.column (setting.kind == POKE_SETTING_INT
                       ? format ("%i32d", setting.getter as int<32>)
                       : setting.kind == POKE_SETTING_BOOL

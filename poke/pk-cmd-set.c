@@ -41,22 +41,9 @@ pk_cmd_set_dump (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
       || exit_exception != PK_NULL)
     PK_UNREACHABLE (); /* This shouldn't happen.  */
 
-#if HAVE_HSERVER
-  {
-    char *hyperlink;
-
-    hyperlink = pk_hserver_make_hyperlink ('e', ".help error-on-warning", PK_NULL);
-    pk_term_class ("hyperlink");
-    pk_term_hyperlink (hyperlink, NULL);
-  }
-#endif
-
+  pk_term_class ("setting-header");
   pk_puts ("error-on-warning");
-
-#if HAVE_HSERVER
-  pk_term_end_hyperlink ();
-  pk_term_end_class ("hyperlink");
-#endif
+  pk_term_end_class ("setting-header");
   pk_printf (" %s\n", pk_error_on_warning (poke_compiler) ? "yes" : "no");
 
   return 0;
