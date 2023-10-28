@@ -19,7 +19,26 @@
 /* This pickle provides facilities to scan strings (sequences of
    characters) stored in some IO space.  This is inspired by the
    string scanning generators provided by the Icon programming
-   language.  */
+   language.
+
+   Usage example (read lines from /etc/password):
+
+     load iscan;
+
+     var iscan = IScan_String { };
+     var lines = string[][]();
+     for (eol in iscan.find ("\n"))
+       {
+         var line = string[]();
+         for (sep in iscan.find (":", eol))
+           {
+             apush (line, iscan.tab (sep));
+             iscan.move (1#B);
+           }
+         apush (lines, line);
+         iscan.move (1#B);
+       }
+ */
 
 type IScan_String =
   struct

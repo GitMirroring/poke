@@ -1,5 +1,9 @@
 2023-10-28  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* pickles/iscan-str.pk: Add usage example.
+
+2023-10-28  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* pickles/base64.pk: Use std's strchr.
 
 2023-10-28  Jose E. Marchesi  <jemarch@gnu.org>
