@@ -11923,6 +11923,28 @@ offsets) and the total size occupied by the fields should be the same
 size than the one declared in the struct's integer type.  This is
 checked and enforced by the compiler.
 
+It is also possible to not specify the overall size of the integral
+struct and let it be deduced from the sizes of the struct fields.  To
+do so, use the @code{int<*>} and @code{uint<*>} type specifiers.  In
+this example:
+
+@example
+type Elf64_RelInfo =
+  struct uint<*>
+  @{
+    uint<32> r_sym;
+    uint<32> r_type;
+  @};
+@end example
+
+@noindent
+If you don't specify an explicit size for the integral struct, the
+compiler will make sure that the sum of the sizes of the fields is
+within the proper range for the number of bits of a signed or unsigned
+integral type, whatever applies, emitting an error in case it is out
+of range (like for example a size of only one bit for a signed
+integral struct, or a size exceeding 64 bits.)
+
 The Elf64 RELA in Poke can then be encoded like:
 
 @example

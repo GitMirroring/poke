@@ -608,6 +608,7 @@ pkl_ast_dup_type (pkl_ast_node type)
     case PKL_TYPE_INTEGRAL:
       PKL_AST_TYPE_I_SIZE (new) = PKL_AST_TYPE_I_SIZE (type);
       PKL_AST_TYPE_I_SIGNED_P (new) = PKL_AST_TYPE_I_SIGNED_P (type);
+      PKL_AST_TYPE_I_DYN_P (new) = PKL_AST_TYPE_I_DYN_P (type);
       break;
     case PKL_TYPE_ARRAY:
       {
@@ -3381,6 +3382,7 @@ pkl_ast_print_1 (FILE *fp, pkl_ast_node ast, int indent)
             {
             case PKL_TYPE_INTEGRAL:
               PRINT_AST_IMM (signed_p, TYPE_I_SIGNED_P, "%d");
+              PRINT_AST_IMM (dyn_p, TYPE_I_DYN_P, "%d");
               PRINT_AST_IMM (size, TYPE_I_SIZE, "%zu");
               break;
             case PKL_TYPE_ARRAY:

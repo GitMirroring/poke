@@ -1,0 +1,3 @@
+/* { dg-do compile } */
+
+type Foo = struct int<*> { }; /* { dg-error "invalid total size.*\n.*got 0 bits" } */

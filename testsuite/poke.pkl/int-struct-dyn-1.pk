@@ -1,0 +1,12 @@
+/* { dg-do run } */
+
+type Foo =
+  struct int<*>
+    {
+      int<32> a;
+      uint<32> b;
+    };
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {+(Foo { a = 0x11223344, b = 0xaabbccdd})} } */
+/* { dg-output "0x11223344aabbccddL" } */

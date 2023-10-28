@@ -897,8 +897,11 @@ pkl_ast_node pkl_ast_make_func_type_arg (pkl_ast ast,
    is controlled in the pass manager.
 
    In integral types, SIGNED is 1 if the type denotes a signed numeric
-   type.  In non-integral types SIGNED is 0.  SIZE is the size in bits
-   of type.
+   type.  In non-integral types SIGNED_P is 0.  SIZE is the size in
+   bits of type, which shall be of the supported range (like [1,64]
+   for unsigned integers and [2,64] for signed integers.)  DYN_P is
+   not 0 if the integral type is dynamic, i.e. its size is not fixed
+   at compile-time like in int<*> and uint<*>.
 
    In array types, ETYPE is a PKL_AST_TYPE node reflecting the type of
    the elements stored in the array.  If the array type is bounded by
@@ -952,6 +955,7 @@ pkl_ast_node pkl_ast_make_func_type_arg (pkl_ast ast,
 #define PKL_AST_TYPE_COMPILED(AST) ((AST)->type.compiled)
 #define PKL_AST_TYPE_I_SIZE(AST) ((AST)->type.val.integral.size)
 #define PKL_AST_TYPE_I_SIGNED_P(AST) ((AST)->type.val.integral.signed_p)
+#define PKL_AST_TYPE_I_DYN_P(AST) ((AST)->type.val.integral.dyn_p)
 #define PKL_AST_TYPE_A_BOUND(AST) ((AST)->type.val.array.bound)
 #define PKL_AST_TYPE_A_ETYPE(AST) ((AST)->type.val.array.etype)
 #define PKL_AST_TYPE_A_CLOSURES(AST) ((AST)->type.val.array.closures)
@@ -1009,6 +1013,7 @@ struct pkl_ast_type
     {
       size_t size;
       int signed_p;
+      int dyn_p;
     } integral;
 
     struct

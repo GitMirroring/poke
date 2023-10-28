@@ -1,0 +1,12 @@
+/* { dg-do run } */
+
+type Foo =
+  struct uint<*>
+    {
+      int<8> a;
+      uint<12> b;
+    };
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {+(Foo { a = 0x12, b = 0xabc})} } */
+/* { dg-output "\\(uint<20>\\) 0x12abc" } */

@@ -1,0 +1,6 @@
+/* { dg-do compile } */
+
+/* Signed integral structs shall have a size > 1, like
+   regular signed integral types do.  */
+
+type Foo = struct int<*> { uint<1> a; }; /* { dg-error "invalid total size.*\n.*between 2.*got 1 bits" } */

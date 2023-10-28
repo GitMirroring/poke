@@ -1750,8 +1750,9 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_struct_ref)
 }
 PKL_PHASE_END_HANDLER
 
-/* The bit width in integral types should be between 1 and 64.  Note
-   that the width is a constant integer as per the parser.  */
+/* The bit width in integral types should be between 1 and 64, unless
+   the size is dynamic.  Note that the width is a constant integer as
+   per the parser for non-dynamic types.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_integral)
 {
@@ -1759,8 +1760,9 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_integral)
   int signed_p = PKL_AST_TYPE_I_SIGNED_P (type);
   int width_min = signed_p ? 2 : 1;
 
-  if (PKL_AST_TYPE_I_SIZE (type) < width_min
-      || PKL_AST_TYPE_I_SIZE (type) > 64)
+  if (!PKL_AST_TYPE_I_DYN_P (type)
+      && (PKL_AST_TYPE_I_SIZE (type) < width_min
+          || PKL_AST_TYPE_I_SIZE (type) > 64))
     {
       PKL_ERROR (PKL_AST_LOC (type),
                  "the width of %s integral type should be in the [%d,64] "
@@ -1777,8 +1779,10 @@ PKL_PHASE_END_HANDLER
    offset types (including other integral structs) and the total int
    size shall match the sum of the sizes of all the fields.
 
-   The total size declared in the integral struct or union should exactly
-   match the size of all the contained fields.
+   The total size declared in the integral struct or union should
+   exactly match the size of all the contained fields.  If the
+   integral struct itype doesn't have a specified size then it is set
+   to the total size of the fields, whose range is checked.
 
    Pinned unions are not allowed.
 
@@ -1883,6 +1887,27 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
                   fields_int_size += fsize;
               }
             }
+        }
+
+      /* If the itype size is 0 that means it is an u?int<*>
+         and we shall derive its witdh from the widths of the
+         integral struct fields.  */
+      if (PKL_AST_TYPE_I_SIZE (struct_type_itype) == 0)
+        {
+          int min_size = PKL_AST_TYPE_I_SIGNED_P (struct_type_itype) ? 2 : 1;
+
+          if (fields_int_size < min_size || fields_int_size > 64)
+            {
+              PKL_ERROR (PKL_AST_LOC (struct_type_itype),
+                         "invalid total size in integral %s type\n"
+                         "size shall be between %d and 64 bits, got %" PRId32 " bits",
+                         is_union_p ? "union" : "struct",
+                         min_size, fields_int_size);
+              PKL_TYPIFY_PAYLOAD->errors++;
+              PKL_PASS_ERROR;
+            }
+
+          PKL_AST_TYPE_I_SIZE (struct_type_itype) = fields_int_size;
         }
 
       if (fields_int_size != PKL_AST_TYPE_I_SIZE (struct_type_itype))

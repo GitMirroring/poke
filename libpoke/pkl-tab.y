@@ -563,6 +563,7 @@ load_module (struct pkl_parser *parser,
 %type <ast> struct_field_list struct_field
 %type <ast> typename type_specifier simple_type_specifier cons_type_specifier
 %type <ast> integral_type_specifier offset_type_specifier array_type_specifier
+%type <ast> dynamic_integral_type_specifier
 %type <ast> function_type_specifier function_type_arg_list function_type_arg
 %type <ast> struct_type_specifier string_type_specifier ref_type
 %type <ast> struct_type_elem_list struct_type_field struct_type_field_identifier
@@ -1585,6 +1586,15 @@ integral_type_specifier:
                 }
         ;
 
+dynamic_integral_type_specifier:
+          integral_type_sign '*' '>'
+                {
+                    $$ = pkl_ast_make_integral_type (pkl_parser->ast, 0, $1);
+                    PKL_AST_TYPE_I_DYN_P ($$) = 1;
+                    PKL_AST_LOC ($$) = @$;
+                }
+        ;
+
 integral_type_sign:
           INTCONSTR        { $$ = 1; }
         | UINTCONSTR        { $$ = 0; }
@@ -1803,6 +1813,7 @@ struct_type_pinned:
 integral_struct:
         %empty           { $$ = NULL; }
         | simple_type_specifier { $$ = $1; }
+        | dynamic_integral_type_specifier { $$ = $1; }
         ;
 
 struct_type_elem_list:
