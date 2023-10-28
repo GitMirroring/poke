@@ -376,9 +376,17 @@ pk_repl (void)
       char *prompt;
       char *line;
 
-      pk_term_flush ();
       rl_completion_entry_function = poke_completion_function;
+
+      /* Emit the styled prompt and set rl_already_prompted.  Note
+         that we still have to pass it to the readline call below, so
+         it can update the screen appropiately.  */
       prompt = pk_prompt ();
+      pk_term_class ("prompt");
+      pk_puts (prompt);
+      pk_term_end_class ("prompt");
+      pk_term_flush ();
+      rl_already_prompted = 1;
       line = readline (prompt);
       free (prompt);
       if (line == NULL)
