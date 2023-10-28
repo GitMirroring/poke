@@ -171,8 +171,17 @@ fun ios_dump_bytes = (int<32> ios,
     var o = 0#B;
     while (o < step && offset + o < top)
       {
-        style = print_val_p ? get_val_style (offset + o) : "dump-ascii";
-        unknown_byte_style = print_val_p ? style : "dump-unknown";
+        if (print_val_p)
+          {
+            style = get_val_style (offset + o);
+            unknown_byte_style = style;
+          }
+
+        if (!print_val_p || style == "")
+          {
+            style = "dump-ascii";
+            unknown_byte_style = "dump-unknown";
+          }
 
         try
         {

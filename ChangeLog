@@ -1,5 +1,10 @@
 2023-10-28  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* pickles/ios.pk (ios_dump_bytes): Restore the proper style in the
+	ascii area once dump :val is done with the value range.
+
+2023-10-28  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* poke/pk-repl.c (pk_repl): Emit a styled prompt.
 
 2023-10-28  Jose E. Marchesi  <jemarch@gnu.org>
