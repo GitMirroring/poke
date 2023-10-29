@@ -11703,7 +11703,16 @@ struct
 @end example
 
 It is possible to specify an alternative offset for a field using a
-@dfn{field label}.
+@dfn{field label}, using the following syntax:
+
+@example
+ @var{field_type} @var{field_name} @@ @var{offset};
+@end example
+
+@noindent
+Which defines a label for the field @var{field_name} with value
+@var{offset}.  Note that the label specifier shall appear after any
+constraint expression and initialization value if the field has these.
 
 Consider for example an entry in an ELF symbol table.  Each entry has
 a @code{st_info} field which is 64-bits long, that in turn can be

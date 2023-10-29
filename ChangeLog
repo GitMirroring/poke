@@ -1,5 +1,11 @@
 2023-10-29  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* doc/poke.texi (Field Labels): Document that field labels should
+	be specified after constraint expressions and initialization field
+	values.
+
+2023-10-29  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* poke/pk-cmd-def.c (pk_cmd_info_type): Get a Poke expression as
 	the argument for .info type.
 	* poke/pk-help.pk: Update help of .info type.
