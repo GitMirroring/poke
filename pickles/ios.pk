@@ -431,6 +431,7 @@ fun ios_dump_bytes = (int<32> ios,
       ios_dumpval_last[0] = val;
       from = val'offset - (val'offset % 16#B);
       size = val'size + (val'offset % 16#B);
+      ios = val'ios;
       print_val_p = 1;
 
       /* Reset ios_dumpval and ios_dumpval_info.  */
