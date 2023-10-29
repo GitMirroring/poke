@@ -253,16 +253,11 @@ pk_cmd_info_types (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 static int
 pk_cmd_info_type (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 {
-  char *name;
+  char *expr;
 
   assert (argc == 2);
   assert (PK_CMD_ARG_TYPE (argv[1]) == PK_CMD_ARG_STR);
-  name = PK_CMD_ARG_STR (argv[1]);
-
-  /* Get the type referred by name.  */
-  if (*name == '\0'
-      || !pk_decl_p (poke_compiler, name, PK_DECL_KIND_TYPE))
-    goto invalid_type;
+  expr = PK_CMD_ARG_STR (argv[1]);
 
   /* Mount an execute a command to call `typedef' on the type and to
      pass the resulting Pk_Type to pk_info_type.  */
@@ -270,15 +265,16 @@ pk_cmd_info_type (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
     char *stmt = NULL;
     pk_val exit_exception = PK_NULL;
 
-    asprintf (&stmt, "pk_info_type (typeof (%s));", name);
+    asprintf (&stmt, "pk_info_type (typeof (%s));", expr);
+    /* XXX we want the compiler to be even quieter here.  */
+    pk_set_quiet_p (poke_compiler, 1);
     if (pk_compile_statement (poke_compiler, stmt, NULL, NULL,
                               &exit_exception) != PK_OK)
       {
-        pk_puts ("internal error: executing pk_info_type in pk_cmd_info_type."
-                 "  Please report this.\n");
-        free (stmt);
-        return 0;
+        pk_set_quiet_p (poke_compiler, 0);
+        goto invalid_type;
       }
+    pk_set_quiet_p (poke_compiler, 0);
     free (stmt);
 
     if (exit_exception != PK_NULL)
@@ -291,10 +287,7 @@ pk_cmd_info_type (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
   pk_term_class ("error");
   pk_puts ("error:");
   pk_term_end_class ("error");
-  if (*name == '\0')
-    pk_printf (" this command requires a type name\n");
-  else
-    pk_printf (" can't find type `%s'\n", name);
+  pk_printf (" this command requires a type specifier o an expression\n");
 
   return 0;
 }

@@ -157,8 +157,9 @@ Show information about some given entities.
   List information about defined functions.
 .info types [REGEXP]
   List information about defined types.
-.info type NAME
-  Print a description of the type with the given name."
+.info type EXPR
+  Print a description of the type of the given expression, which
+  an be a type specifier."
   };
 
 pk_help_add_topic

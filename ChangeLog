@@ -1,5 +1,12 @@
 2023-10-29  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-cmd-def.c (pk_cmd_info_type): Get a Poke expression as
+	the argument for .info type.
+	* poke/pk-help.pk: Update help of .info type.
+	* doc/poke.texi (info command): Likewise.
+
+2023-10-29  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* poke/pk-info.pk (pk_info_type): Style sections.
 
 2023-10-29  Jose E. Marchesi  <jemarch@gnu.org>

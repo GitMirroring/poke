@@ -9062,8 +9062,9 @@ name match the expression are listed.
 Shows a list of defined types along with the locations where the types
 were defined.  If a regular expression is provided then only the types
 whose name match the expression are listed.
-@item .info type @var{name}
-Prints a description of the type with name @var{name}.
+@item .info type @var{expr}|@var{type_specifier}
+Prints a description of the type of the expression @var{expr}, or of
+the type with specifier with name @var{type_specifier}.
 @end table
 
 @node set command
