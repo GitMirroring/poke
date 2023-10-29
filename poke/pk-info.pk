@@ -24,16 +24,16 @@ fun pk_info_type = (Pk_Type typ) void:
   fun add_common = (Pk_Table table, string class) void:
   {
     table.row;
-    table.column ("Class:");
+    table.column ("Class:", "table-header");
     table.column (class);
     if (typ.name != "")
     {
       table.row;
-      table.column ("Name:");
+      table.column ("Name:", "table-header");
       table.column (typ.name, "string");
     }
     table.row;
-    table.column ("Complete:");
+    table.column ("Complete:", "table-header");
     table.column (typ.complete_p ? "yes" : "no", "setting-boolean");
   }
 
@@ -43,30 +43,30 @@ fun pk_info_type = (Pk_Type typ) void:
   {
     add_common (table, "integral");
     table.row;
-    table.column ("Signed:");
+    table.column ("Signed:", "table-header");
     table.column (typ.signed_p ? "yes" : "no", "setting-boolean");
     table.row;
-    table.column ("Size:");
+    table.column ("Size:", "table-header");
     table.column (format ("%u64d#b", typ.size), "offset");
   }
   else if (typ.code == PK_TYPE_OFFSET)
   {
     add_common (table, "offset");
     table.row;
-    table.column ("Base type signed:");
+    table.column ("Base type signed:", "table-header");
     table.column (typ.signed_p ? "yes" : "no", "setting-boolean");
     table.row;
-    table.column ("Base type size:");
+    table.column ("Base type size:", "table-header");
     table.column (format ("%u64d#b", typ.size), "offset");
     table.row;
-    table.column ("Unit:");
+    table.column ("Unit:", "table-header");
     table.column (format ("%u64d#b", typ._unit), "offset");
   }
   else if (typ.code == PK_TYPE_ARRAY)
   {
     add_common (table, "array");
     table.row;
-    table.column ("Bounded:");
+    table.column ("Bounded:", "table-header");
     table.column (typ.bounded_p ? "yes" : "no", "setting-boolean");
   }
   else if (typ.code == PK_TYPE_STRUCT)
@@ -79,10 +79,10 @@ fun pk_info_type = (Pk_Type typ) void:
     if (typ.integral_p)
     {
       table.row;
-      table.column ("Signed:");
+      table.column ("Signed:", "table-header");
       table.column (typ.signed_p ? "yes" : "no", "setting-boolean");
       table.row;
-      table.column ("Integral size:");
+      table.column ("Integral size:", "table-header");
       table.column (format ("%u64d#b", typ.size), "offset");
     }
   }
@@ -103,84 +103,92 @@ fun pk_info_type = (Pk_Type typ) void:
     var computed_field_names = string[]();
 
     if (typ.nfields > 0)
-    {
-      print "Fields:\n";
-      var table = Pk_Table { num_columns = 2, indent = 2, max_column_size = 80 };
-
-      table.row ("table-header");
-      table.column ("Name");
-      table.column ("Type");
-      for (var i = 0; i < typ.nfields; ++i)
       {
-        if (typ.fcomputed[i])
-          continue;
-        table.row;
-        table.column (typ.fnames[i]);
-        table.column (typ.ftypes[i]);
-      }
-      table.print_table;
-
-      var ncomputedfields = lambda uint<32>:
-        {
-          var n = 0U;
-          for (var i = 0; i < typ.nfields; ++i)
-            if (typ.fcomputed[i])
-              ++n;
-          return n;
-        }();
-
-      if (ncomputedfields > 0)
-      {
-        print "Computed Fields:\n";
-        table = Pk_Table { num_columns = 2, indent = 2, max_column_size = 80 };
+        term_begin_class ("table-header");
+        print "Fields:\n";
+        term_end_class ("table-header");
+        var table = Pk_Table { num_columns = 2, indent = 2, max_column_size = 80 };
 
         table.row ("table-header");
         table.column ("Name");
         table.column ("Type");
         for (var i = 0; i < typ.nfields; ++i)
-        {
-          if (!typ.fcomputed[i])
-            continue;
-          table.row;
-          table.column (typ.fnames[i]);
-          table.column (typ.ftypes[i]);
-          apush (computed_field_names, typ.fnames[i]);
-        }
-        table.print_table;
-      }
+          {
+            if (typ.fcomputed[i])
+              continue;
+            table.row;
+            table.column (typ.fnames[i]);
+            table.column (typ.ftypes[i]);
+          }
+          table.print_table;
+
+        var ncomputedfields = lambda uint<32>:
+          {
+            var n = 0U;
+            for (var i = 0; i < typ.nfields; ++i)
+              if (typ.fcomputed[i])
+                ++n;
+            return n;
+          }();
+
+        if (ncomputedfields > 0)
+          {
+            term_begin_class ("table-header");
+            print "Computed Fields:\n";
+            term_end_class ("table-header");
+            table = Pk_Table { num_columns = 2, indent = 2, max_column_size = 80 };
+
+            table.row ("table-header");
+            table.column ("Name");
+            table.column ("Type");
+            for (var i = 0; i < typ.nfields; ++i)
+              {
+                if (!typ.fcomputed[i])
+                  continue;
+
+                table.row;
+                table.column (typ.fnames[i]);
+                table.column (typ.ftypes[i]);
+                apush (computed_field_names, typ.fnames[i]);
+              }
+            table.print_table;
+          }
     }
 
     if (typ.nmethods > 0)
-    {
-      var table = Pk_Table { num_columns = 2, indent = 2, max_column_size = 80 };
-      var nmethods_to_print = 0;
-
-      table.row ("table-header");
-      table.column ("Name");
-      table.column ("Type");
-      for (var i = 0; i < typ.nmethods; ++i)
       {
-        /* Do not include getters and setters of computed fields.  */
-        var mname = typ.mnames[i];
-        if (mname'length > 4
-            && (mname[0:4] == "get_" || mname[0:4] == "set_")
-            && mname[4:] in computed_field_names)
-          continue;
-        /* Ditto for pretty-printers.  */
-        if (mname == "_print")
-          continue;
+        var table = Pk_Table { num_columns = 2, indent = 2, max_column_size = 80 };
+        var nmethods_to_print = 0;
 
-        table.row;
-        table.column (typ.mnames[i]);
-        table.column (typ.mtypes[i]);
-        nmethods_to_print++;
+        table.row ("table-header");
+        table.column ("Name");
+        table.column ("Type");
+        for (var i = 0; i < typ.nmethods; ++i)
+          {
+            /* Do not include getters and setters of computed fields.  */
+            var mname = typ.mnames[i];
+            if (mname'length > 4
+                && (mname[0:4] == "get_" || mname[0:4] == "set_")
+                && mname[4:] in computed_field_names)
+              continue;
+
+            /* Ditto for pretty-printers.  */
+            if (mname == "_print")
+              continue;
+
+            table.row;
+            table.column (typ.mnames[i]);
+            table.column (typ.mtypes[i]);
+            nmethods_to_print++;
+          }
+
+        if (nmethods_to_print > 0)
+          {
+            term_begin_class ("table-header");
+            print "Methods:\n";
+            term_end_class ("table-header");
+            table.print_table;
+          }
       }
-
-      if (nmethods_to_print > 0)
-        {
-          print "Methods:\n";
-          table.print_table;
-        }
-    }
   }
 }

@@ -1,5 +1,9 @@
 2023-10-29  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-info.pk (pk_info_type): Style sections.
+
+2023-10-29  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* poke/pk-cmd.c (dot_cmds): Add compiler_cmd.
 	(pk_cmd_init): Initialize compiler_trie.
 	(pk_cmd_shutdown): Free compiler_trie.
