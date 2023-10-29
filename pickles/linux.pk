@@ -19,7 +19,7 @@
 type Linux_Version_Code =
   struct uint<32>
   {
-    uint<8> _;
+    uint<8>;
     uint<8> major;
     uint<8> middle;
     uint<8> minor;
