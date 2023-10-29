@@ -246,6 +246,19 @@ pk_set_quiet_p (pk_compiler pkc, int quiet_p)
 }
 
 void
+pk_set_debug_p (pk_compiler pkc, int debug_p)
+{
+  pkl_set_debug_p (pkc->compiler, debug_p);
+  pkc->status = PK_OK;
+}
+
+const char *
+pk_get_debug_ast (pk_compiler pkc)
+{
+  return pkl_get_last_ast_str (pkc->compiler);
+}
+
+void
 pk_set_lexical_cuckolding_p (pk_compiler pkc, int lexical_cuckolding_p)
 {
   pkl_set_lexical_cuckolding_p (pkc->compiler, lexical_cuckolding_p);

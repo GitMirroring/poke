@@ -71,6 +71,8 @@ struct pkl_compiler
   int compiling;
   int error_on_warning;
   int quiet_p;
+  int debug_p;
+  char *last_ast_str;
 #define PKL_MODULES_STEP 8
   int lexical_cuckolding_p;
   pkl_alien_token_handler_fn alien_token_fn;
@@ -124,6 +126,10 @@ pkl_new (pvm vm, const char *rt_path,
 
   /* Be verbose by default :) */
   compiler->quiet_p = 0;
+
+  /* No debug by default.  */
+  compiler->debug_p = 0;
+  compiler->last_ast_str = NULL;
 
   /* Bootstrap the compiler.  An error bootstraping is an internal
      error and should be reported as such.  */
@@ -185,6 +191,7 @@ void
 pkl_free (pkl_compiler compiler)
 {
   pkl_env_free (compiler->env);
+  free (compiler->last_ast_str);
   free (compiler);
 }
 
@@ -297,6 +304,12 @@ rest_of_compilation (pkl_compiler compiler,
 
   if (analf_payload.errors > 0)
     goto error;
+
+  if (compiler->debug_p)
+    {
+      free (compiler->last_ast_str);
+      compiler->last_ast_str = pkl_ast_format (ast->ast);
+    }
 
   pkl_ast_free (ast);
   return gen_payload.program;
@@ -633,6 +646,24 @@ void
 pkl_set_quiet_p (pkl_compiler compiler, int quiet_p)
 {
   compiler->quiet_p = quiet_p;
+}
+
+int
+pkl_debug_p (pkl_compiler compiler)
+{
+  return compiler->debug_p;
+}
+
+void
+pkl_set_debug_p (pkl_compiler compiler, int debug_p)
+{
+  compiler->debug_p = debug_p;
+}
+
+char *
+pkl_get_last_ast_str (pkl_compiler compiler)
+{
+  return compiler->last_ast_str;
 }
 
 int

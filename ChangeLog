@@ -1,3 +1,25 @@
+2023-10-29  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl.h: Prototypes for pkl_debug_p, pkl_set_debug_p and
+	pkl_get_last_ast_str.
+	* libpoke/pkl.c (struct pkl_compiler): New fields debug_p and
+	last_ast_str.
+	(pkl_new): Initialize debug_p and last_ast_str.
+	(pkl_debug_p): New function.
+	(pkl_set_debug_p): Likewise.
+	(pkl_get_last_ast_str): Likewise.
+	(pkl_free): Free last_ast_str.
+	(rest_of_compilation): Save printable representation of the ast if
+	in debug mode.
+	* libpoke/libpoke.h: New services pk_set_debug_p and
+	pk_get_debug_ast.
+	* libpoke/libpoke.c (pk_set_debug_p): New function.
+	(pk_get_debug_ast): Likewise.
+	* libpoke/pkl-ast.h: Add prototype of pkl_ast_format.
+	* libpoke/pkl-ast.c (pkl_ast_format): New function.
+	(pkl_ast_print): Rewrite in terms of pkl_ast_format.
+	(pkl_ast_format_1): Rename from pkl_ast_print_1.
+
 2023-10-28  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* poke/pk-cmd-ios.c (print_info_ios): Do not style `size' and

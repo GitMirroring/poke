@@ -348,6 +348,22 @@ void pk_reset_profile (pk_compiler pkc) LIBPOKE_API;
 
 void pk_set_quiet_p (pk_compiler pkc, int quiet_p) LIBPOKE_API;
 
+/* Set the DEBUG_P flag in the compiler.  If this flag is set, the
+   incremental compiler:
+
+   - Creates and saves the abstract syntax tree (AST) intermediate
+     representation of the last compiled program, expression or
+     statement, whose textual representation is then available using
+     the pk_get_debug_ast service.  */
+
+void pk_set_debug_p (pk_compiler pkc, int debug_p) LIBPOKE_API;
+
+/* Get a printable representation of the last program, expression or
+   statement compiled in debug mode.  This function returns NULL if no
+   such program has been compiled.  */
+
+const char *pk_get_debug_ast (pk_compiler pkc) LIBPOKE_API;
+
 /* Install a handler for alien tokens in the incremental compiler.
    The handler gets a string with the token identifier (for $foo it
    would get `foo') and should return a pk_alien_token struct with the

@@ -219,8 +219,21 @@ int pkl_tracer_p (pkl_compiler compiler);
    set, the compiler emits as few output as possible.  */
 
 int pkl_quiet_p (pkl_compiler compiler);
-
 void pkl_set_quiet_p (pkl_compiler compiler, int quiet_p);
+
+/* Set/get the debug_p flag in/from the compiler.  */
+
+int pkl_debug_p (pkl_compiler compiler);
+void pkl_set_debug_p (pkl_compiler compiler, int debug_p);
+
+/* Get the printable representation of the AST corresponding to the
+   last compiled program, expression or statement.  If nothing has
+   been compiled yet then return NULL.
+
+   Note that this printable representation is only recorded when the
+   compiler compiles in debug mode, i.e. when debug_p is true.  */
+
+char *pkl_get_last_ast_str (pkl_compiler compiler);
 
 /* Get/install a handler for alien tokens.  */
 

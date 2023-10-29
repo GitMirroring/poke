@@ -2193,6 +2193,7 @@ void pkl_ast_node_free_chain (pkl_ast_node ast);
 
 pkl_ast_node pkl_ast_reverse (pkl_ast_node ast);
 
+char *pkl_ast_format (pkl_ast_node ast);
 void pkl_ast_print (FILE *fp, pkl_ast_node ast);
 
 char *pkl_ast_format_loc (pkl_ast ast, pkl_ast_loc loc);

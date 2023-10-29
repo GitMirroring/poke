@@ -3150,10 +3150,10 @@ pkl_ast_handle_bconc_ass_stmt (pkl_ast ast, pkl_ast_node ass_stmt)
       int i;                                    \
       for (i = 0; i < indent; i++)              \
         if (indent >= 2 && i % 2 == 0)          \
-          fprintf (fp, "|");                    \
+          sb_append (buffer, "|");              \
         else                                    \
-          fprintf (fp, " ");                    \
-      fprintf (fp, __VA_ARGS__);                \
+          sb_append (buffer, " ");              \
+      sb_appendf (buffer, __VA_ARGS__);         \
     } while (0)
 
 #define PRINT_AST_IMM(NAME,MACRO,FMT)                    \
@@ -3168,7 +3168,7 @@ pkl_ast_handle_bconc_ass_stmt (pkl_ast ast, pkl_ast_node ass_stmt)
   do                                                            \
     {                                                           \
       IPRINTF (#NAME ":\n");                                    \
-      pkl_ast_print_1 (fp, PKL_AST_##MACRO (ast), indent + 2);  \
+      pkl_ast_format_1 (buffer, PKL_AST_##MACRO (ast), indent + 2); \
     }                                                           \
   while (0)
 
@@ -3189,13 +3189,14 @@ pkl_ast_handle_bconc_ass_stmt (pkl_ast ast, pkl_ast_node ass_stmt)
        child;                                   \
        child = PKL_AST_CHAIN (child))           \
     {                                           \
-      pkl_ast_print_1 (fp, child, indent + 2);  \
+      pkl_ast_format_1 (buffer, child, indent + 2); \
     }
 
 /* Auxiliary function used by `pkl_ast_print', defined below.  */
 
 static void
-pkl_ast_print_1 (FILE *fp, pkl_ast_node ast, int indent)
+pkl_ast_format_1 (struct string_buffer *buffer,
+                  pkl_ast_node ast, int indent)
 {
   pkl_ast_node child;
   size_t i;
@@ -3285,8 +3286,8 @@ pkl_ast_print_1 (FILE *fp, pkl_ast_node ast, int indent)
         PRINT_AST_IMM (numops, EXP_NUMOPS, "%d");
         IPRINTF ("operands:\n");
         for (i = 0; i < PKL_AST_EXP_NUMOPS (ast); i++)
-          pkl_ast_print_1 (fp, PKL_AST_EXP_OPERAND (ast, i),
-                         indent + 2);
+          pkl_ast_format_1 (buffer, PKL_AST_EXP_OPERAND (ast, i),
+                            indent + 2);
         break;
       }
 
@@ -3755,6 +3756,18 @@ pkl_ast_print_1 (FILE *fp, pkl_ast_node ast, int indent)
     }
 }
 
+/* Allocate a string with the printable representation of AST.  If
+   there is an error such as out of memory, return NULL.  */
+
+char *
+pkl_ast_format (pkl_ast_node ast)
+{
+  struct string_buffer buffer;
+
+  pkl_ast_format_1 (&buffer, ast, 0);
+  return sb_dupfree (&buffer);
+}
+
 /* Dump a printable representation of AST to the file descriptor FD.
    This function is intended to be useful to debug the PKL
    compiler.  */
@@ -3762,7 +3775,13 @@ pkl_ast_print_1 (FILE *fp, pkl_ast_node ast, int indent)
 void
 pkl_ast_print (FILE *fp, pkl_ast_node ast)
 {
-  pkl_ast_print_1 (fp, ast, 0);
+  char *str = pkl_ast_format (ast);
+
+  if (str == NULL)
+    /* The only possible error here is out-of-memory.  */
+    xalloc_die ();
+  fprintf (fp, str);
+  free (str);
 }
 
 #undef IPRINTF
