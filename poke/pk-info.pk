@@ -114,7 +114,7 @@ fun pk_info_type = (Pk_Type typ) void:
         table.column ("Type");
         for (var i = 0; i < typ.nfields; ++i)
           {
-            if (typ.fcomputed[i])
+            if (typ.fcomputed[i] || typ.fnames[i] == "")
               continue;
             table.row;
             table.column (typ.fnames[i]);
@@ -173,7 +173,8 @@ fun pk_info_type = (Pk_Type typ) void:
               continue;
 
             /* Ditto for pretty-printers.  */
-            if (mname == "_print")
+            if (mname == "_print"
+                || (mname'length > 6 && mname[0:7] == "_print_"))
               continue;
 
             table.row;

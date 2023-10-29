@@ -1,5 +1,10 @@
 2023-10-29  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-info.pk (pk_info_type): Skip field pretty-printers in
+	method list and anonymous fields in field list.
+
+2023-10-29  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* pickles/linux.pk: New file.
 	* pickles/Makefile.am (dist_pickles_DATA): Distribute linux.pk.
 	* pickles/ios.pk (ios_dump_bytes): Always use the IOS of :val if
