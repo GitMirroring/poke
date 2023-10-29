@@ -51,7 +51,7 @@ pk_cmd_compiler_ast (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
         const char *ast_str = pk_get_debug_ast (poke_compiler);
 
         assert (ast_str != NULL);
-        pk_printf ("%s\n", ast_str);
+        pk_printf ("%s", ast_str);
       }
     pk_set_debug_p (poke_compiler, 0);
   }
