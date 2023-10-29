@@ -339,6 +339,20 @@ Perform an operation related to the Poke Virtual Machine.
 pk_help_add_topic
   :entry Poke_HelpEntry {
       category = "dot-commands",
+      topic = ".compiler",
+      synopsis = ".compiler {ast}",
+      summary = "Poke compiler related commands",
+      description = "\
+Perform an operation related to the Poke incremental compiler.
+
+.compiler ast EXPR
+  Show a printable representation of the abstract syntax tree (AST)
+  corresponding to the given EXPR, which is compiled."
+    };
+
+pk_help_add_topic
+  :entry Poke_HelpEntry {
+      category = "dot-commands",
       topic = ".version",
       synopsis = ".version",
       summary = "display the poke version",

@@ -8762,6 +8762,7 @@ au BufRead,BufNewFile *.pk set filetype=poke
 * info command::		Getting information about open files, @i{etc}.
 * set command::			Querying and setting global options.
 * vm command::			Poke Virtual Machine services.
+* compiler command::            Poke incremental compiler services.
 * exit command::		Exiting poke :(
 * quit command::                Likewise.
 @end menu
@@ -9163,6 +9164,27 @@ one.
 
 Jitter by default will use the most efficient dispatch which is
 both stable and available for the current configuration.
+
+@node compiler command
+@section @code{.compiler}
+@cindex @code{.compiler}
+@cindex compiler
+The @code{.compiler} family of dot-commands provide access to
+auxiliary features of the Poke incremental compiler.  This is mostly
+used for debugging poke itself.
+
+@menu
+* @:.compiler ast::             Dump the AST of a given expression.
+@end menu
+
+@node @:.compiler ast
+@subsection @code{.compiler ast}
+@cindex abstract syntax tree
+@cindex AST
+The @command{.compiler ast} command compiles a Poke expression and
+then dumps a printable representation of the corresponding abstract
+syntax tree (AST).  This command is useful when debugging the Poke
+compiler.
 
 @node exit command
 @section @code{.exit}

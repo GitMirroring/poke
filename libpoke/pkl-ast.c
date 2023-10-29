@@ -3764,6 +3764,7 @@ pkl_ast_format (pkl_ast_node ast)
 {
   struct string_buffer buffer;
 
+  sb_init (&buffer);
   pkl_ast_format_1 (&buffer, ast, 0);
   return sb_dupfree (&buffer);
 }

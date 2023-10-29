@@ -1,5 +1,18 @@
 2023-10-29  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-cmd.c (dot_cmds): Add compiler_cmd.
+	(pk_cmd_init): Initialize compiler_trie.
+	(pk_cmd_shutdown): Free compiler_trie.
+	* poke/pk-cmd-compiler.c: New file.
+	* poke/Makefile.am (poke_SOURCES): Add pk-cmd-compiler.c
+	* libpoke/pkl-ast.c (pkl_ast_format): Initialize the
+	string_buffer.
+	* poke/pk-help.pk: Add .help topic for the .compiler command.
+	* doc/poke.texi (@:.compiler ast): New section.
+	(compiler command): Likewise.
+
+2023-10-29  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl.h: Prototypes for pkl_debug_p, pkl_set_debug_p and
 	pkl_get_last_ast_str.
 	* libpoke/pkl.c (struct pkl_compiler): New fields debug_p and

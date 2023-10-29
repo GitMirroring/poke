@@ -59,6 +59,7 @@ extern const struct pk_cmd doc_cmd; /* pk-cmd-misc.c */
 extern const struct pk_cmd jmd_cmd; /* pk-cmd-misc.c */
 extern const struct pk_cmd help_cmd; /* pk-cmd-help.c */
 extern const struct pk_cmd vm_cmd; /* pk-cmd-vm.c  */
+extern const struct pk_cmd compiler_cmd; /* pk-cmd-compiler.c */
 extern struct pk_cmd set_cmd; /* pk-cmd-set.c */
 extern const struct pk_cmd editor_cmd; /* pk-cmd-editor.c */
 extern const struct pk_cmd map_cmd; /* pk-cmd-map.c */
@@ -82,6 +83,7 @@ static const struct pk_cmd *dot_cmds[] =
     &source_cmd,
     &help_cmd,
     &vm_cmd,
+    &compiler_cmd,
     &set_cmd,
     &map_cmd,
     &editor_cmd,
@@ -580,6 +582,9 @@ extern struct pk_trie *info_trie; /* pk-cmd-info.c  */
 extern const struct pk_cmd *vm_cmds[]; /* pk-cmd-vm.c  */
 extern struct pk_trie *vm_trie;  /* pk-cmd-vm.c  */
 
+extern const struct pk_cmd *compiler_cmds[]; /* pk-cmd-compiler.c */
+extern struct pk_trie *compiler_trie; /* pk-cmd-compiler.c */
+
 extern const struct pk_cmd *vm_disas_cmds[];  /* pk-cmd-vm.c */
 extern struct pk_trie *vm_disas_trie; /* pk-cmd-vm.c */
 
@@ -768,6 +773,7 @@ pk_cmd_init (void)
   cmds_trie = pk_trie_from_cmds (dot_cmds);
   info_trie = pk_trie_from_cmds (info_cmds);
   vm_trie = pk_trie_from_cmds (vm_cmds);
+  compiler_trie = pk_trie_from_cmds (compiler_cmds);
   vm_disas_trie = pk_trie_from_cmds (vm_disas_cmds);
   vm_profile_trie = pk_trie_from_cmds (vm_profile_cmds);
   map_trie = pk_trie_from_cmds (map_cmds);
@@ -794,6 +800,7 @@ pk_cmd_shutdown (void)
   pk_trie_free (cmds_trie);
   pk_trie_free (info_trie);
   pk_trie_free (vm_trie);
+  pk_trie_free (compiler_trie);
   pk_trie_free (vm_disas_trie);
   pk_trie_free (vm_profile_trie);
   pk_trie_free (set_trie);
