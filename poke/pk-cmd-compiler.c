@@ -40,7 +40,7 @@ pk_cmd_compiler_ast (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 
   {
     pk_val exit_exception;
-    
+
     pk_set_debug_p (poke_compiler, 1);
     /* Note that the compiler will print its own error messages in
        case the following call fails.  */
