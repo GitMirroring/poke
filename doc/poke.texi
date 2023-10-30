@@ -1139,16 +1139,18 @@ about:
 @example
 (poke) .info ios
   Id	Type	Mode	Bias		Size		Name
-* #0	FILE	rw	0x00000000#B	0x00000398#B	./foo.o
+* 0	FILE	rw	0x00000000#B	0x00000398#B	./foo.o
 @end example
 
 The command @command{.info ios} gives us information about all the IO
-spaces that are currently open.  The first column tells us a @dfn{tag}
-that identifies the IOS.  In this example, the tag corresponding to
-@file{foo.o} is @code{#0}.  The second column tells us the type of
-IO space. The third column tells us that @file{foo.o} allows both
-reading and writing.  The fourth column tells us the size of the file,
-in hexadecimal.
+spaces that are currently open.  The first column tells us a positive
+integer that identifies the IOS.  This @dfn{IO space identifier} is
+unique at any given time.  In this example, the id corresponding to
+@file{foo.o} is @code{0}.  The second column tells us the type of IO
+space. The third column tells us that @file{foo.o} allows both reading
+and writing.  The fourth column tells us the size of the file, in
+hexadecimal.  The fifth column is the name of the IO space; in this
+case, it is the path to the file being edited.
 
 You may wonder what is that weird suffix @code{#B}.  It is a unit,
 and tells us that the size @code{0x398} is measured in bytes, @i{i.e.} the
@@ -1164,8 +1166,8 @@ clearly, let's open another file:
 The current IOS is now `./bar.o'.
 (poke) .info ios
   Id	Type	Mode	Bias		Size		Name
-* #1	FILE	rw	0x00000000#B	0x00000398#B	./bar.o
-  #0	FILE	rw	0x00000000#B	0x00000398#B	./foo.o
+* 1	FILE	rw	0x00000000#B	0x00000398#B	./bar.o
+  0	FILE	rw	0x00000000#B	0x00000398#B	./foo.o
 @end example
 
 Ah, there we have both @file{foo.o} and @file{bar.o}.  Now the current
@@ -1173,15 +1175,15 @@ IO space (the entry featuring the asterisk at the left) is the file
 that we just opened, @file{bar.o}.  This is because poke always sets
 the most recently open file as the current one.  We can switch back to
 @file{foo.o} using yet another dot-command, @command{.ios}, which gets
-an IO space tag as an argument:
+an IO space as an argument:
 
 @example
-(poke) .ios #0
+(poke) .ios 0
 The current IOS is now `./foo.o'.
 (poke) .info ios
   Id	Type	Mode	Bias		Size		Name
-  #1	FILE	rw	0x00000000#B	0x00000398#B	./bar.o
-* #0	FILE	rw	0x00000000#B	0x00000398#B	./foo.o
+  1	FILE	rw	0x00000000#B	0x00000398#B	./bar.o
+* 0	FILE	rw	0x00000000#B	0x00000398#B	./foo.o
 @end example
 
 @noindent
@@ -1189,10 +1191,22 @@ We are back to @file{foo.o}.  Since we are not really interested in
 @file{bar.o}, let's close it:
 
 @example
-(poke) .close #1
+(poke) .close 1
 (poke) .info ios
   Id	Type	Mode	Bias		Size		Name
-* #0	FILE	rw	0x00000000#B	0x00000398#B	./foo.o
+* 0	FILE	rw	0x00000000#B	0x00000398#B	./foo.o
+@end example
+
+Note how in the examples above we used the IO space identifiers (0 and
+1) in order to refer to them.  This can be inconvenient, as these ids
+are not memorable at all.  Fortunately it is also possible to refer to
+an IO space by name using the @code{$<@var{name}>} construct, like
+this:
+
+@example
+(poke) .ios $<./foo.o>
+The current IOS is now `./foo.o'.
+(poke) .close $<./bar.o>
 @end example
 
 @noindent
@@ -2658,7 +2672,7 @@ that opened a file as an IO space?
 The current IOS is now `./foo.o'.
 (poke) .info ios
   Id	Type	Mode	Bias		Size		Name
-* #0	FILE	rw	0x00000000#B	0x000004c8#B	./foo.o
+* 0	FILE	rw	0x00000000#B	0x000004c8#B	./foo.o
 @end example
 
 @noindent
@@ -2670,8 +2684,8 @@ Memory buffers can be created using a similar dot-command,
 The current IOS is now `*foo*'.
 (poke) .info ios
   Id	Type	Mode	Bias		Size		Name
-* #1	MEMORY		0x00000000#B	0x00001000#B    *foo*
-  #0	FILE	rw	0x00000000#B	0x000004c8#B    ./foo.o
+* 1	MEMORY		0x00000000#B	0x00001000#B    *foo*
+  0	FILE	rw	0x00000000#B	0x000004c8#B    ./foo.o
 @end example
 
 Note how the name of the buffer is built by prepending and appending
@@ -2795,8 +2809,8 @@ we can continue our work tomorrow.  This is how we would do that:
 @example
 (poke) .info ios
   Id	Type	Mode	Bias		Size		Name
-* #1	MEMORY		0x00000000#B	0x00001000#B    *scratch*
-  #0	FILE	rw	0x00000000#B	0x000f4241#B    ./foo.o
+* 1	MEMORY		0x00000000#B	0x00001000#B    *scratch*
+  0	FILE	rw	0x00000000#B	0x000f4241#B    ./foo.o
 (poke) save :from 0#B :size iosize (1) :file "scratch.dat"
 @end example
 
@@ -3839,8 +3853,8 @@ $ poke p.sbm
 The current IOS is now `*scratch*'.
 (poke) .info ios
   Id	Type	Mode	Bias		Size		Name
-* #1	MEMORY		0x00000000#B	0x00001000#B	*scratch*
-  #0	FILE	rw	0x00000000#B	0x0000006e#B	./p.sbm
+* 1	MEMORY		0x00000000#B	0x00001000#B	*scratch*
+  0	FILE	rw	0x00000000#B	0x0000006e#B	./p.sbm
 (poke) copy :from_ios 0 :from 0#B :to 0#B :size iosize (0)
 (poke) dump
 76543210  0011 2233 4455 6677 8899 aabb ccdd eeff  0123456789ABCDEF
@@ -6386,12 +6400,12 @@ programs using the following attributes:
 @end example
 
 That's it, @code{ehdr} is mapped at offset zero byte in the IO space
-@code{#0}, which corresponds to @code{foo.o}:
+@code{0}, which corresponds to @code{foo.o}:
 
 @example
 (poke) .info ios
   Id	Type	Mode	Bias		Size		Name
-* #0	FILE	rw	0x00000000#B	0x000004c8#B   ./foo.o
+* 0	FILE	rw	0x00000000#B	0x000004c8#B   ./foo.o
 @end example
 
 Now that we have the ELF header, we may use it to get access to the
@@ -6463,8 +6477,8 @@ ELF file: @code{bar.o}.  We would start by opening the file:
 (poke) .file bar.o
 (poke) .info ios
   Id	Type	Mode	Bias		Size		Name
-* #1	FILE	rw	0x00000000#B	0x000004c8#B	./bar.o
-  #0	FILE	rw	0x00000000#B	0x000004c8#B	./foo.o
+* 1	FILE	rw	0x00000000#B	0x000004c8#B	./bar.o
+  0	FILE	rw	0x00000000#B	0x000004c8#B	./foo.o
 @end example
 
 Now that @code{bar.o} is the current IO space, we can map its header.
@@ -6628,7 +6642,7 @@ the prompt changes accordingly:
 @example
 (poke) [self](poke) .mem foo
 The current IOS is now `*foo*'.
-(poke) .ios #0
+(poke) .ios $<*foo*>
 The current IOS is now `./foo.o'.
 [self](poke)
 @end example
@@ -6639,11 +6653,11 @@ full list of loaded maps, with more information about them:
 @example
 (poke) .info maps
 IOS   Name   Source
-#0    self   ./self.map
+0    self   ./self.map
 @end example
 
 In this case, there is a map @code{self} loaded in the IO space
-@code{#0}, which corresponds to @code{foo.o}.
+@code{0}, which corresponds to @code{foo.o}.
 
 Once we make @code{foo.o} our current IO space, we can ask poke to
 show us the entries corresponding to this map using another
@@ -6703,7 +6717,7 @@ depending on the current IO space:
 Offset       Entry
 0UL#B        $self::ehdr
 3158952UL#B  $self::shdr
-[self](poke) .ios #0
+[self](poke) .ios 0
 The current IOS is now `./foo.o'.
 [self](poke) .map show self
 Offset   Entry
@@ -6716,11 +6730,11 @@ Offset   Entry
 DSO:
 
 @example
-(poke) .ios #0
+(poke) .ios 0
 The current IOS is now `./foo.o'.
 [self](poke) $self::ehdr.e_type
 1UH
-[self](poke) .ios #2
+[self](poke) .ios 2
 The current IOS is now `/usr/local/lib/libpoke.so.0.0.0'.
 [self](poke) $self::ehdr.e_type
 3UH
@@ -6772,8 +6786,8 @@ contains DWARF info!  Let's take a look:
 @example
 [dwarf,self](poke) .info maps
 IOS   Name    Source
-#0    dwarf   /home/jemarch/gnu/hacks/poke/maps/dwarf.map
-#0    self    ./self.map
+0     dwarf   /home/jemarch/gnu/hacks/poke/maps/dwarf.map
+0     self    ./self.map
 [dwarf,self](poke) .map show dwarf
 Offset    Entry
 0x5bUL#B  $dwarf::info
@@ -8926,7 +8940,7 @@ The @command{.sub} command opens a new IO sub-space.  The syntax is:
 @end example
 
 @noindent
-where @var{ios} is the tag of some existing IO space, @var{base} and
+where @var{ios} identifies some existing IO space, @var{base} and
 @var{size} are integers denoting the base and size of the range
 covered by the sub-space (in bytes) and @var{name} is an optional
 name.
@@ -8935,14 +8949,16 @@ name.
 @section @code{.ios}
 @cindex @code{.ios}
 
-@cindex tags, file ID tags
-A list of open files, and their corresponding tags, can be obtained
-using the @command{.info ios} command.  Once a tag is known, you can
-use the @command{.ios} command to switch back to that file:
+A list of open IO spaces, and their corresponding identifiers and
+names, can be obtained using the @command{.info ios} command.  You can
+use the @command{.ios} command to switch back to a particular IO space
+by providing an expression that evaluates to its identifier:
 
 @example
-(poke) .ios #1
+(poke) .ios 1
 The current IOS is now `foo.o'.
+(poke) .ios $</bin/ls>
+The current IOS is now `/bin/ls'.
 @end example
 
 @node close command
@@ -8954,11 +8970,17 @@ The @command{.close} command closes the selected IO space.  The syntax
 is:
 
 @example
-.close @var{#tag}
+.close @var{ios}
 @end example
 
 @noindent
-where @var{#tag} is a tag identifying an open IO space.
+Where @var{ios} is a Poke expression that evaluates to an IO space
+identifier.  Examples:
+
+@example
+(poke) .close 1
+(poke) .close $<*foo*>
+@end example
 
 Note that closing an IO space with this dot-command implies closing
 any sub IO space having it as a base.
@@ -9025,8 +9047,8 @@ Display a list of open files.
 @example
 (poke) .info ios
   Id	Type	Mode	Bias		Size		Name
-  #1	FILE	r	0x00000000#B	0x0000df78#B	foo.o
-* #0	FILE	rw	0x00000000#B	0x00000022#B	foo.bson
+  1	FILE	r	0x00000000#B	0x0000df78#B	foo.o
+* 0	FILE	rw	0x00000000#B	0x00000022#B	foo.bson
 @end example
 
 @cindex IO space
@@ -9037,12 +9059,12 @@ the file that can be passed to the @command{.file} command in order to
 switch to it as the new current IO space:
 
 @example
-(poke) .ios #1
+(poke) .ios 1
 The current file is now `foo.o'.
 (poke) .info ios
   Id	Type	Mode	Bias		Size		Name
-* #1	FILE	r	0x00000000#B	0x0000df78#B	foo.o
-  #0	FILE	rw	0x00000000#B	0x00000022#B	foo.bson
+* 1	FILE	r	0x00000000#B	0x0000df78#B	foo.o
+  0	FILE	rw	0x00000000#B	0x00000022#B	foo.bson
 @end example
 
 @item .info variables [@var{regexp}]

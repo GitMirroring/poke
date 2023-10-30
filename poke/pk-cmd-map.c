@@ -27,6 +27,35 @@
 #include "pk-map.h"
 #include "pk-table.h"
 
+/* Get a Poke expression and compile it to get an int<32> Poke value.
+   If the expression doesn't evaluate to an int<32> then return PK_
+   doesn't evaluate to a valid IO space id then return PK_NULL.  */
+
+static int
+expr_to_intval (const char *expr, pk_val *retval)
+{
+  pk_val val;
+  pk_val exit_exception = PK_NULL;
+  int ret;
+
+  pk_set_lexical_cuckolding_p (poke_compiler, 1);
+  ret = pk_compile_expression (poke_compiler, expr, NULL, &val,
+                               &exit_exception);
+  pk_set_lexical_cuckolding_p (poke_compiler, 0);
+
+  if (ret != PK_OK || exit_exception != PK_NULL)
+    {
+      /* The compiler has already printed diagnostics in the
+         terminal.  */
+      if (exit_exception != PK_NULL)
+        poke_handle_exception (exit_exception);
+      return 0;
+    }
+
+   *retval = val;
+   return 1;
+}
+
 #define SET_TO_CUR_IOS_ID(ios_id)                                             \
   do                                                                          \
     {                                                                         \
@@ -45,7 +74,7 @@
 static int
 pk_cmd_map_create (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 {
-  /* map create MAPNAME [,#IOS] */
+  /* map create MAPNAME [,IOS] */
 
   int ios_id;
   const char *mapname;
@@ -57,7 +86,7 @@ pk_cmd_map_create (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 
   if (strlen (mapname) == 0)
     {
-      pk_printf (_("Invalid name for map\n"));
+      pk_printf (_("Invalid name for map.\n"));
       return 0;
     }
 
@@ -65,17 +94,30 @@ pk_cmd_map_create (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
     SET_TO_CUR_IOS_ID (ios_id);
   else
     {
-      ios_id = PK_CMD_ARG_TAG (argv[2]);
+      pk_val val;
+
+      if (!expr_to_intval (PK_CMD_ARG_STR (argv[2]), &val))
+        /* Compiler should have emitted diagnostics already.  */
+        return 0;
+
+      if (pk_type_code (pk_typeof (val)) != PK_TYPE_INT)
+        {
+          pk_printf (_("Expected IO space identifier.\n"));
+          return 0;
+        }
+
+      ios_id = pk_int_value (val);
+
       if (pk_ios_search_by_id (poke_compiler, ios_id) == NULL)
         {
-          pk_printf (_("No such IOS #%d\n"), ios_id);
+          pk_printf (_("No such IOS with Id %d.\n"), ios_id);
           return 0;
         }
     }
 
   if (!pk_map_create (ios_id, mapname, NULL /* source */))
     {
-      pk_printf (_("The map `%s' already exists in IOS #%d\n"),
+      pk_printf (_("The map `%s' already exists in IOS %d\n."),
                  mapname, ios_id);
       return 0;
     }
@@ -86,7 +128,7 @@ pk_cmd_map_create (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 static int
 pk_cmd_map_remove (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 {
-  /* map remove MAPNAME [,#IOS] */
+  /* map remove MAPNAME [,IOS] */
 
   int ios_id;
   const char *mapname;
@@ -98,7 +140,7 @@ pk_cmd_map_remove (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 
   if (strlen (mapname) == 0)
     {
-      pk_printf (_("Invalid name for map\n"));
+      pk_printf (_("Invalid name for map.\n"));
       return 0;
     }
 
@@ -106,17 +148,30 @@ pk_cmd_map_remove (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
     SET_TO_CUR_IOS_ID (ios_id);
   else
     {
-      ios_id = PK_CMD_ARG_TAG (argv[2]);
+      pk_val val;
+
+      if (!expr_to_intval (PK_CMD_ARG_STR (argv[2]), &val))
+        /* Compiler should have emitted diagnostics already.  */
+        return 0;
+
+      if (pk_type_code (pk_typeof (val)) != PK_TYPE_INT)
+        {
+          pk_printf (_("Expected IO space identifier.\n"));
+          return 0;
+        }
+
+      ios_id = pk_int_value (val);
+
       if (pk_ios_search_by_id (poke_compiler, ios_id) == NULL)
         {
-          pk_printf (_("No such IOS #%d\n"), ios_id);
+          pk_printf (_("No such IOS %d.\n"), ios_id);
           return 0;
         }
     }
 
   if (!pk_map_remove (ios_id, mapname))
     {
-      pk_printf (_("No such map `%s' in IOS #%d\n"),
+      pk_printf (_("No such map `%s' in IOS %d.\n"),
                  mapname, ios_id);
       return 0;
     }
@@ -127,7 +182,7 @@ pk_cmd_map_remove (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 static int
 pk_cmd_map_show (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 {
-  /* map show MAPNAME [,#IOS] */
+  /* map show MAPNAME [,IOS] */
 
   int ios_id;
   const char *mapname;
@@ -142,10 +197,22 @@ pk_cmd_map_show (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
     SET_TO_CUR_IOS_ID (ios_id);
   else
     {
-      ios_id = PK_CMD_ARG_TAG (argv[2]);
+      pk_val val;
+
+      if (!expr_to_intval (PK_CMD_ARG_STR (argv[2]), &val))
+        /* Compiler should have emitted diagnostics already.  */
+        return 0;
+
+      if (pk_type_code (pk_typeof (val)) != PK_TYPE_INT)
+        {
+          pk_printf (_("Expected IO space identifier.\n"));
+          return 0;
+        }
+
+      ios_id = pk_int_value (val);
       if (pk_ios_search_by_id (poke_compiler, ios_id) == NULL)
         {
-          pk_printf (_("No such IOS #%d\n"), ios_id);
+          pk_printf (_("No such IOS %d.\n"), ios_id);
           return 0;
         }
     }
@@ -156,7 +223,7 @@ pk_cmd_map_show (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
   map = pk_map_search (ios_id, mapname);
   if (!map)
     {
-      pk_printf (_("No such map `%s' in IOS #%d\n"),
+      pk_printf (_("No such map `%s' in IOS %d.\n"),
                  mapname, ios_id);
       return 0;
     }
@@ -196,7 +263,7 @@ pk_cmd_map_show (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 static int
 pk_cmd_map_entry_add (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 {
-  /* map entry add MAPNAME, VARNAME [,#IOS]  */
+  /* map entry add MAPNAME, VARNAME [,IOS]  */
 
   int ios_id;
   const char *mapname;
@@ -215,10 +282,22 @@ pk_cmd_map_entry_add (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
     SET_TO_CUR_IOS_ID (ios_id);
   else
     {
-      ios_id = PK_CMD_ARG_TAG (argv[3]);
+      pk_val val;
+
+      if (!expr_to_intval (PK_CMD_ARG_STR (argv[3]), &val))
+        /* Compiler should have emitted diagnostics already.  */
+        return 0;
+
+      if (pk_type_code (pk_typeof (val)) != PK_TYPE_INT)
+        {
+          pk_printf (_("Expected IO space identifier.\n"));
+          return 0;
+        }
+
+      ios_id = pk_int_value (val);
       if (pk_ios_search_by_id (poke_compiler, ios_id) == NULL)
         {
-          pk_printf (_("No such IOS #%d\n"), ios_id);
+          pk_printf (_("No such IOS %d.\n"), ios_id);
           return 0;
         }
     }
@@ -226,7 +305,7 @@ pk_cmd_map_entry_add (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
   /* Make sure the specified map exists in the given IO space.  */
   if (!pk_map_search (ios_id, mapname))
     {
-      pk_printf (_("No such map `%s' in IOS #%d\n"),
+      pk_printf (_("No such map `%s' in IOS %d.\n"),
                  mapname, ios_id);
       return 0;
     }
@@ -234,7 +313,7 @@ pk_cmd_map_entry_add (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
   /* Make sure the variable exists in the top-level environment.  */
   if (!pk_decl_p (poke_compiler, varname, PK_DECL_KIND_VAR))
     {
-      pk_printf ("Variable `%s' doesn't exist\n", varname);
+      pk_printf ("Variable `%s' doesn't exist.\n", varname);
       return 0;
     }
 
@@ -246,7 +325,7 @@ pk_cmd_map_entry_add (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
   if (!pk_val_mapped_p (val)
       || pk_int_value (pk_val_ios (val)) != ios_id)
     {
-      pk_printf ("Variable `%s' is not mapped in the IOS #%d\n",
+      pk_printf ("Variable `%s' is not mapped in the IOS %d.\n",
                  varname, ios_id);
       return 0;
     }
@@ -255,7 +334,7 @@ pk_cmd_map_entry_add (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
   if (!pk_map_add_entry (ios_id, mapname,
                          varname, varname, pk_val_offset (val)))
     {
-      pk_printf ("The entry `%s' already exists in map `%s'\n",
+      pk_printf ("The entry `%s' already exists in map `%s'.\n",
                  varname, mapname);
       return 0;
     }
@@ -266,7 +345,7 @@ pk_cmd_map_entry_add (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 static int
 pk_cmd_map_entry_remove (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 {
-  /* map entry remove MAPNAME, VARNAME [,#IOS]  */
+  /* map entry remove MAPNAME, VARNAME [,IOS]  */
 
   int ios_id;
   const char *mapname;
@@ -284,10 +363,22 @@ pk_cmd_map_entry_remove (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
     SET_TO_CUR_IOS_ID (ios_id);
   else
     {
-      ios_id = PK_CMD_ARG_TAG (argv[3]);
+      pk_val val;
+
+      if (!expr_to_intval (PK_CMD_ARG_STR (argv[3]), &val))
+        /* Compiler should have emitted diagnostics already.  */
+        return 0;
+
+      if (pk_type_code (pk_typeof (val)) != PK_TYPE_INT)
+        {
+          pk_printf (_("Expected IO space identifier.\n"));
+          return 0;
+        }
+
+      ios_id = pk_int_value (val);
       if (pk_ios_search_by_id (poke_compiler, ios_id) == NULL)
         {
-          pk_printf (_("No such IOS #%d\n"), ios_id);
+          pk_printf (_("No such IOS %d.\n"), ios_id);
           return 0;
         }
     }
@@ -295,14 +386,14 @@ pk_cmd_map_entry_remove (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
   /* Make sure the specified map exists in the given IO space.  */
   if (!pk_map_search (ios_id, mapname))
     {
-      pk_printf (_("No such map `%s' in IOS #%d\n"),
+      pk_printf (_("No such map `%s' in IOS %d.\n"),
                  mapname, ios_id);
       return 0;
     }
 
   if (!pk_map_remove_entry (ios_id, mapname, entryname))
     {
-      pk_printf (_("no entry `%s' in map `%s'\n"),
+      pk_printf (_("No entry `%s' in map `%s'.\n"),
                  entryname, mapname);
       return 0;
     }
@@ -313,7 +404,7 @@ pk_cmd_map_entry_remove (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 static int
 pk_cmd_map_load (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 {
-  /* map load MAPNAME [,#IOS] */
+  /* map load MAPNAME [,IOS] */
 
   int ios_id, filename_p;
   const char *mapname, *filename;
@@ -327,10 +418,22 @@ pk_cmd_map_load (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
     SET_TO_CUR_IOS_ID (ios_id);
   else
     {
-      ios_id = PK_CMD_ARG_TAG (argv[2]);
+      pk_val val;
+
+      if (!expr_to_intval (PK_CMD_ARG_STR (argv[2]), &val))
+        /* Compiler should have emitted diagnostics already.  */
+        return 0;
+
+      if (pk_type_code (pk_typeof (val)) != PK_TYPE_INT)
+        {
+          pk_printf (_("Expected IO space identifier.\n"));
+          return 0;
+        }
+
+      ios_id = pk_int_value (val);
       if (pk_ios_search_by_id (poke_compiler, ios_id) == NULL)
         {
-          pk_printf (_("No such IOS #%d\n"), ios_id);
+          pk_printf (_("No such IOS %d.\n"), ios_id);
           return 0;
         }
     }
@@ -339,7 +442,7 @@ pk_cmd_map_load (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
   filename = pk_map_resolve_map (mapname, filename_p);
   if (!filename)
     {
-      pk_printf (_("No such map `%s'\n"), mapname);
+      pk_printf (_("No such map `%s'.\n"), mapname);
       return 0;
     }
 
@@ -369,7 +472,7 @@ pk_cmd_map_save (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 static int
 pk_cmd_info_maps (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 {
-  /* info maps [,#IOS] */
+  /* info maps [,IOS] */
   int ios_id;
   pk_map maps, map;
 
@@ -379,10 +482,22 @@ pk_cmd_info_maps (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
     SET_TO_CUR_IOS_ID (ios_id);
   else
     {
-      ios_id = PK_CMD_ARG_TAG (argv[1]);
+      pk_val val;
+
+      if (!expr_to_intval (PK_CMD_ARG_STR (argv[1]), &val))
+        /* Compiler should have emitted diagnostics already.  */
+        return 0;
+
+      if (pk_type_code (pk_typeof (val)) != PK_TYPE_INT)
+        {
+          pk_printf (_("Expected IO space identifier.\n"));
+          return 0;
+        }
+
+      ios_id = pk_int_value (val);
       if (pk_ios_search_by_id (poke_compiler, ios_id) == NULL)
         {
-          pk_printf (_("No such IOS #%d\n"), ios_id);
+          pk_printf (_("No such IOS %d.\n"), ios_id);
           return 0;
         }
     }
@@ -403,7 +518,7 @@ pk_cmd_info_maps (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 
           pk_table_row (table);
 
-          asprintf (&ios, "#%d", ios_id);
+          asprintf (&ios, "%d", ios_id);
           pk_table_column (table, ios);
           free (ios);
           pk_table_column (table, PK_MAP_NAME (map));
@@ -425,11 +540,11 @@ info_maps_completion_function (const char *x, int state)
 }
 
 const struct pk_cmd map_entry_add_cmd =
-  {"add", "s,s,?t", "", 0, NULL, NULL, pk_cmd_map_entry_add, "add MAPNAME, VARNAME [,#IOS]",
+  {"add", "s,s,?s", "", 0, NULL, NULL, pk_cmd_map_entry_add, "add MAPNAME, VARNAME [,IOS]",
    NULL};
 
 const struct pk_cmd map_entry_remove_cmd =
-  {"remove", "s,s,?t", "", 0, NULL, NULL, pk_cmd_map_entry_remove, "remove MAPNAME, VARNAME [,#IOS]",
+  {"remove", "s,s,?s", "", 0, NULL, NULL, pk_cmd_map_entry_remove, "remove MAPNAME, VARNAME [,IOS]",
    NULL};
 
 extern struct pk_cmd null_cmd; /* pk-cmd.c  */
@@ -455,19 +570,19 @@ const struct pk_cmd map_entry_cmd =
    map_entry_completion_function};
 
 const struct pk_cmd map_create_cmd =
-  {"create", "s,?t", "", 0, NULL, NULL, pk_cmd_map_create, "create MAPNAME [,#IOS]",
+  {"create", "s,?s", "", 0, NULL, NULL, pk_cmd_map_create, "create MAPNAME [,IOS]",
    NULL};
 
 const struct pk_cmd map_remove_cmd =
-  {"remove", "s,?t", "", 0, NULL, NULL, pk_cmd_map_remove, "remove MAPNAME [,#IOS]",
+  {"remove", "s,?s", "", 0, NULL, NULL, pk_cmd_map_remove, "remove MAPNAME [,IOS]",
    NULL};
 
 const struct pk_cmd map_show_cmd =
-  {"show", "s,?t", "", 0, NULL, NULL, pk_cmd_map_show, "show MAPNAME [,#IOS]",
+  {"show", "s,?s", "", 0, NULL, NULL, pk_cmd_map_show, "show MAPNAME [,IOS]",
    NULL};
 
 const struct pk_cmd map_load_cmd =
-  {"load", "s,?t", "", PK_CMD_F_REQ_IO, NULL, NULL, pk_cmd_map_load, "load MAPNAME [,#IOS]",
+  {"load", "s,?s", "", PK_CMD_F_REQ_IO, NULL, NULL, pk_cmd_map_load, "load MAPNAME [,IOS]",
    /* XXX use a completion function for maps.  */
    rl_filename_completion_function};
 
@@ -497,5 +612,5 @@ const struct pk_cmd map_cmd =
    map_completion_function};
 
 const struct pk_cmd info_maps_cmd =
-  {"maps", "?t", "", PK_CMD_F_REQ_IO, NULL, NULL, pk_cmd_info_maps, "info maps",
+  {"maps", "?s", "", PK_CMD_F_REQ_IO, NULL, NULL, pk_cmd_info_maps, "info maps",
    info_maps_completion_function};

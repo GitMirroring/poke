@@ -37,27 +37,57 @@
 #  include "pk-hserver.h"
 #endif
 
+/* Get a Poke expression and compile it to get an IO space identifier.
+   Lexical cuckolding is active to allow referring to IO spaces by
+   name with $<...> constructs.  If the expression is invalid or
+   doesn't evaluate to a valid IO space id then return NULL.  */
+
+static pk_ios
+expr_to_ios (const char *expr)
+{
+  pk_val val;
+  pk_val exit_exception = PK_NULL;
+  int ret;
+
+  pk_set_lexical_cuckolding_p (poke_compiler, 1);
+  ret = pk_compile_expression (poke_compiler, expr, NULL, &val,
+                               &exit_exception);
+  pk_set_lexical_cuckolding_p (poke_compiler, 0);
+
+  if (ret != PK_OK || exit_exception != PK_NULL)
+    {
+      /* The compiler has already printed diagnostics in the
+         terminal.  */
+      if (exit_exception != PK_NULL)
+        poke_handle_exception (exit_exception);
+      return NULL;
+    }
+
+  /* See that VAL is an IO space, i.e. an int<32>.  */
+  if (pk_type_code (pk_typeof (val)) != PK_TYPE_INT
+      || pk_int_size (val) != 32)
+    return NULL;
+
+  return pk_ios_search_by_id (poke_compiler, pk_int_value (val));
+}
+
 static int
 pk_cmd_ios (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 {
-  /* ios #ID */
-
-  int io_id;
+  /* ios EXPR */
   pk_ios io;
 
   assert (argc == 2);
-  assert (PK_CMD_ARG_TYPE (argv[1]) == PK_CMD_ARG_TAG);
+  assert (PK_CMD_ARG_TYPE (argv[1]) == PK_CMD_ARG_STR);
 
-  io_id = PK_CMD_ARG_TAG (argv[1]);
-  io = pk_ios_search_by_id (poke_compiler, io_id);
+  io = expr_to_ios (PK_CMD_ARG_STR (argv[1]));
   if (io == NULL)
     {
-      pk_printf (_("No IOS with tag #%d\n"), io_id);
+      pk_puts ("error: no such IO space\n");
       return 0;
     }
 
   pk_ios_set_cur (poke_compiler, io);
-
   if (poke_interactive_p && !poke_quiet_p)
     pk_printf (_("The current IOS is now `%s'.\n"),
                pk_ios_handler (pk_ios_cur (poke_compiler)));
@@ -68,15 +98,17 @@ static int
 pk_cmd_sub (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 {
   char *handler, *name;
-  int ios;
+  pk_ios ios;
   uint64_t base, size;
 
   assert (argc == 5);
 
   /* Collect and validate arguments.  */
 
-  assert (PK_CMD_ARG_TYPE (argv[1]) == PK_CMD_ARG_TAG);
-  ios = PK_CMD_ARG_TAG (argv[1]);
+  assert (PK_CMD_ARG_TYPE (argv[1]) == PK_CMD_ARG_STR);
+  ios = expr_to_ios (PK_CMD_ARG_STR (argv[1]));
+  if (ios == NULL)
+    return 0;
 
   assert (PK_CMD_ARG_TYPE (argv[2]) == PK_CMD_ARG_INT);
   base = PK_CMD_ARG_INT (argv[2]);
@@ -90,7 +122,7 @@ pk_cmd_sub (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 
   /* Build the handler.  */
   if (asprintf (&handler, "sub://%d/0x%" PRIx64 "/0x%" PRIx64 "/%s",
-                ios, base, size, name ? name : "") == -1)
+                pk_ios_get_id (ios), base, size, name ? name : "") == -1)
     return 0;
 
   /* Open the IOS.  */
@@ -224,23 +256,20 @@ pk_cmd_close (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 {
   /* close [#ID]  */
   pk_ios io;
-  int io_id;
+  const char *expr;
 
   assert (argc == 2);
+  assert (PK_CMD_ARG_TYPE (argv[1]) == PK_CMD_ARG_STR);
+  expr = PK_CMD_ARG_STR (argv[1]);
 
-  if (PK_CMD_ARG_TYPE (argv[1]) == PK_CMD_ARG_NULL)
-    {
-      io = pk_ios_cur (poke_compiler);
-      io_id = pk_ios_get_id (io);
-    }
+  if (*expr == '\0')
+    io = pk_ios_cur (poke_compiler);
   else
     {
-      io_id = PK_CMD_ARG_TAG (argv[1]);
-
-      io = pk_ios_search_by_id (poke_compiler, io_id);
+      io = expr_to_ios (expr);
       if (io == NULL)
         {
-          pk_printf (_("No such IO space: #%d\n"), io_id);
+          pk_printf (_("error: no such IO space\n"));
           return 0;
         }
     }
@@ -249,7 +278,8 @@ pk_cmd_close (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 
   /* All right, now we want to close all the open IOS which are subs
      of the space we just closed.  */
-  pk_ios_map (poke_compiler, close_if_sub_of, (void *) (intptr_t) io_id);
+  pk_ios_map (poke_compiler, close_if_sub_of,
+              (void *) (intptr_t) pk_ios_get_id (io));
 
   return 1;
 }
@@ -267,7 +297,7 @@ print_info_ios (pk_ios io, void *data)
   {
     char *tag;
 
-    asprintf (&tag, "%s#%d",
+    asprintf (&tag, "%s%d",
               io == pk_ios_cur (poke_compiler) ? "* " : "  ",
               pk_ios_get_id (io));
     pk_table_column (table, tag);
@@ -310,7 +340,7 @@ print_info_ios (pk_ios io, void *data)
     char *cmd;
     char *hyperlink;
 
-    asprintf (&cmd, ".ios #%d", pk_ios_get_id (io));
+    asprintf (&cmd, ".ios %d", pk_ios_get_id (io));
     hyperlink = pk_hserver_make_hyperlink ('e', cmd, PK_NULL);
     free (cmd);
 
@@ -328,7 +358,7 @@ print_info_ios (pk_ios io, void *data)
       char *cmd;
       char *hyperlink;
 
-      asprintf (&cmd, ".close #%d", pk_ios_get_id (io));
+      asprintf (&cmd, ".close %d", pk_ios_get_id (io));
       hyperlink = pk_hserver_make_hyperlink ('e', cmd, PK_NULL);
       free (cmd);
 
@@ -479,7 +509,7 @@ pk_cmd_mem (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 
   if (pk_ios_search (poke_compiler, mem_name) != NULL)
     {
-      printf (_("Buffer %s already opened.  Use `.ios #N' to switch.\n"),
+      printf (_("Buffer %s already opened.  Use `.ios IOS' to switch.\n"),
               mem_name);
       free (mem_name);
       return 0;
@@ -516,7 +546,7 @@ pk_cmd_nbd (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 
   if (pk_ios_search (poke_compiler, nbd_name) != NULL)
     {
-      printf (_("Buffer %s already opened.  Use `.ios #N' to switch.\n"),
+      printf (_("Buffer %s already opened.  Use `.ios IOS' to switch.\n"),
               nbd_name);
       free (nbd_name);
       return 0;
@@ -544,7 +574,7 @@ ios_completion_function (const char *x, int state)
 }
 
 const struct pk_cmd ios_cmd =
-  {"ios", "t", "", 0, NULL, NULL, pk_cmd_ios, "ios #ID", ios_completion_function};
+  {"ios", "s", "", 0, NULL, NULL, pk_cmd_ios, "ios EXPR", ios_completion_function};
 
 const struct pk_cmd file_cmd =
   {"file", "f", PK_FILE_UFLAGS, 0, NULL, NULL, pk_cmd_file, "file FILE-NAME",
@@ -554,7 +584,7 @@ const struct pk_cmd proc_cmd =
   {"proc", "i", PK_PROC_UFLAGS, 0, NULL, NULL, pk_cmd_proc, "proc PID", NULL};
 
 const struct pk_cmd sub_cmd =
-  {"sub", "t,i,i,?s", "", 0, NULL, NULL, pk_cmd_sub, "sub IOS, BASE, SIZE, [NAME]", NULL};
+  {"sub", "s,i,i,?s", "", 0, NULL, NULL, pk_cmd_sub, "sub IOS, BASE, SIZE, [NAME]", NULL};
 
 const struct pk_cmd mem_cmd =
   {"mem", "s", "", 0, NULL, NULL, pk_cmd_mem, "mem NAME", NULL};
@@ -565,8 +595,8 @@ const struct pk_cmd nbd_cmd =
 #endif
 
 const struct pk_cmd close_cmd =
-  {"close", "?t", "", PK_CMD_F_REQ_IO, NULL, NULL, pk_cmd_close,
-   "close [#ID]", ios_completion_function};
+  {"close", "s", "", PK_CMD_F_REQ_IO, NULL, NULL, pk_cmd_close,
+   "close [IOS]", ios_completion_function};
 
 const struct pk_cmd info_ios_cmd =
   {"ios", "", "", 0, NULL, NULL, pk_cmd_info_ios, "info ios", NULL};

@@ -1,3 +1,39 @@
+2023-11-01  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* poke/pk-cmd-ios.c (expr_to_ios): New function.
+	(pk_cmd_close): Get a Poke expression as an
+	argument intead of an IOS tag.
+	(pk_cmd_sub): Likewise.
+	(pk_cmd_ios): Likewise.
+	* poke/pk-cmd-map.c (pk_cmd_map_remove): Likewise.
+	(pk_cmd_map_create): Likewise.
+	(pk_cmd_map_show): Likewise.
+	(pk_cmd_map_entry_add): Likewise.
+	(pk_cmd_map_entry_remove): Likewise.
+	(pk_cmd_map_load): Likewise.
+	(pk_cmd_info_maps): Likewise.
+	* testsuite/poke.cmd/extract-1.pk: Adapt test accordingly.
+	* testsuite/poke.cmd/close-sub-1.pk: Likewise.
+	* testsuite/poke.map/ass-map-22.pk: Likewise.
+	* testsuite/poke.pkl/ios-cur-1.pk: Likewise.
+	* testsuite/poke.cmd/ios-1.pk: Likewise.
+	* testsuite/poke.cmd/sub-2.pk: Likewise.
+	* testsuite/poke.cmd/sub-2.pk: Likewise.
+	* testsuite/poke.cmd/maps-3.pk: Likewise.
+	* testsuite/poke.cmd/maps-4.pk: Likewise.
+	* testsuite/poke.cmd/maps-5.pk: Likewise.
+	* testsuite/poke.cmd/maps-6.pk: Likewise.
+	* testsuite/poke.cmd/maps-7.pk: Likewise.
+	* testsuite/poke.cmd/maps-2.pk: Likewise.
+	* testsuite/poke.cmd/maps-7.pk: Likewise.
+	* testsuite/poke.cmd/maps-8.pk: Likewise.
+	* testsuite/poke.cmd/maps-9.pk: Likewise.
+	* testsuite/poke.cmd/file-mode.pk: Likewise.
+	* testsuite/poke.cmd/file-bias-1.pk: Likewise.
+	* testsuite/poke.cmd/file-bias-2.pk: Likewise.
+	* testsuite/poke.cmd/file-relative.pk: Likewise.
+	* doc/poke.texi: Update documentation on IO space tags and ids.
+
 2023-10-30  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* poke/pk-help.pk (pk_help): Hint at activating the page at the

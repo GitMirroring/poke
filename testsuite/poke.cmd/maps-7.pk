@@ -4,13 +4,13 @@
 /* { dg-command { var bar = byte[2] @ 0#B } } */
 /* { dg-command { var quux = int[2] @ 2#B } } */
 /* { dg-command { var jorl = byte[1] @ 17#b } } */
-/* { dg-command { .map create foo,#0 } } */
+/* { dg-command { .map create foo, 0 } } */
 /* { dg-command { .map entry add foo, quux } } */
 /* { dg-command { .map entry add foo, bar } } */
 /* { dg-command { .map entry add foo, jorl } } */
 /* { dg-command { .info maps } } */
 /* { dg-output "IOS +Name +Source" } */
-/* { dg-output "\n#0 +foo +<stdin>" } */
+/* { dg-output "\n0 +foo +<stdin>" } */
 /* { dg-command { .map remove foo } } */
 /* { dg-command { .info maps } } */
 /* { dg-output "" } */

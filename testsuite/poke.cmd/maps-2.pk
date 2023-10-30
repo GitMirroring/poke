@@ -4,4 +4,4 @@
 /* { dg-command { .map create foo } } */
 /* { dg-command { .info maps } } */
 /* { dg-output "IOS +Name +Source" } */
-/* { dg-output "\n#0 +foo +<stdin>" } */
+/* { dg-output "\n0 +foo +<stdin>" } */

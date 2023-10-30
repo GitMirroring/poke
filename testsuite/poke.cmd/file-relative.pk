@@ -4,4 +4,4 @@
 /* { dg-command { .file a#b } } */
 /* { dg-command { .info ios } } */
 /* { dg-output "  Id +Type +Mode +Bias +Size +Name" } */
-/* { dg-output "\n\\* #0 +FILE +rw +0x00000000#B +0x00000008#B +./a#b" } */
+/* { dg-output "\n\\* 0 +FILE +rw +0x00000000#B +0x00000008#B +./a#b" } */

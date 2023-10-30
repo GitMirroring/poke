@@ -9,9 +9,9 @@
 /* { dg-command {.file ass_map_22.data} } */
 /* { dg-command {.mem bar} } */
 /* { dg-command {uint32 @ 0#B = 0xabcdef00} } */
-/* { dg-command {.ios #1} } */
+/* { dg-command {.ios 1} } */
 /* { dg-command {uint32 @ 0#B} } */
 /* { dg-output "\n0x12345678U" } */
-/* { dg-command {.ios #0} } */
+/* { dg-command {.ios 0} } */
 /* { dg-command {uint32 @ 0#B} } */
 /* { dg-output "\n0x0+U" } */
