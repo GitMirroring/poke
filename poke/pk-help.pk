@@ -87,6 +87,9 @@ fun pk_help = (string topic) void:
     print_summaries_for_category ("commands");
     print "\n";
     print "To search for some topic in the poke manual, type \".doc TOPIC\".\n";
+    print "If you couldn't read the whole output, try \"";
+    hserver_print_hl ('e', ".set pager yes", ".set pager yes");
+    print "\"\n";
     return;
   }
 

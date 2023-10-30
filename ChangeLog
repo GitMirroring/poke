@@ -1,3 +1,8 @@
+2023-10-30  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* poke/pk-help.pk (pk_help): Hint at activating the page at the
+	end of the output of `.help'.
+
 2023-10-29  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* poke/pk-info.pk (pk_info_type): Skip field pretty-printers in
