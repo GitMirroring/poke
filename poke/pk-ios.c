@@ -253,7 +253,7 @@ pk_ios_alien_token_handler (char delimiter,
   memcpy (handler, id + 1, id_len - 2);
   handler[id_len - 2] = '\0';
 
-  ios = pk_ios_search (poke_compiler, handler);
+  ios = pk_ios_search (poke_compiler, handler, PK_IOS_SEARCH_F_PARTIAL);
   if (ios)
     {
       /* The IO space alien token resolves to an int<32>.  */

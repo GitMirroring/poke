@@ -1,5 +1,22 @@
 2023-11-01  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/libpoke.h (pk_ios_search): Add new param: FLAGS to support
+	partial match of handlers.
+	* libpoke/libpoke.c (pk_ios_search): Likewise.
+	* libpoke/ios.h (ios_search): Likewise.
+	* libpoke/ios.c (ios_search): Likewise.
+	* poke/pk-ios.c (pk_ios_alien_token_handler): Update to do partial
+	search for IOS handlers.
+	* poke/pk-cmd-ios.c (pk_cmd_file): Call `pk_ios_search' with
+	`PK_IOS_SEARCH_F_EXACT' flag.
+	(pk_cmd_mem): Likewise.
+	(pk_cmd_nbd): Likewise.
+	* testsuite/poke.libpoke/api.c (STREQ): New macro.
+	(test_pk_ios): New function for testing IO space functions.
+	(main): Call `test_pk_ios'.
+
+2023-11-01  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* poke/pk-ios.c (pk_ios_alien_token_handler): Fix handling of
 	alien tokens of length 1, i.e. $<.> tokens.
 

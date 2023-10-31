@@ -188,10 +188,16 @@ ios ios_cur (ios_context ios_ctx);
 
 void ios_set_cur (ios_context ios_ctx, ios io);
 
-/* Return the IO space operating the given HANDLER.  Return NULL if no
-   such space exists.  */
+/* Return the IO space operating the given non-empty HANDLER.  Based on
+   the FLAGS search use different strategies for matching the HANDLER.
+   Return NULL if no such space exists.  */
 
-ios ios_search (ios_context ios_ctx, const char *handler);
+/* Bit 0 choose exact/partial search strategies.  Other bits can change
+   the interpretation of this bit in the future.  */
+#define IOS_SEARCH_F_EXACT 0
+#define IOS_SEARCH_F_PARTIAL 1
+
+ios ios_search (ios_context ios_ctx, const char *handler, uint32_t flags);
 
 /* Return the IO space having the given ID.  Return NULL if no such
    space exists.  */

@@ -473,10 +473,17 @@ pk_ios pk_ios_cur (pk_compiler pkc) LIBPOKE_API;
 
 void pk_ios_set_cur (pk_compiler pkc, pk_ios ios) LIBPOKE_API;
 
-/* Return the IO space operating the given HANDLER.  Return NULL if no
-   such space exist in the given Poke incremental compiler.  */
+/* Return the IO space operating the given non-empty HANDLER.  Based on
+   the FLAGS search use different strategies for matching the HANDLER.
 
-pk_ios pk_ios_search (pk_compiler pkc, const char *handler) LIBPOKE_API;
+   Return NULL if no such space exist in the given Poke incremental
+   compiler.  */
+
+#define PK_IOS_SEARCH_F_EXACT   0  /* Match the whole HANDLER string.  */
+#define PK_IOS_SEARCH_F_PARTIAL 1  /* Match if HANDLER is a sub-string.  */
+
+pk_ios pk_ios_search (pk_compiler pkc, const char *handler,
+                      uint32_t flags) LIBPOKE_API;
 
 /* Return the IO space having the given ID.  Return NULL if no such
    space exist in the given Poke incremental compiler.  */

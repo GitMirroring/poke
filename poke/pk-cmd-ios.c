@@ -204,7 +204,7 @@ pk_cmd_file (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
     /* /c has no effect if the file exists.  */
     create_p = 0;
 
-  if (pk_ios_search (poke_compiler, filename) != NULL)
+  if (pk_ios_search (poke_compiler, filename, PK_IOS_SEARCH_F_EXACT) != NULL)
     {
       printf (_("File %s already opened.  Use `.ios #N' to switch.\n"),
               filename);
@@ -497,7 +497,8 @@ pk_cmd_mem (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
           if (asprintf (&mem_name, "*%d*", i) == -1)
             pk_fatal (_("out of memory"));
 
-          if (pk_ios_search (poke_compiler, mem_name) == NULL)
+          if (pk_ios_search (poke_compiler, mem_name, PK_IOS_SEARCH_F_EXACT)
+              == NULL)
             break;
         }
     }
@@ -507,7 +508,7 @@ pk_cmd_mem (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
         pk_fatal (_("out of memory"));
     }
 
-  if (pk_ios_search (poke_compiler, mem_name) != NULL)
+  if (pk_ios_search (poke_compiler, mem_name, PK_IOS_SEARCH_F_EXACT) != NULL)
     {
       printf (_("Buffer %s already opened.  Use `.ios IOS' to switch.\n"),
               mem_name);
@@ -544,7 +545,7 @@ pk_cmd_nbd (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
   const char *arg_str = PK_CMD_ARG_STR (argv[1]);
   char *nbd_name = xstrdup (arg_str);
 
-  if (pk_ios_search (poke_compiler, nbd_name) != NULL)
+  if (pk_ios_search (poke_compiler, nbd_name, PK_IOS_SEARCH_F_EXACT) != NULL)
     {
       printf (_("Buffer %s already opened.  Use `.ios IOS' to switch.\n"),
               nbd_name);

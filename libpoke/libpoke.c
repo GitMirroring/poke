@@ -618,10 +618,10 @@ pk_ios_flags (pk_ios io)
 }
 
 pk_ios
-pk_ios_search (pk_compiler pkc, const char *handler)
+pk_ios_search (pk_compiler pkc, const char *handler, uint32_t flags)
 {
   pkc->status = PK_OK;
-  return (pk_ios) ios_search (pvm_ios_context (pkc->vm), handler);
+  return (pk_ios) ios_search (pvm_ios_context (pkc->vm), handler, flags);
 }
 
 pk_ios

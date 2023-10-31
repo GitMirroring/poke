@@ -331,13 +331,35 @@ ios_zombie_p (ios io)
 }
 
 ios
-ios_search (ios_context ios_ctx, const char *handler)
+ios_search (ios_context ios_ctx, const char *handler, uint32_t flags)
 {
   ios io;
+  int exact_p = (flags & 1) == IOS_SEARCH_F_EXACT;
 
-  for (io = ios_ctx->io_list; io; io = io->next)
-    if (STREQ (io->handler, handler))
-      break;
+  if (handler[0] == '\0')
+    return NULL;
+
+  if (exact_p)
+    {
+      for (io = ios_ctx->io_list; io; io = io->next)
+        if (STREQ (io->handler, handler))
+          break;
+    }
+  else
+    {
+      ios ios_matched = NULL;
+      size_t n_matched = 0;
+
+      for (io = ios_ctx->io_list; io; io = io->next)
+        if (strstr (io->handler, handler) != NULL)
+          {
+            if (++n_matched > 1)
+              return NULL;
+            ios_matched = io;
+          }
+
+      io = ios_matched;
+    }
 
   return io;
 }
