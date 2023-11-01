@@ -245,10 +245,10 @@ pk_ios_alien_token_handler (char delimiter,
 
   assert (delimiter == '<');
 
-  if (id_len == 3)
+  if (id_len < 3)
     goto error;
 
-  /* Extract the IOS handler from the $<...> string.  */
+  /* Extract the IOS handler from the <...> string.  */
   handler = xmalloc (id_len - 2 + 1);
   memcpy (handler, id + 1, id_len - 2);
   handler[id_len - 2] = '\0';
