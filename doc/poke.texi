@@ -63,7 +63,12 @@ Using poke
 * Maps and Map-files::          Working with views of data.
 * Writing Pickles::		Sharing your abstractions the sane way.
 * Writing Binary Utilities::    Standalone Poke programs.
-* Configuration::		Tailoring the tool to your needs.
+
+Customizing poke
+* pokerc::			User's initialization file.
+* Load Path::			Determining location of modules.
+* Styling::			Changing the appearance of poke's output.
+* Changing the Prompt::         The prompt can be made more useful.
 
 Pickles
 * IOS::                         Functions to work with IO spaces.
@@ -176,11 +181,6 @@ Writing Binary Utilities
 * Loading pickles as Modules::  Importing pickles in programs.
 * elfextractor::                An example Poke binary utility.
 * Filters::                     Writing filters for binary data.
-
-Configuration
-* pokerc::			User's initialization file.
-* Load Path::			Determining location of modules.
-* Styling::			Changing the appearance of poke's output.
 
 Data Encodings
 * base64::                      Encoding and decoding data in base64.
@@ -7880,17 +7880,8 @@ close (stdin);
 close (stdout);
 @end example
 
-@node Configuration
-@chapter Configuration
-
-@menu
-* pokerc::			User's initialization file.
-* Load Path::			Determining location of modules.
-* Styling::			Changing the appearance of poke's output.
-@end menu
-
 @node pokerc
-@section @file{.pokerc}
+@chapter @file{.pokerc}
 @cindex @file{.pokerc}
 
 Upon invocation poke will read and execute the commands of an
@@ -7923,7 +7914,7 @@ pk_dump_cluster_by = 4
 @end example
 
 @node Load Path
-@section Load Path
+@chapter Load Path
 @cindex load path
 
 The @code{load_path} Poke variable contains a list of directories
@@ -7956,10 +7947,59 @@ environment, its value is added to @code{load_path} at poke startup
 time.
 
 @node Styling
-@section Styling
+@chapter Styling
 @cindex styled output
 
 XXX
+
+@node Changing the Prompt
+@chapter Changing the Prompt
+@cindex prompt, changing the
+
+By default the poke command line interface uses a very simple prompt
+when waiting for commands:
+
+@example
+(poke) _
+@end example
+
+@noindent
+This prompt never changes.
+
+However, it is possible to customize the prompt by defining a function
+called @code{pk_prompt}, that gets no arguments and returns a string.
+@command{poke} invokes that function every time it needs to print the
+prompt; the default version of the function just returns @code{"(poke)
+")}.
+
+This is an example of customization:
+
+@example
+fun pk_prompt = string:
+@{
+  var prompt = "(";
+
+  prompt += get_endian == ENDIAN_BIG ? "big:" : "little:";
+  try
+    prompt += iohandler (get_ios);
+  catch if E_no_ios
+    @{
+      prompt += "poke";
+    @};
+
+  return prompt + ") ";
+@}
+@end example
+
+@noindent
+Once the function above gets defined, the prompt will reflect both the
+current endianness and the currently selected IO space, if there is
+any:
+
+@example
+(big:poke) .file /bin/ls
+(big:/bin/ls)
+@end example
 
 @node IOS
 @chapter IOS

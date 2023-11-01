@@ -284,11 +284,7 @@ char *
 pk_prompt (void)
 {
   char *prompt = "";
-
-  if (pk_var_int ("pk_prompt_commented_p"))
-    {
-      prompt = pk_str_concat(prompt, "#!", NULL);
-    }
+  pk_val pk_prompt_fun, val = PK_NULL, exit_exception = PK_NULL;
 
   if (pk_var_int ("pk_prompt_maps_p"))
     {
@@ -314,15 +310,18 @@ pk_prompt (void)
         }
     }
 
-  if (pk_var_int ("pk_prompt_commented_p"))
-    {
-      prompt = pk_str_concat(prompt, "!# ", NULL);
-    }
-  else
-    {
-      prompt = pk_str_concat (prompt, "(poke) ", NULL);
-    }
-  return prompt;
+  pk_prompt_fun = pk_decl_val (poke_compiler, "pk_prompt");
+  val = PK_NULL, exit_exception = PK_NULL;
+
+  if (pk_prompt_fun == PK_NULL
+      || pk_call (poke_compiler, pk_prompt_fun, &val, &exit_exception,
+                  0 /* narg */) == PK_ERROR
+      || exit_exception != PK_NULL
+      || val == PK_NULL
+      || pk_type_code (pk_typeof (val)) != PK_TYPE_STRING)
+    PK_UNREACHABLE ();
+
+  return pk_str_concat (prompt, pk_string_str (val), NULL);
 }
 
 void
