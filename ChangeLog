@@ -1,3 +1,7 @@
+2023-11-01  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* poke/pk-cmd-editor.c (pk_cmd_editor): Stylize the prompt.
+
 2023-11-01  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/libpoke.h (pk_ios_search): Add new param: FLAGS to support

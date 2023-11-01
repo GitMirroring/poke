@@ -124,7 +124,9 @@ pk_cmd_editor (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
       if (*newline != '\0')
         {
           char *prompt = pk_prompt();
+          pk_term_class ("prompt");
           pk_puts (prompt);
+          pk_term_end_class ("prompt");
           free(prompt);
           pk_puts (newline);
           pk_puts ("\n");
