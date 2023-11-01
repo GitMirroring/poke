@@ -1,5 +1,20 @@
 2023-11-01  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/ios.h: Prototype for ios_get_handler.
+	* libpoke/ios.c (ios_get_handler): New function.
+	* libpoke/libpoke.h: Update description of
+	pk_ios_completion_function.
+	* libpoke/libpoke.c (pk_ios_completion_function): Complete on IOS
+	handlers/names, not ids.
+	* poked/poked.c (poked_autocmpl_send_one): Adapt to new
+	pk_ios_completion_function.
+	* poke/pk-repl.c (poke_completion_function): Complete IO space
+	names.
+	* testsuite/poke.repl/repl.exp: Update test
+	tab-completion-subcommand-3.
+
+2023-11-01  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* poke/pk-cmd-ios.c (ios_completion_function): Remove.
 	(ios_cmd): Use poke_completion_function.
 	(close_cmd): Likewise.

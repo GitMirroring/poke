@@ -208,6 +208,10 @@ ios ios_search_by_id (ios_context ios_ctx, int id);
 
 int ios_get_id (ios io);
 
+/* Return the handler of the given IO space.  */
+
+const char *ios_get_handler (ios io);
+
 /* Return the name of the device interface.  */
 
 const char *ios_get_dev_if_name (ios io);

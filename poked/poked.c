@@ -278,20 +278,21 @@ poked_autocmpl_send_one (pk_val pkind, pk_val pstring)
         err (1, "bufb_append() failed");                                      \
     }                                                                         \
   while (0)
-#define FUNC                                                                  \
-  (str_kind == PLET_AUTOCMPL_IDENT ? pk_completion_function                   \
-                                   : pk_ios_completion_function)
+#define COMPLETE(state)                                                 \
+  (str_kind == PLET_AUTOCMPL_IDENT                                      \
+   ? pk_completion_function (pkc, string, (state))                      \
+   : pk_ios_completion_function (pkc, "", string, (state)))
 
   APPEND (string);
-  if ((candidate = FUNC (pkc, string, 0)) != NULL)
+  if ((candidate = COMPLETE (0)) != NULL)
     {
       APPEND (candidate);
-      while ((candidate = FUNC (pkc, string, 1)) != NULL)
+      while ((candidate = COMPLETE (1)) != NULL)
         APPEND (candidate);
     }
   usock_out (srv, USOCK_CHAN_OUT_AUTOCMPL, kind, b.mem, b.cur - b.mem);
 
-#undef FUNC
+#undef COMPLETE
 #undef APPEND
 
   bufb_free (&b);

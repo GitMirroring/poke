@@ -59,13 +59,30 @@ static int volatile ctrlc_buf_valid;
 char *
 poke_completion_function (const char *text, int state)
 {
-  /* First try to complete with "normal" commands.  */
-  char *function_name = pk_completion_function (poke_compiler,
-                                                text, state);
+  char *function_name = NULL;
 
-  /* Then try with dot-commands. */
-  if (function_name == NULL)
-    function_name = pk_cmd_get_next_match (text, strlen (text));
+  if (strlen (text) >= 2 && text[0] == '$' && text[1] == '<')
+    {
+      char *suffixed = NULL;
+
+      function_name = pk_ios_completion_function (poke_compiler, "$<",
+                                                  text, state);
+      if (function_name)
+        {
+          suffixed = pk_str_concat (function_name, ">", NULL);
+          free (function_name);
+          function_name = suffixed;
+        }
+    }
+  else
+    {
+      /* Normal Poke code.  */
+      function_name = pk_completion_function (poke_compiler, text, state);
+
+      /* Then try with dot-commands. */
+      if (function_name == NULL)
+        function_name = pk_cmd_get_next_match (text, strlen (text));
+    }
 
   return function_name;
 }
@@ -331,7 +348,8 @@ pk_repl (void)
 
   /* Configure the readline's completer routine.  */
   rl_completer_quote_characters = "\"";
-  rl_completer_word_break_characters = " \t\n\"\\`@$><=;|&{("; /* }) */
+  rl_completer_word_break_characters = " \t\n\"\\`@>=;|&{("; /* }) */
+  rl_special_prefixes = "$";
 
   /* Let the inputrc parser know who we are.  */
   rl_readline_name = "gnupoke";

@@ -448,16 +448,23 @@ void pk_set_lexical_cuckolding_p (pk_compiler pkc,
 char *pk_completion_function (pk_compiler pkc,
                               const char *text, int state) LIBPOKE_API;
 
-/* Complete the tag of an IOS.
+/* Complete the name of an IOS.
+
+   PREFIX is a prefix appended to the IOS handlers as they are
+   checked.  This is to establish the context where an IOS is to be
+   recognized.  For example, for an application that uses the
+   $<HANDLER> notation for accessing IO spaces, the prefix would be
+   "$<".
 
    TEXT is the partial word to be completed.  STATE is zero the first
    time the function is called and non-zero for each subsequent call.
 
-   On each call, the function returns the tag of an IOS for which
+   On each call, the function returns the name of an IOS for which
    that tag and TEXT share a common substring. It returns NULL to
-   indicate that there are no more such tags.  */
+   indicate that there are no more such names.  */
 
 char *pk_ios_completion_function (pk_compiler pkc,
+                                  const char *prefix,
                                   const char *x, int state) LIBPOKE_API;
 
 /* Return the handler operated by the given IO space.  */

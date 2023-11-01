@@ -383,6 +383,12 @@ ios_get_id (ios io)
 }
 
 const char *
+ios_get_handler (ios io)
+{
+  return io->handler;
+}
+
+const char *
 ios_get_dev_if_name (ios io)
 {
   return io->dev_if->get_if_name ();

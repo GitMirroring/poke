@@ -469,18 +469,9 @@ pk_completion_function (pk_compiler pkc,
   return complete_decl (pkc, text, state);
 }
 
-/* This function provides command line completion when the tag of an
-   IOS is an appropriate completion.
-
-   TEXT is the partial word to be completed.  STATE is zero the first
-   time the function is called and non-zero for each subsequent call.
-
-   On each call, the function returns the tag of an IOS for which
-   that tag and TEXT share a common substring. It returns NULL to
-   indicate that there are no more such tags.
- */
 char *
-pk_ios_completion_function (pk_compiler pkc, const char *text, int state)
+pk_ios_completion_function (pk_compiler pkc,
+                            const char *prefix, const char *text, int state)
 {
 #define IO pkc->completion_ios
 
@@ -489,15 +480,19 @@ pk_ios_completion_function (pk_compiler pkc, const char *text, int state)
   IO = state == 0 ?  ios_begin (pvm_ios_context (pkc->vm)) : ios_next (IO);
   while (1)
     {
+      char *handler = NULL;
+
       if (ios_end (IO))
         break;
 
-      char buf[16];
-      snprintf (buf, 16, "#%d", ios_get_id (IO));
+      handler = pk_str_concat (prefix, ios_get_handler (IO), NULL);
+      if (handler == NULL)
+        return NULL;
 
-      if (strncmp (buf, text, len) == 0)
-        return strdup (buf);
+      if (strncmp (handler, text, len) == 0)
+        return handler;
 
+      free (handler);
       IO = ios_next (IO);
     }
 
