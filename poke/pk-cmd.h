@@ -28,14 +28,12 @@ enum pk_cmd_arg_type
 {
   PK_CMD_ARG_NULL,
   PK_CMD_ARG_INT,
-  PK_CMD_ARG_STR,
-  PK_CMD_ARG_TAG
+  PK_CMD_ARG_STR
 };
 
 #define PK_CMD_ARG_TYPE(arg) ((arg).type)
 #define PK_CMD_ARG_INT(arg) ((arg).val.integer)
 #define PK_CMD_ARG_STR(arg) ((arg).val.str)
-#define PK_CMD_ARG_TAG(arg) ((arg).val.tag)
 
 struct pk_cmd_arg
 {

@@ -1,5 +1,11 @@
 2023-11-01  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-cmd.h (enum pk_cmd_arg_type): Remove PK_CMD_ARG_TAG.
+	(PK_CMD_ARG_TAG): Delete.
+	* poke/pk-cmd.c (pk_cmd_exec_1): Remove handling of tag arguments.
+
+2023-11-01  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* poke/pk-cmd-ios.c (expr_to_ios): New function.
 	(pk_cmd_close): Get a Poke expression as an
 	argument intead of an IOS tag.

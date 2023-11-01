@@ -404,22 +404,6 @@ pk_cmd_exec_1 (const char *str, struct pk_trie *cmds_trie, char *prefix)
                     }
 
                   break;
-                case 't':
-                  /* Parse a #N tag.  */
-                  p = skip_blanks (p);
-                  if (*p == '#'
-                      && p++
-                      && pk_atoi (&p, &(argv[argc].val.tag))
-                      && argv[argc].val.tag >= 0)
-                    {
-                      if (*p == ',' || *p == '\0' || isblank (*p))
-                        {
-                          argv[argc].type = PK_CMD_ARG_TAG;
-                          match = 1;
-                        }
-                    }
-
-                  break;
                 case 's':
                   {
                     /* Parse a string.  */
