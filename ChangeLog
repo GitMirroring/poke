@@ -1,5 +1,13 @@
 2023-11-01  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-cmd-ios.c (ios_completion_function): Remove.
+	(ios_cmd): Use poke_completion_function.
+	(close_cmd): Likewise.
+	* poke/pk-cmd-map.c (info_maps_completion_function): Remove.
+	(info_maps_cmd): Use poke_completion_function.
+
+2023-11-01  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* poke/poke.pk (pk_prompt): New function.
 	(pk_prompt_commented_p): Remove.
 	* poke/pk-repl.c (pk_prompt): Call the Poke function pk_prompt to

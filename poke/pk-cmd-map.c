@@ -26,6 +26,7 @@
 #include "pk-utils.h"
 #include "pk-map.h"
 #include "pk-table.h"
+#include "pk-repl.h" /* For poke_completion_function */
 
 /* Get a Poke expression and compile it to get an int<32> Poke value.
    If the expression doesn't evaluate to an int<32> then return PK_
@@ -533,12 +534,6 @@ pk_cmd_info_maps (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
   return 1;
 }
 
-static char *
-info_maps_completion_function (const char *x, int state)
-{
-  return pk_ios_completion_function (poke_compiler, x, state);
-}
-
 const struct pk_cmd map_entry_add_cmd =
   {"add", "s,s,?s", "", 0, NULL, NULL, pk_cmd_map_entry_add, "add MAPNAME, VARNAME [,IOS]",
    NULL};
@@ -612,5 +607,5 @@ const struct pk_cmd map_cmd =
    map_completion_function};
 
 const struct pk_cmd info_maps_cmd =
-  {"maps", "?s", "", PK_CMD_F_REQ_IO, NULL, NULL, pk_cmd_info_maps, "info maps",
-   info_maps_completion_function};
+  {"maps", "?s", "", PK_CMD_F_REQ_IO, NULL, NULL, pk_cmd_info_maps, "info maps [IOS]",
+   poke_completion_function};

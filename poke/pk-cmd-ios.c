@@ -36,6 +36,7 @@
 #if HAVE_HSERVER
 #  include "pk-hserver.h"
 #endif
+#include "pk-repl.h" /* For poke_completion_function */
 
 /* Get a Poke expression and compile it to get an IO space identifier.
    Lexical cuckolding is active to allow referring to IO spaces by
@@ -568,14 +569,8 @@ pk_cmd_nbd (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 }
 #endif /* HAVE_LIBNBD */
 
-static char *
-ios_completion_function (const char *x, int state)
-{
-  return pk_ios_completion_function (poke_compiler, x, state);
-}
-
 const struct pk_cmd ios_cmd =
-  {"ios", "s", "", 0, NULL, NULL, pk_cmd_ios, "ios EXPR", ios_completion_function};
+  {"ios", "s", "", 0, NULL, NULL, pk_cmd_ios, "ios IOS", poke_completion_function};
 
 const struct pk_cmd file_cmd =
   {"file", "f", PK_FILE_UFLAGS, 0, NULL, NULL, pk_cmd_file, "file FILE-NAME",
@@ -597,7 +592,7 @@ const struct pk_cmd nbd_cmd =
 
 const struct pk_cmd close_cmd =
   {"close", "s", "", PK_CMD_F_REQ_IO, NULL, NULL, pk_cmd_close,
-   "close [IOS]", ios_completion_function};
+   "close [IOS]", poke_completion_function};
 
 const struct pk_cmd info_ios_cmd =
   {"ios", "", "", 0, NULL, NULL, pk_cmd_info_ios, "info ios", NULL};
