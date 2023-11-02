@@ -967,7 +967,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
                                                               /* VAL SCT STR */
 
             /* Set the value in the struct using SETC if the struct is
-               mapped in non-strict mode. Othewrise, use SSET.  */
+               mapped in non-strict mode. Otherwise, use SSET.  */
             {
               pvm_program_label use_sset = pkl_asm_fresh_label (PKL_GEN_ASM);
               pvm_program_label use_ssetc = pkl_asm_fresh_label (PKL_GEN_ASM);

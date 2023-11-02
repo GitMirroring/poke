@@ -621,6 +621,7 @@ EXTRA_DIST = \
   poke.pickles/pe-test.pk \
   poke.pickles/riscv-test.pk \
   poke.pickles/sframe-test.pk \
+  poke.pickles/srec-test.pk \
   poke.pickles/search-test.pk \
   poke.pickles/ustar-test.pk \
   poke.pickles/color-test.pk \

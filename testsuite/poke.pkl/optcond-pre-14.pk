@@ -7,7 +7,7 @@ type Foo =
     if (tag > 0)
       int foo;
     fun jaja = int: { return foo; }
-    int quux = jaja; 
+    int quux = jaja;
   };
 
 /* { dg-command {try Foo {}; catch if E_elem { print "caught\n"; } } } */

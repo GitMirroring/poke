@@ -1,0 +1,265 @@
+/* srec.pk - Read and write Motorola SREC files.  */
+
+/* Copyright (C) 2023 Jose E. Marchesi.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* This pickle provides facilities to deal with Motorola SREC data,
+   which is a widely used ASCII-encoding of addressed binary data.
+
+   SREC data is organized in records.  The SREC_Record type defined
+   below describes a single record, while the SREC_File type describes
+   the contents of a SREC file.  Both types can be used to edit SREC
+   data in-situ:
+
+   (poke) .file bootimg.srec
+   (bootimg.srec) var srec = SREC_File @ 0#B
+
+   A couple of functions are also provided to encode and decode
+   from/to raw bytes to/from SREC: srec_encode and srec_decode.  These
+   encode and decode to and from an IO space, respectively, and are
+   intended to be used as commands.
+
+   To decode SREC data to bytes:
+
+   (poke) .file bootimg.srec
+   (bootimg.srec) var records = SREC_Record[] @ 0#B
+   (bootimg.srec) srec_decode :records records :to_ios $<bootimg>
+
+   To encode bootimg.o to SREC data:
+
+   (poke) .file bootimg.o
+   (bootimg.o) var records = (srec_encode :start_address 0x4000#B)
+*/
+
+var SREC_TAG_S0 = ['S','0'],
+    SREC_TAG_S1 = ['S','1'],
+    SREC_TAG_S2 = ['S','2'],
+    SREC_TAG_S3 = ['S','3'],
+    SREC_TAG_S5 = ['S','5'],
+    SREC_TAG_S6 = ['S','6'],
+    SREC_TAG_S7 = ['S','7'],
+    SREC_TAG_S8 = ['S','8'],
+    SREC_TAG_S9 = ['S','9'];
+
+fun srec_checksum = (uint<8>[] digits) uint<8>:
+{
+  if (digits'length % 2)
+    raise Exception { code = EC_inval,
+                      name = "odd number of hex digits passed to srec_checksum" };
+
+  var checksum = 0UB;
+  for (var i = 0; i < digits'length; i += 2)
+    checksum += atoi (format ("%c%c", digits[i], digits[i + 1]), 16);
+  return ~checksum;
+}
+
+type SREC_Eol =
+  union
+  {
+    uint<8>[2] crlf : crlf == ['\r','\n'];
+    uint<8> lf : lf == '\n';
+
+    method _print = void:
+    {
+      print crlf ?! E_elem ? "#<lf>" : "#<crlf>";
+    }
+  };
+
+type SREC_Record =
+  struct
+  {
+    fun address_digits = (uint<8>[2] tag) int<32>:
+    {
+      if (tag in [SREC_TAG_S3, SREC_TAG_S7])
+        return 8;
+      else if (tag in [SREC_TAG_S2, SREC_TAG_S8])
+        return 6;
+      else
+        return 4;
+    }
+
+    uint<8>[2] tag : tag in [SREC_TAG_S0, SREC_TAG_S1, SREC_TAG_S2,
+                             SREC_TAG_S3, SREC_TAG_S5, SREC_TAG_S6,
+                             SREC_TAG_S7, SREC_TAG_S8, SREC_TAG_S9]
+                   = SREC_TAG_S0 ;
+    uint<8>[2] count = stoca (format ("%u8x", address_digits (tag) / 2 + 1 /* crc */));
+
+    uint<8>[address_digits (tag)] address = uint<8>[address_digits (tag)]('0');
+    if (tag in [SREC_TAG_S0, SREC_TAG_S1, SREC_TAG_S2, SREC_TAG_S3])
+      uint<8>[atoi (catos (count), 16) * 2 - address'size/#B - 2] data;
+
+    /* XXX change to == when unchecked methods are supported.  */
+    uint<8>[2] checksum = stoca (format ("%u8x",
+                                         srec_checksum (count + address
+                                                        + (data ?! E_elem ? uint<8>[]() : data))));
+    SREC_Eol eol = SREC_Eol { lf = '\n' };
+
+    method get_count = uint<8>:
+    {
+      return atoi (catos (count), 16);
+    }
+
+    method get_address = offset<uint<64>,B>:
+    {
+      return atoi (catos (address), 16)#B;
+    }
+
+    method set_address = (offset<uint<64>,B> addr) void:
+    {
+      var address_digits = address_digits (tag);
+      address /* , checksum */= stoca (format ("%u32x", addr'magnitude))[8 - address_digits:];
+      // XXX checksum = srec_checksum (count + address + (data ?! E_elem ? uint<8>[]() : data)));
+    }
+
+    method _print_tag = void:
+    {
+      print "#<" + catos (tag) + ">";
+    }
+
+    method _print_count = void:
+    {
+      printf "#<%v>", get_count;
+    }
+
+    method _print_address = void:
+    {
+      printf "#<%v>", get_address;
+    }
+
+    method _print_data = void:
+    {
+      print "#<" + catos (data) + ">";
+    }
+
+    method _print_checksum = void:
+    {
+      print "#<" + catos (checksum) + ">";
+    }
+  };
+
+type SREC_File =
+  struct
+  {
+    SREC_Record[] records;
+    computed offset<uint<64>,B> start_address;
+
+    method get_start_address = offset<uint<64>,B>:
+    {
+      for (r in records)
+        if (r.tag in [SREC_TAG_S7, SREC_TAG_S8, SREC_TAG_S9])
+          return r.get_address;
+      raise Exception { code = EC_inval,
+                        name = "no start address record in SREC file"  };
+    }
+
+    method set_start_address = (offset<uint<64>,B> address) void:
+    {
+      /* If there is a start address record already in the set of
+         records, update it with the new address.  */
+      for (r in records)
+        if (r.tag in [SREC_TAG_S7, SREC_TAG_S8, SREC_TAG_S9])
+          {
+            r.set_address (address);
+            return;
+          }
+
+      raise Exception { code = EC_inval,
+                        name = "no start address record in SREC file"  };
+    }
+  };
+
+fun srec_decode = (SREC_File srec,
+                   offset<uint<64>,B> base_address = 0#B,
+                   int<32> to_ios = get_ios) void:
+{
+  for (rec in srec.records)
+    {
+      /* Ignore records that have no data to decode.  */
+      if (rec.tag == SREC_TAG_S0 || rec.data ?! E_elem)
+        continue;
+
+      var nbytes = rec.data'length / 2;
+      var bytes = uint<8>[nbytes]();
+      for (var i = 0, j = 0; i < nbytes; ++i, j += 2)
+        bytes[i] = atoi (catos ([rec.data[j], rec.data[j+1]]), 16);
+
+      uint<8>[] @ to_ios : rec.get_address - base_address = bytes;
+    }
+}
+
+fun srec_encode = (int<32> ios = get_ios,
+                   int<32> bytes_per_record = 32,
+                   int<32> crlf = 0,
+                   offset<uint<64>,B> base_address = 0#B,
+                   offset<int<32>,B> address_size
+                     = (iosize (ios) > 2UL#B <<. 24 ? 32#b
+                        : iosize (ios) > 2UL#B <<. 16 ? 24#b
+                        : 16#b)) SREC_File:
+{
+  /* Check that the given address_size is valid.  */
+  if (!(address_size in [2#B, 3#B, 4#B]))
+    {
+      raise Exception { code = EC_inval,
+                        name = "invalid address_size passed to srec_export" };
+    }
+
+  /* Check that the entire selected IO space can be addressed with the
+     specified address size.  */
+  if (iosize (ios) > 2UL#B <<. address_size/#b)
+    {
+      raise Exception { code = EC_inval,
+                        name = "IO space too big for selected addressing",
+                        msg = (address_size == 24#b
+                               ? "Try passing :address_size 32#b"
+                               : "Try passing :address_size 24#b or 32#b")};
+    }
+
+  /* Create records.  */
+  var eol = (crlf ? SREC_Eol { crlf = ['\r', '\n'] } : SREC_Eol { lf = '\n' });
+  var nrecords = (iosize (ios)/#B) / bytes_per_record;
+  var restbytes = (iosize (ios)/#B) % bytes_per_record;
+  var records = SREC_Record[]();
+  var rec = (address_size == 16#b ? stoca ("S1")
+             : address_size == 24#b ? stoca ("S2")
+             : stoca ("S3"));
+
+  /* First the header.  */
+  apush (records, SREC_Record { tag = SREC_TAG_S0, count = stoca (format ("%u8x", 3)),
+                                eol = eol });
+
+  /* Then the data.  */
+  for (var i = 0, off = 0#B; i < nrecords; ++i, off += bytes_per_record#B)
+    {
+      var data = uint<8>[bytes_per_record] @ ios : off;
+      var digits = uint<8>[]();
+
+      for (b in data)
+        {
+          var str = format ("%u8x", b);
+
+          apush (digits, str[0]);
+          apush (digits, str[1]);
+        }
+
+      /* Count is measured in pair of digits.  */
+      var count = stoca (format ("%u8x", digits'length / 2 + address_size'magnitude + 1 /* checksum */));
+      var new = SREC_Record { tag = rec, count = count, data = digits, eol = eol };
+      new.set_address (base_address + off);
+      apush (records, new);
+    }
+
+  return SREC_File { records = records };
+}

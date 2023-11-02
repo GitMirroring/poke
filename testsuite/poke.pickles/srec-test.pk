@@ -1,0 +1,46 @@
+/* srec-test.pk - Tests for the SREC pickle.  */
+
+/* Copyright (C) 2023 Oracle, Inc.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+load pktest;
+load srec;
+
+var tests = [
+  PkTest {
+    name = "srec_checksum",
+    func = lambda (string name) void:
+      {
+        try
+          {
+            srec_checksum (['0','0','0']);
+            assert (0, "srec_checksum should fail with odd number of digits");
+          }
+        catch if E_inval
+          {
+            assert (1, "expected E_inval exception from srec_checksum");
+          }
+
+        assert (srec_checksum (['0','0']) == ~0UB);
+        assert (srec_checksum (['0','1']) == ~1UB);
+        assert (srec_checksum (['a','1']) == ~0xa1UB);
+        assert (srec_checksum (['a','b','c','d']) == ~(0xabUB + 0xcdUB));
+      }
+  },
+];
+
+var ok = pktest_run (tests);
+exit (ok ? 0 : 1);

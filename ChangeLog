@@ -1,9 +1,12 @@
-2023-11-03  Jose E. Marchesi  <jemarch@gnu.org>
+2023-11-04  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-gen.c (pkl_gen_ps_var): Fix detection of
 	non-methods.
 	* testsuite/poke.pkl/optcond-pre-13.pk: New test.
 	* testsuite/poke.pkl/optcond-pre-14.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+	* pickles/Makefile.am (dist_pickles_DATA): Distribute srec.pk.
+	* testsuite/poke.pickles/srec-test.pk: New file.
 	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
 
 2023-11-03  Jose E. Marchesi  <jemarch@gnu.org>
