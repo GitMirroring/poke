@@ -1,3 +1,8 @@
+2023-11-02  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* doc/poke.texi (Files as IO Spaces): Document that $<...>
+	supports specifying a non ambiguous non-empty substring.
+
 2023-11-01  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/ios.h: Prototype for ios_get_handler.

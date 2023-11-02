@@ -1210,7 +1210,20 @@ The current IOS is now `./foo.o'.
 @end example
 
 @noindent
-Awesome.  Now we can focus on @file{foo.o}'s contents@dots{}
+Note that the @code{$<@var{name}>} construct in lenient in the sense
+that it will accept any non-empty sub string that identifies an
+existing IO space in an unambiguous way.  This is useful in order to
+avoid having to write annoying paths.  For example:
+
+@example
+(poke) .file /bin/ls
+(poke) .file /bin/cat
+(poke) .ios $<ls>
+The current IOS is now `/bin/ls'.
+@end example
+
+@noindent
+Auto completion also works.  Try it!
 
 @node Dumping File Contents
 @section Dumping File Contents
