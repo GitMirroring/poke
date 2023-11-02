@@ -1,5 +1,11 @@
 2023-11-02  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-cmd-ios.c (ios_cmd): The option to .ios is optional.
+	(pk_cmd_ios): Avoid crash when no IO space is
+	(pk_cmd_file): Fix string.
+
+2023-11-02  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* poke/pk-cmd-ios.c: Prepend . to dot-command Usage messages.
 	* poke/pk-cmd-compiler.c: Likewise.
 	* poke/pk-cmd-def.c: Likewise.

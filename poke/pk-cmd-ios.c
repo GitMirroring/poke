@@ -79,13 +79,20 @@ pk_cmd_ios (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
   pk_ios io;
 
   assert (argc == 2);
-  assert (PK_CMD_ARG_TYPE (argv[1]) == PK_CMD_ARG_STR);
 
-  io = expr_to_ios (PK_CMD_ARG_STR (argv[1]));
-  if (io == NULL)
+  if (PK_CMD_ARG_TYPE (argv[1]) == PK_CMD_ARG_NULL)
+    /* Do nothing.  */
+    return 0;
+  else
     {
-      pk_puts ("error: no such IO space\n");
-      return 0;
+      assert (PK_CMD_ARG_TYPE (argv[1]) == PK_CMD_ARG_STR);
+
+      io = expr_to_ios (PK_CMD_ARG_STR (argv[1]));
+      if (io == NULL)
+        {
+          pk_puts ("error: no such IO space\n");
+          return 0;
+        }
     }
 
   pk_ios_set_cur (poke_compiler, io);
@@ -207,7 +214,7 @@ pk_cmd_file (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 
   if (pk_ios_search (poke_compiler, filename, PK_IOS_SEARCH_F_EXACT) != NULL)
     {
-      printf (_("File %s already opened.  Use `.ios #N' to switch.\n"),
+      printf (_("File %s already opened.  Use `.ios IOS' to switch.\n"),
               filename);
       return 0;
     }
@@ -570,7 +577,7 @@ pk_cmd_nbd (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 #endif /* HAVE_LIBNBD */
 
 const struct pk_cmd ios_cmd =
-  {"ios", "s", "", 0, NULL, NULL, pk_cmd_ios, ".ios IOS", poke_completion_function};
+  {"ios", "?s", "", 0, NULL, NULL, pk_cmd_ios, ".ios IOS", poke_completion_function};
 
 const struct pk_cmd file_cmd =
   {"file", "f", PK_FILE_UFLAGS, 0, NULL, NULL, pk_cmd_file, ".file FILE-NAME",
