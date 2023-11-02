@@ -1,5 +1,9 @@
 2023-11-02  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-cmd-ios.c (sub_cmd): Use poke_completion_function.
+
+2023-11-02  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* doc/poke.texi (Files as IO Spaces): Document that $<...>
 	supports specifying a non ambiguous non-empty substring.
 

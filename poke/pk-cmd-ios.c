@@ -580,7 +580,8 @@ const struct pk_cmd proc_cmd =
   {"proc", "i", PK_PROC_UFLAGS, 0, NULL, NULL, pk_cmd_proc, "proc PID", NULL};
 
 const struct pk_cmd sub_cmd =
-  {"sub", "s,i,i,?s", "", 0, NULL, NULL, pk_cmd_sub, "sub IOS, BASE, SIZE, [NAME]", NULL};
+  {"sub", "s,i,i,?s", "", 0, NULL, NULL, pk_cmd_sub, "sub IOS, BASE, SIZE, [NAME]",
+   poke_completion_function};
 
 const struct pk_cmd mem_cmd =
   {"mem", "s", "", 0, NULL, NULL, pk_cmd_mem, "mem NAME", NULL};
