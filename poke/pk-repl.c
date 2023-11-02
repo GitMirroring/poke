@@ -63,13 +63,12 @@ poke_completion_function (const char *text, int state)
 
   if (strlen (text) >= 2 && text[0] == '$' && text[1] == '<')
     {
-      char *suffixed = NULL;
-
       function_name = pk_ios_completion_function (poke_compiler, "$<",
                                                   text, state);
       if (function_name)
         {
-          suffixed = pk_str_concat (function_name, ">", NULL);
+          char *suffixed = pk_str_concat (function_name, ">", NULL);
+
           free (function_name);
           function_name = suffixed;
         }
