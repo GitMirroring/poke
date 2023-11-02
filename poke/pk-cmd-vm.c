@@ -151,15 +151,15 @@ struct pk_trie *vm_disas_trie;
 
 const struct pk_cmd vm_disas_cmd =
   {"disassemble", "e", PK_VM_DIS_UFLAGS, 0, vm_disas_cmds, &vm_disas_trie, NULL,
-   "vm disassemble (expression|function)", vm_disas_completion_function};
+   ".vm disassemble (expression|function)", vm_disas_completion_function};
 
 const struct pk_cmd vm_profile_show_cmd =
   {"show", "", "", 0, NULL, NULL, pk_cmd_vm_profile_show,
-   "vm profile show", NULL};
+   ".vm profile show", NULL};
 
 const struct pk_cmd vm_profile_reset_cmd =
   {"reset", "", "", 0, NULL, NULL, pk_cmd_vm_profile_reset,
-   "vm profile reset", NULL};
+   ".vm profile reset", NULL};
 
 const struct pk_cmd *vm_profile_cmds[] =
   {
@@ -178,13 +178,13 @@ struct pk_trie *vm_profile_trie;
 
 const struct pk_cmd vm_profile_cmd =
   {"profile", "", "", 0, vm_profile_cmds, &vm_profile_trie, NULL,
-   "vm profile (show|reset)", vm_profile_completion_function};
+   ".vm profile (show|reset)", vm_profile_completion_function};
 
 struct pk_trie *vm_trie;
 
 const struct pk_cmd vm_dispatch_cmd =
   {"dispatch", "", "", 0, NULL, NULL, pk_cmd_vm_dispatch,
-   "vm dispatch", NULL};
+   ".vm dispatch", NULL};
 
 const struct pk_cmd *vm_cmds[] =
   {
@@ -201,5 +201,5 @@ vm_completion_function (const char *x, int state)
 }
 
 const struct pk_cmd vm_cmd =
-  {"vm", "", "", 0, vm_cmds, &vm_trie, NULL, "vm (disassemble)",
+  {"vm", "", "", 0, vm_cmds, &vm_trie, NULL, ".vm (disassemble)",
    vm_completion_function};

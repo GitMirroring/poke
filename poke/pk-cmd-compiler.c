@@ -63,7 +63,7 @@ struct pk_trie *compiler_trie;
 
 const struct pk_cmd compiler_ast_cmd =
   {"ast", "s", "", 0, NULL, NULL, pk_cmd_compiler_ast,
-   "compiler ast", poke_completion_function};
+   ".compiler ast EXPR", poke_completion_function};
 
 extern struct pk_cmd null_cmd; /* pk-cmd.c  */
 
@@ -80,5 +80,5 @@ compiler_completion_function (const char *x, int state)
 }
 
 const struct pk_cmd compiler_cmd =
-  {"compiler", "", "", 0, compiler_cmds, &compiler_trie, NULL, "compiler (ast)",
+  {"compiler", "", "", 0, compiler_cmds, &compiler_trie, NULL, ".compiler (ast)",
    compiler_completion_function};

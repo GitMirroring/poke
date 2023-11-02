@@ -294,16 +294,16 @@ pk_cmd_info_type (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 
 const struct pk_cmd info_var_cmd =
   {"variables", "s?", "", 0, NULL, NULL, pk_cmd_info_var,
-   "info variables [REGEXP]", poke_completion_function};
+   ".info variables [REGEXP]", poke_completion_function};
 
 const struct pk_cmd info_fun_cmd =
   {"functions", "s?", "", 0, NULL, NULL, pk_cmd_info_fun,
-   "info functions [REGEXP]", poke_completion_function};
+   ".info functions [REGEXP]", poke_completion_function};
 
 const struct pk_cmd info_types_cmd =
   {"types", "s?", "", 0, NULL, NULL, pk_cmd_info_types,
-   "info types [REGEXP]", poke_completion_function};
+   ".info types [REGEXP]", poke_completion_function};
 
 const struct pk_cmd info_type_cmd =
   {"type", "s", "", 0, NULL, NULL, pk_cmd_info_type,
-   "info type NAME", poke_completion_function};
+   ".info type NAME", poke_completion_function};

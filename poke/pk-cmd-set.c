@@ -206,7 +206,7 @@ extern struct pk_cmd null_cmd; /* pk-cmd.c  */
 
 const struct pk_cmd set_error_on_warning_cmd =
   {"error-on-warning", "s?", "", 0, NULL, NULL, pk_cmd_set_error_on_warning,
-   "set error-on-warning (yes|no)", yesno_completion_function};
+   ".set error-on-warning (yes|no)", yesno_completion_function};
 
 const struct pk_cmd **set_cmds;
 

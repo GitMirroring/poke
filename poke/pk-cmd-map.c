@@ -561,28 +561,28 @@ struct pk_trie *map_trie;
 struct pk_trie *map_entry_trie;
 
 const struct pk_cmd map_entry_cmd =
-  {"entry", "", "", 0,  map_entry_cmds, &map_entry_trie, NULL, "map entry (add|remove)",
+  {"entry", "", "", 0,  map_entry_cmds, &map_entry_trie, NULL, ".map entry (add|remove)",
    map_entry_completion_function};
 
 const struct pk_cmd map_create_cmd =
-  {"create", "s,?s", "", 0, NULL, NULL, pk_cmd_map_create, "create MAPNAME [,IOS]",
+  {"create", "s,?s", "", 0, NULL, NULL, pk_cmd_map_create, ".map create MAPNAME [,IOS]",
    NULL};
 
 const struct pk_cmd map_remove_cmd =
-  {"remove", "s,?s", "", 0, NULL, NULL, pk_cmd_map_remove, "remove MAPNAME [,IOS]",
+  {"remove", "s,?s", "", 0, NULL, NULL, pk_cmd_map_remove, ".map remove MAPNAME [,IOS]",
    NULL};
 
 const struct pk_cmd map_show_cmd =
-  {"show", "s,?s", "", 0, NULL, NULL, pk_cmd_map_show, "show MAPNAME [,IOS]",
+  {"show", "s,?s", "", 0, NULL, NULL, pk_cmd_map_show, ".map show MAPNAME [,IOS]",
    NULL};
 
 const struct pk_cmd map_load_cmd =
-  {"load", "s,?s", "", PK_CMD_F_REQ_IO, NULL, NULL, pk_cmd_map_load, "load MAPNAME [,IOS]",
+  {"load", "s,?s", "", PK_CMD_F_REQ_IO, NULL, NULL, pk_cmd_map_load, ".map load MAPNAME [,IOS]",
    /* XXX use a completion function for maps.  */
    rl_filename_completion_function};
 
 const struct pk_cmd map_save_cmd =
-  {"save", "?f", "", 0, NULL, NULL, pk_cmd_map_save, "save [FILENAME]",
+  {"save", "?f", "", 0, NULL, NULL, pk_cmd_map_save, ".map xsave [FILENAME]",
    rl_filename_completion_function};
 
 const struct pk_cmd *map_cmds[] =
@@ -603,9 +603,9 @@ map_completion_function (const char *x, int state)
 }
 
 const struct pk_cmd map_cmd =
-  {"map", "", "", 0, map_cmds, &map_trie, NULL, "map (create|show|entry|load|save)",
+  {"map", "", "", 0, map_cmds, &map_trie, NULL, ".map (create|show|entry|load|save)",
    map_completion_function};
 
 const struct pk_cmd info_maps_cmd =
-  {"maps", "?s", "", PK_CMD_F_REQ_IO, NULL, NULL, pk_cmd_info_maps, "info maps [IOS]",
+  {"maps", "?s", "", PK_CMD_F_REQ_IO, NULL, NULL, pk_cmd_info_maps, ".info maps [IOS]",
    poke_completion_function};

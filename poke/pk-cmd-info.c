@@ -48,5 +48,5 @@ info_completion_function (const char *x, int state)
 }
 
 const struct pk_cmd info_cmd =
-  {"info", "", "", 0, info_cmds, &info_trie, NULL, "info (ios|maps|variables|functions|types|type)",
+  {"info", "", "", 0, info_cmds, &info_trie, NULL, ".info (ios|maps|variables|functions|types|type)",
    info_completion_function};
