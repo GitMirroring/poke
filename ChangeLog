@@ -1,3 +1,7 @@
+2023-11-03  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* poke/poke.pk (pk_exception_handler): Fix styling.
+
 2023-11-02  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* poke/pk-cmd-ios.c (ios_cmd): The option to .ios is optional.
