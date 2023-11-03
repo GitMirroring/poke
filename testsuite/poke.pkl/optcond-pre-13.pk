@@ -1,0 +1,13 @@
+/* { dg-do run } */
+
+type Foo =
+  struct
+  {
+    int tag;
+    if (tag > 0)
+      int foo;
+    int bar = lambda int: { return foo; }();
+  };
+
+/* { dg-command {try Foo {}; catch if E_elem { print "caught\n"; } } } */
+/* { dg-output "caught" } */

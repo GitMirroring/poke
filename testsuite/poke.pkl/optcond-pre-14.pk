@@ -1,0 +1,14 @@
+/* { dg-do run } */
+
+type Foo =
+  struct
+  {
+    int tag;
+    if (tag > 0)
+      int foo;
+    fun jaja = int: { return foo; }
+    int quux = jaja; 
+  };
+
+/* { dg-command {try Foo {}; catch if E_elem { print "caught\n"; } } } */
+/* { dg-output "caught" } */

@@ -606,7 +606,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_var)
          like a constraint expression or an optional field condition,
          then raise E_elem if the value is null.  */
       if (PKL_AST_DECL_STRUCT_FIELD_P (var_decl)
-          && !var_function)
+          && (!var_function || !PKL_AST_FUNC_METHOD_P (var_function)))
         {
           pvm_program_label label
             = pkl_asm_fresh_label (PKL_GEN_ASM);

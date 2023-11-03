@@ -2041,6 +2041,8 @@ EXTRA_DIST = \
   poke.pkl/optcond-pre-10.pk \
   poke.pkl/optcond-pre-11.pk \
   poke.pkl/optcond-pre-12.pk \
+  poke.pkl/optcond-pre-13.pk \
+  poke.pkl/optcond-pre-14.pk \
   poke.pkl/optcond-pre-2.pk \
   poke.pkl/optcond-pre-3.pk \
   poke.pkl/optcond-pre-4.pk \
