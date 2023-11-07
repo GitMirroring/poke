@@ -76,6 +76,8 @@ config.h.in
 /libpoke/pvm-vm1.c
 /libpoke/pvm-vm2.c
 /libpoke/pkl-keywords.def
+/pokefmt/pokefmt.c
+/pokefmt/pokefmt.h
 /poke/pk-map-lex.c
 /poke/pk-map-lex.h
 /poke/pk-map-tab.c
