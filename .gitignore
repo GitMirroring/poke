@@ -66,6 +66,8 @@ config.h.in
 /run
 /libpoke/pkl-asm.pkc
 /libpoke/pkl-gen.pkc
+/libpoke/pkl-gen-attrs.pkc
+/libpoke/pkl-gen-builtins.pkc
 /libpoke/pkl-lex.c
 /libpoke/pkl-lex.h
 /libpoke/pkl-tab.c
