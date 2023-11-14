@@ -1,3 +1,14 @@
+2023-11-14  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/libpoke.h (pk_set_user_data): New function to register an
+	opaque data pointer.
+	(pk_get_user_data): New function to retrieve the registered opaque
+	data pointer.
+	* libpoke/libpoke.c (struct _pk_compiler): Add new field `user_data'.
+	(pk_set_user_data): New function impl.
+	(pk_get_user_data): Likewise.
+	* testsuite/poke.libpoke/api.c (main): Add tests for new functions.
+
 2023-11-04  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-gen.c (pkl_gen_ps_var): Fix detection of

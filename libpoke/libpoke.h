@@ -166,6 +166,13 @@ void pk_unregister_thread (void) LIBPOKE_API;
 
 int pk_errno (pk_compiler pkc) LIBPOKE_API;
 
+/* Set/get user-defined opaque data to the compiler instance.
+   The pointer is accessible whenever an instance of a Poke incremental
+   compiler is available (including from callbacks).  */
+
+void pk_set_user_data (pk_compiler pkc, void *user_data) LIBPOKE_API;
+void *pk_get_user_data (pk_compiler pkc) LIBPOKE_API;
+
 /* Compile and execute a Poke program from the given file FILENAME.
 
    EXIT_EXCEPTION is a pointer to a pk_val variable that is set to an

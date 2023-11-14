@@ -44,6 +44,7 @@ struct _pk_compiler
   ios completion_ios;
   int completion_idx;
   struct pkl_ast_node_iter completion_iter;
+  void *user_data;
 };
 
 struct pk_term_if libpoke_term_if;
@@ -132,6 +133,20 @@ pk_errno (pk_compiler pkc)
   if (pkc)
     return pkc->status;
   return PK_ERROR;
+}
+
+void
+pk_set_user_data (pk_compiler pkc, void *user_data)
+{
+  pkc->status = PK_OK;
+  pkc->user_data = user_data;
+}
+
+void *
+pk_get_user_data (pk_compiler pkc)
+{
+  pkc->status = PK_OK;
+  return pkc->user_data;
 }
 
 int

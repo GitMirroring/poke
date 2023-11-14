@@ -237,9 +237,12 @@ main ()
 
   pkc = test_pk_compiler_new ();
 
+  pk_set_user_data (pkc, (void *)(uintptr_t)0xdeadbeef);
   test_pk_keyword_p (pkc);
   test_pk_load (pkc);
   test_pk_ios (pkc);
+  T ("pk_get_user_data",
+     pk_get_user_data (pkc) == (void *)(uintptr_t)0xdeadbeef);
   test_pk_compiler_free (pkc);
 
   return 0;
