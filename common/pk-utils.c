@@ -82,29 +82,18 @@ PK_POW (pk_upow, uint64_t)
 
 #undef PK_POW
 
-void
-pk_print_binary (void (*puts_fn) (const char *str),
-                 uint64_t val, int size, int sign_p, int use_suffix_p)
+const char *
+pk_integral_suffix (int size, int sign_p)
 {
-  char b[65];
-
-  for (int z = 0; z < size; z++)
-    b[size-1-z] = ((val >> z) & 0x1) + '0';
-  b[size] = '\0';
-
-  puts_fn (b);
-
-  if  (use_suffix_p)
-    {
-      if (size == 64)
-        puts_fn (sign_p ? "L" : "UL");
-      else if (size == 16)
-        puts_fn (sign_p ? "H" : "UH");
-      else if (size == 8)
-        puts_fn (sign_p ? "B" : "UB");
-      else if (size == 4)
-        puts_fn (sign_p ? "N" : "UN");
-    }
+  if (size == 64)
+    return sign_p ? "L" : "UL";
+  if (size == 16)
+    return sign_p ? "H" : "UH";
+  if (size == 8)
+    return sign_p ? "B" : "UB";
+  if (size == 4)
+    return sign_p ? "N" : "UN";
+  return "";
 }
 
 int

@@ -90,7 +90,7 @@ wrapped-functions
   pvm_make_offset_type
   pvm_make_array_type
   pk_upow
-  pk_print_binary
+  pk_integral_suffix
   pk_format_binary
   pvm_alloc
   pvm_allocate_struct_attrs
@@ -517,7 +517,7 @@ late-header-c
       }                                                                     \
       else if ((BASE) == 2)                                                 \
       {                                                                     \
-        pk_print_binary (pk_puts, val, JITTER_ARGN0, 1, 0);                 \
+        PK_PRINT_BINARY (val, JITTER_ARGN0, 1, 0);                          \
         JITTER_DROP_STACK ();                                               \
         JITTER_DROP_STACK ();                                               \
         break;                                                              \
@@ -571,7 +571,7 @@ late-header-c
       }                                                                     \
       else if ((BASE) == 2)                                                 \
       {                                                                     \
-        pk_print_binary (pk_puts, val, JITTER_ARGN0, 1, 0);                 \
+        PK_PRINT_BINARY (val, JITTER_ARGN0, 1, 0);                          \
         JITTER_DROP_STACK ();                                               \
         JITTER_DROP_STACK ();                                               \
         break;                                                              \

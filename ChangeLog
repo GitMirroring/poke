@@ -1,5 +1,19 @@
 2023-11-14  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* common/pk-utils.h (pk_print_binary): Remove function decl.
+	(PK_PRINT_BINARY): New macro for printing in base 2 to make use of
+	`pk_puts' macro easier.
+	* common/pk-utils.c (pk_print_binary): Remove function.
+	(pk_integral_suffix): New function.
+	* libpoke/pvm-val.c (pvm_print_val_1): Change `pk_print_binary' to
+	`PK_PRINT_BINARY'.
+	* libpoke/pvm.jitter (wrapped-functions):
+	s/pk_print_binary/pk_integral_suffix/.
+	(PVM_PRINTI): s/pk_print_binary/PK_PRINT_BINARY/.
+	(PVM_PRINTL): Likewise.
+
+2023-11-14  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/libpoke.h (pk_set_user_data): New function to register an
 	opaque data pointer.
 	(pk_get_user_data): New function to retrieve the registered opaque

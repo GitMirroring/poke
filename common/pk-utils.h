@@ -49,9 +49,39 @@ char *pk_file_readable (const char *filename);
 int64_t pk_ipow (int64_t base, uint32_t exp);
 uint64_t pk_upow (uint64_t base, uint32_t exp);
 
-/* Print the given unsigned 64-bit integer in binary. */
-void pk_print_binary (void (*puts_fn) (const char *str), uint64_t val,
-                      int size, int sign_p, int use_suffix_p);
+/* Return one of the following strings based on the SIZE and SIGN_P:
+     "N", "UN", "B", "UB", "H", "UH", "L", "UL"
+   which are valid suffix for integral values in Poke.
+
+   PK_PRINT_BINARY macro uses this function to avoid using any string
+   literals (because of Jitter's limitation).  */
+
+const char *pk_integral_suffix (int size, int sign_p);
+
+/* Print the given unsigned 64-bit integer in binary.
+
+   Please note that this macro is used in PVM_PRINT{I,L} macros in
+   pvm.jitter; be careful to not call any non-wrapped functions
+   or data (including string literals).  */
+
+#define PK_PRINT_BINARY(val, size, sign_p, use_suffix_p)                      \
+  do                                                                          \
+    {                                                                         \
+      char _pkpb_buf[65];                                                     \
+      uint64_t _pkpb_val = (val);                                             \
+      int _pkpb_sz = (size);                                                  \
+                                                                              \
+      for (int _pkpb_z = 0; _pkpb_z < _pkpb_sz; _pkpb_z++)                    \
+        _pkpb_buf[_pkpb_sz - 1 - _pkpb_z]                                     \
+            = ((_pkpb_val >> _pkpb_z) & 0x1) + '0';                           \
+      _pkpb_buf[_pkpb_sz] = '\0';                                             \
+                                                                              \
+      pk_puts (_pkpb_buf);                                                    \
+                                                                              \
+      if (use_suffix_p)                                                       \
+        pk_puts (pk_integral_suffix (_pkpb_sz, (sign_p)));                    \
+    }                                                                         \
+  while (0)
 
 /* Format the given unsigned 64-bit integer in binary. */
 int pk_format_binary (char* out, size_t outlen, uint64_t val, int size,
