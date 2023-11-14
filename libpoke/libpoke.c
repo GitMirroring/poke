@@ -21,6 +21,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "libpoke.h"
 #include "pk-utils.h"
 #include "pkt.h"
 #include "pkl.h"
@@ -28,7 +29,6 @@
 #include "pkl-env.h" /* XXX */
 #include "pvm.h"
 #include "pvm-val.h" /* XXX */
-#include "libpoke.h"
 #include "ios-dev.h" /* for struct ios_dev_if */
 #include "configmake.h"
 
@@ -47,7 +47,7 @@ struct _pk_compiler
   void *user_data;
 };
 
-struct pk_term_if libpoke_term_if;
+struct pk_term_if_internal libpoke_term_if;
 
 #define PK_RETURN(code) do { return pkc->status = (code); } while (0)
 
@@ -84,7 +84,8 @@ pk_compiler_new_with_flags (struct pk_term_if *term_if, uint32_t flags)
       if (libpoke_datadir == NULL)
         libpoke_datadir = PKGDATADIR;
 
-      libpoke_term_if = *term_if;
+      libpoke_term_if.term_if = *term_if;
+      libpoke_term_if.pkc = pkc;
 
       pkc->vm = pvm_init ();
       if (pkc->vm == NULL)

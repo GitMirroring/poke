@@ -702,18 +702,18 @@ tifbuf_init(void)
 #endif
 
 static void
-tif_flush (void)
+tif_flush (pk_compiler pkc __attribute__ ((unused)))
 {
 }
 static void
-tif_puts (const char *s)
+tif_puts (pk_compiler pkc __attribute__ ((unused)), const char *s)
 {
   if (poked_options.debug_p)
     printf (">(p) '%s'\n", s);
   usock_out (srv, termout_chan, termout_cmdkind, s, strlen (s) + 1);
 }
 static void
-tif_printf (const char *fmt, ...)
+tif_printf (pk_compiler pkc __attribute__ ((unused)), const char *fmt, ...)
 {
   va_list ap;
   char *data = NULL;
@@ -731,7 +731,8 @@ tif_printf (const char *fmt, ...)
   free (data);
 }
 static void
-tif_indent (unsigned int level, unsigned int step)
+tif_indent (pk_compiler pkc __attribute__ ((unused)), unsigned int level,
+            unsigned int step)
 {
   size_t len = /*newline*/ 1u + step * level;
   char *data;
@@ -744,31 +745,32 @@ tif_indent (unsigned int level, unsigned int step)
   free (data);
 }
 static void
-tif_class (const char *name)
+tif_class (pk_compiler pkc __attribute__ ((unused)), const char *name)
 {
   if (termout_chan == USOCK_CHAN_OUT_OUT)
     usock_out (srv, termout_chan, OUTCMD_CLS_BEGIN, name, strlen (name) + 1);
 }
 static int
-tif_class_end (const char *name)
+tif_class_end (pk_compiler pkc __attribute__ ((unused)), const char *name)
 {
   if (termout_chan == USOCK_CHAN_OUT_OUT)
     usock_out (srv, termout_chan, OUTCMD_CLS_END, name, strlen (name) + 1);
   return 1;
 }
 static void
-tif_hlink (const char *name, const char *id)
+tif_hlink (pk_compiler pkc __attribute__ ((unused)), const char *name,
+           const char *id)
 {
   (void)name;
   (void)id;
 }
 static int
-tif_hlink_end (void)
+tif_hlink_end (pk_compiler pkc __attribute__ ((unused)))
 {
   return 1;
 }
 static struct pk_color
-tif_color (void)
+tif_color (pk_compiler pkc __attribute__ ((unused)))
 {
   static struct pk_color c = {
     .red = 0,
@@ -778,7 +780,7 @@ tif_color (void)
   return c;
 }
 static struct pk_color
-tif_bgcolor (void)
+tif_bgcolor (pk_compiler pkc __attribute__ ((unused)))
 {
   static struct pk_color c = {
     .red = 255,
@@ -788,12 +790,12 @@ tif_bgcolor (void)
   return c;
 }
 static void
-tif_color_set (struct pk_color c)
+tif_color_set (pk_compiler pkc __attribute__ ((unused)), struct pk_color c)
 {
   (void)c;
 }
 static void
-tif_bgcolor_set (struct pk_color c)
+tif_bgcolor_set (pk_compiler pkc __attribute__ ((unused)), struct pk_color c)
 {
   (void)c;
 }

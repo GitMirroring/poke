@@ -20,19 +20,18 @@
 #include <stdio.h>
 
 static void
-pk_term_flush ()
+pk_term_flush (pk_compiler pkc __attribute__ ((unused)))
 {
 }
 
 void
-pk_puts (const char *str)
+pk_puts (pk_compiler pkc __attribute__ ((unused)), const char *str)
 {
   printf ("%s", str);
 }
 
-__attribute__ ((__format__ (__printf__, 1, 2)))
-void
-pk_printf (const char *format, ...)
+__attribute__ ((__format__ (__printf__, 2, 3))) void
+pk_printf (pk_compiler pkc __attribute__ ((unused)), const char *format, ...)
 {
   va_list ap;
 
@@ -42,58 +41,59 @@ pk_printf (const char *format, ...)
 }
 
 void
-pk_term_indent (unsigned int lvl,
+pk_term_indent (pk_compiler pkc __attribute__ ((unused)), unsigned int lvl,
                 unsigned int step)
 {
   printf ("\n%*s", (step * lvl), "");
 }
 
 void
-pk_term_class (const char *class)
+pk_term_class (pk_compiler pkc __attribute__ ((unused)), const char *class)
 {
 }
 
 int
-pk_term_end_class (const char *class)
+pk_term_end_class (pk_compiler pkc __attribute__ ((unused)), const char *class)
 {
   return 1;
 }
 
 void
-pk_term_hyperlink (const char *url, const char *id)
+pk_term_hyperlink (pk_compiler pkc __attribute__ ((unused)), const char *url,
+                   const char *id)
 {
 }
 
 int
-pk_term_end_hyperlink (void)
+pk_term_end_hyperlink (pk_compiler pkc __attribute__ ((unused)))
 {
   return 1;
 }
 
 struct pk_color
-pk_term_get_color (void)
+pk_term_get_color (pk_compiler pkc __attribute__ ((unused)))
 {
-  struct pk_color inv = {-1,-1,-1};
+  struct pk_color inv = { -1, -1, -1 };
   return inv;
 }
 
 struct pk_color
-pk_term_get_bgcolor (void)
+pk_term_get_bgcolor (pk_compiler pkc __attribute__ ((unused)))
 {
-  struct pk_color inv = {-1,-1,-1};
+  struct pk_color inv = { -1, -1, -1 };
   return inv;
 }
 
 void
-pk_term_set_color (struct pk_color color)
+pk_term_set_color (pk_compiler pkc __attribute__ ((unused)),
+                   struct pk_color color)
 {
-
 }
 
 void
-pk_term_set_bgcolor (struct pk_color color)
+pk_term_set_bgcolor (pk_compiler pkc __attribute__ ((unused)),
+                     struct pk_color color)
 {
-
 }
 
 static struct pk_term_if poke_term_if =

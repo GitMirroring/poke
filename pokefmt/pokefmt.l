@@ -362,17 +362,17 @@ pokefmt_opts_free ()
 
 // terminal IO functions
 static void
-tif_flush (void)
+tif_flush (pk_compiler pkc __attribute__ ((unused)))
 {
   fflush (stdout);
 }
 static void
-tif_puts (const char *s)
+tif_puts (pk_compiler pkc __attribute__ ((unused)), const char *s)
 {
   printf ("%s", s);
 }
 static void
-tif_printf (const char *fmt, ...)
+tif_printf (pk_compiler pkc __attribute__ ((unused)), const char *fmt, ...)
 {
   va_list ap;
 
@@ -381,36 +381,38 @@ tif_printf (const char *fmt, ...)
   va_end (ap);
 }
 static void
-tif_indent (unsigned int level, unsigned int step)
+tif_indent (pk_compiler pkc __attribute__ ((unused)), unsigned int level,
+            unsigned int step)
 {
   putchar ('\n');
   for (unsigned int i = 0; i < step * level; ++i)
     putchar (' ');
 }
 static void
-tif_class (const char *name)
+tif_class (pk_compiler pkc __attribute__ ((unused)), const char *name)
 {
   (void)name;
 }
 static int
-tif_class_end (const char *name)
+tif_class_end (pk_compiler pkc __attribute__ ((unused)), const char *name)
 {
   (void)name;
   return 1;
 }
 static void
-tif_hlink (const char *name, const char *id)
+tif_hlink (pk_compiler pkc __attribute__ ((unused)), const char *name,
+           const char *id)
 {
   (void)name;
   (void)id;
 }
 static int
-tif_hlink_end (void)
+tif_hlink_end (pk_compiler pkc __attribute__ ((unused)))
 {
   return 1;
 }
 static struct pk_color
-tif_color (void)
+tif_color (pk_compiler pkc __attribute__ ((unused)))
 {
   static struct pk_color c = {
     .red = 0,
@@ -420,7 +422,7 @@ tif_color (void)
   return c;
 }
 static struct pk_color
-tif_bgcolor (void)
+tif_bgcolor (pk_compiler pkc __attribute__ ((unused)))
 {
   static struct pk_color c = {
     .red = 255,
@@ -430,12 +432,12 @@ tif_bgcolor (void)
   return c;
 }
 static void
-tif_color_set (struct pk_color c)
+tif_color_set (pk_compiler pkc __attribute__ ((unused)), struct pk_color c)
 {
   (void)c;
 }
 static void
-tif_bgcolor_set (struct pk_color c)
+tif_bgcolor_set (pk_compiler pkc __attribute__ ((unused)), struct pk_color c)
 {
   (void)c;
 }

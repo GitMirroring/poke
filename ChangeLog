@@ -1,5 +1,102 @@
 2023-11-18  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/libpoke.h (struct pk_term_if): Add `pk_compiler' parameter
+	to all function pointers.
+	* libpoke/libpoke.c (include "libpoke.h"): Move to the top.
+	(libpoke_term_if): Change the type to `struct pk_term_if_internal'.
+	(pk_compiler_new_with_flags): Populate `libpoke_term_if'.
+	* libpoke/pkt.h (PKT_IF): New macro to convey the terminal interface
+	function pointers.
+	(PK_PKC): New macro to convey the instance of current incremental
+	compiler.
+	(pk_*): Re-write the macro definitions to new paradigm.
+	(struct pk_term_if_internal): New data type.
+	(libpoke_term_if): Change the type of the variable.
+	* poke/pk-term.h (pk_puts): Define as a macro.
+	(pk_term_indent): Likewise.
+	(pk_term_class): Likewise.
+	(pk_term_end_class): Likewise.
+	(pk_term_hyperlink): Likewise.
+	(pk_term_end_hyperlink): Likewise.
+	(pk_term_get_color): Likewise.
+	(pk_term_get_bgcolor): Likewise.
+	(pk_term_set_color): Likewise.
+	(pk_term_set_bgcolor): Likewise.
+	(pk_term_flush_1): New terminal interface function with `pk_compiler'
+	parameter.
+	(pk_puts_1): Likewise.
+	(pk_printf_1): Likewise.
+	(pk_term_indent_1): Likewise.
+	(pk_term_class_1): Likewise.
+	(pk_term_end_class_1): Likewise.
+	(pk_term_hyperlink_1): Likewise.
+	(pk_term_end_hyperlink_1): Likewise.
+	(pk_term_get_color_1): Likewise.
+	(pk_term_get_bgcolor_1): Likewise.
+	(pk_term_set_color_1): Likewise.
+	(pk_term_set_bgcolor_1): Likewise.
+	* poke/pk-term.c (pk_term_flush_1): Likewise.
+	(pk_puts_1): Likewise.
+	(pk_printf_1): Likewise.
+	(pk_term_indent_1): Likewise.
+	(pk_term_class_1): Likewise.
+	(pk_term_end_class_1): Likewise.
+	(pk_term_hyperlink_1): Likewise.
+	(pk_term_end_hyperlink_1): Likewise.
+	(pk_term_get_color_1): Likewise.
+	(pk_term_get_bgcolor_1): Likewise.
+	(pk_term_set_color_1): Likewise.
+	(pk_term_set_bgcolor_1): Likewise.
+	(pk_term_flush_1): Likewise.
+	(pk_puts): Remove.
+	(pk_term_indent): Likewise.
+	(pk_term_class): Likewise.
+	(pk_term_end_class): Likewise.
+	(pk_term_hyperlink): Likewise.
+	(pk_term_end_hyperlink): Likewise.
+	(pk_term_get_color): Likewise.
+	(pk_term_get_bgcolor): Likewise.
+	(pk_term_set_color): Likewise.
+	(pk_term_set_bgcolor): Likewise.
+	* poked/poked.c (tif_flush): Add `pk_compiler' parameter.
+	(tif_puts): Likewise.
+	(tif_printf): Likewise.
+	(tif_indent): Likewise.
+	(tif_class): Likewise.
+	(tif_class_end): Likewise.
+	(tif_hlink): Likewise.
+	(tif_hlink_end): Likewise.
+	(tif_color): Likewise.
+	(tif_bgcolor): Likewise.
+	(tif_color_set): Likewise.
+	(tif_bgcolor_set): Likewise.
+	* pokefmt/pokefmt.l (tif_flush): Likewise.
+	(tif_puts): Likewise.
+	(tif_printf): Likewise.
+	(tif_indent): Likewise.
+	(tif_class): Likewise.
+	(tif_class_end): Likewise.
+	(tif_hlink): Likewise.
+	(tif_hlink_end): Likewise.
+	(tif_color): Likewise.
+	(tif_bgcolor): Likewise.
+	(tif_color_set): Likewise.
+	(tif_bgcolor_set): Likewise.
+	* testsutie/poke.libpoke/term-if.h (pk_term_flush): Likewise.
+	(pk_puts): Likewise.
+	(pk_printf): Likewise.
+	(pk_term_indent): Likewise.
+	(pk_term_class): Likewise.
+	(pk_term_end_class): Likewise.
+	(pk_term_hyperlink): Likewise.
+	(pk_term_end_hyperlink): Likewise.
+	(pk_term_get_color): Likewise.
+	(pk_term_get_bgcolor): Likewise.
+	(pk_term_set_color): Likewise.
+	(pk_term_set_bgcolor): Likewise.
+
+2023-11-18  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* common/pk-utils.h (PK_INTEGRAL_SUFFIX): New macro.
 	(pk_integral_suffix): Remove function declaration.
 	(PK_PRINT_BINARY): Remove `use_suffix_p' parameter. And don't print

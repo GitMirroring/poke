@@ -296,18 +296,18 @@ finalize (void)
 
 static struct pk_term_if poke_term_if =
   {
-    .flush_fn = pk_term_flush,
-    .puts_fn = pk_puts,
-    .printf_fn = pk_printf,
-    .indent_fn = pk_term_indent,
-    .class_fn = pk_term_class,
-    .end_class_fn = pk_term_end_class,
-    .hyperlink_fn = pk_term_hyperlink,
-    .end_hyperlink_fn = pk_term_end_hyperlink,
-    .get_color_fn = pk_term_get_color,
-    .set_color_fn = pk_term_set_color,
-    .get_bgcolor_fn = pk_term_get_bgcolor,
-    .set_bgcolor_fn = pk_term_set_bgcolor,
+    .flush_fn = pk_term_flush_1,
+    .puts_fn = pk_puts_1,
+    .printf_fn = pk_printf_1,
+    .indent_fn = pk_term_indent_1,
+    .class_fn = pk_term_class_1,
+    .end_class_fn = pk_term_end_class_1,
+    .hyperlink_fn = pk_term_hyperlink_1,
+    .end_hyperlink_fn = pk_term_end_hyperlink_1,
+    .get_color_fn = pk_term_get_color_1,
+    .set_color_fn = pk_term_set_color_1,
+    .get_bgcolor_fn = pk_term_get_bgcolor_1,
+    .set_bgcolor_fn = pk_term_set_bgcolor_1,
   };
 
 const char *

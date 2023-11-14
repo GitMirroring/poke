@@ -21,21 +21,35 @@
 
 #include <config.h>
 
-#include "libpoke.h"  /* For struct pk_term_if */
+#include "libpoke.h"  /* For struct pk_term_if, pk_compiler.  */
 
-extern struct pk_term_if libpoke_term_if;
+struct pk_term_if_internal
+{
+  struct pk_term_if term_if;
+  pk_compiler pkc;
+};
 
-#define pk_puts libpoke_term_if.puts_fn
-#define pk_printf libpoke_term_if.printf_fn
-#define pk_term_flush libpoke_term_if.flush_fn
-#define pk_term_indent libpoke_term_if.indent_fn
-#define pk_term_class libpoke_term_if.class_fn
-#define pk_term_end_class libpoke_term_if.end_class_fn
-#define pk_term_hyperlink libpoke_term_if.hyperlink_fn
-#define pk_term_end_hyperlink libpoke_term_if.end_hyperlink_fn
-#define pk_term_get_color libpoke_term_if.get_color_fn
-#define pk_term_set_color libpoke_term_if.set_color_fn
-#define pk_term_get_bgcolor libpoke_term_if.get_bgcolor_fn
-#define pk_term_set_bgcolor libpoke_term_if.set_bgcolor_fn
+extern struct pk_term_if_internal libpoke_term_if;
+
+#define PKT_IF (&libpoke_term_if.term_if)
+#define PKT_PKC (libpoke_term_if.pkc)
+
+/* Terminal interface for Poke compiler.  */
+
+#define pk_puts(STR) (PKT_IF)->puts_fn ((PKT_PKC), (STR))
+#define pk_printf(...) (PKT_IF)->printf_fn ((PKT_PKC), __VA_ARGS__)
+#define pk_term_flush() (PKT_IF)->flush_fn (PKT_PKC)
+#define pk_term_indent(LVL, STEP)                                             \
+  (PKT_IF)->indent_fn ((PKT_PKC), (LVL), (STEP))
+#define pk_term_class(CLS) (PKT_IF)->class_fn ((PKT_PKC), (CLS))
+#define pk_term_end_class(CLS) (PKT_IF)->end_class_fn ((PKT_PKC), (CLS))
+#define pk_term_hyperlink(URL, ID)                                            \
+  (PKT_IF)->hyperlink_fn ((PKT_PKC), (URL), ID)
+#define pk_term_end_hyperlink() (PKT_IF)->end_hyperlink_fn (PKT_PKC)
+#define pk_term_get_color() (PKT_IF)->get_color_fn (PKT_PKC)
+#define pk_term_set_color(COLOR) (PKT_IF)->set_color_fn ((PKT_PKC), (COLOR))
+#define pk_term_get_bgcolor() (PKT_IF)->get_bgcolor_fn (PKT_PKC)
+#define pk_term_set_bgcolor(COLOR)                                            \
+  (PKT_IF)->set_bgcolor_fn ((PKT_PKC), (COLOR))
 
 #endif /* ! PKT_H */

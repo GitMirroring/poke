@@ -364,11 +364,10 @@ pk_term_shutdown ()
 }
 
 void
-pk_term_flush ()
+pk_term_flush_1 (pk_compiler pkc __attribute__ ((unused)))
 {
   ostream_flush (pk_ostream, FLUSH_THIS_STREAM);
 }
-
 
 void
 pk_term_start_pager (void)
@@ -470,7 +469,7 @@ pk_puts_paged (const char *lines)
 }
 
 void
-pk_puts (const char *str)
+pk_puts_1 (pk_compiler pkc __attribute__ ((unused)), const char *str)
 {
   if (pager_active_p)
     pk_puts_paged (str);
@@ -478,9 +477,9 @@ pk_puts (const char *str)
     ostream_write_str (pk_ostream, str);
 }
 
-__attribute__ ((__format__ (__printf__, 1, 2)))
+__attribute__ ((__format__ (__printf__, 2, 3)))
 void
-pk_printf (const char *format, ...)
+pk_printf_1 (pk_compiler pkc, const char *format, ...)
 {
   va_list ap;
   char *str;
@@ -491,7 +490,7 @@ pk_printf (const char *format, ...)
   assert (r != -1);
   va_end (ap);
 
-  pk_puts (str);
+  pk_puts_1 (pkc, str);
   free (str);
 }
 
@@ -508,23 +507,21 @@ pk_vprintf (const char *format, va_list ap)
   free (str);
 }
 
-
 void
-pk_term_indent (unsigned int lvl,
-                unsigned int step)
+pk_term_indent_1 (pk_compiler pkc, unsigned int lvl, unsigned int step)
 {
-  pk_printf ("\n%*s", (step * lvl), "");
+  pk_printf_1 (pkc, "\n%*s", (step * lvl), "");
 }
 
 void
-pk_term_class (const char *class)
+pk_term_class_1 (pk_compiler pkc __attribute__ ((unused)), const char *class)
 {
   styled_ostream_begin_use_class (pk_ostream, class);
   push_active_class (class);
 }
 
 int
-pk_term_end_class (const char *class)
+pk_term_end_class_1 (pk_compiler pkc __attribute__ ((unused)), const char *class)
 {
   if (!pop_active_class (class))
     return 0;
@@ -537,7 +534,8 @@ pk_term_end_class (const char *class)
 static int hlcount = 0;
 
 void
-pk_term_hyperlink (const char *url, const char *id)
+pk_term_hyperlink_1 (pk_compiler pkc __attribute__ ((unused)),
+                     const char *url, const char *id)
 {
 #ifdef HAVE_TEXTSTYLE_HYPERLINK_SUPPORT
   styled_ostream_set_hyperlink (pk_ostream, url, id);
@@ -546,7 +544,7 @@ pk_term_hyperlink (const char *url, const char *id)
 }
 
 int
-pk_term_end_hyperlink (void)
+pk_term_end_hyperlink_1 (pk_compiler pkc __attribute__ ((unused)))
 {
 #ifdef HAVE_TEXTSTYLE_HYPERLINK_SUPPORT
   if (hlcount == 0)
@@ -568,7 +566,7 @@ pk_term_color_p (void)
 }
 
 struct pk_color
-pk_term_get_color (void)
+pk_term_get_color_1 (pk_compiler pkc __attribute__ ((unused)))
 {
 #if defined HAVE_TEXTSTYLE_ACCESSORS_SUPPORT
    if (color_mode != color_html
@@ -591,7 +589,7 @@ pk_term_get_color (void)
 }
 
 struct pk_color
-pk_term_get_bgcolor ()
+pk_term_get_bgcolor_1 (pk_compiler pkc __attribute__ ((unused)))
 {
 #if defined HAVE_TEXTSTYLE_ACCESSORS_SUPPORT
   if (color_mode != color_html
@@ -614,7 +612,8 @@ pk_term_get_bgcolor ()
 }
 
 void
-pk_term_set_color (struct pk_color color)
+pk_term_set_color_1 (pk_compiler pkc __attribute__ ((unused)),
+                     struct pk_color color)
 {
 #if defined HAVE_TEXTSTYLE_ACCESSORS_SUPPORT
   if (color_mode != color_html)
@@ -642,7 +641,8 @@ pk_term_set_color (struct pk_color color)
 }
 
 void
-pk_term_set_bgcolor (struct pk_color color)
+pk_term_set_bgcolor_1 (pk_compiler pkc __attribute__ ((unused)),
+                       struct pk_color color)
 {
 #if defined HAVE_TEXTSTYLE_ACCESSORS_SUPPORT
   if (color_mode != color_html)

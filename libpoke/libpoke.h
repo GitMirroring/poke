@@ -83,46 +83,46 @@ struct pk_color
 struct pk_term_if
 {
   /* Flush the output in the terminal.  */
-  void (*flush_fn) (void);
+  void (*flush_fn) (pk_compiler pkc);
 
   /* Output a NULL-terminated C string.  */
-  void (*puts_fn) (const char *str);
+  void (*puts_fn) (pk_compiler pkc, const char *str);
 
   /* Output a formatted string.  */
-  void (*printf_fn) (const char *format, ...);
+  void (*printf_fn) (pk_compiler pkc, const char *format, ...);
 
   /* Output LVL levels of indentation, using STEP white chars in each
      indentation level.  */
-  void (*indent_fn) (unsigned int lvl, unsigned int step);
+  void (*indent_fn) (pk_compiler pkc, unsigned int lvl, unsigned int step);
 
   /* Mark the beginning of a styling class with name CLASS.  */
-  void (*class_fn) (const char *aclass);
+  void (*class_fn) (pk_compiler pkc, const char *aclass);
 
   /* Mark the end of a styling class with name CLASS.  This function
      returns 0 if the given class is not active and therefore can't be
      ended.  1 otherwise.  */
-  int (*end_class_fn) (const char *aclass);
+  int (*end_class_fn) (pk_compiler pkc, const char *aclass);
 
   /* Mark the beginning of an hyperlink with url URL and identifier
      ID.  The identifier can be NULL.  */
-  void (*hyperlink_fn) (const char *url, const char *id);
+  void (*hyperlink_fn) (pk_compiler pkc, const char *url, const char *id);
 
   /* Mark the end of the current hyperlink.  This function returns 0
      if there is no currently an hyperlink open to close.  1
      otherwise.  */
-  int (*end_hyperlink_fn) (void);
+  int (*end_hyperlink_fn) (pk_compiler pkc);
 
   /* Get the current foreground color.  */
-  struct pk_color (*get_color_fn) (void);
+  struct pk_color (*get_color_fn) (pk_compiler pkc);
 
   /* Get the current background color.  */
-  struct pk_color (*get_bgcolor_fn) (void);
+  struct pk_color (*get_bgcolor_fn) (pk_compiler pkc);
 
   /* Set the foreground color.  */
-  void (*set_color_fn) (struct pk_color color);
+  void (*set_color_fn) (pk_compiler pkc, struct pk_color color);
 
   /* Set the background color.  */
-  void (*set_bgcolor_fn) (struct pk_color color);
+  void (*set_bgcolor_fn) (pk_compiler pkc, struct pk_color color);
 };
 
 /* Create and return a new Poke incremental compiler.
