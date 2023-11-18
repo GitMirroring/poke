@@ -1,3 +1,16 @@
+2023-11-18  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* common/pk-utils.h (PK_INTEGRAL_SUFFIX): New macro.
+	(pk_integral_suffix): Remove function declaration.
+	(PK_PRINT_BINARY): Remove `use_suffix_p' parameter. And don't print
+	the suffix.
+	* common/pk-utils.c (PK_INTEGRAL_SUFFIX): Remove function definition.
+	* libpoke/pvm-val.c (pvm_print_val_1): Update use of `PK_PRINT_BINARY'
+	and use `PK_INTEGRAL_SUFFIX'.
+	* libpoke/pvm.jitter (wrapped-functions): Remove `pk_integral_suffix'.
+	(PVM_PRINTI): Update use of `PK_PRINT_BINARY'.
+	(PVM_PRINTL): Likewise.
+
 2023-11-14  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* common/pk-utils.h (pk_print_binary): Remove function decl.

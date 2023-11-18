@@ -49,27 +49,26 @@ char *pk_file_readable (const char *filename);
 int64_t pk_ipow (int64_t base, uint32_t exp);
 uint64_t pk_upow (uint64_t base, uint32_t exp);
 
-/* Return one of the following strings based on the SIZE and SIGN_P:
-     "N", "UN", "B", "UB", "H", "UH", "L", "UL"
-   which are valid suffix for integral values in Poke.
+/* Suffix for integral values.
 
-   PK_PRINT_BINARY macro uses this function to avoid using any string
-   literals (because of Jitter's limitation).  */
+   Please note that you cannot use this macro in pvm.jitter because
+   of string literals.  */
 
-const char *pk_integral_suffix (int size, int sign_p);
+#define PK_INTEGRAL_SUFFIX(SIZE, SIGNED_P)                                    \
+  ((SIZE) == 64   ? ((SIGNED_P) ? "L" : "UL")                                 \
+   : (SIZE) == 16 ? ((SIGNED_P) ? "H" : "UH")                                 \
+   : (SIZE) == 8  ? ((SIGNED_P) ? "B" : "UB")                                 \
+   : (SIZE) == 4  ? ((SIGNED_P) ? "N" : "UN")                                 \
+                  : "")
 
-/* Print the given unsigned 64-bit integer in binary.
+/* Print the given unsigned 64-bit integer in base 2.  */
 
-   Please note that this macro is used in PVM_PRINT{I,L} macros in
-   pvm.jitter; be careful to not call any non-wrapped functions
-   or data (including string literals).  */
-
-#define PK_PRINT_BINARY(val, size, sign_p, use_suffix_p)                      \
+#define PK_PRINT_BINARY(VAL, SIZE)                                            \
   do                                                                          \
     {                                                                         \
       char _pkpb_buf[65];                                                     \
-      uint64_t _pkpb_val = (val);                                             \
-      int _pkpb_sz = (size);                                                  \
+      uint64_t _pkpb_val = (VAL);                                             \
+      int _pkpb_sz = (SIZE);                                                  \
                                                                               \
       for (int _pkpb_z = 0; _pkpb_z < _pkpb_sz; _pkpb_z++)                    \
         _pkpb_buf[_pkpb_sz - 1 - _pkpb_z]                                     \
@@ -77,9 +76,6 @@ const char *pk_integral_suffix (int size, int sign_p);
       _pkpb_buf[_pkpb_sz] = '\0';                                             \
                                                                               \
       pk_puts (_pkpb_buf);                                                    \
-                                                                              \
-      if (use_suffix_p)                                                       \
-        pk_puts (pk_integral_suffix (_pkpb_sz, (sign_p)));                    \
     }                                                                         \
   while (0)
 

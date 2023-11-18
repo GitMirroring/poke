@@ -1168,7 +1168,8 @@ pvm_print_val_1 (pvm vm, int depth, int mode, int base, int indent,
       if (base == 2)
         {
           pk_puts ("0b");
-          PK_PRINT_BINARY (ulongval, size, /*signed_p*/ 1, /*use_suffix_p*/ 1);
+          PK_PRINT_BINARY (ulongval, size);
+          pk_puts (PK_INTEGRAL_SUFFIX (size, /*signed_p*/ 1));
         }
       else
         {
@@ -1197,8 +1198,8 @@ pvm_print_val_1 (pvm vm, int depth, int mode, int base, int indent,
       if (base == 2)
         {
           pk_puts ("0b");
-          PK_PRINT_BINARY ((uint64_t) uintval, size, /*signed*/ 1,
-                           /*use_suffix_p*/ 1);
+          PK_PRINT_BINARY ((uint64_t) uintval, size);
+          pk_puts (PK_INTEGRAL_SUFFIX (size, /*signed_p*/ 1));
         }
       else
         {
@@ -1227,7 +1228,8 @@ pvm_print_val_1 (pvm vm, int depth, int mode, int base, int indent,
       if (base == 2)
         {
           pk_puts ("0b");
-          PK_PRINT_BINARY (ulongval, size, /*signed_p*/ 0, /*use_suffix_p*/ 1);
+          PK_PRINT_BINARY (ulongval, size);
+          pk_puts (PK_INTEGRAL_SUFFIX (size, /*signed_p*/ 0));
         }
       else
         {
@@ -1249,7 +1251,8 @@ pvm_print_val_1 (pvm vm, int depth, int mode, int base, int indent,
       if (base == 2)
         {
           pk_puts ("0b");
-          PK_PRINT_BINARY (uintval, size, /*signed_p*/ 0, /*use_suffix_p*/ 1);
+          PK_PRINT_BINARY (uintval, size);
+          pk_puts (PK_INTEGRAL_SUFFIX (size, /*signed_p*/ 0));
         }
       else
         {

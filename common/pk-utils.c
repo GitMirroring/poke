@@ -82,20 +82,6 @@ PK_POW (pk_upow, uint64_t)
 
 #undef PK_POW
 
-const char *
-pk_integral_suffix (int size, int sign_p)
-{
-  if (size == 64)
-    return sign_p ? "L" : "UL";
-  if (size == 16)
-    return sign_p ? "H" : "UH";
-  if (size == 8)
-    return sign_p ? "B" : "UB";
-  if (size == 4)
-    return sign_p ? "N" : "UN";
-  return "";
-}
-
 int
 pk_format_binary (char* out, size_t outlen,
                   uint64_t val, int size, int sign_p, int use_suffix_p)
