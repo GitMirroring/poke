@@ -203,6 +203,7 @@ fun srec_decode = (SREC_File srec,
 fun srec_encode = (int<32> ios = get_ios,
                    int<32> bytes_per_record = 32,
                    int<32> crlf = 0,
+                   offset<uint<64>,B> start_address = 0#B,
                    offset<uint<64>,B> base_address = 0#B,
                    offset<int<32>,B> address_size
                      = (iosize (ios) > 2UL#B <<. 24 ? 32#b
@@ -258,6 +259,18 @@ fun srec_encode = (int<32> ios = get_ios,
       var count = stoca (format ("%u8x", digits'length / 2 + address_size'magnitude + 1 /* checksum */));
       var new = SREC_Record { tag = rec, count = count, data = digits, eol = eol };
       new.set_address (base_address + off);
+      apush (records, new);
+    }
+
+  /* Add a record for the start address.  */
+  if (start_address != 0#B)
+    {
+      var rec = (address_size == 16#b ? stoca ("S9")
+                 : address_size == 24#b ? stoca ("S8")
+                 : stoca ("S7"));
+
+      var new = SREC_Record { tag = rec };
+      new.set_address (start_address);
       apush (records, new);
     }
 
