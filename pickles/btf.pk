@@ -86,7 +86,7 @@ type BTF_Array =
   struct
   {
     BTF_Type_Id elem_type;
-    uint<32> index_type;
+    BTF_Type_Id index_type;
     uint<32> nelems;
   };
 
