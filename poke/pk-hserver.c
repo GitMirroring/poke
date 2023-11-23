@@ -345,6 +345,7 @@ hserver_thread_worker (void *data)
       if (hserver_finish)
         {
           pthread_mutex_unlock (&hserver_mutex);
+          pk_unregister_thread ();
           pthread_exit (NULL);
         }
       pthread_mutex_unlock (&hserver_mutex);

@@ -1,5 +1,10 @@
 2023-11-23  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-hserver.c (hserver_thread_worker): Call
+	pk_unregister_thread before pthread_exit.
+
+2023-11-23  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* pickles/srec.pk (srec_encode): Create start address records.
 
 2023-11-23  Jose E. Marchesi  <jemarch@gnu.org>
