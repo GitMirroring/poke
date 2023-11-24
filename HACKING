@@ -103,9 +103,10 @@ _________________
 15. Debugging poke
 .. 1. Building with Debugging support
 .. 2. Invoking GDB to debug an uninstalled poke
-.. 3. Using GDB extensions
-.. 4. Valgrind and Poke
-.. 5. Debugging PVM Assembly Code
+.. 3. Debugging poke with GDB
+.. 4. Using GDB extensions
+.. 5. Valgrind and Poke
+.. 6. Debugging PVM Assembly Code
 ..... 1. PVM definition tips
 16. Profiling poke
 .. 1. Building with profiling support
@@ -2211,7 +2212,22 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   `----
 
 
-15.3 Using GDB extensions
+15.3 Debugging poke with GDB
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Once GDB is invoked in either an installed or uninstalled poke, you
+  can debug it normally.
+
+  Something to keep in mind, however, is that the Boehm GC we use uses
+  SIGPWR for internal purposes, in order to stop all threads before
+  starting collecting memory.  Normally this signal is delivered right
+  after the system is powered on and booted, and it is almost always
+  ignored by processes.  However, when you run poke under GDB, GDB will
+  stop once SIGPWR is signaled to the current thread.  If this happens,
+  just (c)ontinue.
+
+
+15.4 Using GDB extensions
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
   In order to use the GDB pretty-printers and other goodies brought to
@@ -2223,7 +2239,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   `----
 
 
-15.4 Valgrind and Poke
+15.5 Valgrind and Poke
 ~~~~~~~~~~~~~~~~~~~~~~
 
   The PVM uses the Boehm conservative garbage collector in order to
@@ -2262,7 +2278,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   Then run `make check' as usual.
 
 
-15.5 Debugging PVM Assembly Code
+15.6 Debugging PVM Assembly Code
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   Hacking some areas of the compiler, such as the code generator pass,
@@ -2348,7 +2364,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   are not boxed and not what the instruction expects.  Mystery solved.
 
 
-15.5.1 PVM definition tips
+15.6.1 PVM definition tips
 --------------------------
 
   When using advanced Jitter dispatches it becomes important that every

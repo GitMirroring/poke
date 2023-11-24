@@ -1755,6 +1755,19 @@ pkl_ast_make_array_type (pkl_ast ast, pkl_ast_node etype, pkl_ast_node bound)
 
    : $ ./libtool --mode=execute ./run gdb poke/poke
 
+** Debugging poke with GDB
+
+   Once GDB is invoked in either an installed or uninstalled poke, you
+   can debug it normally.
+
+   Something to keep in mind, however, is that the Boehm GC we use
+   uses SIGPWR for internal purposes, in order to stop all threads
+   before starting collecting memory.  Normally this signal is
+   delivered right after the system is powered on and booted, and it
+   is almost always ignored by processes.  However, when you run poke
+   under GDB, GDB will stop once SIGPWR is signaled to the current
+   thread.  If this happens, just (c)ontinue.
+
 ** Using GDB extensions
 
    In order to use the GDB pretty-printers and other goodies brought
