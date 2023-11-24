@@ -19,7 +19,7 @@ picklesdir = $(pkgdatadir)/pickles
 dist_pickles_DATA = ctf.pk ctf-dump.pk leb128.pk \
                     bpf.pk btf.pk btf-ext.pk btf-dump.pk bmp.pk gcov.pk \
                     color.pk rgb24.pk id3v1.pk ios.pk diff.pk pk-table.pk \
-		    sframe.pk sframe-dump.pk \
+		    sframe.pk sframe-dump.pk orc.pk \
                     time.pk argp.pk pktest.pk mbr.pk ustar.pk \
                     mcr.pk id3v2.pk jffs2.pk asn1-ber.pk \
                     openpgp.pk search.pk riscv.pk coff.pk coff-i386.pk coff-aarch64.pk \

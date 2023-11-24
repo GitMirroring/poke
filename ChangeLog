@@ -1,3 +1,8 @@
+2023-11-24  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* pickles/orc.pk: New file.
+	* pickles/Makefile.am (dist_pickles_DATA): Add orc.pk.
+
 2023-11-23  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* poke/pk-hserver.c (hserver_thread_worker): Call

@@ -1,0 +1,58 @@
+/* orc.pk - Oops Rewidn Capability for GNU poke.  */
+
+/* Copyright (C) 2023 Jose E. Marchesi.  */
+
+/* Contributed by Oracle Inc.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* This file contains a description of the Linux kernel ORC unwinwing
+   format, as documented by the file
+   Documentation/x86/orc-unwinder.rst in the kernel source tree.  */
+
+/* ORC unwind data is split in two different sections:
+
+   .orc_unwind
+      Contains an array of ORC_Entry structs.
+
+   .orc_unwind_ip
+      Contains an array of instruction addresses associated with
+      the ORC_Entry structs above.
+
+   This is for performance reasons.  */
+
+var ORC_REG_UNDEFINED = 0,
+    ORC_REG_PREV_SP = 1,
+    ORC_REG_DX = 2,
+    ORC_REG_DI = 3,
+    ORC_REG_BP = 4,
+    ORC_REG_SP = 5,
+    ORC_REG_R10 = 6,
+    ORC_REG_R13 = 7,
+    ORC_REG_BP_INDIRECT = 8,
+    ORC_REG_SP_INDIRECT = 9,
+    ORC_REG_MAX = 15;
+
+type ORC_Entry =
+  struct
+  {
+    uint<16> sp_offset;
+    uint<16> bp_offset;
+    uint<4> bp_reg : bp_reg <= ORC_REG_MAX;
+    uint<4> sp_reg : sp_reg <= ORC_REG_MAX;
+    uint<5>;
+    uint<1> end;
+    uint<2> entry_type;
+  };
