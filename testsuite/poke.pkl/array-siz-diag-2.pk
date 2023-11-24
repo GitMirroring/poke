@@ -1,0 +1,4 @@
+/* { dg-do compile } */
+
+type foo = struct { uint<8>[11#b] i; /* { dg-error "do not fit" } */
+};

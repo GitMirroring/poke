@@ -1,0 +1,10 @@
+/* { dg-do run } */
+
+/* This is, for now, not detectable at compile time, but
+   raises an exception at run-time.  */
+
+var x = 1#b;
+type foo = struct { uint<8>[2#B + x] i; };
+
+/* { dg-command {try foo{}; catch if E_constraint { print "caught\n"; } } } */
+/* { dg-output "caught" } */

@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-data {c*} {0x00 0x00 0x00 0x01} } */
 
-type Foo = struct { byte[3#b] bad; };
+type Foo = struct { byte[3#B] bad : bad[0] != 0; };
 
 var tag = 3;
 type Bar = union { Foo foo : tag == 0; int bar : tag == 2; };

@@ -3526,12 +3526,17 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify2_ps_type)
 }
 PKL_PHASE_END_HANDLER
 
-/* Static array indexes should be non-negative.  */
+/* Static array indexes should be non-negative.
+
+   Array types bounded by a constant size and that have elements of a
+   complete type are checked that the size of the array is an exact
+   multiple of the element size.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_typify2_ps_type_array)
 {
   pkl_ast_node array = PKL_PASS_NODE;
   pkl_ast_node bound = PKL_AST_TYPE_A_BOUND (array);
+  pkl_ast_node etype = PKL_AST_TYPE_A_ETYPE (array);
 
   if (bound)
     {
@@ -3545,6 +3550,31 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify2_ps_type_array)
                      "array dimensions may not be negative");
           PKL_TYPIFY_PAYLOAD->errors++;
           PKL_PASS_ERROR;
+        }
+    }
+
+  if (bound
+      && PKL_AST_CODE (bound) == PKL_AST_OFFSET
+      && PKL_AST_TYPE_COMPLETE (etype) == PKL_AST_TYPE_COMPLETE_YES)
+    {
+      pkl_ast_node bound_magnitude = PKL_AST_OFFSET_MAGNITUDE (bound);
+      pkl_ast_node bound_unit = PKL_AST_OFFSET_UNIT (bound);
+      pkl_ast_node etype_size = pkl_ast_sizeof_type (PKL_PASS_AST, etype);
+
+      if (PKL_AST_CODE (bound_magnitude) == PKL_AST_INTEGER
+          && PKL_AST_CODE (bound_unit) == PKL_AST_INTEGER
+          && PKL_AST_CODE (etype_size) == PKL_AST_INTEGER
+          && PKL_AST_INTEGER_VALUE (etype_size) > 0)
+        {
+          if (((PKL_AST_INTEGER_VALUE (bound_magnitude)
+                * PKL_AST_INTEGER_VALUE (bound_unit))
+               % PKL_AST_INTEGER_VALUE (etype_size)) != 0)
+            {
+              PKL_ERROR (PKL_AST_LOC (bound),
+                         "array elements do not fit in specified size");
+              PKL_TYPIFY_PAYLOAD->errors++;
+              PKL_PASS_ERROR;
+            }
         }
     }
 }
