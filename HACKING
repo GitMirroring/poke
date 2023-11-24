@@ -2219,12 +2219,20 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   can debug it normally.
 
   Something to keep in mind, however, is that the Boehm GC we use uses
-  SIGPWR for internal purposes, in order to stop all threads before
-  starting collecting memory.  Normally this signal is delivered right
-  after the system is powered on and booted, and it is almost always
-  ignored by processes.  However, when you run poke under GDB, GDB will
-  stop once SIGPWR is signaled to the current thread.  If this happens,
-  just (c)ontinue.
+  SIGPWR and SIGXCPU for internal purposes, in order to stop all threads
+  before starting collecting memory.  Proper handlers are installed by
+  the GC for these signals.  However, when you run poke under GDB, GDB
+  will stop once SIGPWR or SIGXCPU are signaled to the current thread.
+
+  You can teach GDB to ignore these signals by issuing this command:
+
+  ,----
+  | handle SIGPWR noprint pass
+  | handle SIGXCPU noprint pass
+  `----
+
+
+  Alternatively, you can just (c)ontinue.
 
 
 15.4 Using GDB extensions
