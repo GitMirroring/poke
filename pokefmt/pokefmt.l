@@ -499,7 +499,8 @@ poke_init (struct poke *pk, const char *poke_src_file, FILE *output)
                               ":", poke_picklesdir, NULL);
     if (new_path == NULL)
       err (1, "pk_str_concat() failed");
-    pk_decl_set_val (pk->compiler, "load_path", pk_make_string (new_path));
+    pk_decl_set_val (pk->compiler, "load_path",
+                     pk_make_string (pk->compiler, new_path));
 
     free (new_path);
     free (user_load_path);

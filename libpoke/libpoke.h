@@ -741,7 +741,7 @@ void pk_set_pretty_print (pk_compiler pkc, int pretty_print_p) LIBPOKE_API;
    Return PK_NULL if SIZE exceeds the maximum number of bits supported
    in Poke integers.  */
 
-pk_val pk_make_int (int64_t value, int size) LIBPOKE_API;
+pk_val pk_make_int (pk_compiler pkc, int64_t value, int size) LIBPOKE_API;
 
 /* Return the numerical value stored in the given Poke integer.
    VAL should be a Poke value of the right type.  */
@@ -763,7 +763,7 @@ int pk_int_size (pk_val val) LIBPOKE_API;
    Return NULL if SIZE exceeds the maximum number of bits supported in
    Poke integers.  */
 
-pk_val pk_make_uint (uint64_t value, int size) LIBPOKE_API;
+pk_val pk_make_uint (pk_compiler pkc, uint64_t value, int size) LIBPOKE_API;
 
 /* Return the numerical value stored in the given Poke unsigned
    integer.
@@ -784,7 +784,7 @@ int pk_uint_size (pk_val val) LIBPOKE_API;
    STR is a NULL-terminated string, a copy of which will become the
    value of the Poke string.  */
 
-pk_val pk_make_string (const char *str) LIBPOKE_API;
+pk_val pk_make_string (pk_compiler pkc, const char *str) LIBPOKE_API;
 
 /* Return a NULL-terminated string with the value of the given Poke
    string.  */
@@ -804,7 +804,8 @@ const char *pk_string_str (pk_val val) LIBPOKE_API;
    If any of the arguments is not of the right type return PK_NULL.
    Otherwise return the created offset.  */
 
-pk_val pk_make_offset (pk_val magnitude, pk_val unit) LIBPOKE_API;
+pk_val pk_make_offset (pk_compiler pkc, pk_val magnitude,
+                       pk_val unit) LIBPOKE_API;
 
 /* Return the magnitude of the given Poke offset.  */
 
@@ -826,7 +827,8 @@ pk_val pk_offset_unit (pk_val val) LIBPOKE_API;
    The fields and methods in the created struct are initialized to
    PK_NULL.  */
 
-pk_val pk_make_struct (pk_val nfields, pk_val type) LIBPOKE_API;
+pk_val pk_make_struct (pk_compiler pkc, pk_val nfields,
+                       pk_val type) LIBPOKE_API;
 
 /* Get the number of fields of a struct. */
 
@@ -941,7 +943,8 @@ void pk_struct_set_field_value (pk_val sct, uint64_t idx,
    ARRAY_TYPE is the type of the array.  Note, this is an array type,
    not the type of the elements.  */
 
-pk_val pk_make_array (pk_val nelem, pk_val array_type) LIBPOKE_API;
+pk_val pk_make_array (pk_compiler pkc, pk_val nelem,
+                      pk_val array_type) LIBPOKE_API;
 
 /* Get the number of elements in the given array value, as an
    uint<64>.  */
@@ -1007,7 +1010,8 @@ uint64_t pk_sizeof (pk_val val) LIBPOKE_API;
    SIGNED_P is an int<32> with a boolean specifying whether the type
    is signed or not.  */
 
-pk_val pk_make_integral_type (pk_val size, pk_val signed_p) LIBPOKE_API;
+pk_val pk_make_integral_type (pk_compiler pkc, pk_val size,
+                              pk_val signed_p) LIBPOKE_API;
 
 /* Return an uint<64> containing the size, in bits, of the given
    integral type.  */
@@ -1023,13 +1027,13 @@ pk_val pk_integral_type_signed_p (pk_val type) LIBPOKE_API;
 
 /* Build and return the string type.  */
 
-pk_val pk_make_string_type (void) LIBPOKE_API;
+pk_val pk_make_string_type (pk_compiler pkc) LIBPOKE_API;
 
 /* The `any' type.  */
 
 /* Build and return the `any' type.  */
 
-pk_val pk_make_any_type (void) LIBPOKE_API;
+pk_val pk_make_any_type (pk_compiler pkc) LIBPOKE_API;
 
 /* Offset types.  */
 
@@ -1044,7 +1048,8 @@ pk_val pk_make_any_type (void) LIBPOKE_API;
    REF_TYPE is either PK_NULL or the type of the referenced type if the
    offset is also a reference or pointer.  */
 
-pk_val pk_make_offset_type (pk_val base_type, pk_val unit, pk_val ref_type) LIBPOKE_API;
+pk_val pk_make_offset_type (pk_compiler pkc, pk_val base_type, pk_val unit,
+                            pk_val ref_type) LIBPOKE_API;
 
 /* Get the base type of a given offset type.  */
 
@@ -1066,8 +1071,8 @@ pk_val pk_offset_type_unit (pk_val type) LIBPOKE_API;
 
    FTYPES is a C array containing the types of each struct field. */
 
-pk_val pk_make_struct_type (pk_val nfields, pk_val name, pk_val *fnames,
-                            pk_val *ftypes) LIBPOKE_API;
+pk_val pk_make_struct_type (pk_compiler pkc, pk_val nfields, pk_val name,
+                            pk_val *fnames, pk_val *ftypes) LIBPOKE_API;
 
 /* Get the type of a struct.
    This function is DEPRECATED; please use pk_typeof instead.  */
@@ -1151,7 +1156,8 @@ void pk_struct_type_set_ftype (pk_val type, uint64_t idx,
    - A closure ()offset<uint<64>,1> to denote an array type bounded by
      size.  */
 
-pk_val pk_make_array_type (pk_val etype, pk_val bound) LIBPOKE_API;
+pk_val pk_make_array_type (pk_compiler pkc, pk_val etype,
+                           pk_val bound) LIBPOKE_API;
 
 /* Get the type of the elements of the given array type.  */
 

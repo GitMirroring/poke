@@ -90,7 +90,7 @@ static int
 pk_hserver_token_p (int token)
 {
   pk_val cls = pk_decl_val (poke_compiler, "hserver_token_p");
-  pk_val token_val = pk_make_int (token, 32);
+  pk_val token_val = pk_make_int (poke_compiler, token, 32);
   pk_val token_p, exit_exception;
   int ret;
 
@@ -106,7 +106,7 @@ static char
 pk_hserver_token_kind (int token)
 {
   pk_val cls = pk_decl_val (poke_compiler, "hserver_token_kind");
-  pk_val token_val = pk_make_int (token, 32);
+  pk_val token_val = pk_make_int (poke_compiler, token, 32);
   pk_val token_kind, exit_exception;
   int ret;
 
@@ -122,7 +122,7 @@ static const char *
 pk_hserver_cmd (int token)
 {
   pk_val cls = pk_decl_val (poke_compiler, "hserver_token_cmd");
-  pk_val token_val = pk_make_int (token, 32);
+  pk_val token_val = pk_make_int (poke_compiler, token, 32);
   pk_val cmd, exit_exception;
   int ret;
 
@@ -138,7 +138,7 @@ static pk_val
 pk_hserver_function (int token)
 {
   pk_val cls = pk_decl_val (poke_compiler, "hserver_token_function");
-  pk_val token_val = pk_make_int (token, 32);
+  pk_val token_val = pk_make_int (poke_compiler, token, 32);
   pk_val function, exit_exception;
   int ret;
 
@@ -368,7 +368,7 @@ pk_hserver_init (void)
       pk_fatal (NULL);
     }
   pk_decl_set_val (poke_compiler, "hserver_hostname",
-                   pk_make_string (hostname));
+                   pk_make_string (poke_compiler, hostname));
 }
 
 void
@@ -398,8 +398,9 @@ pk_hserver_start (void)
       pk_fatal (NULL);
     }
 
-  pk_decl_set_val (poke_compiler, "hserver_port",
-                   pk_make_int (ntohs (clientname.sin_port), 32));
+  pk_decl_set_val (
+      poke_compiler, "hserver_port",
+      pk_make_int (poke_compiler, ntohs (clientname.sin_port), 32));
 
   hserver_finish = 0;
   ret = pthread_create (&hserver_thread,
@@ -443,8 +444,8 @@ pk_hserver_make_hyperlink (char type,
   pk_val hyperlink, kind_val, cmd_val, exit_exception;
   int ret;
 
-  kind_val = pk_make_uint (type, 8);
-  cmd_val = pk_make_string (cmd);
+  kind_val = pk_make_uint (poke_compiler, type, 8);
+  cmd_val = pk_make_string (poke_compiler, cmd);
 
   assert (cls != PK_NULL);
   ret = pk_call (poke_compiler, cls, &hyperlink, &exit_exception,

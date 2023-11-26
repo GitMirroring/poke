@@ -1,3 +1,50 @@
+2023-11-26  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/libpoke.h (pk_make_int): Add new param of type `pk_compiler'.
+	(pk_make_uint): Likewise.
+	(pk_make_string): Likewise.
+	(pk_make_offset): Likewise.
+	(pk_make_struct): Likewise.
+	(pk_make_array): Likewise.
+	(pk_make_integral_type): Likewise.
+	(pk_make_string_type): Likewise.
+	(pk_make_any_type): Likewise.
+	(pk_make_offset_type): Likewise.
+	(pk_make_struct_type): Likewise.
+	(pk_make_array_type): Likewise.
+	* libpoke/pk-val.c (pk_make_int): Likewise.
+	(pk_make_uint): Likewise.
+	(pk_make_string): Likewise.
+	(pk_make_offset): Likewise.
+	(pk_make_struct): Likewise.
+	(pk_make_array): Likewise.
+	(pk_make_integral_type): Likewise.
+	(pk_make_string_type): Likewise.
+	(pk_make_any_type): Likewise.
+	(pk_make_offset_type): Likewise.
+	(pk_make_struct_type): Likewise.
+	(pk_make_array_type): Likewise.
+	(pk_val_offset): Update.
+	* poke/pk-cmd-help (pk_cmd_help): Likewise.
+	(pk_cmd_set): Likewise.
+	* poke/pk-hserver.c (pk_hserver_token_p): Likewise.
+	(pk_hserver_token_kind): Likewise.
+	(pk_hserver_cmd): Likewise.
+	(pk_hserver_function): Likewise.
+	(pk_hserver_init): Likewise.
+	(pk_hserver_start): Likewise.
+	(pk_hserver_make_hyperlink): Likewise.
+	* poke/poke.c (pk_set_var_int): Likewise.
+	(set_script_args): Likewise.
+	(initialize): Likewise.
+	* poked/poked.c (poked_init): Likewise.
+	* pokefmt/pokefmt.l (poke_init): Likewise.
+	* testsuite/poke.libpoke/values.c (test_simple_values): Likewise.
+	(test_simple_values_mapping): Likewise.
+	(test_pk_typeof): Likewise.
+	(main): Pass `pk_compiler' to `test_simple_values',
+	`test_simple_values_mapping' and `test_pk_typeof'.
+
 2023-11-25  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pvm.jitter (endhl): Do not raise exceptions.

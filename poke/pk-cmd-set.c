@@ -69,7 +69,7 @@ pk_cmd_set (int int_p,
       assert (registry_get != PK_NULL);
 
       if (pk_call (poke_compiler, registry_get, &retval, &exit_exception,
-                   2, pk_make_string (setting_name), registry)
+                   2, pk_make_string (poke_compiler, setting_name), registry)
           == PK_ERROR
           || exit_exception != PK_NULL)
         /* This shouldn't happen.  */
@@ -87,16 +87,16 @@ pk_cmd_set (int int_p,
       const char *retmsg;
 
       if (int_p)
-        val = pk_make_int (PK_CMD_ARG_INT (argv[1]), 32);
+        val = pk_make_int (poke_compiler, PK_CMD_ARG_INT (argv[1]), 32);
       else
-        val = pk_make_string (PK_CMD_ARG_STR (argv[1]));
+        val = pk_make_string (poke_compiler, PK_CMD_ARG_STR (argv[1]));
 
       registry_set = pk_struct_ref_field_value (registry, "set");
       assert (registry_set != PK_NULL);
 
-      if (pk_call (poke_compiler, registry_set, &retval, &exit_exception,
-                   3, pk_make_string (setting_name), val, registry)
-          == PK_ERROR
+      if (pk_call (poke_compiler, registry_set, &retval, &exit_exception, 3,
+                   pk_make_string (poke_compiler, setting_name), val, registry)
+              == PK_ERROR
           || exit_exception != PK_NULL)
         /* This shouldn't happen, since we know `newval' is of the
            right type.  */

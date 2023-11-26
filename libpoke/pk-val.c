@@ -24,7 +24,7 @@
 #include "libpoke.h"
 
 pk_val
-pk_make_int (int64_t value, int size)
+pk_make_int (pk_compiler pkc __attribute__ ((unused)), int64_t value, int size)
 {
   return pvm_make_signed_integral (value, size);
 }
@@ -48,7 +48,8 @@ pk_int_size (pk_val val)
 }
 
 pk_val
-pk_make_uint (uint64_t value, int size)
+pk_make_uint (pk_compiler pkc __attribute__ ((unused)), uint64_t value,
+              int size)
 {
   return pvm_make_unsigned_integral (value, size);
 }
@@ -72,7 +73,7 @@ pk_uint_size (pk_val val)
 }
 
 pk_val
-pk_make_string (const char *str)
+pk_make_string (pk_compiler pkc __attribute__ ((unused)), const char *str)
 {
   return pvm_make_string (str);
 }
@@ -84,7 +85,8 @@ pk_string_str (pk_val val)
 }
 
 pk_val
-pk_make_offset (pk_val magnitude, pk_val unit)
+pk_make_offset (pk_compiler pkc __attribute__ ((unused)), pk_val magnitude,
+                pk_val unit)
 {
   if (!PVM_IS_INTEGRAL (magnitude)
       || !PVM_IS_ULONG (unit)
@@ -174,10 +176,10 @@ pk_val_offset (pk_val val)
   /* XXX "upunit" properly so we get a nice unit, not just bytes or
      bits.  */
   if (bit_offset % 8 == 0)
-    return pk_make_offset (pvm_make_ulong (bit_offset / 8, 64),
+    return pk_make_offset (/*pkc*/ NULL, pvm_make_ulong (bit_offset / 8, 64),
                            pvm_make_ulong (8, 64));
   else
-    return pk_make_offset (val_offset, pvm_make_ulong (1, 64));
+    return pk_make_offset (/*pkc*/ NULL, val_offset, pvm_make_ulong (1, 64));
 }
 
 void
@@ -282,7 +284,8 @@ pk_val_equal_p (pk_val val1, pk_val val2)
 }
 
 pk_val
-pk_make_struct (pk_val nfields, pk_val type)
+pk_make_struct (pk_compiler pkc __attribute__ ((unused)), pk_val nfields,
+                pk_val type)
 {
   return pvm_make_struct (nfields, pvm_make_ulong (0, 64), type);
 }
@@ -355,13 +358,15 @@ pk_struct_set_field_value (pk_val sct, uint64_t idx, pk_val value)
 }
 
 pk_val
-pk_make_array (pk_val nelem, pk_val array_type)
+pk_make_array (pk_compiler pkc __attribute__ ((unused)), pk_val nelem,
+               pk_val array_type)
 {
   return pvm_make_array (nelem, array_type);
 }
 
 pk_val
-pk_make_integral_type (pk_val size, pk_val signed_p)
+pk_make_integral_type (pk_compiler pkc __attribute__ ((unused)), pk_val size,
+                       pk_val signed_p)
 {
   return pvm_make_integral_type (size, signed_p);
 }
@@ -379,13 +384,14 @@ pk_integral_type_signed_p (pk_val type)
 }
 
 pk_val
-pk_make_string_type (void)
+pk_make_string_type (pk_compiler pkc __attribute__ ((unused)))
 {
   return pvm_make_string_type ();
 }
 
 pk_val
-pk_make_offset_type (pk_val base_type, pk_val unit, pk_val ref_type)
+pk_make_offset_type (pk_compiler pkc __attribute__ ((unused)),
+                     pk_val base_type, pk_val unit, pk_val ref_type)
 {
   return pvm_make_offset_type (base_type, unit, ref_type);
 }
@@ -403,7 +409,8 @@ pk_offset_type_unit (pk_val type)
 }
 
 pk_val
-pk_make_struct_type (pk_val nfields, pk_val name, pk_val *fnames, pk_val *ftypes)
+pk_make_struct_type (pk_compiler pkc __attribute__ ((unused)), pk_val nfields,
+                     pk_val name, pk_val *fnames, pk_val *ftypes)
 {
   return pvm_make_struct_type (nfields, name, fnames, ftypes);
 }
@@ -465,7 +472,8 @@ pk_struct_type_set_ftype (pk_val type, uint64_t idx, pk_val field_type)
 }
 
 pk_val
-pk_make_array_type (pk_val etype, pk_val bound)
+pk_make_array_type (pk_compiler pkc __attribute__ ((unused)), pk_val etype,
+                    pk_val bound)
 {
   return pvm_make_array_type (etype, bound);
 }

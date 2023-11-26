@@ -332,7 +332,7 @@ void
 pk_set_var_int (const char *name, int value)
 {
   pk_decl_set_val (poke_compiler, name,
-                   pk_make_int (value, 32));
+                   pk_make_int (poke_compiler, value, 32));
 }
 
 static void
@@ -357,13 +357,14 @@ set_script_args (int argc, char *argv[])
   /* Any argument after SCRIPT is an argument for the script.  */
   i = i + 2;
   nargs = argc - i;
-  argv_array = pk_make_array (pk_make_uint (nargs, 64),
-                              pk_make_array_type (pk_make_string_type (),
-                                                  array_type_bounder));
+  argv_array = pk_make_array (
+      poke_compiler, pk_make_uint (poke_compiler, nargs, 64),
+      pk_make_array_type (poke_compiler, pk_make_string_type (poke_compiler),
+                          array_type_bounder));
 
   for (index = 0; i < argc; ++i, ++index)
     pk_array_insert_elem (argv_array, index,
-                          pk_make_string (argv[i]));
+                          pk_make_string (poke_compiler, argv[i]));
 
   pk_defvar (poke_compiler, "argv", argv_array);
 }
@@ -619,7 +620,8 @@ initialize (int argc, char *argv[])
 
   /* Make poke_interactive_p available to poke programs.  */
   if (pk_defvar (poke_compiler, "poke_interactive_p",
-                 pk_make_int (poke_interactive_p, 32)) == PK_ERROR)
+                 pk_make_int (poke_compiler, poke_interactive_p, 32))
+      == PK_ERROR)
     pk_fatal ("defining poke_interactive_p");
 
   /* Add the directories where poke installs .pk files to the
@@ -647,7 +649,7 @@ initialize (int argc, char *argv[])
     pk_assert_alloc (newpaths);
 
     pk_decl_set_val (poke_compiler,
-                     "load_path", pk_make_string (newpaths));
+                     "load_path", pk_make_string (poke_compiler, newpaths));
     free (newpaths);
   }
 
@@ -704,13 +706,13 @@ initialize (int argc, char *argv[])
     pk_decl_set_val (poke_compiler, "pk_network_endian", network_endian);
 
     pk_decl_set_val (poke_compiler, "pk_auto_map_p",
-                     pk_make_int (poke_default_auto_map_p, 32));
+                     pk_make_int (poke_compiler, poke_default_auto_map_p, 32));
 
     pk_decl_set_val (poke_compiler, "pk_have_libnbd_p",
 #if defined HAVE_LIBNBD
-                     pk_make_int (1, 32)
+                     pk_make_int (poke_compiler, 1, 32)
 #else
-                     pk_make_int (0, 32)
+                     pk_make_int (poke_compiler, 0, 32)
 #endif
                      );
   }
@@ -739,7 +741,7 @@ initialize (int argc, char *argv[])
 
   /* Set the value of the Poke variable pk_hserver_p.  */
   pk_decl_set_val (poke_compiler, "pk_hserver_p",
-                   pk_make_int (poke_hserver_p, 32));
+                   pk_make_int (poke_compiler, poke_hserver_p, 32));
 #endif
 }
 

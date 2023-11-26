@@ -39,7 +39,7 @@
 /* Test simple type constructors, getters and setters.  */
 
 void
-test_simple_values ()
+test_simple_values (pk_compiler pkc)
 {
   static const char *awesome = "Poke is awesome!";
   const size_t bigstr_len = 1u << 20; /* 1 MiB */
@@ -60,40 +60,40 @@ test_simple_values ()
   /* Signed integers */
 
   /* Exceeding maximum number of bits supported in poke integers.  */
-  T ("pk_make_int_0", pk_make_int (0, 65) == PK_NULL);
+  T ("pk_make_int_0", pk_make_int (pkc, 0, 65) == PK_NULL);
 
-  val = pk_make_int (666, 32);
+  val = pk_make_int (pkc, 666, 32);
   T ("pk_make_int_1", val != PK_NULL);
   T ("pk_int_value_1", pk_int_value (val) == 666);
   T ("pk_int_size_1", pk_int_size (val) == 32);
   T ("pk_val_offset", pk_val_offset (val) == PK_NULL);
 
-  val = pk_make_int (-666, 32);
+  val = pk_make_int (pkc, -666, 32);
   T ("pk_make_int_2", val != PK_NULL);
   T ("pk_int_value_2", pk_int_value (val) == -666);
   T ("pk_int_size_2", pk_int_size (val) == 32);
 
   /* Unsigned integers */
 
-  val = pk_make_uint (UINT64_MAX, 63);
+  val = pk_make_uint (pkc, UINT64_MAX, 63);
   T ("pk_make_uint_0", val != PK_NULL);
   T ("pk_uint_value_0", pk_uint_value (val) == (UINT64_MAX >> 1));
   T ("pk_uint_size_0", pk_uint_size (val) == 63);
   T ("pk_val_offset", pk_val_offset (val) == PK_NULL);
 
-  val = pk_make_uint (0, 64);
+  val = pk_make_uint (pkc, 0, 64);
   T ("pk_make_uint_1", val != PK_NULL);
   T ("pk_uint_value_1", pk_uint_value (val) == 0);
   T ("pk_uint_size_1", pk_uint_size (val) == 64);
 
-  val = pk_make_uint (0xabcdef, 24);
+  val = pk_make_uint (pkc, 0xabcdef, 24);
   T ("pk_make_uint_2", val != PK_NULL);
   T ("pk_uint_value_2", pk_uint_value (val) == 0xabcdef);
   T ("pk_uint_size_2", pk_uint_size (val) == 24);
 
   /* Strings */
 
-  val = pk_make_string (awesome);
+  val = pk_make_string (pkc, awesome);
   T ("pk_make_string_0", val != PK_NULL);
   T ("pk_string_str_0", STREQ (pk_string_str (val), awesome));
   T ("pk_val_offset", pk_val_offset (val) == PK_NULL);
@@ -106,7 +106,7 @@ test_simple_values ()
     memset (bigstr, 'P', bigstr_len);
     bigstr[bigstr_len] = '\0';
 
-    val = pk_make_string (bigstr);
+    val = pk_make_string (pkc, bigstr);
 
     memset (bigstr, 'p', bigstr_len);
     free (bigstr);
@@ -124,27 +124,27 @@ test_simple_values ()
 
   /* Offsets */
 
-  mag = pk_make_uint (0, 64);
-  unit = pk_make_int (1, 64);
+  mag = pk_make_uint (pkc, 0, 64);
+  unit = pk_make_int (pkc, 1, 64);
 
   assert (mag != PK_NULL);
   assert (unit != PK_NULL);
 
-  val = pk_make_offset (mag, unit);
+  val = pk_make_offset (pkc, mag, unit);
   T ("pk_make_offset_0", val == PK_NULL); /* Because of signed unit */
 
-  unit = pk_make_uint (0, 64);
+  unit = pk_make_uint (pkc, 0, 64);
   assert (unit != PK_NULL);
 
-  val = pk_make_offset (mag, unit);
+  val = pk_make_offset (pkc, mag, unit);
   T ("pk_make_offset_1", val == PK_NULL);
 
-  mag = pk_make_uint (UINT64_MAX, 64);
-  unit = pk_make_uint (UINT64_MAX, 64);
+  mag = pk_make_uint (pkc, UINT64_MAX, 64);
+  unit = pk_make_uint (pkc, UINT64_MAX, 64);
   assert (mag != PK_NULL);
   assert (unit != PK_NULL);
 
-  val = pk_make_offset (mag, unit);
+  val = pk_make_offset (pkc, mag, unit);
   T ("pk_val_offset", pk_val_offset (val) == PK_NULL);
   T ("pk_make_offset_2", val != PK_NULL);
   T ("pk_offset_magnitude_2",
@@ -155,19 +155,19 @@ test_simple_values ()
 }
 
 void
-test_simple_values_mapping ()
+test_simple_values_mapping (pk_compiler pkc)
 {
   pk_val simple_values[] = {
-    pk_make_int (1, 23),
-    pk_make_int (2, 46),
-    pk_make_uint (3, 23),
-    pk_make_uint (4, 46),
-    pk_make_string ("Poke"),
-    pk_make_offset (pk_make_uint (5, 64), pk_make_uint (6, 64)),
+    pk_make_int (pkc, 1, 23),
+    pk_make_int (pkc, 2, 46),
+    pk_make_uint (pkc, 3, 23),
+    pk_make_uint (pkc, 4, 46),
+    pk_make_string (pkc, "Poke"),
+    pk_make_offset (pkc, pk_make_uint (pkc, 5, 64), pk_make_uint (pkc, 6, 64)),
   };
   const int N = sizeof (simple_values) / sizeof (simple_values[0]);
-  pk_val i32 = pk_make_int (7, 32);
-  pk_val u64 = pk_make_uint (8, 64);
+  pk_val i32 = pk_make_int (pkc, 7, 32);
+  pk_val u64 = pk_make_uint (pkc, 8, 64);
 
 /* test case */
 #define T0(cond, ...)                                                         \
@@ -277,10 +277,10 @@ error:
 }
 
 void
-test_pk_typeof ()
+test_pk_typeof (pk_compiler pkc)
 {
-  pk_val uint32_type = pk_make_integral_type (pk_make_uint (32, 64),
-                                              pk_make_int (1, 32));
+  pk_val uint32_type = pk_make_integral_type (pkc, pk_make_uint (pkc, 32, 64),
+                                              pk_make_int (pkc, 1, 32));
   pk_val res;
 
   /* If given a type, pk_typeof should return the type itself.  */
@@ -324,7 +324,7 @@ test_pk_struct_ref_set_field_value ()
       goto done;
     }
 
-  pk_struct_ref_set_field_value (sct, "bar", pk_make_int (666, 32));
+  pk_struct_ref_set_field_value (sct, "bar", pk_make_int (pkc, 666, 32));
   val = pk_struct_ref_field_value (sct, "bar");
   if (val == PK_NULL)
     {
@@ -395,10 +395,20 @@ test_pk_val_equal_p ()
 int
 main (int argc, char *argv[])
 {
-  test_simple_values ();
-  test_simple_values_mapping ();
+  pk_compiler pkc;
+
+  pkc = pk_compiler_new (&poke_term_if);
+  if (pkc)
+  {
+    test_simple_values (pkc);
+    test_simple_values_mapping (pkc);
+    test_pk_typeof (pkc);
+  }
+  else
+    fail ("pk_compiler_new failed");
+  pk_compiler_free (pkc);
+
   test_pk_val_equal_p ();
-  test_pk_typeof ();
   test_pk_struct_ref_set_field_value ();
 
   totals ();

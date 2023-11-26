@@ -969,7 +969,8 @@ poked_init (int pdap_version)
     char *newpath = pk_str_concat (pk_string_str (load_path), ":",
                                    poked_appdir, ":", poke_picklesdir, NULL);
 
-    pk_decl_set_val (pkc, "load_path", pk_make_string (newpath));
+    pk_decl_set_val (pkc, "load_path",
+                     pk_make_string (pkc, newpath));
     free (newpath);
   }
 
@@ -998,8 +999,9 @@ poked_init (int pdap_version)
     }
 
   pk_decl_set_val (pkc, "__poked_pdap_version",
-                   pk_make_int (pdap_version, 32));
-  pk_decl_set_val (pkc, "__poked_libpoke_version", pk_make_string (VERSION));
+                   pk_make_int (pkc, pdap_version, 32));
+  pk_decl_set_val (pkc, "__poked_libpoke_version",
+                   pk_make_string (pkc, VERSION));
 
   return OK;
 }
