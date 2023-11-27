@@ -231,7 +231,9 @@ immutable fun term_begin_class = (string class) void:
 
 immutable fun term_end_class = (string class) void:
 {
-  asm ("endsc" :: class);
+  if (!asm int<32>: ("endsc" : class))
+    raise Exception { code = EC_inval,
+                      name = "invalid class" };
 }
 
 immutable fun term_begin_hyperlink = (string url, string id = "") void:
@@ -241,7 +243,9 @@ immutable fun term_begin_hyperlink = (string url, string id = "") void:
 
 immutable fun term_end_hyperlink = void:
 {
-  asm ("endhl");
+  if (!asm int<32>: ("endhl"))
+     raise Exception { code = EC_inval,
+                      name = "no current hyperlink" };
 }
 
 immutable fun vm_obase = int<32>:

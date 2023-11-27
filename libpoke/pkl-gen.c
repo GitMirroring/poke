@@ -1797,9 +1797,20 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_print_stmt)
 
           if (end_sc)
             {
+              pvm_program_label label
+                = pkl_asm_fresh_label (PKL_GEN_ASM);
+
               pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
                             pvm_make_string (end_sc));
               pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ENDSC);
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BNZI, label);
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                            pvm_make_exception (PVM_E_GENERIC,
+                                                "invalid class",
+                                                PVM_E_GENERIC_ESTATUS, NULL, NULL));
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_RAISE);
+              pkl_asm_label (PKL_GEN_ASM, label);
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
             }
 
           if (exp)

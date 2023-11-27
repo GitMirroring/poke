@@ -157,8 +157,6 @@ wrapped-globals
   pvm_literal_code
   pvm_literal_enomem
   pvm_literal_no_toplevel_var
-  pvm_literal_nohyperlink
-  pvm_literal_invalid_class
   pvm_literal_eindex
   pvm_literal_notmappable
   pvm_literal_newline
@@ -788,8 +786,6 @@ late-c
     static const char *pvm_literal_code = "code";
     static const char *pvm_literal_enomem = "out of memory";
     static const char *pvm_literal_no_toplevel_var = "no top-level variable found";
-    static const char *pvm_literal_nohyperlink = "no current hyperlink";
-    static const char *pvm_literal_invalid_class = "invalid class";
     static const char *pvm_literal_eindex = "invalid index in ains";
     static const char *pvm_literal_notmappable = "not mappable value";
     static const char *pvm_literal_newline = "\n";
@@ -2139,19 +2135,15 @@ end
 # End the current hyperlink.
 #
 # If no hyperlink is currently being generated, this instruction
-# raises an exception.
+# pushes int<32>1 in the stack, otherwise it pushes int<32>0.
 #
 # Stack: ( -- )
 # Exceptions: PVM_E_GENERIC
 
 instruction endhl ()
   non-relocatable
-  branching # because of PVM_RAISE_DIRECT
   code
-    if (!pk_term_end_hyperlink ())
-      PVM_RAISE (PVM_E_GENERIC,
-                 pvm_literal_nohyperlink,
-                 PVM_E_GENERIC_ESTATUS);
+    JITTER_PUSH_STACK (pvm_make_int (!!pk_term_end_hyperlink (), 32));
   end
 end
 
@@ -2176,17 +2168,18 @@ end
 # End the styling class whose name is found on the stack.  This class
 # should have been previously began by a `begsc' instruction.
 #
-# Stack: ( STR -- )
+# If the specified class is not currently being used, this function
+# pushes int<32>0 on the stack.  Otherwise it pushes int<32>1.
+#
+# Stack: ( STR -- INT )
 
 instruction endsc ()
   non-relocatable
-  branching # because of PVM_RAISE_DIRECT
   code
-    if (!pk_term_end_class (PVM_VAL_STR (JITTER_TOP_STACK ())))
-      PVM_RAISE (PVM_E_INVAL,
-                 pvm_literal_invalid_class,
-                 PVM_E_INVAL_ESTATUS);
+    pvm_val str = JITTER_TOP_STACK ();
+
     JITTER_DROP_STACK ();
+    JITTER_PUSH_STACK (pvm_make_int (!!pk_term_end_class (PVM_VAL_STR (str)), 32));
   end
 end
 
