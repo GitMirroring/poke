@@ -1320,26 +1320,28 @@ struct pk_iod_if
   /* Determine whether the provided HANDLER is recognized as a valid
      device spec by this backend, and if so, return its normalized
      form (caller will free).  In case of error, return NULL.  This function
-     sets the ERROR to error code or to IOD_OK.  */
+     sets the ERROR to error code or to PK_IOD_OK.  */
   char * (*handler_normalize) (const char *handler, uint64_t flags, int* error);
 
   /* Open a device using the provided HANDLER.  Return the opened
      device, or NULL in case of errors.  Set the ERROR to error code or to
-     IOD_OK.  Note that this function assumes that HANDLER is recognized as a
-     handler by the backend.  DATA is the `data' pointer below, intended to be
-     used as an IOD-specific payload specified by the author of IOD.  */
+     PK_IOD_OK.  Note that this function assumes that HANDLER is recognized as
+     a handler by the backend.  DATA is the `data' pointer below, intended to
+     be used as an IOD-specific payload specified by the author of IOD.  */
   void * (*open) (const char *handler, uint64_t flags, int *error, void *data);
 
   /* Close the given device.  Return the error code if there was an error
-     during the operation, IOD_OK otherwise.  */
+     during the operation, PK_IOD_OK otherwise.  */
   int (*close) (void *dev);
 
   /* Read a small byte buffer from the given device at the given byte offset.
-     Return 0 on success, or IOD_EOF on error, including on short reads.  */
+     Return PK_IOD_OK on success, or PK_IOD_EOF on error, including on short
+     reads.  */
   int (*pread) (void *dev, void *buf, size_t count, pk_iod_off offset);
 
   /* Write a small byte buffer to the given device at the given byte offset.
-     Return 0 on success, or IOD_EOF on error, including short writes.  */
+     Return PK_IOS_OK on success, or PK_IOD_EOF on error, including short
+     writes.  */
   int (*pwrite) (void *dev, const void *buf, size_t count, pk_iod_off offset);
 
   /* Return the flags of the device, as it was opened.  */
@@ -1350,7 +1352,7 @@ struct pk_iod_if
 
   /* If called on a in-stream, free the buffer before OFFSET.  If called on
      an out-stream, flush the data till OFFSET and free the buffer before
-     OFFSET.  Otherwise, do not do anything.  Return IOS_OK in success and
+     OFFSET.  Otherwise, do not do anything.  Return PK_IOS_OK in success and
      an error code on failure.  */
   int (*flush) (void *dev, pk_iod_off offset);
 

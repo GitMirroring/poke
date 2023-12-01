@@ -1,3 +1,8 @@
+2023-12-01  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/libpoke.h (struct pk_iod_if): Fix comments by referring to
+	`PK_IOD_*' return values instead of `IOD_*'.
+
 2023-11-26  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/libpoke.h (pk_make_int): Add new param of type `pk_compiler'.
