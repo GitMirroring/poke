@@ -3781,7 +3781,7 @@ pkl_ast_print (FILE *fp, pkl_ast_node ast)
   if (str == NULL)
     /* The only possible error here is out-of-memory.  */
     xalloc_die ();
-  fprintf (fp, str);
+  fputs (str, fp);
   free (str);
 }
 
