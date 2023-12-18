@@ -32,3 +32,7 @@ pk-strings: pk-strings.in Makefile
 pk-bin2poke: pk-bin2poke.in Makefile
 	$(do_subst) < $(srcdir)/pk-bin2poke.in > pk-bin2poke
 	chmod +x pk-bin2poke
+
+pk-jojopatch: pk-jojopatch.in Makefile
+	$(do_subst) < $(srcdir)/pk-jojopatch.in > pk-jojopatch
+	chmod +x pk-jojopatch

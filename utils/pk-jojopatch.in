@@ -1,0 +1,93 @@
+#!@bindir@/poke -L
+!#
+
+/* pk-jojopatch - Apply JojoDiff patch file.  */
+
+/* Copyright (C) 2023 The poke authors.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+load argp;
+load jojodiff;
+
+var opt_verbosity = 0,
+    opt_dry_run_p = 0;
+
+var options = [
+  Argp_Option {
+    name = "v",
+    long_name = "verbose",
+    summary = "increase verbosity by one level",
+    handler = lambda (string arg) void: { opt_verbosity++; },
+  },
+  Argp_Option {
+    name = "d",
+    long_name = "dry-run",
+    summary = "apply the patch without generating the NEW_FILE",
+    handler = lambda (string arg) void: { opt_dry_run_p = 1; },
+  },
+];
+
+argv = (
+  argp_parse
+    :program "pk-jojopatch"
+    :summary "Apply JojoDiff patch file on original file to generate new file."
+    :opts options
+    :argv argv
+);
+
+var ok_p = (opt_dry_run_p => argv'length == 2)
+           && (!opt_dry_run_p => argv'length == 3);
+
+if (!ok_p)
+  {
+    printf ("Usage: pk-jojopatch [-v] ORIGNAL_FILE PATCH_FILE NEW_FILE\n");
+    printf ("       pk-jojopatch  -d  ORIGNAL_FILE PATCH_FILE\n");
+    exit (1);
+  }
+
+vm_set_obase (10);
+vm_set_opprint (1);  /* Enable pretty-printer.  */
+
+var orig_file = open (argv[0], IOS_M_RDONLY),
+    patch_file = open (argv[1], IOS_M_RDONLY);
+
+var patch = Jojo_Patch @ patch_file : 0#B;
+
+if (opt_dry_run_p)
+  {
+    for (hunk in patch)
+      printf ("Hunk:%v\n", hunk);
+  }
+else
+  {
+    var new_file = open (argv[2], IOS_M_RDWR | IOS_F_CREATE),
+        sz = 0UL#B;
+
+    sz = (
+      jojo_patch_apply
+        :patch patch
+        :orig_ios orig_file
+        :new_ios new_file
+        :verbosity opt_verbosity
+    );
+
+    close (new_file);
+
+    printf ("Wrote %v in %s\n", sz, argv[2]);
+  }
+
+close (patch_file);
+close (orig_file);
