@@ -1,3 +1,8 @@
+2023-12-22  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* utils/Makefile.am (bin_SCRIPTS): Add `pk-jojopatch'.
+	(EXTRA_DIST): Add `pk-jojopatch.in'.
+
 2023-12-18  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* pickles/jojodiff.pk: New pickle for JojoDiff utility.
