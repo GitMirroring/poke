@@ -1,5 +1,14 @@
 2023-12-28  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pkl-ast.h (pkl_ast_format_loc): Change first input
+	param from `pkl_ast' to `const char *'.  Pass filename
+	directly.
+	* libpoke/pkl-ast.c (pkl_ast_format_loc): Use the provided
+	filename and remove the extra ": ".
+	* libpoke/pkl-gen.c (pkl_gen_ps_func): Adapt.
+
+2023-12-28  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-gen.h (struct pkl_gen_payload): Add new field
 	`filename'.
 	* libpoke/pkl-gen.c (pkl_gen_ps_src): Populate `filename'

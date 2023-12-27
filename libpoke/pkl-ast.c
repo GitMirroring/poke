@@ -3027,13 +3027,13 @@ pkl_ast_lvalue_p (pkl_ast_node node)
 }
 
 char *
-pkl_ast_format_loc (pkl_ast ast, pkl_ast_loc loc)
+pkl_ast_format_loc (const char *filename, pkl_ast_loc loc)
 {
   char *s = NULL;
 
   assert (PKL_AST_LOC_VALID (loc));
-  if (asprintf (&s, "%s:%d:%d: ",
-                ast->filename ? ast->filename : "<stdin>",
+  if (asprintf (&s, "%s:%d:%d",
+                filename ? filename : "<stdin>",
                 loc.first_line, loc.first_column) == -1)
     return NULL;
 

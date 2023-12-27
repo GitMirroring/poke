@@ -2267,8 +2267,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_func)
 
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, pvm_make_string ("msg"));
       if (PKL_AST_LOC_VALID (function_location))
-        locstr = pkl_ast_format_loc (PKL_PASS_AST, function_location);
+        locstr = pkl_ast_format_loc (PKL_GEN_PAYLOAD->filename,
+                                     function_location);
       msg = pk_str_concat (locstr == NULL ? "" : locstr,
+                           locstr == NULL ? "" : ": ",
                            "in function ",
                            function_name == NULL ? "lambda" : function_name,
                            NULL);
