@@ -1530,6 +1530,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_asm_stmt)
       ass_stmt = pkl_ast_make_ass_stmt (PKL_PASS_AST,
                                         output,
                                         NULL /* exp */);
+      PKL_AST_LOC (ass_stmt) = PKL_AST_LOC (asm_stmt);
       /* Note the reverse order.  */
       assignments = pkl_ast_chainon (ass_stmt, assignments);
     }
@@ -1799,6 +1800,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans2_ps_incrdecr)
       PKL_AST_TYPE (exp_plus_one) = ASTREF (incrdecr_exp_type);
       ass_stmt = pkl_ast_make_ass_stmt (PKL_PASS_AST,
                                         incrdecr_exp, exp_plus_one);
+      PKL_AST_LOC (ass_stmt) = PKL_AST_LOC (incrdecr);
 
       PKL_AST_INCRDECR_ASS_STMT (incrdecr) = ASTREF (ass_stmt);
       PKL_PASS_RESTART = 1;

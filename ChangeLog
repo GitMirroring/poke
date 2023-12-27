@@ -1,5 +1,11 @@
 2023-12-28  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pkl-trans.c (pkl_trans1_ps_asm_stmt): Add location info
+	to ass-stmt.
+	(pkl_trans2_ps_incrdecr): Likewise.
+
+2023-12-28  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-tab.y (pkl_make_assertion): Fix typo.
 	(expression): Fix location for unary/binary/ternary
 	expressions.
