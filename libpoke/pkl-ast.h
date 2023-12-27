@@ -1678,7 +1678,7 @@ pkl_ast_node pkl_ast_make_incrdecr (pkl_ast ast,
                                     pkl_ast_node exp, int order, int sign);
 
 
-/* PKL_AST_COMPOUND_STMT nodes represent compound statements in the
+/* PKL_AST_COMP_STMT nodes represent compound statements in the
    language.
 
    STMTS is a possibly empty chain of statements.

@@ -1,3 +1,12 @@
+2023-12-28  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-ast.h: Fix comment:
+	s/PKL_AST_COMPOUND_STMT/PKL_AST_COMP_STMT/.
+	* libpoke/pkl-trans.h (struct pkl_trans_function_ctx): Remove
+	unnecessary field `next'.
+	* poke/pk-help.pk (Poke_HelpEntry::is_line_p): Remove extra
+	semi-colon.
+
 2023-12-22  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* utils/Makefile.am (bin_SCRIPTS): Add `pk-jojopatch'.

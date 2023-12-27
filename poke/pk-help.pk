@@ -28,7 +28,7 @@ type Poke_HelpEntry =
   struct
   {
     fun is_line_p = (string s) int<32>:
-      { return strchr (s, '\n') == s'length;; }
+      { return strchr (s, '\n') == s'length; }
 
     string category;
     string topic;

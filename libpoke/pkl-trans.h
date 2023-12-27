@@ -49,8 +49,6 @@ struct pkl_trans_function_ctx
   int ndrops;
   int npopes;
   int back;
-
-  struct pkl_trans_function_ctx *next;
 };
 
 /* The trans phases keep a stack of escapable entities (loops and
