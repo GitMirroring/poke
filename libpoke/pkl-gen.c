@@ -140,6 +140,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_src)
 {
   PKL_GEN_PAYLOAD->in_file_p
     = (PKL_AST_SRC_FILENAME (PKL_PASS_NODE) != NULL);
+  PKL_GEN_PAYLOAD->filename = PKL_AST_SRC_FILENAME (PKL_PASS_NODE);
 }
 PKL_PHASE_END_HANDLER
 
@@ -161,6 +162,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_program)
   PKL_GEN_PAYLOAD->in_file_p
     = (!pkl_compiling_statement_p (PKL_GEN_PAYLOAD->compiler)
        && !pkl_compiling_expression_p (PKL_GEN_PAYLOAD->compiler));
+  PKL_GEN_PAYLOAD->filename = PKL_PASS_AST->filename;
 }
 PKL_PHASE_END_HANDLER
 

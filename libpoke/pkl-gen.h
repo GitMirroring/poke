@@ -74,7 +74,10 @@
    constructor generation handlers.
 
    IN_FILE_P indicates whether the current source is a file, as
-   opposed to stdin (i.e. as opposed of compiling a statement.)  */
+   opposed to stdin (i.e. as opposed of compiling a statement.)
+
+   FILENAME is the current active filename (it can change because
+   of PKL_AST_SRC nodes).  */
 
 
 struct pkl_gen_payload
@@ -91,6 +94,7 @@ struct pkl_gen_payload
   int constructor_depth;
   int mapper_depth;
   int in_file_p;
+  char *filename;
   pkl_env env;
 };
 

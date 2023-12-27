@@ -1,5 +1,13 @@
 2023-12-28  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pkl-gen.h (struct pkl_gen_payload): Add new field
+	`filename'.
+	* libpoke/pkl-gen.c (pkl_gen_ps_src): Populate `filename'
+	field.
+	(pkl_gen_pr_program): Likewise.
+
+2023-12-28  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-ast.h: Fix comment:
 	s/PKL_AST_COMPOUND_STMT/PKL_AST_COMP_STMT/.
 	* libpoke/pkl-trans.h (struct pkl_trans_function_ctx): Remove
