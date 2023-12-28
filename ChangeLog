@@ -1,5 +1,11 @@
 2023-12-28  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pkl-tab.y (pkl_make_assertion): Fix typo.
+	(expression): Fix location for unary/binary/ternary
+	expressions.
+
+2023-12-28  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-ast.h (pkl_ast_format_loc): Change first input
 	param from `pkl_ast' to `const char *'.  Pass filename
 	directly.

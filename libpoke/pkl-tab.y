@@ -168,7 +168,7 @@ pkl_make_assertion (struct pkl_parser *parser, pkl_ast_node cond, pkl_ast_node m
       char *loc_source = pkl_loc_to_source (parser, exp_loc, 80);
       char *escaped_loc_source = NULL;
 
-      /* Escape backslash characters in loc_source, wince we are using
+      /* Escape backslash characters in loc_source, since we are using
          it in a Poke string literal.  */
       {
         size_t escaped_size = 0, i, j;
@@ -819,21 +819,21 @@ expression:
                   {
                   $$ = pkl_ast_make_unary_exp (pkl_parser->ast,
                                                $1, $2);
-                  PKL_AST_LOC ($$) = @1;
+                  PKL_AST_LOC ($$) = @$;
                 }
         | expression ATTR
                 {
                   $$ = pkl_ast_make_binary_exp (pkl_parser->ast, PKL_AST_OP_ATTR,
                                                 $1, $2);
                   PKL_AST_LOC ($2) = @2;
-                  PKL_AST_LOC ($$) = @2;
+                  PKL_AST_LOC ($$) = @$;
                 }
         | expression ATTR '(' expression ')'
                 {
                   $$ = pkl_ast_make_ternary_exp (pkl_parser->ast, PKL_AST_OP_ATTR,
                                                  $1, $2, $4);
                   PKL_AST_LOC ($2) = @2;
-                  PKL_AST_LOC ($$) = @2;
+                  PKL_AST_LOC ($$) = @$;
                 }
         | expression '+' expression
                 {
