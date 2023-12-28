@@ -1,3 +1,36 @@
+2024-03-15  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* pickles/jojodiff.pk (Jojo_Length2): Add initializer to
+	constraint.
+	(Jojo_Length2): Likewise.
+	(Jojo_Length3): Likewise.
+	(Jojo_Length5): Likewise.
+	(Jojo_Length9): Likewise.
+	(jojo_length_encode): New function to encode length according to
+	the Jojo format.
+	(Jojo_EscapedByte): Remove.
+	(Jojo_Datum): Auxiliary type for `Jojo_Bytes'.
+	(Jojo_Bytes): Type to describe sequence of data bytes in Jojo
+	format.
+	(Jojo_Bytes_Callback): Auxiliary type for `jojo_bytes_map' function.
+	(jojo_bytes_map): Add function to run the provided callback
+	for each decoded byte in `Jojo_Bytes'.
+	(jojo_bytes): Add function to encode bytes as `Jojo_Bytes'.
+	(Jojo_MOD): Use `Jojo_Bytes' instead of `Jojo_Byte[]'.
+	(Jojo_INS): Likewise.
+	(Jojo_MOD.get_count): Update accordingly.
+	(Jojo_INS.get_count): Likewise.
+	(Jojo_Hunk): Add `Jojo_Bytes' field to comply with the latest
+	version of JojoDiff generator.
+	(Jojo_Hunk_Orig): Add type to describe original format of JojoDiff.
+	(jojo_patch_from_orig): Add conversion function to transform
+	from `Jojo_Patch_Orig' to `Jojo_Patch'.
+	(jojo_patch_apply): Update to support new `Jojo_Patch' and make
+	verbosity more fine-grained.
+	* testsuite/poke.pickles/jojodiff-test.pk: Add tests for JojoDiff
+	pickle.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
+
 2024-03-05  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* autogen.sh: Updated by `./bootstrap --bootstrap-sync'.

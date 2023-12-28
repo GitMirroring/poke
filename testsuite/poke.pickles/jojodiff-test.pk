@@ -1,0 +1,131 @@
+/* jojo-test.pk - Tests for the JojoDiff pickle.  */
+
+/* Copyright (C) 2024 The poke authors */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+load pktest;
+load jojodiff;
+
+/* TODO(@mnabipoor): Add tests for patch data.  */
+
+var tests = [
+  PkTest {
+    name = "jojo_length_encode",
+    func = lambda (string name) void:
+      {
+        {
+          var l = jojo_length_encode (10#B);
+
+          assert (l isa Jojo_Length);
+
+          assert (!(l.len1 ?! E_elem));
+          assert (l.len1.x == 9);
+          assert (l.len1.value == 10#B);
+          assert (l.get_length == 10#B);
+        }
+
+        {
+          var l = jojo_length_encode (252#B);
+
+          assert (!(l.len1 ?! E_elem));
+          assert (l.len1.x == 251);
+          assert (l.len1.value == 252#B);
+          assert (l.get_length == 252#B);
+        }
+
+        {
+          var l = jojo_length_encode (253#B);
+
+          assert (l.len1 ?! E_elem);
+          assert (!(l.len2 ?! E_elem));
+          assert (l.len2.x == 0);
+          assert (l.len2.value == 253#B);
+          assert (l.get_length == 253#B);
+        }
+
+        {
+          var l = jojo_length_encode (508#B);
+
+          assert (l.len1 ?! E_elem);
+          assert (!(l.len2 ?! E_elem));
+          assert (l.len2.x == 255);
+          assert (l.len2.value == 508#B);
+          assert (l.get_length == 508#B);
+        }
+
+        {
+          var l = jojo_length_encode (509#B);
+
+          assert (l.len1 ?! E_elem);
+          assert (l.len2 ?! E_elem);
+          assert (!(l.len3 ?! E_elem));
+          assert (l.len3.x == 509);
+          assert (l.len3.value == 509#B);
+          assert (l.get_length == 509#B);
+        }
+
+        {
+          var l = jojo_length_encode (0x10000#B - 1#B);
+
+          assert (l.len1 ?! E_elem);
+          assert (l.len2 ?! E_elem);
+          assert (!(l.len3 ?! E_elem));
+          assert (l.len3.x == 0xffff);
+          assert (l.len3.value == 0xffff#B);
+          assert (l.get_length == 0xffff#B);
+        }
+
+        {
+          var l = jojo_length_encode (0x10000#B);
+
+          assert (l.len1 ?! E_elem);
+          assert (l.len2 ?! E_elem);
+          assert (l.len3 ?! E_elem);
+          assert (!(l.len5 ?! E_elem));
+          assert (l.len5.x == 0x10000);
+          assert (l.len5.value == 0x10000#B);
+          assert (l.get_length == 0x10000#B);
+        }
+
+        {
+          var l = jojo_length_encode (0x100000000#B - 1#B);
+
+          assert (l.len1 ?! E_elem);
+          assert (l.len2 ?! E_elem);
+          assert (l.len3 ?! E_elem);
+          assert (!(l.len5 ?! E_elem));
+          assert (l.len5.x == 0xffffffff);
+          assert (l.len5.value == 0xffffffff#B);
+          assert (l.get_length == 0xffffffff#B);
+        }
+
+        {
+          var l = jojo_length_encode (0x100000000#B);
+
+          assert (l.len1 ?! E_elem);
+          assert (l.len2 ?! E_elem);
+          assert (l.len3 ?! E_elem);
+          assert (l.len5 ?! E_elem);
+          assert (!(l.len9 ?! E_elem));
+          assert (l.len9.x == 0x100000000);
+          assert (l.len9.value == 0x100000000#B);
+          assert (l.get_length == 0x100000000#B);
+        }
+      },
+  },
+];
+
+exit (pktest_run (tests) ? 0 : 1);
