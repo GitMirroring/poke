@@ -19,9 +19,8 @@
 /* Reference:
      - https://jojodiff.sourceforge.net/
      - https://github.com/vibhorkalley/jojodiff
-     - https://github.com/janjongboom/janpatch
+     - https://github.com/janjongboom/janpatch (see issue 16)
  */
-
 
 load ios;
 
@@ -51,7 +50,7 @@ type Jojo_Length1 =
 type Jojo_Length2 =
   struct
   {
-    uint<8> prefix : prefix == 252UB;
+    uint<8> prefix == 252UB;
     uint<8> x;
 
     computed Jojo_Offset value;
@@ -65,7 +64,7 @@ type Jojo_Length2 =
 type Jojo_Length3 =
   struct
   {
-    uint<8> prefix : prefix == 253UB;
+    uint<8> prefix == 253UB;
     big uint<16> x;
 
     computed Jojo_Offset value;
@@ -79,7 +78,7 @@ type Jojo_Length3 =
 type Jojo_Length5 =
   struct
   {
-    uint<8> prefix : prefix == 254UB;
+    uint<8> prefix == 254UB;
     big uint<32> x;
 
     computed Jojo_Offset value;
@@ -93,7 +92,7 @@ type Jojo_Length5 =
 type Jojo_Length9 =
   struct
   {
-    uint<8> prefix : prefix == 255UB;
+    uint<8> prefix == 255UB;
     big uint<64> x;
 
     computed Jojo_Offset value;
@@ -130,30 +129,102 @@ type Jojo_Length =
       }
   };
 
-type Jojo_EscapedByte =
-  struct
-  {
-    uint<8> prefix1 == JOJO_ESC;
-    uint<8> prefix2 == JOJO_ESC;
-    uint<8> value : value in [
-        JOJO_ESC, JOJO_MOD, JOJO_MOD, JOJO_INS, JOJO_DEL, JOJO_EQL, JOJO_BKT];
-  };
+/* Encode the length in Jojo format.
+ *
+ *              0     <  x <= 252           1 byte:   0-251
+ *            252     <  x <= 508           2 bytes:  252, x-253
+ *            508     <  x <  0x10000       3 bytes:  253, xx
+ *        0x10000     <= x <  0x100000000   5 bytes:  254, xxxx
+ *        0x100000000 <= x                  9 bytes:  255, xxxxxxxx
+ */
 
-type Jojo_Byte =
+fun jojo_length_encode = (Jojo_Offset len) Jojo_Length:
+{
+  assert (len != 0#B);
+
+  return len <= 252#B ? Jojo_Length {len1 = Jojo_Length1 {x = len/#B - 1}}
+       : len <= 508#B ? Jojo_Length {len2 = Jojo_Length2 {x = len/#B - 253}}
+       : len < 0x10000#B ? Jojo_Length {len3 = Jojo_Length3 {x = len/#B}}
+       : len < 0x100000000#B ? Jojo_Length {len5 = Jojo_Length5 {x = len/#B}}
+       : Jojo_Length {len9 = Jojo_Length9 {x = len/#B}};
+}
+
+type Jojo_Datum =
   union
   {
-    Jojo_EscapedByte escaped;
+    uint<8>[2] escaped_escape : escaped_escape == [JOJO_ESC, JOJO_ESC];
+    uint<8>[2] pair : pair[0] == JOJO_ESC
+        && !(pair[1] in [JOJO_MOD, JOJO_INS, JOJO_DEL, JOJO_EQL, JOJO_BKT]);
     uint<8> value : value != JOJO_ESC;
   };
 
-fun jojo_bytes = (Jojo_Byte[] jbytes) uint<8>[]:
-{
-  var len = jbytes'length,
-      bytes = uint<8>[len] ();
+/* Jojo-encoded bytes.  */
 
-  for (var i = 0UL; i != len; ++i)
-    bytes[i] = jbytes[i].value;
+type Jojo_Bytes =
+  struct
+  {
+    Jojo_Datum[] data : data'length > 0;
+
+    method get_count = Jojo_Offset:
+      {
+        var len = 0UL#B;
+
+        for (d in data)
+          len += !(d.pair ?! E_elem) ? 2#B : 1#B;
+        return len;
+      }
+  };
+
+type Jojo_Bytes_Callback = (uint<64>/*index*/,uint<8>/*byte*/)void;
+
+/* Traverse Jojo_Bytes's data (Jojo_Datum) and for each byte call provided
+   DO callback. */
+
+fun jojo_bytes_map = (Jojo_Bytes jbytes, Jojo_Bytes_Callback do) void:
+{
+  var i = 0UL;
+
+  for (d in jbytes.data)
+    if (!(d.value ?! E_elem))
+      do (/*index*/ i++, /*byte*/ d.value);
+    else if (!(d.pair ?! E_elem))
+      {
+        do (/*index*/ i++, /*byte*/ d.pair[0]);
+        do (/*index*/ i++, /*byte*/ d.pair[1]);
+      }
+    else
+      do (/*index*/ i++, /*byte*/ JOJO_ESC);
+}
+
+/* Decode Jojo-encoded bytes into normal byte array.  */
+
+fun jojo_bytes = (Jojo_Bytes jbytes) uint<8>[]:
+{
+  var bytes = uint<8>[jbytes.get_count] ();
+
+  jojo_bytes_map
+    :jbytes jbytes
+    :do lambda (uint<64> i, uint<8> byte) void:
+          {
+            bytes[i] = byte;
+          };
   return bytes;
+}
+
+/* Encode provided BYTES in Jojo format.  */
+
+fun jojo_bytes_encode = (uint<8>[] bytes) Jojo_Bytes:
+{
+  var ds = Jojo_Datum[] ();
+
+  for (b in bytes)
+    {
+      if (b == JOJO_ESC)
+        apush (ds, Jojo_Datum {escaped_escape=[JOJO_ESC, JOJO_ESC]});
+      else
+        apush (ds, Jojo_Datum {value=b});
+    }
+  return Jojo_Bytes {data=ds};
 }
 
 /* MOD patch instruction
@@ -165,12 +236,12 @@ type Jojo_MOD =
   {
     uint<8> prefix == JOJO_ESC;
     uint<8> opcode == JOJO_MOD;
-    Jojo_Byte[] bytes;
+    Jojo_Bytes jbytes;
 
     computed Jojo_Offset count;
 
     method get_count = Jojo_Offset:
-      { return bytes'length#B; }  /* Don't use `size' attribute.  */
+      { return jbytes.get_count; }
 
     method _print = void:
       { printf ("#<MOD:%v>", get_count); }
@@ -185,12 +256,12 @@ type Jojo_INS =
   {
     uint<8> prefix == JOJO_ESC;
     uint<8> opcode == JOJO_INS;
-    Jojo_Byte[] bytes;
+    Jojo_Bytes jbytes;
 
     computed Jojo_Offset count;
 
     method get_count = Jojo_Offset:
-      { return bytes'length#B; }  /* Don't use `size' attribute.  */
+      { return jbytes.get_count; }  /* Don't use `size' attribute.  */
 
     method _print = void:
       { printf ("#<INS:%v>", get_count); }
@@ -256,7 +327,28 @@ type Jojo_EQL =
       { printf ("#<EQL:%v>", get_count); }
   };
 
+/* In commit 75e4450b2ff661b9d3d0222ca84865e4131f714c (jojodiff.sf.net),
+   the author changed the format of output in a backward-incompatible way.
+   With that commit, ESC-MOD sequence is the default operation when a new
+   operation sequence is needed:
+     - at the start of a file
+     - after an EQL, DEL or BKT operation
+
+   Use Jojo_{Hunk,Patch} for new data, and Jojo_{Hunk,Patch}_Orig for the
+   original data.  */
+
 type Jojo_Hunk =
+  union
+  {
+    Jojo_MOD mod;
+    Jojo_INS ins;
+    Jojo_DEL del;
+    Jojo_EQL eql;
+    Jojo_BKT bkt;
+    Jojo_Bytes jbytes;
+  };
+
+type Jojo_Hunk_Orig =
   union
   {
     Jojo_MOD mod;
@@ -267,6 +359,36 @@ type Jojo_Hunk =
   };
 
 type Jojo_Patch = Jojo_Hunk[];
+type Jojo_Patch_Orig = Jojo_Hunk_Orig[];
+
+/* Convert original Jojo patch to Jojo_Patch type.
+
+   Useful as a pre-processing step before `jojo_patch_apply'.  */
+
+fun jojo_patch_from_orig = (Jojo_Patch_Orig orig) Jojo_Patch:
+{
+  var hs = Jojo_Hunk[] ();
+
+  for (h in orig)
+    {
+      if (!(h.mod ?! E_elem))
+        apush (hs, Jojo_Hunk {mod=h.mod});
+      else if (!(h.ins ?! E_elem))
+        apush (hs, Jojo_Hunk {ins=h.ins});
+      else if (!(h.del ?! E_elem))
+        apush (hs, Jojo_Hunk {del=h.del});
+      else if (!(h.eql ?! E_elem))
+        apush (hs, Jojo_Hunk {eql=h.eql});
+      else if (!(h.bkt ?! E_elem))
+        apush (hs, Jojo_Hunk {bkt=h.bkt});
+      else
+        assert (0, "unreachable reached!");
+    }
+    return hs;
+}
+
+/* Apply provided Jojo PATCH to construct the new content in NEW_IOS from
+   content of ORIG_IOS.  */
 
 fun jojo_patch_apply = (Jojo_Patch patch,
                         int<32> orig_ios,
@@ -278,55 +400,82 @@ fun jojo_patch_apply = (Jojo_Patch patch,
   for (hunk in patch)
     {
       if (verbosity > 0)
-        printf ("Hunk:%v\n", hunk);
+        {
+          var oacutoff = vm_oacutoff;
+
+          if (verbosity == 1) vm_set_oacutoff (5);
+          printf ("Hunk:%v\n", hunk);
+          if (verbosity == 1) vm_set_oacutoff (oacutoff);
+        }
 
       if (!(hunk.mod ?! E_elem))
         {
-          var mod = hunk.mod,
-              len = mod.bytes'length;
+          var jbytes = hunk.mod.jbytes;
 
           if (verbosity > 1)
-            printf ("MOD :to %v :from %v :bytes %v\n", new_off, orig_off,
-                    jojo_bytes (mod.bytes));
+            {
+              printf ("MOD :to %v :from %v", new_off, orig_off);
+              if (verbosity > 2)
+                {
+                  var bytes = jojo_bytes (jbytes);
+
+                  printf (" :nbytes %v :bytes %v", bytes'size, bytes);
+                }
+              print ("\n");
+            }
 
           /* Add the `bytes' to the new file.
              Advance both cursors.  */
-          for (b in mod.bytes)
-            {
-              uint<8> @ new_ios : new_off = b.value;
-              new_off++;
-              orig_off++;
-            }
+          jojo_bytes_map
+            :jbytes jbytes
+            :do lambda (uint<64> index, uint<8> byte) void:
+                {
+                  uint<8> @ new_ios : new_off = byte;
+                  new_off++;
+                  orig_off++;
+                };
         }
       else if (!(hunk.ins ?! E_elem))
         {
-          var o = orig_off,
-              ins = hunk.ins;
+          var jbytes = hunk.ins.jbytes;
 
           if (verbosity > 1)
-            printf ("INS :to %v :bytes %v\n", new_off, jojo_bytes (ins.bytes));
+            {
+              printf ("INS :to %v", new_off);
+              if (verbosity > 2)
+                {
+                  var bytes = jojo_bytes (jbytes);
+
+                  printf (" :nbytes %v :bytes %v", bytes'size, bytes);
+                }
+              print ("\n");
+            }
 
           /* Add the following bytes to the new file.
              Advance cursor in new file.  */
-          for (b in ins.bytes)
-            {
-              uint<8> @ new_ios : new_off = b.value;
-              new_off++;
-              o++;
-            }
+          jojo_bytes_map
+            :jbytes jbytes
+            :do lambda (uint<64> index, uint<8> byte) void:
+                {
+                  uint<8> @ new_ios : new_off = byte;
+                  new_off++;
+                };
         }
       else if (!(hunk.del ?! E_elem))
         {
+          var len = hunk.del.jojo_length.get_length;
+
           if (verbosity > 1)
             {
-              printf ("DEL :from %v\n", orig_off);
-              ios_dump_bytes :ios orig_ios
-                             :from orig_off
-                             :size hunk.del.jojo_length.get_length
-                             :ascii_p 1;
+              printf ("DEL :from %v :size %v\n", orig_off, len);
+              if (verbosity > 2)
+                ios_dump_bytes :ios orig_ios
+                               :from orig_off
+                               :size len
+                               :ascii_p 1;
             }
 
-          orig_off += hunk.del.jojo_length.get_length;
+          orig_off += len;
         }
       else if (!(hunk.eql ?! E_elem))
         {
@@ -334,7 +483,7 @@ fun jojo_patch_apply = (Jojo_Patch patch,
 
           if (verbosity > 1)
             {
-              printf ("EQL :from %v\n", orig_off);
+              printf ("EQL :from %v :size %v\n", orig_off, len);
               ios_dump_bytes :ios orig_ios
                              :from orig_off
                              :size len
@@ -355,6 +504,34 @@ fun jojo_patch_apply = (Jojo_Patch patch,
 
           assert (orig_off >= len);
           orig_off -= len;
+        }
+      else if (!(hunk.jbytes ?! E_elem))
+        {
+          /* Like JOJO_Mod.  */
+          var jbytes = hunk.jbytes;
+
+          if (verbosity > 1)
+            {
+              printf ("MOD(implicit) :to %v :from %v", new_off, orig_off);
+              if (verbosity > 2)
+                {
+                  var bytes = jojo_bytes (jbytes);
+
+                  printf (" :nbytes %v :bytes %v", bytes'size, bytes);
+                }
+              print ("\n");
+            }
+
+          /* Add the `bytes' to the new file.
+             Advance both cursors.  */
+          jojo_bytes_map
+            :jbytes jbytes
+            :do lambda (uint<64> index, uint<8> byte) void:
+                {
+                  uint<8> @ new_ios : new_off = byte;
+                  new_off++;
+                  orig_off++;
+                };
         }
       else
         assert (0, "unreachable reached!");
