@@ -3127,6 +3127,7 @@ pkl_ast_handle_bconc_ass_stmt (pkl_ast ast, pkl_ast_node ass_stmt)
   pkl_ast_node comp_stmt = pkl_ast_make_comp_stmt (ast, NULL);
   pkl_ast_node ass_stmt_exp = PKL_AST_ASS_STMT_EXP (ass_stmt);
   pkl_ast_node ass_stmt_exp_type = PKL_AST_TYPE (ass_stmt_exp);
+  pkl_ast_node tmp;
 
   assert (PKL_AST_TYPE_CODE (ass_stmt_exp_type) == PKL_TYPE_INTEGRAL);
 
@@ -3135,6 +3136,14 @@ pkl_ast_handle_bconc_ass_stmt (pkl_ast ast, pkl_ast_node ass_stmt)
                                           PKL_AST_ASS_STMT_LVALUE (ass_stmt),
                                           ass_stmt_exp,
                                           PKL_AST_TYPE_I_SIZE (ass_stmt_exp_type));
+
+  /* Set the location of comp_stmt and all the new assignments to the whole
+     original assignment stmt.  */
+  PKL_AST_LOC (comp_stmt) = PKL_AST_LOC (ass_stmt);
+  for (tmp = PKL_AST_COMP_STMT_STMTS (comp_stmt); tmp;
+       tmp = PKL_AST_CHAIN (tmp))
+    PKL_AST_LOC (tmp) = PKL_AST_LOC (ass_stmt);
+
   return comp_stmt;
 }
 
