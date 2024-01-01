@@ -248,6 +248,28 @@ identified by the given URI."
 pk_help_add_topic
   :entry Poke_HelpEntry {
       category = "dot-commands",
+      topic = ".mmap",
+      synopsis = ".mmap FILENAME, BASE, SIZE",
+      summary = "open a device driver or file with memory mapping",
+      description = "\
+Create a IO space providing access to a device driver with mmap function
+or also a file where the mmap is provided by the file system driver.
+
+.mmap /dev/mem, BASE, SIZE
+Mapps physical memory area at BASE address which have to be
+a multiple of the page size.
+
+.mmap /dev/mem, 0x4804c000, 0x1000
+int @ 0x13C#B
+int @ 0x134#B
+Example on a Beaglebone black for watching GPIO registers and possibly further
+changing them.
+"
+    };
+
+pk_help_add_topic
+  :entry Poke_HelpEntry {
+      category = "dot-commands",
       topic = ".close",
       synopsis = ".close [#N]",
       summary = "close an IO space",

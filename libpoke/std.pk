@@ -435,6 +435,13 @@ fun openproc = (uint<64> pid, uint<64> flags = 0) int<32>:
   return open (format ("pid://%u64d", pid), flags);
 }
 
+fun openmmap = (string path,
+                offset<uint<64>,B> base,
+                offset<uint<64>,B> size) int<32>:
+{
+  return open (format ("mmap://%u64d/%u64d/%s", base/#B, size/#B, path));
+}
+
 /*** Miscellanea.  */
 
 var NULL = 0#B;

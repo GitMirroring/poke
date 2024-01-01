@@ -45,6 +45,7 @@ typedef uint64_t ios_dev_off;
 #define IOD_ENOMEM -4 /* Memory allocation failure.  */
 #define IOD_EOF    -5 /* End of file / input.  */
 #define IOD_EINVAL -6 /* Invalid argument.  */
+#define IOD_EMMAP  -7 /* Memory mapping error.  */
 
 /* Each IO backend should implement a device interface, by filling an
    instance of the struct defined below.

@@ -103,6 +103,9 @@ extern struct ios_dev_if ios_dev_nbd; /* ios-dev-nbd.c */
 extern struct ios_dev_if ios_dev_proc; /* ios-dev-proc.c */
 #endif
 extern struct ios_dev_if ios_dev_sub; /* ios-dev-sub.c */
+#ifdef HAVE_MMAP
+extern struct ios_dev_if ios_dev_mmap; /* ios-dev-mmap.c */
+#endif
 
 enum
 {
@@ -112,6 +115,7 @@ enum
   IOS_DEV_NBD,
   IOS_DEV_PROC,
   IOS_DEV_SUB,
+  IOS_DEV_MMAP,
   IOS_DEV_FILE, /* File must be last */
 };
 
@@ -131,6 +135,11 @@ static const struct ios_dev_if *ios_dev_ifs[] =
     [IOS_DEV_PROC] = NULL,
 #endif
     [IOS_DEV_SUB] = &ios_dev_sub,
+#ifdef HAVE_MMAP
+    [IOS_DEV_MMAP] = &ios_dev_mmap,
+#else
+    [IOS_DEV_MMAP] = NULL,
+#endif
     [IOS_DEV_FILE] = &ios_dev_file, /* File must be last */
   };
 

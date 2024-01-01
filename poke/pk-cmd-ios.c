@@ -576,6 +576,55 @@ pk_cmd_nbd (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 }
 #endif /* HAVE_LIBNBD */
 
+#ifdef HAVE_MMAP
+static int
+pk_cmd_mmap (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
+{
+  /* mmap FILENAME BASE SIZE */
+  uint64_t base, size;
+  char *handler;
+  int ios_id;
+
+  assert (argc == 4);
+  assert (PK_CMD_ARG_TYPE (argv[1]) == PK_CMD_ARG_STR);
+
+  /* Create a new IO space.  */
+  const char *filename = PK_CMD_ARG_STR (argv[1]);
+
+  assert (PK_CMD_ARG_TYPE (argv[2]) == PK_CMD_ARG_INT);
+  base = PK_CMD_ARG_INT (argv[2]);
+
+  assert (PK_CMD_ARG_TYPE (argv[3]) == PK_CMD_ARG_INT);
+  size = PK_CMD_ARG_INT (argv[3]);
+
+  if (access (filename, F_OK) == 0)
+
+  if (pk_ios_search (poke_compiler, filename, PK_IOS_SEARCH_F_EXACT) != NULL)
+    {
+      printf (_("File %s already opened.  Use `.ios IOS' to switch.\n"),
+              filename);
+      return 0;
+    }
+
+  /* Build the handler for the mmap IOS.  */
+  if (asprintf (&handler, "mmap://0x%" PRIx64 "/0x%" PRIx64 "/%s",
+                           base, size, filename) == -1)
+    return 0;
+
+  /* Open the IOS.  */
+  ios_id = pk_ios_open (poke_compiler, handler, 0, 1);
+  if (ios_id == PK_IOS_NOID)
+    {
+      pk_printf (_("Error creating mmap IOS %s\n"), handler);
+      free (handler);
+      return 0;
+    }
+  free (handler);
+
+  return 1;
+}
+#endif /* HAVE_MMAP */
+
 const struct pk_cmd ios_cmd =
   {"ios", "?s", "", 0, NULL, NULL, pk_cmd_ios, ".ios IOS", poke_completion_function};
 
@@ -596,6 +645,12 @@ const struct pk_cmd mem_cmd =
 #ifdef HAVE_LIBNBD
 const struct pk_cmd nbd_cmd =
   {"nbd", "s", "", 0, NULL, NULL, pk_cmd_nbd, ".nbd URI", NULL};
+#endif
+
+#ifdef HAVE_MMAP
+const struct pk_cmd mmap_cmd =
+  {"mmap", "s,i,i", "", 0, NULL, NULL, pk_cmd_mmap, ".mmap FILE-NAME, BASE, SIZE",
+   rl_filename_completion_function};
 #endif
 
 const struct pk_cmd close_cmd =

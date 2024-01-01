@@ -209,6 +209,7 @@ Dot-Commands
 * source command::              Executing commands in files.
 * file command::		Opening and selecting file IO spaces.
 * mem command::			Opening and selecting memory IO spaces.
+* mmap command::		Opening and selecting memory mapped devices.
 * nbd command::			Opening and selecting NBD IO spaces.
 * proc command::                Opening and selecting process IO spaces.
 * ios command::			Switching between IO spaces.
@@ -8820,6 +8821,7 @@ au BufRead,BufNewFile *.pk set filetype=poke
 * source command::              Executing commands in files.
 * file command::		Opening and selecting file IO spaces.
 * mem command::			Opening and selecting memory IO spaces.
+* mmap command::		Opening and selecting memory mapped devices.
 * nbd command::			Opening and selecting NBD IO spaces.
 * proc command::                Opening and selecting process IO spaces.
 * sub command::                 Opening IO sub-spaces.
@@ -8874,7 +8876,11 @@ where @var{path} is a path to the file containing the commands.
 @cindex opening files
 @cindex IO space
 The @command{.file} command opens a new IO space backed by a file, or
-switches to a previously opened file.  The syntax is:
+switches to a previously opened file.  When reading or writing the file is
+accessed via the read and write syscalls.  An alternative using the mmap syscall
+is implemented as @command{.mmap} command. @xref{file command}
+The syntax is:
+
 
 @example
 .file @var{path}
@@ -8931,6 +8937,81 @@ the buffer.
 
 When a new memory buffer IOS is opened it becomes the current IO
 space.  @xref{file command}.
+
+@node mmap command
+@section @code{.mmap}
+@cindex @code{.mmap}
+@cindex opening memory mapped device
+@cindex IO space
+The @command{.mmap} command opens a new IO space where the content is memory
+mapped from the device driver or file system.  This is especially useful when a
+kernel driver offers a mmap function for mapping the content of kernel memory
+into userspace.  The most famous example is the mem device with its device node
+/dev/mem.  But there are also many drivers especially in embedded systems using
+it.
+
+In the case of a regular file the mapping is done by the file system driver.
+For regular files the @command{.file} command would be an alternative and should
+deliver the same result.  The difference is that @command{.file} is using read
+and write system calls to retrieve or set the content of the file whereas
+@command{.mmap} is using the mmap system call which is copying the data from the
+file into ram memory.  This is done by the file system driver and on nowadays
+file systems @command{.file} and @command{.mmap} are offered by them. When
+having enough free ram and accessing the file very often the @command{.mmap} is
+supposed to be faster because there are less system calls to be executed.
+@xref{file command}
+
+In the case of a device driver the behavior depends on the implementation of the
+driver.  It particularly depends on the offered read, write and mmap functions.
+With /dev/mem for example @command{.file} and @command{.mmap} should deliver the
+same results.
+But there are many drivers used in embedded systems especially for customer
+hardware which are offering either read and write or mmap. In such a case only
+the corresponding command can be used.
+For example when dealing with large amounts of data (video stream) which should
+be visible to the userspace for further processing it's almost impossible to
+copy every single picture to userspace with a driver read function.  In such
+cases device drivers often only offer a mmap function which avoids the extra
+copying operation.
+
+The syntax is:
+
+@example
+.mmap @var{filename}, @var{base}, @var{size}
+@end example
+
+@noindent
+where @var{filename} is the name of the device node or the file name, @var{base}
+is the starting offset (or base address) of the mapping and @var{size} is the
+length of the mapped area.
+
+The @var{base} has to be a multiple of the MMU page size on the system.  It can
+be retrieved via the C function getpagesize(). On most systems it's 4096 Bytes.
+
+The following example is mapping the GPIO registers via /dev/mem on the
+Beaglebone black board and reading the output enable (GPIO_OE) and data out
+(GPIO_DATAOUT) registers of the IO memory:
+
+@example
+$ poke
+(poke) .mmap /dev/mem, 0x4804c000, 0x1000
+(poke) int @ 0x13C#B
+(poke) int @ 0x134#B
+@end example
+
+When using int on 32 bit systems the full address bus width is used when reading
+and the same applies to 64 bit systems with the long datatype.  All accesses
+with less bytes than the address bus width are done via a byte by byte copy.
+
+Please write to the poke-devel mailing list if you need a different alignment.
+
+Warning:
+One should be aware that when writing to mapped registers one is writing to the
+hardware.  Therefore one should be aware of the meaning of the registers as well
+as the electrical circuit connected. Otherwise the hardware can easily be
+destroyed.  To give an example this could happen when setting a GPIO as output
+with a high signal while in fact it is connected as an input on the electrical
+circuit with low signal.
 
 @node nbd command
 @section @code{.nbd}

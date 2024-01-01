@@ -95,6 +95,8 @@ EXTRA_DIST = \
   poke.cmd/maps-8.pk \
   poke.cmd/maps-9.pk \
   poke.cmd/maps-alien-1.pk \
+  poke.cmd/mmap-1.pk \
+  poke.cmd/mmap-2.pk \
   poke.cmd/nbd-1.pk \
   poke.cmd/save-1.pk \
   poke.cmd/save-2.pk \

@@ -4,6 +4,7 @@ libpoke/ios.c
 libpoke/ios-dev-file.c
 libpoke/ios-dev.h
 libpoke/ios-dev-mem.c
+libpoke/ios-dev-mmap.c
 libpoke/ios-dev-nbd.c
 libpoke/ios.h
 libpoke/pkl-anal.c

@@ -66,6 +66,10 @@ libpoke_la_SOURCES = libpoke.h libpoke.c \
 
 libpoke_la_SOURCES += ../common/pk-utils.c ../common/pk-utils.h
 
+if HAVE_MMAP
+libpoke_la_SOURCES += ios-dev-mmap.c
+endif HAVE_MMAP
+
 if NBD
 libpoke_la_SOURCES += ios-dev-nbd.c
 endif NBD

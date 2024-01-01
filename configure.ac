@@ -196,6 +196,11 @@ else
 fi
 AM_CONDITIONAL([NBD], [test "x$libnbd_enabled" = "xyes"])
 
+dnl Check for mmap
+AC_FUNC_MMAP
+
+AM_CONDITIONAL([HAVE_MMAP], [test "x$ac_cv_func_mmap_fixed_mapped" = "xyes"])
+
 dnl Used in Makefile.am.  See the note there.
 WITH_JITTER=$with_jitter
 AC_SUBST([WITH_JITTER])

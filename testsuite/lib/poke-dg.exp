@@ -71,6 +71,11 @@ proc dg-require { args } {
         # Mark the test as unsupported
         set do-what [list [lindex do-what 0] N P]
     }
+    if {[lindex $args 1] == "memzero" \
+            && ! [file exists "/dev/zero"]} {
+        # Mark the test as unsupported
+        set do-what [list [lindex do-what 0] N P]
+    }
     if {[lindex $args 1] == "nbd" \
             && $::env(NBDKIT) == "no"} {
         # Mark the test as unsupported

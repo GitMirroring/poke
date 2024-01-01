@@ -48,6 +48,9 @@ extern const struct pk_cmd mem_cmd; /* pk-cmd-ios.c */
 #ifdef HAVE_LIBNBD
 extern const struct pk_cmd nbd_cmd; /* pk-cmd-ios.c */
 #endif
+#ifdef HAVE_MMAP
+extern const struct pk_cmd mmap_cmd; /* pk-cmd-mmap.c */
+#endif
 extern const struct pk_cmd close_cmd; /* pk-cmd-file.c */
 extern const struct pk_cmd load_cmd; /* pk-cmd-file.c */
 extern const struct pk_cmd source_cmd; /* pk-cmd-ios.c */
@@ -90,6 +93,9 @@ static const struct pk_cmd *dot_cmds[] =
     &mem_cmd,
 #ifdef HAVE_LIBNBD
     &nbd_cmd,
+#endif
+#ifdef HAVE_MMAP
+    &mmap_cmd,
 #endif
     &null_cmd
   };

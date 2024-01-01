@@ -1310,6 +1310,7 @@ typedef uint64_t pk_iod_off;
 #define PK_IOD_ENOMEM -4
 #define PK_IOD_EOF    -5
 #define PK_IOD_EINVAL -6
+#define PK_IOD_EMMAP  -7
 
 struct pk_iod_if
 {
