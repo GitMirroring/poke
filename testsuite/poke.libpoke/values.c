@@ -1,6 +1,6 @@
 /* values.c -- Unit tests for the PK values iface in libpoke  */
 
-/* Copyright (C) 2020, 2021, 2022, 2023 Jose E. Marchesi */
+/* Copyright (C) 2020, 2021, 2022, 2023, 2024 Jose E. Marchesi */
 
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
