@@ -2,6 +2,7 @@
 _GLOBAL_OFFSET_TABLE_
 __errno_location
 __stack_chk_fail
+__stack_chk_guard
 # Now stuff that is used by the Jittery runtime, outside of
 # instructions.  Note that we also have to add the
 # rpl_* symbols that gnulib may replace, and also the
