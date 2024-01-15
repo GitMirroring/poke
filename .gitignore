@@ -63,6 +63,7 @@ config.h.in
 /GNUmakefile
 /maint.mk
 /man/poke.1
+/man/poked.1
 /run
 /libpoke/pkl-asm.pkc
 /libpoke/pkl-gen.pkc
