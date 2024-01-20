@@ -2817,6 +2817,7 @@ EXTRA_DIST = \
   poke.pktest/pktest-11.pk \
   poke.pktest/pktest-12.pk \
   poke.pokefmt/pokefmt.exp \
+  poke.pvm/pvm.exp \
   poke.pvm/pvm-insns-test.pk \
   poke.repl/repl.exp \
   poke.std/std.exp \
