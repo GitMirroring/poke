@@ -7,6 +7,240 @@ See the manual for detailed information.
   are permitted in any medium without royalty provided the copyright
   notice and this notice are preserved.
 
+ Version 3.90.0 (20 January 2024)
+* User interface updates
+
+  - The `dump' command now accepts an argument :val.  This argument is
+    a mapped value, and makes `dump' to dump the bytes corresponding
+    to the value, using colors for the different fields.  This command
+    is useful in order to get a visual representation of the
+    constituents of the value and their corresponding bytes.
+
+  - The `open' call allocates a new "identifier", which is a positive
+    number, when it opens an IO space.  The identifiers are now
+    allocated consecutively and they are consistently reused, much
+    like file descriptors in POSIX systems.  This means that if the IO
+    spaces 0, 1 and 2 are opened, then 1 gets closed, the next call to
+    `open' will use 1.  Poke programs can rely on this behavior, which
+    is now documented.
+
+  - It is now possible to compare Poke values of type `any' using the
+    equality and inequality operators == and !=.
+
+  - GNU poke now acknowledges the POKE_LOAD_PATH environment variable
+    whose value, if defined, gets prepended to the load_path when poke
+    starts.
+
+  - When the poke compiler finds an error in an inline asm template it
+    now emits a proper parse error.
+
+  - The poked program now recognizes the -S command line option
+    properly.
+
+  - The poked program now uses a socket in /tmp/poked-UID.pic where
+    UID is the user ID of the effective user running the program.
+    This is better than the previous behavior of always using
+    /tmp/poked.ipc, since it allows for several poked instances to be
+    run in the system.
+
+  - The poke program now allows referring to IO spaces by name/handler
+    with $<STR>, where STR is a non-ambiguous prefix of some open IO
+    space handler.  Examples are $</bin/ls> and $<*0*>.
+
+  - A new utility called pokefmt has been added to the GNU poke
+    distribution, which implements a simple template system.  See the
+    manual for details on how to use this utility.
+
+  - The poke prompt can now be customized by the user.  This is done
+    by re-defining a function called pk_prompt.  The default value for
+    this function just returns "(poke)", but it can be made as complex
+    as desired.
+
+  - The poke prompt can now be styled using the `prompt' styling
+    class.
+
+  - The new dot-command `.compiler ast EXPR' will compile EXPR and
+    then print its abstract syntax tree (AST).
+
+  - The dot-command `.info type' now accepts both expressions or Poke
+    type specifiers as argument.  In the first case it prints
+    information about the type of the value to which the expression
+    evaluates.  In the second case it prints information about the
+    type denoted by the given specifier.
+
+  - The dot-command `.info type' no longer shows field pretty-printer
+    methods, nor anonymous fields in the list of methods and fields.
+
+  - A dot-command `.mmap FILENAME, BASE, SIZE' is now available to
+    poke at devices and files that require mmap.  This is the case of
+    many devices provided by kernel drivers.
+
+* Poke Language updates
+
+  - The Poke language now supports using the `t' and `T' suffixes to
+    denote the uint<1> (bit) values 0t and 1t.
+
+  - It is now possible to specify pretty-printers for particular
+    fields in struct type definitions, rather than having to
+    pretty-print the whole value.  To pretty-print a field FNAME, just
+    define the pretty-printer as a method called _print_FNAME.
+
+  - A new immutable variable pk_version is made available, that
+    contains a string with the version of the running poke.
+
+  - A new struct type Pk_Version is defined, that denotes the version
+    of a GNU poke system, or of a pickle.  Accompanying functions
+    pk_version_parse and pk_vercmp are available for parsing
+    PK_Version values from strings and for comparing versions,
+    respectively.  The version comparing function accepts Pk_Version
+    or string formatted versions indistinctly.
+
+  - The new built-in function `rtrace' prints out the current call
+    stack in the PVM, a function name in each line.  It makes use of
+    the new PVM instruction of the same name.
+
+  - The new built-in function `iosearch' allows searching for IO
+    spaces by name/handler from Poke programs.
+
+  - The new built-in `openmmap' function allows to create
+    MMAP-operated IO spaces.
+
+* Standard Poke Library updates
+
+  - New functions `isdigit' and `isxdigit' have been added to the
+    standard library, that check whether a given character is a
+    decimal digit or an hexadecimal digit respectively.
+
+  - New function `strrchr' has been added to the standard library,
+    that finds th elast occurrence of a character in a string and
+    returns either its index or, if the character is not found, minus
+    one.
+
+  - New function `strtoi' has been added to the standard library, that
+    parses a numeric denotation on a string and returns the result and
+    the number of parsed characters.
+
+  - The function `atoi' has been refactored to be defined in terms of
+    `strtoi'.
+
+  - New function `strtok' has been added to the standard library, that
+    helps tokenizing strings.
+
+  - New function `strstr' has been added to the standard library, that
+    searches for a sub-string in some given string.
+
+  - The standard function `stoca' has been changed so it doesn't
+    always require passing an array to it.  If no array is passed then
+    it allocates and returns an array by itself.
+
+* libpoke updates
+
+  - A new service pk_keyword_p is available in libpoke, that tells
+    whether a given name is a keyword in the Poke language.
+
+  - When calling pk_load specifying a module that has already been
+    loaded, it is now loaded again and all the definitions in it are
+    re-defined.  This makes the libpoke service to match the behavior
+    of the `load' Poke language construction.
+
+  - The libpoke library now supports the handling of delimited alien
+    tokens with the form $<[^>]*>.
+
+  - New services pk_register_thread and pk_unregister_thread have been
+    added in order to allow using libpoke in multi-threaded programs.
+
+  - We have done more work to remove global state from libpoke, with
+    the goal that someday it shall be possible for a single program to
+    have several instances of the poke incremental compiler.  We are
+    not there yet, but getting near.
+
+  - New services pk_set_debug_p and pk_get_last_ast_str have been
+    added to libpoke, which set the incremental compiler in debug mode
+    and makes it possible to get a printable representation of the AST
+    (abstract syntax tree) corresponding to the last compiled
+    expression.
+
+  - The pk_ios_search service now gets a flag argument, enabling the
+    user to select between exact or partial matching of the handler
+    while searching for the IOS.
+
+  - New services pk_set_user_data and pk_get_user_data are added in
+    order to set a user-defined payload that gets passed back in
+    several libpoke callbacks.
+
+  - The terminal interface in libpoke has been updated so a reference
+    to the pk_compiler incremental compiler is passed to all the
+    callbacks.
+
+* Pickles updates
+
+  - A new pickle `srec' has been added for editing, encoding and
+    decoding Motorola SREC files.
+
+  - A new pickle `orc' has been added for poking at ORC data, which is
+    the stack unwinding format used within the Linux kernel.
+
+  - A new pickle `gcov' has been added for editing GCOV data (.gcda)
+    and notes (.gcno) files.
+
+  - A new pickle `base64' has been added to poke, that provides
+    functions to encode and decode data in base64 as defined by the
+    RFC 4648.
+
+  - A new pickle `iscan' has been added to poke, that provides a
+    framework implementing Icon-like scanning contexts.
+
+  - A new pickle `iscan-str' has been added to poke, that provides
+    Icon-like scanning capabilities in Poke strings.
+
+  - A new pickle `gpt' pickle has been added to poke at GUID partition
+    tables.
+
+  - A new pickle `jojodiff' has been added to generate and apply
+    JojoDiff binary patches.  An accompanying pk-jojopatch utility is
+    also provided.
+
+  - A new pickle `linux' has been added to poke, that provides
+    internal data structures used by the Linux kernel.
+
+  - The ELF pickle is now developed and distributed separately in its
+    own project: https://jemarch.net/poke-elf.
+
+  - The DWARF pickle is now developed and distributed separately in
+    its own project: https://jemarch.net/poke-dwarf.
+
+  - The sframe pickle has been updated to reflect AArch64 PAuth
+    information.
+
+  - The PE pickle now supports //BASE64 encoded names, which is a
+    Microsoft extension.
+
+  - The BTF pickle now performs more data integrity checks, and also
+    now supports BTF_KIND_ENUM64 entries.
+
+  - All the pickles distributed with GNU poke have been modified so
+    they don't use standard types like `int' or 'long' anymore.  This
+    is to make it possible to use them in non-poke applications
+    integrating with libpoke, like GDB.
+
+* Build system updates
+
+  - A file poke.m4 is now installed, that provides the macros
+    PK_PROG_POKE and PK_CHECK_PICKLE.  These macros are to be used by
+    projects and packages that install GNU poke pickles.  The first
+    macro checks for a particular version of poke, whereas the second
+    checks for the availability of some particular pickle.
+
+* Documentation updates
+
+  - The manual has been fixed to refer to `gettime' instead of
+    `get_time'.  This function changed name in 3.0.
+
+  - The GNU poke manual in `info' format is now installed under its
+    own directory category (GNU poke) rather than under Editors.  This
+    is because other poke related projects like poke-elf and
+    poke-dwarf also install manuals under the new directory category.
+
  Version 3.3 (20 August 2023)
 * Bug fixes
 
