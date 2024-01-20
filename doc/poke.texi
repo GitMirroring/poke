@@ -14123,8 +14123,12 @@ This is equivalent to @code{IOS_F_WRITE}.
 This is equivalent to @code{IOS_F_READ | IOS_F_WRITE}.
 @end table
 
-The @code{open} builtin returns a signed 32-bit integer.  This number
-will identify the just opened IOS until it gets closed.
+The @code{open} builtin returns a non-negative signed 32-bit integer.
+This number will identify the just opened IOS until it gets closed.
+The IO space identifiers are allocated sequentially, and are
+consistently re-used.  This means, for example, that to the sequence
+@code{open; open; open; close (1); open;} the following IO spaces get
+allocated: 0, 1, 2, 1.
 
 If there is a problem opening the specified IO device then @code{open}
 will raise an @code{E_no_ios} exception.
