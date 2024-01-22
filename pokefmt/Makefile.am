@@ -78,6 +78,6 @@ pokefmt_CPPFLAGS = -I$(top_srcdir)/common \
                    -I$(top_builddir)/gl -I$(top_srcdir)/gl \
                    -I$(top_srcdir)/libpoke -I$(top_builddir)/libpoke
 pokefmt_CFLAGS = -Wall
-pokefmt_LDADD = $(top_builddir)/gl/libgnu.la \
-                $(top_builddir)/libpoke/libpoke.la
+pokefmt_LDADD = $(top_builddir)/libpoke/libpoke.la \
+                $(top_builddir)/gl/libgnu.la
 pokefmt_LDFLAGS =
