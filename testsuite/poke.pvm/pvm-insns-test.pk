@@ -373,10 +373,10 @@ var tests = [
         assert (asm int<32>: ("stof; nnn; nip" : "  +"));
         assert (asm int<32>: ("stof; nnn; nip" : "  +1 "));
         assert (asm int<32>: ("stof; nnn; nip" : "a"));
+        assert (asm int<32>: ("stof; nnn; nip" : ""));
 
         /* OK cases.  */
         assert (asm int<32>: ("stof; nn; nip" : "  +1"));
-        assert (asm int<32>: ("stof; nn; nip" : ""));
         assert (asm int<32>: ("stof; nn; nip" : "-1E9"));
       }
   },
@@ -395,10 +395,10 @@ var tests = [
         assert (asm int<32>: ("stod; nnn; nip" : "  +"));
         assert (asm int<32>: ("stod; nnn; nip" : "  +1 "));
         assert (asm int<32>: ("stod; nnn; nip" : "a"));
+        assert (asm int<32>: ("stod; nnn; nip" : ""));
 
         /* OK cases.  */
         assert (asm int<32>: ("stod; nn; nip" : "  +1"));
-        assert (asm int<32>: ("stod; nn; nip" : ""));
         assert (asm int<32>: ("stod; nn; nip" : "-1E9"));
       }
   },

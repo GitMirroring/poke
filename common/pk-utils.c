@@ -206,8 +206,8 @@ int pvm_stof (const char *str, float *f)
   assert (f);
   errno = 0;
   *f = strtof (str, &end);
-  /* No ERANGE and it should consume the whole string.  */
-  return errno != 0 || *end != '\0';
+  /* No ERANGE and it should do a conversion and consume the whole string.  */
+  return errno != 0 || end == str || *end != '\0';
 }
 
 int pvm_stod (const char *str, double *d)
@@ -218,8 +218,8 @@ int pvm_stod (const char *str, double *d)
   assert (d);
   errno = 0;
   *d = strtod (str, &end);
-  /* No ERANGE and it should consume the whole string.  */
-  return errno != 0 || *end != '\0';
+  /* No ERANGE and it should do a conversion and consume the whole string.  */
+  return errno != 0 || end == str || *end != '\0';
 }
 
 void
