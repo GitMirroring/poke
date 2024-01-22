@@ -537,16 +537,16 @@ var tests = [
         assert (pi4 == 0x400921cac083126fUL);
 
         /* Valid conversions.  */
-        assert (!(stof ("") ?! E_conv));
         assert (!(stof (" 3") ?! E_conv));
-        assert (!(stod ("") ?! E_conv));
         assert (!(stod (" 3") ?! E_conv));
         assert (!(stod ("+1e9") ?! E_conv));
 
         /* Invalid conversions.  */
+        assert (stof ("") ?! E_conv);
         assert (stof (" ") ?! E_conv);
         assert (stof ("3 ") ?! E_conv);
         assert (stof ("+ 3") ?! E_conv);
+        assert (stod ("") ?! E_conv);
         assert (stod (" ") ?! E_conv);
         assert (stod ("3 ") ?! E_conv);
         assert (stod ("+ 3") ?! E_conv);
