@@ -256,7 +256,9 @@ poke_sigint_handler (int sig)
              unwind the stack.  */
           rl_free_line_state ();
           rl_cleanup_after_signal ();
-          rl_line_buffer[rl_point = rl_end = rl_mark = 0] = 0;
+          rl_point = rl_end = rl_mark = 0;
+          if (rl_line_buffer != NULL)
+            rl_line_buffer[0] = 0;
           printf ("\n");
           siglongjmp (ctrlc_buf, 1);
         }
