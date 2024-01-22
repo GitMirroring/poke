@@ -1,5 +1,10 @@
 2024-01-22  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* NEWS: Add entries for 3.90.1.
+	* doc/gendocs_template (For version): Update to 3.90.1.
+
+2024-01-22  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/Makefile.am (LTV_CURRENT): Bump to 1.
 
 2024-01-20  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
