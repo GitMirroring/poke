@@ -198,7 +198,7 @@ EXTRA_DIST += pkl-tab.y pkl-tab.c pkl-tab.h
 # Libtool's library version information for libpoke.
 # See the libtool documentation, section "Library interface versions".
 # Before making a release, use gnulib/build-aux/libtool-next-version.
-LTV_CURRENT=0
+LTV_CURRENT=1
 LTV_REVISION=0
 LTV_AGE=0
 
