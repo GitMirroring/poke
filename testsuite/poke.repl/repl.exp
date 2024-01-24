@@ -26,6 +26,9 @@
 
 load_lib ${tool}.exp
 
+# Override the general timeout, set in poke.exp.
+set timeout 20
+
 set test "slashes-are-preserved-1"
 poke_start
 poke_test_cmd {4 / 2} {2}
