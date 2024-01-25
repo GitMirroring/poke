@@ -118,11 +118,11 @@ pk_cmd_sub (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
   if (ios == NULL)
     return 0;
 
-  assert (PK_CMD_ARG_TYPE (argv[2]) == PK_CMD_ARG_INT);
-  base = PK_CMD_ARG_INT (argv[2]);
+  assert (PK_CMD_ARG_TYPE (argv[2]) == PK_CMD_ARG_UINT);
+  base = PK_CMD_ARG_UINT (argv[2]);
 
-  assert (PK_CMD_ARG_TYPE (argv[3]) == PK_CMD_ARG_INT);
-  size = PK_CMD_ARG_INT (argv[3]);
+  assert (PK_CMD_ARG_TYPE (argv[3]) == PK_CMD_ARG_UINT);
+  size = PK_CMD_ARG_UINT (argv[3]);
 
   name = (PK_CMD_ARG_TYPE (argv[4]) == PK_CMD_ARG_STR
           ? PK_CMD_ARG_STR (argv[4])
@@ -591,11 +591,11 @@ pk_cmd_mmap (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
   /* Create a new IO space.  */
   const char *filename = PK_CMD_ARG_STR (argv[1]);
 
-  assert (PK_CMD_ARG_TYPE (argv[2]) == PK_CMD_ARG_INT);
-  base = PK_CMD_ARG_INT (argv[2]);
+  assert (PK_CMD_ARG_TYPE (argv[2]) == PK_CMD_ARG_UINT);
+  base = PK_CMD_ARG_UINT (argv[2]);
 
-  assert (PK_CMD_ARG_TYPE (argv[3]) == PK_CMD_ARG_INT);
-  size = PK_CMD_ARG_INT (argv[3]);
+  assert (PK_CMD_ARG_TYPE (argv[3]) == PK_CMD_ARG_UINT);
+  size = PK_CMD_ARG_UINT (argv[3]);
 
   if (access (filename, F_OK) == 0)
 
@@ -636,7 +636,7 @@ const struct pk_cmd proc_cmd =
   {"proc", "i", PK_PROC_UFLAGS, 0, NULL, NULL, pk_cmd_proc, ".proc PID", NULL};
 
 const struct pk_cmd sub_cmd =
-  {"sub", "s,i,i,?s", "", 0, NULL, NULL, pk_cmd_sub, ".sub IOS, BASE, SIZE, [NAME]",
+  {"sub", "s,u,u,?s", "", 0, NULL, NULL, pk_cmd_sub, ".sub IOS, BASE, SIZE, [NAME]",
    poke_completion_function};
 
 const struct pk_cmd mem_cmd =
@@ -649,7 +649,7 @@ const struct pk_cmd nbd_cmd =
 
 #ifdef HAVE_MMAP
 const struct pk_cmd mmap_cmd =
-  {"mmap", "s,i,i", "", 0, NULL, NULL, pk_cmd_mmap, ".mmap FILE-NAME, BASE, SIZE",
+  {"mmap", "s,u,u", "", 0, NULL, NULL, pk_cmd_mmap, ".mmap FILE-NAME, BASE, SIZE",
    rl_filename_completion_function};
 #endif
 

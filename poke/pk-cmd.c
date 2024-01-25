@@ -111,6 +111,23 @@ skip_blanks (const char *p)
 }
 
 static inline int
+pk_atou (const char **p, uint64_t *number)
+{
+  unsigned long int li;
+  char *end;
+
+  errno = 0;
+  li = strtoull (*p, &end, 0);
+  if ((errno != 0 && li == 0)
+      || end == *p)
+    return 0;
+
+  *number = li;
+  *p = end;
+  return 1;
+}
+
+static inline int
 pk_atoi (const char **p, int64_t *number)
 {
   long int li;
@@ -405,6 +422,21 @@ pk_cmd_exec_1 (const char *str, struct pk_trie *cmds_trie, char *prefix)
                       if (*p == ',' || *p == '\0')
                         {
                           argv[argc].type = PK_CMD_ARG_INT;
+                          match = 1;
+                        }
+                    }
+
+                  break;
+                case 'u':
+                  /* Parse an unsigned integer.  */
+                  p = skip_blanks (p);
+                  if (pk_atou (&p, &(argv[argc].val.uinteger))
+                      && (*a == 'i' || argv[argc].val.uinteger >= 0))
+                    {
+                      p = skip_blanks (p);
+                      if (*p == ',' || *p == '\0')
+                        {
+                          argv[argc].type = PK_CMD_ARG_UINT;
                           match = 1;
                         }
                     }

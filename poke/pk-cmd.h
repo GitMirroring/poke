@@ -28,11 +28,13 @@ enum pk_cmd_arg_type
 {
   PK_CMD_ARG_NULL,
   PK_CMD_ARG_INT,
+  PK_CMD_ARG_UINT,
   PK_CMD_ARG_STR
 };
 
 #define PK_CMD_ARG_TYPE(arg) ((arg).type)
 #define PK_CMD_ARG_INT(arg) ((arg).val.integer)
+#define PK_CMD_ARG_UINT(arg) ((arg).val.uinteger)
 #define PK_CMD_ARG_STR(arg) ((arg).val.str)
 
 struct pk_cmd_arg
@@ -41,6 +43,7 @@ struct pk_cmd_arg
   union
   {
     int64_t integer;
+    uint64_t uinteger;
     char *str;
     int64_t tag;
   } val;
