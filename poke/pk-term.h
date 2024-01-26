@@ -23,8 +23,7 @@
 
 #include <textstyle.h>
 
-/* From libpoke.h.  */
-typedef struct _pk_compiler *pk_compiler;
+#include "libpoke.h"
 
 /* Defined in poke.c.  */
 extern pk_compiler poke_compiler;

@@ -1,3 +1,8 @@
+2024-01-26  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* poke/pk-term.h (pk_compiler): Don't re-typedef `pk_compiler'.
+	Include "libpoke.h".
+
 2024-01-22  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* poke/poke.c (pk_print_version): Update --version copyright to
