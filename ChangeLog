@@ -1,3 +1,8 @@
+2024-01-28  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* configure.ac (gl_HOST_CPU_ABI_32BIT): Emit an error instead of
+	warning when the result is "unknown".
+
 2024-01-26  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* poke/pk-term.h (pk_compiler): Don't re-typedef `pk_compiler'.
