@@ -222,7 +222,7 @@ case "$HOST_CPU_C_ABI_32BIT" in
   yes)
     AC_DEFINE([POKE_HOST_32BIT],[1],[whether the host C ABI is 32-bit]);;
   unknown)
-    AC_MSG_WARN([unable to determine whether the host C ABI is 32-bit]);;
+    AC_MSG_ERROR([unable to determine whether the host C ABI is 32-bit]);;
   *) ;;
 esac
 
