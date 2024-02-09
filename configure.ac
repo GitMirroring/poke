@@ -184,17 +184,42 @@ AC_ARG_ENABLE([libnbd],
               AS_HELP_STRING([--enable-libnbd],
                              [Enable building with NBD support (default is YES)]),
               [libnbd_enabled=$enableval], [libnbd_enabled=yes])
+NBDKIT=no
 if test "x$libnbd_enabled" = "xyes"; then
-  PKG_CHECK_MODULES([LIBNBD], [libnbd], [
-    AC_SUBST([LIBNBD_CFLAGS])
-    AC_SUBST([LIBNBD_LIBS])
-    AC_DEFINE([HAVE_LIBNBD], [1], [libnbd found at compile time])
-    AC_PATH_PROGS([NBDKIT], [nbdkit], [no], [$PATH:/usr/local/sbin:/usr/sbin])
-  ], [libnbd_enabled=no NBDKIT=no])
-else
-  NBDKIT=no
+  PKG_CHECK_MODULES([LIBNBD], [libnbd],
+    [dnl Test whether libnbd is really present. This is needed for bi-arch
+     dnl systems: libnbd may be installed only in 64-bit mode, and the
+     dnl libnbd.pc file will then also be found in 32-bit mode, for which no
+     dnl library is installed.
+     saved_CFLAGS=$CFLAGS
+     saved_LIBS=$LIBS
+     CFLAGS="$CFLAGS $LIBNBD_CFLAGS"
+     LIBS="$LIBS $LIBNBD_LIBS"
+     AC_LINK_IFELSE(
+       [AC_LANG_PROGRAM(
+          [[#include <libnbd.h>]],
+          [[return nbd_get_errno ();]])
+       ],
+       [dnl Yes it is present.
+        AC_DEFINE([HAVE_LIBNBD], [1], [libnbd found at compile time])
+        AC_PATH_PROGS([NBDKIT], [nbdkit], [no], [$PATH:/usr/local/sbin:/usr/sbin])
+       ],
+       [dnl Nope, pkg-config fooled us.
+        libnbd_enabled=no
+        LIBNBD_CFLAGS=
+        LIBNBD_LIBS=
+       ])
+     LIBS=$saved_LIBS
+     CFLAGS=$saved_CFLAGS
+    ],
+    [libnbd_enabled=no
+     LIBNBD_CFLAGS=
+     LIBNBD_LIBS=
+    ])
 fi
 AM_CONDITIONAL([NBD], [test "x$libnbd_enabled" = "xyes"])
+AC_SUBST([LIBNBD_CFLAGS])
+AC_SUBST([LIBNBD_LIBS])
 
 dnl Check for mmap
 AC_FUNC_MMAP
