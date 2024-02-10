@@ -15,15 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-bin_SCRIPTS = pk-elfextractor pk-strings pk-bin2poke pk-jojopatch
+bin_SCRIPTS = pk-strings pk-bin2poke pk-jojopatch
 CLEANFILES = $(bin_SCRIPTS)
-EXTRA_DIST = pk-elfextractor.in pk-strings.in pk-bin2poke.in pk-jojopatch.in
+EXTRA_DIST = pk-strings.in pk-bin2poke.in pk-jojopatch.in
 
 do_subst = sed -e 's,[@]bindir[@],$(bindir),g'
-
-pk-elfextractor: pk-elfextractor.in Makefile
-	$(do_subst) < $(srcdir)/pk-elfextractor.in > pk-elfextractor
-	chmod +x pk-elfextractor
 
 pk-strings: pk-strings.in Makefile
 	$(do_subst) < $(srcdir)/pk-strings.in > pk-strings

@@ -1,3 +1,8 @@
+2024-02-10  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* utils/Makefile.am (bin_SCRIPTS): Remove pk-elfextractor.
+	(EXTRA_DIST): Remove pk-elfextractor.in.
+
 2024-01-28  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* configure.ac (gl_HOST_CPU_ABI_32BIT): Emit an error instead of
