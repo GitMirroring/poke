@@ -41,9 +41,20 @@ struct usock *usock_new (const char *path);
 
 void usock_free (struct usock *u);
 
+#define USOCK_SERVE_OK 0
+#define USOCK_SERVE_NOK 1
+
 // Run the server loop.
 // This should run on a separate thread.
-void usock_serve (struct usock *u);
+// On success return USOCK_SERVE_OK, otherwise USOCK_SERVE_NOK.
+// On failure, two functions are allowed to be called:
+//   - usock_serve_error to retrieve the error message
+//   - usock_free to deallocate the server
+int usock_serve (struct usock *u);
+
+// Return a pointer to a NULL-terminated error message.
+// Invocation of this function is only valid if usock_serve is done.
+const char *usock_serve_error (struct usock *u);
 
 // Wake up the server thread to react to new data.
 void usock_notify (struct usock *u);
@@ -63,8 +74,10 @@ void usock_out (struct usock *u, uint8_t chan, uint32_t kind, const void *data,
                 size_t len);
 
 // Like `usock_out' but with a printf-like interface.
-void usock_out_printf (struct usock *u, uint8_t chan, uint32_t kind,
-                       const char *fmt, ...)
+// On success return the number of characters sent (excluding the null byte).
+// On failure return -1.
+int usock_out_printf (struct usock *u, uint8_t chan, uint32_t kind,
+                      const char *fmt, ...)
     __attribute__ ((format (printf, 4, 5)));
 
 #endif

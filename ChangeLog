@@ -1,3 +1,30 @@
+2024-02-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* bootstrap.conf (gnulib_modules): Add `strerror'.
+	* poked/usock-buf.c (#include <err.h>): Remove.
+	* poked/usock.h (USOCK_SERVE_OK): New macro.
+	(USOCK_SERVE_NOK): Likewise.
+	(usock_serve): Change signature to return status (success/failure).
+	(usock_serve_error): New function to retrieve content of error
+	buffer (`errbuf').
+	(usock_out_printf): Change return type to `int' and return number
+	of sent bytes or -1 in case of error.
+	* poked/usock.c (#include <err.h>): Likewise.
+	(USOCK_ERRBUF_SIZE): New macro.
+	(USOCK_HANDLE_SRV_OK): Likewise.
+	(USOCK_HANDLE_SRV_NOK): Likewise.
+	(USOCK_HANDLE_NOTIF_OK): Likewise.
+	(USOCK_HANDLE_NOTIF_NOK): Likewise.
+	(struct usock): Add new field `errbuf' to save error messages.
+	(usock_handle_srv): Do not call `err'; fill `errbuf' and return
+	error.
+	(usock_handle_notif): Likewise.
+	(usock_serve): Adapt new signature and in case of error, fill
+	the `errbuf' and return `USOCK_SERVE_NOK'.
+	(usock_serve_error): New function.
+	* poked/poke.c (srvthread): Handle failure of `usock_serve'.
+	(poked_disas_send): Handle failure of `usock_out_printf'.
+
 2024-02-10  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* utils/Makefile.am (bin_SCRIPTS): Remove pk-elfextractor.

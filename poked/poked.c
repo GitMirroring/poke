@@ -110,7 +110,8 @@ srvthread (void *data)
 {
   struct usock *srv = (struct usock *)data;
 
-  usock_serve (srv);
+  if (usock_serve (srv) != USOCK_SERVE_OK)
+    errx (1, "usock_serve() failed: %s\n", usock_serve_error (srv));
   return NULL;
 }
 
@@ -359,8 +360,10 @@ poked_disas_send (void)
       iteration_begin (srv, USOCK_CHAN_OUT_PDISAS, iteration);
 
       /* Send PDISAS_KIND message with the function_name/expression.  */
-      usock_out_printf (srv, USOCK_CHAN_OUT_PDISAS, PDISAS_KIND, "%c%s",
-                        (int)kind, str);
+      if (usock_out_printf (srv, USOCK_CHAN_OUT_PDISAS, PDISAS_KIND, "%c%s",
+                            (int)kind, str)
+          == -1)
+        errx (1, "poked_disas_send: usock_out_printf() failed");
 
       termout_disas ();
       if (kind == PLET_DISAS_KIND_FUNC || kind == PLET_DISAS_KIND_FUNC_NATIVE)
@@ -368,8 +371,13 @@ poked_disas_send (void)
           int native_p = kind == PLET_DISAS_KIND_FUNC_NATIVE;
 
           if (pk_disassemble_function (pkc, str, native_p) != PK_OK)
-            usock_out_printf (srv, USOCK_CHAN_OUT_PDISAS, PDISAS_ERR,
-                              "invalid function `%s' to disassemble", str);
+            {
+              if (usock_out_printf (srv, USOCK_CHAN_OUT_PDISAS, PDISAS_ERR,
+                                    "invalid function `%s' to disassemble",
+                                    str)
+                  == -1)
+                errx (1, "poked_disas_send: usock_out_printf() failed");
+            }
         }
       else if (kind == PLET_DISAS_KIND_EXPR
                || kind == PLET_DISAS_KIND_EXPR_NATIVE)
@@ -377,8 +385,13 @@ poked_disas_send (void)
           int native_p = kind == PLET_DISAS_KIND_EXPR_NATIVE;
 
           if (pk_disassemble_expression (pkc, str, native_p) != PK_OK)
-            usock_out_printf (srv, USOCK_CHAN_OUT_PDISAS, PDISAS_ERR,
-                              "invalid expression `%s' to disassemble", str);
+            {
+              if (usock_out_printf (srv, USOCK_CHAN_OUT_PDISAS, PDISAS_ERR,
+                                    "invalid expression `%s' to disassemble",
+                                    str)
+                  == -1)
+                errx (1, "poked_disas_send: usock_out_printf() failed");
+            }
         }
       termout_restore ();
 

@@ -21,7 +21,6 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include <err.h> // In usock_buf_chain_rev
 
 #include "usock-buf-priv.h"
 
