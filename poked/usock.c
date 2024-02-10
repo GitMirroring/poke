@@ -28,7 +28,6 @@
 
 #include <sys/types.h>
 
-#include <err.h>
 #include <fcntl.h>
 #include <poll.h>
 #include <pthread.h>
@@ -329,6 +328,7 @@ usock_client_step (struct usock_client *c)
 
 #define USOCK_NOTIFY_FD(u) (u->pipefd[1])
 #define USOCK_CLIENTS_MAX 1024
+#define USOCK_ERRBUF_SIZE 128
 
 struct usock
 {
@@ -342,9 +342,14 @@ struct usock
   int done_p;
   struct usock_buf *inbufs;
   struct usock_buf *outbufs;
+
+  char errbuf[USOCK_ERRBUF_SIZE];
 };
 
-static void
+#define USOCK_HANDLE_SRV_OK 0
+#define USOCK_HANDLE_SRV_NOK -1
+
+static int
 usock_handle_srv (struct usock *u, struct pollfd *pfds)
 {
   assert (u);
@@ -360,10 +365,12 @@ usock_handle_srv (struct usock *u, struct pollfd *pfds)
       if ((fd = accept (u->fd, &adr, &adrlen)) == -1)
         {
           if (errno == EAGAIN || errno == EWOULDBLOCK)
-            return;
+            break;
           if (errno == EINTR)
             continue;
-          err (1, "[%s] accept() failed", __func__);
+          snprintf (u->errbuf, USOCK_ERRBUF_SIZE, "[%s] accept() failed: %s",
+                    __func__, strerror (errno));
+          return USOCK_HANDLE_SRV_NOK;
         }
       if (u->nclients == USOCK_CLIENTS_MAX)
         {
@@ -372,7 +379,12 @@ usock_handle_srv (struct usock *u, struct pollfd *pfds)
           continue;
         }
       if (fcntl (fd, F_SETFL, O_NONBLOCK) == -1)
-        err (1, "[%s] fcntl(%d, O_NONBLOCK) failed", __func__, fd);
+        {
+          snprintf (u->errbuf, USOCK_ERRBUF_SIZE,
+                    "[%s] fcntl(%d, O_NONBLOCK) failed: %s", __func__, fd,
+                    strerror (errno));
+          return USOCK_HANDLE_SRV_NOK;
+        }
       c = &u->clients[u->nclients];
       usock_client_init (c);
       c->fd = fd;
@@ -384,9 +396,13 @@ usock_handle_srv (struct usock *u, struct pollfd *pfds)
       while (usock_client_step (c))
         ;
     }
+  return USOCK_HANDLE_SRV_OK;
 }
 
-static void
+#define USOCK_HANDLE_NOTIF_OK 0
+#define USOCK_HANDLE_NOTIF_NOK -1
+
+static int
 usock_handle_notif (struct usock *u, struct pollfd *pfds)
 {
   assert (u);
@@ -408,7 +424,8 @@ usock_handle_notif (struct usock *u, struct pollfd *pfds)
         {
           if (errno == EAGAIN)
             break;
-          err (1, "read(pipefd[0]) failed");
+          snprintf (u->errbuf, USOCK_ERRBUF_SIZE, "read(pipefd[0]) failed");
+          return USOCK_HANDLE_NOTIF_NOK;
         }
     }
 
@@ -421,7 +438,7 @@ usock_handle_notif (struct usock *u, struct pollfd *pfds)
 
   // Spurious wake up :)
   if (outbufs == NULL)
-    return;
+    return USOCK_HANDLE_NOTIF_OK;
 
   // reverse the chain
   outbufs = usock_buf_chain_rev (outbufs);
@@ -451,6 +468,8 @@ usock_handle_notif (struct usock *u, struct pollfd *pfds)
         while (usock_client_step (c))
           ;
     }
+
+  return USOCK_HANDLE_NOTIF_OK;
 }
 
 static void
@@ -529,12 +548,13 @@ usock_clients_collect_stupid (struct usock *u)
 
 // NOTE This has to run on a separate thread
 // API
-void
+int
 usock_serve (struct usock *u)
 {
   struct pollfd polls[/*server*/ 1 + /*pipefd[0]*/ 1 + USOCK_CLIENTS_MAX];
   int npoll;
   int done_p = 0;
+  int ret = USOCK_SERVE_OK;
   int i;
 
 #define SRV 0
@@ -553,7 +573,10 @@ usock_serve (struct usock *u)
         {
           if (errno == EINTR || errno == EAGAIN)
             continue;
-          err (1, "poll() failed");
+          snprintf (u->errbuf, USOCK_ERRBUF_SIZE, "poll() failed: %s",
+                    strerror (errno));
+          ret = USOCK_SERVE_NOK;
+          break;
         }
 
       // CHKME Should I do this before `poll`, too?
@@ -564,10 +587,18 @@ usock_serve (struct usock *u)
       if (done_p)
         break;
 
-      if (polls[SRV].revents)
-        usock_handle_srv (u, polls + 2);
-      if (polls[NOTIF].revents)
-        usock_handle_notif (u, polls + 2);
+      if (polls[SRV].revents
+          && usock_handle_srv (u, polls + 2) != USOCK_HANDLE_SRV_OK)
+        {
+          ret = USOCK_SERVE_NOK;
+          break;
+        }
+      if (polls[NOTIF].revents
+          && usock_handle_notif (u, polls + 2) != USOCK_HANDLE_NOTIF_OK)
+        {
+          ret = USOCK_SERVE_NOK;
+          break;
+        }
       for (i = 0; i < (int)u->nclients; ++i)
         {
           struct usock_client *c = &u->clients[i];
@@ -614,6 +645,16 @@ usock_serve (struct usock *u)
   for (i = 0; i < (int)u->nclients; ++i)
     usock_client_dtor (&u->clients[i]);
   u->nclients = 0;
+
+  return ret;
+}
+
+// API
+const char *
+usock_serve_error (struct usock *u)
+{
+  assert (u);
+  return u->errbuf;
 }
 
 // API
@@ -750,7 +791,8 @@ usock_out (struct usock *u, uint8_t chan, uint32_t kind, const void *data,
   usock_notify (u);
 }
 
-void
+// API
+int
 usock_out_printf (struct usock *u, uint8_t chan, uint32_t kind,
                   const char *fmt, ...)
 {
@@ -762,10 +804,11 @@ usock_out_printf (struct usock *u, uint8_t chan, uint32_t kind,
   n = vasprintf (&data, fmt, ap);
   va_end (ap);
   if (n == -1)
-    err (1, "%s: vasprintf () failed", __func__);
+    return -1;
 
   usock_out (u, chan, kind, data, n);
   free (data);
+  return n;
 }
 
 // API
