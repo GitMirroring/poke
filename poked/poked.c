@@ -22,8 +22,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
-#include <err.h>
 #include <getopt.h>
 #include <pthread.h>
 #include <unistd.h>
@@ -32,6 +32,34 @@
 #include "usock.h"
 #include "libpoke.h"
 #include "configmake.h"
+
+//--- err and errx implementation
+
+static void
+errx(int eval, const char *fmt, ...)
+{
+  va_list ap;
+
+  va_start (ap, fmt);
+  vfprintf (stderr, fmt, ap);
+  va_end (ap);
+  fprintf (stderr, "\n");
+  exit (eval);
+}
+
+static void
+err(int eval, const char *fmt, ...)
+{
+  va_list ap;
+
+  va_start (ap, fmt);
+  vfprintf (stderr, fmt, ap);
+  va_end (ap);
+  fprintf (stderr, ": %s\n", strerror (errno));
+  exit (eval);
+}
+
+//---
 
 pk_compiler pkc;
 struct usock *srv;
