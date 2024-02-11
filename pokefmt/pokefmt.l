@@ -130,14 +130,17 @@ struct source_range
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
-#include <err.h>
 #include <getopt.h>
 #include <unistd.h>
 
 #include "configmake.h"
 #include "libpoke.h"
 #include "pk-utils.h"
+
+static void errx(int eval, const char *fmt, ...);
+static void err(int eval, const char *fmt, ...);
 
 struct poke
 {
@@ -256,6 +259,34 @@ main (int argc, char *argv[])
   poke_free (&poke);
   return 0;
 }
+
+//--- err and errx implementation
+
+static void
+errx(int eval, const char *fmt, ...)
+{
+  va_list ap;
+
+  va_start (ap, fmt);
+  vfprintf (stderr, fmt, ap);
+  va_end (ap);
+  fprintf (stderr, "\n");
+  exit (eval);
+}
+
+static void
+err(int eval, const char *fmt, ...)
+{
+  va_list ap;
+
+  va_start (ap, fmt);
+  vfprintf (stderr, fmt, ap);
+  va_end (ap);
+  fprintf (stderr, ": %s\n", strerror (errno));
+  exit (eval);
+}
+
+//---
 
 static void
 pokefmt_version (void)

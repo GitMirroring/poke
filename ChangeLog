@@ -1,5 +1,16 @@
 2024-02-11  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* poked/poked.c (#include <err.h>): Remove.
+	(#include <stdarg.h>): Add.
+	(err): New function.
+	(errx): Likewise.
+	* pokefmt/pokefmt.l (#include <err.h>): Remove.
+	(#include <stdarg.h>): Add.
+	(err): New function.
+	(errx): Likewise.
+
+2024-02-11  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* poked/usock.c (usock_handle_notif): Handle `EWOULDBLOCK'
 	errno.
 	(usock_serve): Likewise.
