@@ -422,7 +422,7 @@ usock_handle_notif (struct usock *u, struct pollfd *pfds)
         }
       if (n == -1)
         {
-          if (errno == EAGAIN)
+          if (errno == EAGAIN || errno == EWOULDBLOCK)
             break;
           snprintf (u->errbuf, USOCK_ERRBUF_SIZE, "read(pipefd[0]) failed");
           return USOCK_HANDLE_NOTIF_NOK;
@@ -571,7 +571,7 @@ usock_serve (struct usock *u)
       npoll = poll (polls, 1 + 1 + u->nclients, -1);
       if (npoll == -1)
         {
-          if (errno == EINTR || errno == EAGAIN)
+          if (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK)
             continue;
           snprintf (u->errbuf, USOCK_ERRBUF_SIZE, "poll() failed: %s",
                     strerror (errno));

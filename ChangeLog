@@ -1,3 +1,9 @@
+2024-02-11  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* poked/usock.c (usock_handle_notif): Handle `EWOULDBLOCK'
+	errno.
+	(usock_serve): Likewise.
+
 2024-02-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* bootstrap.conf (gnulib_modules): Update comment to mention
