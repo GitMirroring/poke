@@ -1,5 +1,10 @@
 2024-02-11  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* poked/poked.c: Fix GNU code style.
+	* pokefmt/pokefmt.l: Likewise.
+
+2024-02-11  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* poked/poked.c (#include <err.h>): Remove.
 	(#include <stdarg.h>): Add.
 	(err): New function.

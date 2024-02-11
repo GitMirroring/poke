@@ -139,8 +139,8 @@ struct source_range
 #include "libpoke.h"
 #include "pk-utils.h"
 
-static void errx(int eval, const char *fmt, ...);
-static void err(int eval, const char *fmt, ...);
+static void errx (int eval, const char *fmt, ...);
+static void err (int eval, const char *fmt, ...);
 
 struct poke
 {
@@ -263,7 +263,7 @@ main (int argc, char *argv[])
 //--- err and errx implementation
 
 static void
-errx(int eval, const char *fmt, ...)
+errx (int eval, const char *fmt, ...)
 {
   va_list ap;
 
@@ -275,7 +275,7 @@ errx(int eval, const char *fmt, ...)
 }
 
 static void
-err(int eval, const char *fmt, ...)
+err (int eval, const char *fmt, ...)
 {
   va_list ap;
 
@@ -473,8 +473,7 @@ tif_bgcolor_set (pk_compiler pkc __attribute__ ((unused)), struct pk_color c)
   (void)c;
 }
 
-static void
-default_exception_handler (struct poke *poke, pk_val exc);
+static void default_exception_handler (struct poke *poke, pk_val exc);
 
 void
 poke_init (struct poke *pk, const char *poke_src_file, FILE *output)

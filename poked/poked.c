@@ -36,7 +36,7 @@
 //--- err and errx implementation
 
 static void
-errx(int eval, const char *fmt, ...)
+errx (int eval, const char *fmt, ...)
 {
   va_list ap;
 
