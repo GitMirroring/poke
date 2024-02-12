@@ -1,3 +1,8 @@
+2024-02-12  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* doc/poke.texi (Struct Methods): Entry for SELF in concept index.
+	(Methods): Likewise.
+
 2024-02-11  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* poked/poked.c: Fix GNU code style.
