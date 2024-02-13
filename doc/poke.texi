@@ -15190,7 +15190,7 @@ expression evaluated as the assert condition.
 
 @example
 assert (1 == 1);
-assert (0 == 0, ``Zero is equal to zero'');
+assert (0 == 0, "Zero is equal to zero");
 @end example
 
 @code{assert} is useful for writing unit tests.
