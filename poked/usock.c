@@ -130,6 +130,43 @@ write_n_bytes (int fd, unsigned char *data, size_t *len, size_t cap)
 
 //---
 
+static void
+errorf (int errnum, char *buf, size_t bufsz, const char *fmt, ...)
+{
+  int n;
+  va_list ap;
+
+  assert (buf);
+  assert (bufsz);
+
+  va_start (ap, fmt);
+  n = vsnprintf (buf, bufsz, fmt, ap);
+  va_end (ap);
+
+  assert (n > 0);
+  /* Worst case in release build.  */
+  if (n < 0)
+    {
+      buf[0] = '\0';
+      n = 0;
+    }
+
+  bufsz -= n;
+  buf += n;
+
+  if (bufsz < 3)
+    return;
+  buf[0] = ':';
+  buf[1] = ' ';
+  buf[2] = '\0';
+  bufsz -= 2;
+  buf += 2;
+
+  strerror_r (errnum, buf, bufsz);
+}
+
+//---
+
 // CHKME proper use
 #define USOCK_DIR_UNK 0
 #define USOCK_DIR_IN 1
@@ -368,8 +405,8 @@ usock_handle_srv (struct usock *u, struct pollfd *pfds)
             break;
           if (errno == EINTR)
             continue;
-          snprintf (u->errbuf, USOCK_ERRBUF_SIZE, "[%s] accept() failed: %s",
-                    __func__, strerror (errno));
+          errorf (errno, u->errbuf, USOCK_ERRBUF_SIZE, "[%s] accept() failed",
+                  __func__);
           return USOCK_HANDLE_SRV_NOK;
         }
       if (u->nclients == USOCK_CLIENTS_MAX)
@@ -380,9 +417,8 @@ usock_handle_srv (struct usock *u, struct pollfd *pfds)
         }
       if (fcntl (fd, F_SETFL, O_NONBLOCK) == -1)
         {
-          snprintf (u->errbuf, USOCK_ERRBUF_SIZE,
-                    "[%s] fcntl(%d, O_NONBLOCK) failed: %s", __func__, fd,
-                    strerror (errno));
+          errorf (errno, u->errbuf, USOCK_ERRBUF_SIZE,
+                  "[%s] fcntl(%d, O_NONBLOCK) failed", __func__, fd);
           return USOCK_HANDLE_SRV_NOK;
         }
       c = &u->clients[u->nclients];
@@ -424,7 +460,8 @@ usock_handle_notif (struct usock *u, struct pollfd *pfds)
         {
           if (errno == EAGAIN || errno == EWOULDBLOCK)
             break;
-          snprintf (u->errbuf, USOCK_ERRBUF_SIZE, "read(pipefd[0]) failed");
+          errorf (errno, u->errbuf, USOCK_ERRBUF_SIZE,
+                  "read(pipefd[0]) failed");
           return USOCK_HANDLE_NOTIF_NOK;
         }
     }
@@ -573,8 +610,7 @@ usock_serve (struct usock *u)
         {
           if (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK)
             continue;
-          snprintf (u->errbuf, USOCK_ERRBUF_SIZE, "poll() failed: %s",
-                    strerror (errno));
+          errorf (errno, u->errbuf, USOCK_ERRBUF_SIZE, "poll() failed");
           ret = USOCK_SERVE_NOK;
           break;
         }
