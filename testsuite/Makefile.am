@@ -27,18 +27,18 @@ if HAVE_DEJAGNU
 	  CC_FOR_TARGET="$(CC_FOR_TARGET)" CFLAGS_FOR_TARGET="$(CFLAGS)" \
 	  HAVE_LIBTEXTSTYLE="$(HAVE_LIBTEXTSTYLE)" \
 	  NBDKIT="$(NBDKIT)" \
-          INPUTRC="$(top_builddir)/inputrc" \
-          POKESTYLESDIR="$(top_srcdir)/etc" \
-          POKEPICKLESDIR="$(top_srcdir)/pickles" \
-          POKEAPPDIR="$(top_srcdir)/poke" \
-          POKEDATADIR="$(top_srcdir)/libpoke" \
-          POKECONFIGDIR="$(top_builddir)/libpoke" \
-          POKECMDSDIR="$(top_srcdir)/poke" \
-          POKEDOCDIR="$(top_builddir)/doc" \
-          POKE_LOAD_PATH="$(top_srcdir)/poke" \
-          POKEFMTAPPDIR="$(top_srcdir)/pokefmt" \
+	  INPUTRC="$(top_builddir)/inputrc" \
+	  POKESTYLESDIR="$(top_srcdir)/etc" \
+	  POKEPICKLESDIR="$(top_srcdir)/pickles" \
+	  POKEAPPDIR="$(top_srcdir)/poke" \
+	  POKEDATADIR="$(top_srcdir)/libpoke" \
+	  POKECONFIGDIR="$(top_builddir)/libpoke" \
+	  POKECMDSDIR="$(top_srcdir)/poke" \
+	  POKEDOCDIR="$(top_builddir)/doc" \
+	  POKE_LOAD_PATH="$(top_srcdir)/poke" \
+	  POKEFMTAPPDIR="$(top_srcdir)/pokefmt" \
 		$$runtest --tool $(DEJATOOL) --srcdir $${srcdir} --objdir $(builddir) \
-                        SHELL="$(SHELL)" \
+	                SHELL="$(SHELL)" \
 			$(RUNTESTFLAGS) || exit $$1; \
 	  rm -f $(top_builddir)/inputrc; \
 	else \

@@ -84,7 +84,7 @@ endif HAVE_PROC
 .pks.pkc:
 	if test "$(RAS_AWK)" = ":"; then \
 	  echo "your AWK is not powerful enough.  Please install gawk" \
-          1>&2 && exit 1 || : ; \
+	  1>&2 && exit 1 || : ; \
 	fi
 	outfile=`basename "$@"`; \
 	srcdir=$(srcdir) $(RAS_AWK) -f $(srcdir)/ras $< > $$outfile.tmp \
@@ -103,9 +103,9 @@ BUILT_SOURCES = pkl-gen.pkc pkl-gen-builtins.pkc pkl-gen-attrs.pkc pkl-asm.pkc
 pkl-keywords.def: $(srcdir)/pkl-lex.l
 	outfile=`basename "$@"`; \
 	$(AWK) \
-'/BEGINNING OF KEYWORDS/,/END OF KEYWORDS/ { if ($$1 != "/*") print "PKL_DEF_KEYWORD(" $$1 ")"; }' \
-          < $< > $$outfile.tmp \
-        && mv $$outfile.tmp $(srcdir)/$$outfile
+	'/BEGINNING OF KEYWORDS/,/END OF KEYWORDS/ { if ($$1 != "/*") print "PKL_DEF_KEYWORD(" $$1 ")"; }' \
+	  < $< > $$outfile.tmp \
+	&& mv $$outfile.tmp $(srcdir)/$$outfile
 
 EXTRA_DIST += pkl-keywords.def
 MOSTLYCLEANFILES += pkl-keywords.def.tmp

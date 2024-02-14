@@ -49,7 +49,7 @@ else
 
 poke-settings.texi:
 	echo "Settings documentation not generated in cross-build." \
-          > poke-settings.texi
+	  > poke-settings.texi
 
 endif
 
