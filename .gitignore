@@ -59,6 +59,8 @@ config.h.in
 /doc/poke.toc
 /doc/poke.tree
 /doc/poke.tree.err
+/doc/poke.html/
+/doc/poke-manual.html
 /poke/pcl-lex.h
 /GNUmakefile
 /maint.mk
