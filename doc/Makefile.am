@@ -78,8 +78,18 @@ poke.text: $(srcdir)/poke.texi $(srcdir)/version.texi $(poke_TEXINFOS)
 	$(MAKEINFO) --plaintext $(srcdir)/poke.texi > poke.text-tmp
 	mv poke.text-tmp $(srcdir)/poke.text
 
+# Generation of the HTML-formatted manual as a large file.
+# Rationale: Some people like to search for terms across the entire manual
+# and use HTML rendering at the same time.
+
+html-monolithic: poke-manual.html
+poke-manual.html: $(srcdir)/poke.texi $(srcdir)/version.texi $(poke_TEXINFOS)
+	$(AM_V_MAKEINFO)rm -f poke-manual.html
+	$(AM_V_at)$(MAKEINFOHTML) $(AM_MAKEINFOHTMLFLAGS) --no-headers --no-split $(MAKEINFOFLAGS) -I $(srcdir) -o poke-manual.html $<
+
 MOSTLYCLEANFILES = \
   nodelist \
   poke-settings.texi-tmp \
-  poke.txmp
+  poke.txmp \
+  poke-manual.html
 MAINTAINERCLEANFILES = pvm-insns.texi poke-settings.texi poke.text

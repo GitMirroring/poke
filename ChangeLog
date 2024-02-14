@@ -1,3 +1,9 @@
+2024-02-15  Bruno Haible  <bruno@clisp.org>
+
+	Provide an easy way to generate the monolithic HTML-formatted manual.
+	* doc/Makefile.am (html-monolithic, poke-manual.html): New targets.
+	(MOSTLYCLEANFILES): Add poke-manual.html.
+
 2024-02-12  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* bootstrap.conf (gnulib_modules): Import regex module from
