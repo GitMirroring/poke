@@ -278,11 +278,14 @@ static void
 err (int eval, const char *fmt, ...)
 {
   va_list ap;
+  char buf[128];
 
   va_start (ap, fmt);
   vfprintf (stderr, fmt, ap);
   va_end (ap);
-  fprintf (stderr, ": %s\n", strerror (errno));
+  buf[0] = '\0';
+  strerror_r (errno, buf, sizeof (buf));
+  fprintf (stderr, ": %s\n", buf);
   exit (eval);
 }
 

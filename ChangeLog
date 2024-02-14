@@ -1,3 +1,13 @@
+2024-02-17  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* bootstrap.conf (gnulib_modules): s/strerror/strerror_r-posix/.
+	* pokefmt/pokefmt.l (err): Use `strerror_r'.
+	* poked/poked.c (err): Likewise.
+	* poked/usock.c (errorf): New function.
+	(usock_handle_srv): Use `errorf' to make the buffer.
+	(usock_handle_notif): Likewise.
+	(usock_serve): Likewise.
+
 2024-02-17  Hannes Domani  <ssbssa@yahoo.de>
 
 	* poke/poke.c: Don't include <arpa/inet.h> on windows.
