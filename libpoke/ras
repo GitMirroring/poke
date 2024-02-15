@@ -552,6 +552,10 @@ BEGIN {
         args = gensub (/.*: *(".*") *:.*/, "\\1", "g", line)
         id   = gensub (/ *([^ ]+) *:.*:.*/, "\\1", "g", line)
 
+        # Ignore '\r' of windows line endings.
+        if (substr (name, length (name), 1) == "\r")
+            name = substr (name, 1, length (name) - 1);
+
         # Remove leading and trailing double-quotes wherever
         # appropriate
         name = substr (name, 2, length (name) - 2)
