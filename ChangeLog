@@ -1,5 +1,9 @@
 2024-02-15  Hannes Domani  <ssbssa@yahoo.de>
 
+	* libpoke/ras: Ignore '\r' of windows line endings.
+
+2024-02-15  Hannes Domani  <ssbssa@yahoo.de>
+
 	* doc/poke.texi: Mention colon characters in windows drives.
 	* libpoke/pkl.c: Don't use ':' of windows drives as path separator.
 
