@@ -1,3 +1,8 @@
+2024-02-15  Hannes Domani  <ssbssa@yahoo.de>
+
+	* doc/poke.texi: Mention colon characters in windows drives.
+	* libpoke/pkl.c: Don't use ':' of windows drives as path separator.
+
 2024-02-15  Bruno Haible  <bruno@clisp.org>
 
 	Provide an easy way to generate the monolithic HTML-formatted manual.

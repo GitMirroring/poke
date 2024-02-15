@@ -779,6 +779,16 @@ pkl_resolve_module (pkl_compiler compiler,
         if ((e = strchrnul (s, ':')) == s)
           continue;
 
+#ifdef _WIN32
+        /* Don't use ':' as a path separator if it's between a single
+           letter and a '/', since on Windows paths starting like
+           this "c:/" are just drive letters of absolute paths. */
+        if (e == s + 1
+            && ((*s >= 'a' && *s <= 'z') || (*s >= 'A' && *s <= 'Z'))
+            && e[1] == '/')
+          e = strchrnul (e + 2, ':');
+#endif
+
         asprintf (&full_filename, "%.*s/%s%s", (int) (e - s), s, module, ext);
 
         if (pk_file_readable (full_filename) == NULL)

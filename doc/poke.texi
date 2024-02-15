@@ -7941,6 +7941,9 @@ sequential order for the file corresponding to the requested module.
 Empty directory names and entries that do not name existing
 directories are ignored.
 
+On Windows, colon characters (@code{:}) that are part of a drive
+designation, like @code{c:/}, are not used as directory separators.
+
 Some entries have special meanings:
 
 @table @code
