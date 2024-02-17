@@ -102,6 +102,7 @@ uninstall_sigwinch_handler (void)
 
 #else
 
+# define update_screen_dimensions()
 # define install_sigwinch_handler()
 # define uninstall_sigwinch_handler()
 
