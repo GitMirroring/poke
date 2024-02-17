@@ -26,7 +26,9 @@
 #include <locale.h>
 #include <textstyle.h>
 #include <assert.h>
+#ifndef _WIN32
 #include <arpa/inet.h> /* For htonl */
+#endif
 
 #ifdef HAVE_HSERVER
 #  include "pk-hserver.h"

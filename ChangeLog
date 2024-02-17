@@ -1,5 +1,9 @@
 2024-02-17  Hannes Domani  <ssbssa@yahoo.de>
 
+	* poke/poke.c: Don't include <arpa/inet.h> on windows.
+
+2024-02-17  Hannes Domani  <ssbssa@yahoo.de>
+
 	* poke/pk-term.c (update_screen_dimensions): Define if not availbale.
 
 2024-02-15  Hannes Domani  <ssbssa@yahoo.de>
