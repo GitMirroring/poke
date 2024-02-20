@@ -1,3 +1,8 @@
+2024-02-20  Hannes Domani  <ssbssa@yahoo.de>
+
+	* poke/pk-term.c (pk_term_init): Set erase_line_str.
+	(pk_puts_paged): Use console functions on windows.
+
 2024-02-17  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* bootstrap.conf (gnulib_modules): s/strerror/strerror_r-posix/.

@@ -347,6 +347,14 @@ pk_term_init (int argc, char *argv[])
           }
 #endif
       }
+#if defined _WIN32
+    else
+      {
+        /* Just overwrite the "--More--" text with spaces.  */
+        static char remove_more_buffer[10] = "        \r";
+        erase_line_str = remove_more_buffer;
+      }
+#endif
     if (!done)
       update_screen_dimensions ();
   }
@@ -409,8 +417,13 @@ pk_puts_paged (const char *lines)
 
     if (nlines >= screen_lines)
       {
+#ifndef _WIN32
         struct termios old_termios;
         struct termios new_termios;
+#else
+        HANDLE conin;
+        DWORD con_mode;
+#endif
 
         styled_ostream_begin_use_class (pk_ostream, "pager-more");
         ostream_write_str (pk_ostream, "--More--");
@@ -418,17 +431,34 @@ pk_puts_paged (const char *lines)
         ostream_flush (pk_ostream, FLUSH_THIS_STREAM);
 
         /* Set stdin in non-buffered mode.  */
+#ifndef _WIN32
         tcgetattr (0, &old_termios);
         memcpy (&new_termios, &old_termios, sizeof (struct termios));
         new_termios.c_lflag &= ~(ICANON | ECHO);
         new_termios.c_cc[VTIME] = 0;
         new_termios.c_cc[VMIN] = 1;
         tcsetattr (0, TCSANOW, &new_termios);
+#else
+        conin = GetStdHandle (STD_INPUT_HANDLE);
+        GetConsoleMode (conin, &con_mode);
+        SetConsoleMode (conin,
+                        con_mode & ~(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT));
+#endif
 
         /* Wait for a key and process it.  */
         while (1)
           {
+#ifndef _WIN32
             int c = fgetc (stdin);
+#else
+            char c;
+            DWORD keys_read;
+            if (!ReadConsoleA (conin, &c, 1, &keys_read, NULL)
+                || keys_read != 1)
+              c = 0;
+            else if (c == '\r')
+              c = '\n';
+#endif
 
             if (c == '\n')
               {
@@ -451,7 +481,11 @@ pk_puts_paged (const char *lines)
           }
 
         /* Restore stdin to buffered-mode.  */
+#ifndef _WIN32
         tcsetattr (0, TCSANOW, &old_termios);
+#else
+        SetConsoleMode (conin, con_mode);
+#endif
 
         if (erase_line_str)
           {
