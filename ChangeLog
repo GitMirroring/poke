@@ -1,3 +1,7 @@
+2024-02-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* AUTHORS: Add Hannes Domani.
+
 2024-02-20  Hannes Domani  <ssbssa@yahoo.de>
 
 	* poke/pk-term.c (pk_term_init): Set erase_line_str.
