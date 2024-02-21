@@ -247,6 +247,10 @@ late-header-c
        type as an integer in the main stack, before branching to the
        exception handler.  */
 
+#ifdef _WIN32
+#undef raise
+#endif
+
 #define PVM_RAISE_DIRECT(EXCEPTION)                                   \
   do                                                                  \
   {                                                                   \

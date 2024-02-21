@@ -1,3 +1,7 @@
+2024-02-21  Hannes Domani  <ssbssa@yahoo.de>
+
+	* libpoke/pvm.jitter: Undef raise on windows.
+
 2024-02-21  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* AUTHORS: Add Hannes Domani.
