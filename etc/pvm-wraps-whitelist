@@ -14,6 +14,7 @@ pvm_make_place_for_slow_registers
 pvm_disassemble_program
 pvm_defect_descriptors_correct_displacement
 printf
+__printf_chk
 rpl_printf
 putchar
 exit
