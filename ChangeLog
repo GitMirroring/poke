@@ -1,5 +1,10 @@
 2024-02-22  Hannes Domani  <ssbssa@yahoo.de>
 
+	* libpoke/ios-dev-file.c (ios_dev_file_open): Open files in
+	binary mode on windows.
+
+2024-02-22  Hannes Domani  <ssbssa@yahoo.de>
+
 	* poke/pk-repl.c (poke_sigint_handler, pk_repl): Use pthread
 	functions only if available.
 
