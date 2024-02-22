@@ -21,6 +21,7 @@
 #include <string.h>
 #include <signal.h>
 #include <stdarg.h>
+#include <errno.h> /* For errno.  */
 
 #include "pkl.h"
 #include "pkl-asm.h"
@@ -437,4 +438,28 @@ void
 pvm_unregister_thread ()
 {
   pvm_alloc_unregister_thread ();
+}
+
+int pvm_stof (const char *str, float *f)
+{
+  char *end;
+
+  assert (str);
+  assert (f);
+  errno = 0;
+  *f = strtof (str, &end);
+  /* No ERANGE and it should do a conversion and consume the whole string.  */
+  return errno != 0 || end == str || *end != '\0';
+}
+
+int pvm_stod (const char *str, double *d)
+{
+  char *end;
+
+  assert (str);
+  assert (d);
+  errno = 0;
+  *d = strtod (str, &end);
+  /* No ERANGE and it should do a conversion and consume the whole string.  */
+  return errno != 0 || end == str || *end != '\0';
 }

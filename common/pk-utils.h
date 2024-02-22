@@ -92,22 +92,6 @@ char *pk_str_replace (const char *in, const char *search, const char *replace);
 /* Left and right trim the given string from whitespaces.  */
 void pk_str_trim (char **str);
 
-/* Convert floating-point number in input string STR and save the
-   result in *FLT.  On conversion error, the function will return a
-   non-zero value.
-
-   Note that the whole STR should be a valid floating-point number and
-   leading whitespace(s) will be ignored.  */
-int pvm_stof (const char *str, float *flt) __attribute__ ((nonnull));
-
-/* Convert floating-point number in input string STR and save the
-   result in *DBL.  On conversion error, the function will return a
-   non-zero value.
-
-   Note that the whole STR should be a valid floating-point number and
-   leading whitespace(s) will be ignored.  */
-int pvm_stod (const char *str, double *dbl) __attribute__ ((nonnull));
-
 /* This function is called when the program reaches a supposedly
    unreachable point; print an error message and abort the execution.
 
