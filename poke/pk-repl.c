@@ -39,6 +39,7 @@
 #include "pk-utils.h"
 #include "pk-map.h"
 
+#ifndef _WIN32
 /* The thread that contains the non-local entry point for reentering
    the REPL.  */
 static pthread_t volatile ctrlc_thread;
@@ -46,6 +47,7 @@ static pthread_t volatile ctrlc_thread;
 static sigjmp_buf /*volatile*/ ctrlc_buf;
 /* When nonzero, ctrlc_thread and ctrlc_buf contain valid values.  */
 static int volatile ctrlc_buf_valid;
+#endif
 
 /* This function is called repeatedly by the readline library, when
    generating potential command line completions.
@@ -230,6 +232,7 @@ banner (void)
 
 }
 
+#ifndef _WIN32
 static _GL_ASYNC_SAFE void
 poke_sigint_handler (int sig)
 {
@@ -275,6 +278,7 @@ poke_sigint_handler (int sig)
       raise (SIGINT);
     }
 }
+#endif
 
 /* Return a copy of TEXT, with every instance of the space character
    prepended with the backslash character.   The caller is responsible
@@ -355,6 +359,7 @@ pk_repl (void)
   /* Let the inputrc parser know who we are.  */
   rl_readline_name = "gnupoke";
 
+#ifndef _WIN32
   /* Arrange for the current line to be cancelled on SIGINT.
      Since some library code is also interested in SIGINT
      (GNU libtextstyle, via gnulib module fatal-signal), it is better
@@ -366,6 +371,7 @@ pk_repl (void)
   sa.sa_flags = 0;
   sigemptyset (&sa.sa_mask);
   sigaction (SIGINT, &sa, NULL);
+#endif
 
 #if defined HAVE_READLINE_HISTORY_H
   char *poke_history = NULL;
@@ -389,9 +395,11 @@ pk_repl (void)
   rl_filename_quote_characters = " ";
   rl_filename_quoting_function = escape_metacharacters;
 
+#ifndef _WIN32
   ctrlc_thread = pthread_self ();
   sigsetjmp (ctrlc_buf, 1);
   ctrlc_buf_valid = 1;
+#endif
 
   while (!poke_exit_p)
     {
@@ -448,7 +456,9 @@ pk_repl (void)
   }
 #endif
 
+#ifndef _WIN32
   ctrlc_buf_valid = 0;
+#endif
 }
 
 static int saved_point;
