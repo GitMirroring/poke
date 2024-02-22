@@ -108,6 +108,14 @@ ios_dev_file_open (const char *handler, uint64_t flags, int *error,
   int flags_for_open = 0;
   int fd;
 
+#ifdef _WIN32
+  /* On windows the O_BINARY flag is needed to open files in binary mode.  */
+  int bin_flag = O_BINARY;
+#else
+  /* For other targets use 0 to keep the original flags.  */
+  int bin_flag = 0;
+#endif
+
   if (mode_flags != 0)
     {
       /* Decide what mode to use to open the file.  */
@@ -118,7 +126,8 @@ ios_dev_file_open (const char *handler, uint64_t flags, int *error,
           internal_error = IOD_EFLAGS;
           goto err;
         }
-      fd = open (handler, flags_for_open, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+      fd = open (handler, flags_for_open | bin_flag,
+                 S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
       if (fd == -1)
         goto err;
       f = fdopen (fd, mode_for_fdopen);
@@ -130,19 +139,19 @@ ios_dev_file_open (const char *handler, uint64_t flags, int *error,
          If that fails, then try write-only.  */
       const char *mode_for_fdopen;
 
-      fd = open (handler, O_RDWR, 0);
+      fd = open (handler, O_RDWR | bin_flag, 0);
       flags |= (IOS_F_READ | IOS_F_WRITE);
       mode_for_fdopen = "r+b";
       if (fd == -1)
         {
-          fd = open (handler, O_RDONLY, 0);
+          fd = open (handler, O_RDONLY | bin_flag, 0);
           if (fd != -1)
             flags &= ~IOS_F_WRITE;
           mode_for_fdopen = "rb";
         }
       if (fd == -1)
         {
-          fd = open (handler, O_WRONLY, 0);
+          fd = open (handler, O_WRONLY | bin_flag, 0);
           if (fd != -1)
             flags &= ~IOS_F_READ;
           mode_for_fdopen = "wb";
