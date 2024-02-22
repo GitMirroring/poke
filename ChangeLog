@@ -1,3 +1,12 @@
+2024-02-23  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* poked/usock.c (errorf): Remove.
+	(usock_errorf): Adapt `errorf' to accept `struct usock *'
+	to make the buffer usage implicit.  Add more comments.
+	(usock_handle_srv): Replace `errorf' with `usock_errorf'.
+	(usock_handle_notif): Likewise.
+	(usock_serve): Likewise.
+
 2024-02-23  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* bootstrap.conf (libpoke_modules): Add c-vasprintf and
