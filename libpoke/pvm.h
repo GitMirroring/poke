@@ -803,4 +803,20 @@ void pvm_print_val_with_params (pvm vm, pvm_val val,
 void pvm_register_thread (void);
 void pvm_unregister_thread (void);
 
+/* Convert floating-point number in input string STR and save the
+   result in *FLT.  On conversion error, the function will return a
+   non-zero value.
+
+   Note that the whole STR should be a valid floating-point number and
+   leading whitespace(s) will be ignored.  */
+int pvm_stof (const char *str, float *flt) __attribute__ ((nonnull));
+
+/* Convert floating-point number in input string STR and save the
+   result in *DBL.  On conversion error, the function will return a
+   non-zero value.
+
+   Note that the whole STR should be a valid floating-point number and
+   leading whitespace(s) will be ignored.  */
+int pvm_stod (const char *str, double *dbl) __attribute__ ((nonnull));
+
 #endif /* ! PVM_H */

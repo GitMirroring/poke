@@ -1,3 +1,10 @@
+2024-02-22  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pvm.h: Move prototypes for pvm_stof and pvm_stod from
+	common/pk-utils.h.
+	* libpoke/pvm.c (pvm_stof): Move from common/pk-utils.c.
+	(pvm_stod): Likewise.
+
 2024-02-22  Hannes Domani  <ssbssa@yahoo.de>
 
 	* libpoke/ios-dev-file.c (ios_dev_file_open): Open files in
