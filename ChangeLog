@@ -1,3 +1,8 @@
+2024-02-22  Hannes Domani  <ssbssa@yahoo.de>
+
+	* poke/pk-repl.c (poke_sigint_handler, pk_repl): Use pthread
+	functions only if available.
+
 2024-02-21  Hannes Domani  <ssbssa@yahoo.de>
 
 	* libpoke/pvm.jitter: Undef raise on windows.
