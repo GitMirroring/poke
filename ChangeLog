@@ -1,5 +1,11 @@
 2024-02-22  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* testsuite/lib/poke-dg.exp (dg-require): New procedure.
+	* testsuite/poke.cmd/file-mode.pk: Do not use /etc/passwd and
+	dg-require devnull.
+
+2024-02-22  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* bootstrap.conf (libpoke_modules): Import modules c-strtof and
 	c-strtod.
 	* libpoke/pvm.c (pvm_stof): Use c_strtof.

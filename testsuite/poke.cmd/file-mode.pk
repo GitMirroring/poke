@@ -1,8 +1,10 @@
 /* { dg-do run } */
+/* { dg-require devnull } */
+/* { dg-data {c*} {0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00} foo } */
 
-/* { dg-command { .file /etc/passwd } } */
+/* { dg-command { .file foo } } */
 /* { dg-command { .file /dev/null } } */
 /* { dg-command { .info ios } } */
 /* { dg-output "  Id +Type +Mode +Bias +Size +Name" } */
 /* { dg-output {\n. 1 +FILE +rw +0x00000000#B +0x00000000#B +/dev/null} } */
-/* { dg-output {\n  0 +FILE +r[w ] +0x00000000#B +0x[0-9a-f]*#B +/etc/passwd} } */
+/* { dg-output {\n  0 +FILE +r[w ] +0x00000000#B +0x[0-9a-f]*#B +foo} } */
