@@ -1,5 +1,12 @@
 2024-02-22  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* bootstrap.conf (libpoke_modules): Import modules c-strtof and
+	c-strtod.
+	* libpoke/pvm.c (pvm_stof): Use c_strtof.
+	(pvm_stod): Use c_strtod.
+
+2024-02-22  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pvm.h: Move prototypes for pvm_stof and pvm_stod from
 	common/pk-utils.h.
 	* libpoke/pvm.c (pvm_stof): Move from common/pk-utils.c.
