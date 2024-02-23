@@ -1,3 +1,9 @@
+2024-02-23  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* bootstrap.conf (libpoke_modules): Add c-vasprintf and
+	c-vsnprintf gnulib modules.
+	* libpoke/pvm-wrappers.c: Use c_vaspritnf and c_vsnprintf.
+
 2024-02-22  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* testsuite/lib/poke-dg.exp (dg-require): New procedure.
