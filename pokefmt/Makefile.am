@@ -16,6 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 AUTOMAKE_OPTIONS = subdir-objects
+EXTRA_DIST = pokefmt.l pokefmt.c pokefmt.h
+
+if ENABLE_POKEFMT
 
 MOSTLYCLEANFILES =
 CLEANFILES =
@@ -23,8 +26,6 @@ DISTCLEANFILES =
 MAINTAINERCLEANFILES =
 
 BUILT_SOURCES =
-
-EXTRA_DIST =
 
 appdir = $(pkgdatadir)/pokefmt
 
@@ -67,7 +68,6 @@ pokefmt.h: pokefmt.c
 BUILT_SOURCES += pokefmt.c pokefmt.h
 MOSTLYCLEANFILES += pokefmt.c-tmp pokefmt.h-tmp
 MAINTAINERCLEANFILES += $(srcdir)/pokefmt.c $(srcdir)/pokefmt.h
-EXTRA_DIST += pokefmt.l pokefmt.c pokefmt.h
 
 bin_PROGRAMS = pokefmt
 pokefmt_SOURCES = pokefmt.c pokefmt.h
@@ -81,3 +81,5 @@ pokefmt_CFLAGS = -Wall
 pokefmt_LDADD = $(top_builddir)/libpoke/libpoke.la \
                 $(top_builddir)/gl/libgnu.la
 pokefmt_LDFLAGS =
+
+endif # ENABLE_POKEFMT

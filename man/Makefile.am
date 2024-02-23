@@ -15,30 +15,34 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# In the rules to build manpages below, please depend on the source,
+# not the binary; we don't need to regenerate the binary when any
+# source file changes, only the main one.  Use -o so that the
+# `missing' program can infer the output file.
+
 if NATIVE_BUILD
 
-man_MANS = poke.1 poked.1
-
-EXTRA_DIST = $(man_MANS)
-MAINTAINERCLEANFILES = $(man_MANS)
-
-# The man pages depend on the version number.
-common_mandeps = $(top_srcdir)/configure.ac
-
-# Depend on the source, not the binary; we don't need to regenerate
-# the binary when any source file changes, only the main one.
-# Use -o so that the `missing' program can infer the output file.
-
+man_MANS = poke.1
 poke.1: $(top_srcdir)/poke/poke.c $(common_mandeps)
 	$(MAKE) $(AM_MAKEFLAGS) $(builddir)/../poke/poke$(EXEEXT)
 	$(top_builddir)/run \
 	  $(HELP2MAN) -p poke --name="The GNU extensible binary editor" \
 	      $(builddir)/../poke/poke$(EXEEXT) -o $(srcdir)/poke.1
+EXTRA_DIST = poke.1
+MAINTAINERCLEANFILES = poked.1
 
+if ENABLE_POKED
+man_MANS += poked.1
 poked.1: $(top_srcdir)/poked/poked.c $(common_mandeps)
 	$(MAKE) $(AM_MAKEFLAGS) $(builddir)/../poked/poked$(EXEEXT)
 	$(top_builddir)/run \
 	  $(HELP2MAN) -p poked --name="The poke daemon" -N \
 	      $(builddir)/../poked/poked$(EXEEXT) -o $(srcdir)/poked.1
+EXTRA_DIST += poked.1
+MAINTAINERCLEANFILES += poked.1
+endif
+
+# The man pages depend on the version number.
+common_mandeps = $(top_srcdir)/configure.ac
 
 endif

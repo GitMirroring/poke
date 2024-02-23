@@ -30,11 +30,12 @@ _________________
 .. 4. Bison
 .. 5. GNU Jitter
 .. 6. Building
-.. 7. Building after a git pull
-.. 8. Building with local changes to gnulib or jitter
-.. 9. Gettext
-.. 10. Running an Uninstalled Poke
-.. 11. Continuous Integration
+.. 7. Disabling building some components
+.. 8. Building after a git pull
+.. 9. Building with local changes to gnulib or jitter
+.. 10. Gettext
+.. 11. Running an Uninstalled Poke
+.. 12. Continuous Integration
 4. Coding Style and Conventions
 .. 1. Writing C
 ..... 1. Avoid Tabs
@@ -115,7 +116,7 @@ _________________
 Welcome, adventurous poker! This file contains useful information for
 you.
 
-Copyright (C) 2019, 2020, 2021, 2022, 2023, 2024 The poke authors.
+Copyright (C) 2019-2024 The poke authors.
 
 This file is part of GNU poke.
 
@@ -212,6 +213,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
         Arsen Arsenović		<arsen@aarsen.me>
         Vincenzo Palazzo    <vincenzopalazzodev@gmail.com>
         Martin Cermak		<marticak@gmx.com>
+        Hannes Domani           <ssbssa@yahoo.de>
 
 
 2.5 Personal Branches
@@ -462,7 +464,28 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   `----
 
 
-3.7 Building after a git pull
+3.7 Disabling building some components
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  The poke source distribution encompasses several components: libpoke,
+  the poke application, the poked daemon, etc.  By default all the
+  components will be built provided their requirements are found at
+  configure time, but it is also possible to explicitly disable them
+  when invoking configure.
+
+  For example, this is how you would build a poke without poked and
+  without pokefmt:
+
+  ,----
+  | $ ../configure --disable-poked --disable-pokefmt
+  `----
+
+
+  Note however that if some of the components are disabled, the
+  resulting tree cannot be used to run `make dist' on it.  It will fail.
+
+
+3.8 Building after a git pull
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   Usually issuing a `make' at the top build directory is enough to
@@ -484,7 +507,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   problem with the sub-package mode of Jitter.
 
 
-3.8 Building with local changes to gnulib or jitter
+3.9 Building with local changes to gnulib or jitter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   If you have local changes to gnulib or jitter, that are not yet
@@ -496,8 +519,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   `----
 
 
-3.9 Gettext
-~~~~~~~~~~~
+3.10 Gettext
+~~~~~~~~~~~~
 
   When updating gettext, besides the normal installation on the system,
   it is necessary to run gettextize -f in this hierarchy to update the
@@ -506,7 +529,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   for more information.
 
 
-3.10 Running an Uninstalled Poke
+3.11 Running an Uninstalled Poke
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   Once poke is compiled, you can run it before installing by using the
@@ -523,7 +546,7 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   `----
 
 
-3.11 Continuous Integration
+3.12 Continuous Integration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   The package is built automatically, at regular intervals.  You find

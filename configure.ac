@@ -108,6 +108,32 @@ if test "x$have_proc" = "xyes"; then
 fi
 AM_CONDITIONAL([HAVE_PROC], [test "x$have_proc" = "xyes"])
 
+dnl Support --{enable,disable}-poked, but note it is not supported on
+dnl certain operating systems.
+
+AC_ARG_ENABLE([poked],
+              AS_HELP_STRING([--enable-poked],
+                             [Enable building the poked component (default is YES)]),
+              [enable_poked=$enableval], [enable_poked=yes])
+
+case "${host_os}" in
+  mingw* | windows* )
+    enable_poked=no ;;
+  *)
+    ;;
+esac
+
+AM_CONDITIONAL([ENABLE_POKED], [test "x$enable_poked" = "xyes"])
+
+dnl Support --{enable,disable}-pokefmt.
+
+AC_ARG_ENABLE([pokefmt],
+              AS_HELP_STRING([--enable-pokefmt],
+                             [Enable building the pokefmt component (default is YES)]),
+              [enable_pokefmt=$enableval], [enable_pokefmt=yes])
+
+AM_CONDITIONAL([ENABLE_POKEFMT], [test "x$enable_pokefmt" = "xyes"])
+
 gl_INIT
 libpoke_INIT
 
@@ -326,6 +352,17 @@ dnl pkg-config description
 AX_CREATE_PKGCONFIG_INFO('libpoke/poke.pc', , , 'libpoke')
 
 AC_OUTPUT
+
+dnl Summary
+
+AS_ECHO(["Summary of some of the main features enabled by configure."])
+
+AS_ECHO(["  Build libpoke?                                yes
+  Build poke?                                   yes
+  Build poked?                                  ${enable_poked}
+  Build pokefmt?                                ${enable_pokefmt}
+  Build support for NBD IO spaces?              ${libnbd_enabled}
+"])
 
 dnl Report warnings
 

@@ -17,6 +17,8 @@
 
 AUTOMAKE_OPTIONS = subdir-objects
 
+if ENABLE_POKED
+
 appdir = $(pkgdatadir)/poked
 
 dist_app_DATA = poked.pk pk-dump-minimal.pk
@@ -39,3 +41,5 @@ poked_LDADD = $(top_builddir)/libpoke/libpoke.la \
               $(top_builddir)/gl/libgnu.la \
               -lpthread
 poked_LDFLAGS =
+
+endif # ENABLE_POKED
