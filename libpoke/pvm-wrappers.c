@@ -30,6 +30,8 @@
 #include <time.h>
 #include <timespec.h>
 #include <stdio.h>
+#include <c-vasprintf.h>
+#include <c-vsnprintf.h>
 
 void
 pvm_free (void *p)
@@ -50,7 +52,7 @@ pvm_asprintf (char **resultp, const char *format, ...)
   int result;
 
   va_start (args, format);
-  result = vasprintf (resultp, format, args);
+  result = c_vasprintf (resultp, format, args);
   va_end (args);
   return result;
 }
@@ -62,7 +64,7 @@ pvm_snprintf (char *str, size_t size, const char *format, ...)
   int result;
 
   va_start (args, format);
-  result = vsnprintf (str, size, format, args);
+  result = c_vsnprintf (str, size, format, args);
   va_end (args);
   return result;
 }
