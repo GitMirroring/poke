@@ -92,6 +92,7 @@ Indu Bhagat             <indu.bhagat@oracle.com>
 Arsen Arsenović		<arsen@aarsen.me>
 Vincenzo Palazzo    <vincenzopalazzodev@gmail.com>
 Martin Cermak		<marticak@gmx.com>
+Hannes Domani           <ssbssa@yahoo.de>
 #+END_VERSE
 
 ** Personal Branches
@@ -304,6 +305,23 @@ Martin Cermak		<marticak@gmx.com>
 
    : $ make
    : $ make check
+
+** Disabling building some components
+
+   The poke source distribution encompasses several components:
+   libpoke, the poke application, the poked daemon, etc.  By default
+   all the components will be built provided their requirements are
+   found at configure time, but it is also possible to explicitly
+   disable them when invoking configure.
+
+   For example, this is how you would build a poke without poked and
+   without pokefmt:
+
+   : $ ../configure --disable-poked --disable-pokefmt
+
+   Note however that if some of the components are disabled, the
+   resulting tree cannot be used to run =make dist= on it.  It will
+   fail.
 
 ** Building after a git pull
 
