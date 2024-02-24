@@ -1,3 +1,8 @@
+2024-02-24  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* poked/usock.c (usock_handler_srv): Do F_GETFL before F_SETFL
+	on client sockets.
+
 2024-02-23  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* poked/usock.c (errorf): Remove.

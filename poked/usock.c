@@ -406,6 +406,8 @@ usock_handle_srv (struct usock *u, struct pollfd *pfds)
 
   while (1)
     {
+      int flags;
+
       if ((fd = accept (u->fd, &adr, &adrlen)) == -1)
         {
           if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -421,7 +423,8 @@ usock_handle_srv (struct usock *u, struct pollfd *pfds)
           close (fd);
           continue;
         }
-      if (fcntl (fd, F_SETFL, O_NONBLOCK) == -1)
+      if ((flags = fcntl (fd, F_GETFL)) == -1
+          || fcntl (fd, F_SETFL, flags | O_NONBLOCK) == -1)
         {
           usock_errorf (u, errno, "[%s] fcntl(%d, O_NONBLOCK) failed",
                         __func__, fd);
