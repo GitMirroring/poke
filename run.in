@@ -30,7 +30,7 @@ b=`cd @abs_builddir@ && pwd`
 
 # setup to run uninstalled poke
 set -a
-PATH=$b/poke:$PATH
+PATH=$b/poke:$b/pokefmt:$b/poked:$PATH
 POKEDATADIR=$s/libpoke
 POKECONFIGDIR=$b/libpoke
 POKEINFODIR=$s/doc
