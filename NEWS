@@ -7,7 +7,7 @@ See the manual for detailed information.
   are permitted in any medium without royalty provided the copyright
   notice and this notice are preserved.
 
- Version 3.90.3 (11 February 2024)
+ Version 3.90.4 (25 February 2024)
 * User interface updates
 
   - The `dump' command now accepts an argument :val.  This argument is
@@ -224,6 +224,12 @@ See the manual for detailed information.
     integrating with libpoke, like GDB.
 
 * Build system updates
+
+  - poke, libpoke and pokefmt now builds and runs natively in Windows.
+
+  - Different components in the source tree (poked, pokefmt) can now
+    be disabled using the --disable-poked and --disable-pokefmt
+    command-line options.
 
   - A file poke.m4 is now installed, that provides the macros
     PK_PROG_POKE and PK_CHECK_PICKLE.  These macros are to be used by

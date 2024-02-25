@@ -1,5 +1,10 @@
 2024-02-25  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* NEWS: Update entry for 3.90.4.
+	* doc/gendocs_template: Update version to 3.90.4.
+
+2024-02-25  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* common/pk-utils.c (pk_str_concat): Assert that first argument
 	shall not be NULL.
 	* poke/poke.c (initialize_user): Take care to not use HOME if it
