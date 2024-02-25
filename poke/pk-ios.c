@@ -23,6 +23,7 @@
 #include <regex.h>
 #include <inttypes.h>
 #include <string.h>
+#include <assert.h>
 #include "xalloc.h"
 
 #include "poke.h"

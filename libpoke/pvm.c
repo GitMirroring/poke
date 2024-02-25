@@ -23,6 +23,7 @@
 #include <stdarg.h>
 #include <errno.h> /* For errno.  */
 #include <c-strtod.h> /* for c_strtof and c_strtod.  */
+#include <assert.h>
 
 #include "pkl.h"
 #include "pkl-asm.h"

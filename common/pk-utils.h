@@ -24,7 +24,6 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <assert.h>
 
 /* Macros to avoid using strcmp directly.  */
 
@@ -83,7 +82,7 @@ uint64_t pk_upow (uint64_t base, uint32_t exp);
 int pk_format_binary (char* out, size_t outlen, uint64_t val, int size,
                       int sign_p, int use_suffix_p);
 
-/* Concatenate string arguments into an malloc'ed string. */
+/* Concatenate string arguments into an malloc'ed string.  */
 char *pk_str_concat (const char *s0, ...) __attribute__ ((sentinel));
 
 /* Replace all occurrences of SEARCH within IN by REPLACE. */

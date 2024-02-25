@@ -23,6 +23,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "ios.h"
 #include "ios-dev.h"

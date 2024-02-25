@@ -784,7 +784,7 @@ initialize_user (void)
     char *xdg_config_home = getenv ("XDG_CONFIG_HOME");
     const char *xdg_config_dirs = getenv ("XDG_CONFIG_DIRS");
 
-    if (xdg_config_home == NULL)
+    if (xdg_config_home == NULL && homedir != NULL)
       {
         /* If unset, the default value of $HOME/.config should be preferred to
            the paths in $XDG_CONFIG_DIRS. From the standard:
@@ -792,7 +792,7 @@ initialize_user (void)
            A user-specific version of the configuration file may be created in
            $XDG_CONFIG_HOME/subdir/filename, taking into account the default
            value for $XDG_CONFIG_HOME if $XDG_CONFIG_HOME is not set. */
-        xdg_config_home = pk_str_concat (getenv("HOME"), "/.config", NULL);
+        xdg_config_home = pk_str_concat (homedir, "/.config", NULL);
         pk_assert_alloc (xdg_config_home);
       }
     else
