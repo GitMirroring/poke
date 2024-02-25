@@ -1,3 +1,8 @@
+2024-02-25  Bruno Haible  <bruno@clisp.org>
+
+	libpoke: Fix compiler warnings re [v]asprintf on AIX (regr. 2024-02-23).
+	* bootstrap.conf (libpoke_modules): Add back 'vasprintf-posix'.
+
 2024-02-25  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* NEWS: Update entry for 3.90.4.
