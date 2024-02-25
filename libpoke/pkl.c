@@ -789,7 +789,10 @@ pkl_resolve_module (pkl_compiler compiler,
           e = strchrnul (e + 2, ':');
 #endif
 
-        asprintf (&full_filename, "%.*s/%s%s", (int) (e - s), s, module, ext);
+        if (asprintf (&full_filename, "%.*s/%s%s", (int)(e - s), s, module,
+                      ext)
+            == -1)
+          break;
 
         if (pk_file_readable (full_filename) == NULL)
           break;
