@@ -28,6 +28,7 @@
 #include <stddef.h> /* size_t */
 #include <string.h> /* strcpy */
 #include <ctype.h> /* isspace */
+#include <assert.h>
 
 #include "pk-utils.h"
 
@@ -123,6 +124,8 @@ pk_str_concat (const char *s0, ...)
   size_t len = 0;
   const char *s;
   char *d, *res;
+
+  assert (s0 != NULL);
 
   va_start (args, s0);
   for (s = s0; s; s = va_arg (args, const char *))
