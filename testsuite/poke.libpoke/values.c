@@ -101,7 +101,7 @@ test_simple_values (pk_compiler pkc)
     if ((bigstr = (char *) malloc (bigstr_len + 1)) == NULL)
       {
         fprintf (stderr, "malloc () failed\n");
-        exit (1);
+        exit (EXIT_FAILURE);
       }
     memset (bigstr, 'P', bigstr_len);
     bigstr[bigstr_len] = '\0';
@@ -356,7 +356,7 @@ test_pk_val_equal_p ()
   if (!directory)
     {
       fprintf (stderr, "opendir (%s) failed", TESTDIR);
-      exit (1);
+      exit (EXIT_FAILURE);
     }
 
   while ((dir = readdir (directory)) != NULL)
@@ -371,26 +371,26 @@ test_pk_val_equal_p ()
       if (asprintf (&testfile, "%s/%s", TESTDIR, dir->d_name) == -1)
         {
           fprintf (stderr, "asprintf () failed\n");
-          exit (1);
+          exit (EXIT_FAILURE);
         }
 
       if ((sec_code = read_file (testfile, 0, &test_len)) == NULL)
         {
           fprintf (stderr, "read_file (%s) failed\n", testfile);
-          exit (1);
+          exit (EXIT_FAILURE);
         }
 
       if ((sec_expr1 = strstr (sec_code, "##\n")) == NULL)
         {
           fprintf (stderr, "Invalid test file\n");
-          exit (1);
+          exit (EXIT_FAILURE);
         }
       sec_expr1[0] = '\0'; /* end of code section */
       sec_expr1 += 3;      /* start of first expression section */
       if ((sec_expr2 = strstr (sec_expr1, "##\n")) == NULL)
         {
           fprintf (stderr, "Invalid test file\n");
-          exit (1);
+          exit (EXIT_FAILURE);
         }
       sec_expr2[0] = '\0'; /* end of first expression section */
       sec_expr2 += 3;      /* start of second expression section */
@@ -398,7 +398,7 @@ test_pk_val_equal_p ()
       if (sec_expr2 - sec_code > test_len)
         {
           fprintf (stderr, "Invalid test file\n");
-          exit (1);
+          exit (EXIT_FAILURE);
         }
 
       testcase_pk_val_equal_p (dir->d_name, sec_code, sec_expr1, sec_expr2);
