@@ -795,7 +795,7 @@ initialize_user (void)
         xdg_config_home = pk_str_concat (homedir, "/.config", NULL);
         pk_assert_alloc (xdg_config_home);
       }
-    else
+    else if (xdg_config_home != NULL)
       {
         /* strdup() the user-provided value, to free it below. */
         xdg_config_home = strdup(xdg_config_home);
