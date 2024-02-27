@@ -18,18 +18,15 @@ EXTRA_DIST = \
 
 COMMON = term-if.h
 
-if HAVE_DEJAGNU
 check_PROGRAMS = values api foreign-iod decls
-endif
 
 # Common variables used for all/most test programs.
 
 COMMON_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl \
                   -I$(top_srcdir)/common \
+                  -I$(top_srcdir)/testsuite/lib \
                   -DTESTDIR=\"$(abs_srcdir)\" \
                   -I$(top_srcdir)/libpoke -I$(top_builddir)/libpoke
-# Old DejaGnu versions need a specific old interpretation of 'inline'.
-COMMON_CFLAGS = -fgnu89-inline
 COMMON_LDADD = $(top_builddir)/gl/libgnu.la \
                $(top_builddir)/libpoke/libpoke.la \
                $(LTLIBTEXTSTYLE)

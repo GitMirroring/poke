@@ -309,8 +309,8 @@ if test "x$hserver_enabled" = "xyes"; then
 fi
 
 dnl The test framework is optional.
-AC_CHECK_HEADERS([dejagnu.h])
-AM_CONDITIONAL([HAVE_DEJAGNU], [test "$ac_cv_header_dejagnu_h" = yes])
+AC_CHECK_PROGS([RUNTESTPROG],[runtest],[:])
+AM_CONDITIONAL([HAVE_DEJAGNU], [test "$RUNTESTPROG" != ":"])
 
 dnl editor syntax definitions
 AC_ARG_WITH([vimdir],
