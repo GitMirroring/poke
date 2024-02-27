@@ -27,8 +27,8 @@ COMMON_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl \
                   -I$(top_srcdir)/testsuite/lib \
                   -DTESTDIR=\"$(abs_srcdir)\" \
                   -I$(top_srcdir)/libpoke -I$(top_builddir)/libpoke
-COMMON_LDADD = $(top_builddir)/gl/libgnu.la \
-               $(top_builddir)/libpoke/libpoke.la \
+COMMON_LDADD = $(top_builddir)/libpoke/libpoke.la \
+               $(top_builddir)/gl/libgnu.la \
                $(LTLIBTEXTSTYLE)
 
 # The test programs.
