@@ -1,5 +1,9 @@
 2024-02-27  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* testsuite/poke.libpoke/values.c: Get rid of err.h.
+
+2024-02-27  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* configure.ac: Check for runtest instead of dejagnu.h.
 	* testsuite/lib/poke-uni.h: New file adapted rom dejagnu.h.
 	* testsuite/Makefile.am (EXTRA_DIST): Add lib/poke-unit.h.

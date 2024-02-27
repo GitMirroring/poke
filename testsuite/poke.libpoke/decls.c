@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include <err.h>
 #include "libpoke.h"
 
 #include <poke-unit.h>
