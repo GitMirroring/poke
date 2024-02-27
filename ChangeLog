@@ -1,3 +1,17 @@
+2024-02-27  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* configure.ac: Check for runtest instead of dejagnu.h.
+	* testsuite/lib/poke-uni.h: New file adapted rom dejagnu.h.
+	* testsuite/Makefile.am (EXTRA_DIST): Add lib/poke-unit.h.
+	* testsuite/poke.libpoke/Makefile.am (COMMON_CPPFLAGS): Add
+	$(top_srcdir)/testsuite/lib to the include path.
+	(COMMON_CFLAGS): It is no more needed to use -fgnu89-inline.
+	(check_PROGRAMS): These are now built unconditionally.
+	* testsuite/poke.libpoke/api.c: Include poke-unit.h instead of dejagnu.h.
+	* testsuite/poke.libpoke/decls.c: Likewise.
+	* testsuite/poke.libpoke/foreign-iod.c: Likewise.
+	* testsuite/poke.libpoke/values.c: Likewise.
+
 2024-02-25  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl.c (pkl_resolve_module): Handle failure of `asprintf'.

@@ -57,6 +57,7 @@ EXTRA_DIST = \
   lib/poke-dg.exp \
   lib/poke-pk.exp \
   lib/poke.exp \
+  lib/poke-unit.h \
   poke.cmd/cmd.exp \
   poke.cmd/close-sub-1.pk \
   poke.cmd/copy-1.pk \

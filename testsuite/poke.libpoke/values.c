@@ -28,9 +28,7 @@
 #include "read-file.h"
 #include "libpoke.h"
 
-/* DejaGnu should not use gnulib's vsnprintf replacement here.  */
-#undef vsnprintf
-#include <dejagnu.h>
+#include <poke-unit.h>
 
 #include "term-if.h"
 
