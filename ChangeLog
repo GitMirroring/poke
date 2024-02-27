@@ -1,5 +1,10 @@
 2024-02-27  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/poke.c (initialize_user): Only use xdg_config_home if it is
+	not NULL.
+
+2024-02-27  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* testsuite/poke.libpoke/values.c: Get rid of err.h.
 
 2024-02-27  Jose E. Marchesi  <jemarch@gnu.org>
