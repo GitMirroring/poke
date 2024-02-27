@@ -47,8 +47,8 @@ static int xpassed;
 
 static char buffer[512];
 
-void
-wait (void)
+static void
+deja_wait (void)
 {
 #ifdef _DEJAGNU_WAIT_
   fd_set rfds;
@@ -72,7 +72,7 @@ pass (const char* fmt, ...)
   vsnprintf (buffer, sizeof (buffer), fmt, ap);
   va_end (ap);
   printf ("\tPASSED: %s\n", buffer);
-  wait ();
+  deja_wait ();
 }
 
 static inline void
@@ -85,7 +85,7 @@ xpass (const char* fmt, ...)
   vsnprintf (buffer, sizeof (buffer), fmt, ap);
   va_end (ap);
   printf ("\tXPASSED: %s\n", buffer);
-  wait ();
+  deja_wait ();
 }
 
 static inline void
@@ -98,7 +98,7 @@ fail (const char* fmt, ...)
   vsnprintf (buffer, sizeof (buffer), fmt, ap);
   va_end (ap);
   printf ("\tFAILED: %s\n", buffer);
-  wait ();
+  deja_wait ();
 }
 
 static inline void
@@ -111,7 +111,7 @@ xfail (const char* fmt, ...)
   vsnprintf (buffer, sizeof (buffer), fmt, ap);
   va_end (ap);
   printf ("\tXFAILED: %s\n", buffer);
-  wait ();
+  deja_wait ();
 }
 
 static inline void
@@ -124,7 +124,7 @@ untested (const char* fmt, ...)
   vsnprintf (buffer, sizeof (buffer), fmt, ap);
   va_end (ap);
   printf ("\tUNTESTED: %s\n", buffer);
-  wait ();
+  deja_wait ();
 }
 
 static inline void
@@ -137,7 +137,7 @@ unresolved (const char* fmt, ...)
   vsnprintf (buffer, sizeof (buffer), fmt, ap);
   va_end (ap);
   printf ("\tUNRESOLVED: %s\n", buffer);
-  wait ();
+  deja_wait ();
 }
 
 static inline void
@@ -149,7 +149,7 @@ note (const char* fmt, ...)
   vsnprintf (buffer, sizeof (buffer), fmt, ap);
   va_end (ap);
   printf ("\tNOTE: %s\n", buffer);
-  wait ();
+  deja_wait ();
 }
 
 static inline void

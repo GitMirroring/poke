@@ -1,3 +1,7 @@
+2024-02-27  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* testsuite/lib/poke-unit.h (wait): Rename to `deja_wait'.
+
 2024-02-27  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* testsuite/poke.libpoke/values.c: Use EXIT_FAILURE instead of 1
