@@ -29,6 +29,7 @@
 #ifndef _WIN32
 #include <arpa/inet.h> /* For htonl */
 #endif
+#include <xalloc.h>
 
 #ifdef HAVE_HSERVER
 #  include "pk-hserver.h"
@@ -772,18 +773,23 @@ initialize_user (void)
 
   /* If no ~/.pokerc file was found, acknowledge the XDG Base
      Directory Specification, as documented in
-     https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
-
-     If the environment variable XDG_CONFIG_HOME if defined, try to
-     load the file $XDG_CONFIG_HOME/pokerc.conf.
-
-     If the environment variable $XDG_CONFIG_DIRS is defined, try to
-     use all the : separated paths in that variable to find
-     pokerc.conf.  Else, try to load /etc/xdg/poke/pokerc.conf.  */
+     https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html */
   {
-    char *xdg_config_home = getenv ("XDG_CONFIG_HOME");
-    const char *xdg_config_dirs = getenv ("XDG_CONFIG_DIRS");
+    char *xdg_config_dirs = NULL;
+    char *xdg_config_home = NULL;
 
+    /* If the environment variable $XDG_CONFIG_DIRS is defined, try to
+       use all the : separated paths in that variable to find
+       pokerc.conf.  Else, try to load /etc/xdg/poke/pokerc.conf.  */
+    xdg_config_dirs = getenv ("XDG_CONFIG_DIRS");
+    if (xdg_config_dirs == NULL)
+      xdg_config_dirs = "/etc/xdg";
+
+    char *config_path = xstrdup (xdg_config_dirs);
+
+    /* If the environment variable XDG_CONFIG_HOME if defined, try to
+       load the file $XDG_CONFIG_HOME/pokerc.conf.  */
+    xdg_config_home = getenv ("XDG_CONFIG_HOME");
     if (xdg_config_home == NULL && homedir != NULL)
       {
         /* If unset, the default value of $HOME/.config should be preferred to
@@ -798,16 +804,21 @@ initialize_user (void)
     else if (xdg_config_home != NULL)
       {
         /* strdup() the user-provided value, to free it below. */
-        xdg_config_home = strdup(xdg_config_home);
+        xdg_config_home = strdup (xdg_config_home);
         pk_assert_alloc (xdg_config_home);
       }
 
-    if (xdg_config_dirs == NULL)
-      xdg_config_dirs = "/etc/xdg";
+    if (xdg_config_home)
+      {
+        char *new_config_path = pk_str_concat (xdg_config_home, ":", config_path, NULL);
 
-    char *config_path = pk_str_concat (xdg_config_home, ":", xdg_config_dirs, NULL);
-    pk_assert_alloc (config_path);
+        free (config_path);
+        free (xdg_config_home);
+        pk_assert_alloc (new_config_path);
+        config_path = new_config_path;
+      }
 
+    /* Ok now process config_path.  */
     char *dir = strtok (config_path, ":");
     do
       {
@@ -834,7 +845,6 @@ initialize_user (void)
     while ((dir = strtok (NULL, ":")) != NULL);
 
     free (config_path);
-    free (xdg_config_home);
   }
 }
 
