@@ -1,3 +1,10 @@
+2024-03-05  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* autogen.sh: Updated by `./bootstrap --bootstrap-sync'.
+	* autopull.sh: Likewise.
+	* bootstrap: Likewise.
+	* bootstrap-funclib.sh: Likewise.
+
 2024-02-27  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* testsuite/lib/poke-unit.h (wait): Rename to `deja_wait'.
