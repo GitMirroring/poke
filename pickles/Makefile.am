@@ -28,6 +28,6 @@ dist_pickles_DATA = ctf.pk ctf-dump.pk leb128.pk \
 		    uuid.pk redoxfs.pk pcap.pk ieee754.pk pdap.pk \
                     iscan.pk iscan-str.pk base64.pk gpt-partition-attrs.pk \
 		    gpt-partition-types.pk gpt.pk guid.pk linux.pk srec.pk \
-		    jojodiff.pk
+		    jojodiff.pk jpeg.pk
 
 EXTRA_DIST = README.elf
