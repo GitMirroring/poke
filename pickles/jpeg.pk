@@ -1,0 +1,100 @@
+/* jpeg.pk - JPEG implementation for GNU poke */
+
+/* Copyright (C) 2024 Andreas Klinger */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* Implemented as specified in
+ * https://en.wikipedia.org/wiki/JPEG as well as
+ * https://de.wikipedia.org/wiki/JPEG_File_Interchange_Format  */
+
+/* Marker of JPEG pictures
+ * Array id 0 ("SOF0") starts at binary marker value 0xC0:
+ *   0xC0, 0xC1, ... , 0xC7
+ *   0xC8, 0xC1, ... , 0xCF
+ *   0xD0, 0xD1, ... , 0xD7  (restart marker)
+ *   ...
+ *   0xF8, 0xF1, ... , 0xFF
+ */
+var jpeg_marker =
+  ["SOF0", "SOF1", "SOF2", "SOF3", "DHT", "SOF5", "SOF6", "SOF7",
+   "JPG", "SOF9", "SOF10", "SOF11", "DAC", "SOF13", "SOF14", "SOF15",
+   "-", "-", "-", "-", "-", "-", "-", "-",
+   "SOI", "EOI", "SOS", "DQT", "-", "DRI", "-", "-",
+   "APP0", "APP1", "APP2", "APP3", "APP4", "APP5", "APP6", "APP7",
+   "APP8", "APP9", "APP10", "APP11", "APP12", "APP13", "APP14", "APP15",
+   "-", "-", "-", "-", "-", "-", "-", "-",
+   "-", "-", "-", "-", "-", "-", "COM", "-"];
+
+/* Start and stop marker */
+type JPEG_STS =
+  struct
+  {
+    uint<8> ff = 0xFF;
+    uint<8> xx : xx == 0xD8 || xx == 0xD9 || xx == 0xDA;
+    method _print = void:
+    {
+      printf ("\n#<tag: %u16x\tsymbol: %s>",
+                        ff:::xx, jpeg_marker[xx - 0xC0]);
+    }
+  };
+
+type JPEG_Segment =
+  struct
+  {
+    uint<8> ff == 0xFF;
+    uint<8> xx : xx != 0xD8 && xx != 0xDA && xx != 0xD9 && xx >= 0xC0 && xx < 0xFF;
+    offset<uint<16>,B> size : size >= 2U#B;
+    uint<8>[size >= 2U#B ? size - 2U#B : 0U#B] data;
+    method _print = void:
+    {
+      printf ("\n#<tag: %u16x\tsymbol: %s\tsize: %v>",
+                        ff:::xx, jpeg_marker[xx - 0xC0], size);
+    }
+  };
+
+type JPEG_Tag =
+  struct
+  {
+    type Image =
+      union
+      {
+        uint<8>[2] pair: ((pair[1] != 0xFFUB) && (pair != [0xFFUB,0xD9UB])) || (pair == [0xFFUB,0x00UB]);
+        uint<8> single: single != 0xFFUB;
+      };
+    JPEG_STS soi: soi.xx == 0xD8UB;
+    JPEG_Segment[] segments;
+    JPEG_STS sos: sos.xx == 0xDAUB;
+    Image[] image;
+    JPEG_STS eoi: eoi.xx == 0xD9UB;
+    method get_nsegs = uint<32>:
+    {
+      return segments'length;
+    }
+    method get_image = uint<8>[]:
+    {
+      var bytes = uint<8>[]();
+      for (i in image)
+        try bytes += i.pair;
+        catch if E_elem { bytes += [i.single]; }
+      return bytes;
+    }
+    method get_image_range = offset<uint<64>,B>[]:
+    {
+      var begin = image'offset as offset<uint<64>,B>,
+          end = begin + image'size as offset<uint<64>,B>;
+      return [begin, end];
+    }
+  };
