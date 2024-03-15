@@ -1,5 +1,9 @@
 2024-03-15  Andreas Klinger  <ak@it-klinger.de>
 
+	* testsuite/poke.pickles/jpeg-test.pk: Fix trailing blank.
+
+2024-03-15  Andreas Klinger  <ak@it-klinger.de>
+
 	* pickles/jpeg.pk: New pickle for jpeg files.
 	* pickles/Makefile.am (dist_pickles_DATA): Add jpeg.pk.
 	* testsuite/poke.pickles/jpeg-test.pk: New test.
