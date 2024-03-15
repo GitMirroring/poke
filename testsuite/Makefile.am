@@ -619,6 +619,7 @@ EXTRA_DIST = \
   poke.pickles/id3v2-test.pk \
   poke.pickles/jffs-test.pk \
   poke.pickles/jojodiff-test.pk \
+  poke.pickles/jpeg-test.pk \
   poke.pickles/leb128-test.pk \
   poke.pickles/mcr-test.pk \
   poke.pickles/openpgp-test.pk \
