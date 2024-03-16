@@ -86,6 +86,11 @@ proc dg-require { args } {
         # Mark the test as unsupported
         set do-what [list [lindex do-what 0] N P]
     }
+    if {[lindex $args 1] == "no-darwin" \
+            && [string match "darwin*" $::env(HOST_OS)]} {
+        # Mark the test as unsupported
+        set do-what [list [lindex do-what 0] N P]
+    }
 }
 
 # Create a temporary data file containing the data specified as an

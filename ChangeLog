@@ -1,3 +1,10 @@
+2024-03-16  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* testsuite/Makefile.am (check-DEJAGNU): Set `HOST_OS' env var.
+	* testsuite/lib/poke-dg.exp (dg-require): Add "no-darwin"
+	requirement.
+	* testsuite/poke.cmd/mmap-1.pk: Disable the test on Darwin.
+
 2024-03-15  Andreas Klinger  <ak@it-klinger.de>
 
 	* testsuite/poke.pickles/jpeg-test.pk: Fix trailing blank.
