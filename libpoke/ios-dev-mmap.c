@@ -150,6 +150,7 @@ ios_dev_mmap_open (const char *handler, uint64_t flags, int *error,
   if (!dev_map)
     goto err;
 
+  fd = -1;
   memset (dev_map, 0, sizeof (struct ios_dev_mmap));
 
   /* Format of handler:
@@ -285,6 +286,8 @@ ios_dev_mmap_open (const char *handler, uint64_t flags, int *error,
   return dev_map;
 
 err:
+  if (fd != -1)
+    close (fd);
   if (dev_map)
     free (dev_map->filename);
   free (dev_map);

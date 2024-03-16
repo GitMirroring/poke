@@ -1,5 +1,10 @@
 2024-03-16  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/ios-dev-mmap.c (ios_dev_mmap_open): Close the opened
+	file, in case of error.
+
+2024-03-16  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* testsuite/Makefile.am (check-DEJAGNU): Set `HOST_OS' env var.
 	* testsuite/lib/poke-dg.exp (dg-require): Add "no-darwin"
 	requirement.
