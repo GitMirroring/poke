@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-require memzero } */
+/* { dg-require no-darwin } */
 
 /* Check that it's possible to memory map /dev/zero. */
 

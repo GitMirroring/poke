@@ -25,6 +25,7 @@ if HAVE_DEJAGNU
 	if $(SHELL) -c "$$runtest --version" > /dev/null 2>&1; then \
 	  echo set enable-bracketed-paste off > "$(top_builddir)/inputrc"; \
 	  CC_FOR_TARGET="$(CC_FOR_TARGET)" CFLAGS_FOR_TARGET="$(CFLAGS)" \
+	  HOST_OS="$(host_os)" \
 	  HAVE_LIBTEXTSTYLE="$(HAVE_LIBTEXTSTYLE)" \
 	  NBDKIT="$(NBDKIT)" \
 	  INPUTRC="$(top_builddir)/inputrc" \
