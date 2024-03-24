@@ -1116,10 +1116,14 @@ PKL_PHASE_BEGIN_HANDLER (pkl_fold_ps_cast)
       && PKL_AST_CODE (exp) == PKL_AST_INTEGER)
     {
       int size = PKL_AST_TYPE_I_SIZE (to_type);
+      uint64_t value = PKL_AST_INTEGER_VALUE (exp);
       uint64_t mask = size < 64 ? (1LLU << size) - 1 : 0LLU - 1;
 
-      new = pkl_ast_make_integer (PKL_PASS_AST,
-                                  PKL_AST_INTEGER_VALUE (exp) & mask);
+      value &= mask;
+      if (PKL_AST_TYPE_I_SIGNED_P (to_type))
+        value = (int64_t)(value << (64 - size)) >> (64 - size);
+
+      new = pkl_ast_make_integer (PKL_PASS_AST, value);
     }
   else if (PKL_AST_TYPE_CODE (from_type) == PKL_TYPE_OFFSET
            && PKL_AST_TYPE_CODE (to_type) == PKL_TYPE_OFFSET
@@ -1140,9 +1144,13 @@ PKL_PHASE_BEGIN_HANDLER (pkl_fold_ps_cast)
         PKL_PASS_DONE;
 
       /* Transform magnitude to bits.  */
-      PKL_AST_INTEGER_VALUE (magnitude)
-        = (PKL_AST_INTEGER_VALUE (magnitude) *
-           PKL_AST_INTEGER_VALUE (unit));
+      if (PKL_AST_TYPE_I_SIGNED_P (from_base_type))
+        PKL_AST_INTEGER_VALUE (magnitude)
+            = (uint64_t)((int64_t)PKL_AST_INTEGER_VALUE (magnitude)
+                * (int64_t)PKL_AST_INTEGER_VALUE (unit));
+      else
+        PKL_AST_INTEGER_VALUE (magnitude)
+          = PKL_AST_INTEGER_VALUE (magnitude) * PKL_AST_INTEGER_VALUE (unit);
 
       /* Calculate the new unit.  It should always be a new node,
          since otherwise we may be chaining an integer node that is
@@ -1169,11 +1177,19 @@ PKL_PHASE_BEGIN_HANDLER (pkl_fold_ps_cast)
       /* Transform magnitude to new unit.  */
       {
         int size = PKL_AST_TYPE_I_SIZE (to_base_type);
+        uint64_t mag = PKL_AST_INTEGER_VALUE (magnitude);
         uint64_t mask = size < 64 ? (1LLU << size) -1 : 0LLU - 1;
 
-        PKL_AST_INTEGER_VALUE (magnitude)
-          = (PKL_AST_INTEGER_VALUE (magnitude)
-             /  PKL_AST_INTEGER_VALUE (unit)) & mask;
+        if (PKL_AST_TYPE_I_SIGNED_P (from_base_type))
+          mag = (uint64_t)((int64_t)mag
+                  / (int64_t)PKL_AST_INTEGER_VALUE (unit));
+        else
+          mag /= PKL_AST_INTEGER_VALUE (unit);
+
+        mag &= mask;
+        if (PKL_AST_TYPE_I_SIGNED_P (to_base_type))
+          mag = (int64_t)(mag << (64 - size)) >> (64 - size);
+        PKL_AST_INTEGER_VALUE (magnitude) = mag;
       }
 
       new = pkl_ast_make_offset (PKL_PASS_AST,

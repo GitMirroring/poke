@@ -3504,37 +3504,71 @@
 ;;;    pkl_ast_node reflecting the offset type we are casting to.
 
         .macro offset_cast @from_type @to_type
-        ;; Note that we have to do the arithmetic in unit_types, then
+        ;; Note that we have to do the arithmetic in unit types, then
         ;; convert to to_base_type, to assure that to_base_type can hold
         ;; the to_base_unit.  Otherwise weird division by zero occurs.
+        ;; If @from_base_type is signed, to get the arithmetic right,
+        ;; we have to convert values to int<64> (for signed multiplication
+        ;; and signed division).
         pushf 2
         regvar $tounit                          ; OFF
         ogetu                                   ; OFF FROMUNIT
         regvar $fromunit                        ; OFF
         ;; Get the magnitude of the offset and convert it to the
-        ;; unit type, which is uint<64>.
+        ;; uint<64> or int<64> based on the sign of @from_base_type.
         ogetm                                   ; OFF OFFM
         .let @unit_type = PKL_AST_TYPE (PKL_AST_TYPE_O_UNIT (@from_type))
         .let @from_base_type = PKL_AST_TYPE_O_BASE_TYPE (@from_type)
+        .let @long64_type = pkl_ast_make_integral_type (PKL_PASS_AST, 64, 1);
+   .c   @long64_type = ASTREF (@long64_type);
+   .c if (PKL_AST_TYPE_I_SIGNED_P (PKL_AST_TYPE_O_BASE_TYPE (@from_type)))
+   .c {
+        nton @from_base_type, @long64_type      ; OFF OFFM OFFMC
+   .c }
+   .c else
+   .c {
         nton @from_base_type, @unit_type        ; OFF OFFM OFFMC
+   .c }
         nip                                     ; OFF OFFMC
         ;; Now do the same for the unit.
         pushvar $fromunit                       ; OFF OFFMC OFFU
+   .c if (PKL_AST_TYPE_I_SIGNED_P (PKL_AST_TYPE_O_BASE_TYPE (@from_type)))
+   .c {
         mul @unit_type                          ; OFF OFFMC OFFU (OFFMC*OFFUC)
+   .c }
+   .c else
+   .c {
+        mul @long64_type                        ; OFF OFFMC OFFU (OFFMC*OFFUC)
+   .c }
         nip2                                    ; OFF (OFFMC*OFFUC)
         ;; Convert the new unit.
         pushvar $tounit                         ; OFF (OFFMC*OFFUC) TOUNIT
+   .c if (PKL_AST_TYPE_I_SIGNED_P (PKL_AST_TYPE_O_BASE_TYPE (@from_type)))
+   .c {
+        div @long64_type
+   .c }
+   .c else
+   .c {
         div @unit_type
+   .c }
         nip2                                    ; OFF (OFFMC*OFFUC/TOUNIT)
         ;; Convert to the new unit
         .let @to_base_type = PKL_AST_TYPE_O_BASE_TYPE (@to_type)
+   .c if (PKL_AST_TYPE_I_SIGNED_P (PKL_AST_TYPE_O_BASE_TYPE (@from_type)))
+   .c {
+        nton @long64_type, @to_base_type        ; OFF (OFFMC*OFFUC/TOUNIT) OFFC
+   .c }
+   .c else
+   .c {
         nton @unit_type, @to_base_type          ; OFF (OFFMC*OFFUC/TOUNIT) OFFC
+   .c }
         nip2                                    ; OFFC
      .c PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPE);
      .c PKL_PASS_SUBPASS (@to_type);
      .c PKL_GEN_POP_CONTEXT;
                                                 ; OFFC TYPE
         mko                                     ; OFFC
+     .c pkl_ast_node_free (@long64_type);
         popf 1
         .end
 

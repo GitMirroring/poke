@@ -1142,6 +1142,9 @@ EXTRA_DIST = \
   poke.pkl/cast-integers-17.pk \
   poke.pkl/cast-integers-18.pk \
   poke.pkl/cast-integers-19.pk \
+  poke.pkl/cast-integers-20.pk \
+  poke.pkl/cast-integers-21.pk \
+  poke.pkl/cast-integers-22.pk \
   poke.pkl/cast-int-struct-1.pk \
   poke.pkl/cast-int-struct-2.pk \
   poke.pkl/cast-int-struct-3.pk \
@@ -1151,6 +1154,8 @@ EXTRA_DIST = \
   poke.pkl/cast-offsets-3.pk \
   poke.pkl/cast-offsets-4.pk \
   poke.pkl/cast-offsets-5.pk \
+  poke.pkl/cast-offsets-6.pk \
+  poke.pkl/cast-offsets-7.pk \
   poke.pkl/cast-offsets-diag-1.pk \
   poke.pkl/cast-offsets-diag-2.pk \
   poke.pkl/cast-offsets-diag-3.pk \

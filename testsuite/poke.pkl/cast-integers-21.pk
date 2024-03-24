@@ -1,0 +1,11 @@
+/* { dg-do run } */
+
+var a = -2;
+
+/* { dg-command {.set obase 10} } */
+/* { dg-command { (a as int<13>) as int<3> } } */
+/* { dg-output ".int<3>. -2" } */
+
+/* For constant folding:  */
+/* { dg-command { (-2 as uint<13>) as int<3> } } */
+/* { dg-output "\n.int<3>. -2" } */

@@ -1,0 +1,11 @@
+/* { dg-do run } */
+
+var a = -1;
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command { (a as uint<13>) as int<32> } } */
+/* { dg-output "0x00001fff" } */
+
+/* For constant folding:  */
+/* { dg-command { (-1 as uint<13>) as int<32> } } */
+/* { dg-output "\n0x00001fff" } */
