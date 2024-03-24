@@ -1,0 +1,25 @@
+/* { dg-do run } */
+
+var x = -2#48;
+
+/* { dg-command {.set obase 16} } */
+
+/* { dg-command { (x as offset<uint<13>,24>) as offset<int<54>,B> } } */
+/* { dg-output ".int<54>. 0x00000000005ff4#B" } */
+
+/* For constant folding: */
+/* { dg-command {((-2)#48 as offset<uint<13>,24>) as offset<int<54>,B>} } */
+/* { dg-output "\n.int<54>. 0x00000000005ff4#B" } */
+
+/* Doing the reverse operation to verify that we're getting the
+   math right.  */
+
+var number_of_bytes = 0x5ff4,
+    number_of_bytes_in_24_bits = 3,
+    number_of_24_bits_in_48_bits = 2;
+
+var a = (number_of_bytes / number_of_bytes_in_24_bits) as uint<13>,
+    b = a as int<13>,
+    c = b / number_of_24_bits_in_48_bits;
+
+assert (c == -2);

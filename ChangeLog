@@ -1,3 +1,17 @@
+2024-03-24  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-fold.c (pkl_fold_ps_cast): Fix integer cast by
+	adding missing conditional sign-extension operation.
+	Also fix offset casting to work with negative magnitudes by
+	using signed division, masking and conditional sign extension.
+	* libpoke/pkl-gen.pks (offset_cast): Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+	* testsuite/poke.pkl/cast-integers-20.pk: New test.
+	* testsuite/poke.pkl/cast-integers-21.pk: Likewise.
+	* testsuite/poke.pkl/cast-integers-22.pk: Likewise.
+	* testsuite/poke.pkl/cast-offsets-6.pk: Likewise.
+	* testsuite/poke.pkl/cast-offsets-7.pk: Likewise.
+
 2024-03-16  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/ios-dev-mmap.c (ios_dev_mmap_open): Close the opened
