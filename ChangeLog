@@ -1,5 +1,10 @@
 2024-03-30  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* NEWS: Update for 4.0.
+	* doc/gendocs_template: Likewise.
+
+2024-03-30  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* pickles/ios.pk: fix print :val.
 
 2024-03-24  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
