@@ -1,3 +1,7 @@
+2024-03-30  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* pickles/ios.pk: fix print :val.
+
 2024-03-24  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-fold.c (pkl_fold_ps_cast): Fix integer cast by
