@@ -7,7 +7,7 @@ See the manual for detailed information.
   are permitted in any medium without royalty provided the copyright
   notice and this notice are preserved.
 
- Version 3.90.4 (25 February 2024)
+ Version 4.0 (30 March 2024)
 * User interface updates
 
   - The `dump' command now accepts an argument :val.  This argument is
@@ -15,14 +15,6 @@ See the manual for detailed information.
     to the value, using colors for the different fields.  This command
     is useful in order to get a visual representation of the
     constituents of the value and their corresponding bytes.
-
-  - The `open' call allocates a new "identifier", which is a positive
-    number, when it opens an IO space.  The identifiers are now
-    allocated consecutively and they are consistently reused, much
-    like file descriptors in POSIX systems.  This means that if the IO
-    spaces 0, 1 and 2 are opened, then 1 gets closed, the next call to
-    `open' will use 1.  Poke programs can rely on this behavior, which
-    is now documented.
 
   - It is now possible to compare Poke values of type `any' using the
     equality and inequality operators == and !=.
@@ -44,8 +36,9 @@ See the manual for detailed information.
     run in the system.
 
   - The poke program now allows referring to IO spaces by name/handler
-    with $<STR>, where STR is a non-ambiguous prefix of some open IO
-    space handler.  Examples are $</bin/ls> and $<*0*>.
+    with $<STR>, where STR is a non-ambiguous substring of some open
+    IO space handler.  Examples are $</bin/ls> and $<*0*>, which could
+    be referred to as $<ls> and $<0> respectively.
 
   - A new utility called pokefmt has been added to the GNU poke
     distribution, which implements a simple template system.  See the
@@ -60,7 +53,8 @@ See the manual for detailed information.
     class.
 
   - The new dot-command `.compiler ast EXPR' will compile EXPR and
-    then print its abstract syntax tree (AST).
+    then print its abstract syntax tree (AST).  This is useful for
+    debugging the compiler.
 
   - The dot-command `.info type' now accepts both expressions or Poke
     type specifiers as argument.  In the first case it prints
@@ -92,8 +86,8 @@ See the manual for detailed information.
     of a GNU poke system, or of a pickle.  Accompanying functions
     pk_version_parse and pk_vercmp are available for parsing
     PK_Version values from strings and for comparing versions,
-    respectively.  The version comparing function accepts Pk_Version
-    or string formatted versions indistinctly.
+    respectively.  The version comparing function accepts either
+    Pk_Version or string formatted versions indistinctly.
 
   - The new built-in function `rtrace' prints out the current call
     stack in the PVM, a function name in each line.  It makes use of
@@ -102,10 +96,10 @@ See the manual for detailed information.
   - The new built-in function `iosearch' allows searching for IO
     spaces by name/handler from Poke programs.
 
-  - The new built-in `openmmap' function allows to create
-    MMAP-operated IO spaces.
-
 * Standard Poke Library updates
+
+  - The new built-in `openmmap' function allows to create
+    MMAP-operated IO spaces in Poke programs.
 
   - New functions `isdigit' and `isxdigit' have been added to the
     standard library, that check whether a given character is a
@@ -131,7 +125,8 @@ See the manual for detailed information.
 
   - The standard function `stoca' has been changed so it doesn't
     always require passing an array to it.  If no array is passed then
-    it allocates and returns an array by itself.
+    it allocates and returns an array by itself.  This is backwards
+    compatible.
 
 * libpoke updates
 
@@ -245,7 +240,7 @@ See the manual for detailed information.
   - The GNU poke manual in `info' format is now installed under its
     own directory category (GNU poke) rather than under Editors.  This
     is because other poke related projects like poke-elf and
-    poke-dwarf also install manuals under the new directory category.
+    poke-dwarf also install manuals under this new directory category.
 
  Version 3.3 (20 August 2023)
 * Bug fixes
