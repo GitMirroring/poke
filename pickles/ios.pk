@@ -177,7 +177,7 @@ fun ios_dump_bytes = (int<32> ios,
             unknown_byte_style = style;
           }
 
-        if (!print_val_p || style == "")
+        if (!print_val_p && style == "")
           {
             style = "dump-ascii";
             unknown_byte_style = "dump-unknown";
@@ -317,7 +317,7 @@ fun ios_dump_bytes = (int<32> ios,
 
                     if (style != "")
                       term_begin_class (style);
-                    printf ("%u4x", b & 0xf .>> 4);
+                    printf ("%u4x", (b .>> 4) & 0xf);
                     if (style != "")
                       term_end_class (style);
 
