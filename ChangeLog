@@ -1,5 +1,10 @@
 2024-03-30  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/ios-dev-mmap.c (ios_dev_mmap_open): Avoid using variable
+	fd uninitialized.
+
+2024-03-30  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* NEWS: Update for 4.0.
 	* doc/gendocs_template: Likewise.
 

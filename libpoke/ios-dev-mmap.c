@@ -140,7 +140,7 @@ ios_dev_mmap_open (const char *handler, uint64_t flags, int *error,
   int internal_error = IOD_ERROR;
   uint8_t mode_flags = flags & IOS_FLAGS_MODE;
   int open_flags = 0;
-  int fd;
+  int fd = -1;
   const char *p;
   char *end;
   struct stat st;
@@ -150,7 +150,6 @@ ios_dev_mmap_open (const char *handler, uint64_t flags, int *error,
   if (!dev_map)
     goto err;
 
-  fd = -1;
   memset (dev_map, 0, sizeof (struct ios_dev_mmap));
 
   /* Format of handler:
