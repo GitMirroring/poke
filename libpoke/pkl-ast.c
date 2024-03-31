@@ -3083,7 +3083,7 @@ pkl_ast_handle_bconc_ass_stmt_1 (pkl_ast ast,
           {
             /* This is an l-value.  Append an assignment of a masked
                value with the given shift and increase the shift.  */
-            pkl_ast_node ass_stmt;
+            pkl_ast_node ass_stmt, stmts;
             pkl_ast_node rvalue;
             pkl_ast_node shift_node, shift_node_type;
             pkl_ast_node operand_type = PKL_AST_TYPE (operand);
@@ -3110,9 +3110,8 @@ pkl_ast_handle_bconc_ass_stmt_1 (pkl_ast ast,
 
             ass_stmt = pkl_ast_make_ass_stmt (ast, operand, rvalue);
 
-            PKL_AST_COMP_STMT_STMTS (comp_stmt)
-              = pkl_ast_chainon (PKL_AST_COMP_STMT_STMTS (comp_stmt),
-                                 ass_stmt);
+            stmts = pkl_ast_chainon (PKL_AST_COMP_STMT_STMTS (comp_stmt), ass_stmt);
+            PKL_AST_COMP_STMT_STMTS (comp_stmt) = ASTREF (stmts);
             break;
           }
         }
