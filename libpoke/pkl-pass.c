@@ -634,13 +634,6 @@ pkl_do_pass_1 (pkl_compiler compiler,
  newnode:
  restart:
 
-  /* If a new node was created to replace the incoming node, increase
-     its reference counter.  This assumes that the node returned by
-     this function will be stored in some other node (or the top-level
-     AST structure).  */
-  if (node != node_orig)
-    node = ASTREF (node);
-
  _exit:
   if (level != 0
       && PKL_AST_CODE (node) == PKL_AST_TYPE)

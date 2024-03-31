@@ -1,5 +1,29 @@
 2024-03-31  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-pass.c (pkl_do_pass_1): Do not increase reference
+	counter automatically in substituted PKL_PASS_NODE.  Let the
+	handlers do it instead.
+	* libpoke/pkl-fold.c (OP_UNARY_II): Increase reference counting in
+	PKL_PASS_NODE.
+	(OP_UNARY_OO): Likewise.
+	(OP_BINARY_OOI): Likewise.
+	(OP_BINARY_OOO): Likewise.
+	(OP_BINARY_SIS): Likewise.
+	(OP_BINARY_OIO): Likewise.
+	(OP_BINARY_III): Likewise.
+	(OP_BINARY_SSS): Likewise.
+	(OP_BINARY_SSI): Likewise.
+	(OP_BINARY_AAA_ADD): Likewise.
+	(pkl_fold_pow): Likewise.
+	(pkl_fold_bconc): Likewise.
+	(pkl_fold_ps_cast): Likewise.
+	* libpoke/pkl-typify.c (pkl_typify1_ps_isa): Likewise.
+	* libpoke/pkl-trans.c (pkl_trans1_ps_var): Likewise.
+	(pkl_tarns2_ps_struct_ref): Likewise.
+	(pkl_trans3_ps_op_sizeof): Likewise.
+
+2024-03-31  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-ast.c (pkl_ast_handle_bconc_ass_stmt_1): Fix
 	reference counting in synthetized compount statement.
 
