@@ -251,7 +251,7 @@ EMUL_UU (bnoto) { return ~op; }
           PKL_AST_LOC (new) = PKL_AST_LOC (PKL_PASS_NODE);              \
                                                                         \
           pkl_ast_node_free (PKL_PASS_NODE);                            \
-          PKL_PASS_NODE = new;                                          \
+          PKL_PASS_NODE = ASTREF (new);                                 \
           PKL_PASS_DONE;                                                \
                                                                         \
         overflow:                                                       \
@@ -304,7 +304,7 @@ EMUL_UU (bnoto) { return ~op; }
           PKL_AST_LOC (new) = PKL_AST_LOC (PKL_PASS_NODE);              \
                                                                         \
           pkl_ast_node_free (PKL_PASS_NODE);                            \
-          PKL_PASS_NODE = new;                                          \
+          PKL_PASS_NODE = ASTREF (new);                                 \
           PKL_PASS_DONE;                                                \
         }                                                               \
     }                                                                   \
@@ -364,7 +364,7 @@ EMUL_UU (bnoto) { return ~op; }
           PKL_AST_LOC (new) = PKL_AST_LOC (PKL_PASS_NODE);              \
                                                                         \
           pkl_ast_node_free (PKL_PASS_NODE);                            \
-          PKL_PASS_NODE = new;                                          \
+          PKL_PASS_NODE = ASTREF (new);                                 \
           PKL_PASS_DONE;                                                \
         }                                                               \
     }                                                                   \
@@ -436,7 +436,7 @@ EMUL_UU (bnoto) { return ~op; }
           PKL_AST_LOC (new) = PKL_AST_LOC (PKL_PASS_NODE);              \
                                                                         \
           pkl_ast_node_free (PKL_PASS_NODE);                            \
-          PKL_PASS_NODE = new;                                          \
+          PKL_PASS_NODE = ASTREF (new);                                 \
           PKL_PASS_DONE;                                                \
         }                                                               \
     }                                                                   \
@@ -479,7 +479,7 @@ EMUL_UU (bnoto) { return ~op; }
           PKL_AST_LOC (new) = PKL_AST_LOC (PKL_PASS_NODE);              \
                                                                         \
           pkl_ast_node_free (PKL_PASS_NODE);                            \
-          PKL_PASS_NODE = new;                                          \
+          PKL_PASS_NODE = ASTREF (new);                                 \
           PKL_PASS_DONE;                                                \
         }                                                               \
     }                                                                   \
@@ -558,7 +558,7 @@ EMUL_UU (bnoto) { return ~op; }
           PKL_AST_LOC (new) = PKL_AST_LOC (PKL_PASS_NODE);              \
                                                                         \
           pkl_ast_node_free (PKL_PASS_NODE);                            \
-          PKL_PASS_NODE = new;                                          \
+          PKL_PASS_NODE = ASTREF (new);                                 \
           PKL_PASS_DONE;                                                \
         }                                                               \
     }                                                                   \
@@ -648,7 +648,7 @@ EMUL_UU (bnoto) { return ~op; }
           PKL_AST_LOC (new) = PKL_AST_LOC (PKL_PASS_NODE);              \
                                                                         \
           pkl_ast_node_free (PKL_PASS_NODE);                            \
-          PKL_PASS_NODE = new;                                          \
+          PKL_PASS_NODE = ASTREF (new);                                 \
           PKL_PASS_DONE;                                                \
                                                                         \
         overflow:                                                       \
@@ -689,7 +689,7 @@ EMUL_UU (bnoto) { return ~op; }
           PKL_AST_LOC (new) = PKL_AST_LOC (PKL_PASS_NODE);              \
                                                                         \
           pkl_ast_node_free (PKL_PASS_NODE);                            \
-          PKL_PASS_NODE = new;                                          \
+          PKL_PASS_NODE = ASTREF (new);                                 \
           PKL_PASS_DONE;                                                \
         }                                                               \
     }                                                                   \
@@ -722,7 +722,7 @@ EMUL_UU (bnoto) { return ~op; }
           PKL_AST_LOC (new) = PKL_AST_LOC (PKL_PASS_NODE);              \
                                                                         \
           pkl_ast_node_free (PKL_PASS_NODE);                            \
-          PKL_PASS_NODE = new;                                          \
+          PKL_PASS_NODE = ASTREF (new);                                 \
           PKL_PASS_DONE;                                                \
         }                                                               \
     }                                                                   \
@@ -781,7 +781,7 @@ EMUL_UU (bnoto) { return ~op; }
           PKL_AST_LITERAL_P (new) = 1;                                        \
           PKL_AST_LOC (new) = PKL_AST_LOC (PKL_PASS_NODE);                    \
           pkl_ast_node_free (PKL_PASS_NODE);                                  \
-          PKL_PASS_NODE = new;                                                \
+          PKL_PASS_NODE = ASTREF (new);                                       \
           PKL_PASS_RESTART = 1;                                               \
           PKL_PASS_DONE;                                                      \
         }                                                                     \
@@ -903,7 +903,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_fold_pow)
         PKL_AST_LOC (new) = PKL_AST_LOC (PKL_PASS_NODE);
 
         pkl_ast_node_free (PKL_PASS_NODE);
-        PKL_PASS_NODE = new;
+        PKL_PASS_NODE = ASTREF (new);
         PKL_PASS_DONE;
       }
   }
@@ -1091,7 +1091,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_fold_bconc)
   PKL_AST_LOC (new) = PKL_AST_LOC (PKL_PASS_NODE);
 
   pkl_ast_node_free (PKL_PASS_NODE);
-  PKL_PASS_NODE = new;
+  PKL_PASS_NODE = ASTREF (new);
 }
 PKL_PHASE_END_HANDLER
 
@@ -1202,7 +1202,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_fold_ps_cast)
   PKL_AST_TYPE (new) = ASTREF (to_type);
   PKL_AST_LOC (new) = PKL_AST_LOC (exp);
   pkl_ast_node_free (cast);
-  PKL_PASS_NODE = new;
+  PKL_PASS_NODE = ASTREF (new);
 }
 PKL_PHASE_END_HANDLER
 

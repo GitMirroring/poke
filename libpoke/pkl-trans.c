@@ -317,7 +317,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_var)
                                                        NULL /* args */);
 
           PKL_AST_LOC (funcall) = PKL_AST_LOC (var);
-          PKL_PASS_NODE = funcall;
+          PKL_PASS_NODE = ASTREF (funcall);
           PKL_PASS_RESTART = 1;
         }
     }
@@ -1719,7 +1719,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans2_ps_struct_ref)
           PKL_AST_TYPE (funcall) = ASTREF (function_rtype);
           PKL_AST_LOC (funcall) = PKL_AST_LOC (struct_ref);
 
-          PKL_PASS_NODE = funcall;
+          PKL_PASS_NODE = ASTREF (funcall);
           PKL_PASS_RESTART = 1;
         }
     }
@@ -1979,7 +1979,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans3_ps_op_sizeof)
   }
 
   pkl_ast_node_free (PKL_PASS_NODE);
-  PKL_PASS_NODE = offset;
+  PKL_PASS_NODE = ASTREF (offset);
   PKL_PASS_RESTART = 1;
 }
 PKL_PHASE_END_HANDLER

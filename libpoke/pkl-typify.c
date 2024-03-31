@@ -421,7 +421,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_isa)
       PKL_AST_TYPE (true_node) = ASTREF (bool_type);
 
       pkl_ast_node_free (PKL_PASS_NODE);
-      PKL_PASS_NODE = true_node;
+      PKL_PASS_NODE = ASTREF (true_node);
     }
   else if (PKL_AST_TYPE_CODE (isa_exp_type) != PKL_TYPE_ANY)
     {
@@ -433,7 +433,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_isa)
       PKL_AST_TYPE (bool_node) = ASTREF (bool_type);
 
       pkl_ast_node_free (PKL_PASS_NODE);
-      PKL_PASS_NODE = bool_node;
+      PKL_PASS_NODE = ASTREF (bool_node);
     }
   else
     /* The rest of the cases should be resolved at run-time.  */
