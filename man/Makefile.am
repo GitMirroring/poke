@@ -42,6 +42,17 @@ EXTRA_DIST += poked.1
 MAINTAINERCLEANFILES += poked.1
 endif
 
+if ENABLE_POKEFMT
+man_MANS += pokefmt.1
+pokefmt.1: $(top_srcdir)/pokefmt/pokefmt.l $(common_mandeps)
+	$(MAKE) $(AM_MAKEFLAGS) $(builddir)/../pokefmt/pokefmt$(EXEEXT)
+	$(top_builddir)/run \
+	  $(HELP2MAN) -p pokefmt --name="The poke templating system" -N \
+	      $(builddir)/../pokefmt/pokefmt$(EXEEXT) -o $(srcdir)/pokefmt.1
+EXTRA_DIST += pokefmt.1
+MAINTAINERCLEANFILES += pokefmt.1
+endif
+
 # The man pages depend on the version number.
 common_mandeps = $(top_srcdir)/configure.ac
 
