@@ -1,5 +1,9 @@
 2024-04-01  Sergio Durigan Junior  <sergiodj@sergiodj.net>
 
+	* man/Makefile.am: Generate manpage for pokefmt.
+
+2024-04-01  Sergio Durigan Junior  <sergiodj@sergiodj.net>
+
 	* pokefmt/pokefmt.l (poke_stmt): Fix typo.
 	(poke_expr): Likewise.
 
