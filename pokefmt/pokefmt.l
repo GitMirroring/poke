@@ -609,7 +609,7 @@ poke_stmt (struct poke *poke, const char *poke_src,
       default_exception_handler (poke, exc);
       errx (
           1,
-          "unhandled exception happend during execution of Poke code in range"
+          "unhandled exception happened during execution of Poke code in range"
           " %d,%d-%d,%d: '%s'",
           r->line[0], r->col[0], r->line[1], r->col[1], poke_src);
     }
@@ -637,7 +637,7 @@ poke_expr (struct poke *poke, const char *poke_src,
       default_exception_handler (poke, exc);
       errx (
           1,
-          "unhandled exception happend during execution of Poke code in range"
+          "unhandled exception happened during execution of Poke code in range"
           " %d,%d-%d,%d: '%s'",
           r->line[0], r->col[0], r->line[1], r->col[1], poke_src);
     }
