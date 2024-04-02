@@ -1,3 +1,7 @@
+2024-04-02  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* doc/poke.texi (Poke Scripts): Document poke_interactive_p.
+
 2024-04-01  Sergio Durigan Junior  <sergiodj@sergiodj.net>
 
 	* man/Makefile.am: Generate manpage for pokefmt.
@@ -7,7 +11,7 @@
 	* pokefmt/pokefmt.l (poke_stmt): Fix typo.
 	(poke_expr): Likewise.
 
-2024-03-31  Jose E. Marchesi  <jemarch@gnu.org>
+2024-003-31  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-ast.c (pkl_type_append_to): Include itype in
 	integral struct type string representations.
