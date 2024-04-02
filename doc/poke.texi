@@ -7365,6 +7365,18 @@ And then execute it like any other program or script:
 $ ./say-hello
 @end example
 
+@cindex poke_interactive_p
+Sometimes it is necessary or useful to know whether our Poke code is
+being run interactively or not.  For these cases, we can check the
+@code{poke_interactive_p} pre-defined variable:
+
+@example
+if (!poke_interactive_p)
+  @{
+    /* Set default endianness.  */
+  @}
+@end example
+
 @node Command-Line Arguments
 @section Command-Line Arguments
 
