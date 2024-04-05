@@ -22,6 +22,7 @@
 #include <config.h>
 #include "pkl-pass.h"
 #include "pkl-ast.h"
+#include "pkl-env.h"
 
 /* The trans phases keep a stack of function contexts while they
    operate on the AST.  At any time in the pass, the "current lexical
@@ -106,6 +107,7 @@ struct pkl_trans_payload
   int cur_endian;
   struct pkl_trans_escapable_ctx escapables[PKL_TRANS_MAX_COMP_STMT_NEST];
   int next_escapable;
+  pkl_env env;
 };
 
 typedef struct pkl_trans_payload *pkl_trans_payload;
@@ -114,12 +116,14 @@ extern struct pkl_phase pkl_phase_trans1;
 extern struct pkl_phase pkl_phase_trans2;
 extern struct pkl_phase pkl_phase_trans3;
 extern struct pkl_phase pkl_phase_trans4;
+extern struct pkl_phase pkl_phase_transl;
 
 static inline void
-pkl_trans_init_payload (pkl_trans_payload payload)
+pkl_trans_init_payload (pkl_trans_payload payload, pkl_env env)
 {
   memset (payload, 0, sizeof (struct pkl_trans_payload));
   payload->endian[0] = PKL_AST_ENDIAN_DFL;
+  payload->env = env;
 }
 
 #endif /* PKL_TRANS_H */

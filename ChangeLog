@@ -1,3 +1,31 @@
+2024-06-02  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-trans.h (struct pkl_trans_payload): Add field `env'.
+	(pkl_phase_transl): New extern.
+	(pkl_trans_init_payload): Initialize env.
+	* libpoke/pkl-trans.c (transl): New phase.
+	(PKL_TRANS_ENV): Define.
+	(pkl_transl_ps_var): New handler.
+	(pkl_transl_pr_comp_stmt): Likewise.
+	(pkl_transl_ps_comp_stmt): Likewise.
+	(pkl_transl_pr_try_stmt): Likewise.
+	(pkl_transl_pr_func): Likewise.
+	(pkl_transl_ps_func_arg): Likewise.
+	(pkl_transl_ps_decl): Likewise.
+	(pkl_transl_pr_struct_type_field): Likewise.
+	(pkl_transl_pr_type_struct): Likewise.
+	(pkl_transl_ps_type_struct): Likewise.
+	* libpoke/pkl-anal.c (pkl_anal1_ps_var): Move checks that require
+	lexical depth knowledge to pkl_transl_ps_var.
+	* libpoke/pkl.c (rest_of_compilation): Rename passes and add
+	transl.
+	* libpoke/pkl-gen.c (pkl_gen_ps_var): Emit an ICE if a lexical
+	variable in a VAR node is not set.
+	* testsuite/poke.pkl/scons-73.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+	* etc/hacking.org (Lexical Handling): New section.
+	* HACKING: Regenerate.
+
 2024-06-01  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-pass.c (pkl_call_node_handlers): Use
@@ -5906,7 +5934,6 @@
 	`break` and `continue` keywords.
 	(pkl_trans1_ps_comp_stmt): Likewise.
 	(pkl_trans1_pr_loop_stmt): Likewise.
-	(pkl_trans1_ps_loop_stmt): Likewise.
 	(pkl_trans1_pr_try_stmt_body): Likewise.
 	(pkl_trans1_ps_try_stmt_body): Likewise.
 	(pkl_trans1_pr_try_stmt): New handler.

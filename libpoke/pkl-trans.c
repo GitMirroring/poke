@@ -292,10 +292,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_var)
   pkl_ast_node decl = PKL_AST_VAR_DECL (var);
 
   if (PKL_TRANS_FUNCTION)
-    {
-      PKL_AST_VAR_FUNCTION (var) = PKL_TRANS_FUNCTION->node;
-      PKL_AST_VAR_FUNCTION_BACK (var) = PKL_TRANS_FUNCTION->back;
-    }
+    PKL_AST_VAR_FUNCTION (var) = PKL_TRANS_FUNCTION->node;
 
   if (PKL_AST_DECL_KIND (decl) == PKL_AST_DECL_KIND_FUNC)
     PKL_AST_VAR_IS_RECURSIVE (var)
@@ -1240,9 +1237,6 @@ PKL_PHASE_END_HANDLER
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_comp_stmt)
 {
-  if (PKL_TRANS_FUNCTION)
-    PKL_TRANS_FUNCTION->back++;
-
   if (PKL_TRANS_ESCAPABLE)
     PKL_TRANS_ESCAPABLE->nframes++;
 
@@ -1259,37 +1253,12 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_comp_stmt)
 }
 PKL_PHASE_END_HANDLER
 
-/* FOR-IN statements introduce a lexical level if they use an iterator
-   or have a head of declarations.  Update the current function
-   context accordingly.  */
-
-PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_loop_stmt_iterator)
-{
-  if (PKL_TRANS_FUNCTION)
-    PKL_TRANS_FUNCTION->back++;
-}
-PKL_PHASE_END_HANDLER
-
-/* FOR statements introduce a lexical level if they use an iterator
-   or have a head of declarations.  Update the current function
-   context accordingly.
-
-   FOR statements are escapable constructs, push it to current
+/* FOR statements are escapable constructs, push it to current
    escapables stack.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_loop_stmt)
 {
   pkl_ast_node stmt = PKL_PASS_NODE;
-
-  if (PKL_AST_LOOP_STMT_HEAD (stmt))
-    {
-      assert (!PKL_AST_LOOP_STMT_ITERATOR (stmt));
-      if (PKL_TRANS_FUNCTION)
-        PKL_TRANS_FUNCTION->back++;
-    }
-
-  if (PKL_TRANS_FUNCTION && PKL_AST_LOOP_STMT_ITERATOR (stmt))
-    PKL_TRANS_FUNCTION->ndrops += 3;
 
   PKL_TRANS_PUSH_ESCAPABLE (stmt);
 }
@@ -1299,16 +1268,6 @@ PKL_PHASE_END_HANDLER
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_loop_stmt)
 {
-  pkl_ast_node stmt = PKL_PASS_NODE;
-
-  if (PKL_TRANS_FUNCTION
-      && (PKL_AST_LOOP_STMT_ITERATOR (stmt) || PKL_AST_LOOP_STMT_HEAD (stmt)))
-    PKL_TRANS_FUNCTION->back--;
-
-  if (PKL_TRANS_FUNCTION
-      && (PKL_TRANS_FUNCTION && PKL_AST_LOOP_STMT_ITERATOR (stmt)))
-    PKL_TRANS_FUNCTION->ndrops -= 3;
-
   PKL_TRANS_POP_ESCAPABLE;
 }
 PKL_PHASE_END_HANDLER
@@ -1317,7 +1276,7 @@ PKL_PHASE_END_HANDLER
    function declarations occurring in the statement.
 
    Compound statements introduce a lexical level.  Update the current
-   function context and current escapable context accordingly.
+   escapable context accordingly.
 
    If the compound statement is the first operand of an excond
    operator, then it increases the number of exception handlers that
@@ -1340,9 +1299,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_comp_stmt)
     }
 
   PKL_AST_COMP_STMT_NUMVARS (comp_stmt) = numvars;
-
-  if (PKL_TRANS_FUNCTION)
-    PKL_TRANS_FUNCTION->back--;
 
   if (PKL_TRANS_ESCAPABLE)
     PKL_TRANS_ESCAPABLE->nframes--;
@@ -1398,7 +1354,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_return_stmt)
     {
       PKL_AST_RETURN_STMT_FUNCTION (stmt)
         = PKL_TRANS_FUNCTION->node; /* Note no ASTREF.  */
-      PKL_AST_RETURN_STMT_NDROPS (stmt) = PKL_TRANS_FUNCTION->ndrops;
       PKL_AST_RETURN_STMT_NPOPES (stmt) = PKL_TRANS_FUNCTION->npopes;
     }
 }
@@ -1564,7 +1519,6 @@ struct pkl_phase pkl_phase_trans1 =
    PKL_PHASE_PS_HANDLER (PKL_AST_ARRAY, pkl_trans1_ps_array),
    PKL_PHASE_PR_HANDLER (PKL_AST_COMP_STMT, pkl_trans1_pr_comp_stmt),
    PKL_PHASE_PS_HANDLER (PKL_AST_COMP_STMT, pkl_trans1_ps_comp_stmt),
-   PKL_PHASE_PS_HANDLER (PKL_AST_LOOP_STMT_ITERATOR, pkl_trans1_ps_loop_stmt_iterator),
    PKL_PHASE_PR_HANDLER (PKL_AST_LOOP_STMT, pkl_trans1_pr_loop_stmt),
    PKL_PHASE_PS_HANDLER (PKL_AST_LOOP_STMT, pkl_trans1_ps_loop_stmt),
    PKL_PHASE_PS_HANDLER (PKL_AST_BREAK_CONTINUE_STMT, pkl_trans1_ps_break_continue_stmt),
@@ -2001,4 +1955,544 @@ struct pkl_phase pkl_phase_trans4 =
   {
    PKL_PHASE_PS_HANDLER (PKL_AST_SRC, pkl_trans_ps_src),
    PKL_PHASE_PR_HANDLER (PKL_AST_PROGRAM, pkl_trans_pr_program),
+  };
+
+
+
+#define PKL_TRANS_ENV (PKL_TRANS_PAYLOAD->env)
+
+/* FOR statements introduce a lexical level if they use an iterator or
+   have a head of declarations.  Update the current function context
+   accordingly.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_transl_pr_loop_stmt)
+{
+  pkl_ast_node stmt = PKL_PASS_NODE;
+  pkl_ast_node iterator = PKL_AST_LOOP_STMT_ITERATOR (stmt);
+  pkl_ast_node head = PKL_AST_LOOP_STMT_HEAD (stmt);
+  pkl_ast_node condition = PKL_AST_LOOP_STMT_CONDITION (stmt);
+  pkl_ast_node tail = PKL_AST_LOOP_STMT_TAIL (stmt);
+  pkl_ast_node body = PKL_AST_LOOP_STMT_BODY (stmt);
+  pkl_ast_node t = NULL;
+
+  /* while (CONDITION) BODY
+     for (HEAD; CONDITION; TAIL) BODY
+     for (ITERATOR) BODY  */
+
+  if (iterator)
+    {
+      pkl_ast_node container = PKL_AST_LOOP_STMT_ITERATOR_CONTAINER (iterator);
+      pkl_ast_node decl = PKL_AST_LOOP_STMT_ITERATOR_DECL (iterator);
+
+      PKL_PASS_SUBPASS (container);
+      PKL_TRANS_ENV = pkl_env_push_frame (PKL_TRANS_ENV);
+      PKL_PASS_SUBPASS (decl);
+
+      if (PKL_TRANS_FUNCTION)
+        {
+          PKL_TRANS_FUNCTION->back++;
+          PKL_TRANS_FUNCTION->ndrops += 3;
+        }
+    }
+
+  if (head)
+    {
+      PKL_TRANS_ENV = pkl_env_push_frame (PKL_TRANS_ENV);
+      if (PKL_TRANS_FUNCTION)
+        PKL_TRANS_FUNCTION->back++;
+      for (t = head; t; t = PKL_AST_CHAIN (t))
+        PKL_PASS_SUBPASS (t);
+    }
+
+  if (condition)
+    for (t = condition; t; t = PKL_AST_CHAIN (t))
+      PKL_PASS_SUBPASS (t);
+  if (tail)
+    for (t = tail; t; t = PKL_AST_CHAIN (t))
+      PKL_PASS_SUBPASS (t);
+
+  PKL_PASS_SUBPASS (body);
+
+  if (PKL_TRANS_FUNCTION && iterator)
+    PKL_TRANS_FUNCTION->ndrops -= 3;
+
+  if (iterator || head)
+    {
+      PKL_TRANS_ENV = pkl_env_pop_frame (PKL_TRANS_ENV);
+      if (PKL_TRANS_FUNCTION)
+        PKL_TRANS_FUNCTION->back--;
+    }
+
+  PKL_PASS_BREAK;
+}
+PKL_PHASE_END_HANDLER
+
+/* Compound statements introduce a lexical level, but only if they
+   have one or more declarations inside.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_transl_pr_comp_stmt)
+{
+  pkl_ast_node comp_stmt = PKL_PASS_NODE;
+
+  if (!PKL_AST_COMP_STMT_FRAMELESS_P (comp_stmt))
+    {
+      PKL_TRANS_ENV = pkl_env_push_frame (PKL_TRANS_ENV);
+      if (PKL_TRANS_FUNCTION)
+        PKL_TRANS_FUNCTION->back++;
+    }
+}
+PKL_PHASE_END_HANDLER
+
+PKL_PHASE_BEGIN_HANDLER (pkl_transl_ps_comp_stmt)
+{
+  pkl_ast_node comp_stmt = PKL_PASS_NODE;
+
+  if (!PKL_AST_COMP_STMT_FRAMELESS_P (comp_stmt))
+    {
+      PKL_TRANS_ENV = pkl_env_pop_frame (PKL_TRANS_ENV);
+      if (PKL_TRANS_FUNCTION)
+        PKL_TRANS_FUNCTION->back--;
+    }
+}
+PKL_PHASE_END_HANDLER
+
+/* TRY-CATCH statement whose `catch' part gets an argument introduce a
+   new lexical level right before evaluating the format argument (the
+   exception passed to the handler).  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_transl_pr_try_stmt)
+{
+  pkl_ast_node try_stmt = PKL_PASS_NODE;
+  pkl_ast_node handler = PKL_AST_TRY_STMT_HANDLER (try_stmt);
+  pkl_ast_node body = PKL_AST_TRY_STMT_BODY (try_stmt);
+  pkl_ast_node arg = PKL_AST_TRY_STMT_ARG (try_stmt);
+  pkl_ast_node exp = PKL_AST_TRY_STMT_EXP (try_stmt);
+
+  PKL_PASS_SUBPASS (body);
+  if (exp)
+    PKL_PASS_SUBPASS (exp);
+  if (arg)
+    {
+      PKL_TRANS_ENV = pkl_env_push_frame (PKL_TRANS_ENV);
+      PKL_PASS_SUBPASS (arg);
+    }
+  if (handler)
+    PKL_PASS_SUBPASS (handler);
+  if (arg)
+    PKL_TRANS_ENV = pkl_env_pop_frame (PKL_TRANS_ENV);
+
+  PKL_PASS_BREAK;
+}
+PKL_PHASE_END_HANDLER
+
+/* Function definitions introduce a lexical level for the funtion's
+   arguments.
+
+   Note that we have to use a breaking handler because the return type
+   may have expressions in it (like an array bounder) and these shall
+   be computed out of the new lexical environment.
+
+   In methods there is an implicit argument SELF that has lexical
+   address (0,0).  This handler registers it.
+
+   The handler also maintains a stack of functions.  */
+
+/* XXX do not introduce lexical level if the function has no
+   arguments!.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_transl_pr_func)
+{
+  pkl_ast_node func = PKL_PASS_NODE;
+  pkl_ast_node ret_type = PKL_AST_FUNC_RET_TYPE (func);
+  pkl_ast_node args = PKL_AST_FUNC_ARGS (func);
+  pkl_ast_node body = PKL_AST_FUNC_BODY (func);
+  pkl_ast_node arg;
+
+  PKL_TRANS_PUSH_FUNCTION (PKL_PASS_NODE);
+
+  if (ret_type && !PKL_AST_TYPE_NAME (ret_type))
+    PKL_PASS_SUBPASS (ret_type);
+
+  PKL_TRANS_ENV = pkl_env_push_frame (PKL_TRANS_ENV);
+
+  if (PKL_AST_FUNC_METHOD_P (func))
+    {
+      /* Register an argument SELF for the method's initial implicit
+         argument.  */
+      pkl_ast_node self = pkl_ast_make_identifier (PKL_PASS_AST, "SELF");
+
+      if (!pkl_env_register (PKL_TRANS_ENV,
+                             PKL_PASS_AST,
+                             PKL_ENV_NS_MAIN,
+                             PKL_AST_IDENTIFIER_POINTER (self),
+                             pkl_ast_make_decl (PKL_PASS_AST,
+                                                PKL_AST_DECL_KIND_VAR,
+                                                self,
+                                                pkl_ast_make_integer (PKL_PASS_AST, 0),
+                                                NULL /* source */)))
+        {
+          PKL_ICE (PKL_AST_LOC (func),
+                   "transl: could not register entry for SELF");
+          PKL_TRANS_PAYLOAD->errors++;
+          PKL_PASS_ERROR;
+        }
+    }
+
+  for (arg = args; arg; arg = PKL_AST_CHAIN (arg))
+    PKL_PASS_SUBPASS (arg);
+  PKL_PASS_SUBPASS (body);
+  PKL_TRANS_ENV = pkl_env_pop_frame (PKL_TRANS_ENV);
+
+  PKL_TRANS_POP_FUNCTION;
+  PKL_PASS_BREAK;
+}
+PKL_PHASE_END_HANDLER
+
+/* Function formal arguments shall be registered to the lexical
+   enviroment.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_transl_ps_func_arg)
+{
+  pkl_ast_node arg = PKL_PASS_NODE;
+  pkl_ast_node arg_identifier = PKL_AST_FUNC_ARG_IDENTIFIER (arg);
+  pkl_ast_node dummy = pkl_ast_make_integer (PKL_PASS_AST, 0);
+  PKL_AST_TYPE (dummy) = ASTREF (PKL_AST_FUNC_ARG_TYPE (arg));
+  pkl_ast_node arg_decl = NULL;
+
+  arg_decl = pkl_ast_make_decl (PKL_PASS_AST,
+                                PKL_AST_DECL_KIND_VAR,
+                                arg_identifier,
+                                dummy,
+                                NULL /* source */);
+  PKL_AST_LOC (arg_decl) = PKL_AST_LOC (arg);
+
+  if (!pkl_env_register (PKL_TRANS_ENV,
+                         PKL_PASS_AST,
+                         PKL_ENV_NS_MAIN,
+                         PKL_AST_IDENTIFIER_POINTER (arg_identifier),
+                         arg_decl))
+    {
+      PKL_ICE (PKL_AST_LOC (arg_identifier),
+               "transl: duplicated argument name `%s' in function declaration",
+               PKL_AST_IDENTIFIER_POINTER (arg_identifier));
+      PKL_TRANS_PAYLOAD->errors++;
+      PKL_PASS_ERROR;
+    }
+}
+PKL_PHASE_END_HANDLER
+
+/* Do not traverse type names: the lexical environment of the aliased
+   type has been already constructed from the pertinent
+   declaration.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_transl_pr_type_alias)
+{
+  PKL_PASS_BREAK;
+}
+PKL_PHASE_END_HANDLER
+
+/* Struct type specifiers introduce a lexical level.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_transl_pr_type_struct)
+{
+  PKL_TRANS_ENV = pkl_env_push_frame (PKL_TRANS_ENV);
+  if (PKL_TRANS_FUNCTION)
+    PKL_TRANS_FUNCTION->back++;
+
+  /* Register dummies for the locals used in
+     pkl-gen.pks:struct_mapper, excluding OFFSET.  */
+  {
+    int i;
+    for (i = 0; i < 5; ++i)
+      {
+        char *name;
+        pkl_ast_node id;
+        pkl_ast_node decl;
+
+        asprintf (&name, "@*UNUSABLE_OFF_%d*@", i);
+        id = pkl_ast_make_identifier (PKL_PASS_AST, name);
+        decl = pkl_ast_make_decl (PKL_PASS_AST,
+                                  PKL_AST_DECL_KIND_VAR,
+                                  id, NULL /* initial */,
+                                  NULL /* source */);
+
+        if (!pkl_env_register (PKL_TRANS_ENV, PKL_PASS_AST, PKL_ENV_NS_MAIN, name, decl))
+          {
+            PKL_ICE (PKL_AST_LOC (PKL_PASS_NODE),
+                     "transl: could not register dummy in pkl_transl_pr_type_struct");
+            PKL_TRANS_PAYLOAD->errors++;
+            PKL_PASS_ERROR;
+          }
+      }
+  }
+
+  /* Now register OFFSET with a type of offset<uint<64>,1> */
+  {
+    pkl_ast_node decl, type;
+    pkl_ast_node offset_identifier
+      = pkl_ast_make_identifier (PKL_PASS_AST, "OFFSET");
+    pkl_ast_node offset_magnitude
+      = pkl_ast_make_integer (PKL_PASS_AST, 0);
+    pkl_ast_node offset_unit
+      = pkl_ast_make_integer (PKL_PASS_AST, 1);
+    pkl_ast_node offset;
+
+    type = pkl_ast_make_integral_type (PKL_PASS_AST, 64, 0);
+    PKL_AST_TYPE (offset_magnitude) = ASTREF (type);
+    PKL_AST_TYPE (offset_unit) = ASTREF (type);
+
+    offset = pkl_ast_make_offset (PKL_PASS_AST,
+                                  offset_magnitude,
+                                  offset_unit);
+    type = pkl_ast_make_offset_type (PKL_PASS_AST,
+                                     type,
+                                     offset_unit,
+                                     NULL /* ref_type */);
+    PKL_AST_TYPE (offset) = ASTREF (type);
+
+    decl = pkl_ast_make_decl (PKL_PASS_AST,
+                              PKL_AST_DECL_KIND_VAR,
+                              offset_identifier,
+                              offset,
+                              NULL /* source */);
+
+    if (!pkl_env_register (PKL_TRANS_ENV,
+                           PKL_PASS_AST,
+                           PKL_ENV_NS_MAIN,
+                           PKL_AST_IDENTIFIER_POINTER (offset_identifier),
+                           decl))
+      {
+        PKL_ICE (PKL_AST_LOC (PKL_PASS_NODE),
+                 "transl: error registerting OFFSET in pkl_transl_pr_type_struct");
+        PKL_TRANS_PAYLOAD->errors++;
+        PKL_PASS_ERROR;
+      }
+  }
+}
+PKL_PHASE_END_HANDLER
+
+PKL_PHASE_BEGIN_HANDLER (pkl_transl_ps_type_struct)
+{
+  PKL_TRANS_ENV = pkl_env_pop_frame (PKL_TRANS_ENV);
+  if (PKL_TRANS_FUNCTION)
+    PKL_TRANS_FUNCTION->back--;
+}
+PKL_PHASE_END_HANDLER
+
+
+/* This handler determines and sets the lexical address (back, over)
+   of the variable reference according to the compile-time
+   environment.
+
+   It also determines the lexical depth of the variable within its
+   containing function or method, if any.
+
+   Finally, it also implements some checks that use that information,
+   that perhaps would be best implemented in a separated "anall"
+   pass.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_transl_ps_var)
+{
+  pkl_ast_node var = PKL_PASS_NODE;
+  pkl_ast_node var_name = PKL_AST_VAR_NAME (var);
+
+  if (PKL_AST_VAR_BACK (var) != -1 && PKL_AST_VAR_OVER (var) != -1)
+    PKL_PASS_DONE;
+
+  if (!pkl_env_lookup (PKL_TRANS_ENV, PKL_ENV_NS_MAIN,
+                       PKL_AST_IDENTIFIER_POINTER (var_name),
+                       &PKL_AST_VAR_BACK (var),
+                       &PKL_AST_VAR_OVER (var)))
+    {
+      PKL_ICE (PKL_AST_LOC (var),
+             "could not find variable `%s' in the compile-time environment",
+             PKL_AST_IDENTIFIER_POINTER (var_name));
+      PKL_TRANS_PAYLOAD->errors++;
+      PKL_PASS_ERROR;
+    }
+
+  /* Set the lexical depth of the variable within its containing
+     function.  */
+  if (PKL_TRANS_FUNCTION)
+    PKL_AST_VAR_FUNCTION_BACK (var) = PKL_TRANS_FUNCTION->back;
+
+  /* A method can only refer to struct fields and methods defined in
+     the same struct.  */
+  {
+    pkl_ast_node var = PKL_PASS_NODE;
+    pkl_ast_node var_decl = PKL_AST_VAR_DECL (var);
+    pkl_ast_node var_function = PKL_AST_VAR_FUNCTION (var);
+
+    const int in_method_p
+      = var_function && PKL_AST_FUNC_METHOD_P (var_function);
+    const int var_is_method_p
+      = (PKL_AST_DECL_KIND (var_decl) == PKL_AST_DECL_KIND_FUNC
+         && PKL_AST_FUNC_METHOD_P (PKL_AST_DECL_INITIAL (var_decl)));
+    const int var_is_field_p
+      = PKL_AST_DECL_STRUCT_FIELD_P (var_decl);
+
+    if (in_method_p && (var_is_field_p || var_is_method_p))
+      {
+        const char *what
+          = var_is_method_p ? "method" : "field";
+
+        int back = PKL_AST_VAR_BACK (var);
+        int function_back = PKL_AST_VAR_FUNCTION_BACK (var);
+
+        if (back != (function_back + 1))
+          {
+            pkl_ast_node var_name = PKL_AST_VAR_NAME (var);
+
+            PKL_ERROR (PKL_AST_LOC (var),
+                       "referred %s `%s', not in this struct back=%d function_back=%d",
+                       what, PKL_AST_IDENTIFIER_POINTER (var_name),
+                       back, function_back);
+            PKL_TRANS_PAYLOAD->errors++;
+            PKL_PASS_ERROR;
+          }
+      }
+  }
+}
+PKL_PHASE_END_HANDLER
+
+/* Annotate return statements with the number of drops and popes they
+   have to perform according to the current lexical environment.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_transl_ps_return_stmt)
+{
+  pkl_ast_node stmt = PKL_PASS_NODE;
+
+  if (!PKL_TRANS_FUNCTION)
+    {
+      PKL_ICE (PKL_AST_LOC (PKL_PASS_NODE),
+               "transl: RETURN is not inside a function");
+      PKL_TRANS_PAYLOAD->errors++;
+      PKL_PASS_ERROR;
+    }
+
+  PKL_AST_RETURN_STMT_NDROPS (stmt) = PKL_TRANS_FUNCTION->ndrops;
+}
+PKL_PHASE_END_HANDLER
+
+/* Declarations shall be made available to the lexical environment.
+   If the declaration is a `defun', then the identifier shall be
+   available for the function body to allow for recursive calls.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_transl_pr_decl)
+{
+  /* The top-level environment is to be preserved.  */
+  if (pkl_env_toplevel_p (PKL_TRANS_ENV))
+    PKL_PASS_DONE;
+  else
+    {
+      pkl_ast_node decl = PKL_PASS_NODE;
+      pkl_ast_node decl_name = PKL_AST_DECL_NAME (decl);
+      pkl_ast_node decl_initial = PKL_AST_DECL_INITIAL (decl);
+      int decl_kind = PKL_AST_DECL_KIND (decl);
+
+      if (decl_kind != PKL_AST_DECL_KIND_FUNC)
+        PKL_PASS_SUBPASS (decl_initial);
+
+      if (!pkl_env_register (PKL_TRANS_ENV,
+                             PKL_PASS_AST,
+                             PKL_ENV_NS_MAIN,
+                             PKL_AST_IDENTIFIER_POINTER (decl_name),
+                             decl))
+        {
+          PKL_ICE (PKL_AST_LOC (decl),
+                   "transl: entity `%s' is already in the lexical environment",
+                   PKL_AST_IDENTIFIER_POINTER (decl_name));
+          PKL_PASS_ERROR;
+        }
+
+      if (decl_kind == PKL_AST_DECL_KIND_FUNC)
+        PKL_PASS_SUBPASS (decl_initial);
+    }
+
+  PKL_PASS_BREAK;
+}
+PKL_PHASE_END_HANDLER
+
+/* Struct type fields shall register the field name in the lexical
+   environment.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_transl_pr_struct_type_field)
+{
+  pkl_ast_node field = PKL_PASS_NODE;
+  pkl_ast_node name = PKL_AST_STRUCT_TYPE_FIELD_NAME (field);
+  pkl_ast_node type = PKL_AST_STRUCT_TYPE_FIELD_TYPE (field);
+  pkl_ast_node size = PKL_AST_STRUCT_TYPE_FIELD_SIZE (field);
+  pkl_ast_node initializer = PKL_AST_STRUCT_TYPE_FIELD_INITIALIZER (field);
+  pkl_ast_node optcond_pre = PKL_AST_STRUCT_TYPE_FIELD_OPTCOND_PRE (field);
+  pkl_ast_node constraint = PKL_AST_STRUCT_TYPE_FIELD_CONSTRAINT (field);
+  pkl_ast_node optcond_post = PKL_AST_STRUCT_TYPE_FIELD_OPTCOND_POST (field);
+  pkl_ast_node label = PKL_AST_STRUCT_TYPE_FIELD_LABEL (field);
+
+  if (name)
+    PKL_PASS_SUBPASS (name);
+  if (!PKL_AST_TYPE_NAME (type))
+    PKL_PASS_SUBPASS (type);
+  if (size)
+    PKL_PASS_SUBPASS (size);
+  if (initializer)
+    PKL_PASS_SUBPASS (initializer);
+  if (optcond_pre)
+    PKL_PASS_SUBPASS (optcond_pre);
+
+  /* Register the field, but only if it is not a computed field.  */
+  if (!PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (field))
+  {
+    pkl_ast_node dummy, decl;
+    pkl_ast_node identifier
+      = (name != NULL ? name : pkl_ast_make_identifier (PKL_PASS_AST, ""));
+
+    dummy = pkl_ast_make_integer (PKL_PASS_AST, 0);
+    PKL_AST_TYPE (dummy) = ASTREF (type);
+    decl = pkl_ast_make_decl (PKL_PASS_AST,
+                              PKL_AST_DECL_KIND_VAR,
+                              identifier, dummy,
+                              NULL /* source */);
+    PKL_AST_DECL_STRUCT_FIELD_P (decl) = 1;
+    PKL_AST_LOC (decl) = PKL_AST_LOC (field);
+
+    if (!pkl_env_register (PKL_TRANS_ENV,
+                           PKL_PASS_AST,
+                           PKL_ENV_NS_MAIN,
+                           PKL_AST_IDENTIFIER_POINTER (identifier),
+                           decl))
+      {
+        PKL_ICE (PKL_AST_LOC (field),
+                 "transl: duplicated struct element '%s'",
+                 PKL_AST_IDENTIFIER_POINTER (name));
+        PKL_TRANS_PAYLOAD->errors++;
+        PKL_PASS_ERROR;
+      }
+  }
+
+  if (constraint)
+    PKL_PASS_SUBPASS (constraint);
+  if (optcond_post)
+    PKL_PASS_SUBPASS (optcond_post);
+  if (label)
+    PKL_PASS_SUBPASS (label);
+  PKL_PASS_BREAK;
+}
+PKL_PHASE_END_HANDLER
+
+struct pkl_phase pkl_phase_transl =
+  {
+    PKL_PHASE_PR_HANDLER (PKL_AST_PROGRAM, pkl_trans_pr_program),
+    PKL_PHASE_PS_HANDLER (PKL_AST_VAR, pkl_transl_ps_var),
+    PKL_PHASE_PR_HANDLER (PKL_AST_COMP_STMT, pkl_transl_pr_comp_stmt),
+    PKL_PHASE_PS_HANDLER (PKL_AST_COMP_STMT, pkl_transl_ps_comp_stmt),
+    PKL_PHASE_PR_HANDLER (PKL_AST_TRY_STMT, pkl_transl_pr_try_stmt),
+    PKL_PHASE_PR_HANDLER (PKL_AST_LOOP_STMT, pkl_transl_pr_loop_stmt),
+    PKL_PHASE_PR_HANDLER (PKL_AST_FUNC, pkl_transl_pr_func),
+    PKL_PHASE_PS_HANDLER (PKL_AST_FUNC_ARG, pkl_transl_ps_func_arg),
+    PKL_PHASE_PS_HANDLER (PKL_AST_RETURN_STMT, pkl_transl_ps_return_stmt),
+    PKL_PHASE_PR_HANDLER (PKL_AST_DECL, pkl_transl_pr_decl),
+    PKL_PHASE_PR_HANDLER (PKL_AST_STRUCT_TYPE_FIELD, pkl_transl_pr_struct_type_field),
+    PKL_PHASE_PR_TYPE_HANDLER (PKL_TYPE_ALIAS, pkl_transl_pr_type_alias),
+    PKL_PHASE_PR_TYPE_HANDLER (PKL_TYPE_STRUCT, pkl_transl_pr_type_struct),
+    PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_STRUCT, pkl_transl_ps_type_struct),
   };

@@ -577,8 +577,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_anal1_ps_var)
   const int var_is_method_p
     = (PKL_AST_DECL_KIND (var_decl) == PKL_AST_DECL_KIND_FUNC
        && PKL_AST_FUNC_METHOD_P (PKL_AST_DECL_INITIAL (var_decl)));
-  const int var_is_field_p
-    = PKL_AST_DECL_STRUCT_FIELD_P (var_decl);
 
   /* Only methods can call other methods.  */
   if (var_is_method_p && !in_method_p)
@@ -587,26 +585,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_anal1_ps_var)
                  "only methods can directly call other methods");
       PKL_ANAL_PAYLOAD->errors++;
       PKL_PASS_ERROR;
-    }
-
-  /* A method can only refer to struct fields and methods defined in
-     the same struct.  */
-  if (in_method_p
-      && (var_is_field_p || var_is_method_p))
-    {
-      const char *what
-        = var_is_method_p ? "method" : "field";
-
-      int back = PKL_AST_VAR_BACK (var);
-      int function_back = PKL_AST_VAR_FUNCTION_BACK (var);
-
-      if (back != (function_back + 1))
-        {
-          PKL_ERROR (PKL_AST_LOC (var),
-                     "referred %s not in this struct", what);
-          PKL_ANAL_PAYLOAD->errors++;
-          PKL_PASS_ERROR;
-        }
     }
 }
 PKL_PHASE_END_HANDLER

@@ -1,0 +1,14 @@
+/* { dg-do run } */
+
+/* This tests that the computed field in the struct type does not
+   impact the lexical address assigned to the usage of `names'.  */
+
+type RV32_InsnFmt_I = struct
+  {
+    computed int<32> imm;
+    var names = ["foo"];
+    var name = names[0];
+};
+
+/* { dg-command { RV32_InsnFmt_I {} } } */
+/* { dg-output "RV32_InsnFmt_I \{\}" } */

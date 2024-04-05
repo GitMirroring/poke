@@ -19,6 +19,9 @@
 /* Please do not use any standard type in this file.  They may not
    have been defined.  */
 
+fun lala = int<32>: {return 10;}
+fun lele = int<32>: { return lala; }
+
 /*** Standard units.  */
 
 unit b = 1;
