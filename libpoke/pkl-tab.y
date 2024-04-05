@@ -1112,7 +1112,7 @@ primary:
                   $$ = pkl_ast_make_var (pkl_parser->ast,
                                          $1, /* name.  */
                                          decl,
-                                         back, over);
+                                         -1, -1);
                   PKL_AST_LOC ($$) = @1;
                 }
         | integer

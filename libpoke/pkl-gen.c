@@ -601,9 +601,21 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_var)
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP2);
         }
       else
-        /* Normal variable.  */
-        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSHVAR,
-                      PKL_AST_VAR_BACK (var), PKL_AST_VAR_OVER (var));
+        {
+          /* Normal variable.  */
+          if (PKL_AST_VAR_BACK (var) == -1
+              || PKL_AST_VAR_OVER (var) == -1)
+            {
+              pkl_ast_node var_name = PKL_AST_VAR_NAME (var);
+
+              PKL_ICE (PKL_AST_LOC (var),
+                       "gen: found VAR node for `%s' without lexical address",
+                       PKL_AST_IDENTIFIER_POINTER (var_name));
+              PKL_PASS_ERROR;
+            }
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSHVAR,
+                        PKL_AST_VAR_BACK (var), PKL_AST_VAR_OVER (var));
+        }
 
       /* If the declaration associated with the variable is in a
          struct and we are not in a method, i.e. we are in a context

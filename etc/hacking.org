@@ -1135,6 +1135,37 @@ have a testsuite in =testsuite/poke.FOO= with a driver
     : +-- thenexp
     : +-- elseexp
 
+** Lexical Handling
+
+The parser needs to build the lexical enviroment as it works through
+the source code.  This is because it needs to find the declarations of
+all the entities referenced by variable names.  Also, the Poke syntax
+requires to determine whether a given identifier is a type name or
+not.  It uses a =pkl-env= for this, and it pushes and pops frames
+according to the language rules.  The parser annotates each variable
+reference with the declaration of the entity being referred, but does
+not set the variable's lexical address.  This is because this address
+may not be final, as we shall see below.  Once the parsing is done
+successfully the lexical environment should consist on just the
+top-level definitions, which is kept for the rest of the compilation.
+But the inner frames are no longer available.
+
+After the parser, the front-end compiler passes are run.  This
+includes analysis and checking of language rules, transformation, type
+analysis, constant folding, etc.  These passes can do arbitrary
+transformations of the tree, and some of these transformations can
+alter the lexical structure of the program.  The only exception is the
+top-level environment.  Therefore, these passes shall not rely on the
+lexical structure.
+
+Finally, just before the code generator, a lexical pass is run.  This
+pass contains a =transl= phase.  At this point no further
+transformations of the AST will be performed and it is final.  The
+=transl= phase reconstructs the lexical environment (the top-level
+environment is preserved) and assigns the lexical addresses (back,
+over) to all variable references.  It also performs a few language
+rules checks that rely on the relative lexical position of entities.
+
 ** Compiler Passes and Phases
 
    These are the phases currently implemented in the poke compiler:

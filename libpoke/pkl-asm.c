@@ -184,6 +184,8 @@ pkl_asm_insn_atoa (pkl_asm pasm,
   pkl_ast_node from_type_etype = NULL;
   pkl_ast_node from_bound = NULL;
 
+  pkl_asm_insn (pasm, PKL_INSN_NOTE, pvm_make_string ("begin atoa"));
+
   if (from_type)
     {
       from_type_etype = PKL_AST_TYPE_A_ETYPE (from_type);
@@ -253,6 +255,7 @@ pkl_asm_insn_atoa (pkl_asm pasm,
         PK_UNREACHABLE ();
         }
     }
+  pkl_asm_insn (pasm, PKL_INSN_NOTE, pvm_make_string ("end atoa"));
 }
 
 /* Macro-instruction: BCONC op1_type, op2_type, res_type

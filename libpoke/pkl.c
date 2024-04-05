@@ -210,13 +210,14 @@ rest_of_compilation (pkl_compiler compiler,
   struct pkl_trans_payload trans2_payload;
   struct pkl_trans_payload trans3_payload;
   struct pkl_trans_payload trans4_payload;
+  struct pkl_trans_payload transl_payload;
 
   struct pkl_typify_payload typify1_payload = { 0 };
   struct pkl_typify_payload typify2_payload = { 0 };
 
   struct pkl_fold_payload fold_payload = { 0 };
 
-  struct pkl_phase *frontend_phases[]
+  struct pkl_phase *pass1_phases[]
     = { &pkl_phase_trans1,
         &pkl_phase_anal1,
         &pkl_phase_typify1,
@@ -229,7 +230,7 @@ rest_of_compilation (pkl_compiler compiler,
         NULL,
   };
 
-  void *frontend_payloads[]
+  void *pass1_payloads[]
     = { &trans1_payload,
         &anal1_payload,
         &typify1_payload,
@@ -241,27 +242,36 @@ rest_of_compilation (pkl_compiler compiler,
         &anal2_payload,
   };
 
-  void *middleend_payloads[]
+  void *pass2_payloads[]
     = { &fold_payload,
         &trans4_payload,
         &analf_payload,
   };
 
-  struct pkl_phase *middleend_phases[]
+  struct pkl_phase *pass2_phases[]
     = { &pkl_phase_fold,
         &pkl_phase_trans4,
         &pkl_phase_analf,
         NULL
   };
 
-  /* Note that gen does subpasses, so no transformation phases should
-     be invoked in the backend pass.  */
-  struct pkl_phase *backend_phases[]
+  /* Note that gen and transl do subpasses, so no transformation
+     phases should be invoked in the following passes.  */
+  struct pkl_phase *pass3_phases[]
+    = { &pkl_phase_transl,
+    NULL
+  };
+
+  void *pass3_payloads[]
+    = { &transl_payload
+  };
+
+  struct pkl_phase *pass4_phases[]
     = { &pkl_phase_gen,
         NULL
   };
 
-  void *backend_payloads[]
+  void *pass4_payloads[]
     = { &gen_payload
   };
 
@@ -269,14 +279,15 @@ rest_of_compilation (pkl_compiler compiler,
   pkl_anal_init_payload (&anal1_payload);
   pkl_anal_init_payload (&anal2_payload);
   pkl_anal_init_payload (&analf_payload);
-  pkl_trans_init_payload (&trans1_payload);
-  pkl_trans_init_payload (&trans2_payload);
-  pkl_trans_init_payload (&trans3_payload);
-  pkl_trans_init_payload (&trans4_payload);
+  pkl_trans_init_payload (&trans1_payload, env);
+  pkl_trans_init_payload (&trans2_payload, env);
+  pkl_trans_init_payload (&trans3_payload, env);
+  pkl_trans_init_payload (&trans4_payload, env);
+  pkl_trans_init_payload (&transl_payload, env);
   pkl_gen_init_payload (&gen_payload, compiler, env);
 
   if (!pkl_do_pass (compiler, ast,
-                    frontend_phases, frontend_payloads, PKL_PASS_F_TYPES, 1))
+                    pass1_phases, pass1_payloads, PKL_PASS_F_TYPES, 1))
     goto error;
 
   if (trans1_payload.errors > 0
@@ -290,7 +301,7 @@ rest_of_compilation (pkl_compiler compiler,
     goto error;
 
   if (!pkl_do_pass (compiler, ast,
-                    middleend_phases, middleend_payloads, PKL_PASS_F_TYPES, 2))
+                    pass2_phases, pass2_payloads, PKL_PASS_F_TYPES, 2))
     goto error;
 
   if (trans4_payload.errors > 0
@@ -299,7 +310,14 @@ rest_of_compilation (pkl_compiler compiler,
     goto error;
 
   if (!pkl_do_pass (compiler, ast,
-                    backend_phases, backend_payloads, 0, 0))
+                    pass3_phases, pass3_payloads, 0, 0))
+    goto error;
+
+  if (transl_payload.errors > 0)
+    goto error;
+
+  if (!pkl_do_pass (compiler, ast,
+                    pass4_phases, pass4_payloads, 0, 0))
     goto error;
 
   if (analf_payload.errors > 0)
