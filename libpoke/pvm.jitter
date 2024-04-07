@@ -126,10 +126,8 @@ wrapped-functions
   ios_open
   ios_read_int
   ios_read_uint
-  ios_read_string
   ios_write_int
   ios_write_uint
-  ios_write_string
   ios_search_by_id
   ios_set_bias
   ios_get_bias
@@ -6870,93 +6868,6 @@ instruction pokedlu (?n bits_printer)
     PVM_POKE (ULONG, uint, PVM_STATE_RUNTIME_FIELD (nenc),
               PVM_STATE_RUNTIME_FIELD (endian),
               JITTER_ARGN0, PVM_IOS_ARGS_WRITE_UINT);
-  end
-end
-
-# Instruction: peeks
-#
-# Given an IOS descriptor and a bit-offset, peek a string.
-#
-# If there is a problem performing the operation, this function
-# pushes an exception in the stack.  Otherwise, it pushes the
-# peeked value and PVM_NULL.
-#
-# Stack: ( INT ULONG -- [STR] EXCEPTION|null )
-
-instruction peeks ()
-  code
-    ios io;
-    ios_off offset;
-    char *ios_str;
-    int ret;
-    ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
-
-    offset = PVM_VAL_ULONG (JITTER_TOP_STACK ());
-    io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_UNDER_TOP_STACK ()));
-
-    if (io == NULL)
-      JITTER_TOP_STACK () = PVM_MAKE_DFL_EXCEPTION (PVM_E_NO_IOS);
-    else
-      {
-        JITTER_DROP_STACK ();
-        if ((ret = ios_read_string (io, offset, 0 /* flags */, &ios_str)) == IOS_OK)
-          {
-            JITTER_TOP_STACK () = pvm_make_string (ios_str);
-            JITTER_PUSH_STACK (PVM_NULL);
-          }
-        else if (ret == IOS_EOF)
-          JITTER_TOP_STACK () = PVM_MAKE_DFL_EXCEPTION (PVM_E_EOF);
-        else if (ret == IOS_ENOMEM)
-          JITTER_TOP_STACK () = pvm_make_exception (PVM_E_IO,
-                                                    pvm_literal_enomem,
-                                                    PVM_E_IO_ESTATUS, NULL, NULL);
-        else if (ret == IOS_EPERM)
-          JITTER_TOP_STACK () = PVM_MAKE_DFL_EXCEPTION (PVM_E_PERM);
-        else
-          JITTER_TOP_STACK () = PVM_MAKE_DFL_EXCEPTION (PVM_E_IO);
-     }
-   end
-end
-
-# Instruction: pokes
-#
-# Given an IOS descriptor, a bit-offset and a string, poke it.
-#
-# In case of an error, this instruction pushes an exception describing
-# the error condition.  Otherwise it pushes PVM_NULL.
-#
-# Stack: ( INT ULONG STR -- )
-
-instruction pokes ()
-  code
-    ios io;
-    ios_off offset;
-    char *str;
-    int ret;
-    ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
-
-    str = PVM_VAL_STR (JITTER_TOP_STACK ());
-    offset = PVM_VAL_ULONG (JITTER_UNDER_TOP_STACK ());
-    JITTER_DROP_STACK();
-    JITTER_DROP_STACK();
-
-    io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));
-
-    if (io == NULL)
-      JITTER_TOP_STACK () = PVM_MAKE_DFL_EXCEPTION (PVM_E_NO_IOS);
-    else
-      {
-        JITTER_DROP_STACK ();
-
-        if ((ret = ios_write_string (io, offset, 0 /* flags */, str)) == IOS_OK)
-          JITTER_PUSH_STACK (PVM_NULL);
-        else if (ret == IOS_EOF)
-          JITTER_PUSH_STACK (PVM_MAKE_DFL_EXCEPTION (PVM_E_EOF));
-        else if (ret == IOS_EPERM)
-          JITTER_PUSH_STACK (PVM_MAKE_DFL_EXCEPTION (PVM_E_PERM));
-        else
-          JITTER_PUSH_STACK (PVM_MAKE_DFL_EXCEPTION (PVM_E_IO));
-     }
   end
 end
 

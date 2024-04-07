@@ -1001,6 +1001,37 @@ immutable fun close = (int<32> ios) void:
   _pkl_run_ios_close_hook (ios);
 }
 
+/* Implementation of poke/peek operations for strings.  */
+
+immutable fun _pkl_peek_string = (int<32> ios, uint<64> boffset) string:
+{
+  var s = "",
+      off = boffset#1;
+
+  while (1)
+    {
+      var byte = uint<8> @ ios : off;
+
+      if (!byte)
+        break;
+      s += byte as string;
+      off += 8#1;
+    }
+  return s;
+}
+
+immutable fun _pkl_poke_string = (int<32> ios, uint<64> boffset, string s) void:
+{
+  var off = boffset#1;
+
+  for (c in s)
+    {
+      uint<8> @ ios : off = c;
+      off += 8#1;
+    }
+  uint<8> @ ios : off = 0; /* Final '\0' byte.  */
+}
+
 /* Return whether the given value is integral, i.e. if it is
    either a PVM int, uint, long or ulong.  */
 

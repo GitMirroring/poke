@@ -1,5 +1,23 @@
 2024-04-07  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/ios.h (ios_read_string): Remove.
+	(ios_write_string): Likewise.
+	* libpoke/ios.c (ios_read_string): Likewise.
+	(ios_write_string): Likewise.
+	* libpoke/pkl-rt.pk (_pkl_peek_string): Implementation of `peek'
+	operation for strings in Poke.
+	(_pkl_poke_string): Implementation of `poke' operation for strings
+	in Poke.
+	* libpoke/pvm.jitter (wrapped-functions): Remove `ios_read_string'
+	and `ios_write_string'.
+	(peeks): Remove instruction.
+	(pokes): Likewise.
+	* libpoke/pkl-gen.c (pkl_gen_ps_type_string): Emit call to
+	`_pkl_poke_string' and `_pkl_peek_string' instead of `pokes' and
+	`peeks' instructions.
+
+2024-04-07  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* doc/poke.texi (Array Literals): Document new feature.
 	* libpoke/pkl-ast.h (PKL_AST_ARRAY_ELEM_CAST): New accessor
 	macro.

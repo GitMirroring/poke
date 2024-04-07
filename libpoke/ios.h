@@ -327,12 +327,6 @@ int ios_read_uint (ios io, ios_off offset, int flags,
                    enum ios_endian endian,
                    uint64_t *value);
 
-/* Read a NULL-terminated string of bytes located at the given OFFSET,
-   and put its value in VALUE.  It is up to the caller to free the
-   memory occupied by the returned string, when no longer needed.  */
-
-int ios_read_string (ios io, ios_off offset, int flags, char **value);
-
 /* Write the signed integer of size BITS in VALUE to the space IO, at
    the given OFFSET.  Use the byte endianness ENDIAN and encoding NENC
    when writing the value.  */
@@ -351,11 +345,6 @@ int ios_write_uint (ios io, ios_off offset, int flags,
                     int bits,
                     enum ios_endian endian,
                     uint64_t value);
-
-/* Write the NULL-terminated string in VALUE to the space IO, at the
-   given OFFSET.  */
-
-int ios_write_string (ios io, ios_off offset, int flags, const char *value);
 
 /* If the current IOD is a write stream, write out the data in the buffer
    till OFFSET.  If the current IOD is a stream IOD, free (if allowed by the

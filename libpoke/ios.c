@@ -1068,76 +1068,6 @@ static int realloc_string (char **str, size_t newsize)
   return IOS_OK;
 }
 
-int
-ios_read_string (ios io, ios_off offset, int flags, char **value)
-{
-  char *str = NULL;
-  size_t i = 0;
-  int ret;
-
-  /* The IOS should be readable.  */
-  if (!(io->dev_if->get_flags (io->dev) & IOS_F_READ))
-    return IOS_EPERM;
-
-  /* Apply the IOS bias.  */
-  offset += ios_get_bias (io);
-
-  if (offset % 8 == 0)
-    {
-      /* This is the fast case: the string is aligned to a byte
-         boundary.  We just read bytes from the IOD until either EOF
-         or a NULL byte.  */
-
-      do
-        {
-          if (i % 128 == 0)
-            {
-              if ((ret = realloc_string (&str, i + 128 * sizeof (char))) < 0)
-                goto error;
-            }
-
-          ret = io->dev_if->pread (io->dev, &str[i], 1,  offset / 8 + i);
-          if (ret != IOD_OK)
-            return IOD_ERROR_TO_IOS_ERROR (ret);
-        }
-      while (str[i++] != '\0');
-    }
-  else
-    {
-      /* The string is not aligned to a byte boundary.  Instead of
-         reading bytes from the IOD, we use the IOS to read 8-byte
-         unsigned integers.  */
-
-      do
-        {
-          uint64_t abyte;
-
-          if (i % 128 == 0)
-            {
-              if ((ret = realloc_string (&str, i + 128 * sizeof (char))) < 0)
-                goto error;
-            }
-
-          ret = ios_read_uint (io, offset, flags, 8,
-                               IOS_ENDIAN_MSB, /* Arbitrary.  */
-                               &abyte);
-          if (ret != IOS_OK)
-            goto error;
-
-          str[i] = (char) abyte;
-          offset += 8;
-        }
-      while (str[i++] != '\0');
-    }
-
-  *value = str;
-  return IOS_OK;
-
-error:
-  free (str);
-  return ret;
-}
-
 static inline int
 ios_write_int_fast (ios io, ios_off offset, int flags,
                     int bits,
@@ -1656,58 +1586,6 @@ ios_write_uint (ios io, ios_off offset, int flags,
 
   /* Fall into the case for the unaligned and the sizes other than 8x.  */
   return ios_write_int_common (io, offset, flags, bits, endian, value);
-}
-
-int
-ios_write_string (ios io, ios_off offset, int flags,
-                  const char *value)
-{
-  const char *p;
-
-  /* The IOS should be writable.  */
-  if (!(io->dev_if->get_flags (io->dev) & IOS_F_WRITE))
-    return IOS_EPERM;
-
-  /* Apply the IOS bias.  */
-  offset += ios_get_bias (io);
-
-  if (offset % 8 == 0)
-    {
-      /* This is the fast case: we want to write a string at a
-         byte-boundary.  Just write the bytes to the IOD.  */
-
-      p = value;
-      do
-        {
-          int ret = io->dev_if->pwrite (io->dev, p, 1,
-                                        offset / 8 + p - value);
-          if (ret != IOD_OK)
-            return IOD_ERROR_TO_IOS_ERROR (ret);
-        }
-      while (*(p++) != '\0');
-    }
-  else
-    {
-      /* We want to write the string in an offset that is not aligned
-         to a byte.  Instead of writing bytes to the IOD, use the IOS
-         to write 8-byte unsigned integers instead.  */
-
-      p = value;
-      do
-        {
-          int ret = ios_write_uint (io, offset, flags, 8,
-                                    IOS_ENDIAN_MSB, /* Arbitrary.  */
-                                    (uint64_t) *p);
-          if (ret == IOS_EOF)
-            return ret;
-
-          offset += 8;
-        }
-      while (*(p++) != '\0');
-
-    }
-
-  return IOS_OK;
 }
 
 uint64_t

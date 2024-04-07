@@ -3818,8 +3818,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_type_string)
       pvm_program_label label = pkl_asm_fresh_label (PKL_GEN_ASM);
 
       /* Stack: IOS BOFF STR */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_POKES);
-      /* Stack: EXCEPTION|null */
+      pkl_asm_call (PKL_GEN_ASM, PKL_GEN_PAYLOAD->env, "_pkl_poke_string");
+      /* Stack: - */
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BN, label);
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_RAISE);
       pkl_asm_label (PKL_GEN_ASM, label);
@@ -3827,17 +3827,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_type_string)
     }
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_MAPPER))
     {
-      pvm_program_label label = pkl_asm_fresh_label (PKL_GEN_ASM);
-
       /* Stack: STRICT IOS BOFF */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEEKS);
-      /* Stack: EXCEPTION|null */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BN, label);
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_RAISE);
-      pkl_asm_label (PKL_GEN_ASM, label);
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
-
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP); /* Get rid of STRICT */
+      pkl_asm_call (PKL_GEN_ASM, PKL_GEN_PAYLOAD->env,
+                    "_pkl_peek_string");        /* STRICT STR */
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP); /* STR */
     }
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_CONSTRUCTOR))
     {
