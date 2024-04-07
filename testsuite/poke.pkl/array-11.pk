@@ -1,0 +1,36 @@
+/* { dg-do run } */
+
+type T =
+  struct uint<64>
+    {
+      uint<24> ui24;
+      int<16> i16;
+      uint<8> ui8_1;
+      uint<8> ui8_2;
+      uint<8> ui8_3;
+    };
+
+var x = T{ui24=0xdeada5, i16=0x5a5a, ui8_1=1, ui8_2=2, ui8_3=3},
+    y = 0xdeada5_5a5a_01_02_03UL as T;
+
+assert(x == y);
+
+var a = [x, y, 0x112233_4455_66_77_88 as T]UL,
+    b = [x, 0x112233_4455_66_77_88 as T, y]L;
+
+var a_expected = [
+      0xdeada55a5a010203UL,
+      0xdeada55a5a010203UL,
+      0x1122334455667788UL,
+    ],
+    b_expected = [
+      0xdeada55a5a010203UL as int<64>,
+      0x1122334455667788L,
+      0xdeada55a5a010203UL as int<64>,
+    ];
+
+/* { dg-command {.set obase 10} } */
+/* { dg-command { a == a_expected } } */
+/* { dg-output {1} } */
+/* { dg-command { b == b_expected } } */
+/* { dg-output {\n1} } */

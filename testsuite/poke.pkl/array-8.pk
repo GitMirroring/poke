@@ -1,0 +1,13 @@
+/* { dg-do run } */
+
+var a = [-1, -2, 0, 1]UH,
+    b = [-1, -2, 0, 1]H;
+
+assert (a isa uint<16>[4]);
+assert (b isa int<16>[4]);
+
+/* { dg-command {.set obase 10} } */
+/* { dg-command { a == [0xffffUH, 0xfffeUH, 0UH, 1UH] } } */
+/* { dg-output {1} } */
+/* { dg-command { b } } */
+/* { dg-output {\n\[-1H,-2H,0H,1H]} } */

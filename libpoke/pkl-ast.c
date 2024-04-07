@@ -2621,6 +2621,8 @@ pkl_ast_node_free_1 (gl_set_t visitations, pkl_ast_node ast)
           n = PKL_AST_CHAIN (t);
           PKL_AST_NODE_FREE (t);
         }
+      if (PKL_AST_ARRAY_ELEM_CAST (ast))
+        PKL_AST_NODE_FREE (PKL_AST_ARRAY_ELEM_CAST (ast));
 
       break;
 

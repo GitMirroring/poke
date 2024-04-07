@@ -1,3 +1,34 @@
+2024-04-07  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* doc/poke.texi (Array Literals): Document new feature.
+	* libpoke/pkl-ast.h (PKL_AST_ARRAY_ELEM_CAST): New accessor
+	macro.
+	(elem_cast): New field which contains the type which should
+	be the target of the cast.
+	* libpoke/pkl-ast.c (pkl_ast_node_free_1): Handle new field.
+	* libpoke/pkl-lex.l (parse_integer_literal_suffix): New function.
+	("]"{IS}): New rule to support array literals with suffix, e.g.,
+	`[1,2,3]UB' to be the same as `[1UB,2UB,3UB]'.
+	(integral literals rule): Use `parse_integer_literal_suffix'.
+	* libpoke/pkl-tab.y (ARRSUF): New token for closing bracket with
+	suffix: ]U, ]UB, etc.
+	(array): Add support for suffix for array literals.
+	* libpoke/pkl-typify.c (pkl_typify1_ps_array): Add check to verify
+	user is using suffix only for integral promotable arrays.
+	* libpoke/pkl-promo.c (pkl_promo_ps_array): New phase to add casts
+	to all elements of the array if array has a suffix.
+	(pkl_phase_promo): Register `pkl_promo_ps_array'.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+	* testsuite/poke.pkl/array-4.pk: New test.
+	* testsuite/poke.pkl/array-5.pk: Likewise.
+	* testsuite/poke.pkl/array-6.pk: Likewise.
+	* testsuite/poke.pkl/array-7.pk: Likewise.
+	* testsuite/poke.pkl/array-8.pk: Likewise.
+	* testsuite/poke.pkl/array-9.pk: Likewise.
+	* testsuite/poke.pkl/array-10.pk: Likewise.
+	* testsuite/poke.pkl/array-11.pk: Likewise.
+	* testsuite/poke.pkl/array-diag-2.pk: Likewise.
+
 2024-04-02  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* doc/poke.texi (Poke Scripts): Document poke_interactive_p.

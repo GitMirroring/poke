@@ -10840,6 +10840,18 @@ a compilation-time error if evaluated, are:
 Array literals must contain at least one element.  Accordingly,
 @code{[]} is not a valid array literal.
 
+A set of suffixes can be used to construct array literals of integers
+of certain types.  @code{L} or @code{l} is for array of 64-bit integers.
+@code{H} or @code{h} is for array of 16-bit integers, @code{B} or @code{b}
+is for array of 8-bit integers, @code{n} or @code{N} is for array of
+4-bit integers and @code{t} or @code{T} is for array of 1-bit integers.
+
+@example
+[1,2,3]UB == [1UB,2UB,3UB]
+[1,2]UL == [1UL,2UL]
+[-1,-2,-3]UB == [0xffUB,0xfeUB,0xfdUB]
+@end example
+
 @cindex matrices
 This is how a @code{3x3} matrix could be constructed using an array of
 arrays:

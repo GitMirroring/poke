@@ -136,10 +136,46 @@ pkl_lex_get_base (const char *str, int *offset)
   return base;
 }
 
+/* Parse the suffix for integer literals.
+
+   If there's no [uU] chars, set *SIGNED_P to 0, otherwise 1.
+   If there's no [tTnNbBhHlL] chars, set *WIDTH to 0, otherwise set
+   *WIDTH to corresponding width.  */
+
+void
+parse_integer_literal_suffix (int *signed_p, int *width, const char *end)
+{
+  *signed_p = 1;
+  if (*end == 'u' || *end == 'U'
+      || (*end != '\0' && (*(end + 1) == 'u' || *(end + 1) == 'U')))
+    *signed_p = 0;
+  else if (*end == 't' || *end == 'T'
+      || ((*end != '\0') && (*(end + 1) == 't' || *(end + 1) == 'T')))
+    *signed_p = 0;
+
+  *width = 0;
+  if (*end == 'l' || *end == 'L'
+      || ((*end != '\0') && (*(end + 1) == 'l' || *(end + 1) == 'L')))
+    *width = 64;
+  else  if (*end == 'h' || *end == 'H'
+      || ((*end != '\0') && (*(end + 1) == 'h' || *(end + 1) == 'H')))
+    *width = 16;
+  else  if (*end == 'b' || *end == 'B'
+      || ((*end != '\0') && (*(end + 1) == 'b' || *(end + 1) == 'B')))
+    *width = 8;
+  else if (*end == 'n' || *end == 'N'
+      || ((*end != '\0') && (*(end + 1) == 'n' || *(end + 1) == 'N')))
+    *width = 4;
+  else if (*end == 't' || *end == 'T'
+      || ((*end != '\0') && (*(end + 1) == 't' || *(end + 1) == 'T')))
+    *width = 1;
+}
+
 /* If the width is not already known (e.g., based on the suffix),
    the type of the integer constant is the smallest signed or unsigned
    integer capable of holding it, starting with 32 bits, in steps of
    power of two and up to 64 bits.  But note these are positive values!  */
+
 static int
 integer_literal_width (uint64_t value, int signed_p)
 {
@@ -156,6 +192,7 @@ integer_literal_width (uint64_t value, int signed_p)
    If the bit kidth of VALUE is not known, choose a proper width.
 
    Return 1 on detection of overflow, otherwise 0.  */
+
 static int
 integer_literal_overflow_handling (uint64_t *value, int signed_p, int width)
 {
@@ -341,6 +378,17 @@ GT >
 "++"                { return INC; }
 "--"                { return DEC; }
 "->"                { return IND; }
+
+"]"{IS} {
+  int signed_p, width;
+
+  parse_integer_literal_suffix (&signed_p, &width, &yytext[1]);
+  if (!width)
+    width = 32;
+  yylval->ast = pkl_ast_make_integral_type (yyextra->ast, width, signed_p);
+  yylval->ast = ASTREF (yylval->ast);
+  return ARRSUF;
+}
 
 "["                { return '['; }
 "]"                { return ']'; }
@@ -570,30 +618,7 @@ GT >
       return LEXER_EXCEPTION;
     }
 
-  signed_p = 1;
-  if (*end == 'u' || *end == 'U'
-      || (*end != '\0' && (*(end + 1) == 'u' || *(end + 1) == 'U')))
-    signed_p = 0;
-  else if (*end == 't' || *end == 'T'
-      || ((*end != '\0') && (*(end + 1) == 't' || *(end + 1) == 'T')))
-    signed_p = 0;
-
-  width = 0;
-  if (*end == 'l' || *end == 'L'
-      || ((*end != '\0') && (*(end + 1) == 'l' || *(end + 1) == 'L')))
-    width = 64;
-  else  if (*end == 'h' || *end == 'H'
-      || ((*end != '\0') && (*(end + 1) == 'h' || *(end + 1) == 'H')))
-    width = 16;
-  else  if (*end == 'b' || *end == 'B'
-      || ((*end != '\0') && (*(end + 1) == 'b' || *(end + 1) == 'B')))
-    width = 8;
-  else if (*end == 'n' || *end == 'N'
-      || ((*end != '\0') && (*(end + 1) == 'n' || *(end + 1) == 'N')))
-    width = 4;
-  else if (*end == 't' || *end == 'T'
-      || ((*end != '\0') && (*(end + 1) == 't' || *(end + 1) == 'T')))
-    width = 1;
+  parse_integer_literal_suffix (&signed_p, &width, end);
 
   if (width == 0)
     width = integer_literal_width (value, signed_p);

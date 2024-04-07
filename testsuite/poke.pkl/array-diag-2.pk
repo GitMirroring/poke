@@ -1,0 +1,3 @@
+/* { dg-do compile } */
+
+["foo", "bar"]U; /* { dg-error "array elements not promoteable to uint" } */

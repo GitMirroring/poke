@@ -522,6 +522,8 @@ load_module (struct pkl_parser *parser,
 %token UNSIGNED         _("keyword `unsigned'")
 %token THREEDOTS        _("varargs indicator")
 
+%token <ast> ARRSUF     _("array suffix")
+
 /* This is for the dangling ELSE.  */
 
 %precedence THEN
@@ -1389,6 +1391,15 @@ array:
                                              0 /* nelem */,
                                              0 /* ninitializer */,
                                              $2);
+                    PKL_AST_LOC ($$) = @$;
+                }
+        | '[' array_initializer_list opt_comma ARRSUF
+                {
+                    $$ = pkl_ast_make_array (pkl_parser->ast,
+                                             0 /* nelem */,
+                                             0 /* ninitializer */,
+                                             $2);
+                    PKL_AST_ARRAY_ELEM_CAST ($$) = $4;
                     PKL_AST_LOC ($$) = @$;
                 }
         ;

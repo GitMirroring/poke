@@ -1,0 +1,9 @@
+/* { dg-do run } */
+
+var a = [-1, -2, 0, 1, 0xffff_ffffU as int<32>]U;
+
+assert (a isa uint<32>[4]);
+
+/* { dg-command {.set obase 10} } */
+/* { dg-command { a == [-1U, -2U, 0U, -1U] } } */
+/* { dg-output {1} } */

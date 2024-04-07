@@ -1,0 +1,9 @@
+/* { dg-do run } */
+
+var a = [256, 255, 254]B; /* No overflow detection happens.  */
+
+assert (a isa int<8>[3]);
+
+/* { dg-command {.set obase 10} } */
+/* { dg-command { a } } */
+/* { dg-output {\[0B,-1B,-2B]} } */

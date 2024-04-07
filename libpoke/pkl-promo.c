@@ -1067,6 +1067,41 @@ PKL_PHASE_BEGIN_HANDLER (pkl_promo_ps_array_initializer)
 }
 PKL_PHASE_END_HANDLER
 
+/* If array has a literal suffix, cast all the elements to specified
+   type.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_promo_ps_array)
+{
+  pkl_ast_node node = PKL_PASS_NODE;
+  pkl_ast_node target_type = PKL_AST_ARRAY_ELEM_CAST (node);
+  pkl_ast_node tmp, type;
+  int restart = 0;
+
+  if (!target_type)
+    /* Nothing to promote.  */
+    PKL_PASS_DONE;
+
+  for (tmp = PKL_AST_ARRAY_INITIALIZERS (node); tmp != NULL;
+       tmp = PKL_AST_CHAIN (tmp))
+    {
+      pkl_ast_node exp = PKL_AST_ARRAY_INITIALIZER_EXP (tmp);
+
+      if (!promote_node (PKL_PASS_AST, &exp, target_type, &restart))
+        {
+          PKL_ICE (PKL_AST_LOC (exp), "couldn't promote to target type");
+          PKL_PASS_ERROR;
+        }
+      PKL_AST_ARRAY_INITIALIZER_EXP (tmp) = exp;
+    }
+
+  type = PKL_AST_TYPE (node);
+  pkl_ast_node_free (PKL_AST_TYPE_A_ETYPE (type));
+  PKL_AST_TYPE_A_ETYPE (type) = ASTREF (target_type);
+
+  PKL_PASS_RESTART = 1;
+}
+PKL_PHASE_END_HANDLER
+
 /* In assignments, the r-value should be promoted to the type of the
    l-value, if that is suitable.  */
 
@@ -1842,6 +1877,7 @@ struct pkl_phase pkl_phase_promo =
    PKL_PHASE_PS_HANDLER (PKL_AST_INDEXER, pkl_promo_ps_indexer),
    PKL_PHASE_PS_HANDLER (PKL_AST_TRIMMER, pkl_promo_ps_trimmer),
    PKL_PHASE_PS_HANDLER (PKL_AST_ARRAY_INITIALIZER, pkl_promo_ps_array_initializer),
+   PKL_PHASE_PS_HANDLER (PKL_AST_ARRAY, pkl_promo_ps_array),
    PKL_PHASE_PS_HANDLER (PKL_AST_FUNCALL, pkl_promo_ps_funcall),
    PKL_PHASE_PS_HANDLER (PKL_AST_ASS_STMT, pkl_promo_ps_ass_stmt),
    PKL_PHASE_PS_HANDLER (PKL_AST_RETURN_STMT, pkl_promo_ps_return_stmt),

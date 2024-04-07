@@ -1075,6 +1075,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_array)
 {
   pkl_ast_node array = PKL_PASS_NODE;
   pkl_ast_node initializers = PKL_AST_ARRAY_INITIALIZERS (array);
+  pkl_ast_node elem_cast = PKL_AST_ARRAY_ELEM_CAST (array);
 
   pkl_ast_node tmp, type = NULL;
 
@@ -1093,6 +1094,22 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_array)
           PKL_TYPIFY_PAYLOAD->errors++;
           PKL_PASS_ERROR;
         }
+    }
+
+  /* If array has a literal suffix, check that the elements are promoteable
+     to the type implied by the suffix.  */
+  if (elem_cast)
+    {
+      if (!pkl_ast_type_promoteable_p (type, elem_cast, 0))
+        {
+          PKL_ERROR (PKL_AST_LOC (array),
+                     "array elements not promoteable to %s required by "
+                     "the array suffix",
+                     pkl_type_str (elem_cast, /*use_given_name*/ 1));
+          PKL_TYPIFY_PAYLOAD->errors++;
+          PKL_PASS_ERROR;
+        }
+      assert (PKL_AST_TYPE_I_SIZE (type) != 0);
     }
 
   /* Build the type of the array.  The arrays built from array

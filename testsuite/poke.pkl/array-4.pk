@@ -1,0 +1,9 @@
+/* { dg-do run } */
+
+var a = [1,2,3]UB;
+
+assert (a isa uint<8>[3]);
+
+/* { dg-command {.set obase 10} } */
+/* { dg-command { a } } */
+/* { dg-output {\[1UB,2UB,3UB]} } */

@@ -1,0 +1,13 @@
+/* { dg-do run } */
+
+var a = [-1, -2, 0, 1, 0xffff_ffffU as int<32>]UL,
+    b = [-1, -2, 0, 1, 0xffff_ffffU as int<32>]L;
+
+assert (a isa uint<64>[5]);
+assert (b isa int<64>[5]);
+
+/* { dg-command {.set obase 10} } */
+/* { dg-command { a == [-1UL, -2UL, 0UL, 1UL, -1UL] } } */
+/* { dg-output {1} } */
+/* { dg-command { b == [-1L, -2L, 0L, 1L, -1L]} } */
+/* { dg-output {\n1} } */

@@ -1,0 +1,9 @@
+/* { dg-do run } */
+
+var a = [0xfUL, 0xeUL, 0xdUL, 0xcUL]N;
+
+assert (a isa int<4>[4]);
+
+/* { dg-command {.set obase 10} } */
+/* { dg-command { a } } */
+/* { dg-output {\[-1N,-2N,-3N,-4N]} } */

@@ -366,11 +366,15 @@ pkl_ast_node pkl_ast_make_string (pkl_ast ast,
 /* PKL_AST_ARRAY nodes represent array literals.  Each array holds a
    sequence of elements, all of them having the same type.  There must
    be at least one element in the array, i.e. empty arrays are not
-   allowed.  */
+   allowed.
+
+   If the array literal has an integral suffix, ELEM_CAST contains
+   the corresponding type.  */
 
 #define PKL_AST_ARRAY_NELEM(AST) ((AST)->array.nelem)
 #define PKL_AST_ARRAY_NINITIALIZER(AST) ((AST)->array.ninitializer)
 #define PKL_AST_ARRAY_INITIALIZERS(AST) ((AST)->array.initializers)
+#define PKL_AST_ARRAY_ELEM_CAST(AST) ((AST)->array.elem_cast)
 
 struct pkl_ast_array
 {
@@ -379,6 +383,7 @@ struct pkl_ast_array
   size_t nelem;
   size_t ninitializer;
   union pkl_ast_node *initializers;
+  union pkl_ast_node *elem_cast;
 };
 
 pkl_ast_node pkl_ast_make_array (pkl_ast ast,
