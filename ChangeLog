@@ -1,3 +1,9 @@
+2024-04-08  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/ios.c (realloc_string): Removed.
+	* libpoke/pkl-gen.c (pkl_gen_ps_type_string): Remove the leftover
+	code.
+
 2024-04-07  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/ios.h (ios_read_string): Remove.

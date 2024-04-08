@@ -3815,15 +3815,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_type_string)
 {
   if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_WRITER))
     {
-      pvm_program_label label = pkl_asm_fresh_label (PKL_GEN_ASM);
-
       /* Stack: IOS BOFF STR */
-      pkl_asm_call (PKL_GEN_ASM, PKL_GEN_PAYLOAD->env, "_pkl_poke_string");
-      /* Stack: - */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BN, label);
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_RAISE);
-      pkl_asm_label (PKL_GEN_ASM, label);
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
+      pkl_asm_call (PKL_GEN_ASM, PKL_GEN_PAYLOAD->env,
+                    "_pkl_poke_string"); /* NULL */
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* _ */
     }
   else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_MAPPER))
     {

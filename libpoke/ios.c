@@ -1057,17 +1057,6 @@ ios_read_uint (ios io, ios_off offset, int flags,
   return ios_read_int_common (io, offset, flags, bits, endian, value);
 }
 
-static int realloc_string (char **str, size_t newsize)
-{
-  char *newstr = realloc (*str, newsize);
-
-  if (!newstr)
-    return IOS_ENOMEM;
-
-  *str = newstr;
-  return IOS_OK;
-}
-
 static inline int
 ios_write_int_fast (ios io, ios_off offset, int flags,
                     int bits,
