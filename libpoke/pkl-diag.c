@@ -72,6 +72,9 @@ pkl_detailed_location (pkl_ast ast, pkl_ast_loc loc,
 
       /* Seek to the beginning of the file.  */
       tmp = fseeko (fp, 0, SEEK_SET);
+      if (tmp == -1)
+        /* File is not seekable.  Do not add detailed info.  */
+        return;
       assert (tmp == 0);
 
       while ((c = fgetc (fp)) != EOF)

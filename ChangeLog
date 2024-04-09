@@ -1,3 +1,8 @@
+2024-04-09  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-diag.c (pkl_detailed_location): Handle the failure
+	of `fseeko'.
+
 2024-04-08  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/ios.c (realloc_string): Removed.
