@@ -1,0 +1,7 @@
+/* { dg-do run } */
+
+while (1)
+  { break; } ?! E_elem;
+
+/* { dg-command {1} } */
+/* { dg-output "1" } */

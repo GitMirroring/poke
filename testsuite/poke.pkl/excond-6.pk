@@ -1,0 +1,20 @@
+/* { dg-do run } */
+
+fun f = int:
+  {
+    var i = 0;
+
+    if ({
+          while (1)
+            break;
+          while (0)
+            continue;
+          i = lambda int: { return 1; } ();
+        } ?! E_elem)
+     return 2;
+
+    return i;
+  }
+
+/* { dg-command { f } } */
+/* { dg-output "1" } */
