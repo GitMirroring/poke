@@ -1,5 +1,10 @@
 2024-04-26  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* poke/pk-cmd-vm.c (vm_cmd): Update usage string to also mention
+	`profile' and `dispatch' sub-commands.
+
+2024-04-26  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-ast.h (PKL_AST_BREAK_CONTINUE_STMT_NPOPES): New
 	macro.
 	(struct pkl_ast_break_continue_stmt): New field `npopes' to keep

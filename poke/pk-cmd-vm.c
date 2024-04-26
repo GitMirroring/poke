@@ -201,5 +201,5 @@ vm_completion_function (const char *x, int state)
 }
 
 const struct pk_cmd vm_cmd =
-  {"vm", "", "", 0, vm_cmds, &vm_trie, NULL, ".vm (disassemble)",
-   vm_completion_function};
+  {"vm", "", "", 0, vm_cmds, &vm_trie, NULL,
+   ".vm (disassemble|profile|dispatch)", vm_completion_function};
