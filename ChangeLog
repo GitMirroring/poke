@@ -1,3 +1,25 @@
+2024-04-26  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-ast.h (PKL_AST_BREAK_CONTINUE_STMT_NPOPES): New
+	macro.
+	(struct pkl_ast_break_continue_stmt): New field `npopes' to keep
+	track of number of `pope' instructions.
+	* libpoke/pkl-trans.h (struct pkl_trans_escapable_ctx): Add new
+	field `npopes'.
+	* libpoke/pkl-trans.c (pkl_trans1_pr_comp_stmt): For EXCOND
+	expression statements, only keep track of number of `pope' insns.
+	(pkl_trans1_ps_comp_stmt): Likewise.
+	(pkl_trans1_ps_break_continue_stmt): Update the node with the number
+	of `pope' insns.
+	* libpoke/pkl-gen.c (pkl_gen_ps_break_continue_stmt): Emit `pope'
+	instruction(s).
+	(pkl_gen_pr_op_excond): Push the failure result after evaluation
+	of the EXCOND's LHS.
+	* testsuite/poke.pkl/excond-6.pk: New test.
+	* testsuite/poke.pkl/excond-7.pk: Likewise.
+	* testsuite/poke.pkl/excond-8.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
 2024-04-09  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-diag.c (pkl_detailed_location): Handle the failure

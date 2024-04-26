@@ -1319,9 +1319,12 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_break_continue_stmt)
   pkl_ast_node stmt = PKL_PASS_NODE;
   int kind = PKL_AST_BREAK_CONTINUE_STMT_KIND (stmt);
   int nframes = PKL_AST_BREAK_CONTINUE_STMT_NFRAMES (PKL_PASS_NODE);
+  int npopes = PKL_AST_BREAK_CONTINUE_STMT_NPOPES (PKL_PASS_NODE);
 
   if (nframes > 0)
     pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_POPF, nframes);
+  for (; npopes; --npopes)
+    pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_POPE);
   pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BA,
                 kind == PKL_AST_BREAK_CONTINUE_STMT_KIND_BREAK
                 ? pkl_asm_break_label (PKL_GEN_ASM)
@@ -4635,10 +4638,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_op_excond)
   pvm_program_label exception_handler = pkl_asm_fresh_label (PKL_GEN_ASM);
   pvm_program_label done = pkl_asm_fresh_label (PKL_GEN_ASM);
 
-  /* Push the provisional result of the operation, which is
-     `false'.  */
-  pkl_asm_insn (pasm, PKL_INSN_PUSH, pvm_make_int (0, 32));
-
   /* Install a handler for the exception specified in the second
      operand.  */
   PKL_PASS_SUBPASS (op2);
@@ -4651,14 +4650,16 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_op_excond)
     pkl_asm_insn (pasm, PKL_INSN_DROP);
 
   pkl_asm_insn (pasm, PKL_INSN_POPE);
+
+  /* Push the result of the operation, which is `false'.  */
+  pkl_asm_insn (pasm, PKL_INSN_PUSH, pvm_make_int (0, 32));
+
   pkl_asm_insn (pasm, PKL_INSN_BA, done);
 
-  /* The exception handler just drops the raised exception and the
-     provisional result `false' and pushes `true' to reflect the
-     exception was raised. */
+  /* The exception handler just drops the raised exception and
+     pushes `true' to reflect the exception was raised. */
   pkl_asm_label (pasm, exception_handler);
   pkl_asm_insn (pasm, PKL_INSN_DROP); /* The exception.  */
-  pkl_asm_insn (pasm, PKL_INSN_DROP); /* The provisional result.  */
   pkl_asm_insn (pasm, PKL_INSN_PUSH, pvm_make_int (1, 32));
 
   pkl_asm_label (pasm, done);

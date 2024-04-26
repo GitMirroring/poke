@@ -66,6 +66,7 @@ struct pkl_trans_escapable_ctx
 {
   pkl_ast_node node;
   int nframes;
+  int npopes;
 };
 
 /* The following struct defines the payload of the trans phases.

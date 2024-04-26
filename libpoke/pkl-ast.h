@@ -2022,6 +2022,7 @@ pkl_ast_node pkl_ast_make_print_stmt (pkl_ast ast,
 #define PKL_AST_BREAK_CONTINUE_STMT_KIND(AST) ((AST)->break_continue_stmt.kind)
 #define PKL_AST_BREAK_CONTINUE_STMT_ENTITY(AST) ((AST)->break_continue_stmt.entity)
 #define PKL_AST_BREAK_CONTINUE_STMT_NFRAMES(AST) ((AST)->break_continue_stmt.nframes)
+#define PKL_AST_BREAK_CONTINUE_STMT_NPOPES(AST) ((AST)->break_continue_stmt.npopes)
 
 #define PKL_AST_BREAK_CONTINUE_STMT_KIND_BREAK 0
 #define PKL_AST_BREAK_CONTINUE_STMT_KIND_CONTINUE 1
@@ -2032,6 +2033,7 @@ struct pkl_ast_break_continue_stmt
   union pkl_ast_node *entity;
   int kind;
   int nframes;
+  int npopes;
 };
 
 pkl_ast_node pkl_ast_make_break_continue_stmt (pkl_ast ast,
