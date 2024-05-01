@@ -1,3 +1,7 @@
+2024-05-01  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* utils/pk-jojopatch.in: Disable auto-remap to improve speed.
+
 2024-04-26  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* poke/pk-cmd-vm.c (vm_cmd): Update usage string to also mention

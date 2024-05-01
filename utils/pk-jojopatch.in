@@ -60,6 +60,7 @@ if (!ok_p)
 
 vm_set_obase (10);
 vm_set_opprint (1);  /* Enable pretty-printer.  */
+vm_set_autoremap (0);  /* Disable auto-remap.  */
 
 var orig_file = open (argv[0], IOS_M_RDONLY),
     patch_file = open (argv[1], IOS_M_RDONLY);
