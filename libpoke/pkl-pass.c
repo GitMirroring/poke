@@ -180,7 +180,7 @@ pkl_call_node_handlers (pkl_compiler compiler,
          order.  */
       if (node_code == PKL_AST_TYPE)
         {
-          int typecode = PKL_AST_TYPE_CODE (node);
+          int typecode = PKL_AST_TYPE_CODE2 (node);
 
           PKL_CALL_PHASES (type, ps, typecode);
         }
@@ -228,7 +228,7 @@ pkl_call_node_handlers (pkl_compiler compiler,
          order.  */
       if (node_code == PKL_AST_TYPE)
         {
-          int typecode = PKL_AST_TYPE_CODE (node);
+          int typecode = PKL_AST_TYPE_CODE2 (node);
 
           PKL_CALL_PHASES (type, pr, typecode);
         }
@@ -427,8 +427,12 @@ pkl_do_pass_1 (pkl_compiler compiler,
       break;
     case PKL_AST_TYPE:
       {
-        switch (PKL_AST_TYPE_CODE (node))
+        switch (PKL_AST_TYPE_CODE2 (node))
           {
+          case PKL_TYPE_ALIAS:
+            PKL_PASS (PKL_AST_TYPE_L_NAME (node));
+            PKL_PASS (PKL_AST_TYPE_L_TYPE (node));
+            break;
           case PKL_TYPE_ARRAY:
             PKL_PASS (PKL_AST_TYPE_A_ETYPE (node));
             if (PKL_AST_TYPE_A_BOUND (node))

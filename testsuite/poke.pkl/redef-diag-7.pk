@@ -1,0 +1,8 @@
+/* { dg-do compile } */
+
+type Foo = struct { };
+fun foo = (Foo a) void: { }
+foo (Foo {}); /* Note this introduces a typename that gets fred after execution.  */
+type Foo = struct { };
+foo (Foo {}); /* { dg-error "invalid value for function argument.*\n.*expected a previous declaration of Foo, got Foo" } */
+

@@ -105,6 +105,7 @@ pkl_register_arg (struct pkl_parser *parser, pkl_ast_node arg)
   PKL_AST_LOC (arg_decl) = PKL_AST_LOC (arg);
 
   if (!pkl_env_register (parser->env,
+                         parser->ast,
                          PKL_ENV_NS_MAIN,
                          PKL_AST_IDENTIFIER_POINTER (arg_identifier),
                          arg_decl))
@@ -302,7 +303,7 @@ pkl_register_dummies (struct pkl_parser *parser, int n)
                                 id, NULL /* initial */,
                                 NULL /* source */);
 
-      r = pkl_env_register (parser->env, PKL_ENV_NS_MAIN, name, decl);
+      r = pkl_env_register (parser->env, parser->ast, PKL_ENV_NS_MAIN, name, decl);
       assert (r);
     }
 }
@@ -1542,15 +1543,20 @@ type_specifier:
 typename:
           TYPENAME
                   {
-                  pkl_ast_node decl = pkl_env_lookup (pkl_parser->env,
-                                                      PKL_ENV_NS_MAIN,
-                                                      PKL_AST_IDENTIFIER_POINTER ($1),
-                                                      NULL, NULL);
-                  assert (decl != NULL
-                          && PKL_AST_DECL_KIND (decl) == PKL_AST_DECL_KIND_TYPE);
-                  $$ = PKL_AST_DECL_INITIAL (decl);
-                  PKL_AST_LOC ($$) = @$;
-                  $1 = ASTREF ($1); pkl_ast_node_free ($1);
+                    pkl_ast_node alias;
+                    pkl_ast_node decl;
+
+                    decl = pkl_env_lookup (pkl_parser->env,
+                                           PKL_ENV_NS_MAIN,
+                                           PKL_AST_IDENTIFIER_POINTER ($1),
+                                           NULL, NULL);
+                    assert (decl != NULL
+                            && PKL_AST_DECL_KIND (decl) == PKL_AST_DECL_KIND_TYPE);
+                    alias = pkl_ast_make_named_type (pkl_parser->ast,
+                                                     $1, PKL_AST_DECL_INITIAL (decl));
+                    pkl_ast_add_type_name_to_decl (decl, alias);
+                    $$ = alias;
+                    PKL_AST_LOC ($$) = @$;
                 }
         ;
 
@@ -1789,6 +1795,7 @@ struct_type_specifier:
                                               NULL /* source */);
 
                     if (!pkl_env_register (pkl_parser->env,
+                                           pkl_parser->ast,
                                            PKL_ENV_NS_MAIN,
                                            PKL_AST_IDENTIFIER_POINTER (offset_identifier),
                                            decl))
@@ -1885,6 +1892,7 @@ struct_type_field:
                     PKL_AST_LOC (decl) = @$;
 
                     if (!pkl_env_register (pkl_parser->env,
+                                           pkl_parser->ast,
                                            PKL_ENV_NS_MAIN,
                                            PKL_AST_IDENTIFIER_POINTER (identifier),
                                            decl))
@@ -2102,6 +2110,7 @@ declaration:
                   PKL_AST_LOC ($<ast>$) = @$;
 
                   if (!pkl_env_register (pkl_parser->env,
+                                         pkl_parser->ast,
                                          PKL_ENV_NS_MAIN,
                                          PKL_AST_IDENTIFIER_POINTER ($2),
                                          $<ast>$))
@@ -2164,6 +2173,7 @@ defvar:
                 PKL_AST_LOC ($$) = @$;
 
                 if (!pkl_env_register (pkl_parser->env,
+                                       pkl_parser->ast,
                                        PKL_ENV_NS_MAIN,
                                        PKL_AST_IDENTIFIER_POINTER ($1),
                                        $$))
@@ -2188,12 +2198,10 @@ deftype:
             $$ = pkl_ast_make_decl (pkl_parser->ast,
                                     PKL_AST_DECL_KIND_TYPE, $1, $3,
                                     pkl_parser->filename);
-            PKL_AST_LOC ($1) = @1;
             PKL_AST_LOC ($$) = @$;
 
-            PKL_AST_TYPE_NAME ($3) = ASTREF ($1);
-
             if (!pkl_env_register (pkl_parser->env,
+                                   pkl_parser->ast,
                                    PKL_ENV_NS_MAIN,
                                    PKL_AST_IDENTIFIER_POINTER ($1),
                                    $$))
@@ -2203,6 +2211,8 @@ deftype:
                            PKL_AST_IDENTIFIER_POINTER ($1));
                 YYERROR;
               }
+
+            $1 = ASTREF ($1); pkl_ast_node_free ($1);
           }
         ;
 
@@ -2236,6 +2246,7 @@ defunit:
               PKL_AST_LOC ($$) = @$;
 
               if (!pkl_env_register (pkl_parser->env,
+                                     pkl_parser->ast,
                                      PKL_ENV_NS_UNITS,
                                      PKL_AST_IDENTIFIER_POINTER ($1),
                                      $$))
@@ -2468,6 +2479,7 @@ stmt:
                   PKL_AST_LOC ($<ast>$) = @3;
 
                   if (!pkl_env_register (pkl_parser->env,
+                                         pkl_parser->ast,
                                          PKL_ENV_NS_MAIN,
                                          PKL_AST_IDENTIFIER_POINTER ($3),
                                          $<ast>$))
@@ -2518,6 +2530,7 @@ stmt:
                   PKL_AST_LOC ($<ast>$) = @3;
 
                   if (!pkl_env_register (pkl_parser->env,
+                                         pkl_parser->ast,
                                          PKL_ENV_NS_MAIN,
                                          PKL_AST_IDENTIFIER_POINTER ($3),
                                          $<ast>$))

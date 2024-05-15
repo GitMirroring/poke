@@ -302,7 +302,7 @@ pvm_val pvm_make_void_type (void);
 
 pvm_val pvm_make_array_type (pvm_val type, pvm_val bound);
 
-pvm_val pvm_make_struct_type (pvm_val nfields, pvm_val name,
+pvm_val pvm_make_struct_type (pvm_val nfields,
                               pvm_val *fnames, pvm_val *ftypes);
 
 pvm_val pvm_make_offset_type (pvm_val base_type, pvm_val unit, pvm_val ref_type);

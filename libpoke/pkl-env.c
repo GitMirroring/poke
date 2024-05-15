@@ -170,6 +170,7 @@ env_redecls_free (pkl_env env, int rollback_p)
 
 static int
 register_decl (pkl_env env,
+               pkl_ast ast,
                pkl_hash hash_table,
                const char *name,
                pkl_ast_node decl)
@@ -217,8 +218,7 @@ register_decl (pkl_env env,
 
           if (asprintf (&new_name, "%s$%d", name, generation + 1) == -1)
             return 0;
-          free (PKL_AST_IDENTIFIER_POINTER (PKL_AST_DECL_NAME (found_decl)));
-          PKL_AST_IDENTIFIER_POINTER (PKL_AST_DECL_NAME (found_decl)) = new_name;
+          pkl_ast_rename_decl (ast, found_decl, new_name);
 
           PKL_AST_DECL_PREV_DECL (decl) = ASTREF (found_decl);
 
@@ -304,13 +304,14 @@ pkl_env_pop_frame (pkl_env env)
 
 int
 pkl_env_register (pkl_env env,
+                  pkl_ast ast,
                   int namespace,
                   const char *name,
                   pkl_ast_node decl)
 {
   pkl_hash *table = get_ns_table (env, namespace);
 
-  if (register_decl (env, *table, name, decl))
+  if (register_decl (env, ast, *table, name, decl))
     {
       switch (PKL_AST_DECL_KIND (decl))
         {

@@ -2319,6 +2319,7 @@ EXTRA_DIST = \
   poke.pkl/redef-diag-4.pk \
   poke.pkl/redef-diag-5.pk \
   poke.pkl/redef-diag-6.pk \
+  poke.pkl/redef-diag-7.pk \
   poke.pkl/redef-1.pk \
   poke.pkl/redef-2.pk \
   poke.pkl/redef-3.pk \

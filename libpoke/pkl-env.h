@@ -91,6 +91,7 @@ pkl_env pkl_env_pop_frame (pkl_env env);
    given name in the current frame and namespace.  */
 
 int pkl_env_register (pkl_env env,
+                      pkl_ast ast,
                       int namespace,
                       const char *name,
                       pkl_ast_node decl);
