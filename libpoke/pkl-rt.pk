@@ -1288,14 +1288,14 @@ immutable fun _pkl_eq_any = (any v1, any v2) int<32>:
     fun struct_type_name = (any val) string:
     {
       return asm string: ("typof
-                      tysctgetn
-                      nip2
-                      bn .namenull
-                      nip
-                      ba .done
-                    .namenull:
-                      drop
-                    .done:" : "", val);
+                           tygetn
+                           nip2
+                           bn .namenull
+                           nip
+                           ba .done
+                       .namenull:
+                           drop
+                       .done:" : "", val);
     }
 
     var v1_len = asm uint<64>: ("sel; nip" : v1);
@@ -1358,7 +1358,7 @@ immutable fun _pkl_print_format_any = (any val,
                                        _Pkl_Print_Format_Ctx ctx,
                                        int<32> depth,
                                        int<32> obase = vm_obase,
-                                       int<32> only_struct_type_name = 0) void:
+                                       int<32> only_type_name = 0) void:
 {
   fun lutos = (uint<64> i, int<32> base, int<32> padbits = 0) string:
   {
@@ -1438,18 +1438,31 @@ immutable fun _pkl_print_format_any = (any val,
       }
     else if (asm int<32>: ("tyissct; nip" : val))
       {
-        var maybe_name = asm any: ("tysctgetn; nip" : val);
-        var name
-          = asm int<32>: ("nnn; nip" : maybe_name) ? "struct"
-                                                   : (maybe_name as string);
         var nfields = asm uint<64>: ("tysctgetnf; nip" : val);
+        var type_name
+          = asm string: ("typof
+                          tygetn
+                          nip2
+                          bn .namenull
+                          nip
+                          ba .done
+                       .namenull:
+                          drop
+                       .done:"
+                         : "", val );
 
-        ctx.emit (name);
-        if (name != "struct" && only_struct_type_name)
+        if (type_name != "")
           {
-            ctx.end_class ("type");
-            return;
+            ctx.emit (type_name);
+            if (only_type_name)
+              {
+                ctx.end_class ("type");
+                return;
+              }
           }
+        else
+          ctx.emit ("struct");
+
         ctx.emit (" {");
         for (var i = 0UL; i < nfields; ++i)
           {
@@ -1633,14 +1646,14 @@ immutable fun _pkl_print_format_any = (any val,
 
     var struct_type_name
       = asm string: ("typof
-                      tysctgetn
+                      tygetn
                       nip2
                       bn .namenull
                       nip
                       ba .done
-                    .namenull:
+                   .namenull:
                       drop
-                    .done:"
+                   .done:"
                      : "struct", val );
 
     ctx.begin_class ("struct");

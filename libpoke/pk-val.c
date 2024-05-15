@@ -242,16 +242,7 @@ pk_type_code (pk_val val)
 pk_val
 pk_type_name (pk_val type)
 {
-  switch (PVM_VAL_TYP_CODE (type))
-    {
-    case PVM_TYPE_STRUCT:
-      return PVM_VAL_TYP_S_NAME (type);
-      break;
-    default:
-      break;
-    }
-
-  return PK_NULL;
+  return PVM_VAL_TYP_NAME (type);
 }
 
 int
@@ -412,7 +403,8 @@ pk_val
 pk_make_struct_type (pk_compiler pkc __attribute__ ((unused)), pk_val nfields,
                      pk_val name, pk_val *fnames, pk_val *ftypes)
 {
-  return pvm_make_struct_type (nfields, name, fnames, ftypes);
+  /* XXX name is now unused.  */
+  return pvm_make_struct_type (nfields, fnames, ftypes);
 }
 
 pk_val
@@ -430,7 +422,8 @@ pk_allocate_struct_attrs (pk_val nfields, pk_val **fnames, pk_val **ftypes)
 pk_val
 pk_struct_type_name (pk_val type)
 {
-  return PVM_VAL_TYP_S_NAME (type);
+  /* XXX deprecated call now.  */
+  return PVM_NULL;
 }
 
 pk_val

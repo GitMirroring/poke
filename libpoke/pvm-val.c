@@ -474,6 +474,7 @@ pvm_make_type (enum pvm_type_code code)
 
   memset (type, 0, sizeof (struct pvm_type));
   type->code = code;
+  type->name = PVM_NULL;
 
   PVM_VAL_BOX_TYP (box) = type;
   return PVM_BOX (box);
@@ -541,12 +542,11 @@ pvm_make_array_type (pvm_val type, pvm_val bounder)
 }
 
 pvm_val
-pvm_make_struct_type (pvm_val nfields, pvm_val name,
+pvm_make_struct_type (pvm_val nfields,
                       pvm_val *fnames, pvm_val *ftypes)
 {
   pvm_val stype = pvm_make_type (PVM_TYPE_STRUCT);
 
-  PVM_VAL_TYP_S_NAME (stype) = name;
   PVM_VAL_TYP_S_NFIELDS (stype) = nfields;
   PVM_VAL_TYP_S_CONSTRUCTOR (stype) = PVM_NULL;
   PVM_VAL_TYP_S_FNAMES (stype) = fnames;
@@ -1389,8 +1389,8 @@ pvm_print_val_1 (pvm vm, int depth, int mode, int base, int indent,
     {
       size_t nelem, idx, nabsent;
       pvm_val struct_type = PVM_VAL_SCT_TYPE (val);
-      pvm_val struct_type_name = PVM_VAL_TYP_S_NAME (struct_type);
       pvm_val struct_offset = PVM_VAL_SCT_OFFSET (val);
+      pvm_val struct_type_name = PVM_VAL_TYP_NAME (struct_type);
 
       /* If the struct has a pretty printing method (called _print)
          then use it, unless the PVM is configured to not do so.  */
@@ -1540,7 +1540,7 @@ pvm_print_val_1 (pvm vm, int depth, int mode, int base, int indent,
         case PVM_TYPE_STRUCT:
           {
             size_t i, nelem;
-            pvm_val type_name = PVM_VAL_TYP_S_NAME (val);
+            pvm_val type_name = PVM_VAL_TYP_NAME (val);
 
             nelem = PVM_VAL_ULONG (PVM_VAL_TYP_S_NFIELDS (val));
 
@@ -1700,8 +1700,14 @@ pvm_type_equal_p (pvm_val type1, pvm_val type2)
           return pvm_type_equal_p (etype1, etype2);
       }
     case PVM_TYPE_STRUCT:
-      return (STREQ (PVM_VAL_STR (PVM_VAL_TYP_S_NAME (type1)),
-                     PVM_VAL_STR (PVM_VAL_TYP_S_NAME (type2))));
+      {
+        pvm_val name1 = PVM_VAL_TYP_NAME (type1);
+        pvm_val name2 = PVM_VAL_TYP_NAME (type2);
+
+        if (name1 == PVM_NULL || name2 == PVM_NULL)
+          return 0;
+        return (STREQ (PVM_VAL_STR (name1), PVM_VAL_STR (name2)));
+      }
     case PVM_TYPE_OFFSET:
       return (pvm_type_equal_p (PVM_VAL_TYP_O_BASE_TYPE (type1),
                                 PVM_VAL_TYP_O_BASE_TYPE (type2))
@@ -1792,8 +1798,8 @@ pvm_make_exception (int code, const char *name, int exit_status,
   field_names[4] = msg_name;
   field_types[4] = pvm_make_string_type ();
 
-  type = pvm_make_struct_type (nfields, struct_name,
-                               field_names, field_types);
+  type = pvm_make_struct_type (nfields, field_names, field_types);
+  PVM_VAL_TYP_NAME (type) = struct_name;
 
   exception = pvm_make_struct (nfields, nmethods, type);
 

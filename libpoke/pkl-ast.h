@@ -164,6 +164,7 @@ enum pkl_ast_type_code
   PKL_TYPE_FUNCTION,
   PKL_TYPE_OFFSET,
   PKL_TYPE_ANY,
+  PKL_TYPE_ALIAS,
   PKL_TYPE_NOTYPE,
 };
 
@@ -894,12 +895,21 @@ pkl_ast_node pkl_ast_make_func_type_arg (pkl_ast ast,
    If NAME is not NULL, then this specific type instance has a given
    name, which is encoded in a PKL_AST_IDENTIFIER node.
 
-   CODE contains the kind of type, as defined in the pkl_ast_type_code
-   enumeration above.
+   CODE contains the kind of the referred type, as defined in the
+   pkl_ast_type_code enumeration above.  CODE2 is like CODE but it
+   refers to the code of the immediate type, without traversing, which
+   may be a type alias.
 
    COMPILED contains an integer identifying the last compiler pass
    that was run on the node.  This is only used in certain nodes, and
    is controlled in the pass manager.
+
+   NAMED contains a flag that tells whether this type node is aliased,
+   i.e. it has appeared as an initial in a declaration.  This means
+   this node can only be referred via an alias.
+
+   In alias types, NAME is the name of the aliased type encoded in an
+   IDENTIFIER node.  TYPE is the aliased type.
 
    In integral types, SIGNED is 1 if the type denotes a signed numeric
    type.  In non-integral types SIGNED_P is 0.  SIZE is the size in
@@ -953,46 +963,52 @@ pkl_ast_node pkl_ast_make_func_type_arg (pkl_ast ast,
    "fallible".  Examples of such constraints are constraint
    expressions in struct type fields or size bounders in arrays.  */
 
-#define PKL_AST_TYPE_CODE(AST) ((AST)->type.code)
-#define PKL_AST_TYPE_NAME(AST) ((AST)->type.name)
-#define PKL_AST_TYPE_COMPLETE(AST) ((AST)->type.complete)
-#define PKL_AST_TYPE_FALLIBLE(AST) ((AST)->type.fallible)
-#define PKL_AST_TYPE_COMPILED(AST) ((AST)->type.compiled)
-#define PKL_AST_TYPE_I_SIZE(AST) ((AST)->type.val.integral.size)
-#define PKL_AST_TYPE_I_SIGNED_P(AST) ((AST)->type.val.integral.signed_p)
-#define PKL_AST_TYPE_I_DYN_P(AST) ((AST)->type.val.integral.dyn_p)
-#define PKL_AST_TYPE_A_BOUND(AST) ((AST)->type.val.array.bound)
-#define PKL_AST_TYPE_A_ETYPE(AST) ((AST)->type.val.array.etype)
-#define PKL_AST_TYPE_A_CLOSURES(AST) ((AST)->type.val.array.closures)
-#define PKL_AST_TYPE_A_MAPPER(AST) ((AST)->type.val.array.closures[0])
-#define PKL_AST_TYPE_A_WRITER(AST) ((AST)->type.val.array.closures[1])
-#define PKL_AST_TYPE_A_BOUNDER(AST) ((AST)->type.val.array.closures[2])
-#define PKL_AST_TYPE_A_CONSTRUCTOR(AST) ((AST)->type.val.array.closures[3])
-#define PKL_AST_TYPE_A_INTEGRATOR(AST) ((AST)->type.val.array.closures[4])
-#define PKL_AST_TYPE_S_NFIELD(AST) ((AST)->type.val.sct.nfield)
-#define PKL_AST_TYPE_S_NCFIELD(AST) ((AST)->type.val.sct.ncfield)
-#define PKL_AST_TYPE_S_NDECL(AST) ((AST)->type.val.sct.ndecl)
-#define PKL_AST_TYPE_S_NELEM(AST) ((AST)->type.val.sct.nelem)
-#define PKL_AST_TYPE_S_ELEMS(AST) ((AST)->type.val.sct.elems)
-#define PKL_AST_TYPE_S_PINNED_P(AST) ((AST)->type.val.sct.pinned_p)
-#define PKL_AST_TYPE_S_UNION_P(AST) ((AST)->type.val.sct.union_p)
-#define PKL_AST_TYPE_S_CLOSURES(AST) ((AST)->type.val.sct.closures)
-#define PKL_AST_TYPE_S_MAPPER(AST) ((AST)->type.val.sct.closures[0])
-#define PKL_AST_TYPE_S_WRITER(AST) ((AST)->type.val.sct.closures[1])
-#define PKL_AST_TYPE_S_CONSTRUCTOR(AST) ((AST)->type.val.sct.closures[2])
-#define PKL_AST_TYPE_S_COMPARATOR(AST) ((AST)->type.val.sct.closures[3])
-#define PKL_AST_TYPE_S_INTEGRATOR(AST) ((AST)->type.val.sct.closures[4])
-#define PKL_AST_TYPE_S_DEINTEGRATOR(AST) ((AST)->type.val.sct.closures[5])
-#define PKL_AST_TYPE_S_TYPIFIER(AST) ((AST)->type.val.sct.closures[6])
-#define PKL_AST_TYPE_S_ITYPE(AST) ((AST)->type.val.sct.itype)
-#define PKL_AST_TYPE_O_UNIT(AST) ((AST)->type.val.off.unit)
-#define PKL_AST_TYPE_O_BASE_TYPE(AST) ((AST)->type.val.off.base_type)
-#define PKL_AST_TYPE_O_REF_TYPE(AST) ((AST)->type.val.off.ref_type)
-#define PKL_AST_TYPE_F_RTYPE(AST) ((AST)->type.val.fun.rtype)
-#define PKL_AST_TYPE_F_NARG(AST) ((AST)->type.val.fun.narg)
-#define PKL_AST_TYPE_F_ARGS(AST) ((AST)->type.val.fun.args)
-#define PKL_AST_TYPE_F_VARARG(AST) ((AST)->type.val.fun.vararg)
-#define PKL_AST_TYPE_F_FIRST_OPT_ARG(AST) ((AST)->type.val.fun.first_opt_arg)
+#define PKL_AST_TYPE_NAME(AST) \
+  ((AST)->type.code == PKL_TYPE_ALIAS ? (AST)->type.val.alias.name : NULL)
+
+#define PKL_AST_TYPE_CODE2(AST) ((AST)->type.code)
+#define PKL_AST_TYPE_CODE(AST) (pkl_ast_type_resolv (AST)->type.code)
+#define PKL_AST_TYPE_COMPLETE(AST) (pkl_ast_type_resolv (AST)->type.complete)
+#define PKL_AST_TYPE_FALLIBLE(AST) (pkl_ast_type_resolv (AST)->type.fallible)
+#define PKL_AST_TYPE_COMPILED(AST) (pkl_ast_type_resolv (AST)->type.compiled)
+#define PKL_AST_TYPE_NAMED(AST) (pkl_ast_type_resolv (AST)->type.named)
+#define PKL_AST_TYPE_L_NAME(AST) ((AST)->type.val.alias.name)
+#define PKL_AST_TYPE_L_TYPE(AST) ((AST)->type.val.alias.type)
+#define PKL_AST_TYPE_I_SIZE(AST) (pkl_ast_type_resolv (AST)->type.val.integral.size)
+#define PKL_AST_TYPE_I_SIGNED_P(AST) (pkl_ast_type_resolv (AST)->type.val.integral.signed_p)
+#define PKL_AST_TYPE_I_DYN_P(AST) (pkl_ast_type_resolv (AST)->type.val.integral.dyn_p)
+#define PKL_AST_TYPE_A_BOUND(AST) (pkl_ast_type_resolv (AST)->type.val.array.bound)
+#define PKL_AST_TYPE_A_ETYPE(AST) (pkl_ast_type_resolv (AST)->type.val.array.etype)
+#define PKL_AST_TYPE_A_CLOSURES(AST) (pkl_ast_type_resolv (AST)->type.val.array.closures)
+#define PKL_AST_TYPE_A_MAPPER(AST) (pkl_ast_type_resolv (AST)->type.val.array.closures[0])
+#define PKL_AST_TYPE_A_WRITER(AST) (pkl_ast_type_resolv (AST)->type.val.array.closures[1])
+#define PKL_AST_TYPE_A_BOUNDER(AST) (pkl_ast_type_resolv (AST)->type.val.array.closures[2])
+#define PKL_AST_TYPE_A_CONSTRUCTOR(AST) (pkl_ast_type_resolv (AST)->type.val.array.closures[3])
+#define PKL_AST_TYPE_A_INTEGRATOR(AST) (pkl_ast_type_resolv (AST)->type.val.array.closures[4])
+#define PKL_AST_TYPE_S_NFIELD(AST) (pkl_ast_type_resolv (AST)->type.val.sct.nfield)
+#define PKL_AST_TYPE_S_NCFIELD(AST) (pkl_ast_type_resolv (AST)->type.val.sct.ncfield)
+#define PKL_AST_TYPE_S_NDECL(AST) (pkl_ast_type_resolv (AST)->type.val.sct.ndecl)
+#define PKL_AST_TYPE_S_NELEM(AST) (pkl_ast_type_resolv (AST)->type.val.sct.nelem)
+#define PKL_AST_TYPE_S_ELEMS(AST) (pkl_ast_type_resolv (AST)->type.val.sct.elems)
+#define PKL_AST_TYPE_S_PINNED_P(AST) (pkl_ast_type_resolv (AST)->type.val.sct.pinned_p)
+#define PKL_AST_TYPE_S_UNION_P(AST) (pkl_ast_type_resolv (AST)->type.val.sct.union_p)
+#define PKL_AST_TYPE_S_CLOSURES(AST) (pkl_ast_type_resolv (AST)->type.val.sct.closures)
+#define PKL_AST_TYPE_S_MAPPER(AST) (pkl_ast_type_resolv (AST)->type.val.sct.closures[0])
+#define PKL_AST_TYPE_S_WRITER(AST) (pkl_ast_type_resolv (AST)->type.val.sct.closures[1])
+#define PKL_AST_TYPE_S_CONSTRUCTOR(AST) (pkl_ast_type_resolv (AST)->type.val.sct.closures[2])
+#define PKL_AST_TYPE_S_COMPARATOR(AST) (pkl_ast_type_resolv (AST)->type.val.sct.closures[3])
+#define PKL_AST_TYPE_S_INTEGRATOR(AST) (pkl_ast_type_resolv (AST)->type.val.sct.closures[4])
+#define PKL_AST_TYPE_S_DEINTEGRATOR(AST) (pkl_ast_type_resolv (AST)->type.val.sct.closures[5])
+#define PKL_AST_TYPE_S_TYPIFIER(AST) (pkl_ast_type_resolv (AST)->type.val.sct.closures[6])
+#define PKL_AST_TYPE_S_ITYPE(AST) (pkl_ast_type_resolv (AST)->type.val.sct.itype)
+#define PKL_AST_TYPE_O_UNIT(AST) (pkl_ast_type_resolv (AST)->type.val.off.unit)
+#define PKL_AST_TYPE_O_BASE_TYPE(AST) (pkl_ast_type_resolv (AST)->type.val.off.base_type)
+#define PKL_AST_TYPE_O_REF_TYPE(AST) (pkl_ast_type_resolv (AST)->type.val.off.ref_type)
+#define PKL_AST_TYPE_F_RTYPE(AST) (pkl_ast_type_resolv (AST)->type.val.fun.rtype)
+#define PKL_AST_TYPE_F_NARG(AST) (pkl_ast_type_resolv (AST)->type.val.fun.narg)
+#define PKL_AST_TYPE_F_ARGS(AST) (pkl_ast_type_resolv (AST)->type.val.fun.args)
+#define PKL_AST_TYPE_F_VARARG(AST) (pkl_ast_type_resolv (AST)->type.val.fun.vararg)
+#define PKL_AST_TYPE_F_FIRST_OPT_ARG(AST) (pkl_ast_type_resolv (AST)->type.val.fun.first_opt_arg)
 
 #define PKL_AST_TYPE_COMPLETE_UNKNOWN 0
 #define PKL_AST_TYPE_COMPLETE_YES 1
@@ -1006,14 +1022,20 @@ struct pkl_ast_type
 {
   struct pkl_ast_common common;
 
-  union pkl_ast_node *name;
   enum pkl_ast_type_code code;
   int complete;
   int compiled;
   int fallible;
+  int named;
 
   union
   {
+    struct
+    {
+      union pkl_ast_node *name;
+      union pkl_ast_node *type;
+    } alias;
+
     struct
     {
       size_t size;
@@ -1055,6 +1077,7 @@ struct pkl_ast_type
 
     struct
     {
+      union pkl_ast_node *name;
       union pkl_ast_node *rtype;
       int narg;
       int vararg;
@@ -1065,7 +1088,10 @@ struct pkl_ast_type
   } val;
 };
 
-pkl_ast_node pkl_ast_make_named_type (pkl_ast ast, pkl_ast_node name);
+pkl_ast_node pkl_ast_type_resolv (pkl_ast_node type);
+
+pkl_ast_node pkl_ast_make_named_type (pkl_ast ast, pkl_ast_node name,
+                                      pkl_ast_node type);
 
 pkl_ast_node pkl_ast_make_integral_type (pkl_ast ast, size_t size, int signed_p);
 

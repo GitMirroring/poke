@@ -1542,15 +1542,19 @@ type_specifier:
 typename:
           TYPENAME
                   {
-                  pkl_ast_node decl = pkl_env_lookup (pkl_parser->env,
-                                                      PKL_ENV_NS_MAIN,
-                                                      PKL_AST_IDENTIFIER_POINTER ($1),
-                                                      NULL, NULL);
-                  assert (decl != NULL
-                          && PKL_AST_DECL_KIND (decl) == PKL_AST_DECL_KIND_TYPE);
-                  $$ = PKL_AST_DECL_INITIAL (decl);
-                  PKL_AST_LOC ($$) = @$;
-                  $1 = ASTREF ($1); pkl_ast_node_free ($1);
+                    pkl_ast_node alias;
+                    pkl_ast_node decl;
+
+                    decl = pkl_env_lookup (pkl_parser->env,
+                                           PKL_ENV_NS_MAIN,
+                                           PKL_AST_IDENTIFIER_POINTER ($1),
+                                           NULL, NULL);
+                    assert (decl != NULL
+                            && PKL_AST_DECL_KIND (decl) == PKL_AST_DECL_KIND_TYPE);
+                    alias = pkl_ast_make_named_type (pkl_parser->ast,
+                                                     $1, PKL_AST_DECL_INITIAL (decl));
+                    $$ = alias;
+                    PKL_AST_LOC ($$) = @$;
                 }
         ;
 
@@ -2188,10 +2192,7 @@ deftype:
             $$ = pkl_ast_make_decl (pkl_parser->ast,
                                     PKL_AST_DECL_KIND_TYPE, $1, $3,
                                     pkl_parser->filename);
-            PKL_AST_LOC ($1) = @1;
             PKL_AST_LOC ($$) = @$;
-
-            PKL_AST_TYPE_NAME ($3) = ASTREF ($1);
 
             if (!pkl_env_register (pkl_parser->env,
                                    PKL_ENV_NS_MAIN,
@@ -2203,6 +2204,8 @@ deftype:
                            PKL_AST_IDENTIFIER_POINTER ($1));
                 YYERROR;
               }
+
+            $1 = ASTREF ($1); pkl_ast_node_free ($1);
           }
         ;
 

@@ -421,11 +421,11 @@ typedef struct pvm_struct *pvm_struct;
 #define PVM_VAL_TYP(V) (PVM_VAL_BOX_TYP (PVM_VAL_BOX ((V))))
 
 #define PVM_VAL_TYP_CODE(V) (PVM_VAL_TYP((V))->code)
+#define PVM_VAL_TYP_NAME(V) (PVM_VAL_TYP((V))->name)
 #define PVM_VAL_TYP_I_SIZE(V) (PVM_VAL_TYP((V))->val.integral.size)
 #define PVM_VAL_TYP_I_SIGNED_P(V) (PVM_VAL_TYP((V))->val.integral.signed_p)
 #define PVM_VAL_TYP_A_BOUND(V) (PVM_VAL_TYP((V))->val.array.bound)
 #define PVM_VAL_TYP_A_ETYPE(V) (PVM_VAL_TYP((V))->val.array.etype)
-#define PVM_VAL_TYP_S_NAME(V) (PVM_VAL_TYP((V))->val.sct.name)
 #define PVM_VAL_TYP_S_CONSTRUCTOR(V) (PVM_VAL_TYP((V))->val.sct.constructor)
 #define PVM_VAL_TYP_S_NFIELDS(V) (PVM_VAL_TYP((V))->val.sct.nfields)
 #define PVM_VAL_TYP_S_FNAMES(V) (PVM_VAL_TYP((V))->val.sct.fnames)
@@ -442,6 +442,7 @@ typedef struct pvm_struct *pvm_struct;
 
 enum pvm_type_code
 {
+  PVM_TYPE_NAME,
   PVM_TYPE_INTEGRAL,
   PVM_TYPE_STRING,
   PVM_TYPE_ARRAY,
@@ -454,6 +455,7 @@ enum pvm_type_code
 struct pvm_type
 {
   enum pvm_type_code code;
+  pvm_val name;
 
   union
   {
@@ -703,6 +705,14 @@ typedef struct pvm_off *pvm_off;
       if (PVM_IS_ARR ((V)))                     \
         PVM_VAL_ARR_SIZE_BOUND ((V)) = (O);     \
     } while (0)
+
+#define PVM_VAL_SET_TYPE_NAME(V,N)              \
+  do                                            \
+    {                                           \
+      if (PVM_IS_TYP ((V)) && PVM_VAL_TYP_CODE ((V)) == PVM_TYPE_STRUCT) \
+        PVM_VAL_TYP_NAME ((V)) = (N);           \
+    }                                           \
+  while (0)
 
 void pvm_allocate_struct_attrs (pvm_val nfields, pvm_val **fnames,
                                 pvm_val **ftypes);

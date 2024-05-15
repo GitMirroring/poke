@@ -1,3 +1,58 @@
+2024-05-29  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-gen.pks (struct_constructor): Get an argument
+	struct_type_name.
+	(field_location_str): Likewise.
+	(check_struct_field_constraint): Likewise.
+	(handle_struct_field_constraints): Likewise.
+	(struct_field_extractor): Likewise.
+	(struct_field_mapper): Likewise.
+	(struct_constructor): Likewise.
+	(union_deintegrator): Likewise.
+
+	* libpoke/pkl-gen.c (pkl_gen_pr_decl): Pass name of declared type
+	to RAS_FUNCTION_STRUCT_MAPPER.
+	(pkl_gen_pr_type_struct): Pass NULL as type name to
+	RAS_FUNCTION_STRUCT_MAPPER.
+
+2024-05-15  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pk-val.c (pk_type_name): Adapt to PVM_TYPE_NAME.
+	* libpoke/pvm.jitter: Renamed from tysctgetn.
+	* libpoke/pkl-rt.pk (_pkl_eq_any): Adapt to use tygetn instead of
+	tysctgetn.
+	* libpoke/pvm-val.h (PVM_VAL_TYP_N_NAME): Define.
+	(PVM_VAL_TYP_N_TYPE): Likewise.
+	(PVM_VAL_TYP_S_NAME): Remove.
+	(enum pvm_type_code): Add PVM_TYPE_NAME.
+	* libpoke/pvm-val.c (pvm_make_named_type): Define.
+	(pvm_type_resolv): Likewise.
+	(pvm_make_struct_type): Do not get a type name as argument.
+	* libpoke/pvm.jitter (mktysct): Do not get a name argument on the
+	stack.
+	(mktyn) New instruction.
+	(tyisn): Likewise.
+	* libpoke/pkl-gen.c (pkl_gen_ps_type_struct): Adapt accordingly.
+	(pkl_gen_ps_type_alias): New handler.
+	(pkl_phase_gen): Register pkl_gen_ps_type_alias.
+
+2024-05-15  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-tab.y (typename): Build alias type AST node.
+	(deftype): Do not set PKL_AST_TYPE_NAME.
+	* libpoke/pkl-ast.h (enum pkl_ast_type_code): New entry
+	PKL_TYPE_ALIAS.
+	(struct pkl_ast_type): New field `alias'.
+	(PKL_AST_TYPE_L_NAME): Define.
+	(PKL_AST_TYPE_L_TYPE): Likewise.
+	* libpoke/pkl-ast.c (pkl_ast_type_resolv): New function.
+	(pkl_ast_make_named_type): Build a type alias AST node.
+	(pkl_ast_node_free_1): Handle alias AST nodes.
+	(pkl_ast_format_1): Likewise.
+	(pkl_ast_make_named_type): Rewrite to create a type alias.
+	* libpoke/pkl-pass.c (pkl_do_pass_1): Traverse PKL_TYPE_ALIAS
+	type nodes.
+
 2024-05-15  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-pass.c (pkl_do_pass_1): Avoid accessing
