@@ -365,7 +365,6 @@ pkl_ast_make_type (pkl_ast ast)
 {
   pkl_ast_node type = pkl_ast_make_node (ast, PKL_AST_TYPE);
 
-  PKL_AST_TYPE_NAME (type) = NULL;
   PKL_AST_TYPE_COMPLETE (type)
     = PKL_AST_TYPE_COMPLETE_UNKNOWN;
   PKL_AST_TYPE_FALLIBLE (type)
@@ -374,14 +373,28 @@ pkl_ast_make_type (pkl_ast ast)
 }
 
 pkl_ast_node
-pkl_ast_make_named_type (pkl_ast ast, pkl_ast_node name)
+pkl_ast_type_resolv (pkl_ast_node type)
 {
-  pkl_ast_node type = pkl_ast_make_type (ast);
+  pkl_ast_node t = type;
+
+  while (t && PKL_AST_TYPE_NAME (t))
+    t = PKL_AST_TYPE_L_TYPE (t);
+
+  return t;
+}
+
+pkl_ast_node
+pkl_ast_make_named_type (pkl_ast ast, pkl_ast_node name,
+                         pkl_ast_node type)
+{
+  pkl_ast_node new = pkl_ast_make_type (ast);
 
   assert (name);
 
-  PKL_AST_TYPE_NAME (type) = ASTREF (name);
-  return type;
+  PKL_AST_TYPE_CODE2 (new) = PKL_TYPE_ALIAS;
+  PKL_AST_TYPE_L_NAME (new) = ASTREF (name);
+  PKL_AST_TYPE_L_TYPE (new) = ASTREF (type);
+  return new;
 }
 
 pkl_ast_node
@@ -831,8 +844,11 @@ pkl_type_integral_promote (pkl_ast ast, pkl_ast_node type1,
 int
 pkl_ast_type_is_exception (pkl_ast_node type)
 {
-  pkl_ast_node type_name = PKL_AST_TYPE_NAME (type);
+  pkl_ast_node type_name;
 
+  assert (PKL_AST_CODE (type) == PKL_AST_TYPE);
+
+  type_name = PKL_AST_TYPE_NAME (type);
   return (PKL_AST_TYPE_CODE (type) == PKL_TYPE_STRUCT
           && type_name
           && STREQ (PKL_AST_IDENTIFIER_POINTER (type_name), "Exception"));
@@ -1862,6 +1878,50 @@ pkl_ast_make_decl (pkl_ast ast, int kind, pkl_ast_node name,
   return decl;
 }
 
+/* Link the given PKL_AST_TYPE alias node to DECL.  */
+
+void
+pkl_ast_add_type_name_to_decl (pkl_ast_node decl,
+                               pkl_ast_node type_name)
+{
+  assert (PKL_AST_CODE (type_name) == PKL_AST_TYPE);
+  assert (PKL_AST_TYPE_CODE2 (type_name) == PKL_TYPE_ALIAS);
+
+  PKL_AST_TYPE_L_NEXT_IN_DECL (type_name) = PKL_AST_DECL_TYPE_NAMES (decl);
+  PKL_AST_DECL_TYPE_NAMES (decl) = ASTREF (type_name);
+}
+
+/* Given a declaration DECL and a NEW_NAME, rename the declaration to
+   the new name.  If the declaration is of a type, then also rename
+   all the type names linked in it.  */
+
+void
+pkl_ast_rename_decl (pkl_ast ast, pkl_ast_node decl, const char *new_name)
+{
+  pkl_ast_node name = PKL_AST_DECL_NAME (decl);
+
+  /* First replace the identifier in the declaration with the new
+     name.  */
+  pkl_ast_node_free (name);
+  name = pkl_ast_make_identifier (ast, new_name);
+  PKL_AST_DECL_NAME (decl) = ASTREF (name);
+
+  /* Then rename linked aliases if the declaration is of a type.  */
+  if (PKL_AST_DECL_KIND (decl) == PKL_AST_DECL_KIND_TYPE)
+    {
+      pkl_ast_node type_name = PKL_AST_DECL_TYPE_NAMES (decl);
+
+      while (type_name != NULL)
+        {
+          pkl_ast_node next = PKL_AST_TYPE_L_NEXT_IN_DECL (type_name);
+
+          pkl_ast_node_free (PKL_AST_TYPE_L_NAME (type_name));
+          PKL_AST_TYPE_L_NAME (type_name) = ASTREF (name);
+          type_name = next;
+        }
+    }
+}
+
 /* Build and return an AST node for an offset construct.  */
 
 pkl_ast_node
@@ -2474,44 +2534,50 @@ pkl_ast_node_free_1 (gl_set_t visitations, pkl_ast_node ast)
 
     case PKL_AST_TYPE:
 
-      VISIT_AND_FREE (PKL_AST_TYPE_NAME (ast));
-      switch (PKL_AST_TYPE_CODE (ast))
+      if (PKL_AST_TYPE_NAME (ast))
         {
-        case PKL_TYPE_ARRAY:
-          pvm_free_uncollectable (PKL_AST_TYPE_A_CLOSURES (ast));
-
-          PKL_AST_NODE_FREE (PKL_AST_TYPE_A_BOUND (ast));
-          PKL_AST_NODE_FREE (PKL_AST_TYPE_A_ETYPE (ast));
-          break;
-        case PKL_TYPE_STRUCT:
-          pvm_free_uncollectable (PKL_AST_TYPE_S_CLOSURES (ast));
-
-          for (t = PKL_AST_TYPE_S_ELEMS (ast); t; t = n)
-            {
-              n = PKL_AST_CHAIN (t);
-              PKL_AST_NODE_FREE (t);
-            }
-          break;
-        case PKL_TYPE_FUNCTION:
-          PKL_AST_NODE_FREE (PKL_AST_TYPE_F_RTYPE (ast));
-          PKL_AST_NODE_FREE (PKL_AST_TYPE_F_FIRST_OPT_ARG (ast));
-          for (t = PKL_AST_TYPE_F_ARGS (ast); t; t = n)
-            {
-              n = PKL_AST_CHAIN (t);
-              PKL_AST_NODE_FREE (t);
-            }
-          break;
-        case PKL_TYPE_OFFSET:
-          PKL_AST_NODE_FREE (PKL_AST_TYPE_O_UNIT (ast));
-          PKL_AST_NODE_FREE (PKL_AST_TYPE_O_BASE_TYPE (ast));
-          PKL_AST_NODE_FREE (PKL_AST_TYPE_O_REF_TYPE (ast));
-          break;
-        case PKL_TYPE_INTEGRAL:
-        case PKL_TYPE_STRING:
-        default:
-          break;
+          PKL_AST_NODE_FREE (PKL_AST_TYPE_L_NAME (ast));
+          PKL_AST_NODE_FREE (PKL_AST_TYPE_L_TYPE (ast));
         }
+      else
+        {
+          switch (PKL_AST_TYPE_CODE (ast))
+            {
+            case PKL_TYPE_ARRAY:
+              pvm_free_uncollectable (PKL_AST_TYPE_A_CLOSURES (ast));
 
+              PKL_AST_NODE_FREE (PKL_AST_TYPE_A_BOUND (ast));
+              PKL_AST_NODE_FREE (PKL_AST_TYPE_A_ETYPE (ast));
+              break;
+            case PKL_TYPE_STRUCT:
+              pvm_free_uncollectable (PKL_AST_TYPE_S_CLOSURES (ast));
+
+              for (t = PKL_AST_TYPE_S_ELEMS (ast); t; t = n)
+                {
+                  n = PKL_AST_CHAIN (t);
+                  PKL_AST_NODE_FREE (t);
+                }
+              break;
+            case PKL_TYPE_FUNCTION:
+              PKL_AST_NODE_FREE (PKL_AST_TYPE_F_RTYPE (ast));
+              PKL_AST_NODE_FREE (PKL_AST_TYPE_F_FIRST_OPT_ARG (ast));
+              for (t = PKL_AST_TYPE_F_ARGS (ast); t; t = n)
+                {
+                  n = PKL_AST_CHAIN (t);
+                  PKL_AST_NODE_FREE (t);
+                }
+              break;
+            case PKL_TYPE_OFFSET:
+              PKL_AST_NODE_FREE (PKL_AST_TYPE_O_UNIT (ast));
+              PKL_AST_NODE_FREE (PKL_AST_TYPE_O_BASE_TYPE (ast));
+              PKL_AST_NODE_FREE (PKL_AST_TYPE_O_REF_TYPE (ast));
+              break;
+            case PKL_TYPE_INTEGRAL:
+            case PKL_TYPE_STRING:
+            default:
+              break;
+            }
+        }
       break;
 
     case PKL_AST_STRUCT_TYPE_FIELD:
@@ -3368,7 +3434,10 @@ pkl_ast_format_1 (struct string_buffer *buffer,
 
       PRINT_COMMON_FIELDS;
       if (PKL_AST_TYPE_NAME (ast))
-        PRINT_AST_SUBAST (name, TYPE_NAME);
+        {
+          PRINT_AST_SUBAST (name, TYPE_NAME);
+          PRINT_AST_SUBAST (type, TYPE_L_TYPE);
+        }
       else
         {
           IPRINTF ("code:\n");

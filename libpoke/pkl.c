@@ -915,6 +915,7 @@ pkl_defvar (pkl_compiler compiler,
     goto error;
 
   if (!pkl_env_register (compiler->env,
+                         ast,
                          PKL_ENV_NS_MAIN,
                          varname,
                          decl))

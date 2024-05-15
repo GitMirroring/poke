@@ -196,6 +196,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
 {
   pkl_ast_node decl = PKL_PASS_NODE;
   pkl_ast_node initial = PKL_AST_DECL_INITIAL (decl);
+  pkl_ast_node type_name = PKL_AST_DECL_NAME (decl);
 
   /* mktysct only gets information from regular struct fields.
      Therefore, we do not need to process declarations of variables,
@@ -210,6 +211,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
       PKL_PASS_BREAK;
       break;
     case PKL_AST_DECL_KIND_TYPE:
+      PKL_AST_TYPE_NAMED_P (initial) = 1;
       switch (PKL_AST_TYPE_CODE (initial))
         {
         case PKL_TYPE_FUNCTION:
@@ -262,7 +264,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
 
                 PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_CONSTRUCTOR);
                 RAS_FUNCTION_STRUCT_CONSTRUCTOR (constructor_closure,
-                                                 type_struct);
+                                                 type_struct, type_name);
                 PKL_GEN_POP_CONTEXT;
                 PKL_AST_TYPE_S_CONSTRUCTOR (type_struct) = constructor_closure;
               }
@@ -276,7 +278,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
                 pvm_val mapper_closure;
 
                 PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_MAPPER);
-                RAS_FUNCTION_STRUCT_MAPPER (mapper_closure, type_struct);
+                RAS_FUNCTION_STRUCT_MAPPER (mapper_closure, type_struct, type_name);
                 PKL_GEN_POP_CONTEXT;
                 PKL_AST_TYPE_S_MAPPER (type_struct) = mapper_closure;
               }
@@ -335,7 +337,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
                     PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_DEINTEGRATOR);
                     if (PKL_AST_TYPE_S_UNION_P (type_struct))
                       RAS_FUNCTION_UNION_DEINTEGRATOR (deintegrator_closure,
-                                                       type_struct);
+                                                       type_struct, type_name);
                     else
                       RAS_FUNCTION_STRUCT_DEINTEGRATOR (deintegrator_closure,
                                                         type_struct);
@@ -357,7 +359,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
 
                 PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPIFIER);
                 RAS_FUNCTION_STRUCT_TYPIFIER (typifier_closure,
-                                              type_struct);
+                                              type_struct, type_name);
                 PKL_GEN_POP_CONTEXT;
                 PKL_AST_TYPE_S_TYPIFIER (type_struct) = typifier_closure;
               }
@@ -786,7 +788,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
                                                                         \
             /* If the type is anonymous it wont' have a compiled */     \
             /* writer.  */                                              \
-            if (!PKL_AST_TYPE_NAME ((TYPE)))                            \
+            if (!PKL_AST_TYPE_NAMED_P ((TYPE)))                           \
               {                                                         \
                 assert (writer == PVM_NULL);                            \
                 PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_WRITER);       \
@@ -2135,7 +2137,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_func)
     if (PKL_AST_TYPE_CODE (rtype) == PKL_TYPE_ARRAY
         && PKL_AST_TYPE_A_BOUNDER (rtype) == PVM_NULL)
       {
-        assert (!PKL_AST_TYPE_NAME (rtype));
+        assert (!PKL_AST_TYPE_NAMED_P (rtype));
         PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_ARRAY_BOUNDER);
         PKL_PASS_SUBPASS (rtype);
         PKL_GEN_POP_CONTEXT;
@@ -2201,7 +2203,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_func_arg)
 
       if (PKL_AST_TYPE_A_BOUNDER (func_arg_type) == PVM_NULL)
         {
-          assert (!PKL_AST_TYPE_NAME (func_arg_type));
+          assert (!PKL_AST_TYPE_NAMED_P (func_arg_type));
           PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_ARRAY_BOUNDER);
           PKL_PASS_SUBPASS (func_arg_type);
           PKL_GEN_POP_CONTEXT;
@@ -2544,7 +2546,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_cast)
 
       if (PKL_AST_TYPE_A_BOUNDER (to_type) == PVM_NULL)
         {
-          assert (!PKL_AST_TYPE_NAME (to_type));
+          assert (!PKL_AST_TYPE_NAMED_P (to_type));
           PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_ARRAY_BOUNDER);
           PKL_PASS_SUBPASS (to_type);
           PKL_GEN_POP_CONTEXT;
@@ -2555,16 +2557,9 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_cast)
   else if (PKL_AST_TYPE_CODE (to_type) == PKL_TYPE_STRUCT
            && PKL_AST_TYPE_CODE (from_type) == PKL_TYPE_STRUCT)
     {
-      pvm_val constructor = PKL_AST_TYPE_S_CONSTRUCTOR (to_type);
-
-      /* The constructor should exist, because a struct type specified
-         in a cast shall be referred by name.  */
-      assert (constructor != PVM_NULL);
-
-      /* Apply the constructor to the expression, which is also a
-         struct.  */
-      pkl_asm_insn (pasm, PKL_INSN_PUSH, constructor);
-      pkl_asm_insn (pasm, PKL_INSN_CALL);
+      PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_CONSTRUCTOR);
+      PKL_PASS_SUBPASS (to_type);
+      PKL_GEN_POP_CONTEXT;
     }
   else if (PKL_AST_TYPE_CODE (to_type) == PKL_TYPE_STRUCT
            && PKL_AST_TYPE_CODE (from_type) == PKL_TYPE_INTEGRAL)
@@ -3175,6 +3170,57 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_struct_ref)
 PKL_PHASE_END_HANDLER
 
 /*
+ * TYPE_ALIAS
+ * | NAME
+ * | TYPE
+ */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_alias)
+{
+  pkl_ast_node alias = PKL_PASS_NODE;
+  pkl_ast_node alias_type = PKL_AST_TYPE_L_TYPE (alias);
+  pkl_ast_node alias_name = PKL_AST_TYPE_L_NAME (alias);
+
+  PKL_PASS_SUBPASS (alias_type);
+
+  if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_TYPE))
+    {
+      if (PKL_AST_TYPE_CODE (alias_type) == PKL_TYPE_STRUCT)
+        {
+          PKL_PASS_SUBPASS (alias_name); /* TYP STR */
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_TYSCTSETN); /* TYP */
+        }
+    }
+  else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_CONSTRUCTOR)
+           || PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_MAPPER)
+           || PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_DEINTEGRATOR))
+    {
+      /* The type of the constructed/mapped/deintegrated struct always
+         anonymous.  Set its name here.  The types of other PVM values
+         do not have names at run-time.  */
+      if (PKL_AST_TYPE_CODE (PKL_PASS_NODE) == PKL_TYPE_STRUCT)
+        {
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_TYPOF); /* VAL TYP */
+          PKL_PASS_SUBPASS (alias_name); /* VAL TYP STR */
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_TYSCTSETN); /* VAL TYP */
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* VAL */
+        }
+    }
+  else if (PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_TYPIFIER))
+    {
+      /* The stack now contains a Pk_Type with an empty name field.
+         Set the name field to the name of the aliased type.  */
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, pvm_make_string ("name"));
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                    pvm_make_string (PKL_AST_IDENTIFIER_POINTER (alias_name)));
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SSET);
+    }
+
+  PKL_PASS_BREAK;
+}
+PKL_PHASE_END_HANDLER
+
+/*
  * TYPE_VOID
  */
 
@@ -3554,15 +3600,12 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_array)
 
       PKL_GEN_PAYLOAD->mapper_depth++;
 
-      if (PKL_GEN_PAYLOAD->mapper_depth == 1
-          && !PKL_AST_TYPE_NAME (array_type))
+      if (PKL_GEN_PAYLOAD->mapper_depth == 1 && !PKL_AST_TYPE_NAMED_P (array_type))
         {
           /* Note that this only happens at the top-level of an
              anonymous array type, and compiles a bounder for it.
              Named array types have their bounder compiled in
              pkl_gen_pr_decl.  */
-
-          assert (!PKL_AST_TYPE_NAME (array_type));
           PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_ARRAY_BOUNDER);
           PKL_PASS_SUBPASS (array_type);
           PKL_GEN_POP_CONTEXT;
@@ -3571,8 +3614,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_array)
       if (array_type_mapper == PVM_NULL)
         RAS_FUNCTION_ARRAY_MAPPER (array_type_mapper, array_type);
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, array_type_mapper);
-      if (!PKL_AST_TYPE_NAME (array_type))
-        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);     /* ... STRICT IOS OFF CLS */
+      if (!PKL_AST_TYPE_NAMED_P (array_type))
+        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);       /* ... STRICT IOS OFF CLS */
 
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_TOR);       /* ... STRICT IOS OFF [CLS] */
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ATR);       /* ... STRICT IOS OFF CLS [CLS] */
@@ -3640,7 +3683,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_array)
           PKL_GEN_POP_CONTEXT;
         }
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, array_type_writer);
-      if (!PKL_AST_TYPE_NAME (array_type))
+      if (!PKL_AST_TYPE_NAMED_P (array_type))
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC); /* VAL CLS */
 
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MSETW);                /* VAL */
@@ -3674,7 +3717,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_array)
       if (integrator_closure == PVM_NULL)
         RAS_FUNCTION_ARRAY_INTEGRATOR (integrator_closure, array_type);
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, integrator_closure); /* CLS */
-      if (!PKL_AST_TYPE_NAME (array_type))
+      if (!PKL_AST_TYPE_NAMED_P (array_type))
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);                    /* CLS */
 
       /* Invoke the integrator.  IVAL is either ULONG or an offset with
@@ -3692,8 +3735,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_array)
       PKL_GEN_PAYLOAD->constructor_depth++;
 
       /* Make sure the array type has a bounder.  */
-      if (PKL_GEN_PAYLOAD->constructor_depth == 1
-          && !PKL_AST_TYPE_NAME (array_type))
+      if (PKL_GEN_PAYLOAD->constructor_depth == 1 && !PKL_AST_TYPE_NAMED_P (array_type))
         {
           /* Note that this only happens at the top-level of an
              anonymous array type, and compiles a bounder for it.
@@ -3738,7 +3780,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_array)
       if (array_type_constructor == PVM_NULL)
         RAS_FUNCTION_ARRAY_CONSTRUCTOR (array_type_constructor, array_type);
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, array_type_constructor);
-      if (!PKL_AST_TYPE_NAME (array_type))
+      if (!PKL_AST_TYPE_NAMED_P (array_type))
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);
 
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_CALL);          /* ARR */
@@ -3776,7 +3818,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_array)
       /* Make sure the array type has a bounder.  */
       if (array_bounder == PVM_NULL)
         {
-          assert (!PKL_AST_TYPE_NAME (array_type));
+          assert (!PKL_AST_TYPE_NAMED_P (array_type));
           PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_ARRAY_BOUNDER);
           PKL_PASS_SUBPASS (array_type);
           PKL_GEN_POP_CONTEXT;
@@ -3893,9 +3935,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_struct)
       /* Compile a mapper function and complete it using the current
          environment.  */
       if (type_struct_mapper == PVM_NULL)
-        RAS_FUNCTION_STRUCT_MAPPER (type_struct_mapper, type_struct);
+        RAS_FUNCTION_STRUCT_MAPPER (type_struct_mapper, type_struct,
+                                    (pkl_ast_node) NULL /* type_name */);
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, type_struct_mapper);
-      if (!PKL_AST_TYPE_NAME (type_struct))
+      if (!PKL_AST_TYPE_NAMED_P (type_struct))
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC); /* ... STRICT IOS OFF CLS */
 
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_TOR);   /* ... STRICT IOS OFF [CLS] */
@@ -3935,16 +3978,17 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_struct)
          current environment.  */
       if (type_struct_constructor == PVM_NULL)
         {
-          assert (!PKL_AST_TYPE_NAME (type_struct));
+          assert (!PKL_AST_TYPE_NAMED_P (type_struct));
           PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_CONSTRUCTOR);
-          RAS_FUNCTION_STRUCT_CONSTRUCTOR (type_struct_constructor, type_struct);
+          RAS_FUNCTION_STRUCT_CONSTRUCTOR (type_struct_constructor, type_struct,
+                                           (pkl_ast_node) NULL /* type_name */);
           PKL_GEN_POP_CONTEXT;
           /* We normally do not install closures in anonymous types,
              but this one is needed by ssetc.  */
           PKL_AST_TYPE_S_CONSTRUCTOR (type_struct) = type_struct_constructor;
         }
 
-      if (!PKL_AST_TYPE_NAME (type_struct))
+      if (!PKL_AST_TYPE_NAMED_P (type_struct))
         {
           pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, type_struct_constructor);
           pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);
@@ -3955,7 +3999,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_struct)
          environment.  */
       if (type_struct_writer == PVM_NULL)
         {
-          assert (!PKL_AST_TYPE_NAME (type_struct));
           PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_WRITER);
           if (PKL_AST_TYPE_S_UNION_P (type_struct))
             RAS_FUNCTION_UNION_WRITER (type_struct_writer, type_struct);
@@ -3965,7 +4008,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_struct)
         }
 
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, type_struct_writer); /* VAL CLS */
-        if (!PKL_AST_TYPE_NAME (type_struct))
+        if (!PKL_AST_TYPE_NAMED_P (type_struct))
           pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);                  /* VAL CLS */
 
       /* Install the writer into the value.  */
@@ -4002,13 +4045,14 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_struct)
 
       if (type_struct_constructor == PVM_NULL)
         {
-          RAS_FUNCTION_STRUCT_CONSTRUCTOR (type_struct_constructor, type_struct);
+          RAS_FUNCTION_STRUCT_CONSTRUCTOR (type_struct_constructor, type_struct,
+                                           (pkl_ast_node) NULL /* type_name */);
           /* We normally do not install closures in anonymous types,
              but this one is needed by ssetc.  */
           PKL_AST_TYPE_S_CONSTRUCTOR (type_struct) = type_struct_constructor;
         }
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, type_struct_constructor);
-      if (!PKL_AST_TYPE_NAME (type_struct))
+      if (!PKL_AST_TYPE_NAMED_P (type_struct))
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC); /* SCT CLS */
 
       /* Call the constructor to get a new struct.  */
@@ -4026,7 +4070,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_struct)
          environment.  */
       if (type_struct_writer == PVM_NULL)
         {
-          assert (!PKL_AST_TYPE_NAME (type_struct));
+          assert (!PKL_AST_TYPE_NAMED_P (type_struct));
           PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_WRITER);
           {
             if (PKL_AST_TYPE_S_UNION_P (type_struct))
@@ -4038,7 +4082,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_struct)
         }
 
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, type_struct_writer);
-      if (!PKL_AST_TYPE_NAME (type_struct))
+      if (!PKL_AST_TYPE_NAMED_P (type_struct))
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC); /* NCSCT CLS */
 
       /* Install the writer into the value.  */
@@ -4066,7 +4110,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_struct)
             RAS_FUNCTION_STRUCT_COMPARATOR (comparator_closure, type_struct);
         }
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, comparator_closure);
-      if (!PKL_AST_TYPE_NAME (type_struct))
+      if (!PKL_AST_TYPE_NAMED_P (type_struct))
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);
 
       /* Call the comparator.  */
@@ -4098,7 +4142,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_struct)
             RAS_FUNCTION_STRUCT_INTEGRATOR (integrator_closure, type_struct);
         }
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, integrator_closure);
-      if (!PKL_AST_TYPE_NAME (type_struct))
+      if (!PKL_AST_TYPE_NAMED_P (type_struct))
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);
 
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_CALL);
@@ -4112,12 +4156,13 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_struct)
       if (deintegrator_closure == PVM_NULL)
         {
           if (PKL_AST_TYPE_S_UNION_P (type_struct))
-            RAS_FUNCTION_UNION_DEINTEGRATOR (deintegrator_closure, type_struct);
+            RAS_FUNCTION_UNION_DEINTEGRATOR (deintegrator_closure, type_struct,
+                                             (pkl_ast_node) NULL /* type_struct_name */);
           else
             RAS_FUNCTION_STRUCT_DEINTEGRATOR (deintegrator_closure, type_struct);
         }
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, deintegrator_closure);
-      if (!PKL_AST_TYPE_NAME (type_struct))
+      if (!PKL_AST_TYPE_NAMED_P (type_struct))
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);
 
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_CALL);
@@ -4129,9 +4174,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_struct)
       pvm_val typifier_closure = PKL_AST_TYPE_S_TYPIFIER (type_struct);
 
       if (typifier_closure == PVM_NULL)
-        RAS_FUNCTION_STRUCT_TYPIFIER (typifier_closure, type_struct);
+        RAS_FUNCTION_STRUCT_TYPIFIER (typifier_closure, type_struct,
+                                      (pkl_ast_node) NULL /* type_name */);
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, typifier_closure);
-      if (!PKL_AST_TYPE_NAME (type_struct))
+      if (!PKL_AST_TYPE_NAMED_P (type_struct))
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);
 
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_CALL);
@@ -4174,16 +4220,9 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_type_struct)
       /* We are generating a PVM struct type.  */
 
       pkl_ast_node struct_type = PKL_PASS_NODE;
-      pkl_ast_node type_name = PKL_AST_TYPE_NAME (struct_type);
 
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
                     pvm_make_ulong (PKL_AST_TYPE_S_NFIELD (struct_type), 64));
-      if (type_name)
-        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
-                      pvm_make_string (PKL_AST_IDENTIFIER_POINTER (type_name)));
-      else
-        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL);
-
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MKTYSCT);
 
       /* Install the constructor closure of the struct type.  This may
@@ -5173,6 +5212,7 @@ struct pkl_phase pkl_phase_gen =
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_APOP, pkl_gen_ps_op_apop),
    PKL_PHASE_PR_OP_HANDLER (PKL_AST_OP_EXCOND, pkl_gen_pr_op_excond),
    PKL_PHASE_PR_OP_HANDLER (PKL_AST_OP_TYPEOF, pkl_gen_pr_op_typeof),
+   PKL_PHASE_PR_TYPE_HANDLER (PKL_TYPE_ALIAS, pkl_gen_pr_type_alias),
    PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_VOID, pkl_gen_ps_type_void),
    PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_ANY, pkl_gen_ps_type_any),
    PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_INTEGRAL, pkl_gen_ps_type_integral),

@@ -2017,6 +2017,7 @@ end
 instruction pec ()
   code
     pvm_val cls = JITTER_TOP_STACK ();
+
     PVM_VAL_CLS_ENV (cls) = PVM_STATE_RUNTIME_FIELD (env);
   end
 end
@@ -6164,7 +6165,7 @@ instruction tyissct ()
   end
 end
 
-# Instruction: tyisv ()
+# Instruction: tyisv
 #
 # Given a type, push 1 on the stack if it is a void.  Push 0
 # otherwise.
@@ -6417,21 +6418,18 @@ end
 
 # Instruction: mktysct
 #
-# Given a list of field descriptors, a number of fields and a struct
-# type name, build a struct type and push it on the stack.
+# Given a list of field descriptors and a number of fields, build
+# build a struct type and push it on the stack.
 #
 # Each field descriptor has the form [STRING TYPE] and contains the
 # name of the field and its type.
 #
-# Stack: ( [STRING TYPE]... ULONG STR -- TYPE )
+# Stack: ( [STRING TYPE]... ULONG -- TYPE )
 
 instruction mktysct ()
   code
     size_t i;
-    pvm_val nelem, name, *etypes, *enames;
-
-    name = JITTER_TOP_STACK ();
-    JITTER_DROP_STACK ();
+    pvm_val nelem, *etypes, *enames;
 
     nelem = JITTER_TOP_STACK ();
     JITTER_DROP_STACK ();
@@ -6447,7 +6445,7 @@ instruction mktysct ()
       JITTER_DROP_STACK ();
     }
 
-    JITTER_PUSH_STACK (pvm_make_struct_type (nelem, name, enames, etypes));
+    JITTER_PUSH_STACK (pvm_make_struct_type (nelem, enames, etypes));
   end
 end
 
@@ -6489,7 +6487,7 @@ end
 # Given a struct type, push its name to the stack.  If the struct
 # type is not named push PVM_NULL.
 #
-# Stack: ( TYP -- SCT STR )
+# Stack: ( TYP -- TYP STR )
 
 instruction tysctgetn ()
   code
@@ -6497,6 +6495,23 @@ instruction tysctgetn ()
     pvm_val type_name = PVM_VAL_TYP_S_NAME (type);
 
     JITTER_PUSH_STACK (type_name);
+  end
+end
+
+# Instruction: tysctsetn
+#
+# Given a struct type and a string, set the string as the new
+# name of the type.
+#
+# Stack: ( TYP STR -- TYP )
+
+instruction tysctsetn ()
+  code
+    pvm_val name = JITTER_TOP_STACK ();
+    pvm_val type = JITTER_UNDER_TOP_STACK ();
+
+    JITTER_DROP_STACK ();
+    PVM_VAL_TYP_S_NAME (type) = name;
   end
 end
 

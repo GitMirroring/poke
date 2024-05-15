@@ -706,7 +706,7 @@
    .c }
         .end
 
-;;; RAS_MACRO_FIELD_LOCATION_STR @struct_type @field
+;;; RAS_MACRO_FIELD_LOCATION_STR @struct_type @struct_type_name @field
 ;;; ( -- STR )
 ;;;
 ;;; Calculate a string with some location information for the given
@@ -716,17 +716,20 @@
 ;;; Macro arguments:
 ;;;
 ;;; @struct_type is the type to which the field belongs.
+;;;
+;;; @struct_type_name is either NULL or a pkl_ast_node with the name
+;;; of the struct type.
+;;;
 ;;; @field is a pkl_ast_node with the struct field.
 
-        .macro field_location_str @struct_type @field
+        .macro field_location_str @struct_type @struct_type_name @field
  .c pkl_ast_node field_name = PKL_AST_STRUCT_TYPE_FIELD_NAME (@field);
  .c if (field_name)
  .c {
         .let #field_name_str = pvm_make_string (PKL_AST_IDENTIFIER_POINTER (field_name))
- .c   pkl_ast_node struct_type_name = PKL_AST_TYPE_NAME (@struct_type);
- .c   if (struct_type_name)
+ .c   if (@struct_type_name)
  .c   {
-        .let #type_name = pvm_make_string (PKL_AST_IDENTIFIER_POINTER (struct_type_name))
+        .let #type_name = pvm_make_string (PKL_AST_IDENTIFIER_POINTER (@struct_type_name))
         push #type_name
         push "."
         sconc
@@ -742,7 +745,7 @@
  .c }
         .end
 
-;;; RAS_MACRO_CHECK_STRUCT_FIELD_CONSTRAINT @struct_type @field
+;;; RAS_MACRO_CHECK_STRUCT_FIELD_CONSTRAINT @struct_type @struct_type_name @field
 ;;; ( STRICT -- )
 ;;;
 ;;; Evaluate the given struct field's constraint, raising an
@@ -750,9 +753,15 @@
 ;;;
 ;;; Macro arguments:
 ;;;
+;;; @struct_type is a pkl_ast_node with the struct type that contains
+;;; the field whose constraints are to be checked.
+;;;
+;;; @struct_type_name is either NULL or a pkl_ast_node with the name
+;;; of the struct type.
+;;;
 ;;; @field is a pkl_ast_node with the struct field being mapped.
 
-        .macro check_struct_field_constraint @struct_type @field
+        .macro check_struct_field_constraint @struct_type @struct_type_name @field
    .c if (PKL_AST_STRUCT_TYPE_FIELD_CONSTRAINT (@field) != NULL)
    .c {
         .c PKL_GEN_PUSH_CONTEXT;
@@ -785,7 +794,7 @@
    .c pkl_ast_node field_name = PKL_AST_STRUCT_TYPE_FIELD_NAME (@field);
    .c if (field_name)
    .c {
-        .e field_location_str @struct_type, @field
+        .e field_location_str @struct_type, @struct_type_name, @field
    .c }
    .c else
    .c {
@@ -813,7 +822,7 @@
    .c }
         .end
 
-;;; RAS_MACRO_HANDLE_STRUCT_FIELD_CONSTRAINTS @struct_type @field
+;;; RAS_MACRO_HANDLE_STRUCT_FIELD_CONSTRAINTS @struct_type @struct_type_name @field
 ;;; ( STRICT BOFF STR VAL -- BOFF STR VAL NBOFF )
 ;;;
 ;;; Given a `field', evaluate its post optcond and integrity
@@ -824,12 +833,16 @@
 ;;;
 ;;; Macro-arguments:
 ;;; @struct_type is a pkl_ast_node with the struct type being mapped.
+;;;
+;;; @struct_type_name is either NULL or a pkl_ast_node with the name
+;;; of the struct type.
+;;;
 ;;; @field is a pkl_ast_node with the struct field being mapped.
 ;;;
 ;;; `vars_registered' is a size_t that contains the number
 ;;; of field-variables registered so far.
 
-        .macro handle_struct_field_constraints @struct_type @field
+        .macro handle_struct_field_constraints @struct_type @struct_type_name @field
                                 ; STRICT BOFF STR VAL
         ;; If there is an optional field post optcond, evaluate it.
         ;; If it is false, then add an absent field, i.e. both the
@@ -873,7 +886,7 @@
         rot                     ; BOFF STR STRICT [VAL]
         fromr                   ; BOFF STR STRICT VAL
         swap                    ; BOFF STR VAL STRICT
-        .e check_struct_field_constraint @struct_type, @field
+        .e check_struct_field_constraint @struct_type, @struct_type_name, @field
         ;; Calculate the offset marking the end of the field, which is
         ;; the field's offset plus it's size.
         quake                  ; STR BOFF VAL
@@ -888,7 +901,7 @@
         .end
 
 ;;; RAS_MACRO_STRUCT_FIELD_EXTRACTOR
-;;;               struct_type field struct_itype field_type ivalw fieldw
+;;;               struct_type struct_type_name field struct_itype field_type ivalw fieldw
 ;;; ( STRICT BOFF SBOFF IVAL -- BOFF STR VAL NBOFF )
 ;;;
 ;;; Given an integer large enough, extract the value of the given field
@@ -902,6 +915,9 @@
 ;;; Macro-arguments:
 ;;;
 ;;; @struct_type is a pkl_ast_node with the struct type being mapped.
+;;;
+;;; @struct_type_name is either NULL or a pkl_ast_node with the name
+;;; of the struct type.
 ;;;
 ;;; @field is a pkl_ast_node with the struct field being mapped.
 ;;;
@@ -922,7 +938,7 @@
 ;;; `vars_registered' is a size_t that contains the number
 ;;; of field-variables registered so far.
 
-        .macro struct_field_extractor @struct_type @field @struct_itype \
+        .macro struct_field_extractor @struct_type @struct_type_name @field @struct_itype \
                                       @field_type #ivalw #fieldw
         nrot                            ; STRICT IVAL BOFF SBOFF
         ;; Calculate the amount of bits that we have to right-shift
@@ -996,7 +1012,7 @@
    .c {
         push "msg"
         push "while mapping field "
-        .e field_location_str @struct_type, @field
+        .e field_location_str @struct_type, @struct_type_name, @field
         sconc
         nip2
         sset
@@ -1020,11 +1036,11 @@
                                         ; STRICT BOFF VALC STR
         swap                            ; STRICT BOFF STR VALC
         ;; Evaluate the field's opcond and constraints
-        .e handle_struct_field_constraints @struct_type, @field
+        .e handle_struct_field_constraints @struct_type, @struct_type_name, @field
                                         ; BOFF STR VALC NBOFF
         .end
 
-;;; RAS_MACRO_STRUCT_FIELD_MAPPER
+;;; RAS_MACRO_STRUCT_FIELD_MAPPER struct_type struct_type_name field
 ;;; ( STRICT IOS BOFF SBOFF -- BOFF STR VAL NBOFF )
 ;;;
 ;;; Map a struct field from the current IOS.
@@ -1037,6 +1053,9 @@
 ;;;
 ;;; @struct_type is a pkl_ast_node with the struct type being mapped.
 ;;;
+;;; @struct_type_name is either NULL or a pkl_ast_node with the name
+;;; of the struct type.
+;;;
 ;;; @field is a pkl_ast_node with the struct field being mapped.
 ;;;
 ;;; Required C environment:
@@ -1044,7 +1063,7 @@
 ;;; `vars_registered' is a size_t that contains the number
 ;;; of field-variables registered so far.
 
-        .macro struct_field_mapper @struct_type @field
+        .macro struct_field_mapper @struct_type @struct_type_name @field
         ;; If there is an optional field pre optcond, evaluate it.
         ;; If it is false, then add an absent field, i.e. both the
         ;; field name and the field value are PVM_NULL.
@@ -1113,7 +1132,7 @@
    .c {
         push "msg"
         push "while mapping field "
-        .e field_location_str @struct_type, @field
+        .e field_location_str @struct_type, @struct_type_name, @field
         sconc
         nip2
         sset
@@ -1145,12 +1164,12 @@
         .e emit_tv_field_event @field ; STRICT BOFF STR VAL
    .c }
         ;; Evaluate the field's post optcond and constraints
-        .e handle_struct_field_constraints @struct_type, @field
+        .e handle_struct_field_constraints @struct_type, @struct_type_name, @field
                                         ; BOFF STR VAL NBOFF
 .omitted_field:
         .end
 
-;;; RAS_FUNCTION_STRUCT_MAPPER @type_struct
+;;; RAS_FUNCTION_STRUCT_MAPPER type_struct type_struct_name
 ;;; ( STRICT IOS BOFF EBOUND SBOUND -- SCT )
 ;;;
 ;;; Assemble a function that maps a struct value at the given offset
@@ -1168,6 +1187,12 @@
 ;;;
 ;;; @type_struct is a pkl_ast_node with the struct type being
 ;;; processed.
+;;;
+;;; @type_struct_name is either NULL or a pkl_ast_node with the name
+;;; of the struct type.
+;;;
+;;; @type_name is either NULL or a pkl_ast_node with the name of the
+;;; type being processed.
 
         ;; NOTE: please be careful when altering the lexical structure of
         ;; this code (and of the code in expanded macros). Every local
@@ -1176,7 +1201,7 @@
         ;; add/remove locals here, adjust accordingly in
         ;; pkl-tab.y:struct_type_specifier.  Thank you very mucho!
 
-        .function struct_mapper @type_struct
+        .function struct_mapper @type_struct @type_struct_name
         prolog
         pushf 6
         drop                    ; sbound
@@ -1263,7 +1288,7 @@
         swap                     ; ...[EBOFF ENAME EVAL] [NEBOFF] STRICT NEBOFF
         pushvar $boff
         pushvar $ivalue          ; ...[EBOFF ENAME EVAL] [NEBOFF] STRICT NEBOFF OFF IVAL
-        .e struct_field_extractor @type_struct, @field, @struct_itype, \
+        .e struct_field_extractor @type_struct, @type_struct_name, @field, @struct_itype, \
                                   @field_type, #ivalw, #fieldw
                                  ; ...[EBOFF ENAME EVAL] [NEBOFF] EBOFF ENAME EVAL NEBOFF
  .c   }
@@ -1276,7 +1301,7 @@
         swap                     ; ...[EBOFF ENAME EVAL] [NEBOFF] STRICT IOS NEBOFF
         pushvar $boff            ; ...[EBOFF ENAME EVAL] [NEBOFF] STRICT IOS NEBOFF OFF
         ; ( STRICT IOS BOFF SBOFF -- BOFF STR VAL NBOFF )
-        .e struct_field_mapper @type_struct, @field
+        .e struct_field_mapper @type_struct, @type_struct_name, @field
                                 ; ...[NEBOFF] [EBOFF ENAME EVAL] NEBOFF
 .omitted_field:
  .c   }
@@ -1360,10 +1385,9 @@
         ;; No valid alternative found in union.
         push PVM_E_CONSTRAINT
         push "msg"
- .c pkl_ast_node struct_type_name = PKL_AST_TYPE_NAME (@type_struct);
- .c if (struct_type_name)
+ .c if (@type_struct_name)
  .c {
-        .let #type_name = pvm_make_string (PKL_AST_IDENTIFIER_POINTER (struct_type_name))
+        .let #type_name = pvm_make_string (PKL_AST_IDENTIFIER_POINTER (@type_struct_name))
         push "no valid alternative found for union "
         push #type_name
         sconc
@@ -1419,6 +1443,12 @@
         .c PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPE);
         .c PKL_PASS_SUBPASS (@type_struct);
         .c PKL_GEN_POP_CONTEXT;
+    .c if (@type_struct_name)
+    .c {
+        .let #type_name = pvm_make_string (PKL_AST_IDENTIFIER_POINTER (@type_struct_name))
+        push #type_name
+        tysctsetn
+    .c }
                                 ; BOFF [EBOFF STR VAL]... NFIELD TYP
         mksct                   ; SCT
         ;; Install the attributes of the mapped object.
@@ -1660,7 +1690,7 @@
         ;; please adjust struct_mapper accordingly, and also follow the
         ;; instructions on the NOTE there.
 
-        .function struct_constructor @type_struct
+        .function struct_constructor @type_struct @type_struct_name
         prolog
         pushf 5
         dup                     ; SCT SCT
@@ -1724,7 +1754,7 @@
         ;; of an anonymous type, make sure it has a
         ;; bounder closure.
  .c if (PKL_AST_TYPE_CODE (@field_type) == PKL_TYPE_ARRAY
- .c     && !PKL_AST_TYPE_NAME (@field_type))
+ .c     && !PKL_AST_TYPE_NAMED_P (@field_type))
  .c {
  .c   PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_ARRAY_BOUNDER);
  .c   PKL_PASS_SUBPASS (@field_type);
@@ -1856,7 +1886,7 @@
         ;; Make sure the array type has a bounder.
    .c  if (PKL_AST_TYPE_A_BOUNDER (@field_type) == PVM_NULL)
    .c   {
-   .c     assert (!PKL_AST_TYPE_NAME (@field_type));
+   .c     assert (!PKL_AST_TYPE_NAMED_P (@field_type));
    .c     PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_ARRAY_BOUNDER);
    .c     PKL_PASS_SUBPASS (@field_type);
    .c     PKL_GEN_POP_CONTEXT;
@@ -1919,7 +1949,7 @@
         push PVM_E_CONSTRAINT
         pushe .constraint_failed
         push int<32>1           ; ENAME EVAL STRICT
-        .e check_struct_field_constraint @type_struct, @field
+        .e check_struct_field_constraint @type_struct, @type_struct_name, @field
         pope
         ba .constraint_ok
 .constraint_failed:
@@ -1998,10 +2028,9 @@
         ;; No valid alternative found in union.
         push PVM_E_CONSTRAINT
         push "msg"
- .c pkl_ast_node struct_type_name = PKL_AST_TYPE_NAME (@type_struct);
- .c if (struct_type_name)
+ .c if (@type_struct_name)
  .c {
-        .let #type_name = pvm_make_string (PKL_AST_IDENTIFIER_POINTER (struct_type_name))
+        .let #type_name = pvm_make_string (PKL_AST_IDENTIFIER_POINTER (@type_struct_name))
         push "no valid alternative found for union "
         push #type_name
         sconc
@@ -2661,7 +2690,7 @@
         return
         .end
 
-;;; RAS_FUNCTION_UNION_DEINTEGRATOR @type_struct
+;;; RAS_FUNCTION_UNION_DEINTEGRATOR type_struct type_struct_name
 ;;; ( IVAL -- VAL )
 ;;;
 ;;; Assemble a function that, given an integral value, transforms it
@@ -2673,8 +2702,11 @@
 ;;;
 ;;; @type_struct is a pkl_ast_node with the type of the union to
 ;;; which convert the integer.
+;;;
+;;; @type_struct name is either NULL or a pkl_ast_node with the name
+;;; of the struct type.
 
-        .function union_deintegrator @type_struct
+        .function union_deintegrator @type_struct @type_struct_name
         prolog
         pushf 0
         .let @itype = PKL_AST_TYPE_S_ITYPE (@type_struct)
@@ -2741,7 +2773,6 @@
         push #field_name_str   ; ... OFF OFF STR VAL NMETH NFIELD STR
         fromr                  ; ... OFF OFF STR VAL NMETH NFIELD STR TYP
         push ulong<64>1        ; ... OFF OFF STR VAL NMETH NFIELD STR TYP NFIELD
-        push null              ; ... OFF OFF STR VAL NMETH NFIELD STR TYP NFIELD SNAME
         mktysct                ; ... OFF OFF STR VAL NMETH NFIELD TYP
         mksct                  ; IVAL SCT
         push PVM_E_CONSTRAINT
@@ -2760,11 +2791,10 @@
         drop
         push PVM_E_CONSTRAINT
         push "msg"
-        .let @uname = PKL_AST_TYPE_NAME (@type_struct)
-  .c if (@uname)
+  .c if (@type_struct_name)
   .c {
   .c    char *msg = pk_str_concat ("no valid alternative found for union ", \
-                                   PKL_AST_IDENTIFIER_POINTER (@uname), NULL);
+                                   PKL_AST_IDENTIFIER_POINTER (@type_struct_name), NULL);
         .let #msg = pvm_make_string (msg)
   .c    free (msg);
         push #msg
@@ -2926,12 +2956,17 @@
         mksct
         push #pktype_constructor
         call                    ; PkType
+        ;; Set the name of Pk_Type to the type of the created
+        ;; struct.
+        typof                                   ; VAL TYP
+        push "Pk_Type"                          ; VAL TYP STR
+        tysctsetn                               ; VAL TYP
+        drop                                    ; VAL
   .c if (pk_type_code != pk_type_unknown)
   .c {
   .c    PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPIFIER);
   .c    PKL_PASS_SUBPASS (@type);
   .c    PKL_GEN_POP_CONTEXT;
-  .c
   .c }
         .end
 
@@ -2942,14 +2977,6 @@
 ;;; given generic type @TYPE.
 
         .macro common_typifier @type
-        .let @type_name = PKL_AST_TYPE_NAME (@type)
-     .c if (@type_name)
-     .c {
-        .let #name = pvm_make_string (PKL_AST_IDENTIFIER_POINTER (@type_name))
-        push "name"
-        push #name
-        sset
-     .c }
         .let #complete_p = pvm_make_int (PKL_AST_TYPE_COMPLETE (@type) \
                                          == PKL_AST_TYPE_COMPLETE_YES, 32)
         push "complete_p"
@@ -3018,7 +3045,7 @@
         .e common_typifier @type
         .end
 
-;;; RAS_FUNCTION_TYPIFIER_ANY_ANY_WRAPPER @type
+;;; RAS_FUNCTION_TYPIFIER_ANY_ANY_WRAPPER @type @type_name
 ;;; ( VAL INT -- STR )
 ;;;
 ;;; Assemble a function that type-checks VAL to be of some given
@@ -3027,14 +3054,23 @@
 ;;; Macro arguments:
 ;;; @type is an AST node with the type of the entity being written,
 ;;; which can be either an array or a struct.
+;;; @type_name is an AST node with the name of the type above, or
+;;; NULL if the type is not named.
 
-        .function typifier_any_any_wrapper @type #function
+        .function typifier_any_any_wrapper @type @type_name #function
         prolog
         ;; If the first argument is not of the right type, raise an
         ;; exception.
      .c PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPE);
      .c PKL_PASS_SUBPASS (@type);
      .c PKL_GEN_POP_CONTEXT;
+   .c if (@type_name)
+   .c {
+   .c   assert (PKL_AST_TYPE_CODE (@type) == PKL_TYPE_STRUCT);
+        .let #name = pvm_make_string (PKL_AST_IDENTIFIER_POINTER (@type_name))
+        push #name
+        tysctsetn
+   .c }
         isa
         nip
         bnzi .type_ok
@@ -3130,7 +3166,7 @@
         return
         .end
 
-;;; RAS_FUNCTION_TYPIFIER_ANY_ANY_INT_WRAPPER @type
+;;; RAS_FUNCTION_TYPIFIER_ANY_ANY_INT_WRAPPER @type @type_name #function
 ;;; ( VAL VAL -- INT )
 ;;;
 ;;; Assemble a function that type-checks VAL to be of some given
@@ -3139,8 +3175,10 @@
 ;;; Macro arguments:
 ;;; @type is an AST node with the type of the entity being written,
 ;;; which can be either an array or a struct.
+;;; @type_name is an AST node with the name of the type above, or
+;;; NULL if the type is not named.
 
-        .function typifier_any_any_int_wrapper @type #function
+        .function typifier_any_any_int_wrapper @type @type_name #function
         prolog
         ;; If the second argument is not of the right type, raise an
         ;; exception.
@@ -3206,7 +3244,7 @@
   .c    pvm_val writer_closure;
         .let #function = PKL_AST_TYPE_A_WRITER (@type)
   .c    RAS_FUNCTION_TYPIFIER_ANY_ANY_WRAPPER (writer_closure,
-  .c                                           @type, #function);
+  .c                                           @type, (pkl_ast_node) NULL, #function);
         .let #writer = writer_closure
         push "writer"
         push #writer
@@ -3218,7 +3256,7 @@
   .c    pvm_val integrator_closure;
         .let #function = PKL_AST_TYPE_A_INTEGRATOR (@type)
   .c    RAS_FUNCTION_TYPIFIER_ANY_ANY_WRAPPER (integrator_closure,
-  .c                                           @type, #function);
+  .c                                           @type, (pkl_ast_node) NULL, #function);
         .let #integrator = integrator_closure
         push "integrator"
         push #integrator
@@ -3233,7 +3271,7 @@
 ;;; Given a Pk_Type struct, fill in its attributes for the given
 ;;; struct type @TYPE.
 
-        .function struct_typifier @type
+        .function struct_typifier @type @type_name
         prolog
         .e common_typifier @type
         ;; Fill in the attributes of the struct itself.
@@ -3280,7 +3318,7 @@
   .c    pvm_val writer_closure;
         .let #function = PKL_AST_TYPE_S_WRITER (@type)
   .c    RAS_FUNCTION_TYPIFIER_ANY_ANY_WRAPPER (writer_closure,
-  .c                                           @type, #function);
+  .c                                           @type, @type_name, #function);
         .let #writer = writer_closure
         push "writer"
         push #writer
@@ -3292,7 +3330,7 @@
   .c    pvm_val comparator_closure;
         .let #function = PKL_AST_TYPE_S_COMPARATOR (@type)
   .c    RAS_FUNCTION_TYPIFIER_ANY_ANY_INT_WRAPPER (comparator_closure,
-  .c                                               @type, #function);
+  .c                                               @type, @type_name, #function);
         .let #comparator = comparator_closure
         push "comparator"
         push #comparator
@@ -3304,7 +3342,7 @@
   .c    pvm_val integrator_closure;
         .let #function = PKL_AST_TYPE_S_INTEGRATOR (@type)
   .c    RAS_FUNCTION_TYPIFIER_ANY_ANY_WRAPPER (integrator_closure,
-  .c                                           @type, #function);
+  .c                                           @type, @type_name, #function);
         .let #integrator = integrator_closure
         push "integrator"
         push #integrator

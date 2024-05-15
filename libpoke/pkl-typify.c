@@ -1025,6 +1025,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_op_typeof)
     = pkl_env_lookup_type (pkl_get_env (PKL_PASS_COMPILER), "Pk_Type");
 
   assert (type);
+  type = pkl_ast_make_named_type (PKL_PASS_AST,
+                                  pkl_ast_make_identifier (PKL_PASS_AST, "Pk_Type"),
+                                  type);
+
   PKL_AST_TYPE (PKL_PASS_NODE) = ASTREF (type);
 }
 PKL_PHASE_END_HANDLER
@@ -1340,11 +1344,9 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_pr_func)
                                      nargs,
                                      func_type_args);
   if (func_name)
-    {
-      pkl_ast_node func_name_node = pkl_ast_make_string (PKL_PASS_AST,
-                                                         func_name);
-      PKL_AST_TYPE_NAME (type) = ASTREF (func_name_node);
-    }
+    type = pkl_ast_make_named_type (PKL_PASS_AST,
+                                    pkl_ast_make_string (PKL_PASS_AST, func_name),
+                                    type);
   PKL_AST_TYPE (node) = ASTREF (type);
 }
 PKL_PHASE_END_HANDLER
