@@ -308,8 +308,8 @@ pkl_do_pass_1 (pkl_compiler compiler,
 
   /* Check the COMPILED level in the node, and exit if the node
      doesn't need additional processing.  */
-  if (level != 0 && PKL_AST_TYPE_COMPILED (node) >= level
-      && PKL_AST_CODE (node) == PKL_AST_TYPE)
+  if (level != 0 && PKL_AST_CODE (node) == PKL_AST_TYPE
+      && PKL_AST_TYPE_COMPILED (node) >= level)
     goto _exit;
 
   /* Call the pre-order handlers from registered phases.  */
