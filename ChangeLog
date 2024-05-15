@@ -1,3 +1,70 @@
+2024-06-01  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-pass.c (pkl_call_node_handlers): Use
+	PKL_AST_TYPE_CODE2 instead of PKL_AST_TYPE_CODE.
+	(pkl_do_pass_1): Likewise.
+	* libpoke/pkl-tab.y: Pass the ast to pkl_env_register.
+	(TYPENAME): Add a type alias node instead of the aliased type to
+	the AST.
+	* libpoke/pkl-typify.c (pkl_typify1_ps_op_typeof): Create a named
+	type.
+	* libpoke/pkl.c (pkl_defvar): Pass the ast to pkl_env_register.
+	* libpoke/pvm-val.c (pvm_make_struct_type): Do not get a `name' argument.
+	(pvm_type_equal_p): Struct types may have PVM_NULL as name.
+	(pvm_make_exception): Set struct type name explicitly.
+	* libpoke/pvm.jitter (mktysct): Do not get a type name argument.
+	(tysctsetn): New instruction.
+	* testsuite/poke.pkl/redef-diag-7.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
+	* libpoke/pkl-insn.def: New instruction tysctsetn.
+	* libpoke/pkl-gen.pks (field_location_str): Get the name of the
+	struct type in an argument.
+	(check_struct_field_constraint): Likewise.
+	(handle_struct_field_constraints): Likewise.
+	(struct_field_extractor): Likewise.
+	(struct_field_mapper): Likewise.
+	(struct_mapper): Likewise.
+	(struct_constructor): Likewise.
+	(struct_deintegrator): Likewise.
+	(typifier_any_any_wrapper): Likewise.
+	(typifier_any_any_int_wrapper): Likewise.
+	(struct_typifier): Likewise.
+	(typeof): Set the name of the Pk_Type struct explicitly.
+	(common_typifier): Do not set the field `name' of Pk_Type.
+	* libpoke/pkl-gen.c (pkl_gen_pr_decl): Pass type names to RAS
+	macros requiring it.
+	(pkl_gen_pr_ass_stmt): Use PKL_AST_TYPE_NAMED_P instead of
+	PKL_AST_TYPE_NAME to query whether a type is aliased.
+	(pkl_gen_pr_func): Likewise.
+	(pkl_gen_pr_func_arg): Likewise.
+	(pkl_gen_pr_cast): Likewise.
+	(pkl_gen_pr_type_array): Likewise.
+	(pkl_gen_pr_type_struct): Likewise.
+	(pkl_gen_pr_type_alias): New handler.
+	* libpoke/pkl-env.c (register_decl): Get an ast argument.
+	(register_decl): Invoke pkl_ast_rename_decl to rename
+	declarations.
+	(pkl_env_register): Get an ast argument.
+	* libpoke/pkl-env.h: Change prototype of pkl_ast_rename_decl
+	accordingly.
+	* libpoke/pkl-ast.h (enum pkl_ast_type_code): New value
+	PKL_TYPE_ALIAS.
+	(PKL_AST_TYPE_NAME): Redefine to support type aliases nodes.
+	(PKL_AST_TYPE_CODE2): Define.
+	(struct pkl_ast_type): Remove field name, new field named_p, and
+	add fields for type aliases.
+	(PKL_AST_DECL_TYPE_NAMES): Define.
+	(struct pkl_ast_decl): New field type_names.
+	* libpoke/pkl-ast.c (pkl_ast_make_type): Do not initialize name.
+	(pkl_ast_type_resolv): New function.
+	(pkl_ast_make_named_type): Likewise.
+	(pkl_ast_add_type_name_to_decl): Likewise.
+	(pkl_ast_rename_decl): Likewise.
+	(pkl_ast_node_free_1): Support type aliases nodes.
+	(pkl_ast_format_1): Likewise.
+	* libpoke/pk-val.c (pk_make_struct_type): Do not pass name to
+	pvm_make_struct_type.
+
 2024-05-31  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/ios-dev-mmap.c (ios_dev_mmap_open): Fix error handling

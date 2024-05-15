@@ -541,16 +541,16 @@ pvm_make_array_type (pvm_val type, pvm_val bounder)
 }
 
 pvm_val
-pvm_make_struct_type (pvm_val nfields, pvm_val name,
+pvm_make_struct_type (pvm_val nfields,
                       pvm_val *fnames, pvm_val *ftypes)
 {
   pvm_val stype = pvm_make_type (PVM_TYPE_STRUCT);
 
-  PVM_VAL_TYP_S_NAME (stype) = name;
   PVM_VAL_TYP_S_NFIELDS (stype) = nfields;
   PVM_VAL_TYP_S_CONSTRUCTOR (stype) = PVM_NULL;
   PVM_VAL_TYP_S_FNAMES (stype) = fnames;
   PVM_VAL_TYP_S_FTYPES (stype) = ftypes;
+  PVM_VAL_TYP_S_NAME (stype) = PVM_NULL;
 
   return stype;
 }
@@ -1700,8 +1700,14 @@ pvm_type_equal_p (pvm_val type1, pvm_val type2)
           return pvm_type_equal_p (etype1, etype2);
       }
     case PVM_TYPE_STRUCT:
-      return (STREQ (PVM_VAL_STR (PVM_VAL_TYP_S_NAME (type1)),
-                     PVM_VAL_STR (PVM_VAL_TYP_S_NAME (type2))));
+      {
+        pvm_val name1 = PVM_VAL_TYP_S_NAME (type1);
+        pvm_val name2 = PVM_VAL_TYP_S_NAME (type2);
+
+        if (name1 == PVM_NULL || name2 == PVM_NULL)
+          return 0;
+        return (STREQ (PVM_VAL_STR (name1), PVM_VAL_STR (name2)));
+      }
     case PVM_TYPE_OFFSET:
       return (pvm_type_equal_p (PVM_VAL_TYP_O_BASE_TYPE (type1),
                                 PVM_VAL_TYP_O_BASE_TYPE (type2))
@@ -1792,8 +1798,8 @@ pvm_make_exception (int code, const char *name, int exit_status,
   field_names[4] = msg_name;
   field_types[4] = pvm_make_string_type ();
 
-  type = pvm_make_struct_type (nfields, struct_name,
-                               field_names, field_types);
+  type = pvm_make_struct_type (nfields, field_names, field_types);
+  PVM_VAL_TYP_S_NAME (type) = struct_name;
 
   exception = pvm_make_struct (nfields, nmethods, type);
 
