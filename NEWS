@@ -7,6 +7,37 @@ See the manual for detailed information.
   are permitted in any medium without royalty provided the copyright
   notice and this notice are preserved.
 
+ Version 4.1 (30 May 2024)
+* Bug fixes
+
+  - Invalid memory access in `pkl_do_pass_1' has been fixed.
+
+  - Access to possibly-uninitialized variable in IOS has been fixed.
+
+  - In error reporting, poke no longer crashes when the input is not
+    seekable.
+
+  - Use of `break'/`continue' in EXCOND operator's compound statement
+    has been fixed to not crash the poke.
+
+* Build system update
+
+  - `pokefmt' now has a man page.
+
+* Utilities update
+
+  - Execution speed of `pk-jojopatch' has been improved by disabling
+    auto-remap feature.
+
+* Documentation update
+
+  - Variable `poke_interactive_p' is now documented in the manual.
+
+* Jitter update
+
+  - Update jitter submodule to incorporate minor documentation update
+    and a workaround for an Automake bug.
+
  Version 4.0 (30 March 2024)
 * User interface updates
 
