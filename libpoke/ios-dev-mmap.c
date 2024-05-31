@@ -176,7 +176,7 @@ ios_dev_mmap_open (const char *handler, uint64_t flags, int *error,
 
   /* The rest of the string is the name, which may be empty.  */
   dev_map->filename = strdup (p);
-  if (!p)
+  if (!dev_map->filename)
     goto err;
 
   /* Ok now do some validation.  */
