@@ -1,3 +1,8 @@
+2024-06-02  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-ast.c (pkl_struct_type_traverse): Exclude unnamed
+	fields.
+
 2024-06-02  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-trans.h (struct pkl_trans_payload): Add field `env'.
