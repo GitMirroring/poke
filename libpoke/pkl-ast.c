@@ -768,6 +768,10 @@ pkl_struct_type_traverse (pkl_ast_node type, const char *path)
           if (PKL_AST_CODE (t) == PKL_AST_STRUCT_TYPE_FIELD)
             {
               ename = PKL_AST_STRUCT_TYPE_FIELD_NAME (t);
+
+              if (ename == NULL)
+                continue;
+
               etype = PKL_AST_STRUCT_TYPE_FIELD_TYPE (t);
 
               field = PKL_AST_IDENTIFIER_POINTER (ename);
