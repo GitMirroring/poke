@@ -711,8 +711,8 @@ When there is no ambiguity, the command name and the subcommands can
 be shortened to prefixes.  The commands above can also be written as:
 
 @example
-(poke) .vm dis e int[] @@ 0#B
-(poke) .vm dis f (dump)
+(poke) .vm disa e int[] @@ 0#B
+(poke) .vm disa f (dump)
 @end example
 
 @cindex flags
@@ -9290,12 +9290,6 @@ Dumps the assembler corresponding to the Poke expression @var{expr}.
 @item .vm disassemble function @var{function}
 Dumps the assembler corresponding to the Poke function called
 @var{function}.  The function shall be reachable from the top-level.
-@item .vm disassemble mapper @var{expr}
-If @var{expr} is a mapped value, dumps the assembler corresponding to
-its mapper function.
-@item .vm disassemble writer @var{expr}
-If @var{expr} is a mapped value, dumps the assembler corresponding to
-its writer function.
 @end table
 
 The disassembler will provide a PVM disassembly by default, but it can
