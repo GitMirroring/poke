@@ -749,13 +749,13 @@ pkl_ast_dup_type (pkl_ast_node type)
 pkl_ast_node
 pkl_struct_type_traverse (pkl_ast_node type, const char *path)
 {
-  char *trunk, *sub, *base;
+  char *trunk, *sub, *base, *strtok_ptr;
 
   if (PKL_AST_TYPE_CODE (type) != PKL_TYPE_STRUCT)
     return NULL;
 
   trunk = strndup (path, strlen (path) - strlen (strrchr (path, '.')));
-  base = strtok (trunk, ".");
+  base = strtok_r (trunk, ".", &strtok_ptr);
 
   /* Node in the form XX. Check to silence the compiler about base not used */
   if (base == NULL)
@@ -764,7 +764,7 @@ pkl_struct_type_traverse (pkl_ast_node type, const char *path)
       return type;
     }
 
-  while ((sub = strtok (NULL, ".")) != NULL)
+  while ((sub = strtok_r (NULL, ".", &strtok_ptr)) != NULL)
     {
       pkl_ast_node ename;
       pkl_ast_node etype, t;
