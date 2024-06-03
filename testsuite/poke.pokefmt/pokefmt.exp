@@ -45,7 +45,10 @@ proc pokefmt_run {test input output} {
     puts -nonewline $in $input
     close $in
 
-    exec $POKEFMT < $fin > $fout
+    if {[catch {exec $POKEFMT < $fin > $fout}]} {
+        fail "pokefmt $test due to $POKEFMT execution failure"
+        return
+    }
 
     set out [open $fout r]
     set actual_output [read $out]
