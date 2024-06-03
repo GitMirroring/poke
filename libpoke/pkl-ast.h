@@ -60,7 +60,6 @@ enum pkl_ast_code
   PKL_AST_FORMAT,
   PKL_AST_FORMAT_ARG,
   PKL_AST_INCRDECR,
-  PKL_AST_GCD,
   PKL_AST_ASM_EXP,
   PKL_AST_LAST_EXP = PKL_AST_ASM_EXP,
   /* Types.  */
