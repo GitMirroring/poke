@@ -1,5 +1,11 @@
 2024-06-03  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* doc/poke.texi (Dot-Commands): Fix the example to use
+	`.vm disa' instead of `.vm dis'.
+	(.vm disassemble): Remove non-existent sub-commands.
+
+2024-06-03  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* testsuite/poke.pokefmt/pokefmt.exp (pokefmt_run): Catch
 	exceptional returns of `exec'.
 
