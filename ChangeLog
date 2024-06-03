@@ -1,5 +1,19 @@
 2024-06-03  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* doc/poke.texi (.vm disassemble): Add new item for new cmd.
+	* libpoke/libpoke.h (pk_disassemble_statement): New function.
+	* libpoke/libpoke.c (pk_disassemble_statement): Likewise.
+	* libpoke/pkl.h (pkl_compile_statement): Likewise.
+	* libpoke/pkl.c (pkl_compile_statement): Likewise.
+	* poke/pk-cmd-vm.c (pk_cmd_vm_disas_stmt): Likewise.
+	(vm_disas_stmt_cmd): New variable.
+	(vm_disas_cmds): Add new cmd.
+	(vm_disas_cmd): Update help string.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+	* testsuite/poke.cmd/vm-disas-stmt.pk): New test.
+
+2024-06-03  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* doc/poke.texi (Dot-Commands): Fix the example to use
 	`.vm disa' instead of `.vm dis'.
 	(.vm disassemble): Remove non-existent sub-commands.

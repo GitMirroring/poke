@@ -144,6 +144,12 @@ int pkl_execute_statement (pkl_compiler compiler,
                            const char **end,
                            pvm_val *val, pvm_val *exit_exception);
 
+/* Compile a single Poke statement and return the resulting PVM
+   program.  */
+
+pvm_program pkl_compile_statement (pkl_compiler compiler,
+                                   const char *buffer, const char **end);
+
 /* Compile a single Poke expression and return the resulting PVM
    program.  */
 

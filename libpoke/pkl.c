@@ -396,6 +396,51 @@ pkl_execute_buffer (pkl_compiler compiler,
   return 0;
 }
 
+pvm_program
+pkl_compile_statement (pkl_compiler compiler,
+                       const char *buffer, const char **end)
+{
+  pkl_ast ast = NULL;
+  pvm_program program;
+  int ret;
+  pkl_env env = NULL;
+
+   env = pkl_env_dup_toplevel (compiler->env);
+   if (!env)
+     goto error;
+   compiler->compiling = PKL_COMPILING_STATEMENT;
+
+   /* Parse the input program into an AST.  */
+   ret = pkl_parse_buffer (compiler, &env, &ast,
+                           PKL_PARSE_STATEMENT,
+                           buffer,
+                           NULL /* source */,
+                           1 /* line */,
+                           1 /* column */,
+                           end);
+   if (ret == 1)
+     /* Parse error.  */
+     goto error;
+   else if (ret == 2)
+     /* Memory exhaustion.  */
+     goto error;
+
+   program = rest_of_compilation (compiler, ast, env);
+   if (program == NULL)
+     goto error;
+
+   pkl_env_free (compiler->env);
+   compiler->env = env;
+   pkl_env_commit_renames (compiler->env);
+   pvm_program_make_executable (program);
+
+   return program;
+
+ error:
+   pkl_env_free (env);
+   return NULL;
+}
+
 int
 pkl_execute_statement (pkl_compiler compiler,
                        const char *buffer,

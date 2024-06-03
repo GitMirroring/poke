@@ -340,6 +340,19 @@ int pk_disassemble_function_val (pk_compiler pkc, pk_val val,
 int pk_disassemble_expression (pk_compiler pkc, const char *str,
                                int native_p) LIBPOKE_API;
 
+/* Print a disassembly of a statement.
+
+   STR is a NULL-terminated string containing a Poke statement.
+
+   NATIVE_P is a flag determining whether to emit a native disassembly
+   or a PVM disassembly.
+
+   If STR is not a valid Poke statement, return PK_ERROR.  Otherwise
+   return PK_OK.  */
+
+int pk_disassemble_statement (pk_compiler pkc, const char *str,
+                              int native_p) LIBPOKE_API;
+
 /* Print a profiling summary corresponding to the current state of the
    PVM.  */
 

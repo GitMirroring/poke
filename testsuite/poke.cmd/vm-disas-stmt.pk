@@ -1,0 +1,8 @@
+/* { dg-do run } */
+
+var a = 42;
+
+/* We don't care about the output.  */
+
+/* { dg-command { .vm disas s a = 4} } */
+/* { dg-command { .vm disas statement a + 4} } */

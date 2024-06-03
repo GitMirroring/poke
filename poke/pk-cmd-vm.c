@@ -54,6 +54,35 @@ pk_cmd_vm_disas_exp (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 }
 
 static int
+pk_cmd_vm_disas_stmt (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
+{
+  /* disassemble statement STMT.  */
+
+  int ret;
+  char *stmt;
+
+  assert (argc == 2);
+  assert (PK_CMD_ARG_TYPE (argv[1]) == PK_CMD_ARG_STR);
+
+  stmt = pk_str_concat (PK_CMD_ARG_STR (argv[1]), ";", NULL);
+  if (!stmt)
+    pk_fatal (_ ("out of memory"));
+  ret = pk_disassemble_statement (poke_compiler, stmt,
+                                  uflags & PK_VM_DIS_F_NAT);
+  free (stmt);
+
+  if (ret == PK_ERROR)
+    {
+      pk_term_class ("error");
+      pk_puts ("error: ");
+      pk_term_end_class ("error");
+      pk_puts ("invalid statement\n");
+      return 0;
+    }
+  return 1;
+}
+
+static int
 pk_cmd_vm_disas_fun (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 {
   /* disassemble function EXP.  */
@@ -128,6 +157,12 @@ const struct pk_cmd vm_disas_exp_cmd =
 Flags:\n\
   n (do a native disassemble)", NULL};
 
+const struct pk_cmd vm_disas_stmt_cmd =
+  {"statement", "s", PK_VM_DIS_UFLAGS, 0, NULL, NULL, pk_cmd_vm_disas_stmt,
+   "vm disassemble statement[/n] STMT\n\
+Flags:\n\
+  n (do a native disassemble)", NULL};
+
 const struct pk_cmd vm_disas_fun_cmd =
   {"function", "s", PK_VM_DIS_UFLAGS, 0, NULL, NULL, pk_cmd_vm_disas_fun,
    "vm disassemble function[/n] EXP\n\
@@ -137,6 +172,7 @@ Flags:\n\
 const struct pk_cmd *vm_disas_cmds[] =
   {
    &vm_disas_exp_cmd,
+   &vm_disas_stmt_cmd,
    &vm_disas_fun_cmd,
    &null_cmd
   };
@@ -150,8 +186,9 @@ vm_disas_completion_function (const char *x, int state)
 struct pk_trie *vm_disas_trie;
 
 const struct pk_cmd vm_disas_cmd =
-  {"disassemble", "e", PK_VM_DIS_UFLAGS, 0, vm_disas_cmds, &vm_disas_trie, NULL,
-   ".vm disassemble (expression|function)", vm_disas_completion_function};
+  {"disassemble", "e", PK_VM_DIS_UFLAGS, 0, vm_disas_cmds, &vm_disas_trie,
+  NULL, ".vm disassemble (expression|statement|function)",
+   vm_disas_completion_function};
 
 const struct pk_cmd vm_profile_show_cmd =
   {"show", "", "", 0, NULL, NULL, pk_cmd_vm_profile_show,

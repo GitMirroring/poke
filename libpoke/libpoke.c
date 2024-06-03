@@ -590,6 +590,34 @@ pk_disassemble_expression (pk_compiler pkc, const char *str,
   PK_RETURN (PK_OK);
 }
 
+int
+pk_disassemble_statement (pk_compiler pkc, const char *program_str,
+                          int native_p)
+{
+  pvm_program program;
+  const char *end;
+
+  program = pkl_compile_statement (pkc->compiler,
+                                   program_str, &end);
+
+  if (program == NULL)
+    /* Invalid statement.  */
+    PK_RETURN (PK_ERROR);
+
+  if (*end != '\0')
+    {
+      pvm_destroy_program (program);
+      PK_RETURN (PK_ERROR);
+    }
+
+  if (native_p)
+    pvm_disassemble_program_nat (program);
+  else
+    pvm_disassemble_program (program);
+
+  PK_RETURN (PK_OK);
+}
+
 void
 pk_print_profile (pk_compiler pkc)
 {

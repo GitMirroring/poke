@@ -9287,6 +9287,8 @@ disassembler.  It supports the following subcommands:
 @table @command
 @item .vm disassemble expression @var{expr}
 Dumps the assembler corresponding to the Poke expression @var{expr}.
+@item .vm disassemble statement @var{stmt}
+Dumps the assembler corresponding to the Poke statement @var{stmt}.
 @item .vm disassemble function @var{function}
 Dumps the assembler corresponding to the Poke function called
 @var{function}.  The function shall be reachable from the top-level.
