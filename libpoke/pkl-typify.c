@@ -46,7 +46,6 @@
 #include "pkl-ast.h"
 #include "pkl-env.h"
 #include "pkl-pass.h"
-#include "pkl-typify.h"
 
 /* Roll out our own GCD from gnulib.  */
 #define WORD_T uint64_t
@@ -63,7 +62,6 @@
 
 PKL_PHASE_BEGIN_HANDLER (pkl_typify_pr_program)
 {
-  PKL_TYPIFY_PAYLOAD->errors = 0;
 }
 PKL_PHASE_END_HANDLER
 
@@ -103,7 +101,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_op_not)
                  "expected integral, got %s", op_type_str);
       free (op_type_str);
 
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
   else
@@ -139,7 +136,6 @@ PKL_PHASE_END_HANDLER
                  (EXPECTED_STR), OP##_type_str);                \
       free (OP##_type_str);                                     \
                                                                 \
-      PKL_TYPIFY_PAYLOAD->errors++;                             \
       PKL_PASS_ERROR;                                           \
     }                                                           \
   while (0)
@@ -157,7 +153,6 @@ PKL_PHASE_END_HANDLER
       free (op1_type_str);                                              \
       free (op2_type_str);                                              \
                                                                         \
-      PKL_TYPIFY_PAYLOAD->errors++;                                     \
       PKL_PASS_ERROR;                                                   \
     }                                                                   \
   while (0)
@@ -448,7 +443,6 @@ PKL_PHASE_END_HANDLER
   do                                            \
     {                                           \
       PKL_ERROR (PKL_AST_LOC (cast), (STR));    \
-      PKL_TYPIFY_PAYLOAD->errors++;             \
       PKL_PASS_ERROR;                           \
     }                                           \
   while (0)
@@ -470,7 +464,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_cast)
          of error.  */
       PKL_ICE (PKL_AST_LOC (cast),
                "casting `void' is not allowed");
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -929,7 +922,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_op_in)
       free (t1_str);
       free (t2_str);
 
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -978,7 +970,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_op_bconc)
     {
       PKL_ERROR (PKL_AST_LOC (exp),
                  "the sum of the width of the operators should not exceed 64-bit");
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -1053,7 +1044,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_offset)
         {
           PKL_ERROR (PKL_AST_LOC (unit),
                      "offsets only work on complete types");
-          PKL_TYPIFY_PAYLOAD->errors++;
           PKL_PASS_ERROR;
         }
 
@@ -1095,7 +1085,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_array)
         {
           PKL_ERROR (PKL_AST_LOC (array),
                      "array initializers should be of the same type");
-          PKL_TYPIFY_PAYLOAD->errors++;
           PKL_PASS_ERROR;
         }
     }
@@ -1110,7 +1099,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_array)
                      "array elements not promoteable to %s required by "
                      "the array suffix",
                      pkl_type_str (elem_cast, /*use_given_name*/ 1));
-          PKL_TYPIFY_PAYLOAD->errors++;
           PKL_PASS_ERROR;
         }
       assert (PKL_AST_TYPE_I_SIZE (type) != 0);
@@ -1159,7 +1147,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_trimmer)
                  "expected integral, got %s",
                  type_str);
       free (type_str);
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -1172,7 +1159,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_trimmer)
                  "expected integral, got %s",
                  type_str);
       free (type_str);
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -1186,7 +1172,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_trimmer)
                  "expected array or string, got %s",
                  type_str);
       free (type_str);
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -1259,7 +1244,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_indexer)
                    "expected array or string, got %s",
                    type_str);
         free (type_str);
-        PKL_TYPIFY_PAYLOAD->errors++;
         PKL_PASS_ERROR;
       }
     }
@@ -1274,7 +1258,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_indexer)
                  "expected integral or offset, got %s",
                  type_str);
       free (type_str);
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -1394,7 +1377,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_funcall)
                  "expected function, got %s",
                  type_str);
       free (type_str);
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -1421,7 +1403,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_funcall)
                  "of type %s",
                  function_type_str);
       free (function_type_str);
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -1458,7 +1439,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_funcall)
                  "of type %s",
                  function_type_str);
       free (function_type_str);
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -1498,7 +1478,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_funcall)
               {
                 PKL_ICE (PKL_AST_LOC (aa_name),
                         "anonymous function argument");
-                PKL_TYPIFY_PAYLOAD->errors++;
                 PKL_PASS_ERROR;
               }
 
@@ -1515,7 +1494,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_funcall)
             PKL_ERROR (PKL_AST_LOC (aa),
                        "function doesn't take a `%s' argument",
                        PKL_AST_IDENTIFIER_POINTER (aa_name));
-            PKL_TYPIFY_PAYLOAD->errors++;
             PKL_PASS_ERROR;
           }
       }
@@ -1541,7 +1519,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_funcall)
               {
                 PKL_ICE (PKL_AST_LOC (aa_name),
                          "function doesn't take named arguments");
-                PKL_TYPIFY_PAYLOAD->errors++;
                 PKL_PASS_ERROR;
               }
 
@@ -1571,7 +1548,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_funcall)
             PKL_ERROR (PKL_AST_LOC (funcall),
                        "required argument `%s' not specified in funcall",
                        PKL_AST_IDENTIFIER_POINTER (fa_name));
-            PKL_TYPIFY_PAYLOAD->errors++;
             PKL_PASS_ERROR;
           }
 
@@ -1629,7 +1605,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_funcall)
               free (expected_type);
               free (passed_type);
 
-              PKL_TYPIFY_PAYLOAD->errors++;
               PKL_PASS_ERROR;
             }
           narg++;
@@ -1660,7 +1635,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_funcall)
     {
       PKL_ERROR (PKL_AST_LOC (funcall_function),
                  "function doesn't return a value");
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
   }
@@ -1707,7 +1681,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_struct_ref)
                  "expected struct, got %s",
                  type_str);
       free (type_str);
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -1744,7 +1717,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_struct_ref)
       PKL_ERROR (PKL_AST_LOC (field_name),
                  "field `%s' doesn't exist in struct",
                  PKL_AST_IDENTIFIER_POINTER (field_name));
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -1756,7 +1728,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_struct_ref)
           PKL_ERROR (PKL_AST_LOC (field_name),
                      "field `%s' should be a referring offset",
                      PKL_AST_IDENTIFIER_POINTER (field_name));
-          PKL_TYPIFY_PAYLOAD->errors++;
           PKL_PASS_ERROR;
         }
 
@@ -1786,7 +1757,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_integral)
       PKL_ERROR (PKL_AST_LOC (type),
                  "the width of %s integral type should be in the [%d,64] "
                  "range", signed_p ? "a signed" : "an unsigned", width_min);
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 }
@@ -1835,7 +1805,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
                      "expected integral, got %s",
                      is_union_p ? "union" : "struct", type_str);
           free (type_str);
-          PKL_TYPIFY_PAYLOAD->errors++;
           PKL_PASS_ERROR;
         }
 
@@ -1862,7 +1831,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
                              "union, got %s",
                              is_union_p ? "union" : "struct", type_str);
                   free (type_str);
-                  PKL_TYPIFY_PAYLOAD->errors++;
                   PKL_PASS_ERROR;
                 }
 
@@ -1871,7 +1839,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
                   PKL_ERROR (PKL_AST_LOC (field),
                              "labels are not allowed in integral %ss",
                              is_union_p ? "union" : "struct");
-                  PKL_TYPIFY_PAYLOAD->errors++;
                   PKL_PASS_ERROR;
                 }
 
@@ -1880,7 +1847,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
                   PKL_ERROR (PKL_AST_LOC (field),
                              "optional fields are not allowed in integral %ss",
                              is_union_p ? "union" : "struct");
-                  PKL_TYPIFY_PAYLOAD->errors++;
                   PKL_PASS_ERROR;
                 }
 
@@ -1896,7 +1862,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
                                    "expected %" PRIu64 " bits, got %" PRId32 " bits",
                                    (uint64_t) PKL_AST_TYPE_I_SIZE (struct_type_itype),
                                    fsize);
-                        PKL_TYPIFY_PAYLOAD->errors++;
                         PKL_PASS_ERROR;
                       }
                     if (fields_int_size == 0)
@@ -1922,7 +1887,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
                          "size shall be between %d and 64 bits, got %" PRId32 " bits",
                          is_union_p ? "union" : "struct",
                          min_size, fields_int_size);
-              PKL_TYPIFY_PAYLOAD->errors++;
               PKL_PASS_ERROR;
             }
 
@@ -1937,7 +1901,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
                      is_union_p ? "union" : "struct",
                      (uint64_t) PKL_AST_TYPE_I_SIZE (struct_type_itype),
                      fields_int_size);
-          PKL_TYPIFY_PAYLOAD->errors++;
           PKL_PASS_ERROR;
         }
     }
@@ -1946,7 +1909,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
     {
       PKL_ERROR (PKL_AST_LOC (struct_type),
                  "unions are not allowed to be pinned");
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -1966,7 +1928,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
                          PKL_AST_TYPE_S_PINNED_P (struct_type)
                            ? "pinned structs"
                            : "unions");
-              PKL_TYPIFY_PAYLOAD->errors++;
               PKL_PASS_ERROR;
             }
         }
@@ -2032,7 +1993,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
                                      method_type_str);
                           free (field_type_str);
                           free (method_type_str);
-                          PKL_TYPIFY_PAYLOAD->errors++;
                           PKL_PASS_ERROR;
                         }
                     }
@@ -2061,7 +2021,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_struct)
                                      method_type_str);
                           free (field_type_str);
                           free (method_type_str);
-                          PKL_TYPIFY_PAYLOAD->errors++;
                           PKL_PASS_ERROR;
                         }
                     }
@@ -2098,7 +2057,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_array)
                  "expected integral or offset, got %s",
                  type_str);
       free (type_str);
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 }
@@ -2124,7 +2082,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_map)
     {
       PKL_ERROR (PKL_AST_LOC (map_type),
                  "specified type cannot be mapped");
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -2137,7 +2094,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_map)
                  "expected offset, got %s",
                  type_str);
       free (type_str);
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -2154,7 +2110,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_map)
                      "expected integral, got %s",
                      type_str);
           free (type_str);
-          PKL_TYPIFY_PAYLOAD->errors++;
           PKL_PASS_ERROR;
         }
     }
@@ -2195,7 +2150,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_cons)
           {
             PKL_ERROR (PKL_AST_LOC (astruct),
                        "union constructors require exactly one field initializer");
-            PKL_TYPIFY_PAYLOAD->errors++;
             PKL_PASS_ERROR;
           }
 
@@ -2216,7 +2170,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_cons)
               {
                 PKL_ERROR (PKL_AST_LOC (elem),
                            "anonymous initializer in struct constructor");
-                PKL_TYPIFY_PAYLOAD->errors++;
                 PKL_PASS_ERROR;
               }
 
@@ -2254,7 +2207,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_cons)
 
                             free (expected_type);
                             free (found_type);
-                            PKL_TYPIFY_PAYLOAD->errors++;
                             PKL_PASS_ERROR;
                           }
 
@@ -2268,7 +2220,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_cons)
                 PKL_ERROR (PKL_AST_LOC (elem_name),
                            "invalid struct field `%s' in constructor",
                            PKL_AST_IDENTIFIER_POINTER (elem_name));
-                PKL_TYPIFY_PAYLOAD->errors++;
                 PKL_PASS_ERROR;
               }
           }
@@ -2301,7 +2252,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_cons)
               free (expected_type);
               free (found_type);
 
-              PKL_TYPIFY_PAYLOAD->errors++;
               PKL_PASS_ERROR;
             }
         }
@@ -2364,7 +2314,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_incrdecr)
                    incrdecr_sign == PKL_AST_SIGN_INCR ? "increment" : "decrement",
                    type_str);
         free (type_str);
-        PKL_TYPIFY_PAYLOAD->errors++;
         PKL_PASS_ERROR;
       }
     }
@@ -2411,7 +2360,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_loop_stmt)
                      "expected boolean, got %s",
                      type_str);
           free (type_str);
-          PKL_TYPIFY_PAYLOAD->errors++;
           PKL_PASS_ERROR;
         }
     }
@@ -2444,7 +2392,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_loop_stmt_iterator)
                  "expected array or string, got %s",
                  type_str);
       free (type_str);
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -2505,7 +2452,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_format)
                      expected_type, found_type);
           free (found_type);
           free (expected_type);
-          PKL_TYPIFY_PAYLOAD->errors++;
           PKL_PASS_ERROR;
         }
     }
@@ -2535,7 +2481,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_print_stmt)
                      "expected a string, got %s",
                      type_str);
           free (type_str);
-          PKL_TYPIFY_PAYLOAD->errors++;
           PKL_PASS_ERROR;
         }
     }
@@ -2561,7 +2506,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_raise_stmt)
         {
           PKL_ERROR (PKL_AST_LOC (raise_stmt),
                      "exception in `raise' statement should be an Exception");
-          PKL_TYPIFY_PAYLOAD->errors++;
           PKL_PASS_ERROR;
         }
     }
@@ -2626,7 +2570,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_try_stmt)
                ? "try-catch" : "try-until",
                type_str);
     free (type_str);
-    PKL_TYPIFY_PAYLOAD->errors++;
     PKL_PASS_ERROR;
   }
 }
@@ -2748,7 +2691,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_attr)
                        "expected integral, got %s",
                        argument_type_str);
             free (argument_type_str);
-            PKL_TYPIFY_PAYLOAD->errors++;
             PKL_PASS_ERROR;
           }
       }
@@ -2787,7 +2729,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_attr)
                        "expected integral, got %s",
                        argument_type_str);
             free (argument_type_str);
-            PKL_TYPIFY_PAYLOAD->errors++;
             PKL_PASS_ERROR;
           }
 
@@ -2840,7 +2781,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_attr)
                operand_type_str);
     free (operand_type_str);
 
-    PKL_TYPIFY_PAYLOAD->errors++;
     PKL_PASS_ERROR;
   }
 }
@@ -2878,7 +2818,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_decl)
               PKL_ERROR (PKL_AST_LOC (decl_name),
                          "%s should be of type ()void",
                          decl_name_str);
-              PKL_TYPIFY_PAYLOAD->errors++;
               PKL_PASS_ERROR;
             }
         }
@@ -2907,7 +2846,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_struct_type_field)
     {
       PKL_ERROR (PKL_AST_LOC (elem_type),
                  "invalid type in struct field");
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -2930,7 +2868,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_struct_type_field)
                      "expected boolean, got %s",
                      type_str);
           free (type_str);
-          PKL_TYPIFY_PAYLOAD->errors++;
           PKL_PASS_ERROR;
         }
 
@@ -2956,7 +2893,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_struct_type_field)
                      "expected boolean, got %s",
                      type_str);
           free (type_str);
-          PKL_TYPIFY_PAYLOAD->errors++;
           PKL_PASS_ERROR;
         }
 
@@ -2980,7 +2916,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_struct_type_field)
                      "expected boolean, got %s",
                      type_str);
           free (type_str);
-          PKL_TYPIFY_PAYLOAD->errors++;
           PKL_PASS_ERROR;
         }
 
@@ -3009,7 +2944,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_struct_type_field)
           free (field_type_str);
           free (initializer_type_str);
 
-          PKL_TYPIFY_PAYLOAD->errors++;
           PKL_PASS_ERROR;
         }
     }
@@ -3036,7 +2970,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_struct_type_field)
                      "expected offset, got %s",
                      type_str);
           free (type_str);
-          PKL_TYPIFY_PAYLOAD->errors++;
           PKL_PASS_ERROR;
         }
 
@@ -3077,7 +3010,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_return_stmt)
       free (expected_type_str);
       free (returned_type_str);
 
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 }
@@ -3109,7 +3041,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_func_arg)
           free (arg_type_str);
           free (initial_type_str);
 
-          PKL_TYPIFY_PAYLOAD->errors++;
           PKL_PASS_ERROR;
         }
     }
@@ -3127,7 +3058,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_type_offset)
     {
       PKL_ERROR (PKL_AST_LOC (base_type),
                  "base type of offset types shall be integral");
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 }
@@ -3156,7 +3086,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_if_stmt)
                  "expected boolean, got %s",
                  type_str);
       free (type_str);
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 }
@@ -3195,7 +3124,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_cond_exp)
                  then_type_str, else_type_str);
       free (then_type_str);
       free (else_type_str);
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -3208,7 +3136,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_cond_exp)
                  "expected boolean, got %s",
                  type_str);
       free (type_str);
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -3249,7 +3176,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_ass_stmt)
                  expected_type, found_type);
       free (found_type);
       free (expected_type);
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -3271,7 +3197,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_ass_stmt)
                      "expected an integral value of exactly %lu bits, got %lu bits",
                      lvalue_width,
                      rvalue_width);
-          PKL_TYPIFY_PAYLOAD->errors++;
           PKL_PASS_ERROR;
         }
     }
@@ -3301,7 +3226,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_op_apush)
                  "expected array, got %s",
                  op1_type_str);
       free (op1_type_str);
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -3318,7 +3242,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_op_apush)
       free (op1_elem_type_str);
       free (op2_type_str);
 
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -3347,7 +3270,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_op_apop)
                  "expected array, got %s",
                  op_type_str);
       free (op_type_str);
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -3379,7 +3301,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_op_excond)
                  "expected Exception, got %s",
                  t2_str);
       free (t2_str);
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
   else
@@ -3408,7 +3329,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_asm_stmt)
                  "expected string, got %s",
                  template_type_str);
       free (template_type_str);
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 }
@@ -3437,7 +3357,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_asm_exp)
                  "expected string, got %s",
                  template_type_str);
       free (template_type_str);
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -3445,7 +3364,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_asm_exp)
     {
       PKL_ERROR (PKL_AST_LOC (type),
                  "asm expression cannot return `void'");
-      PKL_TYPIFY_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -3567,7 +3485,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify2_ps_type_array)
         {
           PKL_ERROR (PKL_AST_LOC (bound),
                      "array dimensions may not be negative");
-          PKL_TYPIFY_PAYLOAD->errors++;
           PKL_PASS_ERROR;
         }
     }
@@ -3591,7 +3508,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify2_ps_type_array)
             {
               PKL_ERROR (PKL_AST_LOC (bound),
                          "array elements do not fit in specified size");
-              PKL_TYPIFY_PAYLOAD->errors++;
               PKL_PASS_ERROR;
             }
         }
@@ -3610,7 +3526,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify2_ps_op_sizeof)
   PKL_AST_TYPE_COMPLETE (op) = pkl_ast_type_is_complete (op);
 }
 PKL_PHASE_END_HANDLER
-
 
 struct pkl_phase pkl_phase_typify2 =
   {

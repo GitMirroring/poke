@@ -56,10 +56,6 @@
 #include "pkl-tab.h"
 #include "pkl-lex.h"
 
-#ifdef PKL_DEBUG
-# include "pkl-gen.h"
-#endif
-
 #define scanner (pkl_parser->scanner)
 
 /* YYLLOC_DEFAULT -> default code for computing locations.  */

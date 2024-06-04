@@ -1,6 +1,6 @@
-/* pkl-promo.h - Operand promotion phase for the poke compiler.  */
+/* pkl-passes.def - Front-end passes for the Pkl compiler.  */
 
-/* Copyright (C) 2019, 2020, 2021, 2022, 2023, 2024 Jose E. Marchesi */
+/* Copyright (C) 2024 Jose E. Marchesi.  */
 
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PKL_PROMO_H
-#define PKL_PROMO_H
+PKL_PASS(PKL_PASS_F_TYPES,1)
+     PKL_PHASE(trans1)
+     PKL_PHASE(anal1)
+     PKL_PHASE(typify1)
+     PKL_PHASE(promo)
+     PKL_PHASE(trans2)
+     PKL_PHASE(fold)
+     PKL_PHASE(trans3)
+     PKL_PHASE(typify2)
+     PKL_PHASE(anal2)
+PKL_END_PASS
 
-#include <config.h>
+PKL_PASS(PKL_PASS_F_TYPES,2)
+     PKL_PHASE(fold)
+     PKL_PHASE(analf)
+PKL_END_PASS
 
-extern struct pkl_phase pkl_phase_promo;
+PKL_PASS(0,0)
+     PKL_PHASE(transl)
+PKL_END_PASS
 
-#endif /* PKL_PROMO_H */
+PKL_PASS(0,0)
+     PKL_PHASE(gen)
+PKL_END_PASS
+
+/*
+Local variables:
+mode:c
+End:
+*/

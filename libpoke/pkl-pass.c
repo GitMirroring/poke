@@ -674,10 +674,44 @@ pkl_do_subpass (pkl_compiler compiler,
 
 int
 pkl_do_pass (pkl_compiler compiler,
+             pkl_env env,
              pkl_ast ast,
-             struct pkl_phase *phases[], void *payloads[],
+             struct pkl_phase *phases[],
              int flags, int level)
 {
-  return pkl_do_subpass (compiler, ast, ast->ast, phases,
-                         payloads, flags, level);
+  void **payloads;
+  int i, nphases;
+  int ret;
+
+  /* Allocate space for the payloads.  */
+  nphases = 0;
+  while (phases[nphases])
+    nphases++;
+
+  payloads = malloc ((nphases + 1) * sizeof (void*));
+  if (!payloads)
+    /* No memory.  Return an error.  */
+    return 0;
+  memset (payloads, 0, (nphases + 1) * sizeof (void*));
+
+  /* Initialize phases.  */
+  for (i = 0; i < nphases; ++i)
+    {
+      if (phases[i]->initialize)
+        payloads[i] = phases[i]->initialize (compiler, env);
+    }
+
+  /* Run the pass.  */
+  ret = pkl_do_subpass (compiler, ast, ast->ast, phases,
+                        payloads, flags, level);
+
+  /* Finalize phases.  */
+  for (i = 0; i < nphases; ++i)
+    {
+      if (phases[i]->finalize)
+        phases[i]->finalize (payloads[i]);
+    }
+
+  free (payloads);
+  return ret;
 }

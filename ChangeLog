@@ -1,3 +1,34 @@
+2024-06-05  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-pass.h: New type pkl_phase_initialize_fn.
+	(struct pkl_phase): New field `initialize'.
+	* libpoke/pkl-promo.h: Remove.
+	* libpoke/pkl-fold.h: Likewise.
+	* libpoke/pkl-typify.h: Likewise.
+	* libpoke/pkl-anal.h: Likewise.
+	* libpoke/pkl-trans.h: Likewise.
+	* libpoke/pkl-gen.h: Likewise.
+	* libpoke/Makefile.am (libpoke_la_SOURCES): Remove pkl-promo.h,
+	pkl-fold.h, pkl-typify.h, pkl-anal.h, pkl-trans.h and pkl-gen.h.
+	* libpoke/pkl-anal.c (pkl_anal_initialize): New function.
+	(pkl_anal_finalize): Likewise.
+	(pkl_phase_anal1): Register .initialize and .finalize.
+	(pkl_phase_anal2): Register .initialize and .finalize.
+	(pkl_phase_analf): Register .initialize and .finalize.
+	* libpoke/pkl-trans.c (pkl_trans_initialize): New function.
+	(pkl_trans_finalize): Likewise.
+	(pkl_phase_trans1): Register .initialize and .finalize.
+	(pkl_phase_trans2): Likewise.
+	(pkl_phase_trans3): Likewise.
+	(pkl_phase_transl): Likewise.
+	* libpoke/pkl-gen.c (pkl_gen_initialize): New function.
+	(pkl_gen_finalize): Likewise.
+	(pkl_phase_gen): Register .initialize and .finalize.
+	* libpoke/pkl-passes.def: New file.
+	* libpoke/pkl.c (rest_of_compilation): Use the new passes file.
+	* libpoke/pkl-pass.c (pkl_do_pass): Do not get a payloads
+	argument.
+
 2024-06-03  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* doc/poke.texi (.vm disassemble): Add new item for new cmd.

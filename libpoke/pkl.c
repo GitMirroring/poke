@@ -36,14 +36,8 @@
 #include "pkl-ast.h"
 #include "pkl-parser.h"
 #include "pkl-pass.h"
-#include "pkl-gen.h"
-#include "pkl-trans.h"
-#include "pkl-anal.h"
-#include "pkl-trans.h"
-#include "pkl-typify.h"
-#include "pkl-promo.h"
-#include "pkl-fold.h"
 #include "pkl-env.h"
+#include "pkl-asm.h"
 
 #include "configmake.h"
 
@@ -195,133 +189,40 @@ pkl_free (pkl_compiler compiler)
   free (compiler);
 }
 
+extern struct pkl_phase pkl_phase_anal1;
+extern struct pkl_phase pkl_phase_anal2;
+extern struct pkl_phase pkl_phase_analf;
+extern struct pkl_phase pkl_phase_trans1;
+extern struct pkl_phase pkl_phase_trans2;
+extern struct pkl_phase pkl_phase_trans3;
+extern struct pkl_phase pkl_phase_transl;
+extern struct pkl_phase pkl_phase_typify1;
+extern struct pkl_phase pkl_phase_typify2;
+extern struct pkl_phase pkl_phase_promo;
+extern struct pkl_phase pkl_phase_fold;
+extern struct pkl_phase pkl_phase_gen;
+
 static pvm_program
 rest_of_compilation (pkl_compiler compiler,
                      pkl_ast ast,
                      pkl_env env)
 {
-  struct pkl_gen_payload gen_payload;
+  pvm_program program;
 
-  struct pkl_anal_payload anal1_payload;
-  struct pkl_anal_payload anal2_payload;
-  struct pkl_anal_payload analf_payload;
-
-  struct pkl_trans_payload trans1_payload;
-  struct pkl_trans_payload trans2_payload;
-  struct pkl_trans_payload trans3_payload;
-  struct pkl_trans_payload trans4_payload;
-  struct pkl_trans_payload transl_payload;
-
-  struct pkl_typify_payload typify1_payload = { 0 };
-  struct pkl_typify_payload typify2_payload = { 0 };
-
-  struct pkl_fold_payload fold_payload = { 0 };
-
-  struct pkl_phase *pass1_phases[]
-    = { &pkl_phase_trans1,
-        &pkl_phase_anal1,
-        &pkl_phase_typify1,
-        &pkl_phase_promo,
-        &pkl_phase_trans2,
-        &pkl_phase_fold,
-        &pkl_phase_trans3,
-        &pkl_phase_typify2,
-        &pkl_phase_anal2,
-        NULL,
-  };
-
-  void *pass1_payloads[]
-    = { &trans1_payload,
-        &anal1_payload,
-        &typify1_payload,
-        NULL, /* promo */
-        &trans2_payload,
-        &fold_payload,
-        &trans3_payload,
-        &typify2_payload,
-        &anal2_payload,
-  };
-
-  void *pass2_payloads[]
-    = { &fold_payload,
-        &trans4_payload,
-        &analf_payload,
-  };
-
-  struct pkl_phase *pass2_phases[]
-    = { &pkl_phase_fold,
-        &pkl_phase_trans4,
-        &pkl_phase_analf,
-        NULL
-  };
-
-  /* Note that gen and transl do subpasses, so no transformation
-     phases should be invoked in the following passes.  */
-  struct pkl_phase *pass3_phases[]
-    = { &pkl_phase_transl,
-    NULL
-  };
-
-  void *pass3_payloads[]
-    = { &transl_payload
-  };
-
-  struct pkl_phase *pass4_phases[]
-    = { &pkl_phase_gen,
-        NULL
-  };
-
-  void *pass4_payloads[]
-    = { &gen_payload
-  };
-
-  /* Initialize payloads.  */
-  pkl_anal_init_payload (&anal1_payload);
-  pkl_anal_init_payload (&anal2_payload);
-  pkl_anal_init_payload (&analf_payload);
-  pkl_trans_init_payload (&trans1_payload, env);
-  pkl_trans_init_payload (&trans2_payload, env);
-  pkl_trans_init_payload (&trans3_payload, env);
-  pkl_trans_init_payload (&trans4_payload, env);
-  pkl_trans_init_payload (&transl_payload, env);
-  pkl_gen_init_payload (&gen_payload, compiler, env);
-
-  if (!pkl_do_pass (compiler, ast,
-                    pass1_phases, pass1_payloads, PKL_PASS_F_TYPES, 1))
-    goto error;
-
-  if (trans1_payload.errors > 0
-      || trans2_payload.errors > 0
-      || trans3_payload.errors > 0
-      || anal1_payload.errors > 0
-      || anal2_payload.errors > 0
-      || typify1_payload.errors > 0
-      || fold_payload.errors > 0
-      || typify2_payload.errors > 0)
-    goto error;
-
-  if (!pkl_do_pass (compiler, ast,
-                    pass2_phases, pass2_payloads, PKL_PASS_F_TYPES, 2))
-    goto error;
-
-  if (trans4_payload.errors > 0
-      || fold_payload.errors > 0
-      || analf_payload.errors > 0)
-    goto error;
-
-  if (!pkl_do_pass (compiler, ast,
-                    pass3_phases, pass3_payloads, 0, 0))
-    goto error;
-
-  if (transl_payload.errors > 0)
-    goto error;
-
-  if (!pkl_do_pass (compiler, ast,
-                    pass4_phases, pass4_payloads, 0, 0))
-    goto error;
-
-  if (analf_payload.errors > 0)
-    goto error;
+#define PKL_PHASE(NAME) &pkl_phase_##NAME,
+#define PKL_PASS(FLAGS, LEVEL)                                          \
+  {                                                                     \
+    int flags = (FLAGS);                                                \
+    int level = (LEVEL);                                                \
+                                                                        \
+    struct pkl_phase *phases[] = {
+#define PKL_END_PASS                                            \
+                                   NULL, };                     \
+                                                                \
+    if (!pkl_do_pass (compiler, env, ast, phases, flags, level))\
+      goto error;                                               \
+  }
+#include "pkl-passes.def"
 
   if (compiler->debug_p)
     {
@@ -329,8 +230,9 @@ rest_of_compilation (pkl_compiler compiler,
       compiler->last_ast_str = pkl_ast_format (ast->ast);
     }
 
+  program = (pvm_program) ast->payload;
   pkl_ast_free (ast);
-  return gen_payload.program;
+  return program;
 
  error:
   pkl_ast_free (ast);
@@ -1020,14 +922,12 @@ pkl_ast_node
 pkl_constant_fold (pkl_compiler compiler, pkl_ast ast, pkl_ast_node node)
 {
   pkl_ast tmp_ast;
-  struct pkl_fold_payload fold_payload = { 0 };
   struct pkl_phase *fold_phases[] = { &pkl_phase_fold, NULL };
-  void *fold_payloads[] = { &fold_payload, NULL };
 
   tmp_ast = pkl_ast_init ();
   tmp_ast->ast = ASTREF (node);
   tmp_ast->uid = ast->uid;
-  if (!pkl_do_pass (compiler, tmp_ast, fold_phases, fold_payloads, 0, 1))
+  if (!pkl_do_pass (compiler, compiler->env, tmp_ast, fold_phases, 0, 1))
     PK_UNREACHABLE ();
 
   return tmp_ast->ast;

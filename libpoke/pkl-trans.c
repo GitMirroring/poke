@@ -33,10 +33,116 @@
 #include "pkl-diag.h"
 #include "pkl-ast.h"
 #include "pkl-pass.h"
-#include "pkl-trans.h"
 
 /* This file implements several transformation compiler phases which,
    generally speaking, are restartable.  */
+
+/* The trans phases keep a stack of function contexts while they
+   operate on the AST.  At any time in the pass, the "current lexical
+   function", and some properties relatives to it, are available to
+   the trans phase handlers on the top of this stack.
+
+   The following struct implements each entry on the function contexts
+   stack.
+
+   NODE is the AST node corresponding to the current lexical function,
+   or NULL if not in a function.
+
+   NDROPS is the number of PVM stack values we'd need to drop before
+   returning from the current function.
+
+   NPOPES is the number of PVM exception stack handlers that we'd need
+   to pope before returning from the current function.
+
+   BACK is the current lexical depth relative to the current
+   function.  */
+
+struct pkl_trans_function_ctx
+{
+  pkl_ast_node node;
+  int ndrops;
+  int npopes;
+  int back;
+};
+
+/* The trans phases keep a stack of escapable entities (loops and
+   try-until statements) and the corresponding `break' and `continue'
+   keywords, while they operate on the AST.
+
+   The following struct implements each entry on the breakable/continuable
+   entities stack.
+
+   NODE is the escapable entity (loop or try-until statement).
+
+   NFRAMES is the number of frames in the body of NODE.  */
+
+struct pkl_trans_escapable_ctx
+{
+  pkl_ast_node node;
+  int nframes;
+  int npopes;
+};
+
+/* The following struct defines the payload of the trans phases.
+
+   ADD_FRAMES is the number of frames to add to lexical addresses.
+   This is used in transl.
+
+   FUNCTIONS is a stack of function contexts.
+
+   NEXT_FUNCTION - 1 is the index for the enclosing function in
+   FUNCTIONS.  NEXT_FUNCTION is 0 if not in a function.
+
+   ENDIAN is a stack whose top indicates the endianness to be used
+   when mapping and writing integral types.
+
+   CUR_ENDIAN is the index to ENDIAN and marks the top of the stack of
+   endianness.  Initially PKL_AST_ENDIAN_DFL.
+
+   ESCAPABLES is a stack of escapables.
+
+   NEXT_ESCAPABLE - 1 is the index for the enclosing escapable
+   entity.  */
+
+#define PKL_TRANS_MAX_FUNCTION_NEST 32
+#define PKL_TRANS_MAX_ENDIAN 25
+#define PKL_TRANS_MAX_COMP_STMT_NEST 32
+
+struct pkl_trans_payload
+{
+  int add_frames;
+  struct pkl_trans_function_ctx functions[PKL_TRANS_MAX_FUNCTION_NEST];
+  int next_function;
+  enum pkl_ast_endian endian[PKL_TRANS_MAX_ENDIAN];
+  int cur_endian;
+  struct pkl_trans_escapable_ctx escapables[PKL_TRANS_MAX_COMP_STMT_NEST];
+  int next_escapable;
+  pkl_env env;
+};
+
+typedef struct pkl_trans_payload *pkl_trans_payload;
+
+/* Transformation phases initializer and finalizer.  */
+
+static void *
+pkl_trans_initialize (pkl_compiler compiler, pkl_env env)
+{
+  struct pkl_trans_payload *payload = malloc (sizeof (struct pkl_trans_payload));
+
+  if (!payload)
+    return NULL;
+
+  memset (payload, 0, sizeof (struct pkl_trans_payload));
+  payload->endian[0] = PKL_AST_ENDIAN_DFL;
+  payload->env = env;
+  return payload;
+}
+
+static void
+pkl_trans_finalize (void *payload)
+{
+  free (payload);
+}
 
 /* Handling of the stack of endianness.  */
 
@@ -139,7 +245,6 @@ pkl_trans_in_functions (struct pkl_trans_function_ctx functions[],
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans_pr_program)
 {
-  PKL_TRANS_PAYLOAD->errors = 0;
   PKL_TRANS_PAYLOAD->add_frames = -1;
 }
 PKL_PHASE_END_HANDLER
@@ -378,7 +483,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_string)
             {
               PKL_ERROR (PKL_AST_LOC (string),
                          _ ("\\x used with no following hex digits"));
-              PKL_TRANS_PAYLOAD->errors++;
               PKL_PASS_ERROR;
             }
           if (isxdigit (p[1]))
@@ -387,7 +491,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_string)
         default:
           PKL_ERROR (PKL_AST_LOC (string),
                      _ ("invalid \\%c sequence in string"), *p);
-          PKL_TRANS_PAYLOAD->errors++;
           PKL_PASS_ERROR;
         }
     }
@@ -431,14 +534,12 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_string)
             {
               PKL_ERROR (PKL_AST_LOC (string),
                          _ ("string literal cannot contain NULL character"));
-              PKL_TRANS_PAYLOAD->errors++;
               PKL_PASS_ERROR;
             }
           else if (num > 255)
             {
               PKL_ERROR (PKL_AST_LOC (string),
                          _ ("octal escape sequence out of range"));
-              PKL_TRANS_PAYLOAD->errors++;
               PKL_PASS_ERROR;
             }
           new_string_pointer[i] = num;
@@ -463,7 +564,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_string)
             {
               PKL_ERROR (PKL_AST_LOC (string),
                          _ ("string literal cannot contain NULL character"));
-              PKL_TRANS_PAYLOAD->errors++;
               PKL_PASS_ERROR;
             }
           break;
@@ -512,7 +612,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_op_attr)
     {
       PKL_ERROR (PKL_AST_LOC (identifier),
                  "invalid attribute '%s", identifier_name);
-      PKL_TRANS_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -728,7 +827,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_format)
       if (ntag >= nargs && p[1] != '%' && p[1] != '>' && p[1] != '<')
         {
           PKL_ERROR (PKL_AST_LOC (format), "not enough format arguments");
-          PKL_TRANS_PAYLOAD->errors++;
           PKL_PASS_ERROR;
         }
 
@@ -1131,7 +1229,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_format)
   if (nargs > ntag)
     {
       PKL_ERROR (PKL_AST_LOC (format), "too many format arguments");
-      PKL_TRANS_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -1143,7 +1240,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_format)
  invalid_tag:
   PKL_ERROR (PKL_AST_LOC (format_fmt),
              "invalid %%- tag in format string: %s", msg);
-  PKL_TRANS_PAYLOAD->errors++;
   PKL_PASS_ERROR;
 }
 PKL_PHASE_END_HANDLER
@@ -1194,7 +1290,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_array)
             {
               PKL_ERROR (PKL_AST_LOC (initializer_index_node),
                          "indexes in array initializers shall be constant");
-              PKL_TRANS_PAYLOAD->errors++;
               PKL_PASS_ERROR;
             }
 
@@ -1205,7 +1300,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_array)
             {
               PKL_ERROR (PKL_AST_LOC (initializer_index_node),
                          "array dimensions may not be negative");
-              PKL_TRANS_PAYLOAD->errors++;
               PKL_PASS_ERROR;
             }
           else if ((int64_t) initializer_index < index)
@@ -1482,7 +1576,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_asm_stmt)
         {
           PKL_ERROR (PKL_AST_LOC (output),
                      "asm statement output should be a l-value");
-          PKL_TRANS_PAYLOAD->errors++;
           PKL_PASS_ERROR;
         }
 
@@ -1504,38 +1597,41 @@ PKL_PHASE_END_HANDLER
 
 struct pkl_phase pkl_phase_trans1 =
   {
-   PKL_PHASE_PS_HANDLER (PKL_AST_SRC, pkl_trans_ps_src),
-   PKL_PHASE_PR_HANDLER (PKL_AST_PROGRAM, pkl_trans_pr_program),
-   PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT, pkl_trans1_ps_struct),
-   PKL_PHASE_PS_HANDLER (PKL_AST_OFFSET, pkl_trans1_ps_offset),
-   PKL_PHASE_PS_HANDLER (PKL_AST_FUNCALL, pkl_trans1_ps_funcall),
-   PKL_PHASE_PS_HANDLER (PKL_AST_STRING, pkl_trans1_ps_string),
-   PKL_PHASE_PS_HANDLER (PKL_AST_VAR, pkl_trans1_ps_var),
-   PKL_PHASE_PR_HANDLER (PKL_AST_FUNC, pkl_trans1_pr_func),
-   PKL_PHASE_PS_HANDLER (PKL_AST_FUNC, pkl_trans1_ps_func),
-   PKL_PHASE_PS_HANDLER (PKL_AST_TRIMMER, pkl_trans1_ps_trimmer),
-   PKL_PHASE_PS_HANDLER (PKL_AST_FORMAT, pkl_trans1_ps_format),
-   PKL_PHASE_PR_HANDLER (PKL_AST_DECL, pkl_trans1_pr_decl),
-   PKL_PHASE_PS_HANDLER (PKL_AST_ARRAY, pkl_trans1_ps_array),
-   PKL_PHASE_PR_HANDLER (PKL_AST_COMP_STMT, pkl_trans1_pr_comp_stmt),
-   PKL_PHASE_PS_HANDLER (PKL_AST_COMP_STMT, pkl_trans1_ps_comp_stmt),
-   PKL_PHASE_PR_HANDLER (PKL_AST_LOOP_STMT, pkl_trans1_pr_loop_stmt),
-   PKL_PHASE_PS_HANDLER (PKL_AST_LOOP_STMT, pkl_trans1_ps_loop_stmt),
-   PKL_PHASE_PS_HANDLER (PKL_AST_BREAK_CONTINUE_STMT, pkl_trans1_ps_break_continue_stmt),
-   PKL_PHASE_PR_HANDLER (PKL_AST_TRY_STMT, pkl_trans1_pr_try_stmt),
-   PKL_PHASE_PS_HANDLER (PKL_AST_TRY_STMT, pkl_trans1_ps_try_stmt),
-   PKL_PHASE_PR_HANDLER (PKL_AST_TRY_STMT_BODY, pkl_trans1_pr_try_stmt_body),
-   PKL_PHASE_PS_HANDLER (PKL_AST_TRY_STMT_BODY, pkl_trans1_ps_try_stmt_body),
-   PKL_PHASE_PR_HANDLER (PKL_AST_TRY_STMT_HANDLER, pkl_trans1_pr_try_stmt_handler),
-   PKL_PHASE_PS_HANDLER (PKL_AST_TRY_STMT_HANDLER, pkl_trans1_ps_try_stmt_handler),
-   PKL_PHASE_PR_HANDLER (PKL_AST_STRUCT_TYPE_FIELD, pkl_trans1_pr_struct_type_field),
-   PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT_TYPE_FIELD, pkl_trans1_ps_struct_type_field),
-   PKL_PHASE_PS_HANDLER (PKL_AST_RETURN_STMT, pkl_trans1_ps_return_stmt),
-   PKL_PHASE_PS_HANDLER (PKL_AST_INDEXER, pkl_trans1_ps_indexer),
-   PKL_PHASE_PS_HANDLER (PKL_AST_ASM_STMT, pkl_trans1_ps_asm_stmt),
-   PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_ATTR, pkl_trans1_ps_op_attr),
-   PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_STRUCT, pkl_trans1_ps_type_struct),
-   PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_FUNCTION, pkl_trans1_ps_type_function),
+    .initialize = pkl_trans_initialize,
+    .finalize = pkl_trans_finalize,
+
+    PKL_PHASE_PS_HANDLER (PKL_AST_SRC, pkl_trans_ps_src),
+    PKL_PHASE_PR_HANDLER (PKL_AST_PROGRAM, pkl_trans_pr_program),
+    PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT, pkl_trans1_ps_struct),
+    PKL_PHASE_PS_HANDLER (PKL_AST_OFFSET, pkl_trans1_ps_offset),
+    PKL_PHASE_PS_HANDLER (PKL_AST_FUNCALL, pkl_trans1_ps_funcall),
+    PKL_PHASE_PS_HANDLER (PKL_AST_STRING, pkl_trans1_ps_string),
+    PKL_PHASE_PS_HANDLER (PKL_AST_VAR, pkl_trans1_ps_var),
+    PKL_PHASE_PR_HANDLER (PKL_AST_FUNC, pkl_trans1_pr_func),
+    PKL_PHASE_PS_HANDLER (PKL_AST_FUNC, pkl_trans1_ps_func),
+    PKL_PHASE_PS_HANDLER (PKL_AST_TRIMMER, pkl_trans1_ps_trimmer),
+    PKL_PHASE_PS_HANDLER (PKL_AST_FORMAT, pkl_trans1_ps_format),
+    PKL_PHASE_PR_HANDLER (PKL_AST_DECL, pkl_trans1_pr_decl),
+    PKL_PHASE_PS_HANDLER (PKL_AST_ARRAY, pkl_trans1_ps_array),
+    PKL_PHASE_PR_HANDLER (PKL_AST_COMP_STMT, pkl_trans1_pr_comp_stmt),
+    PKL_PHASE_PS_HANDLER (PKL_AST_COMP_STMT, pkl_trans1_ps_comp_stmt),
+    PKL_PHASE_PR_HANDLER (PKL_AST_LOOP_STMT, pkl_trans1_pr_loop_stmt),
+    PKL_PHASE_PS_HANDLER (PKL_AST_LOOP_STMT, pkl_trans1_ps_loop_stmt),
+    PKL_PHASE_PS_HANDLER (PKL_AST_BREAK_CONTINUE_STMT, pkl_trans1_ps_break_continue_stmt),
+    PKL_PHASE_PR_HANDLER (PKL_AST_TRY_STMT, pkl_trans1_pr_try_stmt),
+    PKL_PHASE_PS_HANDLER (PKL_AST_TRY_STMT, pkl_trans1_ps_try_stmt),
+    PKL_PHASE_PR_HANDLER (PKL_AST_TRY_STMT_BODY, pkl_trans1_pr_try_stmt_body),
+    PKL_PHASE_PS_HANDLER (PKL_AST_TRY_STMT_BODY, pkl_trans1_ps_try_stmt_body),
+    PKL_PHASE_PR_HANDLER (PKL_AST_TRY_STMT_HANDLER, pkl_trans1_pr_try_stmt_handler),
+    PKL_PHASE_PS_HANDLER (PKL_AST_TRY_STMT_HANDLER, pkl_trans1_ps_try_stmt_handler),
+    PKL_PHASE_PR_HANDLER (PKL_AST_STRUCT_TYPE_FIELD, pkl_trans1_pr_struct_type_field),
+    PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT_TYPE_FIELD, pkl_trans1_ps_struct_type_field),
+    PKL_PHASE_PS_HANDLER (PKL_AST_RETURN_STMT, pkl_trans1_ps_return_stmt),
+    PKL_PHASE_PS_HANDLER (PKL_AST_INDEXER, pkl_trans1_ps_indexer),
+    PKL_PHASE_PS_HANDLER (PKL_AST_ASM_STMT, pkl_trans1_ps_asm_stmt),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_ATTR, pkl_trans1_ps_op_attr),
+    PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_STRUCT, pkl_trans1_ps_type_struct),
+    PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_FUNCTION, pkl_trans1_ps_type_function),
   };
 
 
@@ -1712,7 +1808,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans2_ps_type_offset)
     {
       PKL_ERROR (PKL_AST_LOC (type),
                  "offset types only work on complete types");
-      PKL_TRANS_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -1879,21 +1974,24 @@ PKL_PHASE_END_HANDLER
 
 struct pkl_phase pkl_phase_trans2 =
   {
-   PKL_PHASE_PS_HANDLER (PKL_AST_SRC, pkl_trans_ps_src),
-   PKL_PHASE_PR_HANDLER (PKL_AST_PROGRAM, pkl_trans_pr_program),
-   PKL_PHASE_PS_HANDLER (PKL_AST_EXP, pkl_trans2_ps_exp),
-   PKL_PHASE_PS_HANDLER (PKL_AST_OFFSET, pkl_trans2_ps_offset),
-   PKL_PHASE_PS_HANDLER (PKL_AST_ARRAY, pkl_trans2_ps_array),
-   PKL_PHASE_PS_HANDLER (PKL_AST_INDEXER, pkl_trans2_ps_indexer),
-   PKL_PHASE_PS_HANDLER (PKL_AST_TRIMMER, pkl_trans2_ps_trimmer),
-   PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT, pkl_trans2_ps_struct),
-   PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT_REF, pkl_trans2_ps_struct_ref),
-   PKL_PHASE_PS_HANDLER (PKL_AST_CAST, pkl_trans2_ps_cast),
-   PKL_PHASE_PS_HANDLER (PKL_AST_INCRDECR, pkl_trans2_ps_incrdecr),
-   PKL_PHASE_PS_HANDLER (PKL_AST_ASS_STMT, pkl_trans2_ps_ass_stmt),
-   PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_OFFSET, pkl_trans2_ps_type_offset),
-   PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT_TYPE_FIELD, pkl_trans2_ps_struct_type_field),
-   PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_ATTR, pkl_trans2_ps_op_attr),
+    .initialize = pkl_trans_initialize,
+    .finalize = pkl_trans_finalize,
+
+    PKL_PHASE_PS_HANDLER (PKL_AST_SRC, pkl_trans_ps_src),
+    PKL_PHASE_PR_HANDLER (PKL_AST_PROGRAM, pkl_trans_pr_program),
+    PKL_PHASE_PS_HANDLER (PKL_AST_EXP, pkl_trans2_ps_exp),
+    PKL_PHASE_PS_HANDLER (PKL_AST_OFFSET, pkl_trans2_ps_offset),
+    PKL_PHASE_PS_HANDLER (PKL_AST_ARRAY, pkl_trans2_ps_array),
+    PKL_PHASE_PS_HANDLER (PKL_AST_INDEXER, pkl_trans2_ps_indexer),
+    PKL_PHASE_PS_HANDLER (PKL_AST_TRIMMER, pkl_trans2_ps_trimmer),
+    PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT, pkl_trans2_ps_struct),
+    PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT_REF, pkl_trans2_ps_struct_ref),
+    PKL_PHASE_PS_HANDLER (PKL_AST_CAST, pkl_trans2_ps_cast),
+    PKL_PHASE_PS_HANDLER (PKL_AST_INCRDECR, pkl_trans2_ps_incrdecr),
+    PKL_PHASE_PS_HANDLER (PKL_AST_ASS_STMT, pkl_trans2_ps_ass_stmt),
+    PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_OFFSET, pkl_trans2_ps_type_offset),
+    PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT_TYPE_FIELD, pkl_trans2_ps_struct_type_field),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_ATTR, pkl_trans2_ps_op_attr),
   };
 
 
@@ -1912,7 +2010,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans3_ps_op_sizeof)
     {
       PKL_ERROR (PKL_AST_LOC (op),
                  "invalid operand to sizeof");
-      PKL_TRANS_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -1944,20 +2041,13 @@ PKL_PHASE_END_HANDLER
 
 struct pkl_phase pkl_phase_trans3 =
   {
-   PKL_PHASE_PS_HANDLER (PKL_AST_SRC, pkl_trans_ps_src),
-   PKL_PHASE_PR_HANDLER (PKL_AST_PROGRAM, pkl_trans_pr_program),
-   PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_SIZEOF, pkl_trans3_ps_op_sizeof),
+    .initialize = pkl_trans_initialize,
+    .finalize = pkl_trans_finalize,
+
+    PKL_PHASE_PS_HANDLER (PKL_AST_SRC, pkl_trans_ps_src),
+    PKL_PHASE_PR_HANDLER (PKL_AST_PROGRAM, pkl_trans_pr_program),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_SIZEOF, pkl_trans3_ps_op_sizeof),
   };
-
-
-
-struct pkl_phase pkl_phase_trans4 =
-  {
-   PKL_PHASE_PS_HANDLER (PKL_AST_SRC, pkl_trans_ps_src),
-   PKL_PHASE_PR_HANDLER (PKL_AST_PROGRAM, pkl_trans_pr_program),
-  };
-
-
 
 #define PKL_TRANS_ENV (PKL_TRANS_PAYLOAD->env)
 
@@ -2133,7 +2223,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_transl_pr_func)
         {
           PKL_ICE (PKL_AST_LOC (func),
                    "transl: could not register entry for SELF");
-          PKL_TRANS_PAYLOAD->errors++;
           PKL_PASS_ERROR;
         }
     }
@@ -2175,7 +2264,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_transl_ps_func_arg)
       PKL_ICE (PKL_AST_LOC (arg_identifier),
                "transl: duplicated argument name `%s' in function declaration",
                PKL_AST_IDENTIFIER_POINTER (arg_identifier));
-      PKL_TRANS_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 }
@@ -2220,7 +2308,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_transl_pr_type_struct)
           {
             PKL_ICE (PKL_AST_LOC (PKL_PASS_NODE),
                      "transl: could not register dummy in pkl_transl_pr_type_struct");
-            PKL_TRANS_PAYLOAD->errors++;
             PKL_PASS_ERROR;
           }
       }
@@ -2264,7 +2351,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_transl_pr_type_struct)
       {
         PKL_ICE (PKL_AST_LOC (PKL_PASS_NODE),
                  "transl: error registerting OFFSET in pkl_transl_pr_type_struct");
-        PKL_TRANS_PAYLOAD->errors++;
         PKL_PASS_ERROR;
       }
   }
@@ -2307,7 +2393,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_transl_ps_var)
       PKL_ICE (PKL_AST_LOC (var),
              "could not find variable `%s' in the compile-time environment",
              PKL_AST_IDENTIFIER_POINTER (var_name));
-      PKL_TRANS_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -2347,7 +2432,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_transl_ps_var)
                        "referred %s `%s', not in this struct back=%d function_back=%d",
                        what, PKL_AST_IDENTIFIER_POINTER (var_name),
                        back, function_back);
-            PKL_TRANS_PAYLOAD->errors++;
             PKL_PASS_ERROR;
           }
       }
@@ -2366,7 +2450,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_transl_ps_return_stmt)
     {
       PKL_ICE (PKL_AST_LOC (PKL_PASS_NODE),
                "transl: RETURN is not inside a function");
-      PKL_TRANS_PAYLOAD->errors++;
       PKL_PASS_ERROR;
     }
 
@@ -2464,7 +2547,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_transl_pr_struct_type_field)
         PKL_ICE (PKL_AST_LOC (field),
                  "transl: duplicated struct element '%s'",
                  PKL_AST_IDENTIFIER_POINTER (name));
-        PKL_TRANS_PAYLOAD->errors++;
         PKL_PASS_ERROR;
       }
   }
@@ -2481,6 +2563,9 @@ PKL_PHASE_END_HANDLER
 
 struct pkl_phase pkl_phase_transl =
   {
+    .initialize = pkl_trans_initialize,
+    .finalize = pkl_trans_finalize,
+
     PKL_PHASE_PR_HANDLER (PKL_AST_PROGRAM, pkl_trans_pr_program),
     PKL_PHASE_PS_HANDLER (PKL_AST_VAR, pkl_transl_ps_var),
     PKL_PHASE_PR_HANDLER (PKL_AST_COMP_STMT, pkl_transl_pr_comp_stmt),

@@ -34,14 +34,11 @@
 #include "pkl-diag.h"
 #include "pkl-ast.h"
 #include "pkl-pass.h"
-#include "pkl-fold.h"
 
 /* Roll out our own GCD from gnulib.  */
 #define WORD_T uint64_t
 #define GCD fold_gcd
 #include <gcd.c>
-
-#define PKL_FOLD_PAYLOAD ((pkl_fold_payload) PKL_PASS_PAYLOAD)
 
 /* The following handler is used in all fold phases, and handles
    changing the source file for diagnostics.  */
@@ -256,7 +253,6 @@ EMUL_UU (bnoto) { return ~op; }
                                                                         \
         overflow:                                                       \
           PKL_ERROR (PKL_AST_LOC (PKL_PASS_NODE), "expression overflows"); \
-          PKL_FOLD_PAYLOAD->errors++;                                   \
           PKL_PASS_ERROR;                                               \
         }                                                               \
     }                                                                   \
@@ -653,7 +649,6 @@ EMUL_UU (bnoto) { return ~op; }
                                                                         \
         overflow:                                                       \
           PKL_ERROR (PKL_AST_LOC (PKL_PASS_NODE), "expression overflows"); \
-          PKL_FOLD_PAYLOAD->errors++;                                   \
           PKL_PASS_ERROR;                                               \
         }                                                               \
     }                                                                   \
@@ -989,7 +984,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_fold_div)
 
  divbyzero:
   PKL_ERROR (PKL_AST_LOC (op2), "division by zero");
-  PKL_FOLD_PAYLOAD->errors++;
   PKL_PASS_ERROR;
 }
 PKL_PHASE_END_HANDLER
@@ -1021,7 +1015,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_fold_cdiv)
 
  divbyzero:
   PKL_ERROR (PKL_AST_LOC (op2), "division by zero");
-  PKL_FOLD_PAYLOAD->errors++;
   PKL_PASS_ERROR;
 }
 PKL_PHASE_END_HANDLER
@@ -1054,7 +1047,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_fold_mod)
 
  divbyzero:
   PKL_ERROR (PKL_AST_LOC (op2), "division by zero");
-  PKL_FOLD_PAYLOAD->errors++;
   PKL_PASS_ERROR;
 }
 PKL_PHASE_END_HANDLER
@@ -1321,23 +1313,23 @@ PKL_PHASE_END_HANDLER
 
 struct pkl_phase pkl_phase_fold =
   {
-   PKL_PHASE_PS_HANDLER (PKL_AST_SRC, pkl_fold_ps_src),
-   PKL_PHASE_PS_HANDLER (PKL_AST_CAST, pkl_fold_ps_cast),
-   PKL_PHASE_PS_HANDLER (PKL_AST_INDEXER, pkl_fold_ps_indexer),
-   PKL_PHASE_PS_HANDLER (PKL_AST_COND_EXP, pkl_fold_ps_cond_exp),
-#define ENTRY(ops, fs)\
-   PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_##ops, pkl_fold_##fs)
+    PKL_PHASE_PS_HANDLER (PKL_AST_SRC, pkl_fold_ps_src),
+    PKL_PHASE_PS_HANDLER (PKL_AST_CAST, pkl_fold_ps_cast),
+    PKL_PHASE_PS_HANDLER (PKL_AST_INDEXER, pkl_fold_ps_indexer),
+    PKL_PHASE_PS_HANDLER (PKL_AST_COND_EXP, pkl_fold_ps_cond_exp),
+#define ENTRY(ops, fs)                                          \
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_##ops, pkl_fold_##fs)
 
-   ENTRY (OR, or), ENTRY (IOR, ior), ENTRY (ADD, add),
-   ENTRY (XOR, xor), ENTRY (AND, and), ENTRY (BAND, band),
-   ENTRY (EQ, eq), ENTRY (NE, ne), ENTRY (SL, sl),
-   ENTRY (SR, sr), ENTRY (SUB, sub),
-   ENTRY (MUL, mul), ENTRY (DIV, div), ENTRY (CEILDIV, cdiv),
-   ENTRY (MOD, mod), ENTRY (GCD, gcd),
-   ENTRY (LT, lt), ENTRY (GT, gt), ENTRY (LE, le),
-   ENTRY (GE, ge),
-   ENTRY (BCONC, bconc),
-   ENTRY (POS, pos), ENTRY (NEG, neg), ENTRY (BNOT, bnot),
-   ENTRY (NOT, not), ENTRY (POW, pow),
+    ENTRY (OR, or), ENTRY (IOR, ior), ENTRY (ADD, add),
+    ENTRY (XOR, xor), ENTRY (AND, and), ENTRY (BAND, band),
+    ENTRY (EQ, eq), ENTRY (NE, ne), ENTRY (SL, sl),
+    ENTRY (SR, sr), ENTRY (SUB, sub),
+    ENTRY (MUL, mul), ENTRY (DIV, div), ENTRY (CEILDIV, cdiv),
+    ENTRY (MOD, mod), ENTRY (GCD, gcd),
+    ENTRY (LT, lt), ENTRY (GT, gt), ENTRY (LE, le),
+    ENTRY (GE, ge),
+    ENTRY (BCONC, bconc),
+    ENTRY (POS, pos), ENTRY (NEG, neg), ENTRY (BNOT, bnot),
+    ENTRY (NOT, not), ENTRY (POW, pow),
 #undef ENTRY
   };

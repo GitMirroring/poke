@@ -37,6 +37,15 @@
    Implementing a phase involves defining a struct pkl_phase variable
    and filling it up.  A pkl_phase struct contains:
 
+   - INITIALIZE is a function that is invoked by the pass manager in
+     order to perform phase-specific initialization.  The function
+     returns a void pointer that is intended to hold some payload.
+     This pointer can be NULL.
+
+   - FINALIZE is a function that is invoked by the pass manager in
+     order to perform phase-specific finalization.  The function gets
+     a void pointer that is intended to hold some payload.
+
    - CODE_PS_HANDLERS is a table indexed by node codes, which must be
      values in the `pkl_ast_code' enumeration defined in pkl-ast.h.
      For example, PKL_AST_ARRAY.  It maps codes to
@@ -109,8 +118,14 @@ typedef pkl_ast_node (*pkl_phase_handler_fn) (pkl_compiler compiler,
                                               int flags,
                                               int level);
 
+typedef void *(*pkl_phase_initialize_fn) (pkl_compiler compiler, pkl_env env);
+typedef void (*pkl_phase_finalize_fn) (void *payload);
+
 struct pkl_phase
 {
+  pkl_phase_initialize_fn initialize;
+  pkl_phase_finalize_fn finalize;
+
   pkl_phase_handler_fn else_handler;
 
   pkl_phase_handler_fn default_ps_handler;
@@ -331,8 +346,10 @@ pkl_phase_parent_in (pkl_ast_node parent,
 
 #define PKL_PASS_F_TYPES 1
 
-int pkl_do_pass (pkl_compiler compiler, pkl_ast ast,
-                 struct pkl_phase *phases[], void *payloads[],
+int pkl_do_pass (pkl_compiler compiler,
+                 pkl_env env,
+                 pkl_ast ast,
+                 struct pkl_phase *phases[],
                  int flags, int level);
 
 /* The following function is to be used by the PKL_PASS_SUBPASS macro

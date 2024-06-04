@@ -2221,6 +2221,7 @@ struct pkl_ast
   char *buffer;
   FILE *file;
   char *filename;
+  void *payload;
 };
 
 pkl_ast pkl_ast_init (void);
