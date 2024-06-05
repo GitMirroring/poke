@@ -1,3 +1,7 @@
+2024-06-06  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* POTFILES.in: Remove no longer existing pass header files.
+
 2022-03-16  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* POTFILES.in: Remove MI related files.
