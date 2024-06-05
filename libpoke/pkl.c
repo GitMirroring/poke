@@ -195,6 +195,7 @@ extern struct pkl_phase pkl_phase_analf;
 extern struct pkl_phase pkl_phase_trans1;
 extern struct pkl_phase pkl_phase_trans2;
 extern struct pkl_phase pkl_phase_trans3;
+extern struct pkl_phase pkl_phase_transf;
 extern struct pkl_phase pkl_phase_transl;
 extern struct pkl_phase pkl_phase_typify1;
 extern struct pkl_phase pkl_phase_typify2;

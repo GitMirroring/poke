@@ -30,6 +30,7 @@ PKL_END_PASS
 
 PKL_PASS(PKL_PASS_F_TYPES,2)
      PKL_PHASE(fold)
+     PKL_PHASE(transf)
      PKL_PHASE(analf)
 PKL_END_PASS
 

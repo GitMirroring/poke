@@ -2019,6 +2019,41 @@ struct pkl_phase pkl_phase_trans3 =
     PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_SIZEOF, pkl_trans3_ps_op_sizeof),
   };
 
+
+
+/* Mark compound statements that do not contain any declaration as
+   "frameless".  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_transf_ps_comp_stmt)
+{
+  pkl_ast_node comp_stmt = PKL_PASS_NODE;
+  pkl_ast_node stmt = NULL;
+
+  PKL_AST_COMP_STMT_FRAMELESS_P (comp_stmt) = 1;
+  for (stmt = PKL_AST_COMP_STMT_STMTS (comp_stmt);
+       stmt;
+       stmt = PKL_AST_CHAIN (stmt))
+    {
+      if (PKL_AST_CODE (stmt) == PKL_AST_DECL
+          && (PKL_AST_DECL_KIND (stmt) == PKL_AST_DECL_KIND_VAR
+              || PKL_AST_DECL_KIND (stmt) == PKL_AST_DECL_KIND_FUNC))
+        {
+          PKL_AST_COMP_STMT_FRAMELESS_P (comp_stmt) = 0;
+          break;
+        }
+    }
+}
+PKL_PHASE_END_HANDLER
+
+struct pkl_phase pkl_phase_transf =
+  {
+    .initialize = pkl_trans_initialize,
+    .finalize = pkl_trans_finalize,
+
+    PKL_PHASE_PS_HANDLER (PKL_AST_SRC, pkl_trans_ps_src),
+    PKL_PHASE_PS_HANDLER (PKL_AST_COMP_STMT, pkl_transf_ps_comp_stmt),
+  };
+
 #define PKL_TRANS_ENV (PKL_TRANS_PAYLOAD->env)
 
 /* FOR statements introduce a lexical level if they use an iterator or

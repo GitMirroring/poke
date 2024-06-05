@@ -1,5 +1,11 @@
 2024-06-06  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-trans.c (pkl_phase_transf): New struct.
+	(pkl_phase_transf_ps_comp_stmt): New handler.
+	* libpoke/pkl-passes.def: Add phase transf to the second pass.
+
+2024-06-06  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-trans.c (pkl_trans1_pr_comp_stmt): Do not handle
 	escapable nframes.
 	(pkl_trans1_ps_break_continue_stmt): Likewise.
