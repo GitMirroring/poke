@@ -15,7 +15,7 @@
 
 appdir = $(pkgdatadir)/poke
 
-info_TEXINFOS = poke.texi
+info_TEXINFOS = poke.texi pokeint.texi
 poke_TEXINFOS = fdl.texi pvm-insns.texi poke-settings.texi
 
 EXTRA_DIST = gen-pvm-insns.sh learn-poke-language-in-y-minutes.pk \
@@ -64,7 +64,7 @@ nodelist: $(srcdir)/poke.texi
 	  > nodelist
 	test -s nodelist || $(RM) nodelist
 
-INFO_DEPS = $(srcdir)/poke.info
+INFO_DEPS = $(srcdir)/poke.info $(srcdir)/pokeint.info
 
 app_DATA = nodelist
 

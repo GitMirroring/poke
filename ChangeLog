@@ -1,5 +1,14 @@
 2024-06-06  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* MAINTAINERS: New file.
+	* Makefile.am (EXTRA_DIST): Add MAINTAINERS.
+	* doc/pokeint.texi: New file.
+	* doc/Makefile.am (info_TEXINFOS): Add pokeint.texi.
+	(INFO_DEPS): Add $(srcdir)/pokeint.info.
+	* etc/hacking.org: Move some content to doc/pokeint.texi.
+
+2024-06-06  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-trans.c (pkl_phase_transf): New struct.
 	(pkl_phase_transf_ps_comp_stmt): New handler.
 	* libpoke/pkl-passes.def: Add phase transf to the second pass.

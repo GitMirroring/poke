@@ -1,0 +1,66 @@
+-*- mode: text -*-
+
+                         GNU poke Maintainers
+                         ====================
+
+
+This file describes different groupf of people who are, together, the
+maintainers and developers of the GNU poke project.
+
+                           GNU maintainers
+                           ---------------
+
+Jose E. Marchesi       <jemarch@gnu.org>
+Mohammad-Reza Nabipoor <mnabipoor@gnu.org>
+
+                          Global Maintainers
+                          ------------------
+
+Jose E. Marchesi <jemarch@gnu.org>
+
+                        Subsystem Maintainers
+                        ---------------------
+
+Maintainers are individuals who are responsible for, and have
+permission to check in changes in, certain subsets of the code, and
+push them to the master branch.  They can also approve patches in
+these areas, sent by other people.  Note that that maintainers still
+need approval to check in changes outside of the immediate domain that
+they maintain.
+
+Note also that maintainers are still asked to send [COMMITTED]
+messages to the list with the patches they push.  This helps to keep
+the other hackers aware of what is going on in other areas.
+
+
+Aurélien Aptel         <aaptel@suse.com>   etc/poke-mode.el
+Mohammad-Reza Nabipoor <mnabipoor@gnu.org> pickles/riscv.pk, pickles.pcap.pk,
+                                           pokefmt, poked.
+
+                         Write After Approval
+                         --------------------
+
+The people below have write access to the git repository, and can
+install their changes after getting explicit approval from a global
+reviewer.
+
+Egeyar Bagcioglu	<egeyar@gmail.com>
+John Darrington		<jmd@gnu.org>
+Luca Saiu		<positron@gnu.org>
+Darshit Shah		<darnir@gnu.org>
+Dan Čermák		<dan.cermak@cgc-instruments.com>
+Bruno Haible		<bruno@clisp.org>
+Carlo Caione		<ccaione@baylibre.com>
+Eric Blake		<eblake@redhat.com>
+Tim Ruehsen		<tim.ruehsen@gmx.de>
+Kostas Chasialis	<koschasialis@gmail.com>
+Aurélien Aptel		<aaptel@suse.com>
+Mohammad-Reza Nabipoor	<mnabipoor@gnu.org>
+David Faust             <david.faust@oracle.com>
+Indu Bhagat             <indu.bhagat@oracle.com>
+Arsen Arsenović		<arsen@aarsen.me>
+Vincenzo Palazzo    <vincenzopalazzodev@gmail.com>
+Martin Cermak		<marticak@gmx.com>
+Hannes Domani           <ssbssa@yahoo.de>
+
+
