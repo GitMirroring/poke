@@ -642,8 +642,8 @@ values in the stack and something is going banana.  It is also useful
 to determine what kind of value is being accessed by a given
 instruction.
 
-For example, lets say that we are hunting some segmentation fault.  We
-highly suspect the code generated in the first example in this
+For example, let's say that we are hunting some segmentation fault.
+We highly suspect the code generated in the first example in this
 section, above.  Of the three instructions, @code{mullu} is the only
 one that could conceivably generate a segfault, so we add a stack
 trace instruction right before it to inspect its two arguments:
