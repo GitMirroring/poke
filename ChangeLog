@@ -1,5 +1,13 @@
 2024-06-07  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-trans.c (pkl_transl_ps_var): Turn ICE into
+	compile-time error.
+	* testsuite/poke.pkl/field-init-diag-8.pk: New test.
+	* testsuite/poke.pkl/field-init-diag-9.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+
+2024-06-07  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-trans.c (pkl_trans1_pr_try_stmt_body): Increase
 	npopes in escapable.
 	(pkl_trans1_ps_try_stmt_body): Decrease npopes in escapable.

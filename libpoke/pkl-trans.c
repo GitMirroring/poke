@@ -2483,9 +2483,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_transl_ps_var)
                        &PKL_AST_VAR_BACK (var),
                        &PKL_AST_VAR_OVER (var)))
     {
-      PKL_ICE (PKL_AST_LOC (var),
-             "could not find variable `%s' in the compile-time environment",
-             PKL_AST_IDENTIFIER_POINTER (var_name));
+      PKL_ERROR (PKL_AST_LOC (var), "undefined variable '%s'",
+                 PKL_AST_IDENTIFIER_POINTER (var_name));
       PKL_PASS_ERROR;
     }
 
