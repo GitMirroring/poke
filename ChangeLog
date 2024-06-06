@@ -1,3 +1,22 @@
+2024-06-06  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-trans.c (pkl_trans1_pr_comp_stmt): Do not handle
+	escapable nframes.
+	(pkl_trans1_ps_break_continue_stmt): Likewise.
+	(pkl_trans1_pr_try_stmt_handler): Remove handler.
+	(pkl_trans1_ps_try_stmt_handler): Likewise.
+	(pkl_transl_pr_loop_stmt): Handle escapable nframes.
+	(pkl_transl_pr_loop_stmt): Likewise.
+	(pkl_transl_pr_comp_stmt): Liekwise
+	(pkl_transl_ps_comp_stmt): Likewise.
+	(pkl_transl_pr_try_stmt): Likewise.
+	(pkl_transl_pr_decl): Likewise.
+	(pkl_transl_ps_break_continue_stmt): Likewise.
+	* testsuite/poke.pkl/break-while-3.pk: New test.
+	* testsuite/poke.pkl/break-while-4.pk: Likewise.
+	* testsuite/poke.pkl/break-while-5.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+
 2024-06-05  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-pass.h: New type pkl_phase_initialize_fn.

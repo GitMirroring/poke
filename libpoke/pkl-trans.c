@@ -1331,9 +1331,6 @@ PKL_PHASE_END_HANDLER
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_comp_stmt)
 {
-  if (PKL_TRANS_ESCAPABLE)
-    PKL_TRANS_ESCAPABLE->nframes++;
-
   if (PKL_PASS_PARENT
       && PKL_AST_CODE (PKL_PASS_PARENT) == PKL_AST_EXP
       && PKL_AST_EXP_CODE (PKL_PASS_PARENT) == PKL_AST_OP_EXCOND)
@@ -1393,9 +1390,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_comp_stmt)
     }
 
   PKL_AST_COMP_STMT_NUMVARS (comp_stmt) = numvars;
-
-  if (PKL_TRANS_ESCAPABLE)
-    PKL_TRANS_ESCAPABLE->nframes--;
 
   if (PKL_PASS_PARENT
       && PKL_AST_CODE (PKL_PASS_PARENT) == PKL_AST_EXP
@@ -1487,26 +1481,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_try_stmt_body)
 }
 PKL_PHASE_END_HANDLER
 
-/* The handler of a try-catch statement introduces a new lexical
-   level for escapable constructs.  Update the current escapable
-   context.  */
-
-PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_try_stmt_handler)
-{
-  if (PKL_TRANS_ESCAPABLE)
-    PKL_TRANS_ESCAPABLE->nframes++;
-}
-PKL_PHASE_END_HANDLER
-
-/* Likewise.  */
-
-PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_try_stmt_handler)
-{
-  if (PKL_TRANS_ESCAPABLE)
-    PKL_TRANS_ESCAPABLE->nframes--;
-}
-PKL_PHASE_END_HANDLER
-
 /* try-until statements are escapable constructs.  Update escapables
    stack accordingly.  */
 
@@ -1527,8 +1501,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_try_stmt)
 PKL_PHASE_END_HANDLER
 
 /* Annotate break and continue statements with enclosing escapable
-   construct, and with their lexical nesting level with respect to the
-   enclosing escapable construct.  */
+   construct, and with the exception handling nesting level with
+   respect to the enclosing escapable construct.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_break_continue_stmt)
 {
@@ -1536,8 +1510,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_break_continue_stmt)
     {
       PKL_AST_BREAK_CONTINUE_STMT_ENTITY (PKL_PASS_NODE)
         = PKL_TRANS_ESCAPABLE->node;
-      PKL_AST_BREAK_CONTINUE_STMT_NFRAMES (PKL_PASS_NODE)
-        = PKL_TRANS_ESCAPABLE->nframes;
       PKL_AST_BREAK_CONTINUE_STMT_NPOPES (PKL_PASS_NODE)
         = PKL_TRANS_ESCAPABLE->npopes;
     }
@@ -1622,8 +1594,6 @@ struct pkl_phase pkl_phase_trans1 =
     PKL_PHASE_PS_HANDLER (PKL_AST_TRY_STMT, pkl_trans1_ps_try_stmt),
     PKL_PHASE_PR_HANDLER (PKL_AST_TRY_STMT_BODY, pkl_trans1_pr_try_stmt_body),
     PKL_PHASE_PS_HANDLER (PKL_AST_TRY_STMT_BODY, pkl_trans1_ps_try_stmt_body),
-    PKL_PHASE_PR_HANDLER (PKL_AST_TRY_STMT_HANDLER, pkl_trans1_pr_try_stmt_handler),
-    PKL_PHASE_PS_HANDLER (PKL_AST_TRY_STMT_HANDLER, pkl_trans1_ps_try_stmt_handler),
     PKL_PHASE_PR_HANDLER (PKL_AST_STRUCT_TYPE_FIELD, pkl_trans1_pr_struct_type_field),
     PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT_TYPE_FIELD, pkl_trans1_ps_struct_type_field),
     PKL_PHASE_PS_HANDLER (PKL_AST_RETURN_STMT, pkl_trans1_ps_return_stmt),
@@ -2069,6 +2039,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_transl_pr_loop_stmt)
      for (HEAD; CONDITION; TAIL) BODY
      for (ITERATOR) BODY  */
 
+  PKL_TRANS_PUSH_ESCAPABLE (stmt);
+
   if (iterator)
     {
       pkl_ast_node container = PKL_AST_LOOP_STMT_ITERATOR_CONTAINER (iterator);
@@ -2113,6 +2085,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_transl_pr_loop_stmt)
         PKL_TRANS_FUNCTION->back--;
     }
 
+  PKL_TRANS_POP_ESCAPABLE;
   PKL_PASS_BREAK;
 }
 PKL_PHASE_END_HANDLER
@@ -2129,6 +2102,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_transl_pr_comp_stmt)
       PKL_TRANS_ENV = pkl_env_push_frame (PKL_TRANS_ENV);
       if (PKL_TRANS_FUNCTION)
         PKL_TRANS_FUNCTION->back++;
+      if (PKL_TRANS_ESCAPABLE)
+        PKL_TRANS_ESCAPABLE->nframes++;
     }
 }
 PKL_PHASE_END_HANDLER
@@ -2142,6 +2117,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_transl_ps_comp_stmt)
       PKL_TRANS_ENV = pkl_env_pop_frame (PKL_TRANS_ENV);
       if (PKL_TRANS_FUNCTION)
         PKL_TRANS_FUNCTION->back--;
+      if (PKL_TRANS_ESCAPABLE)
+        PKL_TRANS_ESCAPABLE->nframes--;
     }
 }
 PKL_PHASE_END_HANDLER
@@ -2157,19 +2134,31 @@ PKL_PHASE_BEGIN_HANDLER (pkl_transl_pr_try_stmt)
   pkl_ast_node body = PKL_AST_TRY_STMT_BODY (try_stmt);
   pkl_ast_node arg = PKL_AST_TRY_STMT_ARG (try_stmt);
   pkl_ast_node exp = PKL_AST_TRY_STMT_EXP (try_stmt);
+  int kind = PKL_AST_TRY_STMT_KIND (try_stmt);
 
+  if (kind == PKL_AST_TRY_STMT_KIND_UNTIL)
+    PKL_TRANS_PUSH_ESCAPABLE (try_stmt);
   PKL_PASS_SUBPASS (body);
+  if (kind == PKL_AST_TRY_STMT_KIND_UNTIL)
+    PKL_TRANS_POP_ESCAPABLE;
+
   if (exp)
     PKL_PASS_SUBPASS (exp);
   if (arg)
     {
       PKL_TRANS_ENV = pkl_env_push_frame (PKL_TRANS_ENV);
+      if (PKL_TRANS_ESCAPABLE)
+        PKL_TRANS_ESCAPABLE->nframes++;
       PKL_PASS_SUBPASS (arg);
     }
   if (handler)
     PKL_PASS_SUBPASS (handler);
   if (arg)
-    PKL_TRANS_ENV = pkl_env_pop_frame (PKL_TRANS_ENV);
+    {
+      PKL_TRANS_ENV = pkl_env_pop_frame (PKL_TRANS_ENV);
+      if (PKL_TRANS_ESCAPABLE)
+        PKL_TRANS_ESCAPABLE->nframes--;
+    }
 
   PKL_PASS_BREAK;
 }
@@ -2496,6 +2485,19 @@ PKL_PHASE_BEGIN_HANDLER (pkl_transl_pr_decl)
 }
 PKL_PHASE_END_HANDLER
 
+/* Annotate break and continue statements with their lexical nesting
+   level with respect to the enclosing escapable construct.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_transl_ps_break_continue_stmt)
+{
+  if (PKL_TRANS_ESCAPABLE)
+    {
+      PKL_AST_BREAK_CONTINUE_STMT_NFRAMES (PKL_PASS_NODE)
+        = PKL_TRANS_ESCAPABLE->nframes;
+    }
+}
+PKL_PHASE_END_HANDLER
+
 /* Struct type fields shall register the field name in the lexical
    environment.  */
 
@@ -2577,6 +2579,7 @@ struct pkl_phase pkl_phase_transl =
     PKL_PHASE_PS_HANDLER (PKL_AST_RETURN_STMT, pkl_transl_ps_return_stmt),
     PKL_PHASE_PR_HANDLER (PKL_AST_DECL, pkl_transl_pr_decl),
     PKL_PHASE_PR_HANDLER (PKL_AST_STRUCT_TYPE_FIELD, pkl_transl_pr_struct_type_field),
+    PKL_PHASE_PS_HANDLER (PKL_AST_BREAK_CONTINUE_STMT, pkl_transl_ps_break_continue_stmt),
     PKL_PHASE_PR_TYPE_HANDLER (PKL_TYPE_ALIAS, pkl_transl_pr_type_alias),
     PKL_PHASE_PR_TYPE_HANDLER (PKL_TYPE_STRUCT, pkl_transl_pr_type_struct),
     PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_STRUCT, pkl_transl_ps_type_struct),
