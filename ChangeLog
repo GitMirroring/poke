@@ -1,5 +1,9 @@
 2024-06-07  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/std.pk: Remove some spurious debugging definitions.
+
+2024-06-07  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* doc/pokeint.texi (Notifying about pushed commits): New section.
 
 2024-06-07  Jose E. Marchesi  <jemarch@gnu.org>
