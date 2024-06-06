@@ -150,7 +150,7 @@ pkl_make_assertion (struct pkl_parser *parser, pkl_ast_node cond, pkl_ast_node m
       }
     vfunc = pkl_ast_make_var (parser->ast,
                               pkl_ast_make_identifier (parser->ast, name),
-                              vfunc_init, back, over);
+                              vfunc_init, -1, -1);
   }
 
   /* First argument of _pkl_assert: condition */
@@ -1939,7 +1939,7 @@ struct_type_field:
                             field_var = pkl_ast_make_var (pkl_parser->ast,
                                                           $4,
                                                           field_decl,
-                                                          back, over);
+                                                          -1, -1);
                             PKL_AST_LOC (field_var) = PKL_AST_LOC (initializer);
 
                             constraint = pkl_ast_make_binary_exp (pkl_parser->ast,
