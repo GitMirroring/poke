@@ -1,0 +1,7 @@
+/* { dg-do run } */
+
+var a = 0;
+while (1) { a++; try { if (a < 10) continue; } catch {  } break; }
+printf "%v\n", a;
+
+/* { dg-output "10" } */
