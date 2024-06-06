@@ -1,0 +1,709 @@
+\input texinfo
+@comment %**start of header
+@setfilename pokeint.info
+@include versionint.texi
+@settitle GNU poke Internals
+@afourpaper
+@defcodeindex pv
+@comment %**end of header
+
+@copying
+This manual describes the internals of GNU poke (version @value{VERSION},
+@value{UPDATED}).
+
+Copyright @copyright{} 2024 The poke authors.
+
+@quotation
+You can redistribute it and/or modify this manual under the terms of
+the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any
+later version.
+@end quotation
+@end copying
+
+@dircategory GNU poke
+@direntry
+* pokeint: (poke). Internals of the GNU poke binary editor.
+@end direntry
+
+@titlepage
+@title GNU poke Internals
+@subtitle for version @value{VERSION}, @value{UPDATED}
+@author by Jose E. Marchesi et al.
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@contents
+
+@ifnottex
+@node Top
+@top GNU poke Internals
+
+@insertcopying
+@end ifnottex
+
+GNU poke is an interactive, extensible editor for binary data.  Not
+limited to editing basic entities such as bits and bytes, it provides
+a full-fledged procedural, interactive programming language designed
+to describe data structures and to operate on them.
+
+This manual is mainly a reference manual rather than a tutorial.  It
+discusses how to contribute to GNU poke, the source tree structure and
+build system, the overall architecture and a detailed description of
+the internals of the program.  The target audience for this manual are
+GNU poke developers, testers, and people interested in extending or
+customizing the program to their needs.
+
+@menu
+* Nomenclature::
+
+Contributing
+* Development environment::
+* Version control system::
+* Running an uninstalled poke::
+* Submitting a patch::
+
+Building poke
+* Building basics::
+* Partial builds::
+* Building after a git pull::
+* Building with local changes in gnulib or Jitter::
+* Updating gettext::
+
+Testing poke
+* Continuous Integration::
+
+Fuzzing poke
+* Grammarinator::
+
+Debugging poke
+* Building with debugging support::
+* Invoking GDB to debug an uninstalled poke::
+* Debugging poke with GDB::
+* Using GDB extensions::
+* Valgrind and poke::
+* Debugging PVM assembly code::
+
+Profiling poke
+* Building poke with profiling support::
+
+Indices
+* Concept Index::               General concept index
+@end menu
+
+@node Nomenclature
+@chapter Nomenclature
+
+We call @dfn{poke} the program.  When the context may induce confusion
+(since ``poke'' is a pretty common word) then we use @dfn{GNU poke}.
+
+@dfn{Poke} (with upper case P) is the name of the domain-specific
+language implemented by poke, the program.
+
+A @dfn{pickle} is a Poke source file containing definitions of types,
+variables, functions, etc, that conceptually apply to some definite
+domain.  For example, @file{elf.pk} is a pickle that provides
+facilities to poke ELF object files.  Pickles are not necessarily
+related to file formats: a set of functions to work with bit patterns,
+for example, could be implemented in a pickle @file{bitpatterns.pk}.
+
+@node Development environment
+@chapter Development environment
+
+The packages listed in the file @file{DEPENDENCIES} are needed.
+Additionally:
+
+@menu
+* Autotools::
+* Dejagnu::
+* Flex::
+* Bison::
+* GNU Jitter::
+@end menu
+
+@node Autotools
+@section Autotools
+
+This distribution uses whatever versions of Automake, Autoconf, and
+Gettext are listed in NEWS; usually the latest ones released.  If you
+are getting the sources from git (or change configure.ac), you'll need
+to have these tools installed to (re)build.  You'll also need
+help2man.  All of these programs are available from
+@url{ftp://ftp.gnu.org/gnu}.
+
+@node Dejagnu
+@section Dejagnu
+
+The poke testsuite uses DejaGNU.  Please install it if you intend to
+run the tests.  If you want to hack poke, you definitely want to run
+the tests :)
+
+@node Flex
+@section Flex
+
+You will need a recent version of flex, since we are using some recent
+options like "reentrant" or "bison-bridge".  flex version 2.6.1 works
+fine.
+
+@node Bison
+@section Bison
+
+In order to improve the user's experience, we are using fairly recent
+versions of bison.  Bison 3.6.0 or later is required to bootstrap and
+build poke from git.
+
+@node GNU Jitter
+@section GNU Jitter
+
+In order to build and run poke, you need Luca Saiu's GNU Jitter.
+Jitter's git source repository, publicly readable over HTTP, is at
+@url{http://git.ageinghacker.net/jitter} and its home page is
+@url{https://www.gnu.org/software/jitter/}.
+
+The appropriate version of Jitter is downloaded and bootstrapped
+automatically by Poke's @file{bootstrap} script, which frees the user
+from the annoyance of installing Jitter as a dependency.
+
+Configuring and compiling Poke will also compile and configure Jitter
+in a subdirectory.  Jitter, when configured in @dfn{sub-package mode}
+as Poke does, only generates static libraries and requires no
+installation.
+
+@node Version control system
+@chapter Version control system
+
+@menu
+* Git repos::
+* Personal branches::
+@end menu
+
+@node Git repos
+@section Git repos
+
+This section lists the different repositories used in the development
+of GNU poke.  The @code{https} handlers provide read-only.  The ssh
+handlers are for write access, where @var{username} is the handler of
+your user in @url{https://savannah.gnu.org}.
+
+@table @url
+@item https://git.savannah.gnu.org/git/poke.git
+@itemx @var{username}@@git.savannah.gnu.org/srv/git/poke.git
+Main repository, containing the source code of libpoke, the poke
+application, documentation, poked, pokefmt, and testsuite.  The GNU
+poke source distribution is compiled from this repo.
+
+@item https://git.savannah.gnu.org/git/poke/poke-mode.git
+@itemx @var{username}@@git.savannah.gnu.org/srv/git/poke/poke-mode.git
+Repository for @code{poke-mode}, an Emacs major mode for editing Poke
+source code.  The poke-mode ELPA package is built from this repo.
+
+@item https://git.savannah.gnu.org/git/poke/poke-el.git
+@itemx @var{username}@@git.savannah.gnu.org/srv/git/poke/poke-el.git
+Repository for @code{poke.el}, an Emacs interface to GNU poke.  The
+poke ELPA package is built from this repo.
+
+@item https://git.savannah.gnu.org/git/poke/poke/poke-elf.git
+@itemx @var{username}@@git.savannah.gnu.org/srv/git/poke/poke-elf.git
+Repository for the poke ELF pickles
+project@footnote{https://jemarch.net/poke-elf}.
+
+@item https://git.savannah.gnu.org/git/poke/poke/poke-dwarf.git
+@itemx @var{username}@@git.savannah.gnu.org/srv/git/poke/poke-dwarf.git
+Repository for the poke DWARF pickles
+project@footnote{https://jemarch.net/poke-dwarf}.
+@end table
+
+@node Personal branches
+@section Personal branches
+
+Anyone having write access to the git repository is allowed to push
+and maintain personal branches.  These branches should be called
+@code{WHO/WHAT}, where @code{WHO} is the nick identifying the owner of
+the branch and @code{WHAT} a description of what it contains.
+
+Example:
+
+@example
+jemarch/hyperlinks-server
+@end example
+
+Personal branches are intended to ease the interaction between
+developers, and to provide a convenient basis for testing large
+changes.
+
+Personal branches can be rebased, and deleted.  Please do not write
+into a personal branch unless you have the explicit approval of the
+branch owner.
+
+@node Running an uninstalled poke
+@chapter Running an uninstalled poke
+
+Once poke is compiled, you can run it before installing by using the
+@command{run} script built into the root of your build tree; this
+takes care of setting variables such as @code{PATH},
+@code{POKEDATADIR}, @code{POKESTYLESDIR}, and @code{POKEPICKLESDIR} to
+point at appropriate locations.
+
+For example:
+
+@example
+$ pwd
+/home/jemarch/gnu/hacks/poke/build/
+$ ./run poke
+@end example
+
+@node Submitting a patch
+@chapter Submitting a patch
+
+If you hack a feature/improvement/bugfix for poke and want to get it
+integrated upstream, please keep the following points in mind:
+
+@itemize @minus
+@item If your patch changes the user-visible characteristics of poke,
+please include an update for the user manual.
+@item If your patch adds or changes the way poke works internally,
+in a significant way, please consider including an update for the @file{HACKING} file.
+@item Please include a GNU-style ChangeLog in the patch description, but
+do not include it in the thunks.  This is to ease reviewers to apply
+your patch for testing.  Of course, include the thunk in the final
+push!  (We will get rid of manual ChangeLog entries soon.)
+@item Make sure to run =make syntax-check= before submitting the patch,
+and fix any reported problem.  Note that the maintainer reviewing your
+patch will also do this, so this is a great time to save an iteration
+;)
+@item  Let's keep poke.git master linear... no merges please.  Pull with
+@command{--ff-only}.
+@item Send the patch to the @url{poke-devel@@gnu.org} mailing list.
+@item Use text email only.  No html please.
+@item Inline the patch in the body of your email, or alternatively
+attach it as @code{text/x-diff} or @code{text/x-patch}.  This is
+to ease reviewers to quote parts of the patch.
+@end itemize
+
+@node Building basics
+@chapter Building basics
+
+After getting the git sources, and installing the tools above, you can
+run:
+
+@example
+$ ./bootstrap --skip-po
+@end example
+
+Then, you can run @command{configure}, as described in the files
+@file{INSTALL} and @file{INSTALL.generic}.  For example:
+
+@example
+$ mkdir build/ && cd build
+$ ../configure
+@end example
+
+@noindent
+Finally:
+
+@example
+$ make
+$ make check
+@end example
+
+@node Partial builds
+@chapter Partial builds
+
+The poke source distribution encompasses several components: libpoke,
+the poke application, the poked daemon, etc.  By default all the
+components will be built provided their requirements are found at
+configure time, but it is also possible to explicitly disable them
+when invoking configure.
+
+For example, this is how you would build a poke without
+@command{poked} and without @command{pokefmt}:
+
+@example
+$ ../configure --disable-poked --disable-pokefmt
+@end example
+
+Note however that if some of the components are disabled, the
+resulting tree cannot be used to run @command{make dist} on it.  It
+will fail.
+
+@node Building after a git pull
+@chapter Building after a git pull
+
+Usually issuing a @command{make} at the top build directory is enough
+to rebuild poke after changes have been fetched from the source repo.
+The Automake maintainer-mode rules will make sure that autoconf and
+friends are run again and do the right thing.
+
+However, when the Jitter submodule is updated, you have to first
+bootstrap:
+
+@example
+$ ./bootstrap
+@end example
+
+Then go to the top build directory, and issue a configure explicitly
+before rebuilding:
+
+@example
+$ cd build && ../configure
+$ make
+@end example
+
+You can't rely on the maintainer-mode rules there, because of certain
+problem with the sub-package mode of Jitter.
+
+@node Building with local changes in gnulib or Jitter
+@chapter Building with local changes in gnulib or Jitter
+
+If you have local changes to gnulib or jitter, that are not yet
+registered as submodule reference commits, the way to invoke bootstrap
+such that it doesn't delete your changes is:
+
+@example
+$ ./bootstrap --skip-po --no-git --gnulib-srcdir=gnulib --jitter-srcdir=jitter
+@end example
+
+@node Updating gettext
+@chapter Updating gettext
+
+When updating gettext, besides the normal installation on the system,
+it is necessary to run @command{gettextize -f} in this hierarchy to
+update the @file{po/} infrastructure.  After doing so, rerun
+@command{gnulib-tool --import} since otherwise older files will have
+been imported.  See the Gnulib manual for more information.
+
+@node Continuous Integration
+@chapter Continuous Integration
+
+The package is built automatically, at regular intervals.  You find
+the latest build results at
+@url{https://gitlab.com/gnu-poke/ci-distcheck/pipelines}.
+
+We also have a set of "buildbots" hosted at Sourceware.  See
+@url{https://builder.sourceware.org/}.  The sources for this are in
+the Sourceware @file{builder.git} repository at
+@url{https://sourceware.org/git/?p=builder.git}. The @file{README}
+file contains a good reference of how to hack on the build machinery.
+The poke homepage contains little graphics indicating the last
+execution results of these buildbots.
+
+Parts relevant to poke are named @code{/.*gnupoke.*/} in the
+Sourceware buildbot configuration.  Please see the repository linked
+above for details.
+
+@node Grammarinator
+@chapter Grammarinator
+
+@dfn{grammarinator} is a random test generator/fuzzer that creates
+test cases according to an input antlr4 grammar.
+
+In order to generate Poke programs with grammarinator, follow the
+following steps.
+
+First of all, install grammarinator:
+
+@example
+$ git clone https://github.com/renatahodovan/grammarinator
+$ cd grammarinator
+$ sudo python3 setup.py install
+@end example
+
+Then, use @command{grammarinator-process} in order to create the ``unparser''
+and ``unlexer'' for poke:
+
+@example
+$ grammarinator-process ../path/to/poke.g4
+@end example
+
+This will create two files in the current working directory:
+@file{pokeUnlexer.py} and @file{pokeUnparser.py}.  Next step is to use
+@command{grammarinator-generate} in order to create tests:
+
+@example
+$ grammarinator-generate -l pokeUnlexer.py -p pokeUnparser.py \
+                         -r program -n 100 -d 10 \
+                         -t grammarinator.runtime.simple_space_transformer
+@end example
+   
+The option @command{-n} specifies the number of tests (Poke programs)
+to generate.
+
+The option @command{-d} specifies the maximum recursive level.  The
+bigger the recursive level, the bigger the test files will be.  If you
+don't specify a maximum recursive level then
+@command{grammarinator-generate} will crash.
+
+The option @command{-t grammarinator.runtime.simple_space_transformer}
+makes sure that whitespaces get inserted between literal tokens.
+
+@node Building with debugging support
+@chapter Building with debugging support
+
+Short summary: at the present time Poke and its Jittery VM are not
+especially difficult to debug; however the situation is going to
+change as Jitter evolves and the following details will become more
+important to Poke hackers.
+
+In order to make debugging easier you may want to disable advanced
+dispatches in Jitter, which make the generated code harder to follow
+and confuse GDB.
+
+Jitter by default will use the most efficient dispatch which is both
+stable and available for the current configuration; the most efficient
+dispatch is no-threading, which requires assembly support in Jitter
+for the specific architecture and a supported binary format.
+minimal-threading is more portable than no-threading, even if less
+efficient.  Jitter supports two alternative dispatches, slower but
+very stable, portable and friendly to debugging: @dfn{switch} and
+direct-threading.
+
+Any dispatch can be selectively enabled or disabled from the Poke
+@file{configure} script, by passing the following options which will
+be automatically relayed to Jitter's @file{configure} script:
+
+@table @command
+@item --enable-dispatch-switch
+@item --disable-dispatch-switch
+@item --enable-dispatch-direct-threading
+@item --disable-dispatch-direct-threading
+@item --enable-dispatch-minimal-threading
+@item --disable-dispatch-minimal-threading
+@item --enable-dispatch-no-threading
+@item --disable-dispatch-no-threading
+@end table
+
+When configured in sub-package mode, as is the case when used with
+Poke, Jitter will only actually compile the single most efficient
+enabled dispatch.  This means that in order to select some sub-optimal
+dispatch method, one has to disable the more efficient ones.  For
+example, this is the best options for debugging:
+
+@example
+$ ../configure [...] --disable-dispatch-no-threading \
+                     --disable-dispatch-minimal-threading \
+                     --disable-dispatch-direct-threading
+@end example
+
+Other than the configure options above, you will probably want to
+configure the build to generate debugging information, and disable
+compiler optimizations, using something like:
+
+@example
+../configure CFLAGS="-O0 -g3" [...]
+@end example
+
+Note that @command{-g3} is particularly useful to debug the Poke
+compiler, because it allows to refer by cpp macros by name in GDB and
+the compiler uses macros very extensively.
+
+@node Invoking GDB to debug an uninstalled poke
+@chapter Invoking GDB to debug an uninstalled poke
+
+Since we are using libtool, @file{$(builddir)/poke/poke} is a shell
+script.  In order to debug the uninstalled poke, you can do:
+
+@example
+$ ./libtool --mode=execute ./run gdb poke/poke
+@end example
+
+@node Debugging poke with GDB
+@chapter Debugging poke with GDB
+
+Once GDB is invoked in either an installed or uninstalled poke, you
+can debug it normally.
+
+Something to keep in mind, however, is that the Boehm GC we use uses
+SIGPWR and SIGXCPU for internal purposes, in order to stop all threads
+before starting collecting memory.  Proper handlers are installed by
+the GC for these signals.  However, when you run poke under GDB, GDB
+will stop once SIGPWR or SIGXCPU are signaled to the current thread.
+
+You can teach GDB to ignore these signals by issuing this command:
+
+@example
+handle SIGPWR noprint pass
+handle SIGXCPU noprint pass
+@end example
+   
+Alternatively, you can just @command{(c)ontinue}.
+
+@node Using GDB extensions
+@chapter Using GDB extensions
+
+In order to use the GDB pretty-printers and other goodies brought to
+you courtesy of the poke hackers, just source the @file{poke-gdb.scm}
+file from your debugger:
+
+@example
+(gdb) source etc/poke-gdb.scm
+@end example
+
+@node Valgrind and poke
+@chapter Valgrind and poke
+
+The PVM uses the Boehm conservative garbage collector in order to
+manage the memory used by the VM values.  Other parts of poke, such as
+the PKL compiler, manage their own memory.
+
+Valgrind gets easily confused by the GCs tampering with the stack, and
+emits a lot of spurious warnings.  Fortunately it is possible to tell
+memcheck to omit these warnings: the file
+@file{etc/boehm-gc.suppressions} contains a list of suppressions.
+
+Invoke valgrind with
+@command{--suppressions=etc/boehm-gc.suppressions}.
+
+If despite using the suppressions file you see some spurious warning,
+please use:
+
+@example
+$ valgrind --tool=memcheck --gen-suppressions=all --log-file=raw.log
+@end example
+
+Then process @file{raw.log} with the
+@file{etc/parse-valgrind-suppressions.sh} script, wildcard the result
+as much as you can, and append the results to
+@file{etc/boehm-gc.suppressions}.
+
+In order to run the testsuite with valgrind, edit
+@file{lib/poke-dg.exp} and uncomment the lines:
+
+@example
+set VALGRIND "valgrind --quiet \
+   --suppressions=$@{srcdir@}/../etc/boehm-gc.suppressions \
+   --tool=memcheck --gen-suppressions=all"
+@end example
+   
+Finally run @command{make check} as usual.
+
+@node Debugging PVM assembly code
+@chapter Debugging PVM assembly code
+
+Hacking some areas of the compiler, such as the code generator pass,
+involves meta-programming PVM assembler.  It is easy to find examples
+anywhere in @file{libpoke/pkl-gen.c}:
+
+@example
+pkl_asm_insn (pasm, PKL_INSN_ROT);
+pkl_asm_insn (pasm, PKL_INSN_MULLU);
+pkl_asm_insn (pasm, PKL_INSN_NIP2);
+@end example
+
+Or, alternatively, the code may be written in RAS in a @file{.pks} file.
+Like:
+
+@example
+.loop:
+   bz @@type, .endloop      ; ... A B
+   mod @@type               ; ... A B A%B
+   rot                     ; ... B A%B A
+   drop                    ; ... B A%B
+   ba .loop
+@end example
+
+Often, a run-time problem becomes apparent while the PVM executes the
+generated code.  Typical cases are when a PVM value doesn't contain
+what it's supposed to contain, and accessing the wrong boxed value
+causes a segmentation fault (if we are lucky) or a non-crashing
+invalid memory access (if we are very unlucky.)  Whenever that kind of
+crap happens, we find ourselves in the need of debugging the PVM code,
+which is a big PITA.
+
+Bad news are: we don't have a PVM debugger (yet).  Good news are: we
+have a couple of tools that may help.
+
+The first of such tools is the @code{prints} instruction.  This
+instructions basically prints in the standard output the string value
+on the TOS, and then drops it.  It is a wonderful way to trace PVM
+code.
+
+For example, let's say we are trying to find out how many times the
+loop above gets executed.  We can install traces like:
+
+@example
+      push "XXX entering loop\n"
+      prints
+.loop:
+      push "XXX in loop\n"
+      prints
+      mod @@type
+      rot
+      drop
+      ba .loop
+@end example
+   
+The other tool is the @code{strace} instruction.  It prints the
+contents of the stack (one value per line) from the TOS.  It gets the
+number of stack values to print as an argument, 0 meaning all of them.
+It is very useful in many situations, like when a loop is composing
+values in the stack and something is going banana.  It is also useful
+to determine what kind of value is being accessed by a given
+instruction.
+
+For example, lets say that we are hunting some segmentation fault.  We
+highly suspect the code generated in the first example in this
+section, above.  Of the three instructions, @code{mullu} is the only
+one that could conceivably generate a segfault, so we add a stack
+trace instruction right before it to inspect its two arguments:
+
+@example
+pkl_asm_insn (pasm, PKL_INSN_ROT);
+pkl_asm_insn (pasm, PKL_INSN_STRACE, 2); /* XXX remove me */
+pkl_asm_insn (pasm, PKL_INSN_MULLU);
+pkl_asm_insn (pasm, PKL_INSN_NIP2);
+@end example
+   
+We recompile, re-run, and we find out that the elements at the TOS
+when @code{mullu} is executed are a pair of stupid signed integers,
+which are not boxed and not what the instruction expects.  Mystery
+solved.
+
+@section PVM definition tips
+
+When using advanced Jitter dispatches it becomes important that every
+C function or global variable accessed by a relocatable VM instruction
+is "wrapped": see the Jitter documentation [not yet existing at the
+time of writing] for more information.  Non-relocatable instructions
+can access any global without need for wrapping: the problem is
+strictly with VM instruction whose native executable code gets copied
+to different memory addresses, therefore breaking PC-relative access
+to globals.  Wrapping prevents this kind of access, replacing it with
+a indirect access thru a local pointer.
+
+It is important to remark that macros cannot be wrapped as functions:
+rather it is necessary to consider any global variable or function
+containsed in a macro expansion.
+
+Notice that high-latency VM instructions (for example instructions
+performing I/O) and infrequently run instructions (for example an
+instruction which raises an error) can be made non-relocatable without
+loss of efficiency; in fact making large VM instructions
+non-relocatable might improve code locality at run time.
+
+@node Building poke with profiling support
+@chapter Building poke with profiling support
+
+poke supports a couple of commands that can be used to profile Poke
+programs:
+
+@example
+.vm profile reset
+.vm profile show
+@end example
+
+For these commands to work you need to build poke with profiling
+support.  This is done by passing the @command{--enable-pvm-profiling}
+command line option to @command{configure}.
+
+@node Concept Index
+@appendix Concept Index
+
+@c Merge the findex and vindex into the cpindex.
+@syncodeindex fn cp
+@syncodeindex vr cp
+
+@printindex cp
+
+@bye
