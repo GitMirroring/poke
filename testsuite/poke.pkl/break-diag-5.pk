@@ -1,0 +1,6 @@
+/* { dg-do compile } */
+
+while (1)
+  {
+    type lala = int[{break;} ?! E_generic]; /* { dg-error "" } */
+  }

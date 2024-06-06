@@ -1,3 +1,20 @@
+2024-06-06  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-trans.c (PKL_TRANS_PUSH_UNESCAPABLE): Define.
+	(pkl_trans1_pr_type_struct): Push unescapable context.
+	(pkl_trans1_ps_type_struct): Pop uescapable context.
+	(pkl_trans1_pr_type_array): Push unescapable context.
+	(pkl_trans1_ps_type_array): Pop uescapable context.
+	(pkl_trans1_pr_func): Push unescapable context.
+	(pkl_trans1_ps_func): Pop uescapable context.
+	* libpoke/pkl-trans.h (PKL_TRANS_MAX_COMP_STMT_NEST): Bump
+	to 120.
+	* testsuite/poke.pkl/break-diag-2.pk: New test.
+	* testsuite/poke.pkl/break-diag-3.pk: Likewise.
+	* testsuite/poke.pkl/break-diag-4.pk: Likewise.
+	* testsuite/poke.pkl/break-diag-5.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+
 2024-06-03  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* doc/poke.texi (Dot-Commands): Fix the example to use

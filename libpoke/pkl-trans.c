@@ -126,6 +126,8 @@ pkl_trans_in_functions (struct pkl_trans_function_ctx functions[],
     }                                                           \
   while (0)
 
+#define PKL_TRANS_PUSH_UNESCAPABLE PKL_TRANS_PUSH_ESCAPABLE (NULL)
+
 #define PKL_TRANS_POP_ESCAPABLE                                 \
   do                                                            \
     {                                                           \
@@ -174,6 +176,28 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_struct)
 }
 PKL_PHASE_END_HANDLER
 
+/* Array types conform an unescapable context.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_type_array)
+{
+  PKL_TRANS_PUSH_UNESCAPABLE;
+}
+PKL_PHASE_END_HANDLER
+
+PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_type_array)
+{
+  PKL_TRANS_POP_ESCAPABLE;
+}
+PKL_PHASE_END_HANDLER
+
+/* Struct types start an unescapable context.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_type_struct)
+{
+  PKL_TRANS_PUSH_UNESCAPABLE;
+}
+PKL_PHASE_END_HANDLER
+
 /* Compute and set the number of elements, fields and declarations in
    a struct TYPE node.  */
 
@@ -202,6 +226,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_type_struct)
   PKL_AST_TYPE_S_NFIELD (struct_type) = nfield;
   PKL_AST_TYPE_S_NCFIELD (struct_type) = ncfield;
   PKL_AST_TYPE_S_NDECL (struct_type) = ndecl;
+
+  PKL_TRANS_POP_ESCAPABLE;
 }
 PKL_PHASE_END_HANDLER
 
@@ -536,11 +562,13 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_op_attr)
 }
 PKL_PHASE_END_HANDLER
 
-/* Push the function in the stack of function contexts.  */
+/* Push the function in the stack of function contexts.  Function
+   bodies also start an unescapable context.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_func)
 {
   PKL_TRANS_PUSH_FUNCTION (PKL_PASS_NODE);
+  PKL_TRANS_PUSH_UNESCAPABLE;
 }
 PKL_PHASE_END_HANDLER
 
@@ -574,6 +602,9 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_func)
 
   /* Remove this function from stack of functions.  */
   PKL_TRANS_POP_FUNCTION;
+
+  /* Pop the unescapable context.  */
+  PKL_TRANS_POP_ESCAPABLE;
 }
 PKL_PHASE_END_HANDLER
 
@@ -1580,6 +1611,9 @@ struct pkl_phase pkl_phase_trans1 =
    PKL_PHASE_PS_HANDLER (PKL_AST_INDEXER, pkl_trans1_ps_indexer),
    PKL_PHASE_PS_HANDLER (PKL_AST_ASM_STMT, pkl_trans1_ps_asm_stmt),
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_ATTR, pkl_trans1_ps_op_attr),
+   PKL_PHASE_PR_TYPE_HANDLER (PKL_TYPE_ARRAY, pkl_trans1_pr_type_array),
+   PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_ARRAY, pkl_trans1_ps_type_array),
+   PKL_PHASE_PR_TYPE_HANDLER (PKL_TYPE_STRUCT, pkl_trans1_pr_type_struct),
    PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_STRUCT, pkl_trans1_ps_type_struct),
    PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_FUNCTION, pkl_trans1_ps_type_function),
   };

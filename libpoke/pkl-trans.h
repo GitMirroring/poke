@@ -94,7 +94,7 @@ struct pkl_trans_escapable_ctx
 
 #define PKL_TRANS_MAX_FUNCTION_NEST 32
 #define PKL_TRANS_MAX_ENDIAN 25
-#define PKL_TRANS_MAX_COMP_STMT_NEST 32
+#define PKL_TRANS_MAX_COMP_STMT_NEST 120
 
 struct pkl_trans_payload
 {

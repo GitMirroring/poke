@@ -1084,6 +1084,10 @@ EXTRA_DIST = \
   poke.pkl/bnot-offsets-1.pk \
   poke.pkl/bnot-offsets-2.pk \
   poke.pkl/break-diag-1.pk \
+  poke.pkl/break-diag-2.pk \
+  poke.pkl/break-diag-3.pk \
+  poke.pkl/break-diag-4.pk \
+  poke.pkl/break-diag-5.pk \
   poke.pkl/break-for-1.pk \
   poke.pkl/break-while-1.pk \
   poke.pkl/break-while-2.pk \

@@ -1,0 +1,7 @@
+/* { dg-do compile } */
+
+while (1)
+  {
+    type Foo = struct { var lala = { break; } ?! E_generic; }; /* { dg-error "" } */
+    Foo {};
+  }
