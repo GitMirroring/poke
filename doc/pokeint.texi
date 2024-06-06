@@ -426,7 +426,7 @@ $ grammarinator-generate -l pokeUnlexer.py -p pokeUnparser.py \
                          -r program -n 100 -d 10 \
                          -t grammarinator.runtime.simple_space_transformer
 @end example
-   
+
 The option @command{-n} specifies the number of tests (Poke programs)
 to generate.
 
@@ -526,7 +526,7 @@ You can teach GDB to ignore these signals by issuing this command:
 handle SIGPWR noprint pass
 handle SIGXCPU noprint pass
 @end example
-   
+
 Alternatively, you can just @command{(c)ontinue}.
 
 @node Using GDB extensions
@@ -575,7 +575,7 @@ set VALGRIND "valgrind --quiet \
    --suppressions=$@{srcdir@}/../etc/boehm-gc.suppressions \
    --tool=memcheck --gen-suppressions=all"
 @end example
-   
+
 Finally run @command{make check} as usual.
 
 @node Debugging PVM assembly code
@@ -633,7 +633,7 @@ loop above gets executed.  We can install traces like:
       drop
       ba .loop
 @end example
-   
+
 The other tool is the @code{strace} instruction.  It prints the
 contents of the stack (one value per line) from the TOS.  It gets the
 number of stack values to print as an argument, 0 meaning all of them.
@@ -654,7 +654,7 @@ pkl_asm_insn (pasm, PKL_INSN_STRACE, 2); /* XXX remove me */
 pkl_asm_insn (pasm, PKL_INSN_MULLU);
 pkl_asm_insn (pasm, PKL_INSN_NIP2);
 @end example
-   
+
 We recompile, re-run, and we find out that the elements at the TOS
 when @code{mullu} is executed are a pair of stupid signed integers,
 which are not boxed and not what the instruction expects.  Mystery
