@@ -1,0 +1,9 @@
+/* { dg-do compile } */
+
+while (1)
+  {
+    lambda void:
+      {
+        break; /* { dg-error "" } */
+      }();
+  }

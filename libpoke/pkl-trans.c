@@ -106,7 +106,7 @@ struct pkl_trans_escapable_ctx
 
 #define PKL_TRANS_MAX_FUNCTION_NEST 32
 #define PKL_TRANS_MAX_ENDIAN 25
-#define PKL_TRANS_MAX_COMP_STMT_NEST 32
+#define PKL_TRANS_MAX_COMP_STMT_NEST 120
 
 struct pkl_trans_payload
 {
@@ -221,11 +221,26 @@ pkl_trans_in_functions (struct pkl_trans_function_ctx functions[],
    ? NULL                                                       \
    : &PKL_TRANS_PAYLOAD->escapables[PKL_TRANS_PAYLOAD->next_escapable - 1])
 
+#define PKL_TRANS_PUSH_UNESCAPABLE                                      \
+  do                                                                    \
+    {                                                                   \
+      assert (PKL_TRANS_PAYLOAD->next_escapable < PKL_TRANS_MAX_COMP_STMT_NEST); \
+      PKL_TRANS_PAYLOAD->escapables[PKL_TRANS_PAYLOAD->next_escapable].nframes \
+      = 0;                                                              \
+      PKL_TRANS_PAYLOAD->escapables[PKL_TRANS_PAYLOAD->next_escapable].npopes \
+      = 0;                                                              \
+      PKL_TRANS_PAYLOAD->escapables[PKL_TRANS_PAYLOAD->next_escapable++].node \
+      = NULL;                                                           \
+    }                                                                   \
+  while (0)
+
 #define PKL_TRANS_PUSH_ESCAPABLE(b)                             \
   do                                                            \
     {                                                           \
       assert (PKL_TRANS_PAYLOAD->next_escapable < PKL_TRANS_MAX_COMP_STMT_NEST);\
       PKL_TRANS_PAYLOAD->escapables[PKL_TRANS_PAYLOAD->next_escapable].nframes  \
+        = 0;                                                    \
+      PKL_TRANS_PAYLOAD->escapables[PKL_TRANS_PAYLOAD->next_escapable].npopes  \
         = 0;                                                    \
       PKL_TRANS_PAYLOAD->escapables[PKL_TRANS_PAYLOAD->next_escapable++].node \
         = (b);                                                  \
@@ -279,6 +294,28 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_struct)
 }
 PKL_PHASE_END_HANDLER
 
+/* Array types conform an unescapable context.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_type_array)
+{
+  PKL_TRANS_PUSH_UNESCAPABLE;
+}
+PKL_PHASE_END_HANDLER
+
+PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_type_array)
+{
+  PKL_TRANS_POP_ESCAPABLE;
+}
+PKL_PHASE_END_HANDLER
+
+/* Struct types start an unescapable context.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_type_struct)
+{
+  PKL_TRANS_PUSH_UNESCAPABLE;
+}
+PKL_PHASE_END_HANDLER
+
 /* Compute and set the number of elements, fields and declarations in
    a struct TYPE node.  */
 
@@ -307,6 +344,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_type_struct)
   PKL_AST_TYPE_S_NFIELD (struct_type) = nfield;
   PKL_AST_TYPE_S_NCFIELD (struct_type) = ncfield;
   PKL_AST_TYPE_S_NDECL (struct_type) = ndecl;
+
+  PKL_TRANS_POP_ESCAPABLE;
 }
 PKL_PHASE_END_HANDLER
 
@@ -632,11 +671,13 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_op_attr)
 }
 PKL_PHASE_END_HANDLER
 
-/* Push the function in the stack of function contexts.  */
+/* Push the function in the stack of function contexts.  Function
+   bodies also start an unescapable context.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_func)
 {
   PKL_TRANS_PUSH_FUNCTION (PKL_PASS_NODE);
+  PKL_TRANS_PUSH_UNESCAPABLE;
 }
 PKL_PHASE_END_HANDLER
 
@@ -670,6 +711,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_func)
 
   /* Remove this function from stack of functions.  */
   PKL_TRANS_POP_FUNCTION;
+  /* Pop the unescapable context.  */
+  PKL_TRANS_POP_ESCAPABLE;
 }
 PKL_PHASE_END_HANDLER
 
@@ -1444,6 +1487,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_return_stmt)
         = PKL_TRANS_FUNCTION->node; /* Note no ASTREF.  */
       PKL_AST_RETURN_STMT_NPOPES (stmt) = PKL_TRANS_FUNCTION->npopes;
     }
+
 }
 PKL_PHASE_END_HANDLER
 
@@ -1600,6 +1644,9 @@ struct pkl_phase pkl_phase_trans1 =
     PKL_PHASE_PS_HANDLER (PKL_AST_INDEXER, pkl_trans1_ps_indexer),
     PKL_PHASE_PS_HANDLER (PKL_AST_ASM_STMT, pkl_trans1_ps_asm_stmt),
     PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_ATTR, pkl_trans1_ps_op_attr),
+    PKL_PHASE_PR_TYPE_HANDLER (PKL_TYPE_ARRAY, pkl_trans1_pr_type_array),
+    PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_ARRAY, pkl_trans1_ps_type_array),
+    PKL_PHASE_PR_TYPE_HANDLER (PKL_TYPE_STRUCT, pkl_trans1_pr_type_struct),
     PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_STRUCT, pkl_trans1_ps_type_struct),
     PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_FUNCTION, pkl_trans1_ps_type_function),
   };
@@ -2223,6 +2270,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_transl_pr_func)
   pkl_ast_node arg;
 
   PKL_TRANS_PUSH_FUNCTION (PKL_PASS_NODE);
+  PKL_TRANS_PUSH_UNESCAPABLE;
 
   if (ret_type && !PKL_AST_TYPE_NAME (ret_type))
     PKL_PASS_SUBPASS (ret_type);
@@ -2257,6 +2305,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_transl_pr_func)
   PKL_TRANS_ENV = pkl_env_pop_frame (PKL_TRANS_ENV);
 
   PKL_TRANS_POP_FUNCTION;
+  PKL_TRANS_POP_ESCAPABLE;
   PKL_PASS_BREAK;
 }
 PKL_PHASE_END_HANDLER
@@ -2303,6 +2352,20 @@ PKL_PHASE_BEGIN_HANDLER (pkl_transl_pr_type_alias)
 }
 PKL_PHASE_END_HANDLER
 
+/* Array types conform an unescapable context.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_transl_pr_type_array)
+{
+  PKL_TRANS_PUSH_UNESCAPABLE;
+}
+PKL_PHASE_END_HANDLER
+
+PKL_PHASE_BEGIN_HANDLER (pkl_transl_ps_type_array)
+{
+  PKL_TRANS_POP_ESCAPABLE;
+}
+PKL_PHASE_END_HANDLER
+
 /* Struct type specifiers introduce a lexical level.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_transl_pr_type_struct)
@@ -2310,6 +2373,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_transl_pr_type_struct)
   PKL_TRANS_ENV = pkl_env_push_frame (PKL_TRANS_ENV);
   if (PKL_TRANS_FUNCTION)
     PKL_TRANS_FUNCTION->back++;
+  PKL_TRANS_PUSH_UNESCAPABLE;
 
   /* Register dummies for the locals used in
      pkl-gen.pks:struct_mapper, excluding OFFSET.  */
@@ -2386,6 +2450,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_transl_ps_type_struct)
   PKL_TRANS_ENV = pkl_env_pop_frame (PKL_TRANS_ENV);
   if (PKL_TRANS_FUNCTION)
     PKL_TRANS_FUNCTION->back--;
+  PKL_TRANS_POP_ESCAPABLE;
 }
 PKL_PHASE_END_HANDLER
 
@@ -2616,6 +2681,8 @@ struct pkl_phase pkl_phase_transl =
     PKL_PHASE_PR_HANDLER (PKL_AST_STRUCT_TYPE_FIELD, pkl_transl_pr_struct_type_field),
     PKL_PHASE_PS_HANDLER (PKL_AST_BREAK_CONTINUE_STMT, pkl_transl_ps_break_continue_stmt),
     PKL_PHASE_PR_TYPE_HANDLER (PKL_TYPE_ALIAS, pkl_transl_pr_type_alias),
+    PKL_PHASE_PR_TYPE_HANDLER (PKL_TYPE_ARRAY, pkl_transl_pr_type_array),
+    PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_ARRAY, pkl_transl_ps_type_array),
     PKL_PHASE_PR_TYPE_HANDLER (PKL_TYPE_STRUCT, pkl_transl_pr_type_struct),
     PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_STRUCT, pkl_transl_ps_type_struct),
   };

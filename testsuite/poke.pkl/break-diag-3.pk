@@ -1,0 +1,6 @@
+/* { dg-do compile } */
+
+while (1)
+  {
+    fun lala = void: { break; } /* { dg-error "" } */
+  }
