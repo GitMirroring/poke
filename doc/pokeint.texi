@@ -103,7 +103,7 @@ We call @dfn{poke} the program.  When the context may induce confusion
 language implemented by poke, the program.
 
 A @dfn{pickle} is a Poke source file containing definitions of types,
-variables, functions, etc, that conceptually apply to some definite
+variables, functions, @i{etc}, that conceptually apply to some definite
 domain.  For example, @file{elf.pk} is a pickle that provides
 facilities to poke ELF object files.  Pickles are not necessarily
 related to file formats: a set of functions to work with bit patterns,
@@ -312,7 +312,7 @@ $ make check
 @chapter Partial builds
 
 The poke source distribution encompasses several components: libpoke,
-the poke application, the poked daemon, etc.  By default all the
+the poke application, the poked daemon, @i{etc}.  By default all the
 components will be built provided their requirements are found at
 configure time, but it is also possible to explicitly disable them
 when invoking configure.
