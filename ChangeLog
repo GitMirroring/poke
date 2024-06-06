@@ -1,5 +1,9 @@
 2024-06-07  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* doc/pokeint.texi (Notifying about pushed commits): New section.
+
+2024-06-07  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-trans.c (pkl_transl_ps_var): Turn ICE into
 	compile-time error.
 	* testsuite/poke.pkl/field-init-diag-8.pk: New test.

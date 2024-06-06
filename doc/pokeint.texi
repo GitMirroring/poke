@@ -64,6 +64,7 @@ Contributing
 * Version control system::
 * Running an uninstalled poke::
 * Submitting a patch::
+* Notifying about pushed commits::
 
 Building poke
 * Building basics::
@@ -281,6 +282,26 @@ patch will also do this, so this is a great time to save an iteration
 attach it as @code{text/x-diff} or @code{text/x-patch}.  This is
 to ease reviewers to quote parts of the patch.
 @end itemize
+
+@node Notifying about pushed commits
+@chapter Notifying about pushed commits
+
+Once you push one or more commits to some branch in the public git
+repo, please send each patch as an email to the
+@email{poke-devel@@gnu.org} mailing list with a subject line like:
+
+@example
+[COMMITTED @var{branch}] Summary of the change
+@end example
+
+@noindent
+where @var{branch} is the name of the branch to which you pushed the
+associated commit.  This applies to both patches applies as obvious
+and to commits pushed by maintainers.
+
+This will help the other hackers subscribed to the mailing list to
+follow the on-going developments, and even to catch some problem in
+any of the pushed commits.
 
 @node Building basics
 @chapter Building basics
