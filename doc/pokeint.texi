@@ -74,6 +74,7 @@ Building poke
 * Updating gettext::
 
 Testing poke
+* Writing tests::
 * Continuous Integration::
 
 Fuzzing poke
@@ -394,6 +395,333 @@ it is necessary to run @command{gettextize -f} in this hierarchy to
 update the @file{po/} infrastructure.  After doing so, rerun
 @command{gnulib-tool --import} since otherwise older files will have
 been imported.  See the Gnulib manual for more information.
+
+@node Writing tests
+@chapter Writing tests
+
+The poke testsuites live in the @file{testsuite/} subdirectory.  This
+section contains useful hints for adding tests there.
+
+@menu
+* Test framework::
+* Run selected tests::
+* Unit tests::
+* Naming tests::
+* Always set obase::
+* Put each test in its own file::
+* List the test files in @file{testsuite/Makefile.am}::
+* dg-output may require a newline::
+* Using data files in tests::
+* Using NBD connections in tests::
+* Writing tests that depend on a certain capability::
+* Writing REPL tests::
+* Command REPL tests::
+* General REPL tests::
+* Testing pickles::
+@end menu
+
+@node Test framework
+@section Test framework
+
+The test suite is based on DejaGnu, for which you find the general
+documentation at
+@url{https://www.gnu.org/software/dejagnu/manual/index.html}.
+
+The documentation of specific DejaGnu directives is at
+@url{https://gcc.gnu.org/onlinedocs/gccint/Directives.html} and
+@url{https://gcc.gnu.org/wiki/HowToPrepareATestcase}.
+
+@node Run selected tests
+@section Run selected tests
+
+Tests are categorized in different sub-directories. You can run
+run tests of a single category by running
+
+@example
+make check RUNTESTFLAGS=CATEGORY.exp
+@end example
+
+For example, to run tests of =pkl= in =poke.pkl= sub-directory, run:
+
+@example
+make check RUNTESTFLAGS=pkl.exp
+@end example
+
+You can also select tests using @code{TESTS} environment variable.  As
+an example, to run all test files which start with @file{array}, you
+can run:
+
+@example
+make check TESTS=array*.pk
+@end example
+
+@node Unit tests
+@section Unit tests
+
+We are using DejaGnu's support for unit tests.  See
+@file{testsuite/poke.libpoke} for an example on how to write C unit
+tests.
+
+@node Naming tests
+@section Naming tests
+
+For testing a functionality =foo=, name your test =foo.pk= or
+@file{foo-@var{N}.pk} where @var{N} is a number.
+
+If the test is a =do-compile= whose compilation is expected to fail,
+name the test @file{func-diag.pk} or @file{func-diag-N.pk}.  Here
+``diag'' means diagnostic.
+
+@node Always set obase
+@section Always set obase
+
+If your test relies on printing integer values in the REPL (or using
+the @code{%v} formatting tag in a @code{printf}) please make sure to
+set an explicit output numerical base, like in:
+
+@example
+/* @{ dg-command @{.set obase 10@} @}  */
+@end example
+
+This way, we won't have to change the tests if at some point we change
+the default obase.
+
+@node Put each test in its own file
+@section Put each test in its own file
+
+If you are writing tests for a specific functionality, like for
+example a standard function @code{foo}, it may seem logical to put all
+the tests in a single file @file{foo.pk} like:
+
+@example
+/* @{ dg-do run @} */
+
+/* @{ dg-command @{foo (1)@} @} */
+/* @{ dg-output "expected result" @} */
+
+/* @{ dg-command @{foo (1)@} @} */
+/* @{ dg-output "\nexpected result" @} */
+
+[... and so on ...]
+@end example
+
+However, this is not a good idea.  If some of the "subtests" fail, it
+becomes difficult to determine which one is the culprit looking at the
+test log file.
+
+It is better to put each test in its own file: @file{foo-1.pk}, @file{foo-2.pk}
+and so on.
+
+@node List the test files in @file{testsuite/Makefile.am}
+@section List the test files in @file{testsuite/Makefile.am}
+
+So that the tests get distributed, you need to list each newly added
+test file in @file{testsuite/Makefile.am}.
+
+We have a syntax-check target that checks that @code{EXTRA_DIST}
+contains all the test files under @file{testsuite/}, and that there is
+no test listed in @code{EXTRA_DIST} that doesn't exist in the file
+system.
+
+@node dg-output may require a newline
+@section dg-output may require a newline
+
+If despite the advise above you really need to put more than dg-output
+in a dg-run test file, please be aware you need to prefix all of them
+(but the first one) with a newline, like in:
+
+@example
+/* @{ dg-output "foo" @} */
+/* @{ dg-output "\nbar" @} */
+/* @{ dg-output "\n baz" @} */
+@end example
+
+@node Using data files in tests
+@section Using data files in tests
+
+If your test requires mapping data, the dg-data directive is what you
+need.  It has two forms.
+
+The first form looks like:
+
+@example
+/* @{ dg-data @{c*@} @{0x10 0x20 0x30 0x40 ...@} @} */
+@end example
+
+This creates a temporary file (whose name is irrelevant) and makes it
+the current IO space at poke initialization time.  The test body, and
+dg-commands, can then map on it.
+
+However, sometimes you need to map on several files.  In this case,
+you can have several dg-data entries with an additional argument,
+which is the name of the temporary file to create:
+
+@example
+/* @{ dg-data @{c*@} @{0x01 0x02 ...@} foo.data @} */
+/* @{ dg-data @{c*@} @{0x11 0x12 ...@} bar.data @} */
+
+[...]
+
+/* @{ dg-command @{ var foo = open ("foo.data") @} @} */
+@end example
+
+The file created by the last dg-data (be it anonymous or named) is the
+current IO space.
+
+@node Using NBD connections in tests
+@section Using NBD connections in tests
+
+If your test requires an NBD server (only useful when poke is compiled
+with libnbd), the dg-nbd directive is what you need.  It has one form:
+
+@example
+/* @{ dg-nbd @{ 0x1 0x2 ...@} [dg-tmpdir]/sock @} */
+@end example
+
+This utilizes nbdkit to serve an in-memory disk with initial contents
+over a named Unix socket.  Note that the data argument is not the same
+as for dg-data (which uses tcl's binary command), but rather the
+syntax accepted by nbdkit-data-plugin's data= argument, although the
+two are similar.  nbdkit then creates a Unix socket server for the
+data, and will be shut down gracefully when the testsuite completes.
+Use of the utility directive [dg-tmpdir] ensures that the socket name
+will not be too long while still respecting @code{$TMPDIR} (defaulting
+to a new subdirectory of @file{/tmp}), since @code{$objdir} may be
+arbitrarily deep.
+
+To use the server as an IO space, your test will then follow up with:
+
+@example
+/* @{ dg-command "open (\"nbd+unix:///?socket=[dg-tmpdir]/sock\")" @} */
+@end example
+
+@node Writing tests that depend on a certain capability
+@section Writing tests that depend on a certain capability
+
+Sometimes the presence of the functionality tested may be optional.
+An example is testing the support for styling, which depends on poke
+to be built with libtextstyle support.
+
+The dg-require directive can be used for this purpose.  For example,
+the following test will be skipped (with status UNSUPPORTED) if the
+capability @code{libtextstyle} is not found in poke:
+
+@example
+/* @{ dg-do run @} */
+/* @{ dg-options "--color=html" @} */
+/* @{ dg-require libtextstyle @} */
+
+/* @{ dg-command @{printf "%<foo:%i32d%>", 10@} @} */
+/* @{ dg-output "<span class=\"foo\">10</span>" @} */
+@end example
+
+IMPORTANT NOTE: dg-require should appear before any dg-command
+directive in the test file.
+
+The supported capabilities are:
+
+@table @code
+@item libtextstyle
+poke is built with libtextstyle support.
+@item nbd
+poke is built with NBD io space support, and dg-nbd works.
+@end table
+
+@node Writing REPL tests
+@section Writing REPL tests
+
+The @file{poke.repl} testsuite is intended to test features in the
+interactive usage of poke.  Therefore, it is not dg-based.  Instead,
+it uses the services provided by @file{testsuite/lib/poke.exp}.  In a
+nutshell, these services are:
+
+@table @code
+@item poke_start
+Run a new poke process and wait at the prompt.
+@item poke_exit
+Exit poke.
+@item poke_test_cmd @var{cmd} @var{pattern}
+Send @var{cmd} to poke, and expect the result @var{pattern}.
+@var{cmd} is sent as virtual keystrokes.  Therefore, sending @code{\t}
+or @code{\n} has the same effect on the REPL than typing @key{TAB} or
+@key{RET} in the keyboard, respectively.  Note that @var{pattern}
+shouldn't include the prompt.
+@item poke_send @var{input} @var{pattern}
+Send @var{input} to poke, and expect @var{pattern} as output.
+@item poke_send_signal @var{signal}
+Send @var{signal} to poke.
+@end table
+
+Adding a new test to @file{poke.repl} involves editing
+@file{poke.repl/repl.exp} and adding some content there.  The
+following subsections detail how.
+
+@node Command REPL tests
+@section Command REPL tests
+
+Some REPL tests need to check whether poke replies properly to some
+sent command.  The @file{poke_test_cmd} procedure defined in
+@file{testsuite/lib/poke.exp} provides a convenient interface for
+this.
+
+For example:
+
+@example
+set test "slashes are preserved"
+poke_start
+poke_test_cmd @{4 / 2@} @{2@}
+poke_exit
+@end example
+
+The snippet above implements a test named "slashes are preserved" that
+runs poke and sends the command @code{4 / 2} with expected result
+@code{2}.
+
+The dialogue when the test above is executed is:
+
+@example
+(poke) 4 / 2
+2
+(poke)
+@end example
+
+@node General REPL tests
+@section General REPL tests
+
+Other REPL tests are not about executing commands.  Suppose for
+example we want to test whether tab-completion works.  We would write
+something like:
+
+@example
+set test "tab-completion-2"
+poke_start
+poke_send ".e\t\t" "\r\n.editor  .exit *\r\n$poke_prompt .e"
+poke_exit
+@end example
+
+The test above uses the @code{poke_send} procedure, defined in
+@file{testsuite/lib/poke.exp}.  This procedure gets two arguments: the
+input that is sent to poke, and the expected output.  Note how using
+@code{poke_send} doesn't require poke to execute any command.
+
+Using @code{poke_send} is more laborious than using
+@code{poke_test_cmd}: it is necessary to explicitly include the prompt
+in the expected output whenever needed.
+
+Note also how newlines are perceived by expect as the sequence
+@code{\r\n}.
+
+@node Testing pickles
+@section Testing pickles
+
+Each pickle in @file{pickles/@var{foo}.pk} shall have a test file
+@file{testsuite/poke.pickles/@var{foo}-test.pk} written using pickle
+pktest.
+
+If there are some features in the pickle that cannot be tested using
+pktest (e.g., pickle uses @code{print}), that pickle also shall have a
+testsuite in @file{testsuite/poke.@var{foo}} with a driver
+@file{testsuite/poke.FOO/FOO.exp}.
 
 @node Continuous Integration
 @chapter Continuous Integration
