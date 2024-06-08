@@ -1446,11 +1446,11 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_try_stmt_body)
 {
   if (PKL_TRANS_FUNCTION)
     PKL_TRANS_FUNCTION->npopes++;
-  if (PKL_TRANS_ESCAPABLE)
-    PKL_TRANS_ESCAPABLE->npopes++;
 
   if (PKL_AST_TRY_STMT_KIND (PKL_PASS_PARENT) == PKL_AST_TRY_STMT_KIND_UNTIL)
     PKL_TRANS_PUSH_ESCAPABLE (PKL_PASS_PARENT);
+  else if (PKL_TRANS_ESCAPABLE)
+    PKL_TRANS_ESCAPABLE->npopes++;
 }
 PKL_PHASE_END_HANDLER
 
@@ -1459,17 +1459,18 @@ PKL_PHASE_END_HANDLER
    function context accordingly.
 
    try-until statements are escapable constructs.  Update escapables
-   stack accordingly.  */
+   stack accordingly.  try-catch statements increase the number of
+   exception handlers that need to be eventually popped.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_try_stmt_body)
 {
   if (PKL_TRANS_FUNCTION)
     PKL_TRANS_FUNCTION->npopes--;
-  if (PKL_TRANS_ESCAPABLE)
-    PKL_TRANS_ESCAPABLE->npopes--;
 
   if (PKL_AST_TRY_STMT_KIND (PKL_PASS_PARENT) == PKL_AST_TRY_STMT_KIND_UNTIL)
     PKL_TRANS_POP_ESCAPABLE;
+  else if (PKL_TRANS_ESCAPABLE)
+    PKL_TRANS_ESCAPABLE->npopes--;
 }
 PKL_PHASE_END_HANDLER
 
@@ -1494,7 +1495,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_try_stmt_handler)
 PKL_PHASE_END_HANDLER
 
 /* try-until statements are escapable constructs.  Update escapables
-   stack accordingly.  */
+   stack accordingly.  try-catch statements increase the number of
+   exception handlers that need to be eventually dropped.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_try_stmt)
 {
