@@ -1,0 +1,18 @@
+/* { dg-do run } */
+
+fun foo = (offset<uint<64>,b> offset, int size) byte[]:
+{
+  return byte[size] @ offset;
+}
+
+/* { dg-command { .mem } } */
+/* { dg-command { var a = foo (0#B, 3) } } */
+/* { dg-command { var b = foo (10#B, 5) } } */
+/* { dg-command a } */
+/* { dg-output "\\\[0UB,0UB,0UB\\\]" } */
+/* { dg-command b } */
+/* { dg-output "\n\\\[0UB,0UB,0UB,0UB,0UB\\\]" } */
+/* { dg-command a } */
+/* { dg-output "\n\\\[0UB,0UB,0UB\\\]" } */
+/* { dg-command b } */
+/* { dg-output "\n\\\[0UB,0UB,0UB,0UB,0UB\\\]" } */
