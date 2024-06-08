@@ -784,6 +784,7 @@ EXTRA_DIST = \
   poke.pkl/array-bound-5.pk \
   poke.pkl/array-bound-6.pk \
   poke.pkl/array-bound-7.pk \
+  poke.pkl/array-bound-8.pk \
   poke.pkl/array-bound-diag-1.pk \
   poke.pkl/array-diag-1.pk \
   poke.pkl/array-diag-3.pk \
