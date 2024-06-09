@@ -21,22 +21,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
 
-* Coding Style and Conventions
-* Writing Documentation
-
-** Documenting Pickles
-
-   The chapter =Pickles= in the Poke manual contains several sections
-   organized in thematic areas.  When adding a new pickle, find the
-   area appropriate for the abstractions provided by the pickle (or
-   create one if it doesn't exist already) and add a section for it.
-
-   Please make sure to document any dependency of your pickle to other
-   pickles.
-
-   Keep a tutorial-like tone: for fine details, the user can always go
-   and look to the pickle directly.
-
 * Maintenance
 
   This section describes =make= targets that performs several

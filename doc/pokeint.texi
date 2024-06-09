@@ -96,6 +96,9 @@ Coding Style and Conventions
 * Writing Poke::
 * Writing RAS::
 
+Writing Documentation
+* Documenting pickles::
+
 Indices
 * Concept Index::               General concept index
 @end menu
@@ -1191,6 +1194,20 @@ the @code{.call} directive:
 Note how the compiler internal functions use the @code{_pkl_} prefix.
 Also note that @code{.call} can only invoke functions defined in the
 global environment.
+
+@node Documenting pickles
+@chapter Documenting pickles
+
+The chapter @code{Pickles} in the poke user manual contains several
+sections organized in thematic areas.  When adding a new pickle, find
+the area appropriate for the abstractions provided by the pickle (or
+create one if it doesn't exist already) and add a section for it.
+
+Please make sure to document any dependency of your pickle to other
+pickles.
+
+Keep a tutorial-like tone: for fine details, the user can always go
+and look to the pickle directly.
 
 @node Concept Index
 @appendix Concept Index
