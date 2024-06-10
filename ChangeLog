@@ -1,5 +1,14 @@
 2024-06-10  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pvm.jitter (iogetb): Do not convert units to bytes.
+	* testsuite/poke.pkl/iobias-1.pk: Update test accordingly.
+	* testsuite/poke.pkl/iobias-2.pk: Likewise.
+	* testsuite/poke.pkl/iosetbias-2.pk: Likewise.
+	* testsuite/poke.pkl/iosetbias-3.pk: Likewise.
+	* testsuite/poke.pkl/iosetbias-4.pk: Likewise.
+
+2024-06-10  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-typify.c (INVALID_CAST): Remove.
 	(pkl_typify1_ps_cast): Mention types in invalid cast error
 	diagnostic.
