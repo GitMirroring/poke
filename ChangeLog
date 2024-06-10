@@ -1,5 +1,11 @@
 2024-06-10  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-typify.c (INVALID_CAST): Remove.
+	(pkl_typify1_ps_cast): Mention types in invalid cast error
+	diagnostic.
+
+2024-06-10  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-ast.h (PKL_AST_COMP_STMT_BUILTIN): Remove.
 	(struct pkl_ast_comp_stmt): Remove field `builtin'.
 	(PKL_AST_BUILTIN_NONE): Remove.

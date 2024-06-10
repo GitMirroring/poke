@@ -439,14 +439,6 @@ PKL_PHASE_END_HANDLER
 /* The type of a CAST is the type of its target type.  However, not
    all types are allowed in casts.  */
 
-#define INVALID_CAST(STR)                       \
-  do                                            \
-    {                                           \
-      PKL_ERROR (PKL_AST_LOC (cast), (STR));    \
-      PKL_PASS_ERROR;                           \
-    }                                           \
-  while (0)
-
 PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_cast)
 {
   pkl_ast_node cast = PKL_PASS_NODE;
@@ -457,6 +449,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_cast)
   pkl_ast_node to_type = PKL_AST_CAST_TYPE (cast);
   int from_type_code = PKL_AST_TYPE_CODE (from_type);
   int to_type_code = PKL_AST_TYPE_CODE (to_type);
+
+  int invalid_cast = 0;
 
   if (PKL_AST_TYPE_CODE (from_type) == PKL_TYPE_VOID)
     {
@@ -483,50 +477,58 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_cast)
   switch (to_type_code)
     {
     case PKL_TYPE_VOID:
-      INVALID_CAST ("invalid cast to `void'");
-      break;
     case PKL_TYPE_ANY:
-      INVALID_CAST ("invalid cast to `any'");
-      break;
     case PKL_TYPE_FUNCTION:
-      INVALID_CAST ("invalid cast to function");
+      invalid_cast = 1;
       break;
     case PKL_TYPE_OFFSET:
       if (from_type_code != PKL_TYPE_OFFSET)
-        INVALID_CAST ("invalid cast to offset");
+        invalid_cast = 1;
       break;
     case PKL_TYPE_STRING:
       if (from_type_code != PKL_TYPE_STRING
           && (from_type_code != PKL_TYPE_INTEGRAL
               || PKL_AST_TYPE_I_SIGNED_P (from_type) != 0
               || PKL_AST_TYPE_I_SIZE (from_type) != 8))
-        INVALID_CAST ("invalid cast to string");
+        invalid_cast = 1;
       break;
     case PKL_TYPE_STRUCT:
       /* We are not supporting casts to non-integral unions yet.  */
       if (PKL_AST_TYPE_S_UNION_P (to_type)
           && !PKL_AST_TYPE_S_ITYPE (to_type))
-        INVALID_CAST ("invalid cast to union");
+        invalid_cast = 1;
 
       /* Only structs can be casted to regular structs.  Integral
          values can also be casted to integral structs.  */
       if (from_type_code != PKL_TYPE_STRUCT
           && !(PKL_AST_TYPE_S_ITYPE (to_type)
                && from_type_code == PKL_TYPE_INTEGRAL))
-        INVALID_CAST ("invalid cast to struct");
+        invalid_cast = 1;
       break;
     case PKL_TYPE_INTEGRAL:
       if (!pkl_ast_type_integrable_p (from_type))
-        INVALID_CAST ("invalid cast to integral");
+        invalid_cast = 1;
       break;
     case PKL_TYPE_ARRAY:
       /* Only arrays of the same type, i.e. only array boundaries may
          differ, can be casted to arrays.  */
       if (!pkl_ast_type_equal_p (from_type, to_type))
-        INVALID_CAST ("invalid cast to array");
+        invalid_cast = 1;
       break;
     default:
       break;
+    }
+
+  if (invalid_cast)
+    {
+      char *from_type_str = pkl_type_str (from_type, 1);
+      char *to_type_str = pkl_type_str (to_type, 1);
+
+      PKL_ERROR (PKL_AST_LOC (cast), "invalid cast from %s to %s",
+                 from_type_str, to_type_str);
+      free (from_type_str);
+      free (to_type_str);
+      PKL_PASS_ERROR;
     }
 
  done:
