@@ -4,4 +4,4 @@
 /* { dg-command { .set obase 10 } } */
 /* { dg-command { var foo = open ("foo.data") } } */
 /* { dg-command { iobias (foo) } } */
-/* { dg-output "0UL#B" } */
+/* { dg-output "0UL#b" } */

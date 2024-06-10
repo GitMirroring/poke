@@ -1772,18 +1772,8 @@ instruction iogetb ()
     if (io == NULL)
       PVM_RAISE_DFL (PVM_E_NO_IOS);
 
-    uint64_t bias = ios_get_bias (io);
-    if (bias % 8 == 0)
-    {
-      magnitude = PVM_MAKE_ULONG (bias/8, 64);
-      unit = PVM_MAKE_ULONG (8, 64);
-    }
-    else
-    {
-      magnitude = PVM_MAKE_ULONG (bias, 64);
-      unit = PVM_MAKE_ULONG (1, 64);
-    }
-
+    magnitude = PVM_MAKE_ULONG (ios_get_bias (io), 64);
+    unit = PVM_MAKE_ULONG (1, 64);
     type = pvm_make_offset_type (pvm_typeof (magnitude), unit, PVM_NULL /* ref_type */);
     JITTER_PUSH_STACK (pvm_make_offset (magnitude, type));
   end

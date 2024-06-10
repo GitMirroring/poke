@@ -7,9 +7,9 @@
 /* { dg-command { var bar = open ("bar.data") } } */
 /* { dg-command { iosetbias (42#b, bar) } } */
 /* { dg-command { iobias (foo)} } */
-/* { dg-output "0UL#B" } */
+/* { dg-output "0UL#b" } */
 /* { dg-command { iosetbias (5#B, foo) } } */
-/* { dg-command { iobias (foo) } } */
-/* { dg-output "\n5UL#B" } */
+/* { dg-command { iobias (foo) /#B } } */
+/* { dg-output "\n5UL" } */
 /* { dg-command { iobias (bar) } } */
 /* { dg-output "\n42UL#b" } */

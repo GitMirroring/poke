@@ -6,4 +6,4 @@
 /* { dg-command { iosetbias (13#B) } } */
 /* { dg-command { iosetbias } } */
 /* { dg-command { iobias } } */
-/* { dg-output "0UL#B" } */
+/* { dg-output "0UL#b" } */
