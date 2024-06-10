@@ -1682,33 +1682,23 @@ pkl_ast_node pkl_ast_make_incrdecr (pkl_ast ast,
 
    STMTS is a possibly empty chain of statements.
 
-   If BUILTIN is not PKL_AST_BUILTIN_NONE, then this compound
-   statement is a compiler builtin, i.e. specific code will be
-   generated for this node.  In this case, STMTS should be NULL.
-
    If FRAMELESS_P is true then the compound statement will not use its
    own lexical frame.  */
 
 #define PKL_AST_COMP_STMT_STMTS(AST) ((AST)->comp_stmt.stmts)
-#define PKL_AST_COMP_STMT_BUILTIN(AST) ((AST)->comp_stmt.builtin)
 #define PKL_AST_COMP_STMT_NUMVARS(AST) ((AST)->comp_stmt.numvars)
 #define PKL_AST_COMP_STMT_FRAMELESS_P(AST) ((AST)->comp_stmt.frameless_p)
-
-#define PKL_AST_BUILTIN_NONE 0
 
 struct pkl_ast_comp_stmt
 {
   struct pkl_ast_common common;
 
   union pkl_ast_node *stmts;
-  int builtin;
   int numvars;
   int frameless_p;
 };
 
 pkl_ast_node pkl_ast_make_comp_stmt (pkl_ast ast, pkl_ast_node stmts);
-
-pkl_ast_node pkl_ast_make_builtin (pkl_ast ast, int builtin);
 
 /* PKL_AST_NULL_STMT nodes represent the "null statement".  It can
    appear anywhere an statement is expected, but it has no effect.  */

@@ -463,8 +463,6 @@ load_module (struct pkl_parser *parser,
 %token COMPUTED          _("keyword `computed'")
 %token IMMUTABLE
 
-/* Compiler builtins.  */
-
 /* Opcodes.  */
 
 %token <opcode> POWA    _("power-and-assign operator")

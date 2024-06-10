@@ -1,3 +1,17 @@
+2024-06-10  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-ast.h (PKL_AST_COMP_STMT_BUILTIN): Remove.
+	(struct pkl_ast_comp_stmt): Remove field `builtin'.
+	(PKL_AST_BUILTIN_NONE): Remove.
+	* libpoke/pkl-ast.c (pkl_ast_make_comp_stmt): Do not initialize
+	PKL_AST_COMP_STMT_BUILTIN.
+	(pkl_ast_make_builtin): Remove.
+	(pkl_ast_format_1): Do not print the `builtin' field.
+	* libpoke/pkl-anal.c (pkl_anal1_ps_comp_stmt): Remove handler.
+	* libpoke/pkl-gen.c (pkl_gen_pr_comp_stmt): Do not handle
+	builtins.
+	(pkl_gen_ps_comp_stmt): Likewise.
+
 2024-06-09  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* testsuite/poke.pkl/array-bound-8.pk: New test.

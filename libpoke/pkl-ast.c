@@ -2093,19 +2093,6 @@ pkl_ast_make_comp_stmt (pkl_ast ast, pkl_ast_node stmts)
 
   if (stmts)
     PKL_AST_COMP_STMT_STMTS (comp_stmt) = ASTREF (stmts);
-  PKL_AST_COMP_STMT_BUILTIN (comp_stmt) = PKL_AST_BUILTIN_NONE;
-  return comp_stmt;
-}
-
-/* Build and return an AST node for a compiler builtin.  */
-
-pkl_ast_node
-pkl_ast_make_builtin (pkl_ast ast, int builtin)
-{
-  pkl_ast_node comp_stmt = pkl_ast_make_node (ast,
-                                              PKL_AST_COMP_STMT);
-
-  PKL_AST_COMP_STMT_BUILTIN (comp_stmt) = builtin;
   return comp_stmt;
 }
 
@@ -3653,7 +3640,6 @@ pkl_ast_format_1 (struct string_buffer *buffer,
       IPRINTF ("COMP_STMT::\n");
 
       PRINT_COMMON_FIELDS;
-      PRINT_AST_IMM (builtin, COMP_STMT_BUILTIN, "%d");
       PRINT_AST_IMM (numvars, COMP_STMT_NUMVARS, "%d");
       IPRINTF ("stmts:\n");
       PRINT_AST_SUBAST_CHAIN (COMP_STMT_STMTS);

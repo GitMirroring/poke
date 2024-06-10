@@ -239,24 +239,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_anal1_ps_type_struct)
 }
 PKL_PHASE_END_HANDLER
 
-/* Builtin compound statements can't contain statements
-   themselves.  */
-
-PKL_PHASE_BEGIN_HANDLER (pkl_anal1_ps_comp_stmt)
-{
-  pkl_ast_node comp_stmt = PKL_PASS_NODE;
-
-  if (PKL_AST_COMP_STMT_BUILTIN (comp_stmt) != PKL_AST_BUILTIN_NONE
-      && PKL_AST_COMP_STMT_STMTS (comp_stmt) != NULL)
-    {
-      PKL_ICE (PKL_AST_LOC (comp_stmt),
-               "builtin comp-stmt contains statements");
-      PKL_ANAL_PAYLOAD->errors++;
-      PKL_PASS_ERROR;
-    }
-}
-PKL_PHASE_END_HANDLER
-
 /* The arguments to a funcall should be either all named, or none
    named.  Also, it is not allowed to specify the same argument
    twice.  */
@@ -759,7 +741,6 @@ struct pkl_phase pkl_phase_anal1 =
    PKL_PHASE_PR_HANDLER (PKL_AST_PROGRAM, pkl_anal_pr_program),
    PKL_PHASE_PS_HANDLER (PKL_AST_PROGRAM, pkl_anal_ps_program),
    PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT, pkl_anal1_ps_struct),
-   PKL_PHASE_PS_HANDLER (PKL_AST_COMP_STMT, pkl_anal1_ps_comp_stmt),
    PKL_PHASE_PS_HANDLER (PKL_AST_BREAK_CONTINUE_STMT, pkl_anal1_ps_break_continue_stmt),
    PKL_PHASE_PS_HANDLER (PKL_AST_FUNCALL, pkl_anal1_ps_funcall),
    PKL_PHASE_PR_HANDLER (PKL_AST_FUNC, pkl_anal1_pr_func),
