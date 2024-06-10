@@ -131,6 +131,7 @@ wrapped-functions
   ios_search_by_id
   ios_set_bias
   ios_get_bias
+  ios_get_dev_if_name
   ios_set_cur
   pvm_random
   pvm_srandom
@@ -1724,11 +1725,33 @@ instruction ioref ()
   end
 end
 
+# Instruction: iotype
+#
+# Push the name of the inteface that is implemented of the given IO
+# space on the stack, as a string.  The IO space is identified by a
+# descriptor, which is a signed integer.
+#
+# If the given IO space doesn't exist, raise PVM_E_NO_IOS.
+#
+# Stack: ( INT -- INT STR )
+
+instruction iotype ()
+  code
+    ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
+    ios io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));
+
+    if (io == NULL)
+      JITTER_PUSH_STACK (PVM_NULL);
+    else
+      JITTER_PUSH_STACK (pvm_make_string (ios_get_dev_if_name (io)));
+  end
+end
+
 # Instruction: iohandler
 #
 # Push the handler of the given IO space on the stack, as a string.  The
 # IO space is identified by a descriptor, which is a signed integer.
-# If the given IO space doesn't exist, raise PVM_E_NO_IOS.
+# If the given IO space doesn't exist, push PVM_NULL instead.
 #
 # Stack: ( INT -- INT OFF )
 # Exceptions: PVM_E_NO_IOS

@@ -29,29 +29,9 @@ void pk_ios_init (void);
 
 void pk_ios_shutdown (void);
 
-/* Open a file in the application and return its IOS id.
+/* If auto map is enabled, open the maps configured for the given IO
+   space in the Poke variable auto_map.  */
 
-   HANDLER is the handler identifying the IO space.  This is typically
-   the name of a file.
-
-   SET_CUR_P is 1 if the IOS is to become the current IOS after being
-   opened.  0 otherwise.
-
-   CREATE_P is 1 if a file is to be created if HANDLER doesn't exist.
-   The new file is created with read/write permissions.
-
-   Return the IOS id of the newly opened IOS, or PK_IOS_ERROR if the
-   given handler coulnd't be opened.  */
-
-int pk_open_file (const char *handler, int set_cur_p, int create_p);
-
-/* Open sub IO spaces for the given process PID maps, i.e. mapped
-   regions in the process' virtual memory.  If the operation can't be
-   performed by some reason, do nothing.
-
-   If ALL_P is set then include all known ranges.  Otherwise be
-   conservative.  */
-
-void pk_open_proc_maps (int ios_id, uint64_t pid, int all_p);
+void pk_open_file_maps (int ios_id, const char *filename);
 
 #endif /* ! PK_IOS_H */

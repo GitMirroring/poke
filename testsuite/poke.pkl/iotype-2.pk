@@ -1,0 +1,4 @@
+/* { dg-do run } */
+
+/* { dg-command {iotype ?! E_no_ios} } */
+/* { dg-output "1" } */

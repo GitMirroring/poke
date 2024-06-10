@@ -191,6 +191,8 @@ err:
     {
       if (internal_error != IOD_ERROR)
         *error = internal_error;
+      else if (errno == ENOENT)
+        *error = IOD_ENOENT;
       else if (errno == ENOMEM)
         *error = IOD_ENOMEM;
       else if (errno == EINVAL)

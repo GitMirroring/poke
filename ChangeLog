@@ -1,3 +1,41 @@
+2024-06-12  Jose E. Marchesi  <jemarch@termi>
+
+	* libpoke/ios.h (IOS_ENOENT): Define.
+	* libpoke/ios-dev.h (IOD_ENOENT): Likewise.
+	* libpoke/ios-dev-file.c (ios_dev_file_open): Handle ENOENT.
+	* libpoke/pkl-rt.pk (E_noent): Define.
+	(EC_noent): Likewise.
+	(open): Handle E_noent.
+	* poke/pk-cmd-ios.pk: New file.
+	* poke/Makefile.am (dist_app_DATA): Add pk-cmd-ios.pk.
+	* poke/poke.pk: Load pk-cmd-ios.pk.
+	(poke_interactive_p): New variable.
+	(poke_quiet_p): Likewise.
+	* poke/poke.c (initialize): Set values of Poke variables
+	pk_quiet_p and pk_interactive_p.
+	* poke/pk-ios.c (pk_open_file_maps): Rename and adapt from
+	pk_open_file.
+	* poke/pk-cmd-ios.c (pk_cmd_mem): Rewrite to use the Poke
+	implementations of pk_cmd_mem and pk_cmd_mem_unique.
+	(pk_cmd_mmap): Likewise for pk_cmd_mmap.
+	* poke/pk-cmd-ios.c (pk_cmd_close): Likewise for pk_cmd_close.
+	(close_if_sub_of): Remove.
+	(pk_open_proc_maps): Likewise.
+	* poke/pk-ios.h: Remove prototype for pk_open_proc_maps.
+	* testsuite/poke.pkl/open-file-1.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+	* libpoke/pvm.jitter (iotype): New instruction.
+	* libpoke/pkl-insn.def: (PKL_INSN_IOTYPE): Define.
+	* libpoke/pkl-rt.pk (iotype): Define.
+	* poke/pk-info.pk (pk_info_ios): New function.
+	* poke/pk-cmd-ios.c (print_info_ios): Remove.
+	(pk_cmd_info_ios): Call pk_info_ios.
+	* testsuite/poke.pvm/pvm-insns-test.pk: Add test for iotype.
+	* doc/poke.texi (iotype): New section.
+	* testsuite/poke.pkl/iotype-1.pk: New test.
+	* testsuite/poke.pkl/iotype-2.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+
 2024-06-10  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pvm.jitter (iogetb): Do not convert units to bytes.

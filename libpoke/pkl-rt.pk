@@ -59,6 +59,7 @@ immutable var EC_assert        = 16;
 immutable var EC_overflow      = 17;
 immutable var EC_perm          = 18;
 immutable var EC_stack         = 19;
+immutable var EC_noent         = 20;
 
 /* Standard exceptions.  */
 
@@ -88,6 +89,8 @@ immutable var E_signal
   = Exception {code = EC_signal, exit_status = 1};
 immutable var E_io_flags
   = Exception {code = EC_io_flags, name = "invalid IO flags", exit_status = 1};
+immutable var E_noent
+  = Exception {code = EC_noent, name = "entity not found", exit_status = 1};
 immutable var E_inval
   = Exception {code = EC_inval, name = "invalid argument", exit_status = 1};
 immutable var E_exit
@@ -923,6 +926,20 @@ immutable fun iosize = (int<32> ios = get_ios) offset<uint<64>,8>:
   return asm offset<uint<64>,8>: ("iosize; nip" : ios);
 }
 
+immutable fun iotype = (int<32> ios = get_ios) string:
+{
+  return asm string: ("iotype
+                       nip
+                       bn .gotnull
+                       nip
+                       ba .done
+                     .gotnull:
+                       drop
+                       raise
+                     .done:
+                       " : E_no_ios, ios);
+}
+
 immutable fun iohandler = (int<32> ios = get_ios) string:
 {
   return asm string: ("iohandler; nip" : ios);
@@ -971,15 +988,22 @@ immutable fun open = (string handler, uint<64> flags = 0) int<32>:
     ;
   else if (ios == -3)
     raise Exception { code = EC_io_flags,
+                      name = E_io_flags.name,
                       msg = "insufficient permissions or device doesn't exist" };
   else if (ios == -5)
     raise E_eof;
   else if (ios == -6)
     raise Exception { code = EC_inval,
+                      name = E_inval.name,
                       msg = "invalid arguments passed to `open'" };
   else if (ios == -7)
     raise Exception { code = EC_io,
+                      name = E_io.name,
                       msg = "IO space already opened" };
+  else if (ios == -8)
+    raise Exception { code = EC_noent,
+                      name = E_noent.name,
+                      msg = "no such file or device" };
   else
     raise E_io;
 

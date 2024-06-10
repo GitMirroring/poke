@@ -46,6 +46,7 @@ typedef uint64_t ios_dev_off;
 #define IOD_EOF    -5 /* End of file / input.  */
 #define IOD_EINVAL -6 /* Invalid argument.  */
 #define IOD_EMMAP  -7 /* Memory mapping error.  */
+#define IOD_ENOENT -8 /* Device not found.  */
 
 /* Each IO backend should implement a device interface, by filling an
    instance of the struct defined below.

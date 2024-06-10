@@ -1,0 +1,5 @@
+/* { dg-do run } */
+
+/* { dg-command {.mem} } */
+/* { dg-command {iotype} } */
+/* { dg-output {"MEMORY"} } */

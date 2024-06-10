@@ -14085,6 +14085,7 @@ memory of some process.
 * iolist::                      Getting a list of open IO spaces.
 * openset::                     Opening and setting combined.
 * iosize::			Getting the size of an IO space.
+* iotype::                      Getting the type of an IO space.
 * iohandler::                   Getting the handler string of an IO space.
 * ioflags::                     Getting the flags of an IO space.
 * IO Space Hooks::              Hooking in common operations on IO spaces.
@@ -14346,6 +14347,23 @@ fun iosize = (int<32> ios = get_ios) offset<uint<64>,1>
 @end example
 
 If the IO space specified to @code{iosize} doesn't exist,
+@code{E_no_ios} will be raised.
+
+@node iotype
+@subsubsection @code{iotype}
+@cindex @code{iotype}
+
+The @code{iotype} builtin returns a string that describes the kind of
+device that backs some given IO space.  It has the following
+prototype:
+
+@example
+fun iotype = (int<32> ios = get_ios) string
+@end example
+
+Examples of strings returned are @code{"MEMORY"} and @code{"FILE"}.
+
+If the IO space specified to @code{iotype} doesn't exist,
 @code{E_no_ios} will be raised.
 
 @node iohandler

@@ -1,0 +1,181 @@
+/* pk-cmd-ios.pk - IOS management dot-commands.  */
+
+/* Copyright (C) 2024 Jose E. Marchesi */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* Open an IO space given a HANDLER, then set it as the current IO
+   space, emitting messages to the user.
+
+   This function returns the IOS Id of the just opened IO space, or -1
+   in case of error.  */
+
+load iscan;
+
+fun pk_openset_handler = (string handler, uint<64> flags = 0) int<32>:
+{
+  var ios = -1;
+
+  try ios = open (handler, flags);
+  catch (Exception e)
+    {
+      term_begin_class ("error");
+      print ("error:");
+      term_end_class ("error");
+      printf (" opening %s: %s\n", handler, e.msg);
+      return -1;
+    }
+
+  set_ios (ios);
+  if (pk_interactive_p && !pk_quiet_p)
+    printf ("The current IOS is now `%s'.\n", iohandler (ios));
+  return ios;
+}
+
+/* Open a file IO space.
+
+   FILENAME is the name of the file to open.
+   CREATE_P is a flag indicating whether to create an empty file
+   with the given name, if it doesn't exist.
+
+   If the specified file cannot be opened then this function raises an
+   exception.  Otherwise returns the ID of the created IO space.  */
+
+fun pk_cmd_file = (string filename, int<32> create_p) int<32>:
+{
+  var flags = (create_p ? IOS_F_READ | IOS_F_WRITE | IOS_F_CREATE : 0);
+
+  return pk_openset_handler (filename, flags);
+}
+
+/* Open a mem IO space using *NAME* as its base name and return the
+   resulting IO space, or -1 if there is an error.  */
+
+fun pk_cmd_mem = (string name) int<32>:
+{
+  var handler = "*" + name + "*";
+  return pk_openset_handler (handler);
+}
+
+/* Generate an unique name for a mem IO space and open it.  */
+
+fun pk_cmd_mem_unique = int<32>:
+{
+  for (var i = 0; i < 99; ++i)
+    {
+      var handler = format ("*%i32d*", i);
+
+      if (iosearch (handler) ?! E_no_ios)
+        return pk_cmd_mem (format ("%i32d", i));
+    }
+
+  return -1;
+}
+
+/* Open a mmap IO space.
+
+   FILENAME is the path to the file to open.
+   BASE is an offset within the file from which to mmap, in bytes.
+   SIZE is the size of the area to mmap, in bytes.  */
+
+fun pk_cmd_mmap = (string filename, uint<64> base, uint<64> size) int<32>:
+{
+  var handler = format ("mmap://0x%u64x/0x%u64x/%s",
+                         base, size, filename);
+
+  return pk_openset_handler (handler);
+}
+
+/* Open a proc IO space.
+
+   PID is the process id of the process whose memory we want to
+   access.
+
+   FLAGS contains ORed flags, which are the PK_CMD_PROC_F_* values
+   defined below.  */
+
+var PK_CMD_PROC_F_MAPS = 1U;
+var PK_CMD_PROC_F_MAPS_ALL = 2U;
+
+fun pk_cmd_proc = (uint<64> pid, uint<32> flags) int<32>:
+{
+  var handler = format ("pid://%u64d", pid);
+
+  var ios = pk_openset_handler (handler);
+  if (ios == -1)
+    return -1;
+
+  if (flags & (PK_CMD_PROC_F_MAPS | PK_CMD_PROC_F_MAPS_ALL))
+    {
+      /* Read the process maps file. Each line describes a mapped
+         region in the process' virtual memory space.  Create a sub
+         IOS for each. If we can't figure out the format of a line, it
+         is simply ignored.  */
+
+      try with_temp_ios
+          :handler format ("/proc/%u64d/maps", pid)
+          :do lambda void:
+            {
+              var iscan = IScan_String { };
+              iscan.ios = get_ios;
+
+              for (eol in iscan.find ("\n", 1#MB))
+                {
+                  var spaces = iscan.find (" ", eol);
+                  var range_begin = strtoi (iscan.tab (iscan.find ("-", eol)[0]), 16);
+                  iscan.move (1#B);
+                  var range_end = strtoi (iscan.tab (spaces[0]), 16);
+                  iscan.move (1#B);
+                  var perms = iscan.tab (spaces[1]);
+                  iscan.pos = spaces[spaces'length - 1];
+                  iscan.move (1#B);
+                  var name = iscan.tab (eol);
+                  iscan.move (1#B);
+
+                  if ((flags & PK_CMD_PROC_F_MAPS_ALL)
+                      || name'length == 0 || name[0] != '/')
+                    {
+                      open (format ("sub://%i32d/0x%s/0x%s/%s",
+                                    ios,
+                                    ltrim (format ("%u64x", range_begin.val), "0"),
+                                    ltrim (format ("%u64x", range_end.val - range_begin.val), "0"),
+                                    name),
+                            (perms[0] == 'r' ? IOS_F_READ : 0)
+                            | (perms[1] == 'w' ? IOS_F_WRITE : 0));
+                    }
+                }
+            };
+      catch { }
+    }
+
+  return ios;
+}
+
+/* Close a given IO space, including any associated sub-space.  This
+   is used to implement the .close dot-command.  */
+
+fun pk_cmd_close = (int<32> ios) void:
+{
+  for (sub in iolist)
+    {
+      var handler = iohandler (sub);
+
+      if (handler'length > 5
+          && handler[:6] == "sub://"
+          && strtoi (handler[6:]).val == ios)
+        close (sub);
+    }
+  close (ios);
+}

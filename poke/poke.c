@@ -398,6 +398,9 @@ parse_args_1 (int argc, char *argv[])
         case 'L':
           poke_interactive_p = 0;
           return;
+        case QUIET_ARG:
+          poke_quiet_p = 1;
+          break;
         case NO_AUTO_MAP_ARG:
           poke_default_auto_map_p = 0;
           break;
@@ -414,7 +417,6 @@ parse_args_1 (int argc, char *argv[])
         case '?':
           exit (EXIT_FAILURE);
           break;
-        case QUIET_ARG:
         case LOAD_ARG:
         case LOAD_AND_EXIT_ARG:
         case CMD_ARG:
@@ -452,7 +454,6 @@ parse_args_2 (int argc, char *argv[])
       switch (c)
         {
         case QUIET_ARG:
-          poke_quiet_p = 1;
           pk_set_quiet_p (poke_compiler, 1);
           break;
         case 'l':
@@ -704,6 +705,11 @@ initialize (int argc, char *argv[])
         network_endian = endian_big;
 #endif
       }
+
+    pk_decl_set_val (poke_compiler, "pk_quiet_p",
+                     pk_make_int (poke_compiler, poke_quiet_p, 32));
+    pk_decl_set_val (poke_compiler, "pk_interactive_p",
+                     pk_make_int (poke_compiler, poke_interactive_p, 32));
 
     pk_decl_set_val (poke_compiler, "pk_host_endian", host_endian);
     pk_decl_set_val (poke_compiler, "pk_network_endian", network_endian);

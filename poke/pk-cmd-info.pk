@@ -16,6 +16,63 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* Print information about the open IO spaces.  This function is used
+   to implement the `.info ios' command.  */
+
+fun pk_info_ios = void:
+{
+  var table = Pk_Table { num_columns = pk_hserver_p ? 7 : 6,
+                         max_column_size = 80 };
+
+  table.row ("table-header");
+  table.column ("  Id");
+  table.column ("Type");
+  table.column ("Mode");
+  table.column ("Bias");
+  table.column ("Size");
+  table.column ("Name");
+  if (pk_hserver_p)
+    table.column (""); /* [close] button.  */
+
+  if (get_ios ?! E_no_ios)
+    return;
+
+  for (ios in iolist)
+    {
+      var bias = iobias (ios)/#b;
+      var size = iosize (ios)/#b;
+      var flags = ioflags (ios);
+      var mode = ((flags & IOS_F_READ) ? "r" : " ") + ((flags & IOS_F_WRITE) ? "w" : " ");
+
+      table.row;
+      table.column ((ios == get_ios ? "* " : "  ") + format ("%i32d", ios));
+      table.column (iotype);
+      table.column (mode);
+      if (bias > 0xffff_ffff)
+        {
+          table.column (bias % 8 == 0
+                        ? format ("0x%u64x#B", bias / 8)
+                        : format ("0x%u64x#b", bias));
+        }
+      else
+        {
+          table.column (bias % 8 == 0
+                        ? format ("0x%u32x#B", bias / 8)
+                        : format ("0x%u32x#b", bias));
+        }
+      table.column (size > 0xffff_ffff
+                    ? format ("0x%u64x#B", size / 8)
+                    : format ("0x%u32x#B", size / 8));
+      table.column (iohandler (ios), "",
+                    hserver_make_hyperlink ('e', format (".ios %i32d", ios)));
+      if (pk_hserver_p)
+        table.column ("[close]", "",
+                      hserver_make_hyperlink ('e', format (".close %i32d", ios)));
+    }
+
+  table.print_table;
+}
+
 /* Print information about the given Pk_Type.  This function is used
    to implement the `.info type NAME' command.  */
 

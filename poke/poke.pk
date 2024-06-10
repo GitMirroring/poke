@@ -22,6 +22,14 @@
    initializes, after loading this file.  The initialization values
    below are therefore the defaults.  */
 
+/* poke can be run either interactively (from a tty) or in batch mode.
+   The following predicate records this.  */
+
+var pk_interactive_p = 0;
+
+/* Whether poke should be quiet.  */
+var pk_quiet_p = 0;
+
 /* The endianness of the running host.  */
 var pk_host_endian = ENDIAN_BIG;
 
@@ -86,7 +94,8 @@ fun pk_print_vm_dispatch = void:
 /* Load some poke subsystems.  */
 
 load "pk-table.pk";
-load "pk-info.pk";
+load "pk-cmd-ios.pk";
+load "pk-cmd-info.pk";
 load "pk-help.pk";
 load "pk-map.pk";
 load "pk-settings.pk";

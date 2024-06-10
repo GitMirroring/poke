@@ -1806,6 +1806,8 @@ EXTRA_DIST = \
   poke.pkl/iosetbias-5.pk \
   poke.pkl/iosetbias-6.pk \
   poke.pkl/iosetbias-7.pk\
+  poke.pkl/iotype-1.pk \
+  poke.pkl/iotype-2.pk \
   poke.pkl/ior-integers-1.pk \
   poke.pkl/ior-integers-2.pk \
   poke.pkl/ior-int-struct-1.pk \
@@ -2045,6 +2047,7 @@ EXTRA_DIST = \
   poke.pkl/open-1.pk \
   poke.pkl/open-2.pk \
   poke.pkl/open-3.pk \
+  poke.pkl/open-file-1.pk \
   poke.pkl/open-set-1.pk \
   poke.pkl/open-sub-1.pk \
   poke.pkl/open-sub-10.pk \

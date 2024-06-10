@@ -114,6 +114,19 @@ var tests = [
         assert (asm int<32>: ("pushopp") == 1);
       }
   },
+  /* IOS related instructions.  */
+  PkTest {
+    name = "iotype",
+    func = lambda (string name) void:
+      {
+        with_temp_ios
+          :do lambda void:
+            {
+              assert (asm string: ("iotype; nip" : get_ios)
+                      == "MEMORY");
+            };
+      }
+  },
   /* Integer overflow instructions.  */
   PkTest {
     name = "addiof",

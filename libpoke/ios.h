@@ -105,6 +105,8 @@ typedef int64_t ios_off;
 #define IOS_EPERM  -8  /* Insufficient permissions to perform the
                           requested operation.  */
 
+#define IOS_ENOENT -9  /* Specified device not found.  */
+
 #define IOD_ERROR_TO_IOS_ERROR(error_no) (error_no)
 
 /* **************** IOS flags ******************************

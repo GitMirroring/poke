@@ -153,35 +153,28 @@ static int
 pk_cmd_proc (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 {
 #if defined HAVE_PROC
+
+  pk_val pk_cmd_proc = pk_decl_val (poke_compiler, "pk_cmd_proc");
+  pk_val retval = PK_NULL;
+  pk_val exit_exception = PK_NULL;
   uint64_t pid;
-  char *handler;
-  int ios_id;
+
+  assert (pk_cmd_proc != PK_NULL);
 
   /* Get the PID of the process to open.  */
   assert (argc == 2);
   assert (PK_CMD_ARG_TYPE (argv[1]) == PK_CMD_ARG_INT);
   pid = PK_CMD_ARG_INT (argv[1]);
 
-  /* Build the handler for the proc IOS.  */
-  if (asprintf (&handler, "pid://%" PRIi64, pid) == -1)
-    return 0;
+  if (pk_call (poke_compiler, pk_cmd_proc, &retval, &exit_exception,
+               2,
+               pk_make_uint (poke_compiler, pid, 64),
+               pk_make_uint (poke_compiler, uflags, 32)) == PK_ERROR
+      || exit_exception != PK_NULL)
+    PK_UNREACHABLE (); /* This shouldn't happen.  */
 
-  /* Open the IOS.  */
-  ios_id = pk_ios_open (poke_compiler, handler, 0, 1);
-  if (ios_id == PK_IOS_NOID)
-    {
-      pk_printf (_("Error creating proc IOS %s\n"), handler);
-      free (handler);
-      return 0;
-    }
-  free (handler);
+  return (pk_int_value (retval) != -1);
 
-  /* All right, now open sub spaces for the process' maps, if
-     requested.  */
-  if (uflags & PK_PROC_F_MAPS || uflags & PK_PROC_F_MAPS_ALL)
-    pk_open_proc_maps (ios_id, pid, uflags & PK_PROC_F_MAPS_ALL);
-
-  return 1;
 #else
   pk_term_class ("error");
   pk_puts (_("error: "));
@@ -199,6 +192,10 @@ pk_cmd_file (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 {
   /* file FILENAME */
 
+  pk_val retval = PK_NULL;
+  pk_val exit_exception = PK_NULL;
+  pk_val pk_cmd_file = pk_decl_val (poke_compiler, "pk_cmd_file");
+
   assert (argc == 2);
   assert (PK_CMD_ARG_TYPE (argv[1]) == PK_CMD_ARG_STR);
 
@@ -212,60 +209,34 @@ pk_cmd_file (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
     /* /c has no effect if the file exists.  */
     create_p = 0;
 
-  if (pk_ios_search (poke_compiler, filename, PK_IOS_SEARCH_F_EXACT) != NULL)
+  if (pk_call (poke_compiler, pk_cmd_file, &retval, &exit_exception,
+               2,
+               pk_make_string (poke_compiler, filename),
+               pk_make_int (poke_compiler, create_p, 32)) == PK_ERROR
+      || exit_exception != PK_NULL)
+    PK_UNREACHABLE (); /* This shouldn't happen.  */
+
+  if (pk_int_value (retval) != -1)
     {
-      printf (_("File %s already opened.  Use `.ios IOS' to switch.\n"),
-              filename);
-      return 0;
+      pk_open_file_maps (pk_int_value (retval), filename);
+      return 1;
     }
-
-  if (PK_IOS_NOID == pk_open_file (filename, 1 /* set_cur_p */, create_p))
-    {
-      pk_term_class ("error");
-      pk_puts (_("error: "));
-      pk_term_end_class ("error");
-
-      pk_printf (_("opening %s\n"), filename);
-      return 0;
-    }
-
-  return 1;
-}
-
-static void
-close_if_sub_of (pk_ios io, void *data)
-{
-  const char *handler = pk_ios_handler (io);
-  int ios_id = (int) (intptr_t) data;
-
-  if (handler[0] == 's'
-      && handler[1] == 'u'
-      && handler[2] == 'b'
-      && handler[3] == ':'
-      && handler[4] == '/'
-      && handler[5] == '/')
-    {
-      int base_ios;
-      const char *p = handler + 6;
-      char *end;
-
-      /* Parse the base IOS number of this sub IOS.  Note that we can
-         assume the string has the right syntax.  */
-      base_ios = strtol (p, &end, 0);
-      assert (*p != '\0' && *end == '/');
-
-      if (base_ios == ios_id)
-        pk_ios_close (poke_compiler, io);
-    }
+  else
+    return 0;
 }
 
 static int
 pk_cmd_close (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 {
   /* close [#ID]  */
+
+  pk_val pk_cmd_close = pk_decl_val (poke_compiler, "pk_cmd_close");
+  pk_val retval = PK_NULL;
+  pk_val exit_exception = PK_NULL;
   pk_ios io;
   const char *expr;
 
+  assert (pk_cmd_close != PK_NULL);
   assert (argc == 2);
   assert (PK_CMD_ARG_TYPE (argv[1]) == PK_CMD_ARG_STR);
   expr = PK_CMD_ARG_STR (argv[1]);
@@ -282,129 +253,28 @@ pk_cmd_close (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
         }
     }
 
-  pk_ios_close (poke_compiler, io);
-
-  /* All right, now we want to close all the open IOS which are subs
-     of the space we just closed.  */
-  pk_ios_map (poke_compiler, close_if_sub_of,
-              (void *) (intptr_t) pk_ios_get_id (io));
+  if (pk_call (poke_compiler, pk_cmd_close, &retval, &exit_exception,
+               1, pk_make_int (poke_compiler, pk_ios_get_id (io), 32)) == PK_ERROR
+      || exit_exception != PK_NULL)
+    PK_UNREACHABLE (); /* This shouldn't happen.  */
 
   return 1;
-}
-
-static void
-print_info_ios (pk_ios io, void *data)
-{
-  uint64_t flags = pk_ios_flags (io);
-  char mode[3];
-  pk_table table = (pk_table) data;
-
-  pk_table_row (table);
-
-  /* Id.  */
-  {
-    char *tag;
-
-    asprintf (&tag, "%s%d",
-              io == pk_ios_cur (poke_compiler) ? "* " : "  ",
-              pk_ios_get_id (io));
-    pk_table_column (table, tag);
-    free (tag);
-  }
-
-  /* Type.  */
-  pk_table_column (table, pk_ios_get_dev_if_name (io));
-
-  /* Mode.  */
-  mode[0] = flags & PK_IOS_F_READ ? 'r' : ' ';
-  mode[1] = flags & PK_IOS_F_WRITE ? 'w' : ' ';
-  mode[2] = '\0';
-  pk_table_column (table, mode);
-
-  /* Bias.  */
-  {
-    char *string;
-    uint64_t bias = pk_ios_get_bias (io);
-    if (bias % 8 == 0)
-      asprintf (&string, "0x%08" PRIx64 "#B", bias / 8);
-    else
-      asprintf (&string, "0x%08" PRIx64 "#b", bias);
-    pk_table_column (table, string);
-    free (string);
-  }
-
-  /* Size.  */
-  {
-    char *size;
-    asprintf (&size, "0x%08" PRIx64 "#B", pk_ios_size (io));
-    pk_table_column (table, size);
-    free (size);
-  }
-
-  /* Name.  */
-#if HAVE_HSERVER
-  if (poke_hserver_p)
-  {
-    char *cmd;
-    char *hyperlink;
-
-    asprintf (&cmd, ".ios %d", pk_ios_get_id (io));
-    hyperlink = pk_hserver_make_hyperlink ('e', cmd, PK_NULL);
-    free (cmd);
-
-    pk_table_column_hl (table, pk_ios_handler (io), hyperlink);
-    free (hyperlink);
-  }
-  else
-#endif
-  pk_table_column (table, pk_ios_handler (io));
-
-#if HAVE_HSERVER
-  if (poke_hserver_p)
-    {
-      /* [close] button.  */
-      char *cmd;
-      char *hyperlink;
-
-      asprintf (&cmd, ".close %d", pk_ios_get_id (io));
-      hyperlink = pk_hserver_make_hyperlink ('e', cmd, PK_NULL);
-      free (cmd);
-
-      pk_table_column_hl (table, "[close]", hyperlink);
-      free (hyperlink);
-    }
-#endif /* HAVE_HSERVER */
 }
 
 static int
 pk_cmd_info_ios (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 {
-  pk_table table;
+  pk_val pk_info_ios = pk_decl_val (poke_compiler, "pk_info_ios");
+  pk_val retval, exit_exception;
+  assert (pk_info_ios != PK_NULL);
 
   assert (argc == 1);
-#if HAVE_HSERVER
-  if (poke_hserver_p)
-    table = pk_table_new (7);
-  else
-#endif
-    table = pk_table_new (6);
 
-  pk_table_row_cl (table, "table-header");
-  pk_table_column (table, "  Id");
-  pk_table_column (table, "Type");
-  pk_table_column (table, "Mode");
-  pk_table_column (table, "Bias");
-  pk_table_column (table, "Size");
-  pk_table_column (table, "Name");
-#if HAVE_HSERVER
-  if (poke_hserver_p)
-    pk_table_column (table, ""); /* [close] button */
-#endif
+  if (pk_call (poke_compiler, pk_info_ios, &retval, &exit_exception,
+               0) == PK_ERROR
+      || exit_exception != PK_NULL)
+    PK_UNREACHABLE (); /* This shouldn't happen.  */
 
-  pk_ios_map (poke_compiler, print_info_ios, table);
-
-  pk_table_print (table);
-  pk_table_free (table);
   return 1;
 }
 
@@ -485,59 +355,36 @@ static int
 pk_cmd_mem (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 {
   /* mem NAME */
+  /* Create a new memory IO space.  */
 
+  const char *arg_str = PK_CMD_ARG_STR (argv[1]);
+
+  pk_val pk_cmd_mem = pk_decl_val (poke_compiler, "pk_cmd_mem");
+  pk_val pk_cmd_mem_unique = pk_decl_val (poke_compiler, "pk_cmd_mem_unique");
+  pk_val retval = PK_NULL;
+  pk_val exit_exception = PK_NULL;
+
+  assert (pk_cmd_mem != PK_NULL);
+  assert (pk_cmd_mem_unique != PK_NULL);
   assert (argc == 2);
   assert (PK_CMD_ARG_TYPE (argv[1]) == PK_CMD_ARG_STR);
 
-  /* Create a new memory IO space.  */
-  const char *arg_str = PK_CMD_ARG_STR (argv[1]);
-  char *mem_name = NULL;
-
-  /* If the user didn't specify a name for the memory IOS, search for
-     the first available *N*.  */
   if (*arg_str == '\0')
     {
-      int i;
-
-      for (i = 0; i < 99; ++i)
-        {
-          free (mem_name);
-          if (asprintf (&mem_name, "*%d*", i) == -1)
-            pk_fatal (_("out of memory"));
-
-          if (pk_ios_search (poke_compiler, mem_name, PK_IOS_SEARCH_F_EXACT)
-              == NULL)
-            break;
-        }
+      if (pk_call (poke_compiler, pk_cmd_mem_unique, &retval, &exit_exception,
+                   0) == PK_ERROR
+          || exit_exception != PK_NULL)
+        PK_UNREACHABLE (); /* This shouldn't happen.  */
     }
   else
     {
-      if (asprintf (&mem_name, "*%s*", arg_str) == -1)
-        pk_fatal (_("out of memory"));
+      if (pk_call (poke_compiler, pk_cmd_mem, &retval, &exit_exception,
+                   1, pk_make_string (poke_compiler, arg_str)) == PK_ERROR
+          || exit_exception != PK_NULL)
+        PK_UNREACHABLE (); /* This shouldn't happen.  */
     }
 
-  if (pk_ios_search (poke_compiler, mem_name, PK_IOS_SEARCH_F_EXACT) != NULL)
-    {
-      printf (_("Buffer %s already opened.  Use `.ios IOS' to switch.\n"),
-              mem_name);
-      free (mem_name);
-      return 0;
-    }
-
-  if (PK_IOS_NOID == pk_ios_open (poke_compiler, mem_name, 0, 1))
-    {
-      pk_printf (_("Error creating memory IOS %s\n"), mem_name);
-      free (mem_name);
-      return 0;
-    }
-
-  free (mem_name);
-
-  if (poke_interactive_p && !poke_quiet_p)
-    pk_printf (_("The current IOS is now `%s'.\n"),
-               pk_ios_handler (pk_ios_cur (poke_compiler)));
-
-  return 1;
+  return (pk_int_value (retval) != -1);
 }
 
 #ifdef HAVE_LIBNBD
@@ -581,15 +428,20 @@ static int
 pk_cmd_mmap (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 {
   /* mmap FILENAME BASE SIZE */
+  /* Create a new mmap IO space.  */
+
+  const char *filename;
   uint64_t base, size;
-  char *handler;
-  int ios_id;
 
+  pk_val pk_cmd_mmap = pk_decl_val (poke_compiler, "pk_cmd_mmap");
+  pk_val retval = PK_NULL;
+  pk_val exit_exception = PK_NULL;
+
+  assert (pk_cmd_mmap != PK_NULL);
   assert (argc == 4);
-  assert (PK_CMD_ARG_TYPE (argv[1]) == PK_CMD_ARG_STR);
 
-  /* Create a new IO space.  */
-  const char *filename = PK_CMD_ARG_STR (argv[1]);
+  assert (PK_CMD_ARG_TYPE (argv[1]) == PK_CMD_ARG_STR);
+  filename = PK_CMD_ARG_STR (argv[1]);
 
   assert (PK_CMD_ARG_TYPE (argv[2]) == PK_CMD_ARG_UINT);
   base = PK_CMD_ARG_UINT (argv[2]);
@@ -597,31 +449,14 @@ pk_cmd_mmap (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
   assert (PK_CMD_ARG_TYPE (argv[3]) == PK_CMD_ARG_UINT);
   size = PK_CMD_ARG_UINT (argv[3]);
 
-  if (access (filename, F_OK) == 0)
+  if (pk_call (poke_compiler, pk_cmd_mmap, &retval, &exit_exception, 3,
+               pk_make_string (poke_compiler, filename),
+               pk_make_uint (poke_compiler, base, 64),
+               pk_make_uint (poke_compiler, size, 64)) == PK_ERROR
+      || exit_exception != PK_NULL)
+    PK_UNREACHABLE (); /* This shouldn't happen.  */
 
-  if (pk_ios_search (poke_compiler, filename, PK_IOS_SEARCH_F_EXACT) != NULL)
-    {
-      printf (_("File %s already opened.  Use `.ios IOS' to switch.\n"),
-              filename);
-      return 0;
-    }
-
-  /* Build the handler for the mmap IOS.  */
-  if (asprintf (&handler, "mmap://0x%" PRIx64 "/0x%" PRIx64 "/%s",
-                           base, size, filename) == -1)
-    return 0;
-
-  /* Open the IOS.  */
-  ios_id = pk_ios_open (poke_compiler, handler, 0, 1);
-  if (ios_id == PK_IOS_NOID)
-    {
-      pk_printf (_("Error creating mmap IOS %s\n"), handler);
-      free (handler);
-      return 0;
-    }
-  free (handler);
-
-  return 1;
+  return (pk_int_value (retval) != -1);
 }
 #endif /* HAVE_MMAP */
 
