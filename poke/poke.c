@@ -39,7 +39,6 @@
 #include "pk-cmd.h"
 #include "pk-repl.h"
 #include "pk-utils.h"
-#include "pk-map.h"
 #include "pk-ios.h"
 #include "configmake.h"
 
@@ -83,14 +82,6 @@ char *poke_infodir;
 
 char *poke_picklesdir;
 
-/* The following global contains the directory holding the standard
-   map files.  In an installed poke, this is the same than
-   poke_datadir/maps, but the POKE_MAPSDIR environment variable can be
-   set to a different value, which is mainly to run an uinstalled
-   poke.  */
-
-char *poke_mapsdir;
-
 /* The following global contains the directory holding the help
    support files.  In an installed poke, this is the same than
    poke_datadir, but the POKE_DOCDIR environment variable can be set
@@ -98,12 +89,6 @@ char *poke_mapsdir;
    poke.  */
 
 char *poke_docdir;
-
-/* The following global determines whether auto-maps shall be
-   acknowledged when loading files by default.  Defaults to 1, but can
-   be changed to 0 using the --no-auto-map command-line option.  */
-
-int poke_default_auto_map_p = 1;
 
 /* The following global determines whether the user specified that the
    hyperlinks server should not be activated, in the command line.  */
@@ -145,7 +130,6 @@ enum
   STYLE_ARG,
   STYLE_DARK_ARG,
   STYLE_BRIGHT_ARG,
-  NO_AUTO_MAP_ARG,
   NO_HSERVER_ARG,
   NO_STDTYPES_ARG
 };
@@ -163,7 +147,6 @@ static const struct option long_options[] =
   {"style", required_argument, NULL, STYLE_ARG},
   {"style-dark", no_argument, NULL, STYLE_DARK_ARG},
   {"style-bright", no_argument, NULL, STYLE_BRIGHT_ARG},
-  {"no-auto-map", no_argument, NULL, NO_AUTO_MAP_ARG},
   {"no-hserver", no_argument, NULL, NO_HSERVER_ARG},
   {"no-stdtypes", no_argument, NULL, NO_STDTYPES_ARG},
   {NULL, 0, NULL, 0},
@@ -208,7 +191,6 @@ print_help (void)
   /* TRANSLATORS: --help output, less used GNU poke arguments.
      no-wrap */
   puts (_("  -q, --no-init-file                  do not load an init file"));
-  puts (_("      --no-auto-map                   disable auto-map"));
 #if HAVE_HSERVER
   puts (_("      --no-hserver                    do not run the hyperlinks server"));
 #endif
@@ -290,7 +272,6 @@ finalize (void)
 #endif
   pk_cmd_shutdown ();
   pk_ios_shutdown ();
-  pk_map_shutdown ();
   pk_compiler_free (poke_compiler);
   pk_term_shutdown ();
 }
@@ -401,9 +382,6 @@ parse_args_1 (int argc, char *argv[])
         case QUIET_ARG:
           poke_quiet_p = 1;
           break;
-        case NO_AUTO_MAP_ARG:
-          poke_default_auto_map_p = 0;
-          break;
         case NO_HSERVER_ARG:
           poke_no_hserver_arg = 1;
           break;
@@ -509,7 +487,6 @@ parse_args_2 (int argc, char *argv[])
             exit (exit_status);
             break;
           }
-        case NO_AUTO_MAP_ARG:
         case NO_HSERVER_ARG:
         case NO_STDTYPES_ARG:
         case 'q':
@@ -597,13 +574,6 @@ initialize (int argc, char *argv[])
   poke_picklesdir = getenv ("POKEPICKLESDIR");
   if (poke_picklesdir == NULL)
     poke_picklesdir = "%DATADIR%/pickles";
-
-  poke_mapsdir = getenv ("POKEMAPSDIR");
-  if (poke_mapsdir == NULL)
-    {
-      poke_mapsdir = pk_str_concat (poke_datadir, "/maps", NULL);
-      pk_assert_alloc (poke_mapsdir);
-    }
 
   poke_docdir = getenv ("POKEDOCDIR");
   if (poke_docdir == NULL)
@@ -714,9 +684,6 @@ initialize (int argc, char *argv[])
     pk_decl_set_val (poke_compiler, "pk_host_endian", host_endian);
     pk_decl_set_val (poke_compiler, "pk_network_endian", network_endian);
 
-    pk_decl_set_val (poke_compiler, "pk_auto_map_p",
-                     pk_make_int (poke_compiler, poke_default_auto_map_p, 32));
-
     pk_decl_set_val (poke_compiler, "pk_have_libnbd_p",
 #if defined HAVE_LIBNBD
                      pk_make_int (poke_compiler, 1, 32)
@@ -725,9 +692,6 @@ initialize (int argc, char *argv[])
 #endif
                      );
   }
-
-  /* Initialize the global map.  */
-  pk_map_init ();
 
   /* Initialize ios stuff.  */
   pk_ios_init ();

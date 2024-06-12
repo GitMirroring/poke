@@ -183,62 +183,6 @@ Pretty-printers are defined as methods named `_print'.",
 
 pk_settings.add_setting
   :entry Poke_Setting {
-      name = "auto-map",
-      kind = POKE_SETTING_BOOL,
-      summary = "whether poke auto-loads maps when opening IO spaces",
-      usage = ".set auto-map {yes,no}",
-      description = "\
-This setting determines whether to automatically load map files when
-opening IO spaces.
-
-The decision of what maps to load is driven by the contents of the
-array `auto_map'.  Each entry in the array is an array whose first
-element is a regular expression, and the second element is the name of
-a map.
-
-Example:
-
-  auto_map = [[\"\\.o\", \"elf\"], [\"\\.o\", \"dwarf\"]];
-
-The entry above makes poke to automatically load the maps `elf.map'
-and `dwarf.map' when opening any file whose name ends in `.o',
-provided `auto-map' is set to `yes'.",
-      getter = lambda any: { return pk_auto_map_p; },
-      setter = lambda (any val) int<32>:
-        {
-          pk_auto_map_p = val as int<32>;
-          return 1;
-        }
-    };
-
-pk_settings.add_setting
-  :entry Poke_Setting {
-    name = "prompt-maps",
-    kind = POKE_SETTING_BOOL,
-    summary = "whether map information should be included in the prompt",
-    usage = ".set prompt-maps {yes,no}",
-    description = "\
-This setting determines whether a list of open maps is displayed
-before the poke prompt.
-
-Example of a prompt with map information and `prompt-maps' set to
-`yes':
-
-  (poke) .file foo.o
-  [dwarf,elf](poke)
-
-Which indicates that the opening of the IO space `foo.o' resulted in
-the `elf.map' and `dwarf.map' maps to be automatically loaded.",
-    getter = lambda any: { return pk_prompt_maps_p; },
-    setter = lambda (any val) int<32>:
-      {
-        pk_prompt_maps_p = val as int<32>;
-        return 1;
-      }
-    };
-
-pk_settings.add_setting
-  :entry Poke_Setting {
     name = "omaps",
     kind = POKE_SETTING_BOOL,
     summary = "whether include offset information when printing values",

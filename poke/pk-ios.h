@@ -29,9 +29,4 @@ void pk_ios_init (void);
 
 void pk_ios_shutdown (void);
 
-/* If auto map is enabled, open the maps configured for the given IO
-   space in the Poke variable auto_map.  */
-
-void pk_open_file_maps (int ios_id, const char *filename);
-
 #endif /* ! PK_IOS_H */

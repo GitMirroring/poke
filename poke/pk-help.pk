@@ -145,15 +145,13 @@ pk_help_add_topic
   :entry Poke_HelpEntry {
       category = "dot-commands",
       topic = ".info",
-      synopsis = ".info {ios,maps,variables,functions,types}",
-      summary = "list IO spaces, maps, and other entities",
+      synopsis = ".info {ios,variables,functions,types}",
+      summary = "list IO spaces and other entities",
       description = "\
 Show information about some given entities.
 
 .info ios
   List the currently opened IO spaces.
-.info maps
-  List the active maps.
 .info variables [REGEXP]
   List information about defined variables.
 .info functions [REGEXP]

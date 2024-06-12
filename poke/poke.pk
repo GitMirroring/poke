@@ -40,13 +40,6 @@ var pk_network_endian = ENDIAN_BIG;
 /* Whether the terminal hyperlinks server is running or not.  */
 var pk_hserver_p = 0;
 
-/* Whether auto-maps shall be acknowledged when loading files or
-   not. */
-var pk_auto_map_p = 0;
-
-/* Whether map information shall be included in the REPL prompt.  */
-var pk_prompt_maps_p = 1;
-
 /* The following global contains the name of the program to use to
    display documentation.  Valid values are `info' and `less'.  */
 var pk_doc_viewer = "info";
@@ -97,7 +90,6 @@ load "pk-table.pk";
 load "pk-cmd-ios.pk";
 load "pk-cmd-info.pk";
 load "pk-help.pk";
-load "pk-map.pk";
 load "pk-settings.pk";
 load "pk-tracer.pk";
 

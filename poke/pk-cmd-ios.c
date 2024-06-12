@@ -29,7 +29,6 @@
 
 #include "poke.h"
 #include "pk-cmd.h"
-#include "pk-map.h"
 #include "pk-utils.h"
 #include "pk-ios.h"
 #include "pk-table.h"
@@ -216,13 +215,7 @@ pk_cmd_file (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
       || exit_exception != PK_NULL)
     PK_UNREACHABLE (); /* This shouldn't happen.  */
 
-  if (pk_int_value (retval) != -1)
-    {
-      pk_open_file_maps (pk_int_value (retval), filename);
-      return 1;
-    }
-  else
-    return 0;
+  return pk_int_value (retval) != -1;
 }
 
 static int

@@ -37,7 +37,6 @@
 #  include "pk-hserver.h"
 #endif
 #include "pk-utils.h"
-#include "pk-map.h"
 
 #ifndef _WIN32
 /* The thread that contains the non-local entry point for reentering
@@ -307,30 +306,6 @@ pk_prompt (void)
 {
   char *prompt = "";
   pk_val pk_prompt_fun, val = PK_NULL, exit_exception = PK_NULL;
-
-  if (pk_var_int ("pk_prompt_maps_p"))
-    {
-      pk_ios cur_ios;
-
-      cur_ios = pk_ios_cur (poke_compiler);
-      if (cur_ios)
-        {
-          pk_map maps
-            = pk_map_get_maps (pk_ios_get_id (cur_ios));
-
-          if (maps)
-            {
-              pk_map map;
-
-              prompt = pk_str_concat (prompt, "[", NULL);
-              for (map = maps; map; map = PK_MAP_CHAIN (map))
-                prompt = pk_str_concat (prompt, PK_MAP_NAME (map),
-                                        PK_MAP_CHAIN (map) != NULL ? "," : NULL,
-                                        NULL);
-              prompt = pk_str_concat (prompt, "]", NULL);
-            }
-        }
-    }
 
   pk_prompt_fun = pk_decl_val (poke_compiler, "pk_prompt");
   val = PK_NULL, exit_exception = PK_NULL;

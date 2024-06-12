@@ -1,5 +1,52 @@
 2024-06-12  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* configure.ac (AC_CONFIG_fILES): Do not process maps/Makefile.in.
+	* Makefile.am (SUBDIRS): Do not recurse in maps/.
+	* maps/Makefile.am: Remove.
+	* maps/mp3.map: Likewise.
+	* maps/elf.map: Likewise.
+	* maps/dwarf.map: Likewise.
+	* poke/pk-map-tab.y: Likewise.
+	* poke/pk-map-parser.h: Likewise.
+	* poke/pk-map-lex.l: Likewise.
+	* poke/pk-map.pk: Likewise.
+	* poke/pk-map.h: Likewise.
+	* poke/pk-map.c: Likewise.
+	* poke/pk-cmd-map.c: Likewise.
+	* etc/poke-map-mode.el: Remove.
+	* etc/Makefile.am (dist_lisp_DATA): Remove poke-map-mode.el.
+	* poke/Makefile.am (dist_app_DATA): Remove pk-map.pk.
+	(poke_SOURCES): Remove pk-cmd-map.c, pk-map.c, pk-map.h,
+	pk-map-parser.h, pk-map-tab.c pk-map-lex.l.
+	(generate-pk-map-lex): Remove rule.
+	(generate-pk-map-tab): Likewise.
+	(AM_YFLAGS): Remove.
+	* doc/poke.texi (Maps and Map-files): Remove chapter.
+	(poke-map-mode): Do not mention poke-map-mode.
+	* poke/pk-ios.c: Do not include pk-map.h.
+	(pk_open_file_maps): Remove.
+	* poke/pk-cmd-ios.c: Do not include pk-map.h.
+	* poke/pk-repl.c: Do not include pk-map.h.
+	(pk_prompt): Do not add map info to the prompt.
+	* poke/poke.c: Do not include pk-map.h.
+	(finalize): Do not pk_map_shutdown.
+	(initialize): Do not pk_map_init.
+	* testsuite/poke.cmd/maps-1.pk: Remove.
+	* testsuite/poke.cmd/maps-2.pk: Likewise.
+	* testsuite/poke.cmd/maps-3.pk: Likewise.
+	* testsuite/poke.cmd/maps-4.pk: Likewise.
+	* testsuite/poke.cmd/maps-5.pk: Likewise.
+	* testsuite/poke.cmd/maps-6.pk: Likewise.
+	* testsuite/poke.cmd/maps-7.pk: Likewise.
+	* testsuite/poke.cmd/maps-8.pk: Likewise.
+	* testsuite/poke.cmd/maps-9.pk: Likewise.
+	* testsuite/poke.cmd/maps-alien-1.pk: Likewise.
+	* poke/pk-settings.pk: Remove setting for auto-map and
+	prompt-maps.
+	* testsuite/Makefile.am (EXTRA_DIST): Remove maps related tests.
+
+2024-06-12  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* poke/pk-cmd-ios.pk (pk_cmd_proc): Make better usage of iscan and
 	report an error if the maps file couldn't be read.
 

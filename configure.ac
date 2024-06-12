@@ -336,7 +336,6 @@ AC_CONFIG_FILES(Makefile
                 pokefmt/Makefile
                 utils/Makefile
                 pickles/Makefile
-                maps/Makefile
                 doc/Makefile
                 man/Makefile
                 po/Makefile.in
