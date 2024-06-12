@@ -1,3 +1,10 @@
+2024-06-13  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* poke/pk-cmd-ios.c (expr_to_ios): Emit diagnostics in all failing
+	cases.
+	(pk_cmd_ios): Adjust accordingly.
+	(pk_cmd_close): Likewise.
+
 2024-06-10  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pvm.jitter (iogetb): Do not convert units to bytes.
