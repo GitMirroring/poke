@@ -77,7 +77,11 @@ pk_cmd_ios (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
   /* ios EXPR */
   pk_ios io;
 
+  pk_val pk_cmd_ios = pk_decl_val (poke_compiler, "pk_cmd_ios");
+  pk_val retval = PK_NULL, exit_exception = PK_NULL;
+
   assert (argc == 2);
+  assert (pk_cmd_ios != PK_NULL);
 
   if (PK_CMD_ARG_TYPE (argv[1]) == PK_CMD_ARG_NULL)
     /* Do nothing.  */
@@ -94,10 +98,11 @@ pk_cmd_ios (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
         }
     }
 
-  pk_ios_set_cur (poke_compiler, io);
-  if (poke_interactive_p && !poke_quiet_p)
-    pk_printf (_("The current IOS is now `%s'.\n"),
-               pk_ios_handler (pk_ios_cur (poke_compiler)));
+  if (pk_call (poke_compiler, pk_cmd_ios, &retval, &exit_exception,
+               1, pk_make_int (poke_compiler, pk_ios_get_id (io), 32)) == PK_ERROR
+      || exit_exception != PK_NULL)
+    PK_UNREACHABLE ();
+
   return 1;
 }
 

@@ -184,3 +184,12 @@ fun pk_cmd_close = (int<32> ios) void:
     }
   close (ios);
 }
+
+/* Switch to a given IO space.  This implements the .ios dot-command.  */
+
+fun pk_cmd_ios = (int<32> ios) void:
+{
+  set_ios (ios);
+  if (pk_interactive_p && !pk_quiet_p)
+    printf ("The current IOS is now `%s'.\n", iohandler (ios));
+}
