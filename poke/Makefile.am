@@ -28,9 +28,19 @@ EXTRA_DIST =
 
 appdir = $(pkgdatadir)/poke
 
-dist_app_DATA = pk-cmd.pk pk-dump.pk pk-save.pk pk-copy.pk pk-diff.pk \
-                pk-extract.pk pk-scrabble.pk poke.pk pk-settings.pk \
-                pk-help.pk pk-tracer.pk pk-cmd-info.pk pk-cmd-ios.pk
+dist_app_DATA = poke.pk \
+                pk-tracer.pk \
+                pk-cmd.pk \
+                pk-cmd-dump.pk \
+                pk-cmd-save.pk \
+                pk-cmd-copy.pk \
+                pk-cmd-diff.pk \
+                pk-cmd-extract.pk \
+                pk-cmd-scrabble.pk \
+                pk-cmd-set.pk \
+                pk-cmd-help.pk \
+                pk-cmd-info.pk \
+                pk-cmd-ios.pk
 
 bin_PROGRAMS = poke
 poke_SOURCES = poke.c poke.h \

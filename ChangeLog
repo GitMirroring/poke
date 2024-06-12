@@ -1,5 +1,17 @@
 2024-06-12  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-cmd-extract.pk: Rename pk-extract.pk.
+	* poke/pk-cmd-diff.pk: Rename from pk-diff.pk.
+	* poke/pk-cmd-copy.pk: Rename from pk-copy.pk.
+	* poke/pk-cmd-dump.pk: Rename from pk-dump.pk.
+	* poke/pk-cmd-scrabble.pk: Rename from pk-scrabble.pk.
+	* poke/pk-cmd-save.pk: Rename from pk-save.pk.
+	* poke/pk-cmd-set.pk: Renamed from pk-settings.pk.
+	* poke/pk-cmd-help.pk: Renamed from pk-help.pk.
+	* poke/Makefile.am (dist_app_DATA): Reflect renaming.
+
+2024-06-12  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* configure.ac (AC_CONFIG_fILES): Do not process maps/Makefile.in.
 	* Makefile.am (SUBDIRS): Do not recurse in maps/.
 	* maps/Makefile.am: Remove.

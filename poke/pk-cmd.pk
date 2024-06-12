@@ -18,9 +18,9 @@
 
 /* poke commands implemented in Poke.  */
 
-load "pk-dump.pk";
-load "pk-copy.pk";
-load "pk-save.pk";
-load "pk-extract.pk";
-load "pk-scrabble.pk";
-load "pk-diff.pk";
+load "pk-cmd-dump.pk";
+load "pk-cmd-copy.pk";
+load "pk-cmd-save.pk";
+load "pk-cmd-extract.pk";
+load "pk-cmd-scrabble.pk";
+load "pk-cmd-diff.pk";

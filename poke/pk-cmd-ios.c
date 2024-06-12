@@ -1,4 +1,4 @@
-/* pk-cmd-ios.c - Commands for operating on IO spaces.  */
+/* pk-cmd-ios.c - Dot-commands for operating on IO spaces.  */
 
 /* Copyright (C) 2019, 2020, 2021, 2022, 2023, 2024 Jose E. Marchesi */
 

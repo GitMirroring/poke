@@ -1,4 +1,4 @@
-/* pk-cmd-set.c - Commands to show and set properties.  */
+/* pk-cmd-set.c - Dot-commands to show and set properties.  */
 
 /* Copyright (C) 2019, 2020, 2021, 2022, 2023, 2024 Jose E. Marchesi */
 
@@ -233,7 +233,7 @@ pk_cmd_set_init ()
   assert (setting_str != PK_NULL);
 
   /* Build set_cmds based on the contents of the global settings
-     registry (see pk-settings.pk).  We want a .set SUBCOMMAND for
+     registry (see pk-cmd-set.pk).  We want a .set SUBCOMMAND for
      each setting.  */
 
   registry = pk_decl_val (poke_compiler, "pk_settings");

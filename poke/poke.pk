@@ -89,8 +89,8 @@ fun pk_print_vm_dispatch = void:
 load "pk-table.pk";
 load "pk-cmd-ios.pk";
 load "pk-cmd-info.pk";
-load "pk-help.pk";
-load "pk-settings.pk";
+load "pk-cmd-help.pk";
+load "pk-cmd-set.pk";
 load "pk-tracer.pk";
 
 /* Default value for poke_prompt.  */

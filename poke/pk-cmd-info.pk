@@ -1,4 +1,4 @@
-/* pk-info.pk - Tool introspection-related commands.  */
+/* pk-info.pk - .info dot-command.  */
 
 /* Copyright (C) 2022, 2023, 2024 Jose E. Marchesi */
 

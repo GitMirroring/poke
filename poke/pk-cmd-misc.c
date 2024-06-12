@@ -1,4 +1,4 @@
-/* pk-cmd-misc.c - Miscellaneous commands.  */
+/* pk-cmd-misc.c - Miscellaneous dot-commands.  */
 
 /* Copyright (C) 2019, 2020, 2021, 2022, 2023, 2024 Jose E. Marchesi */
 

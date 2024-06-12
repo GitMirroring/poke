@@ -1,4 +1,4 @@
-/* pk-cmd-compiler.c - Poke compiler related commands.  */
+/* pk-cmd-compiler.c - Poke compiler related dot-commands.  */
 
 /* Copyright (C) 2023, 2024 Jose E. Marchesi */
 

@@ -1,4 +1,4 @@
-/* pk-diff.pk - Home of the `sdiff' and `bdiff' commands.  */
+/* pk-cmd-diff.pk - Home of the `sdiff' and `bdiff' commands.  */
 
 /* Copyright (C) 2022, 2023, 2024 Jose E. Marchesi */
 
