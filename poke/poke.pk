@@ -91,6 +91,7 @@ load "pk-cmd-ios.pk";
 load "pk-cmd-info.pk";
 load "pk-cmd-help.pk";
 load "pk-cmd-set.pk";
+load "pk-cmd-misc.pk";
 load "pk-tracer.pk";
 
 /* Default value for poke_prompt.  */

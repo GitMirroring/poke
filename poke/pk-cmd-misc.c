@@ -128,50 +128,18 @@ pk_cmd_doc (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 static int
 pk_cmd_jmd (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 {
+  pk_val pk_cmd_jmd = pk_decl_val (poke_compiler, "pk_cmd_jmd");
+  pk_val exit_exception = PK_NULL;
+  pk_val retval = PK_NULL;
+
   assert (argc == 1);
+  assert (pk_cmd_jmd != PK_NULL);
 
-  static const char *strings[] =
-    {
-     "<jmd> I never win on the pokies.",
-     "<jmd> \"poke\" is an anagram of \"peok\" which is the "
-     "Indonesian word for \"dent\".",
-     "<jmd> Good morning poke(wo)men!",
-     "<jmd> jemarch: I though it was a dismissal for a golden duck.",
-     "<jmd> Just have a .do-what-i-want command and be done "
-     "with it.",
-     "<jmd> It looks as if Jose was poking late into the night!",
-     "<jmd> I inadvertently pushed some experimental crap.",
-     "<jmd> Whey are they called \"pickles\"?  They ought to be "
-     "called \"pokles\".",
-     "<jmd> I thought I'd just poke my nose in here and see what's "
-     "going on.",
-     "[jmd wonders if jemarch has \"export EDITOR=poke\" in his .bashrc]",
-     "<jmd> every time I type \"killall -11 poke\", poke segfaults.",
-     "<jemarch> a bugfix a day keeps jmd away",
-     "<jmd> Did you know that \"Poke\" is a Hawaiian salad?",
-     "<jmd> I never place periods after my strncpy.",
-     "<jmd> pokie pokie!",
-     "<jmd> Hokus Pokus",
-     "<mnabipoor> I wanted making a zero-length array for a long (!) time",
-     "<jmd> Please don't talk whilst people are interrupting!",
-     "<jemarch> I'm gonna tattoo \"See HACKING\" on my forehead",
-     "<jemarch> 1000 bitcoins could be in fucking HACKING and you people "
-     "would not fucking notice",
-     "<mnabipoor> Yes, acid is awesome!",
-     "[jemarch blames mnabipoor]",
-     NULL
-    };
-  static int num_strings = 0;
+  if (pk_call (poke_compiler, pk_cmd_jmd, &retval, &exit_exception,
+               0) == PK_ERROR
+      || exit_exception != PK_NULL)
+    PK_UNREACHABLE ();
 
-  if (num_strings == 0)
-    {
-      srand (time (NULL));
-      const char **p = strings;
-      while (*p++ != NULL)
-        num_strings++;
-    }
-
-  pk_printf ("%s\n", strings[rand () % num_strings]);
   return 1;
 }
 

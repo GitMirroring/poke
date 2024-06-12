@@ -1,5 +1,13 @@
 2024-06-12  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-cmd-misc.pk: New file.
+	* poke/poke.pk: Load pk-cmd-misc.pk.
+	* poke/Makefile.am (dist_app_DATA): Add pk-cmd-misc.pk.
+	* poke/pk-cmd-misc.c (pk_cmd_jmd): Call to Poke version of
+	pk_cmd_jmd.
+
+2024-06-12  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* poke/pk-cmd-extract.pk: Rename pk-extract.pk.
 	* poke/pk-cmd-diff.pk: Rename from pk-diff.pk.
 	* poke/pk-cmd-copy.pk: Rename from pk-copy.pk.

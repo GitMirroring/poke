@@ -40,7 +40,8 @@ dist_app_DATA = poke.pk \
                 pk-cmd-set.pk \
                 pk-cmd-help.pk \
                 pk-cmd-info.pk \
-                pk-cmd-ios.pk
+                pk-cmd-ios.pk \
+                pk-cmd-misc.pk
 
 bin_PROGRAMS = poke
 poke_SOURCES = poke.c poke.h \

@@ -1,0 +1,47 @@
+/* pk-cmd-misc.pk - Miscellaneous dot-commands.  */
+
+/* Copyright (C) 2024 Jose E. Marchesi */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+var pk_jmd_cookies =
+  [  "<jmd> I never win on the pokies.",
+     "<jmd> \"poke\" is an anagram of \"peok\" which is the Indonesian word for \"dent\".",
+     "<jmd> Good morning poke(wo)men!",
+     "<jmd> jemarch: I though it was a dismissal for a golden duck.",
+     "<jmd> Just have a .do-what-i-want command and be done with it.",
+     "<jmd> It looks as if Jose was poking late into the night!",
+     "<jmd> I inadvertently pushed some experimental crap.",
+     "<jmd> Whey are they called \"pickles\"?  They ought to be called \"pokles\".",
+     "<jmd> I thought I'd just poke my nose in here and see what's going on.",
+     "[jmd wonders if jemarch has \"export EDITOR=poke\" in his .bashrc]",
+     "<jmd> every time I type \"killall -11 poke\", poke segfaults.",
+     "<jemarch> a bugfix a day keeps jmd away",
+     "<jmd> Did you know that \"Poke\" is a Hawaiian salad?",
+     "<jmd> I never place periods after my strncpy.",
+     "<jmd> pokie pokie!",
+     "<jmd> Hokus Pokus",
+     "<mnabipoor> I wanted making a zero-length array for a long (!) time",
+     "<jmd> Please don't talk whilst people are interrupting!",
+     "<jemarch> I'm gonna tattoo \"See HACKING\" on my forehead",
+     "<jemarch> 1000 bitcoins could be hidding in HACKING and you people would not fucking notice",
+     "<mnabipoor> Yes, acid is awesome!",
+     "[jemarch blames mnabipoor]",
+  ];
+
+fun pk_cmd_jmd = void:
+{
+  printf ("%s\n", pk_jmd_cookies[rand (gettime[1]) % pk_jmd_cookies'length]);
+}
