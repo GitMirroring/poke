@@ -1,3 +1,8 @@
+2024-06-12  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* poke/pk-cmd-ios.pk (pk_cmd_proc): Make better usage of iscan and
+	report an error if the maps file couldn't be read.
+
 2024-06-12  Jose E. Marchesi  <jemarch@termi>
 
 	* libpoke/ios.h (IOS_ENOENT): Define.

@@ -121,24 +121,23 @@ fun pk_cmd_proc = (uint<64> pid, uint<32> flags) int<32>:
     {
       /* Read the process maps file. Each line describes a mapped
          region in the process' virtual memory space.  Create a sub
-         IOS for each. If we can't figure out the format of a line, it
-         is simply ignored.  */
-
+         IOS for each. */
       try with_temp_ios
           :handler format ("/proc/%u64d/maps", pid)
           :do lambda void:
             {
+              var hexchars = "0123456789abcdefABCDEF";
               var iscan = IScan_String { };
               iscan.ios = get_ios;
 
               for (eol in iscan.find ("\n", 1#MB))
                 {
                   var spaces = iscan.find (" ", eol);
-                  var range_begin = strtoi (iscan.tab (iscan.find ("-", eol)[0]), 16);
-                  iscan.move (1#B);
-                  var range_end = strtoi (iscan.tab (spaces[0]), 16);
-                  iscan.move (1#B);
-                  var perms = iscan.tab (spaces[1]);
+                  var range_begin = strtoi (iscan.tab (iscan.manyof (hexchars, eol)), 16).val;
+                  iscan.tab (iscan.match ("-"));
+                  var range_end = strtoi (iscan.tab (iscan.manyof (hexchars, eol)), 16).val;
+                  iscan.tab (iscan.match (" "));
+                  var perms = iscan.tab (iscan.manyof ("rwxp-", eol));
                   iscan.pos = spaces[spaces'length - 1];
                   iscan.move (1#B);
                   var name = iscan.tab (eol);
@@ -149,15 +148,21 @@ fun pk_cmd_proc = (uint<64> pid, uint<32> flags) int<32>:
                     {
                       open (format ("sub://%i32d/0x%s/0x%s/%s",
                                     ios,
-                                    ltrim (format ("%u64x", range_begin.val), "0"),
-                                    ltrim (format ("%u64x", range_end.val - range_begin.val), "0"),
+                                    ltrim (format ("%u64x", range_begin), "0"),
+                                    ltrim (format ("%u64x", range_end - range_begin), "0"),
                                     name),
                             (perms[0] == 'r' ? IOS_F_READ : 0)
                             | (perms[1] == 'w' ? IOS_F_WRITE : 0));
                     }
                 }
             };
-      catch { }
+      catch
+        {
+          term_begin_class ("error");
+          print ("error:");
+          term_end_class ("error");
+          printf (" couln't get maps information for %s\n", handler);
+        }
     }
 
   return ios;
