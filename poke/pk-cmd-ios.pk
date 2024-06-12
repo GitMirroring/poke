@@ -84,6 +84,27 @@ fun pk_cmd_mem_unique = int<32>:
   return -1;
 }
 
+/* Open a sub-IO space.
+
+   IOS is the Id of the super-IOS.
+   BASE is the offset within the super-IOS, in bytes.
+   SIZE is the size of the sub-IO space, in bytes.
+   NAME is a string with the name of the sub-IO space to create.
+
+   Return the Id of the new IO space, or -1 if there was some
+   error. */
+
+fun pk_cmd_sub = (int<32> ios, uint<64> base, uint<64> size,
+                  string name) int<32>:
+{
+  var base_str = ltrim (format ("%u64x", base), "0");
+  var size_str = ltrim (format ("%u64x", size), "0");
+  var handler = format ("sub://%i32d/0x%s/0x%s/%s",
+                        ios, base_str, size_str, name);
+
+  return pk_openset_handler (handler);
+}
+
 /* Open a mmap IO space.
 
    FILENAME is the path to the file to open.

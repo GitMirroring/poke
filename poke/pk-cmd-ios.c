@@ -109,11 +109,15 @@ pk_cmd_ios (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 static int
 pk_cmd_sub (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 {
-  char *handler, *name;
   pk_ios ios;
   uint64_t base, size;
+  char *name;
+
+  pk_val pk_cmd_sub = pk_decl_val (poke_compiler, "pk_cmd_sub");
+  pk_val retval = PK_NULL, exit_exception = PK_NULL;
 
   assert (argc == 5);
+  assert (pk_cmd_sub != PK_NULL);
 
   /* Collect and validate arguments.  */
 
@@ -121,7 +125,6 @@ pk_cmd_sub (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
   ios = expr_to_ios (PK_CMD_ARG_STR (argv[1]));
   if (ios == NULL)
     return 0;
-
   assert (PK_CMD_ARG_TYPE (argv[2]) == PK_CMD_ARG_UINT);
   base = PK_CMD_ARG_UINT (argv[2]);
 
@@ -132,21 +135,17 @@ pk_cmd_sub (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
           ? PK_CMD_ARG_STR (argv[4])
           : NULL);
 
-  /* Build the handler.  */
-  if (asprintf (&handler, "sub://%d/0x%" PRIx64 "/0x%" PRIx64 "/%s",
-                pk_ios_get_id (ios), base, size, name ? name : "") == -1)
-    return 0;
+  /* Create the sub-IO space.  */
+  if (pk_call (poke_compiler, pk_cmd_sub, &retval, &exit_exception,
+               4,
+               pk_make_int (poke_compiler, pk_ios_get_id (ios), 32),
+               pk_make_uint (poke_compiler, base, 64),
+               pk_make_uint (poke_compiler, size, 64),
+               pk_make_string (poke_compiler, name ? name : "")) == PK_ERROR
+      || exit_exception != PK_NULL)
+    PK_UNREACHABLE ();
 
-  /* Open the IOS.  */
-  if (pk_ios_open (poke_compiler, handler, 0, 1) == PK_IOS_NOID)
-    {
-      pk_printf (_("Error creating sub IOS %s\n"), handler);
-      free (handler);
-      return 0;
-    }
-
-  free (handler);
-  return 1;
+  return pk_int_value (retval) != -1;
 }
 
 #define PK_PROC_UFLAGS "mM"
