@@ -1,5 +1,12 @@
 2024-06-13  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-cmd-ios.c (expr_to_ios): Emit diagnostics in all failing
+	cases.
+	(pk_cmd_ios): Adjust accordingly.
+	(pk_cmd_close): Likewise.
+
+2024-06-13  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* poke/pk-cmd-ios.pk (pk_cmd_sub): New funtion.
 	* poke/pk-cmd-ios.c (pk_cmd_sub): Rewrite to use the Poke version.
 

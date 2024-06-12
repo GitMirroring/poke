@@ -48,6 +48,7 @@ expr_to_ios (const char *expr)
   pk_val val;
   pk_val exit_exception = PK_NULL;
   int ret;
+  pk_ios io;
 
   pk_set_lexical_cuckolding_p (poke_compiler, 1);
   ret = pk_compile_expression (poke_compiler, expr, NULL, &val,
@@ -66,9 +67,25 @@ expr_to_ios (const char *expr)
   /* See that VAL is an IO space, i.e. an int<32>.  */
   if (pk_type_code (pk_typeof (val)) != PK_TYPE_INT
       || pk_int_size (val) != 32)
-    return NULL;
+    {
+      pk_term_class ("error");
+      pk_puts (_("error:"));
+      pk_term_end_class ("error");
+      pk_puts (" please specify a valid IO space\n");
+      return NULL;
+    }
 
-  return pk_ios_search_by_id (poke_compiler, pk_int_value (val));
+  io = pk_ios_search_by_id (poke_compiler, pk_int_value (val));
+  if (io == NULL)
+    {
+      pk_term_class ("error");
+      pk_puts (_("error:"));
+      pk_term_end_class ("error");
+      pk_printf (" no such IO space with id %" PRIx64 "\n", pk_int_value (val));
+      return NULL;
+    }
+
+  return io;
 }
 
 static int
@@ -92,10 +109,7 @@ pk_cmd_ios (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 
       io = expr_to_ios (PK_CMD_ARG_STR (argv[1]));
       if (io == NULL)
-        {
-          pk_puts ("error: no such IO space\n");
-          return 0;
-        }
+        return 0;
     }
 
   if (pk_call (poke_compiler, pk_cmd_ios, &retval, &exit_exception,
@@ -244,10 +258,7 @@ pk_cmd_close (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
     {
       io = expr_to_ios (expr);
       if (io == NULL)
-        {
-          pk_printf (_("error: no such IO space\n"));
-          return 0;
-        }
+        return 0;
     }
 
   if (pk_call (poke_compiler, pk_cmd_close, &retval, &exit_exception,
