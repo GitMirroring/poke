@@ -56,7 +56,6 @@ pkl_detailed_location (pkl_ast ast, pkl_ast_loc loc,
     return;
 
   if (ast->filename)
-
     {
       FILE *fp = fopen (ast->filename, "rb");
       int c;
@@ -391,6 +390,8 @@ pkl_loc_to_source (struct pkl_parser *parser, pkl_ast_loc loc,
       assert (tmp == 0);
       fclose (fp);
     }
+  else if (parser->ast->buffer)
+    goto do_buffer;
 
   return str;
 

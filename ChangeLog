@@ -1,3 +1,9 @@
+2024-06-13  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-diag.c (pkl_detailed_location): Remove extra empty
+	line.
+	(pkl_loc_to_source): Handle compilation from buffer.
+
 2024-06-13  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* poke/pk-cmd-ios.c (expr_to_ios): Emit diagnostics in all failing
