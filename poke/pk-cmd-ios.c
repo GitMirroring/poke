@@ -399,6 +399,9 @@ pk_cmd_mem (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 static int
 pk_cmd_nbd (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 {
+  pk_val pk_cmd_nbd = pk_decl_val (poke_compiler, "pk_cmd_nbd");
+  pk_val retval = PK_NULL, exit_exception = PK_NULL;
+
   /* nbd URI */
 
   assert (argc == 2);
@@ -408,26 +411,12 @@ pk_cmd_nbd (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
   const char *arg_str = PK_CMD_ARG_STR (argv[1]);
   char *nbd_name = xstrdup (arg_str);
 
-  if (pk_ios_search (poke_compiler, nbd_name, PK_IOS_SEARCH_F_EXACT) != NULL)
-    {
-      printf (_("Buffer %s already opened.  Use `.ios IOS' to switch.\n"),
-              nbd_name);
-      free (nbd_name);
-      return 0;
-    }
+  if (pk_call (poke_compiler, pk_cmd_nbd, &retval, &exit_exception,
+               1, pk_make_string (poke_compiler, nbd_name)) == PK_ERROR
+      || exit_exception != PK_NULL)
+    PK_UNREACHABLE ();
 
-  if (PK_IOS_NOID == pk_ios_open (poke_compiler, nbd_name, 0, 1))
-    {
-      pk_printf (_("Error creating NBD IOS %s\n"), nbd_name);
-      free (nbd_name);
-      return 0;
-    }
-
-  if (poke_interactive_p && !poke_quiet_p)
-    pk_printf (_("The current IOS is now `%s'.\n"),
-               pk_ios_handler (pk_ios_cur (poke_compiler)));
-
-  return 1;
+  return (pk_int_value (retval) != -1);
 }
 #endif /* HAVE_LIBNBD */
 

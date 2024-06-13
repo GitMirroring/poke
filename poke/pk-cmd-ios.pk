@@ -105,6 +105,17 @@ fun pk_cmd_sub = (int<32> ios, uint<64> base, uint<64> size,
   return pk_openset_handler (handler);
 }
 
+/* Open a NBD IO space.
+
+   URI si the nbd uri to open.  Return the id of the opened IO space,
+   or -1 in case of error.  */
+
+fun pk_cmd_nbd = (string uri) int<32>:
+{
+  /* XXX validate URI.  */
+  return pk_openset_handler (uri);
+}
+
 /* Open a mmap IO space.
 
    FILENAME is the path to the file to open.
