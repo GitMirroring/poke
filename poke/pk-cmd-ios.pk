@@ -182,8 +182,10 @@ fun pk_cmd_proc = (uint<64> pid, uint<32> flags) int<32>:
                     {
                       open (format ("sub://%i32d/0x%s/0x%s/%s",
                                     ios,
-                                    ltrim (format ("%u64x", range_begin), "0"),
-                                    ltrim (format ("%u64x", range_end - range_begin), "0"),
+                                    (ltrim (format ("%u64x", range_begin), "0")
+                                     + (range_begin == 0 ? "0" : "")),
+                                    (ltrim (format ("%u64x", range_end - range_begin), "0")
+                                     + (range_end == 0 ? "0" : "")),
                                     name),
                             (perms[0] == 'r' ? IOS_F_READ : 0)
                             | (perms[1] == 'w' ? IOS_F_WRITE : 0));
