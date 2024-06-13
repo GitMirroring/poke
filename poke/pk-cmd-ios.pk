@@ -97,8 +97,8 @@ fun pk_cmd_mem_unique = int<32>:
 fun pk_cmd_sub = (int<32> ios, uint<64> base, uint<64> size,
                   string name) int<32>:
 {
-  var base_str = ltrim (format ("%u64x", base), "0");
-  var size_str = ltrim (format ("%u64x", size), "0");
+  var base_str = ltrim (format ("%u64x", base), "0") + (base == 0 ? "0" : "");
+  var size_str = ltrim (format ("%u64x", size), "0") + (base == 0 ? "0" : "");
   var handler = format ("sub://%i32d/0x%s/0x%s/%s",
                         ios, base_str, size_str, name);
 
@@ -113,8 +113,10 @@ fun pk_cmd_sub = (int<32> ios, uint<64> base, uint<64> size,
 
 fun pk_cmd_mmap = (string filename, uint<64> base, uint<64> size) int<32>:
 {
-  var handler = format ("mmap://0x%u64x/0x%u64x/%s",
-                         base, size, filename);
+  var base_str = ltrim (format ("%u64x", base), "0") + (base == 0 ? "0" : "");
+  var size_str = ltrim (format ("%u64x", size), "0") + (base == 0 ? "0" : "");
+  var handler = format ("mmap://0x%s/0x%s/%s",
+                         base_str, size_str, filename);
 
   return pk_openset_handler (handler);
 }

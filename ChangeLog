@@ -1,3 +1,8 @@
+2024-06-13  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* poke/pk-cmd-ios.pk (pk_cmd_mmap): Trim long integers in handler.
+	(pk_cmd_sub): Fix trimming of digits for zero values.
+
 2024-06-13  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-diag.c (pkl_detailed_location): Remove extra empty
