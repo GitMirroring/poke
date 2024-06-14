@@ -3,4 +3,4 @@
 
 /* { dg-command { var input = open ("foo", IOS_M_WRONLY) } } */
 /* { dg-command { dump :ios input :size 1#B :ruler 0 } } */
-/* { dg-output "00000001: \?\?\?\? \?\?" } */
+/* { dg-output "00000001: [?][?][?][?] [?][?]} */
