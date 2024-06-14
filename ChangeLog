@@ -1,3 +1,9 @@
+2024-06-14  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* pickles/ios.pk (ios_dump_bytes): Print unknown_byte instead of
+	raising E_perm.
+	* testsuite/poke.cmd/dump-10.pk: Adapt accordingly.
+
 2024-06-13  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* poke/pk-cmd-ios.pk (pk_cmd_proc): Fix trimming of digits for

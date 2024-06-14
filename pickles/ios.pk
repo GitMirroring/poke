@@ -87,7 +87,7 @@ var ios_dumpval_last = any[1](0);
    argument has a negative value then no limit applies.  Defaults to
    -1.
 
-   This function may raise E_io, E_perm, and E_eof on several error
+   This function may raise E_io, and E_eof on several error
    conditions.  */
 
 fun ios_dump_bytes = (int<32> ios,
@@ -197,14 +197,19 @@ fun ios_dump_bytes = (int<32> ios,
             term_end_class (style);
           len += 1;
         }
-        catch if E_io
+        catch (Exception e)
         {
-          if (style != "")
-            term_begin_class (style);
-          printf "%c", nonprintable_char;
-          if (style != "")
-            term_end_class (style);
-          len += 1;
+          if (e.code in [EC_io, EC_perm])
+            {
+              if (style != "")
+                term_begin_class (style);
+              printf "%c", nonprintable_char;
+              if (style != "")
+                term_end_class (style);
+              len += 1;
+            }
+          else
+            raise e;
         }
         o++;
 	if (o < 16#B && (o % (cluster_by * group_by)) == 0#B)
@@ -334,15 +339,20 @@ fun ios_dump_bytes = (int<32> ios,
 
                 col += 2;
               }
-              catch if E_io
+              catch (Exception e)
               {
-                if (o % group_by == 0#B)
+                if (e.code in [EC_io, EC_perm])
                   {
-                    print " ";
-                    col += 1;
+                    if (o % group_by == 0#B)
+                      {
+                        print " ";
+                        col += 1;
+                      }
+                    printf ("%<dump-unknown:%s%>", unknown_byte);
+                    col += 2;
                   }
-                printf ("%<dump-unknown:%s%>", unknown_byte);
-                col += 2;
+                else
+                  raise e;
               }
 
               o++;
@@ -397,10 +407,6 @@ fun ios_dump_bytes = (int<32> ios,
         col = 0;
       }
   }
-
-  /* First of all, we require a readable IO space.  */
-  if (! (ioflags (ios) & IOS_F_READ))
-    raise E_perm;
 
   /* If `val' is specified, it can be:
      negative int<32> -> for "no value".
