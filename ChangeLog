@@ -1,3 +1,9 @@
+2024-06-15  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-tab.y (pushlevel_args): Call `assert' on
+	the result of `pkl_register_arg' function instead of the
+	whole function call expression.
+
 2024-06-13  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-diag.c (pkl_detailed_location): Remove extra empty
