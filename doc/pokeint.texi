@@ -1174,7 +1174,7 @@ compiled Poke code from that code; for example, to execute complex
 formulae or to perform some operation defined recursively.
 
 In these situations, the solution is to first write a Poke function in
-the compiler's runtime library, @file{pkl-rt*.pk}, like:
+the compiler's runtime library, @file{pkl-rt.pk}, like:
 
 @example
 fun _pkl_foo = (uint<64> ival, uint<64> eval,
