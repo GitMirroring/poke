@@ -693,7 +693,6 @@ program_elem:
             $$ = $2;
           }
         | stmt
-        | load
         ;
 
 load:
@@ -2669,6 +2668,7 @@ stmt:
                     PKL_AST_LOC (PKL_AST_TYPE ($2)) = @2;
                   PKL_AST_LOC ($$) = @$;
                 }
+        | load
         ;
 
 funcall_stmt:

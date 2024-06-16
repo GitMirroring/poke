@@ -1,3 +1,18 @@
+2024-06-16  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-parser.c (pkl_parse_file): Change the assertion
+	to not check for top-level env.
+	* libpoke/pkl-tab.y (program_elem): Remove `load'.
+	(stmt): Define `load' as a statement.
+	* libpoke/pkl-gen.c (pkl_gen_ps_src): Change the `in_file_p'
+	logic to string comparison against `"<stdin>"', instead of
+	comparing against `NULL'.
+	(pkl_gen_ps_program): Fix comment.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+	* testsuite/poke.pkl/load-6.pk: New test.
+	* testsuite/poke.pkl/load-diag-3.pk: Likewise.
+	* doc/poke.texi (Modules): Add a new paragraph and example.
+
 2024-06-30  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* testsuite/poke.pkl/break-while-7.pk: New test.

@@ -14976,10 +14976,25 @@ If the environment variable @code{POKEDATADIR} is defined, it replaces
 @file{@var{prefix}/share/poke}.  This is mainly intended to test a
 poke program before it gets installed in its final location.
 
-Nothing prevents you to load the same pickle twice.  This will work if
-the pickle doesn't include definitions, but just executes statements.
-Otherwise, you will likely get an error due to trying to define stuff
-twice.
+Nothing prevents you to load the same pickle twice.  This will re-define
+all the definitions.  The new definitions are distinct from previous
+definitions.
+
+It is also possible to use @code{load} construction inside a lexical
+block.  Obviously new definitions are not available outside of the
+lexical block.
+
+@example
+while (1)
+  @{
+    load color;
+
+    assert (color_name (color_blue) == "blue");
+    break;
+  @}
+
+/* color_blue is not accessible here.  */
+@end example
 
 There is an alternate syntax of the @code{load} construction that is
 useful when the module is implemented in a file whose name doesn't

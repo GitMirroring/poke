@@ -254,7 +254,8 @@ pkl_gen_finalize (void *payload)
 PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_src)
 {
   PKL_GEN_PAYLOAD->in_file_p
-    = (PKL_AST_SRC_FILENAME (PKL_PASS_NODE) != NULL);
+      = PKL_AST_SRC_FILENAME (PKL_PASS_NODE)
+        && STRNEQ (PKL_AST_SRC_FILENAME (PKL_PASS_NODE), "<stdin>");
   PKL_GEN_PAYLOAD->filename = PKL_AST_SRC_FILENAME (PKL_PASS_NODE);
 }
 PKL_PHASE_END_HANDLER
@@ -297,7 +298,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_program)
            && PKL_AST_CODE (PKL_AST_PROGRAM_ELEMS (PKL_PASS_NODE)) == PKL_AST_EXP_STMT))
     pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL);
 
-  PKL_PASS_AST->payload = pkl_asm_finish (PKL_GEN_ASM, 1 /* prologue */);
+  PKL_PASS_AST->payload = pkl_asm_finish (PKL_GEN_ASM, 1 /* epilogue */);
 }
 PKL_PHASE_END_HANDLER
 

@@ -1,0 +1,10 @@
+/* { dg-do compile } */
+/* { dg-data {a*} {var bar = 10; } foo2.pk } */
+
+var foo = 20;
+{
+  load foo2;
+
+  bar = 3;
+}
+bar = 2;  /* { dg-error "" } */

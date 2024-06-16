@@ -103,15 +103,15 @@ pkl_parse_file (pkl_compiler compiler, pkl_env *env,
     ret = pkl_tab_parse (parser);
   else
     goto out_of_memory;
-  *ast = parser->ast;
-  *env = parser->env;
-
-  /* In the absence of an error, only the top-level compile-time
+  /* In the absence of an error, only the initial compile-time
      environment should remain after parsing.  In the case of an
      error, this doesn't matter since the environment is gonna be
      discarded anyway.  XXX but it would be nice to fix this in the
      parser's destructor.  */
-  assert (ret != 0 || pkl_env_toplevel_p (parser->env));
+  assert (ret != 0 || parser->env == *env);
+  *ast = parser->ast;
+  *env = parser->env;
+
   pkl_parser_free (parser);
 
   return ret;

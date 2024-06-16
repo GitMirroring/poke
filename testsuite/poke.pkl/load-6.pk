@@ -1,0 +1,14 @@
+/* { dg-do run } */
+/* { dg-data {a*} {n += 1; var foo = 10; } foo.pk } */
+
+var n = 42;
+
+
+/* { dg-command { .set obase 10 } } */
+/* { dg-command { assert (n == 42) } } */
+/* { dg-command { lambda void: { { load foo; }; printf ("%v\n", n); } () } } */
+/* { dg-output "43" } */
+/* { dg-command { lambda void: { { load foo; { foo = 1; load foo; printf ("%v\n", foo); } } } (); } } */
+/* { dg-output "\n10" } */
+/* { dg-command { n } } */
+/* { dg-output "\n45" } */
