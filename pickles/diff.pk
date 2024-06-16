@@ -202,7 +202,9 @@ fun diff_structured = (any a, any b,
 
   fun elem_simple_p = (any elem, uint<64> idx) int<32>:
   {
-    try { elem'elem(idx)'elem (0); return 0; }
+    /* To see if IDX-th element is "simple", we try to see if it is
+       mapped or not.  If it's not mapped, then it's "simple".  */
+    try { return !elem'elem (idx)'mapped; }
     catch (Exception e)
     {
       if (e.code == EC_out_of_bounds)

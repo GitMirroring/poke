@@ -118,6 +118,7 @@ EXTRA_DIST = \
   poke.cmd/sdiff-10.pk \
   poke.cmd/sdiff-11.pk \
   poke.cmd/sdiff-12.pk \
+  poke.cmd/sdiff-13.pk \
   poke.cmd/set-autoremap-1.pk \
   poke.cmd/set-endian.pk \
   poke.cmd/set-error-on-warning.pk \
