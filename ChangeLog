@@ -1,3 +1,10 @@
+2024-06-16  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* pickles/diff.pk (diff_structured): Fix `elem_simple_p'
+	to detect "simple" types correctly.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
+	* testsuite/poke.cmd/sdiff-13.pk: New test.
+
 2024-06-15  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-tab.y (pushlevel_args): Call `assert' on

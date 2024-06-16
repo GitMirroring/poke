@@ -1,0 +1,12 @@
+/* { dg-do run } */
+/* { dg-data {c*} {0x7f 0xff 0xff } } */
+
+type Bit = struct uint<1> { uint<1> bit; };
+type Foo = struct uint<16> { Bit bit; uint<15> u15; };
+
+
+/* { dg-command {.set endian little} } */
+/* { dg-command {sdiff :a (Foo @ 0#B) :b (Foo @ 1#B) :values 0 } } */
+/* { dg-output "@@ 0x00\\+2,0x01\\+2 @@\n" } */
+/* { dg-output "-7f ff +a *\n" } */
+/* { dg-output "\\+ff ff +b *\n" } */
