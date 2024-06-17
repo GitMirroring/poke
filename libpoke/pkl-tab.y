@@ -1442,7 +1442,7 @@ pushlevel_args:
                       pkl_ast_node arg_name
                         = pkl_ast_make_identifier (pkl_parser->ast,
                                                    "SELF");
-                      int registered_p __attribute__ ((maybe_unused));
+                      int registered_p __attribute__ ((unused));
 
                       pkl_ast_node arg
                         = pkl_ast_make_func_arg (pkl_parser->ast,
