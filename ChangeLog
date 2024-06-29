@@ -1,3 +1,8 @@
+2024-06-29  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* testsuite/poke.libpoke/api.c (include "read-file.h"): Remove
+	unused header file.
+
 2024-06-16  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* pickles/diff.pk (diff_structured): Fix `elem_simple_p'
