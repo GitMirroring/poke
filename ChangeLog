@@ -1,5 +1,10 @@
 2024-06-30  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pkl-ast.c (pkl_ast_format_1): Show `nframes' and
+	`npopes' fields of `PKL_AST_BREAK_CONTINUE_STMT' node.
+
+2024-06-30  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* testsuite/poke.pkl/break-while-3.pk: Use explicit
 	output base 10.
 

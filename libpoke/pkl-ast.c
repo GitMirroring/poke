@@ -3733,6 +3733,8 @@ pkl_ast_format_1 (struct string_buffer *buffer,
     case PKL_AST_BREAK_CONTINUE_STMT:
       IPRINTF ("BREAK_CONTINUE_STMT::\n");
       PRINT_COMMON_FIELDS;
+      PRINT_AST_IMM (nframes, BREAK_CONTINUE_STMT_NFRAMES, "%d");
+      PRINT_AST_IMM (npopes, BREAK_CONTINUE_STMT_NPOPES, "%d");
       break;
 
     case PKL_AST_RAISE_STMT:
