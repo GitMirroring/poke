@@ -121,6 +121,8 @@ pkl_trans_in_functions (struct pkl_trans_function_ctx functions[],
       assert (PKL_TRANS_PAYLOAD->next_escapable < PKL_TRANS_MAX_COMP_STMT_NEST);\
       PKL_TRANS_PAYLOAD->escapables[PKL_TRANS_PAYLOAD->next_escapable].nframes  \
         = 0;                                                    \
+      PKL_TRANS_PAYLOAD->escapables[PKL_TRANS_PAYLOAD->next_escapable].npopes \
+        = 0;                                                    \
       PKL_TRANS_PAYLOAD->escapables[PKL_TRANS_PAYLOAD->next_escapable++].node \
         = (b);                                                  \
     }                                                           \

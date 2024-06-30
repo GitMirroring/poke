@@ -1,5 +1,10 @@
 2024-06-30  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pkl-trans.c (PKL_TRANS_PUSH_ESCAPABLE): Initialize
+	`npopes' field.
+
+2024-06-30  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-trans.c (pkl_trans1_pr_try_stmt_handler): Fix
 	`nframes' tracking to only change iff we're using try-catch
 	with argument form: `try {...} catch (Exception ex) {...}'.
