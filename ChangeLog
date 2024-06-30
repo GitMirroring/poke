@@ -1,3 +1,14 @@
+2024-06-30  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-trans.c (pkl_trans1_pr_try_stmt_handler): Fix
+	`nframes' tracking to only change iff we're using try-catch
+	with argument form: `try {...} catch (Exception ex) {...}'.
+	* (pkl_trans1_ps_try_stmt_handler): Likewise.
+	* testsuite/poke.pkl/break-while-4.pk: New test.
+	* testsuite/poke.pkl/break-while-5.pk: Likewise.
+	* testsuite/poke.pkl/break-while-6.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
 2024-06-16  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* pickles/diff.pk (diff_structured): Fix `elem_simple_p'
