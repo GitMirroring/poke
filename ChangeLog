@@ -1,5 +1,10 @@
 2024-06-30  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* NEWS: Update.
+	* doc/gendocs_template: Update version to `4.2'.
+
+2024-06-30  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-ast.c (pkl_ast_format_1): Show `nframes' and
 	`npopes' fields of `PKL_AST_BREAK_CONTINUE_STMT' node.
 

@@ -7,6 +7,59 @@ See the manual for detailed information.
   are permitted in any medium without royalty provided the copyright
   notice and this notice are preserved.
 
+ Version 4.2 (30 Jun 2024)
+* Bug fixes
+
+  - Handle `strdup' error correctly in mmap IO device.
+
+  - Exclude unnamed fields when traversing struct types.  Fixes bug 31836.
+
+  - Replace `strtok' with `strtok_r' in pkl-ast.
+
+  - Fix the compiler to not accept invalid use of `break'/`continue'
+    statements.
+
+  - Fix the compiler to emit the correct code for valid `break'/`continue'
+    statements in more unconventional cases.
+
+  - Fix `iogetb' to always produce a bit offset due to signature of
+    `iobias' function.
+
+  - Fix `pkl_loc_to_source' to handle compilation from buffer correctly.
+
+  - Fix use of `assert' function in parser.
+
+* Improvements
+
+  - Diagnostics for invalid casts has been improved.
+
+  - Improve diagnostics of `.ios' command.
+
+* Build system update
+
+  - Handle execution errors for `pokefmt' tests.
+
+* Pickles update
+
+  - `diff_structured' function in `diff' pickle has been fixed to detect
+    "simple types" correctly (types that have value semantics instead of
+    reference semantics).
+
+* Documentation update
+
+  - Update reference manual to use `.vm disa' as short name for
+    `.vm disassemble' instead of `.vm dis'.
+
+* Internal changes
+
+  - Internal machinery for compiler builtins has been removed.  These were
+    no longer necessary.
+
+* Jitter update
+
+  - Update jitter submodule to incorporate a fix for `configure' portability
+    issue on some old systems.
+
  Version 4.1 (30 May 2024)
 * Bug fixes
 
