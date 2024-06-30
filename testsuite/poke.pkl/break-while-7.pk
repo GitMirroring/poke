@@ -1,0 +1,10 @@
+/* { dg-do run } */
+
+var a = 10;
+while (1)
+  try { raise E_generic; }
+  catch (Exception ex) { while (1) break; { break; } }
+printf "%v\n", a;
+
+/* { dg-command {.set obase 10} } */
+/* { dg-output "10" } */

@@ -1,5 +1,10 @@
 2024-06-30  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* testsuite/poke.pkl/break-while-7.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
+2024-06-30  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* NEWS: Update.
 	* doc/gendocs_template: Update version to `4.2'.
 
