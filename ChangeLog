@@ -1,5 +1,10 @@
 2024-06-30  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* testsuite/poke.pkl/break-while-3.pk: Use explicit
+	output base 10.
+
+2024-06-30  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-trans.c (PKL_TRANS_PUSH_ESCAPABLE): Initialize
 	`npopes' field.
 
