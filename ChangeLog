@@ -1,3 +1,8 @@
+2024-07-08  Emanuele Torre  <torreemanuele6@gmail.com>
+
+	* pickles/pe.pk (PE_Opt_Hdr): loader_flags is not zero in many
+	instances.  Adapt constraint accordingly.
+
 2024-06-16  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-parser.c (pkl_parse_file): Change the assertion

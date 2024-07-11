@@ -1034,8 +1034,9 @@ type PE_Opt_Hdr =
       offset<uint<32>,B> s32;
     } size_of_heap_commit;
 
-    /* Loader flags.  This is reserved and must be zero.  */
-    uint<32> loader_flags == 0;
+    /* Loader flags.  This is reserved and should be zero.
+       However, sometimes it is not zero.  */
+    uint<32> loader_flags;
 
     /* Number of data-directory entries in the remainder of the
        optional header.  */
