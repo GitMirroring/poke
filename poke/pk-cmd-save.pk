@@ -27,8 +27,7 @@ pk_help_add_topic
           topic = "save",
           summary = "save a range of an IO space to a file",
           description = format ("
-Get the bytes corresponding to a given mapped value and create a
-memory IO space that contains them.
+Save bytes from an IO space to a file.
 
 Synopsis:
 
@@ -60,8 +59,6 @@ Arguments:
 
   :verbose (bool)
          Be verbose.  Defaults to %i32d.
-
-If the given value is not mapped `extract' raises E_map.
 
 See `.doc save' for more information.",
                                 pk_save_from, pk_save_size,

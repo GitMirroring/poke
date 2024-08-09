@@ -1,3 +1,7 @@
+2024-08-09  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* poke/pk-cmd-save.pk: Fix documentation of the `save' command.
+
 2024-07-11  Emanuele Torre  <torreemanuele6@gmail.com>
 
 	* MAINTAINERS: fix typo.
