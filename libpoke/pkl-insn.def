@@ -203,6 +203,9 @@ PKL_DEF_INSN(PKL_INSN_BXORIU,"","bxoriu")
 PKL_DEF_INSN(PKL_INSN_BXORL,"","bxorl")
 PKL_DEF_INSN(PKL_INSN_BXORLU,"","bxorlu")
 
+PKL_DEF_INSN(PKL_INSN_POPCOUNTIU,"","popcountiu")
+PKL_DEF_INSN(PKL_INSN_POPCOUNTLU,"","popcountlu")
+
 /* Relational instructions.  */
 
 PKL_DEF_INSN(PKL_INSN_AND,"","and")

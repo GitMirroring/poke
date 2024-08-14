@@ -634,6 +634,12 @@ EXTRA_DIST = \
   poke.pickles/gpt-test.pk \
   poke.pickles/guid-test.pk \
   poke.pkl/pkl.exp \
+  poke.pkl/popcount-1.pk \
+  poke.pkl/popcount-2.pk \
+  poke.pkl/popcount-3.pk \
+  poke.pkl/popcount-4.pk \
+  poke.pkl/popcount-5.pk \
+  poke.pkl/popcount-6.pk \
   poke.pkl/postincr-1.pk \
   poke.pkl/postincr-2.pk \
   poke.pkl/postdecr-1.pk \

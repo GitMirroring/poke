@@ -1,3 +1,28 @@
+2024-08-14  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* bootstrap.conf (libpoke_modules): Add `count-one-bits'.
+	* libpoke/pkl-insn.def (popcountiu): New instruction.
+	(popcountlu): Likewise.
+	* libpoke/pvm.jitter (popcountiu): Likewise.
+	(popcountlu): Likewise.
+	(wrapped-functions): Add `pvm_popcount' function to the list.
+	* libpoke/pvm-wrappers.c: Include <count-one-bits.h>.
+	(pvm_popcount): New function.
+	* libpoke/pvm-wrappers.h (pvm_popcount): Likewise.
+	* libpoke/std.pk (popcount): New function to count one bits in an
+	integer or magnitude of an offset.
+	* testsuite/poke.pkl/popcount-1.pk: New test.
+	* testsuite/poke.pkl/popcount-2.pk: New test.
+	* testsuite/poke.pkl/popcount-3.pk: New test.
+	* testsuite/poke.pkl/popcount-4.pk: New test.
+	* testsuite/poke.pkl/popcount-5.pk: New test.
+	* testsuite/poke.pkl/popcount-6.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+	* doc/poke.texi (The Standard Library): Add a new section for
+	bitwise functions.
+	(Bitwise Operation Functions): New section which documents
+	`popcount'.
+
 2024-08-09  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* poke/pk-cmd-save.pk: Fix documentation of the `save' command.

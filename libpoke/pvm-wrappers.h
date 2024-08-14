@@ -33,5 +33,6 @@ size_t pvm_strlen (const char *s);
 char *pvm_strcpy (char *restrict dest, const char *src);
 char *pvm_strncpy (char *restrict dest, const char *restrict src, size_t n);
 char *pvm_strcat (char *restrict dest, const char *restrict src);
+int pvm_popcount (uint64_t num);
 
 #endif /* ! PVM_WRAPPERS_H */

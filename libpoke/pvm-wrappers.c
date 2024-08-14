@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <c-vasprintf.h>
 #include <c-vsnprintf.h>
+#include <count-one-bits.h>
 
 void
 pvm_free (void *p)
@@ -127,4 +128,10 @@ char *
 pvm_strcat (char *restrict dest, const char *restrict src)
 {
   return strcat (dest, src);
+}
+
+int
+pvm_popcount (uint64_t num)
+{
+  return count_one_bits_ll (num);
 }

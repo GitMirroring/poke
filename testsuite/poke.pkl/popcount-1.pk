@@ -1,0 +1,5 @@
+/* { dg-do run } */
+
+/* { dg-command { .set obase 10 } } */
+/* { dg-command { [popcount (0), popcount (1), popcount (-1)] } } */
+/* { dg-output "\\\[0,1,32\\\]" } */

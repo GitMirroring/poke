@@ -257,6 +257,7 @@ The Standard Library
 * CRC Functions::               Cyclic Redundancy Checksums.
 * Dates and Times::             Processing and displaying dates and times.
 * Offset Functions::            Useful functions that operate on offsets.
+* Bitwise Operation Functions:: Functions which deal with bits in integers and offsets
 * Other Functions::             Miscellany.
 
 @c Hacking poke
@@ -16179,6 +16180,37 @@ fun alignto = (uoff64 offset, uoff64 to) uoff64:
 @noindent
 It returns an offset that is the result of aligning the given
 @var{offset} to the given alignment @var{to}.
+
+@node Bitwise Operation Functions
+@section Bitwise Operation Functions
+
+@menu
+* popcount::             Count the number of 1 bits in input
+@end menu
+
+@node popcount
+@subsection popcount
+
+The @code{popcount} function has the prototype:
+
+@example
+fun popcount = (any integer_or_offset) int<32>:
+@{ @dots{} @}
+@end example
+
+@noindent
+It returns number of 1 bits in the given input @var{integer_or_offset}.
+
+Examples:
+
+@example
+assert (popcount (1) == 1);
+assert (popcount (5) == 2);
+assert (popcount (-1) == 32);
+assert (popcount (-1L) == 64);
+assert (popcount (0#B) == 0);
+assert (popcount (0xff#B) == 8);
+@end example
 
 @node Other Functions
 @section Other Standard Library Functions

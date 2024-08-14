@@ -1,0 +1,11 @@
+/* { dg-do run } */
+
+var a = 0L,
+    b = 1L,
+    c = -1L,
+    d = 0x55_55_55_55UL,
+    e = 0xaa_aa_aa_aa__aa_aa_aa_aaU;
+
+/* { dg-command { .set obase 10 } } */
+/* { dg-command { [popcount (a), popcount (b), popcount (c), popcount (d), popcount (e)] } } */
+/* { dg-output "\\\[0,1,64,16,32\\\]" } */

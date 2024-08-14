@@ -920,3 +920,22 @@ fun stod = (string s) uint<64>:
     exit_status = 1,
   };
 }
+
+/* Count one bits in an integer or magnitude of an offset.  */
+
+fun popcount = (any v) int<32>:
+{
+  var typof = asm any: ("typof; nip" : v);
+
+  if (asm int<32>: ("tyisi; nip" : typof))
+    return asm int<32>: ("itoiu 32; nip; popcountiu; nip" : v);
+  if (asm int<32>: ("tyisiu; nip" : typof))
+    return asm int<32>: ("popcountiu; nip" : v);
+  if (asm int<32>: ("tyisl; nip" : typof))
+    return asm int<32>: ("ltolu 64; nip; popcountlu; nip" : v);
+  if (asm int<32>: ("tyislu; nip" : typof))
+    return asm int<32>: ("popcountlu; nip" : v);
+  if (asm int<32>: ("tyiso; nip" : typof))
+    return popcount (asm any: ("ogetm; nip" : v));
+  raise E_inval;
+}

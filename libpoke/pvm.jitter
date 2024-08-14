@@ -148,6 +148,7 @@ wrapped-functions
   pvm_snprintf
   pvm_stof
   pvm_stod
+  pvm_popcount
 end
 
 wrapped-globals
@@ -4236,6 +4237,38 @@ end
 instruction bnotlu ()
   code
     PVM_UNOP (ULONG, ULONG, ulong, ~);
+  end
+end
+
+# Instruction: popcountiu
+#
+# Push the number of 1 bits in the unsigned int value at the top of
+# the stack.
+#
+# Stack: ( UINT - UINT INT )
+
+instruction popcountiu ()
+  code
+    uint32_t val;
+
+    val = PVM_VAL_UINT (JITTER_TOP_STACK ());
+    JITTER_PUSH_STACK (PVM_MAKE_INT (pvm_popcount (val), 32));
+  end
+end
+
+# Instruction: popcountlu
+#
+# Push the number of 1 bits in the unsigned long value at the top of
+# the stack.
+#
+# Stack: ( ULONG - ULONG INT )
+
+instruction popcountlu ()
+  code
+    uint64_t val;
+
+    val = PVM_VAL_ULONG (JITTER_TOP_STACK ());
+    JITTER_PUSH_STACK (PVM_MAKE_INT (pvm_popcount (val), 32));
   end
 end
 
