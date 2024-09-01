@@ -1,3 +1,8 @@
+2024-09-01  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* Add missing section ("Bitwise Operation Functions") to "The
+	Standard Library" chapter's menu.
+
 2024-08-14  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* bootstrap.conf (libpoke_modules): Add `count-one-bits'.

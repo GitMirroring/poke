@@ -15364,6 +15364,7 @@ facilities provided by the library.
 * CRC Functions::               Cyclic Redundancy Checksums.
 * Dates and Times::             Processing and displaying dates and times.
 * Offset Functions::            Useful functions that operate on offsets.
+* Bitwise Operation Functions:: Functions which deal with bits in integers and offsets
 * Other Functions::             Miscellany.
 @end menu
 
