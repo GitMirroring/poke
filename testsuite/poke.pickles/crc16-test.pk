@@ -1,0 +1,41 @@
+/* crc16-test.pk - Tests for the crc16 pickle.  */
+
+/* Copyright (C) 2024 The poke authors */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+load pktest;
+load crc16;
+
+var tests = [
+  PkTest {
+    name = "CRC-CCITT: Hello, World!",
+    func = lambda (string name) void:
+      {
+        assert (crc16_ccitt (stoca ("Hello, World!")) == 0x67daUH);
+      },
+  },
+  PkTest {
+    name = "CRC-CCITT: Empty input",
+    func = lambda (string name) void:
+      {
+        assert (crc16_ccitt (uint<8>[] ()) == 0xffffUH);
+      },
+  },
+];
+
+var ec = pktest_run (tests) ? 0 : 1;
+
+exit (ec);

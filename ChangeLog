@@ -1,3 +1,9 @@
+2024-09-07  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* pickles/crc16.pk: New pickle for 16-bit CRCs.
+	* testsuite/poke.pickles/crc16-test.pk: New file.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
 2024-09-01  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* Add missing section ("Bitwise Operation Functions") to "The

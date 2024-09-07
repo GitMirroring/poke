@@ -604,6 +604,7 @@ EXTRA_DIST = \
   poke.pickles/asn1-ber-test.pk \
   poke.pickles/base64-test.pk \
   poke.pickles/bmp-test.pk \
+  poke.pickles/crc16-test.pk \
   poke.pickles/gcov-test.pk \
   poke.pickles/bpf-test.pk \
   poke.pickles/btf-ext-test.pk \
