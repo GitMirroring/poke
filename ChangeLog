@@ -1,3 +1,7 @@
+2024-09-09  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* pickles/Makefile.am (dist_pickles_DATA): Add `crc16.pk'.
+
 2024-09-07  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* pickles/crc16.pk: New pickle for 16-bit CRCs.
