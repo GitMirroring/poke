@@ -943,7 +943,8 @@ pkl_ast_node pkl_ast_make_func_type_arg (pkl_ast ast,
    In offset types, BASE_TYPE is a PKL_AST_TYPE with the base type for
    the offset's magnitude, and UNIT is either a PKL_AST_IDENTIFIER
    containing one of few recognized keywords (b, B, Kb, etc) or a
-   PKL_AST_TYPE.
+   PKL_AST_TYPE.  If a REF_TYPE is specified, then it is the type of
+   the values referred by the offset value; this is akin to a pointer.
 
    In function types, NARG is the number of formal arguments in the
    function type.  ARGS is a chain of PKL_AST_FUNC_TYPE_ARG nodes.
