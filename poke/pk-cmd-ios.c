@@ -461,11 +461,11 @@ const struct pk_cmd ios_cmd =
   {"ios", "?s", "", 0, NULL, NULL, pk_cmd_ios, ".ios IOS", poke_completion_function};
 
 const struct pk_cmd file_cmd =
-  {"file", "f", PK_FILE_UFLAGS, 0, NULL, NULL, pk_cmd_file, ".file FILE-NAME",
+  {"file", "f", PK_FILE_UFLAGS, 0, NULL, NULL, pk_cmd_file, ".file[/c] FILE-NAME",
    rl_filename_completion_function};
 
 const struct pk_cmd proc_cmd =
-  {"proc", "i", PK_PROC_UFLAGS, 0, NULL, NULL, pk_cmd_proc, ".proc PID", NULL};
+  {"proc", "i", PK_PROC_UFLAGS, 0, NULL, NULL, pk_cmd_proc, ".proc[/mM] PID", NULL};
 
 const struct pk_cmd sub_cmd =
   {"sub", "s,u,u,?s", "", 0, NULL, NULL, pk_cmd_sub, ".sub IOS, BASE, SIZE, [NAME]",
