@@ -4666,10 +4666,10 @@ Class:      struct
 Name:       Elf64_File
 Complete:   no
 Fields:
-  Name     Type
-  ehdr     Elf64_Ehdr
-  shdr     Elf64_Shdr[]
-  phdr     Elf64_Phdr[]
+  Name     Type             Optional
+  ehdr     Elf64_Ehdr       no
+  shdr     Elf64_Shdr[]     yes
+  phdr     Elf64_Phdr[]     yes
 Methods:
   Name                     Type
   get_section_name         (offset<Elf_Word,8>)string

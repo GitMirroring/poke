@@ -1,5 +1,11 @@
 2024-09-16  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-cmd-info.pk (pk_info_type): Print whether struct fields
+	are optional or not.
+	* doc/poke.texi (Pickles): Update accordingly.
+
+2024-09-16  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-rt.pk: New field `foptional'.
 	* libpoke/pkl-gen.pks (struct_typifier): Initialize the value of
 	foptional in Pk_Type struct.

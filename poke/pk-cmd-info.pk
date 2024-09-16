@@ -164,11 +164,12 @@ fun pk_info_type = (Pk_Type typ) void:
         term_begin_class ("table-header");
         print "Fields:\n";
         term_end_class ("table-header");
-        var table = Pk_Table { num_columns = 2, indent = 2, max_column_size = 80 };
+        var table = Pk_Table { num_columns = 3, indent = 2, max_column_size = 80 };
 
         table.row ("table-header");
         table.column ("Name");
         table.column ("Type");
+        table.column ("Optional");
         for (var i = 0; i < typ.nfields; ++i)
           {
             if (typ.fcomputed[i] || typ.fnames[i] == "")
@@ -176,6 +177,7 @@ fun pk_info_type = (Pk_Type typ) void:
             table.row;
             table.column (typ.fnames[i]);
             table.column (typ.ftypes[i]);
+            table.column (typ.foptional[i] ? "yes" : "no");
           }
           table.print_table;
 
