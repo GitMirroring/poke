@@ -135,6 +135,7 @@ Basic Editing
 * Negative Integers::		Going behind zero.
 * Weird Integers::		Incomplete bytes in numbers.
 * Unaligned Integers::		IO spaces are bit-oriented.
+* Write-only Partial Bytes::    Writing partial bytes requires reading full bytes.
 * Integers of Different Sizes:: Promotion of integers in expressions.
 * Offsets and Sizes::           United values.
 * Buffers as IO Spaces::	Poking memory buffers.
@@ -1012,9 +1013,10 @@ integers, and the like.
 * Values and Variables::        Values can be stored in variables.
 * From Bytes to Integers::	Building numbers with bytes.
 * Big and Little Endians::	Pick your egg.
-* Negative Integers::		Going behind 0.
+* Negative Integers::		Going behind zero.
 * Weird Integers::		Incomplete bytes in numbers.
 * Unaligned Integers::		IO spaces are bit-oriented.
+* Write-only Partial Bytes::    Writing partial bytes requires reading full bytes.
 * Integers of Different Sizes:: Promotion of integers in expressions.
 * Offsets and Sizes::           United values.
 * Buffers as IO Spaces::	Poking memory buffers.
@@ -2476,6 +2478,65 @@ integers, bits, bytes, @i{etc} into the corresponding byte operations,
 and this translation is far from trivial.  Fortunately, we can let
 poke do the dirty job for us, and abstract ourselves from that
 complexity.
+
+@node Write-only Partial Bytes
+@section Write-only Partial Bytes
+
+As we have seen in the previous sections, both weird integers and
+unaligned integers usually imply that poke has to work with partial
+bytes.  However, since the underlying IO devices are always byte
+oriented, poke needs to read in full bytes in order to work with a
+subset of them.
+
+This may lead to surprising behavior when dealing with write-only IO
+spaces.  Consider this scenario:
+
+@example
+$ cat "abc" > writeonly
+$ chmod a-r writeonly
+$ ls -l writeonly
+--w------- 1 jemarch jemarch 4 Sep 16 22:37 writeonly
+@end example
+
+@noindent
+This can be written to, but not read from: it is write-only.  If we
+then fire up poke and try to read its contents, we get:
+
+@example
+(poke) dump
+76543210  0011 2233 4455 6677 8899 aabb ccdd eeff  0123456789ABCDEF
+00000000: ???? ???? ???? ???? ???? ???? ???? ????  ................
+00000010: ???? ???? ???? ???? ???? ???? ???? ????  ................
+00000020: ???? ???? ???? ???? ???? ???? ???? ????  ................
+00000030: ???? ???? ???? ???? ???? ???? ???? ????  ................
+00000040: ???? ???? ???? ???? ???? ???? ???? ????  ................
+00000050: ???? ???? ???? ???? ???? ???? ???? ????  ................
+00000060: ???? ???? ???? ???? ???? ???? ???? ????  ................
+00000070: ???? ???? ???? ???? ???? ???? ???? ????  ................
+@end example
+
+@noindent
+This is as expected: no bytes can be read from the read-only file.
+Writing, however, shall work in principle.  Indeed, writes that
+involve full bytes (any number of them) work as expected:
+
+@example
+(poke) byte @@ 2#B = 'x'
+@end example
+
+@noindent
+The third character in the file indeed changes from @code{'c'} to
+@code{'x'}, this can be verified by changing the permission of the
+file and taking a look.  But if a write involves writing partial
+bytes, as it happens with weird integers and non-aligned integers,
+poke cannot perform the operation:
+
+@example
+(poke) byte @@ 9#b = 'x'
+unhandled wrong permissions exception
+(poke) uint<3> @@ 0#B = 2
+unhandled wrong permissions exception
+@end example
 
 @node Integers of Different Sizes
 @section Integers of Different Sizes

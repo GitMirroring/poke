@@ -1,5 +1,9 @@
 2024-09-16  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* doc/poke.texi (Write-only Partial Bytes): New section.
+
+2024-09-16  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* poke/pk-cmd-info.pk (pk_info_type): Print whether struct fields
 	are optional or not.
 	* doc/poke.texi (Pickles): Update accordingly.
