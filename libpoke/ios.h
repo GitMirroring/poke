@@ -66,9 +66,6 @@ void ios_shutdown (ios_context ios_ctx);
    - "uints", which are unsigned integers from 1 to 64 bits wide.
      They can be stored using either msb or lsb endianness.
 
-   - "strings", which are sequences of bytes terminated by a NULL
-     byte, much like C strings.
-
    IO spaces also provide caching capabilities, transactions,
    serialization of concurrent accesses, and more goodies.  */
 
