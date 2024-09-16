@@ -178,11 +178,15 @@ pk_help_add_topic
   :entry Poke_HelpEntry {
       category = "dot-commands",
       topic = ".file",
-      synopsis = ".file FILE",
+      synopsis = ".file[/c] FILE",
       summary = "open a file",
       description = "\
 Open the given file as a new IO space and switch to it.  The
-open flags will be inferred from the permissions of the file."
+open flags will be inferred from the permissions of the file.
+
+If the /c flag is used and no file with the given name exists,
+a new empty file will be created using the current UMASK and
+opened."
     };
 
 pk_help_add_topic
