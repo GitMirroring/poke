@@ -3422,6 +3422,24 @@
         ains                    ; ... ARR
  .c }
         drop                    ; SCT(Type) SCT(sct)
+        ;; Whether fields are optional.
+        push "foptional"
+        sref
+        nip                     ; SCT(Type) SCT(sct) ARR
+ .c for (@field = PKL_AST_TYPE_S_ELEMS (@type);
+ .c      @field;
+ .c      @field = PKL_AST_CHAIN (@field))
+ .c {
+ .c   if (PKL_AST_CODE (@field) != PKL_AST_STRUCT_TYPE_FIELD)
+ .c       continue;
+        sel                     ; ... ARR SEL
+ .c   if (PKL_AST_STRUCT_TYPE_FIELD_OPTIONAL_P (@field))
+        push int<32>1           ; ... ARR SEL OPTIONAL_P
+ .c   else
+        push int<32>0           ; ... ARR SEL OPTIONAL_P
+        ains                    ; ... ARR
+ .c }
+        drop                    ; SCT(Type) SCT(sct)
         ;; Methods names.
         push "mnames"
         sref

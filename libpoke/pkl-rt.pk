@@ -693,6 +693,7 @@ immutable type Pk_Type =
     string[] fnames     if code == PK_TYPE_STRUCT;
     int<32>[] fcomputed if code == PK_TYPE_STRUCT;
     string[] ftypes     if code == PK_TYPE_STRUCT;
+    int<32>[] foptional if code == PK_TYPE_STRUCT;
     string[] mnames     if code == PK_TYPE_STRUCT;
     string[] mtypes     if code == PK_TYPE_STRUCT;
 

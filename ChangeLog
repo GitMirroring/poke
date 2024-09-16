@@ -1,3 +1,11 @@
+2024-09-16  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-rt.pk: New field `foptional'.
+	* libpoke/pkl-gen.pks (struct_typifier): Initialize the value of
+	foptional in Pk_Type struct.
+	* testsuite/poke.pkl/typeof-struct-5.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
+
 2024-09-09  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* pickles/Makefile.am (dist_pickles_DATA): Add `crc16.pk'.

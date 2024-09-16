@@ -1,0 +1,13 @@
+/* { dg-do run } */
+
+type Foo =
+  struct
+  {
+    int i;
+    long l if i > 0;
+    if (i == 0) int z;
+    if (i > 10) int w if i % 2;
+  };
+
+/* { dg-command {typeof (Foo).foptional} } */
+/* { dg-output "\\\[0,1,1,1\\\]" } */
