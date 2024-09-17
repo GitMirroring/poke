@@ -1,0 +1,46 @@
+/* pci_common.pk - Common Definitions for reuse in PCI pickles */
+
+/* Work in progress */
+
+/* Copyright (C) 2024 Darshit Shah */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+/**
+ * Reserved and Zero
+ * These are bits that are reserved for future RW1C implementations.
+ * They *must* always be zero
+ */
+type rsvdz = struct uint<1> {
+    uint<1> rsvdz == 0T;
+    method _print = void:
+    {
+        print "RsvdZ: 0";
+    }
+};
+
+/**
+ * Reserved and Preserve
+ * These are bits that are reserved for future RW implementations.
+ * Their status *must* be preserved.
+ */
+type rsvdp = struct uint<1> {
+    uint<1> rsvdp;
+    method _print = void:
+    {
+        printf("RsvdP: %u1b", rsvdp);
+    }
+};

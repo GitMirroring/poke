@@ -1,0 +1,245 @@
+/* pci.pk - PCI Config Space (PCI Base Specification v5) */
+
+/* Work in progress */
+
+/* Copyright (C) 2024 Darshit Shah */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* PCI Express Base Specification v5
+ *
+ * https://pcisig.com/pci-express-base-specification-revision-50-version-10
+ * https://en.wikipedia.org/wiki/PCI_configuration_space
+ *
+ * This pickle implements a mapping over the PCI Base Config Space as defined
+ * in revision 5.0 of the specification.
+ */
+
+/* set_endian (ENDIAN_LITTLE); */
+
+load "pci_common.pk";
+
+type PCI_Command =
+  struct uint<16>
+    {
+      rsvdp;
+      rsvdp;
+      rsvdp;
+      rsvdp;
+      rsvdp;
+      uint<1> int_disable;
+      uint<1> fast_b2b_tx_enable == 0T;
+      uint<1> serr_enable;
+      uint<1> idsel_stepping == 0T;
+      uint<1> parity_error_response;
+      uint<1> vga_palette_snoop == 0T;
+      uint<1> mem_write_invalidate == 0T;
+      uint<1> sp_cycle_enable == 0T;
+      uint<1> bus_master_enable;
+      uint<1> mem_enable;
+      uint<1> io_enable;
+    };
+
+type PCI_Status =
+  struct uint<16>
+    {
+      uint<1> parity_error;
+      uint<1> sig_sys_error;
+      uint<1> rcvd_master_abort;
+      uint<1> rcvd_target_abort;
+      uint<1> sig_target_abort;
+      uint<2> devsel_timing == 0;
+      uint<1> master_data_parity_error;
+      uint<1> fast_b2b_tx_cap;
+      rsvdz;
+      uint<1> Mhz66_cap == 0T;
+      uint<1> cap_list;
+      uint<1> int_status;
+      rsvdz;
+      rsvdz;
+      uint<1> imm_readiness;
+
+      /**
+       * Pretty print the DEVSEL timing.
+       *
+       * This field is not used in PCIe, and is hardwired
+       * to 0b. However, the PCI v3 Specification allows the
+       * following values. So let's print the human-readable
+       * values when pretty printing
+       */
+      method _print_devsel_timing = void:
+      {
+          print "#<";
+          if (devsel_timing == 0b0)
+              print "Fast";
+          else if (devsel_timing == 0b01)
+              print "Medium";
+          else if (devsel_timing == 0b10)
+              print "Slow";
+          else
+              print "ERROR - Reserved";
+          print ">";
+      }
+    };
+
+type PCI_Hdr_Type =
+  struct uint<8>
+    {
+      uint<7> hdr_layout;
+      uint<1> multi_fn;
+    };
+
+type PCI_BAR =
+  struct
+    {
+      uint<32>;
+    };
+
+assert (#PCI_BAR == 32#b);
+
+fun get_int_pin = (uint<8> int_pin) string:
+  {
+    var pins = ["None", "INT A", "INT B", "INT C", "INT D"];
+    if (int_pin < pins'length)
+        return pins[int_pin];
+    else
+        return "ERR - Reserved";
+  }
+
+type PCI_Type0 =
+  struct
+    {
+      PCI_BAR[6] bars;
+      uint<32> cardbus_cis_ptr == 0x0U;
+      uint<16> subsystem_vendor_id;
+      uint<16> subsystem_id;
+      uint<32> exp_rom_base_addr;
+      offset<uint<8>,B> cap_ptr;
+      uint<56> rsvdz == 0;
+      uint<8> int_line;
+      uint<8> int_pin;
+      uint<8> min_gnt;
+      uint<8> max_lat;
+
+      method _print_int_pin = void:
+        {
+          printf("#<%s>", get_int_pin(int_pin));
+        }
+    };
+
+assert (#PCI_Type0 == 48#B);
+
+type PCI_Type1 =
+  struct
+    {
+      PCI_BAR bar_0;
+      PCI_BAR bar_1;
+      uint<8> primary_bus_nr;
+      uint<8> sec_bus_nr;
+      uint<8> sub_bus_nr;
+      uint<8> sec_lat_timer;
+      uint<8> io_base;
+      uint<8> io_limit;
+      uint<16> sec_status;
+      uint<16> mem_base;
+      uint<16> mem_limit;
+      uint<16> prefetch_mem_base;
+      uint<16> prefetch_mem_limit;
+      uint<32> prefetch_mem_base_upper;
+      uint<32> prefetch_mem_limit_upper;
+      uint<16> io_base_upper;
+      uint<16> io_base_limit;
+      offset<uint<8>,B> cap_ptr;
+      uint<24> rsvdz == 0;
+      uint<32> exp_rom_base;
+      uint<8> int_line;
+      uint<8> int_pin;
+      uint<16> bridge_ctrl;
+
+      method _print_int_pin = void:
+        {
+          printf("#<%s>", get_int_pin(int_pin));
+        }
+  };
+
+assert (#PCI_Type1 == 48#B);
+
+
+type PCI_Config_Space =
+  struct
+    {
+      uint<16> vendor;
+      uint<16> device;
+      PCI_Command command;
+      PCI_Status status;
+      uint<8> revision_id;
+      uint<24> class_code;
+      uint<8> cache_line_size;
+      uint<8> pri_lat_timer == 0;
+      PCI_Hdr_Type header;
+      uint<8> BIST;
+      if (header.hdr_layout == 0T)
+          PCI_Type0 endpt_specific_data;
+      if (header.hdr_layout == 1T)
+          PCI_Type1 bridge_specific_data;
+      // These are technically not a part of Type 0 / Type 1 structures
+      // But I define them in there for ease. Instead, we can use Field Labels
+      // to create virtual fields here that point to the correct data
+      computed offset<uint<8>,B> cap_ptr;
+      // Interpreting int_line is architeccture specific. And not defined in the
+      // specification. So we have no pretty printers for it.
+      computed uint<8> int_line;
+      computed uint<8> int_pin;
+
+      method get_cap_ptr = offset<uint<8>,B>:
+        { return header.hdr_layout == 0 ? endpt_specific_data.cap_ptr : bridge_specific_data.cap_ptr; }
+
+      method get_int_line = uint<8>:
+        { return header.hdr_layout == 0 ? endpt_specific_data.int_line : bridge_specific_data.int_line; }
+
+      method get_int_pin = uint<8>:
+        { return header.hdr_layout == 0 ? endpt_specific_data.int_pin : bridge_specific_data.int_pin; }
+
+      method set_cap_ptr = (offset<uint<8>,B> inp) void:
+        {
+          if (header.hdr_layout == 0)
+            endpt_specific_data.cap_ptr = inp;
+          else
+            bridge_specific_data.cap_ptr = inp;
+        }
+
+      method set_int_line = (uint<8> inp) void:
+        {
+          if (header.hdr_layout == 0)
+            endpt_specific_data.int_line = inp;
+          else
+            bridge_specific_data.int_line = inp;
+        }
+
+      method set_int_pin = (uint<8> inp) void:
+        {
+          if (header.hdr_layout == 0)
+            endpt_specific_data.int_pin = inp;
+          else
+            bridge_specific_data.int_pin = inp;
+        }
+
+      method _print_cache_line_size = void:
+        {
+            printf("#<%u8d bytes>", cache_line_size * 4);
+        }
+  };
+
+assert ((PCI_Config_Space {})'size == 0x40#B);
