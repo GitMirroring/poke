@@ -68,7 +68,7 @@ Customizing poke
 * pokerc::			User's initialization file.
 * Load Path::			Determining location of modules.
 * Styling::			Changing the appearance of poke's output.
-* Changing the Prompt::         The prompt can be made more useful.
+* The Prompt::                  Customize and create your own prompt.
 
 Pickles
 * IOS::                         Functions to work with IO spaces.
@@ -7436,34 +7436,109 @@ time.
 
 XXX
 
-@node Changing the Prompt
-@chapter Changing the Prompt
+@node The Prompt
+@chapter The Prompt
 @cindex prompt, changing the
 
-By default the poke command line interface uses a very simple prompt
-when waiting for commands:
+@section The default prompt
+
+By default the poke prompt shows the following information:
+
+@example
+(@var{flags}:@var{endianness}:@var{ios})
+@end example
+
+@noindent
+Where @var{flags} is a set of letters denoting certain settings are
+switched on:
+
+@table @code
+@item p
+Pretty printing is switched on.
+@item 0
+@itemx x
+@itemx o
+@itemx 2
+Output base is decimal, hexadecimal octal or binary respectively.
+@end table
+
+@var{endianness} denotes the currently enabled byte endianness,
+@code{big} for big-endian and @code{little} for little-endian.
+
+@var{ios} is either the handler of the currently selected IO space, or
+@code{poke} if no IO space is opened.
+
+This is an example of a typical prompt:
+
+@example
+(p0:big:/bin/ls) _
+@end example
+
+@noindent
+Which tells us that pretty-printing is switched on (the @code{p}
+flag), that the output mode is base 10 (the @code{0} flag), that the
+current endianness is big endian, and that we are currently editing
+@file{/bin/ls}.
+
+Note that if poke has been set to be in ``quiet'' mode (like when
+using the @option{--quiet} command line option, or by setting
+@code{pk_u} then a very simple prompt will be used:
 
 @example
 (poke) _
 @end example
 
-@noindent
-This prompt never changes.
+@section Simple customization of the prompt
 
-However, it is possible to customize the prompt by defining a function
+The information shown by the prompt can be changed at any time by
+simply setting the values of a few variables, all of which are
+booleans:
+
+@table @code
+@item pk_prompt_show_ios
+Whether the currently selected IO space should be shown in the prompt.
+Defaults to 1.
+@item pk_prompt_show_endian
+Whether the current endianness should be shown in the prompt.
+Defaults to 1.
+@item pk_prompt_show_pp
+Whether a @code{p} flag should be shown in the prompt when pretty
+printing is enabled.  Defaults to 1.
+@item pk_prompt_show_obase
+Whether a flag should be shown in the prompt indicating the currently
+selected output numeration base.  Defaults to 1.
+@item pk_prompt_comment
+Whether the prompt shall use @code{#!} and @code{!#} delimiters
+instead of @code{(} and @code{)}.  This makes the prompt a comment in
+Poke and therefore makes it easier to copy code from interactive
+sessions and evaluate it as code.  Defaults to 0.
+@end table
+
+You can customize your poke by setting these variables in your
+@file{.pokerc} file, or at any time by setting the values of the
+variables in the prompt:
+
+@example
+(poke) pk_prompt_comment = 1
+#!poke!# _
+@end example
+
+@section Advanced customization of the prompt
+
+Is possible to further customize the prompt by defining a function
 called @code{pk_prompt}, that gets no arguments and returns a string.
 @command{poke} invokes that function every time it needs to print the
-prompt; the default version of the function just returns @code{"(poke)
-")}.
+prompt; the default version of the function implements what has been
+described in the previous section.
 
-This is an example of customization:
+This is an example of customization of a simple prompt that included
+the current IO space but little else:
 
 @example
 fun pk_prompt = string:
 @{
-  var prompt = "(";
+  var prompt = pk_prompt_comment ? "#!" : "(";
 
-  prompt += get_endian == ENDIAN_BIG ? "big:" : "little:";
   try
     prompt += iohandler (get_ios);
   catch if E_no_ios
@@ -7471,7 +7546,7 @@ fun pk_prompt = string:
       prompt += "poke";
     @};
 
-  return prompt + ") ";
+  return prompt + (pk_prompt_comment ? "#!" : ") ");
 @}
 @end example
 
@@ -7484,6 +7559,9 @@ any:
 (big:poke) .file /bin/ls
 (big:/bin/ls)
 @end example
+
+If you write your own @code{pk_prompt} and share it with other people,
+it is a good practice to acknowledge @code{pk_prompt_comment}.
 
 @node IOS
 @chapter IOS

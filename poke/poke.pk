@@ -94,11 +94,47 @@ load "pk-cmd-set.pk";
 load "pk-cmd-misc.pk";
 load "pk-tracer.pk";
 
-/* Default value for poke_prompt.  */
+/* Default machinery for the poke prompt.  */
+
+var pk_prompt_comment = 0;
+var pk_prompt_show_ios = 1;
+var pk_prompt_show_endian = 1;
+var pk_prompt_show_pp = 1;
+var pk_prompt_show_obase = 1;
 
 fun pk_prompt = string:
 {
-  return "(poke) ";
+  if (pk_quiet_p)
+    return pk_prompt_comment ? "#!poke!# " : "(poke) ";
+
+  var prompt = pk_prompt_comment ? "#!" : "(";
+  var flags = "";
+
+  if (pk_prompt_show_pp && vm_opprint)
+    flags += "p";
+
+  if (pk_prompt_show_obase)
+    flags += (vm_obase == 10 ? "0"
+              : vm_obase == 16 ? "x"
+              : vm_obase == 8 ? "o"
+              : vm_obase == 2 ? "2"
+              : "");
+
+  if (flags != "")
+    prompt += flags + ":";
+
+  if (pk_prompt_show_endian)
+    prompt += get_endian == ENDIAN_BIG ? "big:" : "little:";
+
+  if (pk_prompt_show_ios)
+    {
+      try prompt += iohandler (get_ios);
+      catch if E_no_ios { prompt += "poke"; };
+   }
+  else
+    prompt += "poke";
+
+  return prompt + (pk_prompt_comment ? "!# " : ") ");
 }
 
 /* Add the current working directory to the load path.  */
