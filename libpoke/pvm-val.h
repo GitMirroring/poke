@@ -204,9 +204,6 @@ struct pvm_mapinfo
   pvm_val offset;
 };
 
-struct pvm_mapinfo pvm_make_mapinfo (int mapped_p, pvm_val ios,
-                                     pvm_val offset);
-
 /* Arrays values are boxed, and store sequences of homogeneous values
    called array "elements".  They can be mapped in IO, or unmapped.
 

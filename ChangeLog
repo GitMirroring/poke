@@ -1,5 +1,10 @@
 2024-09-19  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pvm-val.h: Remove spurious definition of
+	pvm_make_mapinfo.
+
+2024-09-19  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/ras: Support IOS_F_* constants as RAS values.
 	* libpoke/pkl-asm.pks (remap): Do not remap in non-volatile
 	read-only IO spaces.
