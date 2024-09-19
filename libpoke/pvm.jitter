@@ -92,6 +92,7 @@ wrapped-functions
   pk_upow
   pk_format_binary
   pvm_alloc
+  pvm_alloc_gc
   pvm_allocate_struct_attrs
   pvm_make_struct_type
   pvm_typeof
@@ -7240,6 +7241,18 @@ instruction sleep ()
         JITTER_PUSH_STACK (PVM_MAKE_INT (-2, 32));
     } else
       JITTER_PUSH_STACK (PVM_MAKE_INT (0, 32));
+  end
+end
+
+# Instruction: gc
+#
+# Run the PVM garbage collector.
+#
+# Stack: ( -- )
+
+instruction gc ()
+  code
+    pvm_alloc_gc ();
   end
 end
 

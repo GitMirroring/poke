@@ -1,5 +1,12 @@
 2024-09-19  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pvm-alloc.c (pvm_alloc_gc): Define.
+	* libpoke/pkl-insn.def (PKL_INSN_GC): Define.
+	* libpoke/pvm.jitter (gc): New instruction.
+	* testsuite/poke.pvm/pvm-insns-test.pk: Add test for gc instruction.
+
+2024-09-19  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* poke/pk-cmd-ios.c (PK_FILE_F_RDONLY): Define.
 	(pk_cmd_file): Acknowledge /r flag in file dot-command.
 	* poke/pk-cmd-ios.pk (pk_cmd_file): Likewise.

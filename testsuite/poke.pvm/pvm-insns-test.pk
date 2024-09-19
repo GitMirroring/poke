@@ -890,6 +890,14 @@ var tests = [
         assert (asm int<32>: ("cgetn; nip; nnn; nip" : lambda void: {}));
       }
   },
+  /* Miscellaneous instructions.  */
+  PkTest {
+    name = "gc",
+    func = lambda (string name) void:
+      {
+        asm ("gc");
+      }
+  },
 ];
 
 var ok = pktest_run (tests);

@@ -482,6 +482,7 @@ PKL_DEF_INSN(PKL_INSN_DISAS,"","disas")
 PKL_DEF_INSN(PKL_INSN_RAND,"","rand")
 PKL_DEF_INSN(PKL_INSN_TIME,"","time")
 PKL_DEF_INSN(PKL_INSN_SLEEP,"","sleep")
+PKL_DEF_INSN(PKL_INSN_GC,"","gc")
 
 /* System interaction instructions.  */
 

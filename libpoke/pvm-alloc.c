@@ -122,3 +122,9 @@ pvm_alloc_unregister_thread ()
 {
   assert (GC_unregister_my_thread () == GC_SUCCESS);
 }
+
+void
+pvm_alloc_gc ()
+{
+  GC_gcollect ();
+}
