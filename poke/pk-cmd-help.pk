@@ -176,11 +176,15 @@ pk_help_add_topic
   :entry Poke_HelpEntry {
       category = "dot-commands",
       topic = ".file",
-      synopsis = ".file[/c] FILE",
+      synopsis = ".file[/cr] FILE",
       summary = "open a file",
       description = "\
 Open the given file as a new IO space and switch to it.  The
 open flags will be inferred from the permissions of the file.
+
+If the /r flag is used then the file is opened read-only.  Opening
+files that won't be modified in read-only mode is recommended because
+they don't require remaps.
 
 If the /c flag is used and no file with the given name exists,
 a new empty file will be created using the current UMASK and

@@ -83,6 +83,7 @@ EXTRA_DIST = \
   poke.cmd/file-bias-1.pk \
   poke.cmd/file-bias-2.pk \
   poke.cmd/file-mode.pk \
+  poke.cmd/file-rdonly-1.pk \
   poke.cmd/file-relative.pk \
   poke.cmd/ios-1.pk \
   poke.cmd/ios-2.pk \

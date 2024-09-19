@@ -1159,15 +1159,22 @@ Finally, the asterisk character at the left of the entry for
 clearly, let's open another file:
 
 @example
-(poke) .file bar.o
+(poke) .file/r bar.o
 The current IOS is now `./bar.o'.
 (poke) .info ios
   Id    Type    Volatile   Mode    Bias            Size            Name
-* 1     FILE    no         rw      0x00000000#B    0x00000398#B    ./bar.o
+* 1     FILE    no         r       0x00000000#B    0x00000398#B    ./bar.o
   0     FILE    no         rw      0x00000000#B    0x00000398#B    ./foo.o
 @end example
 
-Ah, there we have both @file{foo.o} and @file{bar.o}.  Now the current
+Ah, there we have both @file{foo.o} and @file{bar.o}.  Note how
+@file{bar.o} is opened in read-only mode rather than read-write.  This
+is because we used the @command{/r} flag when invoking the
+@command{.file} dot-command.  In poke it is important to open files in
+read-only mode if we don't plan to update them, because the program
+can work much faster.
+
+Now the current
 IO space (the entry featuring the asterisk at the left) is the file
 that we just opened, @file{bar.o}.  This is because poke always sets
 the most recently open file as the current one.  We can switch back to
@@ -1179,7 +1186,7 @@ an IO space as an argument:
 The current IOS is now `./foo.o'.
 (poke) .info ios
   Id    Type    Volatile   Mode    Bias            Size            Name
-  1     FILE    no         rw      0x00000000#B    0x00000398#B    ./bar.o
+  1     FILE    no         r       0x00000000#B    0x00000398#B    ./bar.o
 * 0     FILE    no         rw      0x00000000#B    0x00000398#B    ./foo.o
 @end example
 
@@ -8456,6 +8463,9 @@ space is open in read/write mode, for example.
 If the specified file path doesn't exist then poke emits an error.
 However, the flag @command{/c} ( for ``create'') can be passed to the
 command to tell poke it should create a new file.
+
+A file can be opened in read-only mode by specifying the flag
+@command{/r}.
 
 @node mem command
 @section @code{.mem}

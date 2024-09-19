@@ -49,13 +49,17 @@ fun pk_openset_handler = (string handler, uint<64> flags = 0) int<32>:
    FILENAME is the name of the file to open.
    CREATE_P is a flag indicating whether to create an empty file
    with the given name, if it doesn't exist.
+   RDONLY_P is a flag indicating whether the file has to be opened
+   read-only.
 
    If the specified file cannot be opened then this function raises an
    exception.  Otherwise returns the ID of the created IO space.  */
 
-fun pk_cmd_file = (string filename, int<32> create_p) int<32>:
+fun pk_cmd_file = (string filename, int<32> create_p, int<32> rdonly_p) int<32>:
 {
-  var flags = (create_p ? IOS_F_READ | IOS_F_WRITE | IOS_F_CREATE : 0);
+  var flags = (create_p ? IOS_F_READ | IOS_F_WRITE | IOS_F_CREATE
+               : rdonly_p ? IOS_F_READ
+               : 0);
 
   return pk_openset_handler (filename, flags);
 }

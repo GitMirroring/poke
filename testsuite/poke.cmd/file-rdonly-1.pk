@@ -1,0 +1,6 @@
+/* { dg-do run } */
+/* { dg-data {c*} {0x10 0x20 0x30 0x40 0x50 0x60 0x70 0x80} foo.data } */
+
+/* { dg-command { .file/r foo.data } } */
+/* { dg-command { ioflags & IOS_F_WRITE } } */
+/* { dg-output "0UL" } */

@@ -201,8 +201,9 @@ pk_cmd_proc (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
 #endif /* HAVE_PROC */
 }
 
-#define PK_FILE_UFLAGS "c"
+#define PK_FILE_UFLAGS "cr"
 #define PK_FILE_F_CREATE 0x1
+#define PK_FILE_F_RDONLY 0x2
 
 static int
 pk_cmd_file (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
@@ -220,6 +221,7 @@ pk_cmd_file (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
   const char *arg_str = PK_CMD_ARG_STR (argv[1]);
   const char *filename = arg_str;
   int create_p = uflags & PK_FILE_F_CREATE;
+  int rdonly_p = uflags & PK_FILE_F_RDONLY;
 
   if (access (filename, F_OK) == 0
       && create_p)
@@ -227,9 +229,10 @@ pk_cmd_file (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
     create_p = 0;
 
   if (pk_call (poke_compiler, pk_cmd_file, &retval, &exit_exception,
-               2,
+               3,
                pk_make_string (poke_compiler, filename),
-               pk_make_int (poke_compiler, create_p, 32)) == PK_ERROR
+               pk_make_int (poke_compiler, create_p, 32),
+               pk_make_int (poke_compiler, rdonly_p, 32)) == PK_ERROR
       || exit_exception != PK_NULL)
     PK_UNREACHABLE (); /* This shouldn't happen.  */
 

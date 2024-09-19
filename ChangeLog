@@ -1,5 +1,16 @@
 2024-09-19  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-cmd-ios.c (PK_FILE_F_RDONLY): Define.
+	(pk_cmd_file): Acknowledge /r flag in file dot-command.
+	* poke/pk-cmd-ios.pk (pk_cmd_file): Likewise.
+	* poke/pk-cmd-help.pk: Document /r flag in online documentation.
+	* testsuite/poke.cmd/file-rdonly-1.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
+	* doc/poke.texi (Files as IO Spaces): Document /r.
+	(file command): Likewise.
+
+2024-09-19  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pvm-val.h: Remove spurious definition of
 	pvm_make_mapinfo.
 
