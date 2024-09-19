@@ -58,15 +58,25 @@
         .macro remap
         ;; The re-map should be done only if the value is mapped.
         mm                      ; VAL MAPPED_P
-        bzi .label              ; VAL MAPPED_P
+        bzi .done               ; VAL MAPPED_P
         drop                    ; VAL
-        ;; XXX do not re-map if the object is up to date (cached
-        ;; value.)
+        ;; If the IO space where the value is mapped is non-volatile
+        ;; and read-only, there is no need to remap.
+        mgetios                 ; VAL IOS
+        iogetv                  ; VAL IOS VOLATILE
+        bnzi .remap
+        drop                    ; VAL IOS
+        ioflags                 ; VAL IOS FLAGS
+        push IOS_F_WRITE        ; VAL IOS FLAGS F_WRITE
+        bandlu
+        nip2                    ; VAL IOS FLAGS WRITABLE
+        bzlu .done2
+        drop2                   ; VAL
+.remap:
         mgetw                   ; VAL WCLS
         swap                    ; WCLS VAL
         mgetm                   ; WCLS VAL MCLS
         swap                    ; WCLS MCLS VAL
-
         mgets                   ; WCLS MCLS VAL STRICT
         swap                    ; WCLS MCLS STRICT VAL
         mgetios                 ; WCLS MCLS STRICT VAL IOS
@@ -85,7 +95,10 @@
         swap                    ; NVAL WCLS
         msetw                   ; NVAL
         push null               ; NVAL null
-.label:
+        ba .done
+.done2:
+        drop
+.done:
         drop                    ; NVAL
         .end
 

@@ -1,5 +1,11 @@
 2024-09-19  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/ras: Support IOS_F_* constants as RAS values.
+	* libpoke/pkl-asm.pks (remap): Do not remap in non-volatile
+	read-only IO spaces.
+
+2024-09-19  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* testsuite/poke.pvm/pvm-insns-test.pk: Add test for iovolatile.
 
 2024-09-19  Jose E. Marchesi  <jemarch@gnu.org>

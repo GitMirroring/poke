@@ -531,6 +531,7 @@ BEGIN {
     string_re="(\"([^\"]|\")*\")"
     var_re="(\\$[a-zA-Z][0-9a-zA-Z_]*)"
     expt_re="(PVM_E_[A-Z_]+)"
+    ioflag_re="(IOS_F_[A-Z_]+)"
     tv_re="(PK_TV_[A-Z_]+)"
     endian_re="(IOS_ENDIAN_LSB|IOS_ENDIAN_MSB)"
     anode_re="@([a-zA-Z_][0-9a-zA-Z_]*)"
@@ -592,7 +593,7 @@ BEGIN {
                         break
                     case "v":
                         re="(" null_re "|" int_re "|" long_re \
-                           "|" string_re "|" expt_re "|" tv_re "|" endian_re "|" aval_re ")"
+                           "|" string_re "|" expt_re "|" ioflag_re "|" tv_re "|" endian_re "|" aval_re ")"
                         break
                     case "r":
                         break
@@ -936,6 +937,9 @@ BEGIN {
 
     # Substitute and check label arguments.
     $0 = gensub ("\\.([a-zA-Z][0-9a-zA-Z_]*)", "\\1_label", "g", $0);
+
+    # Substitute and check IO flag constants.
+    $0 = gensub (ioflag_re, "pvm_make_ulong (\\1, 64)", "g", $0);
 
     # Substitute and check exception arguments.
     $0 = gensub (expt_re, "pvm_make_exception (\\1, \\1_NAME, \\1_ESTATUS, NULL, NULL)",
