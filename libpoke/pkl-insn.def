@@ -509,6 +509,7 @@ PKL_DEF_INSN(PKL_INSN_IOGETB,"","iogetb")
 PKL_DEF_INSN(PKL_INSN_IOSETB,"","iosetb")
 PKL_DEF_INSN(PKL_INSN_IONUM,"","ionum")
 PKL_DEF_INSN(PKL_INSN_IOREF,"","ioref")
+PKL_DEF_INSN(PKL_INSN_IOGETV,"","iogetv")
 
 /* VM instructions.  */
 
