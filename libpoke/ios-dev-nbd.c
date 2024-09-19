@@ -185,6 +185,12 @@ ios_dev_nbd_flush (void *iod, ios_dev_off offset)
   return IOS_OK;
 }
 
+static int
+ios_dev_nbd_volatile_by_default (void *iod, const char *handler)
+{
+  return 1;
+}
+
 struct ios_dev_if ios_dev_nbd =
   {
    .get_if_name = ios_dev_nbd_get_if_name,
@@ -196,4 +202,5 @@ struct ios_dev_if ios_dev_nbd =
    .get_flags = ios_dev_nbd_get_flags,
    .size = ios_dev_nbd_size,
    .flush = ios_dev_nbd_flush,
+   .volatile_by_default = ios_dev_nbd_volatile_by_default,
   };

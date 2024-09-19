@@ -172,6 +172,12 @@ ios_dev_proc_flush (void *iod, ios_dev_off offset)
   return IOS_OK;
 }
 
+static int
+ios_dev_proc_volatile_by_default (void *iod, const char *handler)
+{
+  return 1;
+}
+
 struct ios_dev_if ios_dev_proc =
   {
    .get_if_name = ios_dev_proc_get_if_name,
@@ -182,5 +188,6 @@ struct ios_dev_if ios_dev_proc =
    .pwrite = ios_dev_proc_pwrite,
    .get_flags = ios_dev_proc_get_flags,
    .size = ios_dev_proc_size,
-   .flush = ios_dev_proc_flush
+   .flush = ios_dev_proc_flush,
+   .volatile_by_default = ios_dev_proc_volatile_by_default,
   };

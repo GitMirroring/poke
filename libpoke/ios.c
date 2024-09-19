@@ -64,6 +64,10 @@
 
    NEXT is a pointer to the next open IO space, or NULL.
 
+   VOLATILE_P determines whether the IO space contents can vary
+   beetween calls to ios_write_*.  In other words, a volatile IOS
+   assume that its contents may change at any time.
+
    XXX: add status, saved or not saved.
  */
 
@@ -71,6 +75,7 @@ struct ios
 {
   int id;
   int zombie_p;
+  int volatile_p;
   int num_sub_devs;
   char *handler;
   void *dev;
@@ -244,6 +249,11 @@ found:
   if (iod_error || io->dev == NULL)
     goto error;
 
+  /* Set whether the IO space is volatile.  If it is not volatile by
+     default then it can be overriden by the IOS_F_VOLATILE flag.  */
+  io->volatile_p =
+    (flags & IOS_F_VOLATILE) || dev_if->volatile_by_default (io->dev, handler);
+
   /* Increment the id counter after all possible errors are avoided.  */
   io->id = ios_ctx->next_id++;
 
@@ -389,6 +399,12 @@ int
 ios_get_id (ios io)
 {
   return io->id;
+}
+
+int
+ios_volatile_p (ios io)
+{
+  return io->volatile_p;
 }
 
 const char *

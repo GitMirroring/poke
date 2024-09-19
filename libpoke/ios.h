@@ -125,6 +125,8 @@ typedef int64_t ios_off;
 #define IOS_F_WRITE  2
 #define IOS_F_CREATE 16
 
+#define IOS_F_VOLATILE (1 << 8)
+
 #define IOS_M_RDONLY (IOS_F_READ)
 #define IOS_M_WRONLY (IOS_F_WRITE)
 #define IOS_M_RDWR (IOS_F_READ | IOS_F_WRITE)
@@ -206,6 +208,10 @@ ios ios_search_by_id (ios_context ios_ctx, int id);
 /* Return the ID of the given IO space.  */
 
 int ios_get_id (ios io);
+
+/* Return whether the given IO space is volatile.  */
+
+int ios_volatile_p (ios io);
 
 /* Return the handler of the given IO space.  */
 

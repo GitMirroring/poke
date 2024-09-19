@@ -137,6 +137,12 @@ iod_close (void *dev)
   return PK_OK;
 }
 
+int
+iod_volatile_by_default (void *dev, const char *handler)
+{
+  return 0;
+}
+
 static uint32_t USER_DATA = 0x706f6b65u; /* "poke" */
 
 struct pk_iod_if iod_if =
@@ -147,6 +153,7 @@ struct pk_iod_if iod_if =
     iod_close,
     iod_pread,
     iod_pwrite,
+    iod_volatile_by_default,
     iod_get_flags,
     iod_size,
     iod_flush,

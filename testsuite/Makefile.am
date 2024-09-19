@@ -1807,6 +1807,7 @@ EXTRA_DIST = \
   poke.pkl/iosetbias-7.pk\
   poke.pkl/iotype-1.pk \
   poke.pkl/iotype-2.pk \
+  poke.pkl/iovolatile-1.pk \
   poke.pkl/ior-integers-1.pk \
   poke.pkl/ior-integers-2.pk \
   poke.pkl/ior-int-struct-1.pk \
@@ -2070,6 +2071,8 @@ EXTRA_DIST = \
   poke.pkl/open-sub-7.pk \
   poke.pkl/open-sub-8.pk \
   poke.pkl/open-sub-9.pk \
+  poke.pkl/open-volatile-1.pk \
+  poke.pkl/open-volatile-2.pk \
   poke.pkl/optcond-1.pk \
   poke.pkl/optcond-1-diag.pk \
   poke.pkl/optcond-2.pk \

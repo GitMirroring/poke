@@ -4,5 +4,5 @@
 /* { dg-command { .file foo.data } } */
 /* { dg-command { iosetbias (0x13#b) } } */
 /* { dg-command { .info ios } } */
-/* { dg-output "  Id +Type +Mode +Bias +Size +Name" } */
-/* { dg-output "\n\\* 0 +FILE +rw +0x00000013#b +0x00000008#B +./foo.data" } */
+/* { dg-output "  Id +Type +Volatile +Mode +Bias +Size +Name" } */
+/* { dg-output "\n\\* 0 +FILE +no +rw +0x00000013#b +0x00000008#B +./foo.data" } */

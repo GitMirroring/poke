@@ -1,3 +1,58 @@
+2024-09-19  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/ios-dev.h (struct ios_dev_if): New field
+	volatile_by_default.
+	* libpoke/libpoke.h (struct pk_iod_if): Likewise.
+	* libpoke/ios.c (struct ios): New field volatile_p.
+	(ios_open): Initialize volatile_p in newly opened IO space.
+	(ios_volatile_p): Define.
+	* libpoke/ios-dev-file.c (ios_dev_file_volatile_by_default):
+	Define.
+	(ios_dev_file): Set volatile_by_default.
+	(ios_dev_file_convert_flags): Ignore IOS_F_VOLATILE.
+	* libpoke/ios-dev-mem.c (ios_dev_mem_volatile_by_default): Define.
+	(ios_dev_mem): Set volatile_by_default.
+	* libpoke/ios-dev-mmap.c (ios_dev_mmap_volatile_by_default):
+	Define.
+	(ios_dev_mmap): set volatile_by_default.
+	* libpoke/ios-dev-nbd.c (ios_dev_nbd_volatile_by_default): Define.
+	(ios_dev_nbd): Set volatile_by_default.
+	* libpoke/ios-dev-proc.c (ios_dev_proc_volatile_by_default):
+	Define.
+	(ios_dev_proc): Set volatile_by_default.
+	* libpoke/ios-dev-stream.c (ios_dev_stream_volatile_by_default):
+	Define.
+	(ios_dev_stream): Set volatile_by_default.
+	* libpoke/ios-dev-sub.c (ios_dev_sub_volatile_by_default): Define.
+	(ios_dev_sub): Set volatile_by_default.
+	* libpoke/ios-dev-zero.c (ios_dev_zero_volatile_by_default):
+	Define.
+	(ios_dev_zero): Define volatile_by_default.
+	* libpoke/pvm.jitter (iogetv): New instruction.
+	* libpoke/pkl-rt.pk (ioisvolatile): New function.
+	(IOS_F_VOLATILE): Define.
+	* poke/pk-cmd-info.pk (pk_info_ios): Add column "Volatile".
+	* libpoke/ios.h (IOS_F_VOLATILE): Define.
+	* testsuite/poke.libpoke/foreign-iod.c (iod_volatile_by_default):
+	New function.
+	(iod_if): Initialize volatile_by_default.
+	* libpoke/libpoke.c (pk_register_iod): Update to handle
+	volatile_by_default.
+	* testsuite/poke.pkl/open-volatile-1.pk: New test.
+	* testsuite/poke.pkl/open-volatile-2.pk: Likewise.
+	* testsuite/poke.pkl/iovolatile-1.pk: Likewise.
+	* testsuite/poke.cmd/file-bias-1.pk: Update test.
+	* testsuite/poke.cmd/file-relative.pk: Likewise.
+	* testsuite/poke.cmd/file-mode.pk: Likewise.
+	* testsuite/poke.cmd/file-bias-2.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+	* doc/poke.texi (Files as IO Spaces): Update to reflect volatile
+	attribute of IO spaces.
+	(Buffers as IO Spaces): Likewise.
+	(info command): Likewise.
+	(iovolatile): New section.
+	(Auto-Remapping): Update.
+
 2024-09-16  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* poke/pk-cmd-ios.c (file_cmd): Add flags to command synopsis.

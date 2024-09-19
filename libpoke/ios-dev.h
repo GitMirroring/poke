@@ -65,6 +65,7 @@ struct ios_dev_if
   uint64_t (*get_flags) (void *dev);
   ios_dev_off (*size) (void *dev);
   int (*flush) (void *dev, ios_dev_off offset);
+  int (*volatile_by_default) (void *dev, const char *handler);
 };
 
 #define IOS_FILE_HANDLER_NORMALIZE(handler, new_handler)                \

@@ -367,6 +367,8 @@ immutable var IOS_F_READ   = 1;
 immutable var IOS_F_WRITE  = 2;
 immutable var IOS_F_CREATE = 16;
 
+immutable var IOS_F_VOLATILE = 1 <<. 8;
+
 immutable var IOS_M_RDONLY = IOS_F_READ;
 immutable var IOS_M_WRONLY = IOS_F_WRITE;
 immutable var IOS_M_RDWR = IOS_F_READ | IOS_F_WRITE;
@@ -973,6 +975,11 @@ immutable fun iosearch = (string handler) int<32>:
       return ios;
 
   raise E_no_ios;
+}
+
+immutable fun iovolatile = (int<32>ios = get_ios) int<32>:
+{
+  return asm int<32>: ("iogetv; nip" : ios);
 }
 
 immutable fun iosetbias = (offset<uint<64>,1> bias = 0#1, int<32> ios = get_ios) void:

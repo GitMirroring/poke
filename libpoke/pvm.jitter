@@ -123,6 +123,7 @@ wrapped-functions
   ios_map
   ios_handler
   ios_size
+  ios_volatile_p
   ios_open
   ios_read_int
   ios_read_uint
@@ -1767,6 +1768,30 @@ instruction iohandler ()
       PVM_RAISE_DFL (PVM_E_NO_IOS);
 
     JITTER_PUSH_STACK (pvm_make_string (ios_handler (io)));
+  end
+end
+
+# Instruction: iogetv
+#
+# Push 1 on the stack if the IO space on the stack is volatile.
+# Push 0 otherwise.
+#
+# If the given IO space doesn't exist then the exception PVM_E_NO_IOS
+# is raised.
+#
+# Stack: ( INT - INT INT )
+# Exceptions: PVM_E_NO_IOS
+
+instruction iogetv ()
+  non-relocatable
+  branching # because of PVM_RAISE_DIRECT
+  code
+    ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
+    ios io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));
+
+    if (io == NULL)
+      PVM_RAISE_DFL (PVM_E_NO_IOS);
+    JITTER_PUSH_STACK (pvm_make_int (ios_volatile_p (io), 32));
   end
 end
 

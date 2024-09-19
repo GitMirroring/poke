@@ -259,6 +259,14 @@ ios_dev_sub_flush (void *iod, ios_dev_off offset)
   return IOS_OK;
 }
 
+static int
+ios_dev_sub_volatile_by_default (void *iod, const char *handler)
+{
+  struct ios_dev_sub *sub = iod;
+
+  return ios_volatile_p (sub->base_ios);
+}
+
 struct ios_dev_if ios_dev_sub =
   {
    .get_if_name = ios_dev_sub_get_if_name,
@@ -269,5 +277,6 @@ struct ios_dev_if ios_dev_sub =
    .pwrite = ios_dev_sub_pwrite,
    .get_flags = ios_dev_sub_get_flags,
    .size = ios_dev_sub_size,
-   .flush = ios_dev_sub_flush
+   .flush = ios_dev_sub_flush,
+   .volatile_by_default = ios_dev_sub_volatile_by_default,
   };

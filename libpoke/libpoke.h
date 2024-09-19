@@ -1328,7 +1328,6 @@ typedef uint64_t pk_iod_off;
 struct pk_iod_if
 {
   /* Return the name of this device interface. Cannot return NULL. */
-
   const char *(*get_if_name) ();
 
   /* Determine whether the provided HANDLER is recognized as a valid
@@ -1357,6 +1356,12 @@ struct pk_iod_if
      Return PK_IOS_OK on success, or PK_IOD_EOF on error, including short
      writes.  */
   int (*pwrite) (void *dev, const void *buf, size_t count, pk_iod_off offset);
+
+  /* Return whether IO spaces implemented by this interface are
+     "volatile" by default.  Volatile IO spaces assume that their
+     contents can change at any time, and not just as the result of
+     write operations in this interface.  */
+  int (*volatile_by_default) (void *dev, const char *handler);
 
   /* Return the flags of the device, as it was opened.  */
   uint64_t (*get_flags) (void *dev);

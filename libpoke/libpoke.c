@@ -1166,6 +1166,7 @@ pk_register_iod (pk_compiler pkc, struct pk_iod_if *iod_if)
   CF (close);
   CF (pread);
   CF (pwrite);
+  CF (volatile_by_default);
   CF (get_flags);
   CF (size);
   CF (flush);

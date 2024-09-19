@@ -1132,8 +1132,8 @@ about:
 
 @example
 (poke) .info ios
-  Id	Type	Mode	Bias		Size		Name
-* 0	FILE	rw	0x00000000#B	0x00000398#B	./foo.o
+  Id   Type   Volatile   Mode   Bias           Size           Name
+* 0    FILE   no         rw     0x00000000#B   0x00000398#B   ./foo.o
 @end example
 
 The command @command{.info ios} gives us information about all the IO
@@ -1141,10 +1141,13 @@ spaces that are currently open.  The first column tells us a positive
 integer that identifies the IOS.  This @dfn{IO space identifier} is
 unique at any given time.  In this example, the id corresponding to
 @file{foo.o} is @code{0}.  The second column tells us the type of IO
-space. The third column tells us that @file{foo.o} allows both reading
-and writing.  The fourth column tells us the size of the file, in
-hexadecimal.  The fifth column is the name of the IO space; in this
-case, it is the path to the file being edited.
+space. The third column tells us whether the IO space is
+@dfn{volatile} or not; the contents of a volatile IO space can change
+at any time out of our control.  The third column tells us that
+@file{foo.o} allows both reading and writing.  The fourth column tells
+us the size of the file, in hexadecimal.  The fifth column is the name
+of the IO space; in this case, it is the path to the file being
+edited.
 
 You may wonder what is that weird suffix @code{#B}.  It is a unit,
 and tells us that the size @code{0x398} is measured in bytes, @i{i.e.} the
@@ -1159,9 +1162,9 @@ clearly, let's open another file:
 (poke) .file bar.o
 The current IOS is now `./bar.o'.
 (poke) .info ios
-  Id	Type	Mode	Bias		Size		Name
-* 1	FILE	rw	0x00000000#B	0x00000398#B	./bar.o
-  0	FILE	rw	0x00000000#B	0x00000398#B	./foo.o
+  Id    Type    Volatile   Mode    Bias            Size            Name
+* 1     FILE    no         rw      0x00000000#B    0x00000398#B    ./bar.o
+  0     FILE    no         rw      0x00000000#B    0x00000398#B    ./foo.o
 @end example
 
 Ah, there we have both @file{foo.o} and @file{bar.o}.  Now the current
@@ -1175,9 +1178,9 @@ an IO space as an argument:
 (poke) .ios 0
 The current IOS is now `./foo.o'.
 (poke) .info ios
-  Id	Type	Mode	Bias		Size		Name
-  1	FILE	rw	0x00000000#B	0x00000398#B	./bar.o
-* 0	FILE	rw	0x00000000#B	0x00000398#B	./foo.o
+  Id    Type    Volatile   Mode    Bias            Size            Name
+  1     FILE    no         rw      0x00000000#B    0x00000398#B    ./bar.o
+* 0     FILE    no         rw      0x00000000#B    0x00000398#B    ./foo.o
 @end example
 
 @noindent
@@ -1187,8 +1190,8 @@ We are back to @file{foo.o}.  Since we are not really interested in
 @example
 (poke) .close 1
 (poke) .info ios
-  Id	Type	Mode	Bias		Size		Name
-* 0	FILE	rw	0x00000000#B	0x00000398#B	./foo.o
+  Id    Type    Volatile   Mode    Bias            Size            Name
+* 0     FILE    no         rw      0x00000000#B    0x00000398#B    ./foo.o
 @end example
 
 Note how in the examples above we used the IO space identifiers (0 and
@@ -2737,8 +2740,8 @@ that opened a file as an IO space?
 (poke) .file foo.o
 The current IOS is now `./foo.o'.
 (poke) .info ios
-  Id	Type	Mode	Bias		Size		Name
-* 0	FILE	rw	0x00000000#B	0x000004c8#B	./foo.o
+  Id    Type    Volatile   Mode    Bias            Size            Name
+* 0     FILE    no         rw      0x00000000#B    0x000004c8#B    ./foo.o
 @end example
 
 @noindent
@@ -2749,9 +2752,9 @@ Memory buffers can be created using a similar dot-command,
 (poke) .mem foo
 The current IOS is now `*foo*'.
 (poke) .info ios
-  Id	Type	Mode	Bias		Size		Name
-* 1	MEMORY		0x00000000#B	0x00001000#B    *foo*
-  0	FILE	rw	0x00000000#B	0x000004c8#B    ./foo.o
+  Id    Type    Volatile   Mode    Bias            Size            Name
+* 1     MEMORY  no                 0x00000000#B    0x00001000#B    *foo*
+  0     FILE    no         rw      0x00000000#B    0x000004c8#B    ./foo.o
 @end example
 
 Note how the name of the buffer is built by prepending and appending
@@ -2874,9 +2877,9 @@ we can continue our work tomorrow.  This is how we would do that:
 
 @example
 (poke) .info ios
-  Id	Type	Mode	Bias		Size		Name
-* 1	MEMORY		0x00000000#B	0x00001000#B    *scratch*
-  0	FILE	rw	0x00000000#B	0x000f4241#B    ./foo.o
+  Id    Type    Volatile   Mode    Bias            Size            Name
+* 1     MEMORY  no                 0x00000000#B    0x00001000#B    *scratch*
+  0     FILE    no         rw      0x00000000#B    0x000f4241#B    ./foo.o
 (poke) save :from 0#B :size iosize (1) :file "scratch.dat"
 @end example
 
@@ -3918,9 +3921,9 @@ $ poke p.sbm
 (poke) .mem scratch
 The current IOS is now `*scratch*'.
 (poke) .info ios
-  Id	Type	Mode	Bias		Size		Name
-* 1	MEMORY		0x00000000#B	0x00001000#B	*scratch*
-  0	FILE	rw	0x00000000#B	0x0000006e#B	./p.sbm
+  Id    Type    Volatile Mode    Bias            Size            Name
+* 1     MEMORY  no               0x00000000#B    0x00001000#B    *scratch*
+  0     FILE    no       rw      0x00000000#B    0x0000006e#B    ./p.sbm
 (poke) copy :from_ios 0 :from 0#B :to 0#B :size iosize (0)
 (poke) dump
 76543210  0011 2233 4455 6677 8899 aabb ccdd eeff  0123456789ABCDEF
@@ -8721,9 +8724,9 @@ Display a list of open files.
 
 @example
 (poke) .info ios
-  Id	Type	Mode	Bias		Size		Name
-  1	FILE	r	0x00000000#B	0x0000df78#B	foo.o
-* 0	FILE	rw	0x00000000#B	0x00000022#B	foo.bson
+  Id    Type    Volatile   Mode    Bias            Size            Name
+  1     FILE    no         r       0x00000000#B    0x0000df78#B    foo.o
+* 0     FILE    no         rw      0x00000000#B    0x00000022#B    foo.bson
 @end example
 
 @cindex IO space
@@ -8737,9 +8740,9 @@ switch to it as the new current IO space:
 (poke) .ios 1
 The current file is now `foo.o'.
 (poke) .info ios
-  Id	Type	Mode	Bias		Size		Name
-* 1	FILE	r	0x00000000#B	0x0000df78#B	foo.o
-  0	FILE	rw	0x00000000#B	0x00000022#B	foo.bson
+  Id    Type    Volatile   Mode    Bias            Size            Name
+* 1     FILE    no         r       0x00000000#B    0x0000df78#B    foo.o
+  0     FILE    no         rw      0x00000000#B    0x00000022#B    foo.bson
 @end example
 
 @item .info variables [@var{regexp}]
@@ -13608,6 +13611,7 @@ memory of some process.
 * iosearch::                    Search for an IO space by name.
 * iolist::                      Getting a list of open IO spaces.
 * openset::                     Opening and setting combined.
+* iovolatile::                  Getting whether a given IO space is volatile.
 * iosize::			Getting the size of an IO space.
 * iotype::                      Getting the type of an IO space.
 * iohandler::                   Getting the handler string of an IO space.
@@ -13858,6 +13862,20 @@ fun openset = (string @var{handler}, uint<64> @var{flags} = 0) int<32>
 @noindent
 Where the meaning of @var{handler}, @var{flags} and the returned value
 are exactly like in @code{open}.
+
+@node iovolatile
+@subsubsection @code{iovolatile}
+@cindex @code{iovolatile}
+
+The @code{iovolatile} builtin returns a boolean indicating whether a
+given IO space is @dfn{volatile}.  It has the following prototype:
+
+@example
+fun iovolatile = (int<32> ios = get_ios) int<32>
+@end example
+
+If the IO space specified to @code{iovolatile} doesn't exist,
+@code{E_no_ios} will be raised.
 
 @node iosize
 @subsubsection @code{iosize}
@@ -14395,11 +14413,12 @@ definition.
 @node Auto-Remapping
 @subsection Auto-Remapping
 @cindex remap
+@cindex volatile IO spaces
 
 By default poke always tries to handle mapped values in a transparent
 way, @i{i.e.} in the same way than if the values weren't mapped.  To
 guarantee that the contents of mapped values are always up to date, it
-issues @dfn{remaps} every time the value gets referenced.
+may need to issue @dfn{remaps} when the value gets referenced.
 
 @noindent
 For example, consider the following Poke program:
@@ -14425,26 +14444,16 @@ element in position 2.
 
 This re-mapping 100% guarantees that the mapped values are up to date.
 However, this can get very slow, depending on the data structures we
-are poking at.
+are poking at. poke thus tries to be smart and do as less remapping as
+possible.  In non-volatile IO spaces, like files, only mapped values
+whose contents have been updated by poke itself will be re-mapped.
+This is in contrast to volatile IO spaces, in which the underlying
+contents may be updated any time out of the control of poke, and
+therefore remapping cannot be avoided.  In read-only non-volatile IO
+spaces poke doesn't remap values at all.
 
-@noindent
-poke offers a way to turn this auto re-mapping off.  In Poke code:
-
-@example
-vm_set_autoremap (0)
-@end example
-
-@noindent
-Or using the poke application CLI:
-
-@example
-(poke) .set autoremap no
-@end example
-
-@noindent
-When auto-remap is switched off, mapped values are used as-is.  It is
-then the responsibility of the user to explicitly re-map values using
-the @code{remap} operator.  Like:
+The user can explicitly re-map values using the @code{remap} operator.
+Like:
 
 @example
 (poke) remap arr
