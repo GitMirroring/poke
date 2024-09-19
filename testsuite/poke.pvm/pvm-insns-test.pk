@@ -127,6 +127,19 @@ var tests = [
             };
       }
   },
+  PkTest {
+    name = "iogetv",
+    func = lambda (string name) void:
+      {
+        with_temp_ios
+          :do lambda void:
+            {
+              /* Memory IO spaces are non-volatile by default.  */
+              assert (asm int<32>: ("iogetv; nip" : get_ios)
+                      == 0);
+            };
+      }
+  },
   /* Integer overflow instructions.  */
   PkTest {
     name = "addiof",
