@@ -47,7 +47,7 @@ fun pk_info_ios = void:
 
       table.row;
       table.column ((ios == get_ios ? "* " : "  ") + format ("%i32d", ios));
-      table.column (iotype);
+      table.column (iotype (ios));
       table.column (iovolatile (ios) ? "yes" : "no");
       table.column (mode);
       if (bias > 0xffff_ffff)
