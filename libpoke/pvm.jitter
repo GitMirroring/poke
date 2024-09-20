@@ -7293,6 +7293,18 @@ end
 
 ## Peephole optimizations
 
+rule dup-swap-to-dup rewrite
+  dup; swap
+into
+  dup
+end
+
+rule swap-tuck-to-over rewrite
+  swap; tuck
+into
+  over
+end
+
 rule swap-drop-to-nip rewrite
   swap; drop
 into
