@@ -1,3 +1,8 @@
+2024-09-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-typify.c (pkl_typify1_ps_struct_type_field): Fix
+	memory leak.
+
 2024-09-20  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* testsuite/poke.cmd/set-oacutoff-2.pk: Escape dots in regexps.

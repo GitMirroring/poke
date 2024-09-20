@@ -2954,6 +2954,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_struct_type_field)
      an offset<uint<64>,*>.  */
   if (elem_label)
     {
+      int promoteable_p = 0;
       pkl_ast_node label_type = PKL_AST_TYPE (elem_label);
       pkl_ast_node offset_type
         = pkl_ast_make_offset_type (PKL_PASS_AST,
@@ -2961,9 +2962,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_struct_type_field)
                                     pkl_ast_make_integer (PKL_PASS_AST, 1),
                                     NULL /* ref_type */);
 
-
-      if (!pkl_ast_type_promoteable_p (label_type, offset_type,
-                                       1 /* promote_array_of_any */))
+      promoteable_p = pkl_ast_type_promoteable_p (label_type, offset_type,
+                                                  1 /* promote_array_of_any */);
+      offset_type = ASTREF (offset_type); pkl_ast_node_free (offset_type);
+      if (!promoteable_p)
         {
           char *type_str = pkl_type_str (label_type, 1);
 
@@ -2974,8 +2976,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_struct_type_field)
           free (type_str);
           PKL_PASS_ERROR;
         }
-
-      offset_type = ASTREF (offset_type); pkl_ast_node_free (offset_type);
     }
 }
 PKL_PHASE_END_HANDLER
