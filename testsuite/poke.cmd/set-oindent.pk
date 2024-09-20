@@ -10,5 +10,5 @@
 /* { dg-command { type Bar = struct { Foo foo; } } } */
 /* { dg-command { Bar @ 0#B } } */
 /* { dg-output "Bar \{" } */
-/* { dg-output "\n    foo=Foo \{...\}" } */
+/* { dg-output "\n    foo=Foo \{\.\.\.\}" } */
 /* { dg-output "\n\}" } */
