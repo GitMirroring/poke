@@ -1,5 +1,15 @@
 2024-09-20  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* testsuite/poke.cmd/set-oacutoff-2.pk: Escape dots in regexps.
+	* testsuite/poke.pkl/printf-25.pk: Likewise.
+	* testsuite/poke.pkl/format-28.pk: Likewise.
+	* testsuite/poke.pkl/format-20.pk: Likewise.
+	* testsuite/poke.pkl/format-19.pk: Likewise.
+	* testsuite/poke.cmd/set-oindent.pk: Likewise.
+	* testsuite/poke.cmd/set-odepth-1.pk: Likewise.
+
+2024-09-20  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* poke/poke.c (initialize): Enable pretty-printing, tree output
 	mode and pager by default if no quiet mode.
 	* doc/poke.texi (Simple Init File): Update accordingly.

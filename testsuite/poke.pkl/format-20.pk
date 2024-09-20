@@ -4,4 +4,4 @@
 /* { dg-command {vm_set_omaps (1)} } */
 /* { dg-command {vm_set_oacutoff (3)} } */
 /* { dg-command {format("%v", ["GNU", "poke", "by", "Jose", "Marchesi"])} } */
-/* { dg-output {"\[\\"GNU\\" @ 0UL#B,\\"poke\\" @ 4UL#B,\\"by\\" @ 9UL#B,...] @ 0UL#B"} } */
+/* { dg-output {"\[\\"GNU\\" @ 0UL#B,\\"poke\\" @ 4UL#B,\\"by\\" @ 9UL#B,\.\.\.] @ 0UL#B"} } */

@@ -8,10 +8,10 @@
 /* { dg-command { type Foo = struct { byte b; } } } */
 /* { dg-command { type Bar = struct { Foo foo; } } } */
 /* { dg-command { Bar @ 0#B } } */
-/* { dg-output "Bar \{foo=Foo \{...\}\}" } */
+/* { dg-output "Bar \{foo=Foo \{\.\.\.\}\}" } */
 
 /* { dg-command { .set omode tree } } */
 /* { dg-command { Bar @ 0#B } } */
 /* { dg-output "\nBar \{" } */
-/* { dg-output "\n  foo=Foo \{...\}" } */
+/* { dg-output "\n  foo=Foo \{\.\.\.\}" } */
 /* { dg-output "\n\}" } */
