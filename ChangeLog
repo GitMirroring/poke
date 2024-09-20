@@ -1,3 +1,9 @@
+2024-09-20  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* poke/poke.c (initialize): Enable pretty-printing, tree output
+	mode and pager by default if no quiet mode.
+	* doc/poke.texi (Simple Init File): Update accordingly.
+
 2024-09-19  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pvm-alloc.c (pvm_alloc_gc): Define.

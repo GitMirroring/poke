@@ -962,10 +962,7 @@ We recommend new users to set the following options:
 
 @example
 .set endian little
-.set omode tree
 .set oacutoff 5
-.set pretty-print yes
-.set pager yes
 @end example
 
 @noindent

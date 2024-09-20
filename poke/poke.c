@@ -431,9 +431,6 @@ parse_args_2 (int argc, char *argv[])
       c = ret;
       switch (c)
         {
-        case QUIET_ARG:
-          pk_set_quiet_p (poke_compiler, 1);
-          break;
         case 'l':
         case LOAD_ARG:
           {
@@ -491,6 +488,7 @@ parse_args_2 (int argc, char *argv[])
         case NO_STDTYPES_ARG:
         case 'q':
         case NO_INIT_FILE_ARG:
+        case QUIET_ARG:
           /* These are handled in parse_args_1.  */
           break;
         case HELP_ARG:
@@ -592,6 +590,9 @@ initialize (int argc, char *argv[])
   if (poke_compiler == NULL)
     pk_fatal ("creating the incremental compiler");
 
+  /* Set the quiet flag in the compiler.  */
+  pk_set_quiet_p (poke_compiler, poke_quiet_p);
+
   /* Make poke_interactive_p available to poke programs.  */
   if (pk_defvar (poke_compiler, "poke_interactive_p",
                  pk_make_int (poke_compiler, poke_interactive_p, 32))
@@ -691,6 +692,38 @@ initialize (int argc, char *argv[])
                      pk_make_int (poke_compiler, 0, 32)
 #endif
                      );
+
+    /* Enable the pager by default if poke is not in quiet mode and it
+       was called interactively.  */
+    if (poke_interactive_p && !poke_quiet_p)
+      pk_decl_set_val (poke_compiler, "pk_pager_p",
+                       pk_make_int (poke_compiler, 1, 32));
+
+    /* Enable pretty-printing and tree output mode by default if poke
+       is not running in quiet mode.  */
+    if (!poke_quiet_p)
+      {
+        pk_val setter, vm_omode_tree;
+        pk_val exit_exception;
+
+        setter = pk_decl_val (poke_compiler, "vm_set_opprint");
+        assert (setter != PK_NULL);
+        if (pk_call (poke_compiler, setter,
+                     NULL /* ret */, &exit_exception,
+                     1, pk_make_int (poke_compiler, 1, 32)) == PK_ERROR
+            || exit_exception != PK_NULL)
+          PK_UNREACHABLE ();
+
+        vm_omode_tree = pk_decl_val (poke_compiler, "VM_OMODE_TREE");
+        assert (vm_omode_tree);
+        setter = pk_decl_val (poke_compiler, "vm_set_omode");
+        assert (setter != PK_NULL);
+        if (pk_call (poke_compiler, setter,
+                     NULL /* ret */, &exit_exception,
+                     1, vm_omode_tree) == PK_ERROR
+            || exit_exception != PK_NULL)
+          PK_UNREACHABLE ();
+      }
   }
 
   /* Initialize ios stuff.  */
