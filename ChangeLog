@@ -1,5 +1,13 @@
 2024-09-21  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-gen.c (struct pkl_gen_payload): Remove pasm2 and
+	cur_pasm2 fields.
+	(PKL_GEN_ASM2): Remove.
+	(PKL_GEN_PUSH_ASM2): Likewise.
+	(PKL_GEN_POP_ASM2): Likewise.
+
+2024-09-21  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* poke/pk-cmd-help.pk: Add missing "dispatch" in synopsis for .vm.
 
 2024-09-21  Jose E. Marchesi  <jemarch@gnu.org>

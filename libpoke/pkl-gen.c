@@ -47,16 +47,13 @@
 
    COMPILER is the Pkl compiler driving the compilation.
 
-   PASM and PASM2 are stacks of macro-assemblers.  Assemblers in PASM
-   are used for assembling the main program, struct mappers, and
-   functions.  Assemblers in PASM2 are used for compiling struct
-   constructors.
+   PASM is a stack of macro-assemblers, which are used to asembly the
+   main program, struct mappers, functions, etc.
 
    ENDIAN is the endianness to be used when mapping and writing
    integral types.
 
-   CUR_PASM and CUR_PASM2 are the pointers to the top of PASM and
-   PASM2, respectively.
+   CUR_PASM is a pointer to the top of PASM.
 
    PROGRAM is the main PVM program being compiled.  When the phase is
    completed, the program is "finished" (in PVM parlance) and ready
@@ -83,11 +80,9 @@ struct pkl_gen_payload
 {
   pkl_compiler compiler;
   pkl_asm pasm[PKL_GEN_MAX_PASM];
-  pkl_asm pasm2[PKL_GEN_MAX_PASM];
   uint32_t context[PKL_GEN_MAX_CTX];
   enum pkl_ast_endian endian;
   int cur_pasm;
-  int cur_pasm2;
   int cur_context;
   pvm_program program;
   int constructor_depth;
@@ -154,7 +149,6 @@ pkl_gen_finalize (void *payload)
   (PKL_GEN_PAYLOAD->ASM[PKL_GEN_PAYLOAD->cur_##ASM])
 
 #define PKL_GEN_ASM  PKL_GEN_AN_ASM(pasm)
-#define PKL_GEN_ASM2 PKL_GEN_AN_ASM(pasm2)
 
 #define PKL_GEN_PUSH_AN_ASM(ASM,new_pasm)                               \
   do                                                                    \
@@ -165,7 +159,6 @@ pkl_gen_finalize (void *payload)
   while (0)
 
 #define PKL_GEN_PUSH_ASM(new_pasm)  PKL_GEN_PUSH_AN_ASM(pasm,new_pasm)
-#define PKL_GEN_PUSH_ASM2(new_pasm) PKL_GEN_PUSH_AN_ASM(pasm2,new_pasm)
 
 #define PKL_GEN_POP_AN_ASM(ASM)                  \
   do                                             \
@@ -176,7 +169,6 @@ pkl_gen_finalize (void *payload)
   while (0)
 
 #define PKL_GEN_POP_ASM  PKL_GEN_POP_AN_ASM(pasm)
-#define PKL_GEN_POP_ASM2 PKL_GEN_POP_AN_ASM(pasm2)
 
 #define PKL_GEN_IN_CTX_P(CTX)                                           \
   (PKL_GEN_PAYLOAD->context[PKL_GEN_PAYLOAD->cur_context] & (CTX))
