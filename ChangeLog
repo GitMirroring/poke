@@ -1,5 +1,9 @@
 2024-09-21  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-cmd-help.pk: Add missing "dispatch" in synopsis for .vm.
+
+2024-09-21  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pvm.jitter (dup-wap-to-dup): New rewrite.
 	(swap-tuck-to-over): Likewise.
 
