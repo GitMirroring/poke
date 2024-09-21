@@ -3198,7 +3198,6 @@ pkl_ast_handle_bconc_ass_stmt (pkl_ast ast, pkl_ast_node ass_stmt)
 
   assert (PKL_AST_TYPE_CODE (ass_stmt_exp_type) == PKL_TYPE_INTEGRAL);
 
-  PKL_AST_COMP_STMT_FRAMELESS_P (comp_stmt) = 1;
   (void) pkl_ast_handle_bconc_ass_stmt_1 (ast, comp_stmt,
                                           PKL_AST_ASS_STMT_LVALUE (ass_stmt),
                                           ass_stmt_exp,
