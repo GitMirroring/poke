@@ -346,7 +346,7 @@ pk_help_add_topic
   :entry Poke_HelpEntry {
       category = "dot-commands",
       topic = ".vm",
-      synopsis = ".vm {disassemble,profile}",
+      synopsis = ".vm {disassemble,profile,dispatch}",
       summary = "PVM related commands",
       description = "\
 Perform an operation related to the Poke Virtual Machine.
