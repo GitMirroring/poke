@@ -18,6 +18,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// List of PCIe Capability IDs as defined by PCI-SIG in Revision 1.12
+// https://pcisig.com/sites/default/files/files/PCI_Code-ID_r_1_12__v9_Jan_2020.pdf
+// Decoding of all the IDs is not currently supported.
+var PCI_CAP_NULL    = 0x00,
+    PCI_CAP_PMI     = 0x01,
+    PCI_CAP_AGP     = 0x02,
+    PCI_CAP_VPD     = 0x03,
+    PCI_CAP_SID     = 0x04,
+    PCI_CAP_MSI     = 0x05,
+    PCI_CAP_CHS     = 0x06,
+    PCI_CAP_PCIX    = 0x07,
+    PCI_CAP_HTT     = 0x08,
+    PCI_CAP_VENDOR  = 0x09,
+    PCI_CAP_DBG     = 0x0A,
+    PCI_CAP_CCRC    = 0x0B,
+    PCI_CAP_HOTPLUG = 0x0C,
+    PCI_CAP_BSV_ID  = 0x0D,
+    PCI_CAP_AGP8X   = 0x0E,
+    PCI_CAP_SD      = 0x0F,
+    PCI_CAP_PCIe    = 0x10,
+    PCI_CAP_MSIX    = 0x11,
+    PCI_CAP_SATA    = 0x12;
 
 /**
  * Reserved and Zero

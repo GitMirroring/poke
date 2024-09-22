@@ -1,0 +1,153 @@
+/* pci_capability.pk - Structs for mapping PCI Capabilities */
+
+/* Work in progress */
+
+/* Copyright (C) 2024 Darshit Shah */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+load "pci_common.pk";
+
+
+/*      MSI Capability (0x05)     */
+
+type PCI_msi_msg_control =
+  struct uint<16>
+  {
+    rsvdp;
+    rsvdp;
+    rsvdp;
+    rsvdp;
+    rsvdp;
+    uint<1> ext_msg_data_en;
+    uint<1> ext_msg_data_cap;
+    uint<1> per_vec_masking;
+    uint<1> addr_64_bit_capable;
+    uint<3> multi_msg_enable;
+    uint<3> multi_msg_capable;
+    uint<1> msi_enable;
+  };
+
+type PCI_cap_msi =
+  struct
+  {
+    uint<8> cap_id == PCI_CAP_MSI;
+    offset<uint<8>,B> next_cap;
+    PCI_msi_msg_control msg_control;
+    uint<32> msg_add;
+    if (msg_control.addr_64_bit_capable == 0x1)
+        uint<32> msg_upper_add;
+    uint<16> msg_data;
+    uint<16> ext_msg_data;
+    if (msg_control.per_vec_masking == 0x1)
+        uint<32> mask_bits;
+    if (msg_control.per_vec_masking == 0x1)
+        uint<32> pending_bits;
+  };
+
+/*         PCIe Capability (0x10)           */
+
+type PCIe_cap_reg = struct uint<16> {
+    // Can be used to identify the PCIe version
+    rsvdp;
+    uint<1> tcs_routing;
+    uint<5> msi_vec_nr;
+    uint<1> slot_impl;
+    uint<4> dev_port_type;
+    uint<4> cap_ver;
+
+    method _print_dev_port_type = void:
+    {
+        print "#<";
+        if (dev_port_type == 0b0000)
+            print "PCI Express Endpoint";
+        else if (dev_port_type == 0b0001)
+            print "Legacy PCI Express Endpoint";
+        else if (dev_port_type == 0b1001)
+            print "RCiEP";
+        else if (dev_port_type == 0b1010)
+            print "Root Complex Event Collector";
+        else
+            printf "0b%u4b" dev_port_type;
+        print ">";
+    }
+};
+
+type PCI_cap_pcie = struct {
+    uint<8> cap_id == PCI_CAP_PCIe;
+    offset<uint<8>,B> next_cap;
+    PCIe_cap_reg cap_reg;
+    uint<32> dev_cap;
+    uint<16> dev_ctl;
+    uint<16> dev_sta;
+    uint<32> lnk_cap;
+    uint<16> lnk_ctl;
+    uint<16> lnk_sta;
+    union uint<64> {
+        struct uint<64> {
+          uint<32> slt_cap;
+          uint<16> slt_ctl;
+          uint<16> slt_sta;
+        } PCI_pcie_slot : cap_reg.slot_impl == 0x1;
+        uint<64> _undefined;
+    } slot;
+    uint<16> root_ctl;
+    uint<16> root_cap;
+    uint<32> root_sta;
+    uint<32> dev_cap2;
+    uint<16> dev_ctl2;
+    uint<16> dev_sta2;
+    uint<32> lnk_cap2;
+    uint<16> lnk_ctl2;
+    uint<16> lnk_sta2;
+    uint<32> slt_cap2;
+    uint<16> slt_ctl2 == 0x0;
+    uint<16> slt_sta2 == 0x0;
+};
+
+type PCI_capability =
+  union
+  {
+    PCI_cap_msi msi;
+    PCI_cap_pcie pcie;
+    // Implement a default struct that still matches the basic structure of a
+    // capability, so we can follow the pointers, even when the capability is
+    // not yet implemented
+    struct
+      {
+        uint<8> cap_id;
+        offset<uint<8>, B> next_cap;
+      } not_implemented;
+
+    method _print = void:
+      {
+        if (msi ?! E_elem != 1)
+          printf("%v\n", msi);
+        else if (pcie ?! E_elem != 1)
+          printf("%v\n", pcie);
+        else
+          printf("%v\n", not_implemented);
+      }
+
+    method next_cap = offset<uint<8>, B>:
+      {
+        if (msi ?! E_elem != 1)
+          return msi.next_cap;
+        else if (pcie ?! E_elem != 1)
+          return pcie.next_cap;
+        else
+          return not_implemented.next_cap;
+      }
+  };
