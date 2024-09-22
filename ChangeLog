@@ -1,3 +1,8 @@
+2024-09-22  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-ast.h (struct pkl_type): Remove unused field `name'
+	from the `fun' struct.
+
 2024-09-21  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-ast.c (pkl_ast_handle_bconc_ass_stmt): There is no

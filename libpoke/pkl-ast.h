@@ -1080,7 +1080,6 @@ struct pkl_ast_type
 
     struct
     {
-      union pkl_ast_node *name;
       union pkl_ast_node *rtype;
       int narg;
       int vararg;
