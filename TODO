@@ -448,7 +448,7 @@ match (value)
 pokec ommand:
 
 
-(poke) search :from FROM :to TO :pattern Packet {{ size > 0 }} :aligned Packet'size
+(poke) search :from FROM :to XTO :pattern Packet {{ size > 0 }} :aligned Packet'size
 Result at OFFSET: Packet { ... }
 Result at OFFSET: Packet { ... }
 
@@ -1289,7 +1289,7 @@ For integral values.
 ** Auto-complete =.help= using the available help topics
 ** Auto-complete =.proc= with PIDs in the system
 ** Make =.ios= with no argument to switch to next IOS
-** Add command =checksum :algorithm ALG :from FROM :to TO :size SIZE=
+** Add command =checksum :algorithm ALG :from FROM :to XTO :size SIZE=
 ** Add :step argument to scrabble
 * Emacs
 ** poke-el: mark the current ios in *poke-ios*
