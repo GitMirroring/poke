@@ -1,3 +1,8 @@
+2024-09-24  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* pickles/btf-ext.pk (BTF_Ext_Header): Improve constraint for
+	`magic' so it handles endianness better.
+
 2024-09-22  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-ast.h (struct pkl_type): Remove unused field `name'
