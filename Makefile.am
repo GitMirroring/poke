@@ -41,13 +41,6 @@ cyclo-$(PACKAGE).html: $(CYCLO_SRCS)
 			> $@-tmp
 	mv $@-tmp $@
 
-# Update the HACKING file from the contents of etc/hacking.org.
-# This requires Emacs.
-
-update-hacking:
-	emacs ${srcdir}/etc/hacking.org --batch -f org-ascii-export-to-ascii --kill
-	mv -f ${srcdir}/etc/hacking.txt ${srcdir}/HACKING
-
 # Support for git-version-gen
 $(top_srcdir)/.version: $(top_srcdir)/configure
 	echo '$(VERSION)' > $@-t
@@ -55,5 +48,3 @@ $(top_srcdir)/.version: $(top_srcdir)/configure
 
 dist-hook:
 	echo '$(VERSION)' > $(distdir)/.tarball-version
-
-.PHONY = update-hacking

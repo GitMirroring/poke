@@ -2,7 +2,7 @@
 @comment %**start of header
 @setfilename pokeint.info
 @include versionint.texi
-@settitle GNU poke Internals
+@settitle GNU poke Internals and Development Guide
 @afourpaper
 @defcodeindex pv
 @comment %**end of header
@@ -27,7 +27,7 @@ later version.
 @end direntry
 
 @titlepage
-@title GNU poke Internals
+@title GNU poke Internals and Development Guide
 @subtitle for version @value{VERSION}, @value{UPDATED}
 @author by Jose E. Marchesi et al.
 @page
@@ -63,6 +63,7 @@ Contributing
 * Development environment::
 * Version control system::
 * Running an uninstalled poke::
+* Picking something to work on::
 * Submitting a patch::
 * Notifying about pushed commits::
 
@@ -90,6 +91,10 @@ Debugging poke
 Profiling poke
 * Building poke with profiling support::
 
+Hacking poke
+* Maintenance targets::
+* Writing compiler diagnostics::
+
 Coding Style and Conventions
 * Writing C::
 * Writing Poke::
@@ -97,6 +102,11 @@ Coding Style and Conventions
 
 Writing Documentation
 * Documenting pickles::
+
+Internals
+* The Poke compiler::
+* The Poke Virtual Machine::
+* Memory management::
 
 Indices
 * Concept Index::               General concept index
@@ -153,8 +163,8 @@ the tests :)
 @section Flex
 
 You will need a recent version of flex, since we are using some recent
-options like "reentrant" or "bison-bridge".  flex version 2.6.1 works
-fine.
+options like @code{reentrant} or @code{bison-bridge}.  flex version
+2.6.1 works fine.
 
 @node Bison
 @section Bison
@@ -262,6 +272,25 @@ $ pwd
 /home/jemarch/gnu/hacks/poke/build/
 $ ./run poke
 @end example
+
+@node Picking something to work on
+@chapter Picking something to work on
+
+We maintain a categorized and quite big list of tasks and ideas in the
+@file{TODO} file which is located at the top level of the sources
+distribution.  Some of the tasks listed there are simple, well
+defined, and straightforward: these are ideal for first contributions.
+Other entries, however, describe full-fledged projects or even half
+baked ideas that are only sketched barely.  These later will require
+additional discussion in the mailing list.
+
+In any case, if you start working on some project, be it listed in
+@file{TODO} or not, we highly recommend you let us know in the
+poke-devel mailing list.
+
+If you would prefer to work on bug fixing, you can browse the open
+bugs at
+@url{https://sourceware.org/bugzilla/describecomponents.cgi?product=poke}.
 
 @node Submitting a patch
 @chapter Submitting a patch
@@ -1009,13 +1038,13 @@ solved.
 
 When using advanced Jitter dispatches it becomes important that every
 C function or global variable accessed by a relocatable VM instruction
-is "wrapped": see the Jitter documentation [not yet existing at the
-time of writing] for more information.  Non-relocatable instructions
-can access any global without need for wrapping: the problem is
-strictly with VM instruction whose native executable code gets copied
-to different memory addresses, therefore breaking PC-relative access
-to globals.  Wrapping prevents this kind of access, replacing it with
-a indirect access thru a local pointer.
+is @dfn{wrapped}: see the Jitter documentation [not yet existing at
+the time of writing] for more information.  Non-relocatable
+instructions can access any global without need for wrapping: the
+problem is strictly with VM instruction whose native executable code
+gets copied to different memory addresses, therefore breaking
+PC-relative access to globals.  Wrapping prevents this kind of access,
+replacing it with a indirect access thru a local pointer.
 
 It is important to remark that macros cannot be wrapped as functions:
 rather it is necessary to consider any global variable or function
@@ -1041,6 +1070,101 @@ programs:
 For these commands to work you need to build poke with profiling
 support.  This is done by passing the @command{--enable-pvm-profiling}
 command line option to @command{configure}.
+
+@node Maintenance targets
+@chapter Maintenance targets
+
+This section describes @command{make} targets that performs several
+maintenance tasks.
+
+@table @command
+@item syntax-check
+Run several syntax-related checks in the source files.  It is useful
+to run this target before submitting code to be reviewed, and while
+reviewing other people's code.
+
+Note that sometimes the results have to be taken with a pinch of salt.
+This happens, for example, when a rule oriented to C is applied to,
+say, an AWK file.  In these cases, consider adding a @file{.x-sc_*}
+fine-tuning file.  But please ask in poke-devel first.
+
+We provide a pre-push git hook that performs the syntax check right
+before pushing. If the check fails, the push is aborted. You should
+consider enabling this check by coping @file{etc/git-hooks/pre-push}
+to @file{.git/hooks/}.
+
+@item coverage
+This target builds *poke* with code coverage support, runs the
+testsuite, and generates a nice html report under
+@file{$(top_builddir)/doc/coverage/}.  It is necessary to have the
+@command{lcov} program for this to work.  Note also that you need to
+have jitter configured to use a dispatch model other than
+no-threading.
+
+@item cyclo-poke.html
+This target runs the pmccabe utility to calculate the modified
+cyclomatic complexity of the functions composing the poke sources, and
+generates a nice html report.
+
+@item refresh-po
+This target download the latest available translations from the
+translation project and installs them in the source tree.
+
+@item update-copyright
+Run this rule once per year (usually early in January) to update all
+the copyright years in the project.  By default this excludes all
+variants of COPYING.  Exceptions to this procedure (such as
+@file{ChangeLog..*} for rotated change logs) can be added in the file
+@file{.x-update-copyright}.
+@end table
+
+@node Writing compiler diagnostics
+@chapter Writing compiler diagnostics
+
+Please follow the following guidelines when adding new errors or
+warnings to the poke compiler:
+
+@itemize @minus
+@item
+Make the diagnostic messages self-contained, @i{i.e.} do not rely on
+the extra location information to make the error intelligible.  This
+is mainly for the sake of accessibility, and also for when poke is run
+in quiet mode.
+
+This is an example of a bad diagnostic:
+
+@example
+error: field doesn't exist in struct
+@end example
+
+Write something like this instead:
+
+@example
+error: field `foo' doesn't exist in struct
+@end example
+
+@item
+When checking for the type of some ENTITY, please use a two-lines
+error message like:
+
+@example
+error: invalid ENTITY
+error: expected EXPECTED_TYPE, got ACTUAL_TYPE
+@end example
+
+this is to keep some uniformity.  You can get the written
+representation of a type using the =pkl_type_str= utility function.
+
+@item
+When referring to integer types in diagnostic messages, please refer
+to them as @dfn{integrals}.
+
+@item
+Always pass 1 for @code{use_given_name} when invoking
+@code{pkl_type_str} unless you need the expanded definition of the
+type for whatever reason (like to show the arguments taken by a
+function type.)
+@end itemize
 
 @node Writing C
 @chapter Writing C
@@ -1196,6 +1320,866 @@ pickles.
 
 Keep a tutorial-like tone: for fine details, the user can always go
 and look to the pickle directly.
+
+@node The Poke compiler
+@chapter The Poke compiler
+
+@menu
+* Compiler overview::
+* The bison parser in @file{pkl-tab.y}::
+* The AST::
+* Lexical handling::
+* Compiler passes and phases::
+@end menu
+
+@node Compiler overview
+@section Compiler overview
+
+This figure depicts the architecture of the compiler:
+
+@example
+      /--------\
+      | source |
+      \---+----/
+          |
+          v
+  +-----------------+
+  |      Parser     |
+  +-----------------+
+  |  analysis and   |
+  | transformation  |
+  |     phases      |
+  +-----------------+
+  | code generation |
+  |      phase      |
+  +-----------------+
+  | Macro assembler |
+  +-----------------+
+          |
+          v
+     /---------\
+     | program |
+     \---------/
+@end example
+
+@node The bison parser in @file{pkl-tab.y}
+@section The bison parser in @file{pkl-tab.y}
+
+The only purpose of the bison parser in pkl-tab.y is to do the
+syntactic analysis, build the initial AST, and set the locations of
+the AST nodes.
+
+Unfortunately, currently it also does some extra work, due to
+limitations in the LARL parser:
+
+- It builds the compile-time environment and register type, variable
+  and function declarations.
+- It links return statements with their containing functions.
+
+As we shall see below, any further analysis and transformations on the
+AST are performed by the compiler phases, which are implemented
+elsewhere.  This greatly helps to keep the parser code clean and easy
+to read, and also eases changing the syntactic structure of poke
+programs.
+
+@node The AST
+@section The AST
+
+The compiler operates on an abstract syntax tree that represent the
+program being compiled.  The following subsections discuss some useful
+aspects of the structure of the AST.
+
+@menu
+* loop_stmt::
+* try_stmt::
+* exp::
+* cond_exp::
+@end menu
+
+@node loop_stmt
+@subsection loop_stmt
+
+Loop statements are represented with trees like:
+
+@example
+loop_stmt
+|
++-- [iterator]
+|       |
+|       +-- decl
+|       +-- container
+|
++-- [condition]
++-- body
+@end example
+
+Different kind of loop statements supported in Poke are represented
+including or not including optional fields.
+
+@code{while} statements with a condition:
+
+@example
+while (CONDITION) BODY
+@end example
+
+@noindent
+are represented as:
+
+@example
+loop_stmt
+    |
+    +-- condition
+    +-- body
+@end example
+
+@code{for} statements without a condition:
+
+@example
+for (;;) BODY
+@end example
+
+@noindent
+are represented as:
+
+@example
+loop_stmt
+    |
+    +-- body
+@end example
+
+@code{for-in} statements:
+
+@example
+for (VAR in CONTAINER) BODY
+@end example
+
+@noindent
+are represented as:
+
+@example
+loop_stmt
+    |
+    +-- iterator
+    |      |
+    |      +-- decl (VAR
+    |      +-- container
+    |
+    +-- body
+@end example
+
+@code{for-in-where} statements:
+
+@example
+for (VAR in CONTAINER where SELECTOR) BODY
+@end example
+
+@noindent
+are represented as:
+
+@example
+loop_stmt
+    |
+    +-- iterator
+    |      |
+    |      +-- decl (VAR)
+    |      +-- container
+    |
+    +-- condition (SELECTOR)
+    +-- body
+@end example
+
+@node try_stmt
+@subsection try_stmt
+
+There are several syntactic forms of this statement:
+
+@example
+try CODE catch HANDLER
+try CODE catch if EXP HANDLER
+try CODE catch (ARG) HANDLER
+try CODE until EXP
+@end example
+
+Try statements are represented with trees like:
+
+@example
+try_stmt
+|
++-- try_stmt_body
+|   |
+|   +-- code
+|
++-- try_stmt_handler
+|   |
+|   +-- code
+|
++-- [arg]
++-- [exp]
+@end example
+
+where @code{arg} and @code{exp} are exclusive.
+
+@node exp
+@subsection exp
+
+Expressions are the application of some @dfn{operator} to one or more
+operators.  The Poke language supports unary, binary and ternary
+operators.
+
+Expressions are represented with trees like:
+
+@example
+exp
+|
++-- code
++-- attr
++-- flag
++-- numops
++-- operands[3]
+    |
+    +-- [operand]
+    +-- [operand]
+    +-- [operand]
+@end example
+
+Where @code{code} identifies the operator of the expression.  Operators
+are defined in the @file{libpoke/pkl-ops.def} file.
+
+If the operator is an attribute, then @code{attr} identifies the invoked
+attribute.  Attributes are defined in the @file{libpoke/pkl-attrs.def}
+file.  This field @code{attr} is initialized in the @code{trans1} phase.
+
+
+The @code{exp} AST node is used for all the Poke unary and binary
+operators, which only use two of the operands.
+
+Additionally, the application of an attribute to which an argument is
+passed, like in:
+
+@example
+foo'elem (1)
+@end example
+
+Is encoded as an @code{exp} node with three operands: the first
+operand holds @code{foo}, the second operand an identifier for the
+attribute @code{elem} and the third operand the expression passed to
+the attribute (in this case 1).  A handler in @code{trans1} transforms
+this ternary expression node in a binary expression, filling
+@code{attr} in the process.
+
+Note that the Poke ternary conditional operator @code{? :} is
+@emph{not} implemented using @code{exp} nodes, but @code{cond_exp} AST
+nodes.
+
+@node cond_exp
+@subsection cond_exp
+
+This AST node is used to encode Poke's ternary conditional operator,
+which looks like:
+
+@example
+cond_exp ? then_exp : else_exp
+@end example
+
+It uses trees like this:
+
+@example
+cond_exp
+|
++-- cond
++-- thenexp
++-- elseexp
+@end example
+
+@node Lexical handling
+@section Lexical handling
+
+
+The parser needs to build the lexical enviroment as it works through
+the source code.  This is because it needs to find the declarations of
+all the entities referenced by variable names.  Also, the Poke syntax
+requires to determine whether a given identifier is a type name or
+not.  It uses a @code{pkl_env} for this, and it pushes and pops frames
+according to the language rules.  The parser annotates each variable
+reference with the declaration of the entity being referred, but does
+not set the variable's lexical address.  This is because this address
+may not be final, as we shall see below.  Once the parsing is done
+successfully the lexical environment should consist on just the
+top-level definitions, which is kept for the rest of the compilation.
+But the inner frames are no longer available.
+
+After the parser, the front-end compiler passes are run.  This
+includes analysis and checking of language rules, transformation, type
+analysis, constant folding, @i{etc}.  These passes can do arbitrary
+transformations of the tree, and some of these transformations can
+alter the lexical structure of the program.  The only exception is the
+top-level environment.  Therefore, these passes shall not rely on the
+lexical structure.
+
+Finally, just before the code generator, a lexical pass is run.  This
+pass contains a @code{transl} phase.  At this point no further
+transformations of the AST will be performed and it is final.  The
+@code{transl} phase reconstructs the lexical environment (the
+top-level environment is preserved) and assigns the lexical addresses
+(back, over) to all variable references.  It also performs a few
+language rules checks that rely on the relative lexical position of
+entities.
+
+@node Compiler passes and phases
+@section Compiler passes and phases
+
+@menu
+* The @file{pkl-passes.def} file::
+* Naming conventions for phases::
+* Naming conventions for phase handlers::
+@end menu
+
+@node The @file{pkl-passes.def} file
+@subsection The @file{pkl-passes.def} file
+
+The @file{pkl-passes.def} file describes the different @dfn{passes}
+performed by the compiler front-end, along with its constituent
+@dfn{phases}.  This is an example of a pass definition:
+
+@example
+PKL_PASS(PKL_PASS_F_TYPES,1)
+     PKL_PHASE(trans1)
+     PKL_PHASE(anal1)
+     PKL_PHASE(typify1)
+     PKL_PHASE(promo)
+     PKL_PHASE(trans2)
+     PKL_PHASE(fold)
+     PKL_PHASE(trans3)
+     PKL_PHASE(typify2)
+     PKL_PHASE(anal2)
+PKL_END_PASS
+@end example
+
+When running a pass, each phase will be applied in order to each node
+of the abstract syntax tree. See the documentation in
+@file{pkl-pass.h} for more detailed information about the compiler's
+pass manager.
+
+@node Naming conventions for phases
+@subsection Naming conventions for phases
+
+We use the following convention to name phases:
+
+@example
+@{NAME@}@{SUFFIX@}
+@end example
+
+Where @code{NAME} reflects a phase category (see below) and
+@code{SUFFIX} is usually an integer that specifies the order in which
+the phases are applied.  Thus, for example, @code{name4} is performed
+after @code{name1}.  Sometimes, @code{SUFFIX} is @code{f} (meaning
+``final'').
+
+The suffix is not used if there is only one phase in the given
+category.
+
+We use the following phase categories:
+
+@table @code
+@item anal
+For phases whose main purpose is to perform checks on the AST, and/or
+the contents of the AST nodes, and emit errors/warnings.
+@item trans
+For phases whose main purpose is to alter the structure of the AST,
+and/or the contents of the AST nodes.
+@item tipify
+For phases whose main purpose is to perform type checks, and otherwise
+do work on types.
+@item promo
+For phases whose main purpose is to perform coercions wherever
+appropriate.  Currently there is only one phase in this category.
+@item fold
+For phases whose main purpose is to pre-compute areas of the AST
+whenever it is possible to do so at compile-time.  Currently there is
+only one phase in this category, that performs constant folding.
+@item gen
+For phases whose main purpose is to generate PVM code.  Currently
+there is only one phase in this category.
+@end table
+
+The phases in category @code{NAME} are implemented in the source files
+@file{libpoke/pkl-NAME.[c]}.
+
+@node Naming conventions for phase handlers
+@subsection Naming conventions for phase handlers
+
+We use the following convention to name phase handlers:
+
+@example
+pkl_PHASE_@{ps,pr@}_NODE
+@end example
+
+Where @code{PHASE} can be a complete phase name (like @code{typify1})
+if the handler is to be installed in that phase only, or a phase
+category name (like @code{typify}) if the handler is to be installed
+in several phases in that category.  If the phase is to be executed in
+pre-order, @code{pr} follows, otherwise, @code{ps}.  Finally,
+@code{NODE} is the name of the AST node.
+
+For example, the handler:
+
+@example
+pkl_anal1_ps_comp_stmt
+@end example
+
+@noindent
+is installed in the phase @code{anal1}, executes in post-order, and
+serves the AST nodes with code @code{PKL_AST_COMP_STMT}.
+
+@node The Poke Virtual Machine
+@chapter The Poke Virtual Machine
+
+@menu
+* PVM types::
+* Exception handling::
+* Signal handling::
+* Offsets and bit-offsets in the PVM::
+* Writing relocatable instructions::
+* Avoiding branching instructions::
+* Wrapping globals::
+@end menu
+
+@node PVM types
+@section PVM types
+
+@subsection How @code{any} is handled in the PVM
+
+The Poke type @code{any} is not implemented in the PVM as a PVM type
+value.  Instead, @code{null} is used to denote it, by convention.
+
+Note that it is not possible to use @code{void} to denote the Poke
+@code{any} type, because of closure types: a closure returning
+@code{void} is not the same than a closure returning @code{any}.
+
+@node Exception handling
+@section Exception handling
+
+Exception types or codes are signed 32-bit integers, and are defined
+in @file{libpoke/pkl-rt.pk} as @code{EC_*} variables.
+
+The exceptions themselves are struct values of type @code{Exception},
+also defined in @file{libpoke/pkl-rt.pk}.
+
+There are two ways an exception can be raised in the PVM:
+
+@itemize @minus
+@item Explicitly, when the instruction =raise= is executed.
+@item Implicitly, when some instruction needs to fail.
+For example, an integer division instruction divides by zero.
+@end itemize
+
+In either case, the treatment of a raised exception is the same:
+
+@enumerate
+@item Pop an exception handler from the exception handler stack.
+@item If the exception handler matches the raised exception type, then
+@enumerate
+@item Restore the heights of the main and return stacks.
+@item Restore the dynamic environment.
+@item Push the cached exception type to the stack.
+@item Branch to the exception handler.
+@end enumerate
+@item Repeat.
+@end enumerate
+
+The default exception handler, which catches ``unhandled'' exceptions,
+is installed by the macro-assembler in
+@file{libpoke/pkl-asm.c:pkl_asm_new} and
+@file{libpoke/pkl-asm.c:pkl_asm_finish}.  It calls the function
+@code{_pkl_exception_handler}, that is defined in the compiler runtime
+in @file{libpoke/pkl-rt.pk}.
+
+@node Signal handling
+@section Signal handling
+
+When the PVM is about to execute a program, it installs a signal
+handler that, at the moment, handles @code{SIGINT}.  This signal
+handler is defined in the @code{late-c} block in pvm.jitter, and
+records the signal in the PVM internal state.
+
+Then, when a @code{sync} instruction is executed, it checks the PVM
+internal state and raises a @code{PVM_E_SIGNAL} exception if there is
+some pending signal.  The default signal handler just ignores this
+signal, but the user can also intercept it if desired.  The PKL
+compiler generates @code{sync} instructions in strategic places, such
+as before backward jumps in loops.
+
+The @code{exit} PVM instruction clears the pending signals in the
+internal PVM state.
+
+@node Offsets and bit-offsets in the PVM
+@section Offsets and bit-offsets in the PVM
+
+The PVM supports a @code{pvm_off} boxed value, to denote pairs of
+magnitudes and units.  Both accessor macros (in @file{pvm-val.h}) and
+PVM instructions (@code{ogetm}, @code{ogetu}) are provided to access
+their components.
+
+Many other PVM entities need to denote offsets in a way or another.
+For example, struct fields in @code{pvm_struct} values need to record
+their relative offset with respect the beginning of the struct.
+
+It may come to mind, quite naturally, to use @code{pvm_off} values to
+denote these offsets.  It is very elegant.  However, we decided to use
+@dfn{bit offsets} instead, stored in 64-bit @code{pvm_long} values.
+
+There are two reasons for this:
+
+@itemize @minus
+@item
+First of all, performance.  It is fairly common to operate with the
+absolute value of these offsets, in bits.  In fact, in most cases that
+is the only purpose of maintaining them.  Having them stored in
+@code{pvm_off} values means we have to multiply every time we want to
+get their magnitude.  This is a waste, for no good reason.
+@item
+To avoid code coupling.  PVM offsets are very cool, but they are also
+complex: the unit is arbitrary.  This means in many cases we have to
+assume the nature of the unit, mainly bits.  This is very fragile.
+@end itemize
+
+So, the take-home message is: in the PVM, restrict the presence of
+@code{pvm_off} values to the ones generated by the code generator.
+Whenever an offset is needed in some internal PVM structure, use
+bit-offsets instead encoded as @code{ulong<64>} values.
+
+@node Writing relocatable instructions
+@section Writing relocatable instructions
+
+When operating in non-threaded mode, Jitter likes to move the code
+compiled for instruction bodies around.  This imposes several
+restrictions on what can you have in the instruction bodies:
+
+@itemize @minus
+@item
+If you call a global function from your instruction, please add it to
+the @code{wrapped-functions} section in the file.
+@item
+Likewise, if you use a global variable, please add the variable to the
+@code{wrapped-globals} section.
+@item
+Do not use any constant C string like @code{"foo"}; these are global
+variables in disguise and you cannot wrap them unless you give them a
+name.
+@end itemize
+
+If you cannot follow the guidelines above for whatever reason, please
+mark the instruction as @code{non-relocatable} like this:
+
+@example
+instruction foo ()
+  non-relocatable
+  code
+    ...
+  end
+end
+@end example
+
+This will prevent Jitter to relocate the instruction body and crash in
+many platforms and non-threading modes.
+
+@node Avoiding branching instructions
+@section Avoiding branching instructions
+
+Another cause for a Jitter instruction to be non-relocatable is when
+it branches mid-instructions.  In practice this often happens when an
+instruction can raise an exception.  The typical example would be a
+division instruction @code{div}, which may be defined as raising a
+``division by zero'' exception if division by zero is found.  Jitter
+requires such an instruction to be marked as @dfn{branching} like
+this:
+
+@example
+instruction div
+  branching
+  code
+   ...
+  end
+end
+@end example
+
+In the PVM we always must avoid having branching instructions like the
+above, since it has a performance impact.  A way to avoid it is having
+the instruction push some value on the stack that signifies the
+execution found a problem, then get the compiler check for that value
+and raise the exception.  As an example, if the @code{div} instruction
+pushes @code{PVM_NULL} on the stack if division by zero is attempted,
+the compiler can generate this to check for it and raise the
+corresponding exception:
+
+@example
+  div
+  bnn .ok
+  pushe E_division_by_zero
+  raise
+.ok:
+  drop
+@end example
+
+@node Wrapping globals
+@section Wrapping globals
+
+The non-threaded Jitter operation modes require every global (variable
+or function) to be wrapped, @i{i.e.} specified in sections
+@code{wrapped-functions} or @code{wrapped-globals} in
+@file{pvm.jitter}.
+
+Since it is not trivial to keep track of every used global, having
+hundred of instructions, we are providing a syntax-check that looks
+for this automatically.
+
+In order to avoid false positives, there are two files that we
+maintain by hand:
+
+@table @file
+@item etc/pvm-wraps-whitelist
+This file contains a list of @emph{global} symbols that are used in
+pvm.jitter but are not required to be listed in neither
+@code{wrapped-function} nor @code{wrapped-globals}.  These are
+variables and functions that, despite being global and undefined, are
+not used @emph{within} PVM instructions.
+@item etc/pvm-wraps-static-whitelist
+This file contains a list of @emph{static} symbols that are defined in
+@file{pvm.jitter} and also listed in either @code{wrapped-functions}
+or @code{wrapped-globals}.  This includes for example the @code{pvm_*}
+wrappers we define in the file, to be used in PVM instructions.
+@end table
+
+@subsection Wrapping standard function calls
+
+If we need to call to a standard library function provided by the
+system (such as @code{printf}, @code{strstr}, or the like) from the
+body of a PVM instruction, we have to consider the possibility of
+gnulib replacing such function with another having a name like
+@code{rpl_printf} or @code{rpl_strstr}.
+
+Since the @code{wrapped-functions} list in @file{pvm.jitter} is static
+and the referred functions must exist, just wrapping the @code{rpl_*}
+symbols doesn't work.
+
+So instead, for every standard function @code{FOO} we call from PVM
+instructions, we:
+
+@itemize @minus
+@item
+Create a wrapper for it, called @code{pvm_FOO}, and put it in the
+@file{pvm-wrappers.[ch]} source files.
+@item
+Use @code{pvm_FOO} in the PVM instruction.
+@item
+Add @code{pvm_FOO} to the wrapped-functions section in
+@file{pvm.jitter}.
+@end itemize
+
+@node Memory management
+@chapter Memory management
+
+Different parts of poke use different strategies for memory
+management:
+
+@itemize @minus
+@item
+The compiler front-end uses reference counting to handle AST nodes.
+@item
+The PVM uses the Boehm GC collector for values and the run-time
+environment.
+@item
+Everything else uses @code{malloc}/@code{free}.
+@end itemize
+
+This sometimes leads to tricky situations, some of which are
+documented in the sections below.
+
+@menu
+* Using @code{ASTREF}::
+* Using @code{ASTDEREF}::
+* PVM values in PVM programs::
+* PVM values in AST nodes::
+@end menu
+
+@node Using @code{ASTREF}
+@section Using @code{ASTREF}
+
+The AST uses reference counting in order to manage the memory used by
+the nodes.  Every time you store a pointer to an AST node, you should
+use the @code{ASTREF} function in order to increase its counter:
+
+@example
+pkl_ast_node foo = ASTREF (node);
+@end example
+
+Note that the @code{pkl_ast_make_*} constructors do @code{ASTREF}
+internally, so you don't need to use it in calls like:
+
+@example
+pkl_ast_node new = pkl_ast_make_struct (ast, 5, elems_node);
+@end example
+
+To make sure you get the reference counting right, it's required to
+use the return value of @code{ASTREF} function. The compiler will warn
+you otherwise.
+
+@node Using @code{ASTDEREF}
+@section Using @code{ASTDEREF}
+
+@code{ASTDEREF} decreases the reference counter of the provided AST
+node. It's required to use the return value of @code{ASTDEREF}. The
+compiler will warn you otherwise.
+
+In practice you will seldom find yourself in the need to use
+@code{ASTDEREF}.  Just make sure that every @code{ASTREF} is paired
+with a @code{pkl_ast_node_free}.
+
+However, there are situations where @code{ASTDEREF} is necessary in
+order to avoid a memory leak.  For example, consider transformations
+like @code{a -> b} to @code{a -> x -> b}.  In that case, you should
+use something like:
+
+@example
+b = PKL_AST_KIND_WHAT (node);
+x = pkl_ast_make_xxx (ast, ASTDEREF (b));
+PKL_AST_KIND_WHAT (node) = ASTREF (x);
+@end example
+
+This works because @code{pkl_ast_make_xxx} does an @code{ASTREF} to
+@code{b} internally.  The final result is that the reference counter
+of @code{b} doesn't change at all.
+
+@node PVM values in PVM programs
+@section PVM values in PVM programs
+
+PVM routines (data structures of type =pvm_routine=) are allocated by
+Jitter in complicated data structures, internally relying on
+@code{malloc}.  Their content is therefore not automatically visible
+to the GC.
+
+Now, the instructions in a routine can contain literal PVM values, and
+some of these values will be boxed.  For example, the following
+routine contains a pointer to a @code{pvm_val_box}:
+
+@example
+;; Initialize the element index to 0UL, and put it
+;; in a local.
+push ulong<64>0
+regvar $eidx
+@end example
+
+There is only one place where jitter routines are stored in other
+data structures: the PVM program abstraction.
+
+PVM programs are allocated using @code{pvm_alloc}, @i{i.e.} by the GC.
+They are composed by a PVM routine and other fields:
+
+@example
+struct pvm_program
+@{
+  pvm_routine routine;
+  [...]
+@}
+@end example
+
+However, since @code{routine} is malloc-allocated, the GC can't
+traverse it.  Consequently, the references to contained boxed values
+won't be accounted for, and these values will be collected if there
+are no more references to them!
+
+The solution, recommended by Luca Saiu, is to keep an array of
+pointers in the PVM program structure, containing the pointers to
+every boxed value used in @code{routine}:
+
+@example
+struct pvm_program
+@{
+  pvm_routine routine;
+  void **pointers;
+  [...]
+@};
+@end example
+
+The pointers are collected in the @code{pvm-program.c} functions that
+append parameters to instructions.
+
+@node PVM values in AST nodes
+@section PVM values in AST nodes
+
+Storing a PVM value (whose memory is handled by GC) in an AST node
+(reference-counted) leads to a problem: the GC is unable to see the
+reference to values, and will therefore collect the memory if there
+are no other reachable references.
+
+Let's see an example of this.  Both array and struct types contain
+closures for mappers, writers, bounders, and the like.  For example,
+let's take arrays:
+
+@example
+struct pkl_ast_type
+@{
+    ...
+    struct
+    @{
+      union pkl_ast_node *bound;
+      union pkl_ast_node *etype;
+      pvm_val mapper;
+      pvm_val writer;
+      pvm_val bounder;
+    @} array;
+@}
+@end example
+
+In this case, @code{mapper}, @code{writer} and @code{bounder} are
+managed by GC.  However, the contained @code{struct pkl_ast_type} is
+not.  There is no way the GC can find these nodes thru the AST node.
+
+The solution is to allocate memory for these values as
+@dfn{uncollectable}.  This is done with
+@code{pvm_alloc_uncollectable}.  For example:
+
+@example
+pkl_ast_node
+pkl_ast_make_array_type (pkl_ast ast, pkl_ast_node etype, pkl_ast_node bound)
+@{
+  ...
+  /* Prevent GC to collect these PVM values.  */
+  PKL_AST_TYPE_A_CLOSURES (type)
+      = pvm_alloc_uncollectable (nclosures * sizeof (pvm_val));
+  PKL_AST_TYPE_A_MAPPER (type) = PVM_NULL;
+  PKL_AST_TYPE_A_WRITER (type) = PVM_NULL;
+  PKL_AST_TYPE_A_BOUNDER (type) = PVM_NULL;
+  PKL_AST_TYPE_A_CONSTRUCTOR (type) = PVM_NULL;
+  PKL_AST_TYPE_A_INTEGRATOR (type) = PVM_NULL;
+  PKL_AST_TYPE_A_FORMATER (type) = PVM_NULL;
+  PKL_AST_TYPE_A_PRINTER (type) = PVM_NULL;
+
+  return type;
+@}
+@end example
+
+And of course, before the memory of the AST node is freed, the
+uncollectable memory shall be explicitly fred in
+@code{pkl_ast_node_free}:
+
+@example
+void
+pkl_ast_node_free (pkl_ast_node ast)
+@{
+  ...
+  case PKL_AST_TYPE:
+    switch (PKL_AST_TYPE_CODE (ast))
+      @{
+      ...
+      case PKL_TYPE_ARRAY:
+        pvm_free_uncollectable (PKL_AST_TYPE_A_CLOSURES (ast));
+      @}
+@}
+@end example
+
+If you add PVM values or PVM environments to an AST node, please
+follow the strategy above.
 
 @node Concept Index
 @appendix Concept Index

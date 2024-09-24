@@ -1,5 +1,16 @@
 2024-09-24  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* HACKING: Simplify contents.
+	* etc/hacking.org: Remove
+	* Makefile.am (update-hacking): Remove rule.
+	* doc/pokeint.texi (Maintenance targets): New section.
+	(Picking something to work on): Likewise.
+	(The Poke compiler): New chapter.
+	(The Poke Virtual Machine): Likewise.
+	(Memory management): Likewise.
+
+2024-09-24  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* etc/Makefile.am (EXTRA_DIST): Do not distribute poke.rec.
 	* configure.ac: Do not check for recfix.
 	* cfg.mk (sc_recfix_poke_rec): Remove rule.
