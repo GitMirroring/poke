@@ -23,7 +23,6 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
-#include <xalloc.h>
 #include <stdlib.h>
 #include <errno.h>
 
@@ -37,6 +36,24 @@
 
 /* This file implements several transformation compiler phases which,
    generally speaking, are restartable.  */
+
+/* String dup and malloc with ICE in case of out-of-memory.  */
+
+#define XSTRDUP(PTR)                                    \
+  ({                                                    \
+    char *tmp = strdup ((PTR));                         \
+    if (tmp == NULL)                                    \
+      PKL_ICE (PKL_AST_NOLOC, _("out of memory"));      \
+    tmp;                                                \
+  })
+
+#define XMALLOC(SIZE)                                   \
+  ({                                                    \
+    char *tmp = malloc ((SIZE));                        \
+    if (tmp == NULL)                                    \
+      PKL_ICE (PKL_AST_NOLOC, _("out of memory"));      \
+    tmp;                                                \
+  })
 
 /* Handling of the stack of endianness.  */
 
@@ -293,7 +310,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_pr_decl)
       pkl_ast_node function = PKL_AST_DECL_INITIAL (decl);
 
       PKL_AST_FUNC_NAME (function)
-        = xstrdup (PKL_AST_IDENTIFIER_POINTER (name));
+        = XSTRDUP (PKL_AST_IDENTIFIER_POINTER (name));
     }
 }
 PKL_PHASE_END_HANDLER
@@ -427,7 +444,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_string)
     goto _exit;
 
   /* Second pass: compose the new string.  */
-  new_string_pointer = xmalloc (string_length + 1);
+  new_string_pointer = XMALLOC (string_length + 1);
 
   for (p = string_pointer, i = 0; *p != '\0'; ++p, ++i)
     {
@@ -1021,7 +1038,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_format)
         case '>':
           {
             int end_sc = 0;
-            char *class = xmalloc (strlen (fmt) + 1);
+            char *class = XMALLOC (strlen (fmt) + 1);
             size_t j;
 
             end_sc = (p[1] == '>');
@@ -1070,7 +1087,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_format)
               }
 
             assert (new_style_class == NULL);
-            new_style_class = end_sc ? xstrdup (class) : class;
+            new_style_class = end_sc ? XSTRDUP (class) : class;
             add_new_style_arg_p = 1;
             break;
           }
@@ -1088,7 +1105,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_format)
           new_arg = pkl_ast_make_format_arg (PKL_PASS_AST, NULL);
 
           if (add_new_percent_arg_p)
-            PKL_AST_FORMAT_ARG_SUFFIX (new_arg) = xstrdup ("%");
+            PKL_AST_FORMAT_ARG_SUFFIX (new_arg) = XSTRDUP ("%");
           else if (add_new_style_arg_p)
             {
               int end_sc = p[-1] == '>';

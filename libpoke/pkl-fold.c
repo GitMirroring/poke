@@ -25,7 +25,6 @@
 #include <string.h>
 #include <stdint.h>
 #include <assert.h>
-#include "xalloc.h"
 #include "intprops.h"
 
 #include "pk-utils.h"
@@ -150,12 +149,15 @@ EMUL_SSI (ges) { return (strcmp (op1, op2) >= 0); }
 
 EMUL_SIS (muls)
 {
-  char *res = xmalloc (strlen (op1) * op2 + 1);
+  char *res = malloc (strlen (op1) * op2 + 1);
   size_t i;
 
-  *res = '\0';
-  for (i = 0; i < op2; ++i)
-    strcat (res, op1);
+  if (res)
+    {
+      *res = '\0';
+      for (i = 0; i < op2; ++i)
+        strcat (res, op1);
+    }
 
   return res;
 }
