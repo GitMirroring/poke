@@ -1,5 +1,9 @@
 2024-09-24  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* TODO: New contents.
+
+2024-09-24  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* poke/pk-cmd-editor.c (pk_cmd_editor): Do not print a dot at the
 	end of error messages.
 

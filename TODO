@@ -1,1 +1,1221 @@
-See etc/poke.rec.
+-*- mode: org; fill-column: 78 -*-
+
+#+STARTUP: overview
+
+This file contains an evolving list of categorized tasks and ideas we would
+want to get done at some point in the GNU poke project.  Some of them are
+simple and clear, some others full-fledged projects that will require
+discussion and further design.  If you want to help us in the development,
+feel free to pick one task, but please let us know in the development mailing
+list [0] if you start working on it.
+
+Note that bugs are tracked in the bugzilla [1] and not in this file.
+
+[0] https://lists.gnu.org/mailman/listinfo/poke-devel
+[1] https://sourceware.org/bugzilla/describecomponents.cgi?product=poke
+
+* Build System
+** Provide each component in the source tree its own configure script
+
+This will allow to have separated bootstrap scripts and separated gnulibs etc.
+Requires to add a top-level configure and makefile, in a similar way the
+binutils does it.
+
+** Filter out LTO when building jitter vm files
+** Check for GC_is_init_called at configure time
+
+We require a version of the boehm GC recent enough to provide that call.
+
+* Language
+** Arrays bounded by predicate
+
+Currently the Poke language supports three kind of array types:
+
+1. "Unbounded" array types, like
+
+    int<32>[]
+
+   When mapped, values get added to the array until either EOF happens or a
+   constraint expression fails.  Suppose for example:
+
+   (poke) type Printable_Char = struct { uint<8> c : c >= 32 && c <= 126; }
+   (poke) Printable_Char[] @ 0#B
+
+   The resulting array will contain all printable chars from the
+   beginning of the IO space to either the end or to where a
+   non-printable char is found.  The first non-printable char (the
+   Printable_Char whose mapping results in E_constraint) is not included
+   in the array.
+
+   Constructing an unbounded array results in an empty array:
+
+   (poke) Printable_Char[]()
+   []
+
+2. Array types bounded by number of elements, like
+
+     int<32>[10]
+
+   Where the index can be any Poke expression that evaluates to an
+   integral value.
+
+   When mapped, exactly that number of values are read from the IO space
+   to conform the elements of the new array.  If an array of the
+   specified numer of elements cannot be mapped, i.e. if the bound is
+   not satisfied, then an exception gets raised.
+
+   Constructing an array bounded by number of elements results in an
+   array with that number of elements:
+
+   (poke) int<32>[5]()
+   [0,0,0,0,0]
+   (poke) int<32>[5](100)
+   [100,100,100,100,100]
+
+3. Array types bounded by size, like
+
+     int<32>[16#B]
+
+   Where the index can be any Poke expression that evaluates to an
+   offset value, which is the size of the whole array, not of each
+   element.
+
+   When mapped, an exact number values are read from the IO space to
+   conform the elements of the new array, so the total size of the array
+   equals the size bound.  If no exact number of values can be mapped to
+   satisfy the bound an exception is raised.
+
+   Constructing an array bounded by size results in an array with the
+   number of elements that satisfy the bound:
+
+   (big:poke) int<32>[16#B]()
+   [0,0,0,0]
+
+This works well.
+
+However, consider the following two real-life situations:
+
+
+a) The ASN1 BER encoding specify variable byte sequences, which are
+   basically streams of bytes that end with two consecutive zero bytes.
+
+   This is how the asn1-ber.pk pickle implements these sequences:
+
+   type BER_Variable_Contents =
+     struct
+     {
+       type Datum =
+         union
+         {
+           uint<8>[2] pair : pair[1] != 0UB;
+           uint<8> single : single != 0UB;
+         };
+
+       Datum[] data;
+       uint<8>[2] end : end == [0UB,0UB];
+
+       method get_bytes = uint<8>[]:
+       {
+         var bytes = uint<8>[]();
+         for (d in data)
+           try bytes += d.pair;
+           catch if E_elem { bytes += [d.single]; }
+         return bytes;
+       }
+     };
+
+   As you can see, the trick is to use an unbounded array of `Data'
+   values, each of which is either a pair of bytes the second of which
+   is not zero, or a single non-zero byte.  The finalizing two zero
+   bytes follow.  This approach has several problems: it is difficult to
+   understand at first sight, it is bulky, inefficient and it requires
+   an additional method (get_bytes) to construct the desired array from
+   the rather more convoluted underlying data structure.
+
+b) The JoJo Diff format also uses variable sequences of bytes, but this
+   time each sequence is finalized by one of several possible escapse
+   sequences of two bytes, which are themselves _not_ part of the
+   resulting sequence.
+
+   This is how the jojodiff.pk pickle implements these sequences:
+
+     type Jojo_Datum =
+       union
+       {
+         uint<8>[2] escaped_escape : escaped_escape == [JOJO_ESC, JOJO_ESC];
+         uint<8>[2] pair : pair[0] == JOJO_ESC
+             && !(pair[1] in [JOJO_MOD, JOJO_INS, JOJO_DEL, JOJO_EQL, JOJO_BKT]);
+         uint<8> value : value != JOJO_ESC;
+       };
+
+
+    type Jojo_Bytes =
+      struct
+      {
+        Jojo_Datum[] data : data'length > 0;
+
+        method get_count = Jojo_Offset:
+        {
+          var len = 0UL#B;
+
+          for (d in data)
+            len += !(d.pair ?! E_elem) ? 2#B : 1#B;
+          return len;
+        }
+      };
+
+   This uses a similar technique than the BER case.  Again, this is
+   cumbersome, not trivial to understand, and again it builds convoluted
+   data structures that have to be turned into the expected simple form
+   of a sequence of elements by a method.
+
+There are many more similar such cases.  In order to better support
+these, I am proposing to a fourth kind of array type:
+
+4. Array types bounded by predicate, like
+
+     int<32>[lambda (int[] a, int e) int: { return e != 0; }]
+
+   Where the index is any expression that evaluates to a closure with
+   prototype:
+
+     (ELEMTYPE[],ELEMTYPE)int<32>
+
+   The predicate gets called for each value that is to be appended to
+   the array when mapping or constructing an array value.   The first
+   argument is the so-far mapped/constructed array.  The first time the
+   predicate gets called this array is empty.  The second argument is
+   the value that is a candidate to be added as an element.
+
+   If the predicate returns a positive number the candidate value gets
+   added to the array and the construction/mapping process continues
+   with a new candidate value.
+
+   If the predicate returns 0 the candidate value gets added to the
+   array and the construction/mapping process is stopped.
+
+   If the predicate returns -N the candidate value gets added to the
+   array, N elements get trimmed from the right of the array, and the
+   construction/mapping process is stopped.
+
+The previous two data structures can now be expressed in a much better
+way.  A BER variable byte sequence becomes:
+
+  fun ber_is_byte_array = (uint<8>[] arr, uint<8> elem) int<64>:
+  {
+    if (arr'length > 0 && arr[arr'length-1] == 0UB && elem == 0UB)
+      /* The trailer zero bytes are part of the array.  */
+      return 0;
+    else
+      /* Continue mapping/constructing.  */
+      return 1;
+  }
+
+  type BER_Variable_Contents = uint<8>[ber_is_byte_array];
+
+Whereas the Jojo Diff variable sequence of bytes becomes something like:
+
+  fun jojo_is_bytes = (uint<8>[] arr, uint<8> elem) int<64>:
+  {
+    if (arr'length > 1
+        && [arr[arr'length - 1],elem] in [[JOJO_ESC, JOJO_INS],
+                                          [JOJO_ESC, JOJO_MOD],
+                                          ...])
+      {
+        /* The escape sequence is _not_ part of the
+           resulting array.  */
+        return -2;
+      }
+    else
+     /* Continue the mapping/construction.  */
+     return 1;
+  }
+
+  type Jojo_Bytes = uint<8>[jojo_is_bytes];
+
+An interesting aspect of this is that nothing prevents the predicate
+functions to alter the array mapped/constructed so far, do all sort of
+stuff based on global variables, do their own exploratory mapping, and
+other crazy stuff... guaranteed fun and sheer power 8-)
+
+No additional syntax is required, and I think it fits well with the
+already used notion of "the bounding varies depending on the kind of
+expression one specifies in the [XXX] part of the array type specifier".
+
+The predicates can of course also raise E_constraint and other exceptions.
+This is a way to support data integrity in array elements without having to
+use an "intermediate" struct type.
+
+** Add an idiom to change the unit of an offset
+
+23:57 <dfaust> also, sometimes I poke at some data and it gives
+               values back in #b but I really just want #B,
+23:57 <dfaust> would be nice if you could just say like <expr> as
+               #B
+23:57 <jemarch> hm you can
+23:57 <dfaust> so I always end up having to do <expr> / 1#B
+23:57 <jemarch> <expr> as offset<int,B>
+23:57 <jemarch> but yes
+23:58 <dfaust> yes, but a shorthand would be nice
+23:58 <jemarch> problem with that is that you "lose" the base unit
+23:58 <dfaust> i think it is common enough
+
+What about OFFSET # UNIT for the syntax?
+
+** Support for :size and :aligned attributes in struct types
+   [2022-07-17 Sun]
+
+#+BEGIN_SRC
+   struct int<32>
+     :alignment 32#b :size 128#B
+   {
+     int foo;
+     int bar;
+   }
+#+END_SRC
+
+Where
+
+- :size shall get a constant expression.
+- The size type attribute shall be checked at compile-time in
+  pkl_anal2_ps_checktype for complete types.
+- :size should provide completeness and also checking at map/construction
+  time.
+- type attributes can be accessed with TYPENAME'ATTRNAME
+
+** Support casts to function types
+
+This requires conveying full function type info to PVM types.  At the present
+the closure types in PVM only reflect the number of arguments.
+
+- Expand closure types in PVM with formal arguments info etc.
+- Support translating PVM closure types to Poke function types in
+  pvm_to_pkl_type
+
+** Support local-on-write variables and functions
+
+Variables that become local in the current lexical environment when set.
+
+: local var foo = 10; { foo = 20; }
+
+Compiler inserts:
+
+: local var foo = 10; { var foo = foo; foo = 20; }
+
+This can be a phase in trans1.  The lexical revamp allows to not have to do
+more, hopefully, since all other checks (typechecking for example) shall be
+satisfied with the external definition.
+
+This allows to temporarily change the endianness without having to alter the
+global.
+
+** Pattern matching and ~ operator
+
+VAL ~ (TYPEOFVAL)int<32>
+
+Struct patterns:
+
+val ~ Packet {{ size > 10 }}
+
+Array patterns:
+
+val ~ ArrayType {{ [0] > 10 }}
+
+fun packet_valid_p = (Packet p) int<32>: { ... }
+
+val ~ packet_valid_p
+
+~
+
+match (val)
+{
+  case Packet {{ size > 10 }}:
+  ...
+  fallthrough;
+  case packet_invalid_p:
+  ...
+  break;
+  case lambda (Packet p) int<32>: { return p'size > 10#B; }:
+  ...
+  break;
+}
+
+fun mrange = (int<64> from, int<64> to) int<32>: { ... }
+
+match (value)
+{
+  case mrange (1, 10): ...;
+
+}
+
+pokec ommand:
+
+
+(poke) search :from FROM :to TO :pattern Packet {{ size > 0 }} :aligned Packet'size
+Result at OFFSET: Packet { ... }
+Result at OFFSET: Packet { ... }
+
+The default for :aligned should be 1#B unless the struct type
+has an aligned attribute.
+
+Syntax for struct tyep attributes:
+
+type Packet =
+  struct
+  {
+
+
+  } aligned (128#B);
+
+(poke) Packet'aligned
+128#B
+
+** Add syntax to construct anonymous struct and union values
+
+One option is to use the `any' type, which keeps the general form TYPE {...}.
+
+: any {}
+
+This works for anonymous struct constructors:
+
+: type Foo = struct { struct { int a, int b} foo; }
+: Foo { foo = any { a = 2, b = 3 } }
+
+That should construct a struct type, for printers to work etc.
+
+** Support passing xint<*>, int<*> and uint<*> to `isa'
+
+This will greatly help to dispatch values by type in Poke programs, and is
+also forward-compatible with potentially supporting gradual typing.
+
+These constructions can be at this point recognized at lexical level and with
+fixed rules for ISA operator.
+
+- int<*>, uint<*>, xint<*>
+- any[]
+- any{}
+
+: fun elem_simple_p = (any elem, uint<64> idx) int:
+: {
+:   return elem'elem(idx) isa any[] || elem'elem(idx) isa any{};
+: }
+
+** Add context to pretty-printers
+
+The context may provide access to the list of containing structs.
+
+An alternative would be to override pretty-printers for struct types contained
+in another struct, for example:
+
+#+BEGIN_SRC
+type Elf64_File =
+  struct
+  {
+    method get_section_name = ...;
+
+    [...]
+
+    method _print_Elf64_Section_Name = (Elf64_Section_Name sh_name) void:
+    {
+       print "#<" + get_section_name (sh_name) + ">";
+    }
+  };
+#+END_SRC
+
+** Off-line method (re)definition
+
+: method TYPE::METHOD = function_specifier;
+
+- Augments/changes the existing type TYPE in the compiler-time environment.
+- Impacts new instances.
+
+** Conditional load
+
+: load foo if EXPR;
+
+** Support for matching ~ operator
+
+: EXPR ~ lambda (typeof (EXPR))int<32>
+
+** Regular expressions in Poke
+
+: /^([a-zA-Z0-9]+:)(.*)$/ -> (string)int<32>
+
+So it can be used in a ~ operator:
+
+: "foo: bar" ~ /^([a-zA-Z0-9]+:)(.*)$/
+
+* Compiler
+** Add a trans phase to annotate struct type fields with their containing struct type
+
+Having that, we can determine whether a given variable refers to a field, and
+whether that field is in the same struct/union than some other field.
+
+** Stop using xalloc in libpoke
+
+There are a few places where we still use xalloc facilities (xstrdup, xmalloc,
+etc) in libpoke.  This is bad because it causes the library to abort in case
+of out-of-memory conditions.
+
+We should add a service to libpoke so the user application can register a
+handler for such conditions, and have the code in libpoke to call the handler,
+which is not supposed to return.
+
+Then we will be able to remove xalloc and the corresponding gnulib module from
+libpoke.
+
+** Optimization: turn type names and declaration names in AST from identifiers to char*
+** Optimization: compare IDENTIFIER nodes by pointer not strcmp
+
+This requires maintaining a cache of identifier nodes in each pkl_ast
+structure.  pkl_make_identifier will re-use nodes from the cache whenever
+appropriate.
+
+This will greatly both improve performance and memory usage in the compiler
+front-end.
+
+** Support appcalls
+
+Allows to do "appcalls".
+
+Each appcall gets a number of arguments of some particular given type.  The
+application call is identified by an appcall code which is an int<32>.  The
+application using libpoke registers a handler to attend appcalls.  The appcall
+may or may not return a PVM value.
+
+In order to avoid using asm directly and also having some type compiler
+support, the application provides prototypes like this:
+
+#+BEGIN_SRC
+  type Frob =
+    struct
+    {
+       whatever foo;
+    };
+
+  var APPCTL_ADD_FROB = 12;
+
+  fun add_frob = (Frob f1, Frob f2) Frob:
+  {
+    return asm Frob: ("appctl" : f1, f2, APPCTL_ADD_FROB);
+  }
+#+END_SRC
+
+The application's dispatch function, registered via libpoke, dispatches 12
+to whatever application C code implementing frob addition:
+
+#+BEGIN_SRC
+  int
+  appctl_dispatch (uint64_t code, uint32_t nargs, pk_val **args, pk_val *retval)
+  {
+    switch (code)
+      {
+      case ADD_FROB:
+        {
+          struct frob1, frob2, res;
+
+          frob1.foo = pk_struct_ref_field_value (args[0], "foo");
+          frob2.foo = pk_struct_ref_field_value (args[1], "foo");
+
+          res = add_frobs (frob1, frob2);
+          *retval = pk_make_struct (poke_compiler, nfields,
+                                    frob_pk_type);
+          [...]
+          return 1;
+        }
+      [...]
+      }
+
+    return 0;
+  }
+#+END_SRC
+
+** Update C printer for offset types to print referred type
+** Add source information to Pk_Type
+
+Source file, and span of line,column.
+
+** Add arguments and return type for functions to Pk_Type
+
+** Add referred offset extra info to Pk_Type and .info type
+
+New field for Pk_Type:
+
+ref_type -> string with type specifier
+
+** Add etype string to Pk_Type for array types
+** Add bounders to Pk_Type for array types as closures
+
+One for sbound another for ebound, which shall be optional depending on the
+type in question.
+
+** Attribute 'ref_type for referring offsets, giving a Pk_Type
+** Include call stacks in Exception
+
+This requies new PVM instructions:
+
+: framedepth ( -- ULONG )  Number of frames
+: stackframe ( ULONG -- ULONG STR ) Info for frame N: Stack_Frame { na
+
+** Define PVM_VAL_SET_ULONG and optimize in pvm_array_set by not allocating a new ulong
+** Support recursive types
+** Warn for VAR >= 0UL, always true, likely a mistake
+** Support the ?: operator
+
+Like in GNU C.
+Make sure to not evaluate the condition twice.
+
+** Avoid spurious push 0 in functions with no arguments
+
+The parser needs to be adjusted to not introduce the pushlevel in the rule:
+
+: '(' pushlevel_args function_arg_list ')' simple_type_specifier ':' comp_stmt
+
+if there are no arguments.  But this is no easy without triggering warnings.
+Perhaps better to wait until we have a hand-written parser.
+
+** Forward declarations of functions
+
+: fun FNAME;
+
+A forward declaration for a function can compile into an empty body that
+raises an exception.  But this will not work due to how re-definitions work.
+
+We need it to compile to a stub (that may raise the exception) and then when
+the function is actually defined, the stub gets replaced.
+
+** Forward declarations of types
+
+: type TNAME;
+
+** Promote array elements in array casts
+
+03:01 <jemarch> regarding [1,2,3,4] as int<33>[4]
+03:01 <jemarch> right now the array casts are not casting
+                recursively
+03:02 <jemarch> we could support it
+03:02 <jemarch> but then this would need to be supported too:
+                [[1,2],[3,4]] as int<33>[][]
+
+: [1,2,3] as byte[3]
+
+that should be:
+
+: [1 as byte, 2 as byte, 3 as byte] as byte[3]
+
+The casts shall be inserted in promo.
+In case the array's element type is promoteable.  This shall be recursive.
+
+** Support calling methods from functions in methods
+
+: (big:poke) type Foo = struct { method foo = void: {} method bar = void: { fun jorl = void: { foo (); } } }
+: <stdin>:1:83: error: only methods can directly call other methods
+
+** Support struct fields of type `any'
+
+- Modify typify to not check to field types.
+- Make pkl_asm_insn_cmp support comparing ANY values.
+- Support for EQ and NEQ for any values + tests.
+- Support for any in structs, non-mappable.  Or they map to uint<8>[0].
+- Explore having map-bable structs with any values.
+
+** Support for defining offline methods
+
+: method Elf64_File::get_section_group = ...
+
+** Support for multiple assignment
+
+: a,b,c = 1,2,3;
+
+Multiple assignments are executed from left to right.
+
+** Support for multiple field assigment
+
+: xsct.{f1,f2,f3} = e1, e2, e3;
+
+This is necessary to support breaking the data integrity temporarily in
+situations like:
+
+: type Foo =
+:  struct
+:  {
+:     int data : ...check with checksum...;
+:     int checksum : ...check with data...;
+:  };
+
+Assignments get realized from left to right, integrity is not checked until
+the last assignment is performed, and it rollbacks if necessary.
+
+** Constant-fold 'eoffset and 'esize in pkl-fold.c
+** Diagnostics: expected Fun_t (a.k.a. (int,long)void)
+** Optimization: do not generate right-shift of count 0 in pkl_ast_handle_bconc_ass_stmt_1
+** Detect ipow overflow as compile-time error in constant folding
+** Add ogdigits option to group digits in value printer
+
+This can be implemented purely in Poke.
+Run-time table with grouping per base, zero means no grouping:
+
+: var pk_base_group_digit = int<32>[15]();
+
+Associated dot-command:
+
+: (poke) .set base-group-digit 16, 4
+: (poke) 0xffffffff
+: 0xffff_ffff
+
+** Print struct computed fields in value printer
+
+Perhaps with a prefix to mark them as computed.
+- use the srefmnt instruction to get a method by name, using get_FOO.
+- call it.
+- The resulting `any' value can then be printed.
+
+This requires method information in PVM struct types:
+
+  pvm_val *mnames;
+
+** Implement universal writer: _pkl_write_any
+** Implement universal add: _pkl_add_any
+** Implement universal sub: _pkl_sub_any
+** Implement universal mul: _pkl_mul_any
+** Implement universal div: _pkl_div_any
+** Implement universal cdiv: _pkl_cdiv_any
+** Implement universal mod: _pkl_mod_any
+** Implement error-on-arning in Poke
+
+Requires some form of FFI.
+
+** Put each inline asm program in its own program and jump with `ba'
+
+This will allow to have more than one label with the same name in the same
+program.
+
+: asm (".foo:");
+: asm (".foo:");
+
+** Improve diagnostics "too {many,few} arguments passed to function"
+
+The current messages do not explicitly specify the name of the function being
+called, forcing the user to rely on the location if no verbose error output is
+enabled.
+
+** Constant-fold ipow with series of multiplications, detecting overflow
+
+This shall be done in pkl-fold.c:OP_BINARY_III.
+
+** Improve diagnostic message for E_out_of_map while mapping arrays by size
+** Improve diagnostic message for E_constraint caused by array boundary violation
+** Warn when assigning to fields in some contexts where the effect would be lost
+
+The effect of assigning values to fields in:
+
+- Non-method functions.
+- Constraint expressions.
+- Conditional field expressions.
+- Array boundaries.
+- Variable initializers.
+
+while inside a struct type may have a surprising outcome for the non
+initialized user who doesn't know how mappers and constructors work.  Make the
+compiler to warn in these situations.
+
+** Make io* instructions non-branching in pvm.jitter
+
+The following IO related PVM instructions raise exceptions, and therefore are
+marked as "branching" in pmv.jitter:
+
+- popios
+- ioflags
+- iosize
+- ionum
+- ioref
+- iohandler
+- iogetv
+- iogetb
+- iosetb
+
+These instructions should be changed to not raise exceptions, and the compiler
+and/or runtime adjusted accordingly.  For example, iosize can be made to push
+PVM_NULL on the stack if the specified IO space doesn't exist. Then the
+corresponding iosize function in pkl-rt.pk should be changed to check for null
+and raise an exception.
+
+** Get rid of autoremap once reactive IOS gets in
+* Tracer
+** Mapper events for mapped integral structs
+
+This would be TV_MAPPED_INTEGRAL_STRUCT.
+To be called after the subpass on the itype.
+
+* RAS
+** Add support for .pushdecl
+
+The pseudo-instrution:
+
+: .pushdecl "foo"
+
+Will push whatever variable or function registered the compile-time
+environment under that name.  If there is no such variable or function then
+the compiler will abort with an ICE.
+
+This will make it possible, among other things, to not have to duplicate
+constants like PK_TV_* in C: defining them in pkl-rt.pk will be enough.
+
+* PVM
+** Move mapper, writer, etc from struct/array PVM values to PVM types
+
+And try to share the type among the values!
+
+From pvm_struct:
+- mapper
+- writer
+- nfields
+- nmethods
+
+From pvm_array:
+- elems_bound
+- size_bound
+- mapper
+- writer
+
+* Runtime
+* Library
+** pk_decl_set_val must return an error code
+
+   To avoid this for example:
+   var a = 10
+   a = "foo"
+
+** add pk_signal (SIGINT)
+** Move poked server capabilities to libpoke
+
+This will allow libpoke clients to connect to GUIs and the like.  This will
+also allow the poke CLI to become a server and to write a pokelsp.
+
+** Add pk_quote_string
+
+This service will quote a Poke string:
+
+: char *pk_quote_string (const char *str);
+
+** Add pk_get_unused_identifier
+
+This will allow libpoke clients to compute identifiers that are not defined in
+the poke incremental compiler's top level enviroment:
+
+: char *pk_get_unused_identifier (const char *prefix);
+
+Generates identifiers like "PREFIX0", "PREFIX1", etc.
+
+** Add services to term_if to query terminal geometry, cols x rows
+** Make compilation services to return PK_ICE whenever appropriate
+
+This avoids aborting in the library.
+
+** Add pk_decl_type service to get a PK type by name
+* IO Handling
+** Reactive IOS
+*** ios.h
+
+Conceptually, the VRT (valued ranges table):
+
+| VAL | BEGIN | SIZE |
+|-----+-------+------|
+| f   |   0#B | 12#B |
+| g   |   8#B | 25#B |
+
+: ios_register_range (VAL, IOS, BEGIN, SIZE)
+: ios_deregister_ranges (VAL)
+
+- Each time a new VAL gets mapped, ios_register_range gets called for the
+  newly mapped VAL.  If the table size is above certain threshold, invoke GC
+  manually and decrease threshold.  Then add a new entry to the VRT.
+
+- Each time the GC finalizes a value, it calls ios_deregister_ranges for some
+  VAL.
+
+- Each time ios_write_int or ios_write_uint get invoked, the table is accessed
+  and a function is executed that gets each value mapped in any range
+  including the updated range [OFFSET,OFFSET+bits).  This requires fast
+  indexing of ranges.
+
+*** PVM
+
+New instructions:
+
+: ioregval ( IOS VAL BEGIN SIZE -- )
+
+More instructions to allow Poke programs to, for example, iterate
+over all values mapped in some given range:
+
+: for (v in iosvals (0#B, iosize))
+:  // Use v'offset, v'ios, v'size, etc.
+
+** Add unix socket IO device (IOD)
+** Filtered IO spaces
+
+  Installed by IOS_F_ZCOMPRESS, IOS_F_SREC, etc.
+  Similar to PDF's stream filters.
+  Including SUB IO spaces, for compressed areas like ELF sections.
+
+  But what about arguments to filters.
+  Also, flags do not support ordered filters: first compress, then encode in ASCII.
+  iomisc function?
+
+  Example of filter: Packed72:
+
+  <trn_> Before I get too far into it, just to be sure it's
+         possible ... can I use Poke on mainframe data stored
+         in Packed72 (9->8-bit packing).  That is, 9-bit bytes
+         natively, stored as 9 8-bit bytes which represents 8
+         9-bit bytes)
+  <trn_> http://simh.trailing-edge.com/docs/simh_magtape.pdf
+
+** Filtered maps
+
+  TYPE @ OFFSET :filtered [LAMBDA,...]  ?
+
+** Support 128 bit ios_off
+** User-defined IO devices
+
+How to do this without going Poke -> C -> Poke?
+The peek/poke instructions can branch to Poke code.
+But then we would need to implement the IOS in Poke.
+
+** Support mem://NAME/SIZE handlers in mem IO spaces
+
+This allows to specify an initial size for the growing buffer instead of the
+default 1024 bytes.
+
+* Program
+** Support --args and argv
+
+For use when no -L.
+
+This implies that argv is always defined, even when -L is not specified.  Any
+argument in the poke command line after --args get appended in argv.
+
+** Support poke --tracer option
+
+It is easier than:
+
+: #!/usr/bin/env -S poke -e '.set tracer yes' -L
+
+** Make hserver_make_hyperlink get an any arguments
+
+This requires casts to functions to work.
+
+** New command .info src TYPE
+** Keys in prompt to disable and enable pretty-printing and other flags
+  [2024-08-09 Fri]
+
+  Keys should trigger Poke functions, with some defaults.
+
+  Also express pretty-printing status in the prompt:
+
+  (P:ENDIAN:NAME)
+
+  The 'P' is for pretty-printing.
+  Other flags can be added there as well using other letters and/or symbols.
+
+  /C EXPR
+
+  Better suffixes?  Or both?
+  Programmable via Poke?  Yes!
+
+  Standard ones:
+  /P -> no pretty-printing
+
+** Autocomplete struct field accesses with ->
+* Commands
+** intbits: do a bit/bytes diagram
+
+For integral values.
+
+: (poke) intbits :ios IOS :offset OFFSET :width WIDTH :signed BOOL
+: poke values      |        uint<16> @@ 2#b        |
+: -----------      |                               |
+: IO space     |b|b|b|b|b|b|b|b|b|b|b|b|b|b|b|b|b|b|b|b|b|b|b|b|
+: -----------  |               |               |               |
+: IO device    |     byte0     |     byte1     |     byte2     |
+
+** Add source information to =.info type=
+** Make =.sub= to get poke expressions instead of integers
+** Auto-complete =.help= using the available help topics
+** Auto-complete =.proc= with PIDs in the system
+** Make =.ios= with no argument to switch to next IOS
+** Add command =checksum :algorithm ALG :from FROM :to TO :size SIZE=
+** Add :step argument to scrabble
+* Emacs
+** poke-el: mark the current ios in *poke-ios*
+** poke-el: refresh vu after editing a field
+** poke-el: add IOS column in map view
+** poke-el: buffer *poke-info* for type infos
+
+   Like .info type, using the same Poke code.
+
+** poke-el: save all fields in *poke-edit* pressing C-cC-c
+** poke-el: support computed fields in both editor and navigator
+** poke-el: use forward-line instead of {prev,next}-line in poke-vu-cmd-next-line and poke-vu-cmd-previous-line
+* Pickles
+** macho object files
+** GCC LTO sections
+** DataBase Container file (DBC)
+   [2022-04-08 Fri]
+
+   https://www.autopi.io/blog/the-meaning-of-dbc-file/
+   https://www.csselectronics.com/pages/can-dbc-file-database-intro
+
+** Support bits in sdiff format
+** TI-TXT hex format Texas Instrument
+** Intel HEX + variants
+** Tektronix Hex format
+** MOS Technology file format
+** crc24 pickle
+* Documentation
+** Add =.help= topics for std functions
+** Add =.tutorial= topic to help
+** Document the tracer in the manual
+
+  Also how to register your own handlers.
+
+** Document how to write poke applications
+
+The idea is that $PREFIX/share/poke is shared among all the "pokeish"
+programs, in this way:
+
+  $PREFIX/share/poke/
+
+    Contains the libpoke runtime (that is necessary to implement the
+    language) and also the Poke standard library.
+
+  $PREFIX/share/poke/pickles/
+
+    Contains pickles that only rely on the standard library, and
+    therefore can be used by any pokeish application.
+
+  $PREFIX/share/poke/APPLICATION/
+
+    Contains Poke scripts that are specific to particular applications.
+    poke (the program) is just one of these applications.  Others are
+    poked, GDB+poke integration, etc.
+
+** Do not use deftypefun in poke.texi
+
+Poke's syntax doesn't really match Texinfo's expectations.
+
+** Update documentation of the .map dot-commands
+** Document styling classes
+
+@node Terminal Classes
+@subsection Terminal Classes
+
+A Poke implementation is required to implement support for the
+following styling classes.  As already mentioned, this implementation
+may consist on just ignoring them.  But they must be nevertheless
+supported.
+
+Styling classes used in the output of diagnostics and errors:
+
+@table @code
+@item error
+@item warning
+@item error-location
+@item error-filename
+@end table
+
+Styling classes used to print Poke values:
+
+@table @code
+@item integer
+@item string
+@item array
+@item ellipsis
+@item offset
+@item struct
+@item struct-field-name
+@item type
+@item any
+@item special
+@end table
+
+PVM disassembly classes:
+
+@table @code
+@item pvm-comment
+@item pvm-punctuation
+@item pvm-instruction
+@item pvm-label
+@item pvm-register
+@item pvm-number
+@end table
+
+** Document sub IO spaces in the manual's tutorial part
+** Improve docs on right-shift and normal floor-division
+   [2022-01-18 Tue]
+
+07:48 <apache2> speaking of annoying implementation-defined things
+                that are good to list, the 17.2.5.5 Modulus doesn't
+                say what kind of arithmetic it's doing
+07:49 <apache2> it would be nice if we stated what kind of % we did
+07:49 <apache2> this is already annoying when porting from e.g. C
+                to Python where % works differently
+07:50 <apache2> (% and / are two sides of the same problem really,
+                but I rarely use / so it's usually % that bites me)
+07:51 <apache2> so as a reader of the docs, there are two kinds of
+                division: / and /^ where /^ is ceil division
+07:52 <apache2> so presumable / is not also ceil division, which
+                means / either does floor division or it rounds off
+                to nearest (which would be insane, so I'm going to
+                assume floor)
+-
+07:54 <apache2> so the big question is what it does if the dividend
+                and/or the divisor are negative
+07:57 <apache2> so in python for example:
+07:57 <apache2> -7 // 3 = -3
+07:58 <apache2> -7 % 3 = 2
+07:58 <apache2> -7 % -3 = -1
+07:58 <apache2> -7 // -3 = 2
+07:58 <apache2> in poke
+07:58 <apache2> -7 / 3 = -2
+07:58 <apache2> -7 /^ 3 = -1
+07:59 <apache2> -7 % -3 = -1 (they agree on that)
+07:59 <apache2> -7 // -3 = 2 (also agree on that
+08:00 <apache2> -7 /^ -3 = 3
+08:01 <apache2> in python 7 // -3 = -3   in poke  7 / -3 = -2  and
+                7 /^ -3 = -1
+08:06 <apache2> so floor div (//) in python rounds down and in poke
+                the normal division 7 / -3 = -2 rounds up, and 7 /^
+                -3  rounds even further up
+08:10 <apache2> it kind of makes sense to me in python where (7 //
+                -2) + math.ceil(7 / -2) = -7 ie the equivalent to
+                ((7+7)/-2) / -1 = 7 (something both poke and python
+                agrees upon), but there's lots of good arguments
+                for doing it different from python (like being
+                compatible with amd x86_64, or C, or
+                whatever). It's just good to say what the semantics
+-
+
+05:37 <apache2> in that manual section this text is a bit unclear:
+                "Left shifting by a number of bits equal or bigger
+                than the value operand is an error, and will
+                trigger either a compile-time error or a run-time
+                E_out_of_bounds exception."
+05:38 <apache2> My guess from reading this is that if it's a 64-bit
+                uint then    x <<. s : 0 <= s <= 63   must hold
+05:39 <apache2> ie the value of x doesn't matter at all, it's the
+                size of the *type* of x that matters
+05:42 <apache2> If       x . >>.  999   is legal (which I guess it
+                is since that's not mentioned here) then it would
+                be helpful if the manual would say that, since
+                that's not the case in e.g. C where it's undefined
+                behavior to switch with s >= sizeof(typeof(x))*8 in
+                any direction
+05:47 <apache2> (in C you also can get in trouble for using left
+                bit shifts on x if x is negative, but mostly
+                compilers just treat it like a logical left shift
+                on an unsigned value of the same width; if Poke
+                does the same that would also be great to have
+                said)
+0
+
+** Document the hserver_* interface in the manual
+** Document hyperilnks with example in Terminal Hyperlinks
+** Generate man-pages for Poke types
+
+Similar to the Tcl(3) manpages.
+
+: Overview
+: Fields
+: Methods
+: Usage
+: ...
+
+We could use help2pod from binutils
+Section: 3poke
+
+** Document referring offsets in the manual
+
+Make sure to mention that offset operations do not propagate the ref_type of
+the type of the operands.
+
+** Document the relevant Poke variables in Customizing poke
+
+These are all the variables whose values determine the behavior of the poke
+application: pk_quiet_p, pk_host_endian, pk_network_endian, pk_doc_viewer,
+etc.  Explain how the application can be customized by setting them, either
+directly or via the .set dot-command.
+
+** Document that when assigning to fields in some contexts the effect would be lost
+
+The effect of assigning values to fields in:
+
+- Non-method functions.
+- Constraint expressions.
+- Conditional field expressions.
+- Array boundaries.
+- Variable initializers.
+
+while inside a struct type may have a surprising outcome for the non
+initialized user who doesn't know how mappers and constructors work.  Make
+sure to document this well in the manual.
+
+* Testsuite
+** Add a testsuite for the poke tracer
+
+Some particular cases to test:
+
+TV_MAPPED_FIELD
+- Regular field
+- Optional field
+- Field in integral struct
+
+TV_CONSTRUCTED_FIELD
+- Regular field without initial value
+- Regular field with initial value
+- Optional field
+- Field in integral struct without initial value
+- Field in integral struct with initial value
+
+** Test indirecting computed offset fields
+** Test indirecting offsets in both strict and non-strict mode
+** Test indireting offsets in an IOS != than current IOS
+* GDB
+** GDB registers
+
+The poke side in GDB could access the inferior's registers by opening an IO
+space with a handler like: gdb://inferior/regs.
+
+#+BEGIN_SRC
+type GDB_Reginfo =
+  struct
+    {
+      string name;
+      uint<8> size;
+    };
+
+/* | r | i | p | 8 | a | e | x | 8 | ... */
+
+var gdb_reginfo = GDB_Reginfo[] @ open ("gdb://inferior/reginfo") : 0#B;
+var gdb_regs = open ("gdb://inferior/regs");
+
+[GDB_Reginfo {
+   name = "rip",
+   size = 8
+ },
+ GDB_Reginfo {
+   name = "aex",
+   size = 8
+ },
+ [...]
+}
+
+var gdb_regs = GDB_Reg[] @ open ("gdb://inferior/regs");
+
+gdb_regs.get_by_name ("rip")
+gdb_regs.set_by_name ("rip", 0xffff)
+#+END_SRC
+
+* Other
+** Write GDB pretty-printers for poke and libpoke data strutures
+** Write a C or Poke program to apply sdiffs to binary files
