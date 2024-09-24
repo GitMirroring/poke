@@ -9,67 +9,9 @@
 Table of Contents
 _________________
 
-1. Nomenclature
-2. Maintenance
-.. 1. GNU Maintainer
-.. 2. Global Maintainers
-.. 3. Maintainers
-.. 4. Write After Approval
-.. 5. Personal Branches
-.. 6. Building Release Tarballs
-.. 7. Installing Obvious Changes
-.. 8. The poke.rec database
-.. 9. The source for this HACKING file
-.. 10. The Bugzilla
-..... 1. Dealing with spam in the Bugzilla
-.. 11. Backporting to maintenance branches
-3. Development Environment
-.. 1. Autotools
-.. 2. Dejagnu
-.. 3. Flex
-.. 4. Bison
-.. 5. GNU Jitter
-.. 6. Building
-.. 7. Disabling building some components
-.. 8. Building after a git pull
-.. 9. Building with local changes to gnulib or jitter
-.. 10. Gettext
-.. 11. Running an Uninstalled Poke
-.. 12. Continuous Integration
-4. Coding Style and Conventions
-.. 1. Writing C
-..... 1. Avoid Tabs
-..... 2. Avoid bool
-..... 3. Use _p for Predicates
-..... 4. Documenting Functions in Public Headers
-.. 2. Writing Poke
-.. 3. Writing RAS
-..... 1. RAS Emacs mode
-..... 2. Calling compiled Poke from RAS
-5. Writing Tests
-.. 1. Test framework
-.. 2. Run selected tests
-.. 3. Unit Tests
-.. 4. Naming Tests
-.. 5. Always set obase
-.. 6. Put each test in its own file
-.. 7. List the test files in testsuite/Makefile.am
-.. 8. dg-output may require a newline
-.. 9. Using data files in tests
-.. 10. Using NBD connections in tests
-.. 11. Writing tests that depend on a certain capability
-.. 12. Writing REPL tests
-..... 1. Command REPL tests
-..... 2. General REPL tests
-.. 13. Testing Pickles
-6. Writing Documentation
-.. 1. Documenting Pickles
-7. Fuzzing poke
-.. 1. Grammarinator
-8. Submitting a Patch
-9. Maintenance
-10. Poke Architecture
-11. The Poke Compiler
+1. Maintenance
+2. Poke Architecture
+3. The Poke Compiler
 .. 1. Compiler Overview
 .. 2. The bison Parser in pkl-tab.y
 .. 3. The AST
@@ -84,7 +26,7 @@ _________________
 ..... 3. Front and Middle End Handlers should be Re-entrant
 .. 6. Adding Compiler Built-Ins
 .. 7. Writing Compiler Diagnostics
-12. The Poke Virtual Machine
+4. The Poke Virtual Machine
 .. 1. PVM types
 ..... 1. How `any' is handed in the PVM
 .. 2. Exception Handling
@@ -93,25 +35,15 @@ _________________
 .. 5. Writing relocatable instructions
 .. 6. Wrapping globals
 ..... 1. Wrapping standard function calls
-13. Memory Management
+5. Memory Management
 .. 1. Using ASTREF
 .. 2. Using ASTDEREF
 .. 3. PVM values in PVM programs
 .. 4. PVM values in AST nodes
-14. Terminal Handling
+6. Terminal Handling
 .. 1. pk-term
 .. 2. Styling Classes
 .. 3. Debugging Styling
-15. Debugging poke
-.. 1. Building with Debugging support
-.. 2. Invoking GDB to debug an uninstalled poke
-.. 3. Debugging poke with GDB
-.. 4. Using GDB extensions
-.. 5. Valgrind and Poke
-.. 6. Debugging PVM Assembly Code
-..... 1. PVM definition tips
-16. Profiling poke
-.. 1. Building with profiling support
 
 
 Welcome, adventurous poker! This file contains useful information for
@@ -135,1017 +67,7 @@ You should have received a copy of the GNU General Public License along
 with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
 
 
-1 Nomenclature
-==============
-
-  We call `poke' the program.  When the context may induce confusion
-  (since `poke' is a pretty common word) then we use `GNU poke'.
-
-  `Poke' (with upper case P) is the name of the domain-specific language
-  implemented by `poke', the program.
-
-  A `pickle' is a Poke source file containing definitions of types,
-  variables, functions, etc, that conceptually apply to some definite
-  domain.  For example, `elf.pk' is a pickle that provides facilities to
-  poke ELF object files.  Pickles are not necessarily related to file
-  formats: a set of functions to work with bit patterns, for example,
-  could be implemented in a pickle `bitpatterns.pk'.
-
-
-2 Maintenance
-=============
-
-2.1 GNU Maintainer
-~~~~~~~~~~~~~~~~~~
-
-  Jose E. Marchesi <jemarch@gnu.org> Mohammad-Reza Nabipoor
-  <mnabipoor@gnu.org>
-
-
-2.2 Global Maintainers
-~~~~~~~~~~~~~~~~~~~~~~
-
-  Jose E. Marchesi <jemarch@gnu.org>
-
-
-2.3 Maintainers
-~~~~~~~~~~~~~~~
-
-  Maintainers are individuals who are responsible for, and have
-  permission to check in changes in, certain subsets of the code, and
-  push them to the master branch.  They can also approve patches in
-  these areas, sent by other people.  Note that that maintainers still
-  need approval to check in changes outside of the immediate domain that
-  they maintain.
-
-  Note also that maintainers are still asked to send [COMMITTED]
-  messages to the list with the patches they push.  This helps to keep
-  the other hackers aware of what is going on in other areas.
-
-        etc/poke-mode.el        Aurélien Aptel <aaptel@suse.com>
-        doc/learn-poke-language-in-y-minutes.pk
-        pickles/riscv.pk
-        pickles/pcap.pk
-        pokefmt
-        poked                   Mohammad-Reza Nabipoor <mnabipoor@gnu.org>
-
-
-2.4 Write After Approval
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-  The people below have write access to the git repository, and can
-  install their changes after getting explicit approval from a global
-  reviewer.
-
-        Egeyar Bagcioglu	<egeyar@gmail.com>
-        John Darrington		<jmd@gnu.org>
-        Luca Saiu		<positron@gnu.org>
-        Darshit Shah		<darnir@gnu.org>
-        Dan Čermák		<dan.cermak@cgc-instruments.com>
-        Bruno Haible		<bruno@clisp.org>
-        Carlo Caione		<ccaione@baylibre.com>
-        Eric Blake		<eblake@redhat.com>
-        Tim Ruehsen		<tim.ruehsen@gmx.de>
-        Kostas Chasialis	<koschasialis@gmail.com>
-        Aurélien Aptel		<aaptel@suse.com>
-        Mohammad-Reza Nabipoor	<mnabipoor@gnu.org>
-        David Faust             <david.faust@oracle.com>
-        Indu Bhagat             <indu.bhagat@oracle.com>
-        Arsen Arsenović		<arsen@aarsen.me>
-        Vincenzo Palazzo    <vincenzopalazzodev@gmail.com>
-        Martin Cermak		<marticak@gmx.com>
-        Hannes Domani           <ssbssa@yahoo.de>
-
-
-2.5 Personal Branches
-~~~~~~~~~~~~~~~~~~~~~
-
-  Anyone having write access to the git repository is allowed to push
-  and maintain personal branches.  These branches should be called
-  `WHO/WHAT', where `WHO' is the nick identifying the owner of the
-  branch and `WHAT' a description of what it contains.
-
-  Example:
-
-  ,----
-  | jemarch/hyperlinks-server
-  `----
-
-
-  Personal branches are intended to ease the interaction between
-  developers, and to provide a convenient basis for testing large
-  changes.
-
-  Personal branches can be rebased, and deleted.  Please do not write
-  into a personal branch unless you have the explicit approval of the
-  branch owner.
-
-
-2.6 Building Release Tarballs
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  The standard target `make distcheck' builds a distributable sources
-  tarball, and tests that it can be built and tested properly.
-
-  The version information the package gets built against is
-  automatically determined from git, based on `git describe' output and
-  the current branch.  The format for versions generated like this is:
-  `X.Y[.Z]-BRANCH-NN-gHASH' for an inter-version build, and `X.Y[.Z]'
-  for a release.  In either case, if the tree you're building is not
-  clean, you will get a `-dirty' suffix.
-
-  `X.Y[.Z]' gets computed from the latest annotated tag on your current
-  `HEAD' history.
-
-  Note that if you're working on a checkout that is not fresh (i.e. it
-  has had commits or tags since you last ran `./autogen.sh'), it is
-  desirable to re-run `./autogen.sh', or otherwise regenerate
-  `configure', to get updated version information.  This version will be
-  stored in the newly-generated dist tarball.
-
-  Keep in mind that, when regenerating, a dirty (i.e. modified) tree,
-  including differently dated submodules, will cause the version to be
-  suffixed with `-dirty'.  Should this happen, and you want to go
-  through with the release anyway, `git stash' your changes and `git
-  submodule update' submodules, so that they get checked out to in-tree
-  revisions.  This also ensures that you're testing the version of the
-  tree that will make it into a release, rather than something with a
-  potentially uncommitted fix, or suchlike.
-
-
-2.7 Installing Obvious Changes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  Anyone listed in the Write After Approval section is allowed to push
-  obvious changes to non-personal branches.  The "obvious" category
-  includes typos in comments, renaming of variables, etc.
-
-  If you commit and push an obvious change, you are still required to
-  send an email to the mailing list stating you installed the change.
-  Please include a suggestive tag in your email's subject, something
-  like `[COMMITTED]'.  Also, make sure to include the patch itself.
-
-
-2.8 The poke.rec database
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  We maintain a database in `etc/poke.rec', in the form of a recfile.
-  See <http://www.gnu.org/software/recutils> for more information on
-  recfiles.
-
-  This database is kept up to date by the maintainer, and contains lots
-  of information on the current tasks to do, bugs, release, asn so on.
-  See the comment at the top of `poke.rec' for more information.
-
-
-2.9 The source for this HACKING file
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  This file (HACKING) is an ASCII export of the org-mode file in
-  etc/hacking.org.  In order to regenerate it, you have two options:
-
-  - You can open it in Emacs and run the `org-export-dispatch' function.
-    Replace the current contents of HACKING with the output.
-
-  - You can run `make update-hacking' at the top build directory.  This
-    will execute Emacs in batch mode and update HACKING.
-
-
-2.10 The Bugzilla
-~~~~~~~~~~~~~~~~~
-
-  We maintain a bugs database in <https://www.sourceware.org/bugzilla>.
-  Our product is `poke', which is divided in several components
-  corresponding to the several areas of the program/project.
-
-  If you find a bug and you don't want or you can't work on it, please
-  file a bug there providing as much details as you can.
-
-  If the bugzilla URL ever changes it should be updated in
-  `configure.ac'.
-
-  Once a new bug is submitted to bugzilla, a maintainer will eventually
-  look at it and, if confirmed as a bug, will add an entry for it to
-  `etc/poke.rec'.
-
-
-2.10.1 Dealing with spam in the Bugzilla
-----------------------------------------
-
-  Sometimes the bugzilla at sourceware gets some spam, in the form of
-  bugs containing crap.  If you see one, you can flag is as spam by
-  transitioning the following fields::
-
-        Component -> spam
-        Product -> web
-        Assigneee -> nobody@sourceware.org
-        Status -> Closed as invalid
-
-
-2.11 Backporting to maintenance branches
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  At any time we keep several branches open to development in poke:
-
-  - `master' is the main branch where development happens.  The next
-    major release of poke will be branched from it.
-
-  - `maint/poke-N' is the maintenance branch for poke `N.x'.  The next
-    bugfix release for poke version `N' will be made from it.
-
-  When applying a patch to poke, the maintainer should decide to which
-  branches she wants to apply the patch:
-
-  - Work on new features should go to `master', and only to `master'.
-    As tempting as it may be to add a simple but useful new feature to a
-    maintenance branch, please don't.  We release poke often, so the new
-    feature will soon reach the users.
-
-  - Bug fixes always go to `master' and, if appropriate, also to
-    maintenance branches.
-
-  If in doubt, please ask in poke-devel.
-
-  When a given patch is to be backported to a maintenance branch, use
-  the following strategy:
-
-  1. Commit the patch to `master' as usual.
-  2. Checkout `maint/poke-N' and make sure it is up to date.
-  3. cherry-pick commit (or commits) from master.  This may result in
-     conflicts.  In that case, resolve them and finish the cherry-pick.
-  4. Retest in `maint/poke-N', including make syntax-check.
-  5. Push both `master' and `maint/poke-N' to savannah.
-
-
-3 Development Environment
-=========================
-
-  The packages listed in the file DEPENDENCIES are needed.
-  Additionally:
-
-
-3.1 Autotools
-~~~~~~~~~~~~~
-
-  This distribution uses whatever versions of Automake, Autoconf, and
-  Gettext are listed in NEWS; usually the latest ones released.  If you
-  are getting the sources from git (or change configure.ac), you'll need
-  to have these tools installed to (re)build.  You'll also need
-  help2man.  All of these programs are available from
-  <ftp://ftp.gnu.org/gnu>.
-
-
-3.2 Dejagnu
-~~~~~~~~~~~
-
-  The poke testsuite uses DejaGNU.  Please install it if you intend to
-  run the tests.  If you want to hack poke, you definitely want to run
-  the tests :)
-
-
-3.3 Flex
-~~~~~~~~
-
-  You will need a recent version of flex, since we are using some recent
-  options like "reentrant" or "bison-bridge".  flex version 2.6.1 works
-  fine.
-
-
-3.4 Bison
-~~~~~~~~~
-
-  In order to improve the user's experience, we are using fairly recent
-  versions of bison.  Bison 3.6.0 or later is required to bootstrap and
-  build poke from git.
-
-
-3.5 GNU Jitter
-~~~~~~~~~~~~~~
-
-  In order to build and run poke, you need Luca Saiu's GNU Jitter.
-  Jitter's git source repository, publicly readable over HTTP, is at
-  <http://git.ageinghacker.net/jitter> and its home page is
-  <https://www.gnu.org/software/jitter/>.
-
-  The appropriate version of Jitter is downloaded and bootstrapped
-  automatically by Poke's `bootstrap' script, which frees the user from
-  the annoyance of installing Jitter as a dependency.
-
-  Configuring and compiling Poke will also compile and configure Jitter
-  in a subdirectory.  Jitter, when configured in `sub-package mode' as
-  Poke does, only generates static libraries and requires no
-  installation.
-
-
-3.6 Building
-~~~~~~~~~~~~
-
-  After getting the git sources, and installing the tools above, you can
-  run:
-
-  ,----
-  | $ ./bootstrap --skip-po
-  `----
-
-
-  Then, you can run `configure', as described in the files INSTALL and
-  INSTALL.generic.  For example:
-
-  ,----
-  | $ mkdir build/ && cd build
-  | $ ../configure
-  `----
-
-
-  Finally:
-
-  ,----
-  | $ make
-  | $ make check
-  `----
-
-
-3.7 Disabling building some components
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  The poke source distribution encompasses several components: libpoke,
-  the poke application, the poked daemon, etc.  By default all the
-  components will be built provided their requirements are found at
-  configure time, but it is also possible to explicitly disable them
-  when invoking configure.
-
-  For example, this is how you would build a poke without poked and
-  without pokefmt:
-
-  ,----
-  | $ ../configure --disable-poked --disable-pokefmt
-  `----
-
-
-  Note however that if some of the components are disabled, the
-  resulting tree cannot be used to run `make dist' on it.  It will fail.
-
-
-3.8 Building after a git pull
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  Usually issuing a `make' at the top build directory is enough to
-  rebuild poke after changes have been fetched from the source repo.
-  The Automake maintainer-mode rules will make sure that autoconf and
-  friends are run again and do the right thing.
-
-  However, when the Jitter submodule is updated, you have to first
-  bootstrap:
-
-  $ ./bootstrap
-
-  Then go to the top build directory, and issue a configure explicitly
-  before rebuilding:
-
-  $ cd build && ../configure $ make
-
-  You can't rely on the maintainer-mode rules there, because of certain
-  problem with the sub-package mode of Jitter.
-
-
-3.9 Building with local changes to gnulib or jitter
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  If you have local changes to gnulib or jitter, that are not yet
-  registered as submodule reference commits, the way to invoke bootstrap
-  such that it doesn't delete your changes is:
-
-  ,----
-  | $ ./bootstrap --skip-po --no-git --gnulib-srcdir=gnulib --jitter-srcdir=jitter
-  `----
-
-
-3.10 Gettext
-~~~~~~~~~~~~
-
-  When updating gettext, besides the normal installation on the system,
-  it is necessary to run gettextize -f in this hierarchy to update the
-  po/ infrastructure.  After doing so, rerun gnulib-tool --import since
-  otherwise older files will have been imported.  See the Gnulib manual
-  for more information.
-
-
-3.11 Running an Uninstalled Poke
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  Once poke is compiled, you can run it before installing by using the
-  `run' script built into the root of your build tree; this takes care
-  of setting variables such as `PATH', `POKEDATADIR', `POKESTYLESDIR',
-  and `POKEPICKLESDIR' to point at appropriate locations.
-
-  For example:
-
-  ,----
-  | $ pwd
-  | /home/jemarch/gnu/hacks/poke/build/
-  | $ ./run poke
-  `----
-
-
-3.12 Continuous Integration
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  The package is built automatically, at regular intervals.  You find
-  the latest build results here:
-
-  ,----
-  | https://gitlab.com/gnu-poke/ci-distcheck/pipelines
-  | https://gitlab.com/gnu-poke/ci-distcheck/-/jobs?scope=finished
-  `----
-
-
-  We also have a set of "buildbots" hosted at Sourceware.  See
-  <https://builder.sourceware.org/>.  The sources for this are in the
-  Sourceware `builder.git' repository at
-  <https://sourceware.org/git/?p=builder.git>. The README file contains
-  a good reference of how to hack on the build machinery.  The poke
-  homepage contains little graphics indicating the last execution
-  results of these buildbots.
-
-  Parts relevant to poke are named `/.*gnupoke.*/' in the Sourceware
-  buildbot configuration.  Please see the repository linked above for
-  details.
-
-
-4 Coding Style and Conventions
-==============================
-
-4.1 Writing C
-~~~~~~~~~~~~~
-
-  In Poke we follow the GNU Coding Standards.  Please see
-  <https://www.gnu.org/prep/standards/>.
-
-  Additionally, we have a few conventions that we ask you to follow when
-  hacking poke, in order to keep a coherent style when possible.  These
-  are documented in the following subsections.
-
-
-4.1.1 Avoid Tabs
-----------------
-
-  Please format your code using spaces.  Tabs (Ascii 9) should not
-  appear anywhere except in Makefiles.
-
-
-4.1.2 Avoid bool
-----------------
-
-  C99 defines the type `bool'.  However, in poke we prefer to use
-  variables of type `int' in order to hold truth values.  We kindly ask
-  you to do the same.
-
-  When documenting functions that receive or return boolean values
-  stored in integer variables, please remember that the interpretation
-  of the truth values in C is: zero means false, and any value other
-  than zero means true.  Avoid referring to 1 to mean true.
-
-  Also, please never rely on a boolean to hold exactly 1 or any other
-  particular non-zero value, to be interpreted as true.
-
-
-4.1.3 Use _p for Predicates
----------------------------
-
-  We use the venerable convention of using a suffix `_p' (for predicate)
-  when naming variables and struct fields that contain booleans.
-
-  We do not always do this, but it is especially important in cases
-  where the name of the variable is not indicative enough.
-
-
-4.1.4 Documenting Functions in Public Headers
----------------------------------------------
-
-  Function prototypes in headers must be documented using a comment
-  block preceding the prototype.
-
-  Start the comment block with a terse short sentence that states what
-  the function does.  Then, document the arguments that the function
-  takes, and the value it returns, if any.  When referring to arguments
-  and other variables in the comment block, please use caps.
-
-  It is ok for single comment block to document more than one prototype.
-
-  Please leave an empty line between the comment block and the function
-  prototype.
-
-  Example:
-
-  ,----
-  | /* Frobnicate a frob.
-  | 
-  |    FROB is a frob that should have been previously initialized using
-  |    frob_new.
-  | 
-  |    LAZY_P is a boolean.  If true, FROB won't be frobnicated
-  |    immediately, but instead marked for later frobnication.
-  | 
-  |    If the frob cannot be frobnicated, this function returns NULL.
-  |    Otherwise the function returns the given frob.  */
-  | 
-  | frob_t frobnicate (frob_t frob, int lazy_p);
-  | frob_t forbnicate_r (frob_t frob, int lazy_p);
-  `----
-
-
-4.2 Writing Poke
-~~~~~~~~~~~~~~~~
-
-  We recommend to use the Emacs mode in `etc/poke-mode.el' to write
-  `.pk' files.
-
-  - Do not separate magnitudes and units when writing offsets.  Do it
-    like this:
-
-    ,----
-    | 16#B
-    `----
-
-
-    instead of:
-
-    ,----
-    | 16 #B
-    `----
-
-  - Use Camel_Case for type names, but do not use Camel_Case for
-    variable/function names!
-
-  - Surround pretty-printed values with `#<' and `>.' This is to notify
-    the reader that the value has been pretty-printed.
-
-
-4.3 Writing RAS
-~~~~~~~~~~~~~~~
-
-4.3.1 RAS Emacs mode
---------------------
-
-  We recommend to use the Emacs mode in `etc/poke-ras-mode.el' to write
-  `.pks' files.
-
-
-4.3.2 Calling compiled Poke from RAS
-------------------------------------
-
-  A big part of the code generated by the PKL code generator is written
-  by hand, in `.pks' files.  Sometimes it is convenient to call compiled
-  Poke code from that code; for example, to execute complex formulae or
-  to perform some operation defined recursively.
-
-  In these situations, the solution is to first write a Poke function in
-  the compiler's runtime library, `pkl-rt*.pk', like:
-
-  ,----
-  | fun _pkl_foo = (uint<64> ival, uint<64> eval,
-  |                 uint<32> ivalw, uint<32> fieldw) uint<64>:
-  | {
-  |    return ival | (eval <<. (ivalw - fieldw));
-  | }
-  `----
-
-
-  Then, the function can be invoked from the hand-written RAS file using
-  the `.call' directive:
-
-  ,----
-  | .call _pkl_foo
-  `----
-
-
-  Note how the compiler internal functions use the `_pkl_' prefix.  Also
-  note that `.call' can only invoke functions defined in the global
-  environment.
-
-
-5 Writing Tests
-===============
-
-  The poke testsuites live in the `testsuite/' subdirectory.  This
-  section contains useful hints for adding tests there.
-
-
-5.1 Test framework
-~~~~~~~~~~~~~~~~~~
-
-  The test suite is based on DejaGnu, for which you find the general
-  documentation at
-  <https://www.gnu.org/software/dejagnu/manual/index.html>
-
-  The documentation of specific DejaGnu directives is at
-  <https://gcc.gnu.org/onlinedocs/gccint/Directives.html>
-  <https://gcc.gnu.org/wiki/HowToPrepareATestcase>
-
-
-5.2 Run selected tests
-~~~~~~~~~~~~~~~~~~~~~~
-
-  Tests are categorized in different sub-directories. You can run run
-  tests of a single category by running
-  ,----
-  | make check RUNTESTFLAGS=CATEGORY.exp
-  `----
-
-  For example, to run tests of `pkl' in `poke.pkl' sub-directory, run:
-  ,----
-  | make check RUNTESTFLAGS=pkl.exp
-  `----
-
-  You can also select tests using `TESTS' environment variable.  As an
-  example, to run all test files which start with `array', you can run:
-  ,----
-  | make check TESTS=array*.pk
-  `----
-
-
-5.3 Unit Tests
-~~~~~~~~~~~~~~
-
-  We are using DejaGnu's support for unit tests.  See
-  `testsuite/poke.libpoke' for an example on how to write C unit tests.
-
-
-5.4 Naming Tests
-~~~~~~~~~~~~~~~~
-
-  For testing a functionality `foo', name your test `foo.pk' or
-  `foo-N.pk' where `N' is a number.
-
-  If the test is a `do-compile' whose compilation is expected to fail,
-  name the test `func-diag.pk' or `func-diag-N.pk'.  Here "diag" means
-  diagnostic.
-
-
-5.5 Always set obase
-~~~~~~~~~~~~~~~~~~~~
-
-  If your test relies on printing integer values in the REPL (or using
-  the `%v' formatting tag in a `printf') please make sure to set an
-  explicit output numerical base, like in:
-
-  ,----
-  | /* { dg-command {.set obase 10} }  */
-  `----
-
-
-  This way, we won't have to change the tests if at some point we change
-  the default obase.
-
-
-5.6 Put each test in its own file
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  If you are writing tests for a specific functionality, like for
-  example a standard function `foo', it may seem logical to put all the
-  tests in a single file `foo.pk' like:
-
-  ,----
-  | /* { dg-do run } */
-  | 
-  | /* { dg-command {foo (1)} } */
-  | /* { dg-output "expected result" } */
-  | 
-  | /* { dg-command {foo (1)} } */
-  | /* { dg-output "\nexpected result" } */
-  | 
-  | [... and so on ...]
-  `----
-
-
-  However, this is not a good idea.  If some of the "subtests" fail, it
-  becomes difficult to determine which one is the culprit looking at the
-  test log file.
-
-  It is better to put each test in its own file: `foo-1.pk', `foo-2.pk'
-  and so on.
-
-
-5.7 List the test files in testsuite/Makefile.am
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  So that the tests get distributed, you need to list each newly added
-  test file in testsuite/Makefile.am.
-
-  We have a syntax-check target that checks that EXTRA_DIST contains all
-  the test files under `testsuite/', and that there is no test listed in
-  EXTRA_DIST that doesn't exist in the file system.
-
-
-5.8 dg-output may require a newline
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  If despite the advise above you really need to put more than dg-output
-  in a dg-run test file, please be aware you need to prefix all of them
-  (but the first one) with a newline, like in:
-
-  ,----
-  | /* { dg-output "foo" } */
-  | /* { dg-output "\nbar" } */
-  | /* { dg-output "\n baz" } */
-  `----
-
-
-5.9 Using data files in tests
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  If your test requires mapping data, the dg-data directive is what you
-  need.  It has two forms.
-
-  The first form looks like:
-
-  ,----
-  | /* { dg-data {c*} {0x10 0x20 0x30 0x40 ...} } */
-  `----
-
-
-  This creates a temporary file (whose name is irrelevant) and makes it
-  the current IO space at poke initialization time.  The test body, and
-  dg-commands, can then map on it.
-
-  However, sometimes you need to map on several files.  In this case,
-  you can have several dg-data entries with an additional argument,
-  which is the name of the temporary file to create:
-
-  ,----
-  | /* { dg-data {c*} {0x01 0x02 ...} foo.data } */
-  | /* { dg-data {c*} {0x11 0x12 ...} bar.data } */
-  | 
-  | [...]
-  | 
-  | /* { dg-command { var foo = open ("foo.data") } } */
-  `----
-
-
-  The file created by the last dg-data (be it anonymous or named) is the
-  current IO space.
-
-
-5.10 Using NBD connections in tests
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  If your test requires an NBD server (only useful when poke is compiled
-  with libnbd), the dg-nbd directive is what you need.  It has one form:
-
-  ,----
-  | /* { dg-nbd { 0x1 0x2 ...} [dg-tmpdir]/sock } */
-  `----
-
-
-  This utilizes nbdkit to serve an in-memory disk with initial contents
-  over a named Unix socket.  Note that the data argument is not the same
-  as for dg-data (which uses tcl's binary command), but rather the
-  syntax accepted by nbdkit-data-plugin's data= argument, although the
-  two are similar.  nbdkit then creates a Unix socket server for the
-  data, and will be shut down gracefully when the testsuite completes.
-  Use of the utility directive [dg-tmpdir] ensures that the socket name
-  will not be too long while still respecting $TMPDIR (defaulting to a
-  new subdirectory of /tmp), since $objdir may be arbitrarily deep.
-
-  To use the server as an IO space, your test will then follow up with:
-
-  ,----
-  | /* { dg-command "open (\"nbd+unix:///?socket=[dg-tmpdir]/sock\")" } */
-  `----
-
-
-5.11 Writing tests that depend on a certain capability
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  Sometimes the presence of the functionality tested may be optional.
-  An example is testing the support for styling, which depends on poke
-  to be built with libtextstyle support.
-
-  The dg-require directive can be used for this purpose.  For example,
-  the following test will be skipped (with status UNSUPPORTED) if the
-  capability `libtextstyle' is not found in poke:
-
-  ,----
-  | /* { dg-do run } */
-  | /* { dg-options "--color=html" } */
-  | /* { dg-require libtextstyle } */
-  | 
-  | /* { dg-command {printf "%<foo:%i32d%>", 10} } */
-  | /* { dg-output "<span class=\"foo\">10</span>" } */
-  `----
-
-
-  IMPORTANT NOTE: dg-require should appear before any dg-command
-  directive in the test file.
-
-  The supported capabilities are:
-
-  libtextstyle
-        poke is built with libtextstyle support.
-  nbd
-        poke is built with NBD io space support, and dg-nbd works.
-
-
-5.12 Writing REPL tests
-~~~~~~~~~~~~~~~~~~~~~~~
-
-  The `poke.repl' testsuite is intended to test features in the
-  interactive usage of poke.  Therefore, it is not dg-based.  Instead,
-  it uses the services provided by `testsuite/lib/poke.exp'.  In a
-  nutshell, these services are:
-
-  poke_start
-        Run a new poke process and wait at the prompt.
-  poke_exit
-        Exit poke.
-  poke_test_cmd CMD PATTERN
-        Send CMD to poke, and expect the result PATTERN.  CMD is sent as
-        virtual keystrokes.  Therefore, sending \t or \n has the same
-        effect on the REPL than typing TAB or RET in the keyboard,
-        respectively.  PATTERN shouldn't include the prompt.
-  poke_send INPUT PATTERN
-        Send INPUT to poke, and expect PATTERN as output.
-  poke_send_signal SIGNAL
-        Send SIGNAL to poke.
-
-  Adding a new test to `poke.repl' involves editing `poke.repl/repl.exp'
-  and adding some content there.  The following subsections detail how.
-
-
-5.12.1 Command REPL tests
--------------------------
-
-  Some REPL tests need to check whether poke replies properly to some
-  sent command.  The `poke_test_cmd' procedure defined in
-  `testsuite/lib/poke.exp' provides a convenient interface for this.
-
-  For example:
-
-  ,----
-  | set test "slashes are preserved"
-  | poke_start
-  | poke_test_cmd {4 / 2} {2}
-  | poke_exit
-  `----
-
-
-  The snippet above implements a test named "slashes are preserved" that
-  runs poke and sends the command `4 / 2' with expected result `2'.
-
-  The dialogue when the test above is executed is:
-
-  ,----
-  | (poke) 4 / 2
-  | 2
-  | (poke)
-  `----
-
-
-5.12.2 General REPL tests
--------------------------
-
-  Other REPL tests are not about executing commands.  Suppose for
-  example we want to test whether tab-completion works.  We would write
-  something like:
-
-  ,----
-  | set test "tab-completion-2"
-  | poke_start
-  | poke_send ".e\t\t" "\r\n.editor  .exit *\r\n$poke_prompt .e"
-  | poke_exit
-  `----
-
-
-  The test above uses the `poke_send' procedure, defined in
-  `testsuite/lib/poke.exp'.  This procedure gets two arguments: the
-  input that is sent to poke, and the expected output.  Note how using
-  `poke_send' doesn't require poke to execute any command.
-
-  Using `poke_send' is more laborious than using `poke_test_cmd': it is
-  necessary to explicitly include the prompt in the expected output
-  whenever needed.
-
-  Note also how newlines are perceived by expect as the sequence `\r\n'.
-
-
-5.13 Testing Pickles
-~~~~~~~~~~~~~~~~~~~~
-
-  Each pickle in `pickles/FOO.pk' shall have a test file
-  `testsuite/poke.pickles/FOO-test.pk' written using pickle `pktest'.
-
-  If there are some features in the pickle that cannot be tested using
-  `pktest' (e.g., pickle uses `print'), that pickle also shall have a
-  testsuite in `testsuite/poke.FOO' with a driver
-  `testsuite/poke.FOO/FOO.exp'.
-
-
-6 Writing Documentation
-=======================
-
-6.1 Documenting Pickles
-~~~~~~~~~~~~~~~~~~~~~~~
-
-  The chapter `Pickles' in the Poke manual contains several sections
-  organized in thematic areas.  When adding a new pickle, find the area
-  appropriate for the abstractions provided by the pickle (or create one
-  if it doesn't exist already) and add a section for it.
-
-  Please make sure to document any dependency of your pickle to other
-  pickles.
-
-  Keep a tutorial-like tone: for fine details, the user can always go
-  and look to the pickle directly.
-
-
-7 Fuzzing poke
-==============
-
-7.1 Grammarinator
-~~~~~~~~~~~~~~~~~
-
-  *grammarinator* is a random test generator/fuzzer that creates test
-  cases according to an input antlr4 grammar.
-
-  In order to generate Poke programs with grammarinator, follow the
-  following steps.
-
-  First of all, install grammarinator:
-
-  ,----
-  | $ git clone https://github.com/renatahodovan/grammarinator
-  | $ cd grammarinator
-  | $ sudo python3 setup.py install
-  `----
-
-
-  Then, use `grammarinator-process' in order to create the "unparser"
-  and "unlexer" for poke:
-
-  ,----
-  | $ grammarinator-process ../path/to/poke.g4
-  `----
-
-
-  This will create two files in the current working directory:
-  `pokeUnlexer.py' and `pokeUnparser.py'.  Next step is to use
-  `grammarinator-generate' in order to create tests:
-
-  ,----
-  | $ grammarinator-generate -l pokeUnlexer.py -p pokeUnparser.py \
-  |                          -r program -n 100 -d 10 \
-  |                          -t grammarinator.runtime.simple_space_transformer
-  `----
-
-
-  The option `-n' specifies the number of tests (Poke programs) to
-  generate.
-
-  The option `-d' specifies the maximum recursive level.  The bigger the
-  recursive level, the bigger the test files will be.  If you don't
-  specify a maximum recursive level then grammarinator-generate will
-  crash.
-
-  The option `-t grammarinator.runtime.simple_space_transformer' makes
-  sure that whitespaces get inserted between literal tokens.
-
-
-8 Submitting a Patch
-====================
-
-  If you hack a feature/improvement/bugfix for poke and want to get it
-  integrated upstream, please keep the following points in mind:
-
-  - If your patch changes the user-visible characteristics of poke,
-    please include an update for the user manual.
-
-  - If your patch adds or changes the way poke works internally, in a
-    significant way, please consider including an update for the
-    `HACKING' file.
-
-  - Please include a GNU-style ChangeLog in the patch description, but
-    do not include it in the thunks.  This is to ease reviewers to apply
-    your patch for testing.  Of course, include the thunk in the final
-    push!  (We will get rid of manual ChangeLog entries soon.)
-
-  - Make sure to run `make syntax-check' before submitting the patch,
-    and fix any reported problem.  Note that the maintainer reviewing
-    your patch will also do this, so this is a great time to save an
-    iteration ;)
-
-  - Let's keep poke.git master linear... no merges please.  Pull with
-    `--ff-only'.
-
-  - Send the patch to the `poke-devel' mailing list.
-
-  - Use text email only.  No html please.
-
-  - Inline the patch in the body of your email, or alternatively attach
-    it as `text/x-diff' or `text/x-patch'.  This is to ease reviewers to
-    quote parts of the patch.
-
-
-9 Maintenance
+1 Maintenance
 =============
 
   This section describes `make' targets that performs several
@@ -1187,8 +109,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
         the file `.x-update-copyright'.
 
 
-10 Poke Architecture
-====================
+2 Poke Architecture
+===================
 
   This figure depicts the overall architecture of poke:
 
@@ -1215,11 +137,11 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   The command subsystem resides in the `poke' executable.
 
 
-11 The Poke Compiler
-====================
+3 The Poke Compiler
+===================
 
-11.1 Compiler Overview
-~~~~~~~~~~~~~~~~~~~~~~
+3.1 Compiler Overview
+~~~~~~~~~~~~~~~~~~~~~
 
   This figure depicts the architecture of the compiler:
 
@@ -1249,8 +171,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   `----
 
 
-11.2 The bison Parser in pkl-tab.y
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3.2 The bison Parser in pkl-tab.y
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   The only purpose of the bison parser in pkl-tab.y is to do the
   syntactic analysis, build the initial AST, and set the locations of
@@ -1273,16 +195,16 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   programs.
 
 
-11.3 The AST
-~~~~~~~~~~~~
+3.3 The AST
+~~~~~~~~~~~
 
   The compiler operates on an abstract syntax tree that represent the
   program being compiled.  The following subsections discuss some useful
   aspects of the structure of the AST.
 
 
-11.3.1 loop_stmt
-----------------
+3.3.1 loop_stmt
+---------------
 
   Loop statements are represented with trees like:
 
@@ -1378,8 +300,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   `----
 
 
-11.3.2 try_stmt
----------------
+3.3.2 try_stmt
+--------------
 
   There are several syntactic forms of this statement:
 
@@ -1412,8 +334,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   where ARG and EXP are exclusive.
 
 
-11.3.3 exp
-----------
+3.3.3 exp
+---------
 
   Expressions are the application of some *operator* to one or more
   *operators*.  The Poke language supports unary, binary and ternary
@@ -1464,8 +386,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   implemented using `exp' nodes, but `cond_exp' AST nodes.
 
 
-11.3.4 cond_exp
----------------
+3.3.4 cond_exp
+--------------
 
   This AST node is used to encode Poke's ternary conditional operator,
   which looks like:
@@ -1486,8 +408,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   `----
 
 
-11.4 Lexical Handling
-~~~~~~~~~~~~~~~~~~~~~
+3.4 Lexical Handling
+~~~~~~~~~~~~~~~~~~~~
 
   The parser needs to build the lexical enviroment as it works through
   the source code.  This is because it needs to find the declarations of
@@ -1519,8 +441,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   rules checks that rely on the relative lexical position of entities.
 
 
-11.5 Compiler Passes and Phases
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3.5 Compiler Passes and Phases
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   These are the phases currently implemented in the poke compiler:
 
@@ -1554,8 +476,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
         gen
 
 
-11.5.1 Naming Conventions for Phases
-------------------------------------
+3.5.1 Naming Conventions for Phases
+-----------------------------------
 
   We use the following convention to name phases:
 
@@ -1600,8 +522,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   `libpoke/pkl-NAME.[ch]'.
 
 
-11.5.2 Naming Conventions for Handlers
---------------------------------------
+3.5.2 Naming Conventions for Handlers
+-------------------------------------
 
   We use the following convention to name phase handlers:
 
@@ -1628,8 +550,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   the AST nodes with code `PKL_AST_COMP_STMT'.
 
 
-11.5.3 Front and Middle End Handlers should be Re-entrant
----------------------------------------------------------
+3.5.3 Front and Middle End Handlers should be Re-entrant
+--------------------------------------------------------
 
   When a type is referenced by name, for example in a map:
 
@@ -1650,8 +572,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   executed more than once, they should do The Right Thing (TM).
 
 
-11.6 Adding Compiler Built-Ins
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3.6 Adding Compiler Built-Ins
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   [NOTE: now that inline asm statements are supported, built-ins are
    implemented as immutable functions in the compiler runtime
@@ -1710,8 +632,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   `----
 
 
-11.7 Writing Compiler Diagnostics
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3.7 Writing Compiler Diagnostics
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   Please follow the following guidelines when adding new errors or
   warnings to the poke compiler:
@@ -1754,14 +676,14 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
     reason (like to show the arguments taken by a function type.)
 
 
-12 The Poke Virtual Machine
-===========================
+4 The Poke Virtual Machine
+==========================
 
-12.1 PVM types
-~~~~~~~~~~~~~~
+4.1 PVM types
+~~~~~~~~~~~~~
 
-12.1.1 How `any' is handed in the PVM
--------------------------------------
+4.1.1 How `any' is handed in the PVM
+------------------------------------
 
   The Poke type `any' is not implemented in the PVM as a PVM type value.
   Instead, `null' is used to denote it, by convention.
@@ -1771,8 +693,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   same than a closure returning `any'.
 
 
-12.2 Exception Handling
-~~~~~~~~~~~~~~~~~~~~~~~
+4.2 Exception Handling
+~~~~~~~~~~~~~~~~~~~~~~
 
   Exception types or codes are signed 32-bit integers, and are defined
   in `libpoke/pkl-rt-1.pk' as `EC_*' variables.
@@ -1802,8 +724,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   `libpoke/pkl-rt-1.pkl'.
 
 
-12.3 Signal Handling
-~~~~~~~~~~~~~~~~~~~~
+4.3 Signal Handling
+~~~~~~~~~~~~~~~~~~~
 
   When the PVM is about to execute a program, it installs a signal
   handler that, at the moment, handles `SIGINT'.  This signal handler is
@@ -1821,8 +743,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   PVM state.
 
 
-12.4 Offsets and bit-offsets in the PVM
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+4.4 Offsets and bit-offsets in the PVM
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   The PVM supports a `pvm_off' boxed value, to denote pairs of
   magnitudes and units.  Both accessor macros (in `pvm-val.h') and PVM
@@ -1855,8 +777,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   bit-offsets instead encoded as `ulong<64>' values.
 
 
-12.5 Writing relocatable instructions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+4.5 Writing relocatable instructions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   When operating in non-threaded mode, Jitter likes to move the code
   compiled for instruction bodies around.  This imposes several
@@ -1889,8 +811,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   many platforms and non-threading modes.
 
 
-12.6 Wrapping globals
-~~~~~~~~~~~~~~~~~~~~~
+4.6 Wrapping globals
+~~~~~~~~~~~~~~~~~~~~
 
   The non-threaded Jitter operation modes require every global (variable
   or function) to be wrapped, i.e. specified in sections
@@ -1915,8 +837,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
     instructions.
 
 
-12.6.1 Wrapping standard function calls
----------------------------------------
+4.6.1 Wrapping standard function calls
+--------------------------------------
 
   If we need to call to a standard library function provided by the
   system (such as `printf', `strstr', or the like) from the body of a
@@ -1937,8 +859,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   - Add `pvm_FOO' to the wrapped-functions section in pvm.jitter.
 
 
-13 Memory Management
-====================
+5 Memory Management
+===================
 
   Different parts of poke use different strategies for memory
   management:
@@ -1954,8 +876,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   documented in the subsections below.
 
 
-13.1 Using ASTREF
-~~~~~~~~~~~~~~~~~
+5.1 Using ASTREF
+~~~~~~~~~~~~~~~~
 
   The AST uses reference counting in order to manage the memory used by
   the nodes.  Every time you store a pointer to an AST node, you should
@@ -1979,8 +901,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   otherwise.
 
 
-13.2 Using ASTDEREF
-~~~~~~~~~~~~~~~~~~~
+5.2 Using ASTDEREF
+~~~~~~~~~~~~~~~~~~
 
   `ASTDEREF' decreases the reference counter of the provided AST
   node. It's required to use the return value of `ASTDEREF'. The
@@ -2006,8 +928,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   doesn't change at all.
 
 
-13.3 PVM values in PVM programs
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+5.3 PVM values in PVM programs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   PVM routines (data structures of type `pvm_routine') are allocated by
   Jitter in complicated data structures, internally relying on `malloc'.
@@ -2063,8 +985,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   append parameters to instructions.
 
 
-13.4 PVM values in AST nodes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+5.4 PVM values in AST nodes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   Storing a PVM value (whose memory is handled by GC) in an AST node
   (reference-counted) leads to a problem: the GC is unable to see the
@@ -2140,11 +1062,11 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   follow the strategy above.
 
 
-14 Terminal Handling
-====================
+6 Terminal Handling
+===================
 
-14.1 pk-term
-~~~~~~~~~~~~
+6.1 pk-term
+~~~~~~~~~~~
 
   Writing to the terminal, and getting information from the terminal, is
   handled by the `pk-term' module.  It provides functions to:
@@ -2161,8 +1083,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   will still compile and run properly.
 
 
-14.2 Styling Classes
-~~~~~~~~~~~~~~~~~~~~
+6.2 Styling Classes
+~~~~~~~~~~~~~~~~~~~
 
   Styling is handled using "classes", which are identified by some
   string.  Using `pk_term' calls, enclosed environments can be defined:
@@ -2185,8 +1107,8 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   `poke-default.css'.
 
 
-14.3 Debugging Styling
-~~~~~~~~~~~~~~~~~~~~~~
+6.3 Debugging Styling
+~~~~~~~~~~~~~~~~~~~~~
 
   As recommended in the libtextstyle manual, a good way to see the class
   hierarchy of some given output is to run poke passing the
@@ -2198,276 +1120,3 @@ with GNU poke.  If not, see <https://www.gnu.org/licenses/>.
   | (poke) [1#B,2#B]
   | <span class="array">[<span class="offset"><span class="integer">0x1</span>#B</span>,<span class="offset"><span class="integer">0x2</span>#B</span>]</span><br/>(poke)
   `----
-
-
-15 Debugging poke
-=================
-
-15.1 Building with Debugging support
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  Short summary: at the present time Poke and its Jittery VM are not
-  especially difficult to debug; however the situation is going to
-  change as Jitter evolves and the following details will become more
-  important to Poke hackers.
-
-  In order to make debugging easier you may want to disable advanced
-  dispatches in Jitter, which make the generated code harder to follow
-  and confuse GDB.
-
-  Jitter by default will use the most efficient dispatch which is both
-  stable and available for the current configuration; the most efficient
-  dispatch is `no-threading', which requires assembly support in Jitter
-  for the specific architecture and a supported binary format.
-  `minimal-threading' is more portable than `no-threading', even if less
-  efficient.  Jitter supports two alternative dispatches, slower but
-  very stable, portable and friendly to debugging: `switch' and
-  `direct-threading'.
-
-  Any dispatch can be selectively enabled or disabled from the Poke
-  `configure' script, by passing the following options which will be
-  automatically relayed to Jitter's `configure' script:
-
-  - `--enable-dispatch-switch'
-  - `--disable-dispatch-switch'
-  - `--enable-dispatch-direct-threading'
-  - `--disable-dispatch-direct-threading'
-  - `--enable-dispatch-minimal-threading'
-  - `--disable-dispatch-minimal-threading'
-  - `--enable-dispatch-no-threading'
-  - `--disable-dispatch-no-threading'
-
-  When configured in sub-package mode, as is the case when used with
-  Poke, Jitter will only actually compile the single most efficient
-  enabled dispatch.  This means that in order to select some sub-optimal
-  dispatch method, one has to disable the more efficient ones.  For
-  example, this is the best options for debugging:
-
-  ,----
-  | --disable-dispatch-no-threading --disable-dispatch-minimal-threading
-  | --disable-dispatch-direct-threading
-  `----
-
-
-  Other than the configure options above, you will probably want to
-  configure the build to generate debugging information, and disable
-  compiler optimizations, using something like:
-
-  ,----
-  | CFLAGS="-O0 -g3" ../configure [...]
-  `----
-
-
-15.2 Invoking GDB to debug an uninstalled poke
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  Since we are using libtool, `$(builddir)/poke/poke' is a shell script.
-  In order to debug the uninstalled poke, you can do:
-
-  ,----
-  | $ ./libtool --mode=execute ./run gdb poke/poke
-  `----
-
-
-15.3 Debugging poke with GDB
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  Once GDB is invoked in either an installed or uninstalled poke, you
-  can debug it normally.
-
-  Something to keep in mind, however, is that the Boehm GC we use uses
-  SIGPWR and SIGXCPU for internal purposes, in order to stop all threads
-  before starting collecting memory.  Proper handlers are installed by
-  the GC for these signals.  However, when you run poke under GDB, GDB
-  will stop once SIGPWR or SIGXCPU are signaled to the current thread.
-
-  You can teach GDB to ignore these signals by issuing this command:
-
-  ,----
-  | handle SIGPWR noprint pass
-  | handle SIGXCPU noprint pass
-  `----
-
-
-  Alternatively, you can just (c)ontinue.
-
-
-15.4 Using GDB extensions
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  In order to use the GDB pretty-printers and other goodies brought to
-  you courtesy of the poke hackers, just source the poke-gdb.scm file
-  from your debugger:
-
-  ,----
-  | (gdb) source etc/poke-gdb.scm
-  `----
-
-
-15.5 Valgrind and Poke
-~~~~~~~~~~~~~~~~~~~~~~
-
-  The PVM uses the Boehm conservative garbage collector in order to
-  manage the memory used by the VM values.  Other parts of poke, such as
-  the PKL compiler, manage their own memory.
-
-  Valgrind gets easily confused by the GCs tampering with the stack, and
-  emits a lot of spurious warnings.  Fortunately it is possible to tell
-  memcheck to omit these warnings: the file etc/boehm-gc.suppressions
-  contains a list of suppressions.
-
-  Invoke valgrind with `--suppressions=etc/boehm-gc.suppressions'.
-
-  If despite using the suppressions file you see some spurious warning,
-  please use:
-
-  ,----
-  | $ valgrind --tool=memcheck --gen-suppressions=all --log-file=raw.log
-  `----
-
-
-  Then process raw.log with the `etc/parse-valgrind-suppressions.sh'
-  script, wildcard the result as much as you can, and append the results
-  to `etc/boehm-gc.suppressions'.
-
-  In order to run the testsuite with valgrind, edit `lib/poke-dg.exp'
-  and uncomment the lines:
-
-  ,----
-  | set VALGRIND "valgrind --quiet \
-  |    --suppressions=${srcdir}/../etc/boehm-gc.suppressions \
-  |    --tool=memcheck --gen-suppressions=all"
-  `----
-
-
-  Then run `make check' as usual.
-
-
-15.6 Debugging PVM Assembly Code
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  Hacking some areas of the compiler, such as the code generator pass,
-  involves meta-programming PVM assembler.  It is easy to find examples
-  anywhere in `libpoke/pkl-gen.c':
-
-  ,----
-  | pkl_asm_insn (pasm, PKL_INSN_ROT);
-  | pkl_asm_insn (pasm, PKL_INSN_MULLU);
-  | pkl_asm_insn (pasm, PKL_INSN_NIP2);
-  `----
-
-
-  Or, alternatively, the code may be written in RAS in a `.pks' file.
-  Like:
-
-  ,----
-  | .loop:
-  |       bz @type, .endloop      ; ... A B
-  |       mod @type               ; ... A B A%B
-  |       rot                     ; ... B A%B A
-  |       drop                    ; ... B A%B
-  |       ba .loop
-  `----
-
-
-  Often, a run-time problem becomes apparent while the PVM executes the
-  generated code.  Typical cases are when a PVM value doesn't contain
-  what it's supposed to contain, and accessing the wrong boxed value
-  causes a segmentation fault (if we are lucky) or a non-crashing
-  invalid memory access (if we are very unlucky.)  Whenever that kind of
-  crap happens, we find ourselves in the need of debugging the PVM code,
-  which is a big PITA.
-
-  Bad news are: we don't have a PVM debugger (yet).  Good news are: we
-  have a couple of tools that may help.
-
-  The first of such tools is the `prints' instruction.  This
-  instructions basically prints in the standard output the string value
-  on the TOS, and then drops it.  It is a wonderful way to trace PVM
-  code.
-
-  For example, let's say we are trying to find out how many times the
-  loop above gets executed.  We can install traces like:
-
-
-  ,----
-  |       push "XXX entering loop\n"
-  |       prints
-  | .loop:
-  |       push "XXX in loop\n"
-  |       prints
-  |       mod @type
-  |       rot
-  |       drop
-  |       ba .loop
-  `----
-
-
-  The other tool is the `strace' instruction.  It prints the contents of
-  the stack (one value per line) from the TOS.  It gets the number of
-  stack values to print as an argument, 0 meaning all of them.  It is
-  very useful in many situations, like when a loop is composing values
-  in the stack and something is going banana.  It is also useful to
-  determine what kind of value is being accessed by a given instruction.
-
-  For example, lets say that we are hunting some segmentation fault.  We
-  highly suspect the code generated in the first example in this
-  section, above.  Of the three instructions, `mullu' is the only one
-  that could conceivably generate a segfault, so we add a stack trace
-  instruction right before it to inspect its two arguments:
-
-  ,----
-  | pkl_asm_insn (pasm, PKL_INSN_ROT);
-  | pkl_asm_insn (pasm, PKL_INSN_STRACE, 2); /* XXX remove me */
-  | pkl_asm_insn (pasm, PKL_INSN_MULLU);
-  | pkl_asm_insn (pasm, PKL_INSN_NIP2);
-  `----
-
-
-  We recompile, re-run, and we find out that the elements at the TOS
-  when `mullu' is executed are a pair of stupid signed integers, which
-  are not boxed and not what the instruction expects.  Mystery solved.
-
-
-15.6.1 PVM definition tips
---------------------------
-
-  When using advanced Jitter dispatches it becomes important that every
-  C function or global variable accessed by a relocatable VM instruction
-  is "wrapped": see the Jitter documentation [not yet existing at the
-  time of writing] for more information.  Non-relocatable instructions
-  can access any global without need for wrapping: the problem is
-  strictly with VM instruction whose native executable code gets copied
-  to different memory addresses, therefore breaking PC-relative access
-  to globals.  Wrapping prevents this kind of access, replacing it with
-  a indirect access thru a local pointer.
-
-  It is important to remark that macros cannot be wrapped as functions:
-  rather it is necessary to consider any global variable or function
-  containsed in a macro expansion.
-
-  Notice that high-latency VM instructions (for example instructions
-  performing I/O) and infrequently run instructions (for example an
-  instruction which raises an error) can be made non-relocatable without
-  loss of efficiency; in fact making large VM instructions
-  non-relocatable might improve code locality at run time.
-
-
-16 Profiling poke
-=================
-
-16.1 Building with profiling support
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  poke supports a couple of commands that can be used to profile Poke
-  programs:
-
-  ,----
-  | .vm profile reset
-  | .vm profile show
-  `----
-
-
-  For these commands to work you need to build poke with profiling
-  support.  This is done by passing the `--enable-pvm-profiling' command
-  line option to `configure'.

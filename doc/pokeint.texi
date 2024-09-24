@@ -84,7 +84,6 @@ Debugging poke
 * Building with debugging support::
 * Invoking GDB to debug an uninstalled poke::
 * Debugging poke with GDB::
-* Using GDB extensions::
 * Valgrind and poke::
 * Debugging PVM assembly code::
 
@@ -885,17 +884,6 @@ handle SIGXCPU noprint pass
 @end example
 
 Alternatively, you can just @command{(c)ontinue}.
-
-@node Using GDB extensions
-@chapter Using GDB extensions
-
-In order to use the GDB pretty-printers and other goodies brought to
-you courtesy of the poke hackers, just source the @file{poke-gdb.scm}
-file from your debugger:
-
-@example
-(gdb) source etc/poke-gdb.scm
-@end example
 
 @node Valgrind and poke
 @chapter Valgrind and poke
