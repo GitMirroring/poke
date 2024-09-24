@@ -1,5 +1,16 @@
 2024-09-24  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-fold.c (OP_BINARY_SIS): Signal out of memory.
+	(EMUL_SIS): Use malloc instead of xmalloc.
+	(OP_BINARY_SSS): Call PKL_PASS_ERROR after PKL_ICE.
+	* libpoke/pkl-trans.c (pkl_trans1_ps_format): Likewise.
+	(pkl_trans2_ps_incdecr): Likewise.
+	* libpoke/pkl-trans.c (XSTRDUP): Likewise.
+	(XMALLOC): Likewise.
+	* libpoke/pkl-gen.c (pkl_gen_ps_func): Likewise.
+
+2024-09-24  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-ast.c: Likewise.
 
 	* libpoke/pkl-fold.c: Do not include xalloc.h.
