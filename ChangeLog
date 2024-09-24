@@ -1,5 +1,10 @@
 2024-09-24  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-cmd-editor.c (pk_cmd_editor): Do not print a dot at the
+	end of error messages.
+
+2024-09-24  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-fold.c (OP_BINARY_SIS): Signal out of memory.
 	(EMUL_SIS): Use malloc instead of xmalloc.
 	(OP_BINARY_SSS): Call PKL_PASS_ERROR after PKL_ICE.

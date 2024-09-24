@@ -66,7 +66,7 @@ pk_cmd_editor (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
       pk_term_class ("error");
       pk_puts ("error: ");
       pk_term_end_class ("error");
-      pk_puts ("the EDITOR environment variable is not set.\n");
+      pk_puts ("the EDITOR environment variable is not set\n");
       return 0;
     }
 
@@ -77,7 +77,7 @@ pk_cmd_editor (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
       pk_term_class ("error");
       pk_puts ("error: ");
       pk_term_end_class ("error");
-      pk_puts ("determining a temporary file name.\n");
+      pk_puts ("determining a temporary file name\n");
       return 0;
     }
 
@@ -90,7 +90,7 @@ pk_cmd_editor (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
       pk_term_class ("error");
       pk_puts ("error: ");
       pk_term_end_class ("error");
-      pk_puts ("executing editor.\n");
+      pk_puts ("executing editor\n");
       free (cmdline);
       return 0;
     }
