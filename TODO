@@ -27,6 +27,81 @@ binutils does it.
 We require a version of the boehm GC recent enough to provide that call.
 
 * Language
+** Support for string properties
+
+In areas of a string:
+
+Styling classes.
+Hyperlinks/actions.
+
+Produced by `format', according to the % tags in the format string.
+
+This should be visible at the PVM level.  Instructions to set string
+properties:
+
+: push "Age: 10"
+: push 5LU
+: push 2LU
+: push "integer"
+: sprop ; String propertize  ( STR IDX LENGTH CLASS -- STR )
+
+** Support arguments in type constructors
+
+: struct Packet (t1 f1, ..., tn fn) { ... }
+: Packet (a1, ..., an) packet;
+
+or
+
+: Packet<a1,...,an> packet;
+
+The second option is more coherent with the constructors like int<16>.  But it
+will require a lexical trick =TYPE<=.
+
+** Support for big numbers
+
+Currently the PVM supports the following kind of integer values:
+
+- Integers up to 32-bit, signed and unsigned.  These values are unboxed.
+- Long integers, up to 64-bit, signed and unsigned.  These values are boxed.
+
+The task is to introduce an additional kind of integer:
+
+- Big integers, up to infinite bits, signed and unsigned These values are
+  boxed.
+
+This new integer shall be implemented as a boxed value, using the GNU
+MultiPrecision library ``libgmp``.  This task involves:
+
+- Adding the support to ``src/pvm-val.[ch]``.
+- Add new instruction to ``src/pvm.jitter``, i.e. itob, btol, etc.
+- Adapt the compiler to support big integer literals.
+- Adapt the code generator to use the new instructions.
+
+** Support _equal methods in struct types
+
+The default equal compares all fields, but the user may want to use a
+different notion of equality.
+
+This can also return 1 for > and -1 for <, but then the default
+predicate should return < by convention to mean "not equal".
+
+#+BEGIN_SRC
+type Exception =
+  struct
+  {
+    int<32> code;
+    string msg;
+
+    defun _equal = int: (Exception b)
+    {
+      return code == b.code;
+    }
+  };
+#+END_SRC
+
+This requires support for recursive definitions and also for offline method
+definitions.
+
 ** Arrays bounded by predicate
 
 Currently the Poke language supports three kind of array types:
@@ -309,6 +384,28 @@ satisfied with the external definition.
 This allows to temporarily change the endianness without having to alter the
 global.
 
+** Struct patterns and matching operators
+
+: Foo {{ a == 2 }}
+
+Only valid as second argument of the match operator ~.  NO: valid
+everywhere, so the resulting closure can be passed to
+commands/functions.  The pattern compiles to a closure, that is then
+called.
+
+: (poke) Foo { a = 2} ~ Foo {{ a == 2 }}
+: 1
+
+Or:
+
+: Foo {{a ==2}} (Foo { a = 2 })
+
+: TYPE {{ EXP, EXP, ... }}
+
+Where EXP is an expression that evaluates to an int<32>.  All the expressions
+should evaluate to 1 when applied to the given struct value, for the pattern
+operator to succeed.
+
 ** Pattern matching and ~ operator
 
 VAL ~ (TYPEOFVAL)int<32>
@@ -433,6 +530,33 @@ type Elf64_File =
 
 : load foo if EXPR;
 
+** Support more than one constraint per struct field
+
+: struct
+: {
+:    int i : i > 1,
+:            i % 2 == 0;
+: };
+
+Logically equivalent to &&, but in this way it becomes possible to
+discriminate what expression failed in case of error.
+
+** Named annotations in struct types
+
+: int foo : foo > 10;      /* Error constraint.  */
+; int foo :fail foo > 10; /* Equivalent to the above.  */
+: int foo :last foo > 10; /* Last/final constraint.  */
+: int foo :warning foo > 10; /* Warning.  */
+: int foo :aligned 8;  /* Alignment.  */
+
+These constraints can be combined:
+
+: int foo : foo < 10, :warning foo == 8, :final foo == 5;
+
+The warnings are emitted by the struct mapper function with `print', and also
+registered in the IOS as "problematic" areas, to be displayed (and listed) as
+such.
+
 ** Support for matching ~ operator
 
 : EXPR ~ lambda (typeof (EXPR))int<32>
@@ -445,7 +569,88 @@ So it can be used in a ~ operator:
 
 : "foo: bar" ~ /^([a-zA-Z0-9]+:)(.*)$/
 
+** Make endianness a type quality
+
+To: Bruno Haible <bruno@clisp.org>
+Cc: poke-devel@gnu.org
+Subject: Re: Generalizing the big/little attribute
+From: "Jose E. Marchesi" <jemarch@gnu.org>
+Gcc: nnfolder+archive:sent.2020-07
+--text follows this line--
+
+Hi Bruno!
+Sorry for the delay in replying to this.
+
+First of all, thank you very much for your suggestions.  There is a lot
+to improve/complete in Poke's design!  Much appreciated :)
+
+    Currently, big/little applies only integral struct fields:
+
+    deftype test =
+      struct
+      {
+        little uint32 a;                        // OK
+        little uint8[3] b;                      // ERROR
+        little struct { uint8 x; uint8 y; } c;  // ERROR
+      };
+
+    A simple generalization to make it apply to integral types, then
+
+    deftype test =
+      struct
+      {
+        little uint32 a;                        // OK
+        little uint8[3] b;                      // would be OK
+        little struct { uint8 x; uint8 y; } c;  // ERROR
+      };
+
+    However, another generalization would be more powerful:
+    [...]
+
+The big/little attribute, as you mention, is currently associated with
+struct fields.  It is not associated with integral types.  Implementing
+the "simple generalization" would involve adding a new attribute to
+struct types, with the endianness to use.  This would be easy.
+
+However, at this point I would generalize the endianness in a way it
+becomes an attribute of certain types, not struct fields.  This way, you
+could write:
+
+deftype MSBInt32 = big int<32>;
+deftype Foo = little struct { MSBInt32 magic_in_big; ... };
+
+This would involve changes in the type system (like, two integer types
+with different endianness are different types) but I don't think it will
+require a lot of work.
+
+    So, in any place where you can use a type name, you could also add a
+    little/big attribute, and it has a recursive effect.
+
+Using the approach of associating endianness to types, it would be
+natural to support a new type specifier `{little,big} typename', that
+constructs a proper (derived) type itself.
+
+Then we could use `{little,big} typename' anywhere a type specifier is
+expected, like casts, function formal arguments, etc.
+
+    Method invocations would not only have an implicit SELF argument, but
+    maybe also an implicit ENDIANNESS_OVERRIDE argument?
+
+Good idea
+
+** Variable-length integral types
+
+- Similar syntax than fixed-width integers:
+  int<EXP>, uint<EXP>, where EXP are non constant expressions.
+- Type specifiers: int<*> and uint<*>.
+- Built on top of long<64> and ulong<64> PVM values?
+- Casts: u?int<*> -> u?int<N>, u?int<N> -> u?int<*>
+
 * Compiler
+** Array deintegrators
+
+Array integrators are already done.  Deintegrators are pending.
+
 ** Add a trans phase to annotate struct type fields with their containing struct type
 
 Having that, we can determine whether a given variable refers to a field, and
@@ -559,6 +764,32 @@ This requies new PVM instructions:
 
 ** Define PVM_VAL_SET_ULONG and optimize in pvm_array_set by not allocating a new ulong
 ** Support recursive types
+
+This is to support recursive definitions, like it happens in the BSON format:
+
+#+BEGIN_SRC
+type BSON_Code_Scope =
+  struct
+  {
+    int32 size;
+    BSON_String code;
+    BSON_Doc doc;
+    int doc;
+  };
+
+  type BSON_Doc =
+    struct
+    {
+      ...
+      struct
+      {
+        byte tag : tag == 0x0f;
+        string name;
+        BSON_Code_Scope value;
+      } js_scope;
+    }
+#+END_SRC
+
 ** Warn for VAR >= 0UL, always true, likely a mistake
 ** Support the ?: operator
 
@@ -646,7 +877,6 @@ situations like:
 Assignments get realized from left to right, integrity is not checked until
 the last assignment is performed, and it rollbacks if necessary.
 
-** Constant-fold 'eoffset and 'esize in pkl-fold.c
 ** Diagnostics: expected Fun_t (a.k.a. (int,long)void)
 ** Optimization: do not generate right-shift of count 0 in pkl_ast_handle_bconc_ass_stmt_1
 ** Detect ipow overflow as compile-time error in constant folding
@@ -699,9 +929,20 @@ The current messages do not explicitly specify the name of the function being
 called, forcing the user to rely on the location if no verbose error output is
 enabled.
 
+** Constant-fold 'eoffset and 'esize in pkl-fold.c
 ** Constant-fold ipow with series of multiplications, detecting overflow
 
 This shall be done in pkl-fold.c:OP_BINARY_III.
+
+** Constant-fold array trims
+** Constant-fold array casts
+** Constant-fold `isa' expressions
+** Constant-fold array concatenation
+** Constant-fold struct references
+** Constant-fold struct integrations
+** Constant-fold operations with integral structs
+
+Such as +, -, etc.
 
 ** Improve diagnostic message for E_out_of_map while mapping arrays by size
 ** Improve diagnostic message for E_constraint caused by array boundary violation
@@ -741,6 +982,31 @@ corresponding iosize function in pkl-rt.pk should be changed to check for null
 and raise an exception.
 
 ** Get rid of autoremap once reactive IOS gets in
+** Add error recovery support to the compiler
+
+- Ability to emit more than one error message.
+- Passes and phases can replace trees with ERROR_MARK nodes in the
+  AST.
+- Further passes and phases ignore ERROR_MARK nodes.
+- At some points a pass is invoked that checks for ERROR_MARK nodes
+  and emit error messages and then abort the compilation.
+
+** Implement tail recursion optimization
+** Support lazy mapping
+
+In complete arrays, the size of the elements is known at compile-time.  Then,
+it is not required to calculate it by peeking the element from IO.  Lazy
+mapping is therefore possible.
+
+Size annotations will be needed in structs in cases where it is not possible
+for the compiler to determine the size by:
+
+: struct { ... } size(24#B)
+
+Because of data integrity, lazy mapping can only be done when mapping
+non-strict values or for array types whose elements do not have constraints in
+them.
+
 * Tracer
 ** Mapper events for mapped integral structs
 
@@ -777,6 +1043,29 @@ From pvm_array:
 - size_bound
 - mapper
 - writer
+
+** Location tracking in PVM
+
+The PVM shall be expanded with new instructions for location tracking.
+Something like::
+
+: pushloc file,line,column
+: setloc line,column
+: poploc
+
+If you want to work in this, please start a discussion in poke-devel so we can
+design a suitable set of instructions.
+
+** Make the PVM aware of units
+
+The poke compiler allows the user to define her own units using the `unit'
+construct.  The PVM, however, is oblivious of this, and it only knows how to
+print the names of the standard units.  This is achieved by replicating the
+logic of the units in the `print_unit_name' function.
+
+The PVM offset type shall be expanded in order to have a "unit" attribute
+which is a string.  The offset operations may or may not use the unit name of
+their operands.
 
 * Runtime
 * Library
@@ -887,6 +1176,35 @@ But then we would need to implement the IOS in Poke.
 This allows to specify an initial size for the growing buffer instead of the
 default 1024 bytes.
 
+** Pipe IOS
+
+Something like:
+
+: var ios = open ("|cmd")
+
+This could return an array of two IO descriptors, one read-only stream
+connected to the standard output of |cmd.  And one write-only stream
+connected to the standard input of |cmd.
+
+That runs CMD in a subprocess.  Reading from IOS results in accessing
+the process' standard output, and writing to IOS results in writing to
+the process' standard input.
+
+This should leverage the existing Stream IOD.
+Modeled after the Tcl open(3tcl)
+
+** Support IO transactions
+
+: (poke) ... poke something ...
+: (poke*) ... poke something more ...
+: (poke*) .changes
+: - 000043: 0034 aabb
+: + 000043: ffff ffff
+: (poke*) .commit
+: Written 4 #B to IO foo.o
+:
+: (poke*) .rollback
+
 * Program
 ** Support --args and argv
 
@@ -926,7 +1244,34 @@ This requires casts to functions to work.
   Standard ones:
   /P -> no pretty-printing
 
+** Auto-complete $<...> in the prompt
+
+$<...> should auto-complete to the handler of some of the open IO spaces.
+
 ** Autocomplete struct field accesses with ->
+
+libpoke.c:complete_struct shall be adapted in order to auto-complete foo->bar
+in a similar way it auto-completes foo.bar.
+
+** Add mutex to avoid concurrency crash with hyperlinks
+
+Until we figure out how to implement concurrency in Poke, we have to avoid
+running nested PVMs, which happens easily with hyperlinks:
+
+#+BEGIN_SRC
+hserver_print_hl ('i', "crashme", "", lambda void: { print "die\n"; });
+print "\n";
+
+while (1)
+  {
+    print ("looping peacefully...");
+    sleep (1);
+  }
+#+END_SRC
+
+Jitter detects this and gives an error.  We need a mutex to protect the PVM,
+and make the hserver and the prompt to use it.
+
 * Commands
 ** intbits: do a bit/bytes diagram
 
@@ -957,6 +1302,13 @@ For integral values.
 ** poke-el: save all fields in *poke-edit* pressing C-cC-c
 ** poke-el: support computed fields in both editor and navigator
 ** poke-el: use forward-line instead of {prev,next}-line in poke-vu-cmd-next-line and poke-vu-cmd-previous-line
+** poke-mode.el: implement {beginning,end}-of-defun-function
+
+Having functions in poke-mode capable of locating the beginning and end of
+functions and methods will allow us to navigate thru them, and also to
+implement support for add-log-current-defun-function.
+
+** poke-mode.el: implement add-log-current-defun-function
 * Pickles
 ** macho object files
 ** GCC LTO sections
@@ -972,6 +1324,12 @@ For integral values.
 ** Tektronix Hex format
 ** MOS Technology file format
 ** crc24 pickle
+** RFC 8794 EBML pickle
+** MSEED (geological formats) pickle
+
+And data encodings for the payloads: GEOSCOPE, STEIM-1 and STEIM-2
+encoded integers, etc.
+
 * Documentation
 ** Add =.help= topics for std functions
 ** Add =.tutorial= topic to help
@@ -1160,7 +1518,25 @@ while inside a struct type may have a surprising outcome for the non
 initialized user who doesn't know how mappers and constructors work.  Make
 sure to document this well in the manual.
 
+** Document poked in the poke manual
+
+New chapter in poke.texi explaining how to write interfaces to poke using
+poked.
+
+** Document poke CSS classes in the manual
+** Document "default values" in the poke manual
+
+These are the values generated by the constructors of the several types
+(integers, offsets, strings, arrays, structs).  Refer to this section from
+array and struct constructor sections.
+
 * Testsuite
+** Parallelize the dg testsuite
+
+The dg testsuites are big.  We need to be able to run the tests in parallel.
+A good place where to look for inspiration for this task is the GCC testing
+infrastructure.
+
 ** Add a testsuite for the poke tracer
 
 Some particular cases to test:
@@ -1180,6 +1556,11 @@ TV_CONSTRUCTED_FIELD
 ** Test indirecting computed offset fields
 ** Test indirecting offsets in both strict and non-strict mode
 ** Test indireting offsets in an IOS != than current IOS
+** Add a testsuite for poked
+
+In testsuite/poke.poked.
+But it needs Tcl machinery.
+
 * GDB
 ** GDB registers
 

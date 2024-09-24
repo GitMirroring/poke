@@ -156,11 +156,6 @@ dnl in order to avoid actions that wouln't work while cross compiling.
 
 AM_CONDITIONAL([NATIVE_BUILD], [test "x$cross_compiling" = "xno"])
 
-dnl recfix is part of the GNU recutils suite, and is used in cfg.mk to
-dnl implement a syntax-check for etc/poke.rec.  If recfix is not
-dnl present we set RECFIX to : so the rule wont fail.
-AC_CHECK_PROGS([RECFIX],[recfix],[:])
-
 dnl i18n with gettext
 AM_GNU_GETTEXT_VERSION([0.19.8])
 AM_GNU_GETTEXT([external])

@@ -60,10 +60,6 @@ sc_pvm_wrappers:
           { diff -u globals-list wrapped-list; \
             msg='found non-wrapped globals in pvm.jitter' $(_sc_say_and_exit) }
 
-sc_recfix_poke_rec:
-	@$(RECFIX) $(top_srcdir)/etc/poke.rec || \
-            { msg='integrity problems found in etc/poke.rec' $(_sc_say_and_exit) }
-
 update-copyright-env = UPDATE_COPYRIGHT_HOLDER="Jose E. Marchesi"
 
 gendocs_options_ = -I $(abs_builddir)/doc/

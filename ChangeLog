@@ -1,5 +1,41 @@
 2024-09-24  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* etc/Makefile.am (EXTRA_DIST): Do not distribute poke.rec.
+	* configure.ac: Do not check for recfix.
+	* cfg.mk (sc_recfix_poke_rec): Remove rule.
+	* etc/poke.rec: Remove.
+	* TODO (Array deintegrators): New entry.
+	(Document poked in the poke manual): Likewise.
+	(Add a testsuite for poked): Likewise.
+	(Struct patterns and matching operators): Likewise.
+	(Support more than one constraint per struct field): Likewise.
+	(Named annotations in struct types): Likewise.
+	(Pipe IOS): Likewise.
+	(Make endianness a type quality): Likewise.
+	(Variable-length integral types): Likewise.
+	(Support for big numbers): Likewise.
+	(Auto-complete $<...> in the prompt): Likewise.
+	(Support arguments in type constructors): Likewise.
+	(Add error recovery support to the compiler): Likewise.
+	(Constant-fold array trims): Likewise.
+	(Constant-fold array casts): Likewise.
+	(Constant-fold `isa' expressions): Likewise.
+	(Constant-fold array concatenation): Likewise.
+	(Constant-fold struct references): Likewise.
+	(Constant-fold struct integrations): Likewise.
+	(Constant-fold operations with integral structs): Likewise.
+	(Support lazy mapping): Likewise.
+	(Support for string properties): Likewise.
+	(Location tracking in PVM): Likewise.
+	(Make the PVM aware of units): Likewise.
+	(Support IO transactions): Likewise.
+	(RFC 8794 EBML pickle): Likewise.
+	(Parallelize the dg testsuite): Likewise.
+	(Document poke CSS classes in the manual): Likewise.
+	(Add mutex to avoid concurrency crash with hyperlinks): Likewise.
+
+2024-09-24  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* bootstrap.conf (bootstrap_epilogue): Define.
 
 2024-09-24  Jose E. Marchesi  <jemarch@gnu.org>
