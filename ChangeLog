@@ -1,5 +1,16 @@
 2024-09-24  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/pkl-ast.c: Likewise.
+
+	* libpoke/pkl-fold.c: Do not include xalloc.h.
+
+	* libpoke/pkl-tab.y: Do not include xalloc.h.
+	* libpoke/pkl-trans.c: Do not include xalloc.h.
+	(XSTRDUP): Define.
+	(XMALLOC): Likewise.
+
+2024-09-24  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* HACKING: Regenerate.
 	* etc/poke-gdb.scm: Remove file.
 	* doc/pokeint.texi (Using GDB extensions): Remove section.
