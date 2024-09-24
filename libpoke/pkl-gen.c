@@ -2261,7 +2261,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_func)
                            function_name == NULL ? "lambda" : function_name,
                            NULL);
       if (msg == NULL)
-        PKL_ICE (PKL_AST_LOC (function), "out of memory");
+        {
+          PKL_ICE (PKL_AST_LOC (function), "out of memory");
+          PKL_PASS_ERROR;
+        }
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, pvm_make_string (msg));
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SSET);
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_RAISE);

@@ -475,6 +475,11 @@ EMUL_UU (bnoto) { return ~op; }
                                                                         \
           result = emul_##OP (PKL_AST_STRING_POINTER (string_op),       \
                               PKL_AST_INTEGER_VALUE (int_op));          \
+          if (!result)                                                  \
+            {                                                           \
+              PKL_ICE (PKL_AST_NOLOC, "out of memory");                 \
+              PKL_PASS_ERROR;                                           \
+            }                                                           \
                                                                         \
           new = pkl_ast_make_string (PKL_PASS_AST, result);             \
           PKL_AST_TYPE (new) = ASTREF (type);                           \
@@ -683,7 +688,10 @@ EMUL_UU (bnoto) { return ~op; }
           res = pk_str_concat (PKL_AST_STRING_POINTER (op1),            \
                                PKL_AST_STRING_POINTER (op2), NULL);     \
           if (!res)                                                     \
-            PKL_ICE (PKL_AST_LOC (op1), _("out of memory"));            \
+            {                                                           \
+              PKL_ICE (PKL_AST_LOC (op1), _("out of memory"));          \
+              PKL_PASS_ERROR;                                           \
+            }                                                           \
                                                                         \
           new = pkl_ast_make_string (PKL_PASS_AST, res);                \
           free (res);                                                   \

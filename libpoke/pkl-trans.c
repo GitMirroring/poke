@@ -43,7 +43,10 @@
   ({                                                    \
     char *tmp = strdup ((PTR));                         \
     if (tmp == NULL)                                    \
-      PKL_ICE (PKL_AST_NOLOC, _("out of memory"));      \
+      {                                                 \
+        PKL_ICE (PKL_AST_NOLOC, _("out of memory"));    \
+        PKL_PASS_ERROR;                                 \
+      }                                                 \
     tmp;                                                \
   })
 
@@ -51,7 +54,10 @@
   ({                                                    \
     char *tmp = malloc ((SIZE));                        \
     if (tmp == NULL)                                    \
-      PKL_ICE (PKL_AST_NOLOC, _("out of memory"));      \
+      {                                                 \
+        PKL_ICE (PKL_AST_NOLOC, _("out of memory"));    \
+        PKL_PASS_ERROR;                                 \
+      }                                                 \
     tmp;                                                \
   })
 
@@ -764,7 +770,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_format)
       p = strchrnul (fmt, '%');
       PKL_AST_FORMAT_PREFIX (format) = strndup (fmt, p - fmt);
       if (!PKL_AST_FORMAT_PREFIX (format))
-        PKL_ICE (PKL_AST_LOC (format), _("out of memory"));
+        {
+          PKL_ICE (PKL_AST_LOC (format), _("out of memory"));
+          PKL_PASS_ERROR;
+        }
     }
 
   /* Process the format string.  */
@@ -1163,13 +1172,19 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans1_ps_format)
 
               if (asprintf(&s, "%s%.*s", PKL_AST_FORMAT_ARG_SUFFIX (arg),
                            (int)(end - p), p) == -1)
-                PKL_ICE (PKL_AST_LOC (format), _("out of memory"));
+                {
+                  PKL_ICE (PKL_AST_LOC (format), _("out of memory"));
+                  PKL_PASS_ERROR;
+                }
               PKL_AST_FORMAT_ARG_SUFFIX (arg) = s;
             }
           else
             PKL_AST_FORMAT_ARG_SUFFIX (arg) = strndup (p, end - p);
           if (!PKL_AST_FORMAT_ARG_SUFFIX (arg))
-            PKL_ICE (PKL_AST_LOC (format), _("out of memory"));
+            {
+              PKL_ICE (PKL_AST_LOC (format), _("out of memory"));
+              PKL_PASS_ERROR;
+            }
           p = end;
         }
     }
@@ -1854,8 +1869,11 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans2_ps_incrdecr)
          typify.  */
       step = pkl_ast_type_incr_step (PKL_PASS_AST, incrdecr_exp_type);
       if (!step)
-        PKL_ICE (PKL_AST_NOLOC,
-                 "pkl_ast_type_incr_step failed in pkl_trans2_ps_incrdecr");
+        {
+          PKL_ICE (PKL_AST_NOLOC,
+                   "pkl_ast_type_incr_step failed in pkl_trans2_ps_incrdecr");
+          PKL_PASS_ERROR;
+        }
 
       /* Build a statement EXP = EXP +/- STEP  */
       exp_plus_one = pkl_ast_make_binary_exp (PKL_PASS_AST, op,
