@@ -1,3 +1,16 @@
+2024-09-25  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* etc/poke-ras-mode.el: Replace FSF's address with URL.
+	* testsuite/poke.cmd/cmd.exp: Likewise.
+	* testsuite/poke.map/map.exp: Likewise.
+	* testsuite/poke.pickles/pickles.exp: Likewise.
+	* testsuite/poke.pkl/pkl.exp: Likewise.
+	* testsuite/poke.pktest/pktest.exp: Likewise.
+	* testsuite/poke.pvm/pvm.exp: Likewise.
+	* testsuite/poke.repl/repl.exp: Likewise.
+	* testsuite/poke.std/std.exp: Likewise.
+	* testsuite/poke.time/time.exp: Likewise.
+
 2024-09-25  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* poke/pk-cmd-ios.pk (pk_cmd_nbd): Validate URI.
