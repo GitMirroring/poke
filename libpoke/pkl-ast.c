@@ -1526,13 +1526,13 @@ pkl_type_append_to (pkl_ast_node type, int use_given_name,
 
       if (dollar)
         {
-          sb_append (buffer, "a previous declaration of ");
+          sb_append_c (buffer, "a previous declaration of ");
           *dollar = '\0';
-          sb_append (buffer, name);
+          sb_append_c (buffer, name);
           *dollar = '$';
         }
       else
-        sb_append (buffer, name);
+        sb_append_c (buffer, name);
       return;
     }
 
@@ -1543,18 +1543,18 @@ pkl_type_append_to (pkl_ast_node type, int use_given_name,
   switch (PKL_AST_TYPE_CODE (type))
     {
     case PKL_TYPE_ANY:
-      sb_append (buffer, "any");
+      sb_append_c (buffer, "any");
       break;
     case PKL_TYPE_INTEGRAL:
       if (!PKL_AST_TYPE_I_SIGNED_P (type))
-        sb_append (buffer, "u");
+        sb_append_c (buffer, "u");
       sb_appendf (buffer, "int<%zd>", PKL_AST_TYPE_I_SIZE (type));
       break;
     case PKL_TYPE_VOID:
-      sb_append (buffer, "void");
+      sb_append_c (buffer, "void");
       break;
     case PKL_TYPE_STRING:
-      sb_append (buffer, "string");
+      sb_append_c (buffer, "string");
       break;
     case PKL_TYPE_ARRAY:
       {
@@ -1562,7 +1562,7 @@ pkl_type_append_to (pkl_ast_node type, int use_given_name,
 
         pkl_type_append_to (PKL_AST_TYPE_A_ETYPE (type), 1,
                             buffer);
-        sb_append (buffer, "[");
+        sb_append_c (buffer, "[");
         if (bound != NULL)
           {
             pkl_ast_node bound_type = PKL_AST_TYPE (bound);
@@ -1574,7 +1574,7 @@ pkl_type_append_to (pkl_ast_node type, int use_given_name,
                 sb_appendf (buffer, "%" PRIu64, PKL_AST_INTEGER_VALUE (bound));
               }
           }
-        sb_append (buffer, "]");
+        sb_append_c (buffer, "]");
         break;
       }
     case PKL_TYPE_STRUCT:
@@ -1582,17 +1582,17 @@ pkl_type_append_to (pkl_ast_node type, int use_given_name,
         pkl_ast_node t;
 
         if (PKL_AST_TYPE_S_UNION_P (type))
-          sb_append (buffer, "union {");
+          sb_append_c (buffer, "union {");
         else
           {
             if (PKL_AST_TYPE_S_ITYPE (type))
               {
-                sb_append (buffer, "struct ");
+                sb_append_c (buffer, "struct ");
                 pkl_type_append_to (PKL_AST_TYPE_S_ITYPE (type), 0, buffer);
-                sb_append (buffer, " {");
+                sb_append_c (buffer, " {");
               }
             else
-              sb_append (buffer, "struct {");
+              sb_append_c (buffer, "struct {");
           }
 
         for (t = PKL_AST_TYPE_S_ELEMS (type); t;
@@ -1604,25 +1604,25 @@ pkl_type_append_to (pkl_ast_node type, int use_given_name,
                 pkl_ast_node etype = PKL_AST_STRUCT_TYPE_FIELD_TYPE (t);
 
                 if (PKL_AST_STRUCT_TYPE_FIELD_COMPUTED_P (t))
-                  sb_append (buffer, "computed ");
+                  sb_append_c (buffer, "computed ");
 
                 pkl_type_append_to (etype, 1, buffer);
                 if (ename)
                   {
-                    sb_append (buffer, " ");
-                    sb_append (buffer, PKL_AST_IDENTIFIER_POINTER (ename));
+                    sb_append_c (buffer, " ");
+                    sb_append_c (buffer, PKL_AST_IDENTIFIER_POINTER (ename));
                   }
-                sb_append (buffer, ";");
+                sb_append_c (buffer, ";");
               }
           }
-        sb_append (buffer, "}");
+        sb_append_c (buffer, "}");
         break;
       }
     case PKL_TYPE_FUNCTION:
       {
         pkl_ast_node t;
 
-        sb_append (buffer, "(");
+        sb_append_c (buffer, "(");
         for (t = PKL_AST_TYPE_F_ARGS (type); t;
              t = PKL_AST_CHAIN (t))
           {
@@ -1630,18 +1630,18 @@ pkl_type_append_to (pkl_ast_node type, int use_given_name,
               = PKL_AST_FUNC_TYPE_ARG_TYPE (t);
 
             if (t != PKL_AST_TYPE_F_ARGS (type))
-              sb_append (buffer, ",");
+              sb_append_c (buffer, ",");
 
             if (PKL_AST_FUNC_TYPE_ARG_VARARG (t))
-              sb_append (buffer, "...");
+              sb_append_c (buffer, "...");
             else
               {
                 pkl_type_append_to (atype, 1, buffer);
                 if (PKL_AST_FUNC_TYPE_ARG_OPTIONAL (t))
-                  sb_append (buffer, "?");
+                  sb_append_c (buffer, "?");
               }
           }
-        sb_append (buffer, ")");
+        sb_append_c (buffer, ")");
 
         pkl_type_append_to (PKL_AST_TYPE_F_RTYPE (type), 1,
                             buffer);
@@ -1651,15 +1651,15 @@ pkl_type_append_to (pkl_ast_node type, int use_given_name,
       {
         pkl_ast_node unit = PKL_AST_TYPE_O_UNIT (type);
 
-        sb_append (buffer, "offset<");
+        sb_append_c (buffer, "offset<");
         pkl_type_append_to (PKL_AST_TYPE_O_BASE_TYPE (type), 1,
                             buffer);
-        sb_append (buffer, ",");
+        sb_append_c (buffer, ",");
 
         if (PKL_AST_CODE (unit) == PKL_AST_TYPE)
           pkl_type_append_to (unit, 1, buffer);
         else if (PKL_AST_CODE (unit) == PKL_AST_IDENTIFIER)
-          sb_append (buffer, PKL_AST_IDENTIFIER_POINTER (unit));
+          sb_append_c (buffer, PKL_AST_IDENTIFIER_POINTER (unit));
         else if (PKL_AST_CODE (unit) == PKL_AST_INTEGER)
           sb_appendf (buffer, "%" PRIu64, PKL_AST_INTEGER_VALUE (unit));
         else
@@ -1667,12 +1667,12 @@ pkl_type_append_to (pkl_ast_node type, int use_given_name,
 
         if (PKL_AST_TYPE_O_REF_TYPE (type))
           {
-            sb_append (buffer, ",");
+            sb_append_c (buffer, ",");
             pkl_type_append_to (PKL_AST_TYPE_O_REF_TYPE (type), 1,
                                 buffer);
           }
 
-        sb_append (buffer, ">");
+        sb_append_c (buffer, ">");
         break;
       }
     case PKL_TYPE_NOTYPE:
@@ -1694,7 +1694,7 @@ pkl_type_str (pkl_ast_node type, int use_given_name)
 
   sb_init (&buffer);
   pkl_type_append_to (type, use_given_name, &buffer);
-  str = sb_dupfree (&buffer);
+  str = sb_dupfree_c (&buffer);
   if (str == NULL)
     /* The only possible error here is out-of-memory.  */
     xalloc_die ();
@@ -3224,9 +3224,9 @@ pkl_ast_handle_bconc_ass_stmt (pkl_ast ast, pkl_ast_node ass_stmt)
       int i;                                    \
       for (i = 0; i < indent; i++)              \
         if (indent >= 2 && i % 2 == 0)          \
-          sb_append (buffer, "|");              \
+          sb_append_c (buffer, "|");            \
         else                                    \
-          sb_append (buffer, " ");              \
+          sb_append_c (buffer, " ");            \
       sb_appendf (buffer, __VA_ARGS__);         \
     } while (0)
 
@@ -3844,7 +3844,7 @@ pkl_ast_format (pkl_ast_node ast)
 
   sb_init (&buffer);
   pkl_ast_format_1 (&buffer, ast, 0);
-  return sb_dupfree (&buffer);
+  return sb_dupfree_c (&buffer);
 }
 
 /* Dump a printable representation of AST to the file descriptor FD.
