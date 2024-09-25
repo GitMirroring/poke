@@ -1,5 +1,10 @@
 2024-09-25  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-cmd-ios.c (expr_to_ios): Print IO space identifier in
+	decimal, not hexadecimal.
+
+2024-09-25  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/ios-dev-mmap.c (ios_dev_mmap_open): Improve error codes
 	and do not print in terminal.
 	(ios_dev_mmap_flush): Likewise.

@@ -81,7 +81,7 @@ expr_to_ios (const char *expr)
       pk_term_class ("error");
       pk_puts (_("error:"));
       pk_term_end_class ("error");
-      pk_printf (" no such IO space with id %" PRIx64 "\n", pk_int_value (val));
+      pk_printf (" no such IO space with id %" PRId64 "\n", pk_int_value (val));
       return NULL;
     }
 
