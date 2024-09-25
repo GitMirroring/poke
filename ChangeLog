@@ -1,5 +1,9 @@
 2024-09-25  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* poke/pk-cmd-ios.pk (pk_cmd_nbd): Validate URI.
+
+2024-09-25  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* TODO (Support specifying strict mapping in referring offsets):
 	New entry.
 	(Print referred values in value printer): Likewise.

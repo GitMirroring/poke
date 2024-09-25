@@ -116,7 +116,8 @@ fun pk_cmd_sub = (int<32> ios, uint<64> base, uint<64> size,
 
 fun pk_cmd_nbd = (string uri) int<32>:
 {
-  /* XXX validate URI.  */
+  if (uri'length < 6 || uri[0:6] != "nbd://")
+    return -1;
   return pk_openset_handler (uri);
 }
 
