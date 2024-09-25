@@ -26,7 +26,7 @@
 #define _(str) gettext (str)
 #include <streq.h>
 
-#include "byteswap.h"
+#include <byteswap.h>
 
 #include "pk-utils.h"
 #include "ios.h"
