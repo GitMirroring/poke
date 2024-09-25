@@ -714,6 +714,7 @@ pk_cmd_exec (const char *str)
         poke_handle_exception (exit_exception);
 
     cleanup:
+      pk_set_lexical_cuckolding_p (poke_compiler, 0);
       free (cmd_alloc);
       return retval;
     }
