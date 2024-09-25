@@ -1,5 +1,10 @@
 2024-09-25  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* doc/learn-poke-language-in-y-minutes.pk: Update and add a few
+        more examples.
+
+2024-09-25  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* etc/poke-ras-mode.el: Replace FSF's address with URL.
 	* testsuite/poke.cmd/cmd.exp: Likewise.
 	* testsuite/poke.map/map.exp: Likewise.

@@ -119,7 +119,8 @@ var ia5 = 25 % 7;     /* modulus        -- ia5 == 4   */
 /* Bitwise
  *
  * Poke has the following left-associative binary bitwise operators:
- *   - Logical shifts (`<<.`, and `.>>`)
+ *   - Logical shifts for unsigned numbers (`<<.`, and `.>>`)
+ *   - Arithmetic shifts for signed numbers (`<<.`, and `.>>`)
  *   - AND (`&`)
  *   - XOR (`^`)
  *   - OR (`|`)
@@ -127,13 +128,12 @@ var ia5 = 25 % 7;     /* modulus        -- ia5 == 4   */
  *
  * Right-associative unary bitwise operator:
  *   - Bitwise complement (`~`)
- *
- * NOTE There's no arithmetic right-shifting operator in Poke.
  */
 var ib1 = 1 <<. 10;             /* ib1 == 1024     */
 var ib2 = 1024 .>> 9;           /* ib2 == 2        */
 var ib3 = 0x12UB ::: 0x34UB;    /* ib3 == 0x1234UH */
 var ib4 = ~0x0fUB;              /* ib4 == 0xf0UB   */
+var ib5 = -4B .>> 1;            /* ib5 == -2B      */
 
 
 /* String values (null-terminated) */
@@ -196,11 +196,13 @@ unit BIT = 1;
 unit NIBBLE = 4;
 unit kilobit = 10U ** 3;
 unit kilobyte = 10U ** 3 * 8;
+unit Page = 4096 * 8;  /* 4#KiB contains `4096*8` bits */
 
 var off_bit    = 10#BIT;      /* off_bit == 10#b                         */
 var off_nibble = 4#NIBBLE;    /* off_nibble == 4#N && off_nibble == 16#b */
 var off_kb = 1#kilobit;       /* off_kb == 1#Kb && off_kb == 1000#b      */
 var off_kB = 2#kilobyte;      /* off_kB == 2#KB && off_kB == 16000#b     */
+var off_3pages = 3#Page;      /* off_3pages == 12#KiB                    &/
 
 
 /* Array values */
@@ -251,9 +253,10 @@ var arr10 = int<32>[16#B]();    /* arr10 == [0, 0, 0, 0] */
  * different widths, in both signed and unsigned variants.
  *
  * `int<N>` is a signed integer with `N`-bit width. `N` can be an integer
- * literal in the range `[1, 64]`.
+ * literal in the range `[2, 64]`.
  *
- * `uint<N>` is the unsigned variant.
+ * `uint<N>` is the unsigned variant and `N` can be an integer literal in
+ * the range `[1, 64]`.
  *
  * Examples:
  *
@@ -261,6 +264,11 @@ var arr10 = int<32>[16#B]();    /* arr10 == [0, 0, 0, 0] */
  *    uint<7>
  *    int<64>
  */
+
+assert (1 isa int<32>);  /* `isa` operator can be used to verify types.
+                          * Form: VAR/ID isa TYPE
+                          */
+assert (1U isa uint<32>, "1U literal value should be of type uint<32>");
 
 /* String type
  *
@@ -277,6 +285,22 @@ var arr10 = int<32>[16#B]();    /* arr10 == [0, 0, 0, 0] */
  *   - Bounded by size, like `uint<32>[8#B]`
  */
 
+assert ([1,2,3] isa int<32>[3]);
+assert ([1,2,3] isa int<32>[12#B]);
+assert ([1,2,3] isa int<32>[]);
+
+assert ([ [1,2,3], [4,5,6] ] isa int<32>[3][2]);
+assert ([ [1,2,3], [4,5,6] ] isa int<32>[3][]);
+assert ([ [1,2,3], [4,5,6] ] isa int<32>[][2]);
+assert ([ [1,2,3], [4,5,6] ] isa int<32>[][]);
+
+/* This is an array with 3 elements, which contains an array of 2 elements
+ * which itself is an array of 1 element.
+ *
+ * Please note that the order of dimensions is different from C.
+ */
+assert ([ [[1],[2]], [[3],[4]], [[5],[6]] ] isa int<32>[1][2][3]);
+
 /* Offset types
  *
  * Offset types are denoted as `offset<BASE_TYPE,UNIT>`, where BASE_TYPE is
@@ -288,6 +312,8 @@ var arr10 = int<32>[16#B]();    /* arr10 == [0, 0, 0, 0] */
  *   offset<uint<12>,Kb>
  *   offset<uint<12>,1024>
  */
+
+assert (10#B isa offset<int<32>,B>);
 
 /* Struct types
  *
@@ -394,12 +420,12 @@ var packet_2 =
   {
     flags = 1,
 
-    /* The following line is invalid; because type of numbers is `uint<32>`.
+    /* The following line is invalid; because type of numbers is `int<32>`.
      */
     /* data = [0, 1, 2, 3, 4, 5, 6, 7], */
 
     /* User cannot specify less than 8 elements; because the `data` field is a
-     * fixed size array. So the following line is compilation error:
+     * fixed size array. So the following line is a compilation error:
      */
     /* data = [0UB, 1UB, ], */
   };
@@ -444,7 +470,7 @@ type Payload =
  */
 var off_23_packets = 23#Packet;    /* magnitude: 23, unit: Packet */
 
-/* Note that this is invalid and give compilation error:
+/* Note that this is invalid and gives compilation error:
  *
  *   var off_buffer = 1#Buffer;
  *
@@ -473,7 +499,8 @@ type HeaderWithInit =
   };
 
 var hdrauto = HeaderWithInit {};
-/* hdrauto.magic == 100UB && hdrauto.version == 3UB */
+
+assert (hdrauto.magic == 100UB && hdrauto.version == 3UB);
 
 /* It is possible to change the value of initialized fields: */
 hdrauto.magic = 200UB;
@@ -524,7 +551,8 @@ type HeaderMagicVersion =
     uint<8> version = 2UB : version in [1UB, 2UB];
   };
 var hdrmagver = HeaderMagicVersion {};
-/* hdrmagver.magic == 0x55UB && hdrmagver.version == 0x2UB */
+
+assert (hdrmagver.magic == 0x55UB && hdrmagver.version == 0x2UB);
 hdrmagver.magic = 0xaaUB;
 
 /* Logical implication operator =>
@@ -555,8 +583,9 @@ var hdrmagver_1 = HeaderMagicVersionImpl{},
  * A facility to deal with integers as a composite data.
  * Different groups of bits of the integer can be accessed independently.
  *
- * Note that "integral structs" are integers, not structs. So the order of
- * fields are independent of the underlying endianness.
+ * Integral struct is a facility to deal with sub-parts of an integral value.
+ * Unlike structs, first the whole underlying integer will be read from IO
+ * space (according to the endianness), and then, the fields will be created.
  *
  * See http://jemarch.net/pokology-20200720.html for more info.
  */
@@ -581,6 +610,12 @@ var z = intsct.z;    /* z == 0xdUN */
  */
 var intsct_as_uint16 = intsct + 0H;    /* intsct_as_uint16   == 0xabcdUH */
 var intsct_as_uint16_2 = +intsct;      /* intsct_as_uint16_2 == 0xabcdUH */
+/* Casting from integers to integral structs also works.
+ */
+var intsct_from_uint16 = 0xabcd as IntSct;
+assert(intsct_from_uint16.x == 0xaUN);
+assert(intsct_from_uint16.y == 0xbcUB);
+assert(intsct_from_uint16.z == 0xdUN);
 
 
 /* Exception Handling
@@ -671,6 +706,31 @@ ten = 11;
 var no_more_twenty = double32;    /* no_more_twenty == 22 */
 ten = 10;                         /* double32 == 20UL     */
 
+/* But the real power is the following scenario:
+ */
+var a_global_parameter = 1,
+    a_counter = 0;
+fun calculate_default_parameter = int<32>:
+  {
+    ++a_counter;
+    return 2 * a_global_parameter + 1;
+  }
+fun do_something =
+    (int<32> param1, int<32> param2 = calculate_default_parameter) void:
+  {
+    printf ("do_something :param1 %i32d :param2 :%i32d\n", param1, param2);
+  }
+
+assert (a_counter == 0);
+do_something (1); /* Prints: do_something :param1 1 :param2 3 */
+assert (a_counter == 1); /* This is because each time we need a value for
+                          * `param2`, `calculate_default_parameter` is
+                          * invoked!  Very powerful and handy!
+                          */
+a_global_parameter = 3;
+do_something (0); /* Prints: do_something :param1 0 :param2 7 */
+assert (a_counter == 2);
+
 /* Function with no output (a procedure!) */
 fun packet_toggle_flag = (Packet p) void:
   {
@@ -759,9 +819,7 @@ var packet_u_3 =
     size = 128,
   };
 
-/* isa operator: VAR isa TYPE */
-var typ1_is_a_uint8 = packet_u_1.u.alt1.typ isa uint<8>;
-/* typ1_is_a_uint8 == 1 */
+assert (packet_u_1.u.alt1.typ isa uint<8>);
 
 /* Trying to access to a non-active field results in an `E_elem` exception */
 try packet_u_1.u.alt2.typ = 1;
@@ -770,8 +828,7 @@ catch if E_elem
     print ("`alt2` is not the active field in `packet_u_1.u` union\n");
   }
 
-var typ2_is_a_uint16 = packet_u_2.u.alt2.typ isa uint<16>;
-/* typ2_is_a_uint16  == 1 */
+assert (packet_u_2.u.alt2.typ isa uint<16>);
 
 var flags3 = packet_u_3.u.alt3.flags;
 
@@ -870,7 +927,9 @@ for (var j = 0; j < 2; j++)
 print "\nList of maintainers:\n";
 for (i in ["jemarch", "egeyar", "jmd", "positron", "darnir", "dan.cermak",
            "bruno", "ccaione", "eblake", "tim.ruehsen", "sdi1600195",
-           "aaptel", "m.nabipoor", "david.faust", "indu.bhagat"])
+           "aaptel", "mnabipoor", "david.faust", "indu.bhagat",
+           "Arsen", "vincenzopalazzodev", "marticak", "ssbssa",
+           "torreemanuele6"])
   {
     printf ("  %s\n", i);
   }
