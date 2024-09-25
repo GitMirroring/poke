@@ -1,3 +1,8 @@
+2024-09-25  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* poke/pk-cmd.c (pk_cmd_exec): Clear lexical cuckolding if
+	pk_compile_statement_with_loc fails.
+
 2024-09-24  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* HACKING: Simplify contents.
