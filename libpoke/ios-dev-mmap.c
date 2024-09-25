@@ -36,8 +36,6 @@
 #include "ios.h"
 #include "ios-dev.h"
 
-#include "pkt.h"
-
 /* State associated with a file device.  */
 struct ios_dev_mmap
 {
@@ -199,8 +197,7 @@ ios_dev_mmap_open (const char *handler, uint64_t flags, int *error,
       fd = open (dev_map->filename, open_flags);
       if (fd == -1)
         {
-          pk_printf ("Error in open of %s err: %s\n",
-                     dev_map->filename, strerror (errno));
+          internal_error = IOD_ENOENT;
           goto err;
         }
       flags = mode_flags;
@@ -229,8 +226,7 @@ ios_dev_mmap_open (const char *handler, uint64_t flags, int *error,
         }
       if (fd == -1)
         {
-          pk_printf ("Error in open of %s err: %s\n",
-                     dev_map->filename, strerror (errno));
+          internal_error = IOD_ENOENT;
           goto err;
         }
     }
@@ -240,8 +236,7 @@ ios_dev_mmap_open (const char *handler, uint64_t flags, int *error,
   ret = fstat (fd, &st);
   if (ret == -1)
     {
-      pk_printf ("Error in fstat of %s err: %s\n",
-                 dev_map->filename, strerror (errno));
+      internal_error = IOD_ENOENT;
       goto err;
     }
   if ((st.st_mode & S_IFMT) == S_IFREG)
@@ -261,9 +256,6 @@ ios_dev_mmap_open (const char *handler, uint64_t flags, int *error,
                         fd, dev_map->base);
   if (dev_map->addr == MAP_FAILED)
     {
-      pk_printf ("Error in mmap of %s base: 0x%x len: 0x%x prot: 0x%x err: %s\n",
-                 dev_map->filename, dev_map->base, dev_map->size,
-                 dev_map->prot, strerror (errno));
       internal_error = IOD_EMMAP;
       goto err;
     }
@@ -273,8 +265,6 @@ ios_dev_mmap_open (const char *handler, uint64_t flags, int *error,
      But we double check because pread and pwrite rely on this alignment */
   if ((unsigned long)dev_map->addr & ((unsigned long)getpagesize () - 1))
     {
-      pk_printf ("Alignment issue treated as error in mmap of %s addr: 0x%x\n",
-                 dev_map->filename, dev_map->addr);
       internal_error = IOD_EMMAP;
       goto err;
     }
@@ -436,12 +426,7 @@ ios_dev_mmap_flush (void *iod, ios_dev_off offset)
     {
       ret = msync (dev_map->addr, dev_map->size, MS_SYNC);
       if (ret == -1)
-        {
-          pk_printf ("Error in msync of %s base: 0x%lx len: 0x%lx err: %s\n",
-                     dev_map->filename, dev_map->addr, dev_map->size,
-                     strerror (errno));
-          return IOD_ERROR;
-        }
+        return IOD_EMMAP;
     }
 
   return IOD_OK;

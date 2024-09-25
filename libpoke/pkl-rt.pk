@@ -1007,7 +1007,7 @@ immutable fun open = (string handler, uint<64> flags = 0) int<32>:
   else if (ios == -7)
     raise Exception { code = EC_io,
                       name = E_io.name,
-                      msg = "IO space already opened" };
+                      msg = "memory mapping error" };
   else if (ios == -8)
     raise Exception { code = EC_noent,
                       name = E_noent.name,

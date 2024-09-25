@@ -1,5 +1,12 @@
 2024-09-25  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* libpoke/ios-dev-mmap.c (ios_dev_mmap_open): Improve error codes
+	and do not print in terminal.
+	(ios_dev_mmap_flush): Likewise.
+	* libpoke/pkl-rt.pk (open): Fix exception msg for IOD_EMMAP.
+
+2024-09-25  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* poke/pk-cmd.c (pk_cmd_exec): Clear lexical cuckolding if
 	pk_compile_statement_with_loc fails.
 

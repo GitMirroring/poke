@@ -35,7 +35,7 @@ typedef uint64_t ios_dev_off;
 /* Error codes to be used in the interface below.
 
    If you update them, please adjust the PK_IOS_* constants in
-   libpoke.h accordingly.  */
+   libpoke.h accordingly and also the open builtin in pkl-rt.pk.  */
 
 #define IOD_OK      0 /* The operation was performed to completion,
                          in the expected way.  */
