@@ -646,6 +646,10 @@ Good idea
 - Built on top of long<64> and ulong<64> PVM values?
 - Casts: u?int<*> -> u?int<N>, u?int<N> -> u?int<*>
 
+** Support specifying strict mapping in referring offsets
+
+Perhaps using 'sref instead of 'ref?
+
 * Compiler
 ** Array deintegrators
 
@@ -755,6 +759,12 @@ One for sbound another for ebound, which shall be optional depending on the
 type in question.
 
 ** Attribute 'ref_type for referring offsets, giving a Pk_Type
+** Print referred values in value printer
+
+  Follow references in this situations:
+  - Array of referring offsets.
+  - Struct with referring offsets as fields.
+
 ** Include call stacks in Exception
 
 This requies new PVM instructions:
@@ -1128,6 +1138,11 @@ Conceptually, the VRT (valued ranges table):
   including the updated range [OFFSET,OFFSET+bits).  This requires fast
   indexing of ranges.
 
+*** Compiler
+
+- REMAP should only remap if dirty flag set.
+- unmap operator should deregister range.
+
 *** PVM
 
 New instructions:
@@ -1139,6 +1154,25 @@ over all values mapped in some given range:
 
 : for (v in iosvals (0#B, iosize))
 :  // Use v'offset, v'ios, v'size, etc.
+
+*** Perhaps only necessary to dirty the top-level containing objects?
+
+This requires: pvm_contains_p (pvm_val a, pvm_val b);
+
+foreach entry in table
+  if range fits and a contained in b => dirty b and stop.
+                                         *
+ A = struct { struct B { struct C { .*.. } ... } ... }
+                         struct Z { *.. }
+| BA | EA | A* |
+| BB | EB | B  |
+| BZ | EZ | Z* |
+| BC | EC | C  |
+
+Dirty list: A, Z
+
+This relies in that in Poke you cannot refer to C without referring to A
+first.
 
 ** Add unix socket IO device (IOD)
 ** Filtered IO spaces
