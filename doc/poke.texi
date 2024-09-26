@@ -209,6 +209,7 @@ Dot-Commands
 * info command::		Getting information about open files, @i{etc}.
 * set command::			Querying and setting global options.
 * vm command::			Poke Virtual Machine services.
+* compiler command::            Poke incremental compiler services.
 * exit command::		Exiting poke :(
 * quit command::		Likewise.
 
