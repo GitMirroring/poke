@@ -1,3 +1,20 @@
+2024-09-27  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* poke/pk-cmd-misc.c ("pk-repl.h"): New include for
+	`poke_completion_function'.
+	(pk_cmd_bases): New function to implement
+	`.bases' dot-command.
+	(bases_cmd): New variable.
+	* poke/pk-cmd-misc.pk (pk_cmd_bases): New Poke function.
+	* poke/pk-cmd.c (dot_cmds): Register the new dot-command.
+	* testsuite/poke.cmd/bases-1.pk: New test.
+	* testsuite/poke.cmd/bases-2.pk: Likewise.
+	* testsuite/poke.cmd/bases-3.pk: Likewise.
+	* testsuite/poke.cmd/bases-4.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+	* doc/poke.texi (Dot-Commands): Add doc for new dot-command.
+	* poke/pk-cmd-help.pk: Document new dot-command.
+
 2024-09-25  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* doc/learn-poke-language-in-y-minutes.pk: Update and add a few

@@ -1,0 +1,4 @@
+/* { dg-do run } */
+
+/* { dg-command { .bases 1 } } */
+/* { dg-output "0x1, 1, 0o1, 0b1" } */

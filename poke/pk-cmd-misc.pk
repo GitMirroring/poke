@@ -45,3 +45,30 @@ fun pk_cmd_jmd = void:
 {
   printf ("%s\n", pk_jmd_cookies[rand (gettime[1]) % pk_jmd_cookies'length]);
 }
+
+fun pk_cmd_bases = (any val) void:
+{
+  var ob = vm_obase;
+  var s = "";
+
+  try
+    {
+      vm_set_obase (16);
+      printf ("0x%s, ", ltrim (format ("%v", val)[2:], "0"));
+
+      vm_set_obase (10);
+      printf ("%v, ", val);
+
+      vm_set_obase (8);
+      printf ("0o%s, ", ltrim (format ("%v", val)[2:], "0"));
+
+      vm_set_obase (2);
+      printf ("0b%s\n", ltrim (format ("%v", val)[2:], "0"));
+    }
+  catch (Exception ex)
+    {
+      vm_set_obase (ob);
+      raise ex;
+    }
+  vm_set_obase (ob);
+}

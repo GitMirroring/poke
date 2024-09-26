@@ -60,6 +60,7 @@ extern const struct pk_cmd quit_cmd; /* pk-cmd-misc.c  */
 extern const struct pk_cmd version_cmd; /* pk-cmd-misc.c */
 extern const struct pk_cmd doc_cmd; /* pk-cmd-misc.c */
 extern const struct pk_cmd jmd_cmd; /* pk-cmd-misc.c */
+extern const struct pk_cmd bases_cmd; /* pk-cmd-misc.c */
 extern const struct pk_cmd help_cmd; /* pk-cmd-help.c */
 extern const struct pk_cmd vm_cmd; /* pk-cmd-vm.c  */
 extern const struct pk_cmd compiler_cmd; /* pk-cmd-compiler.c */
@@ -79,6 +80,7 @@ static const struct pk_cmd *dot_cmds[] =
     &version_cmd,
     &doc_cmd,
     &jmd_cmd,
+    &bases_cmd,
     &info_cmd,
     &close_cmd,
     &load_cmd,

@@ -28,6 +28,7 @@
 #include "poke.h"
 #include "pk-cmd.h"
 #include "pk-utils.h"
+#include "pk-repl.h" /* For poke_completion_function */
 
 static int
 pk_cmd_exit (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
@@ -197,6 +198,57 @@ doc_completion_function (const char *x, int state)
   return NULL;
 }
 
+static int
+pk_cmd_bases (int argc, struct pk_cmd_arg argv[], uint64_t uflags)
+{
+  /* bases EXPR */
+
+  pk_val printer = PK_NULL;
+  pk_val retval = PK_NULL;
+  pk_val val = PK_NULL;
+  pk_val exit_exception = PK_NULL;
+  const char *expr;
+  int ret;
+
+  assert (argc == 2);
+  assert (PK_CMD_ARG_TYPE (argv[1]) == PK_CMD_ARG_STR);
+  expr = PK_CMD_ARG_STR (argv[1]);
+
+  if (*expr == '\0')
+    return 1;
+
+  ret = pk_compile_expression (poke_compiler, expr, NULL, &val,
+                               &exit_exception);
+
+  if (ret != PK_OK || exit_exception != PK_NULL)
+    {
+      /* The compiler has already printed diagnostics in the
+         terminal.  */
+      if (exit_exception != PK_NULL)
+        poke_handle_exception (exit_exception);
+      return 0;
+    }
+
+  if (pk_type_code (pk_typeof (val)) == PK_TYPE_INT
+      || pk_type_code (pk_typeof (val)) == PK_TYPE_UINT)
+    {
+      printer = pk_decl_val (poke_compiler, "pk_cmd_bases");
+      assert(printer != PK_NULL);
+      if (pk_call (poke_compiler, printer, &retval, &exit_exception,
+                   1, val) == PK_ERROR
+          || exit_exception != PK_NULL)
+        PK_UNREACHABLE ();
+    }
+  else
+    {
+      pk_term_class ("error");
+      pk_puts (_("error:"));
+      pk_term_end_class ("error");
+      pk_puts (" expression should evaluate to an integer\n");
+      return 0;
+    }
+  return 1;
+}
 
 const struct pk_cmd quit_cmd =
   {"quit", "?i", "", 0, NULL, NULL, pk_cmd_exit, ".quit [CODE]", NULL};
@@ -212,3 +264,6 @@ const struct pk_cmd jmd_cmd =
 
 const struct pk_cmd doc_cmd =
   {"doc", "?s", "", 0, NULL, NULL, pk_cmd_doc, ".doc [section]", doc_completion_function};
+
+const struct pk_cmd bases_cmd =
+  {"bases", "s", "", 0, NULL, NULL, pk_cmd_bases, ".bases EXPR", poke_completion_function};

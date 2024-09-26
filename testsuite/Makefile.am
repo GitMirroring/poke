@@ -60,6 +60,10 @@ EXTRA_DIST = \
   lib/poke.exp \
   lib/poke-unit.h \
   poke.cmd/cmd.exp \
+  poke.cmd/bases-1.pk \
+  poke.cmd/bases-2.pk \
+  poke.cmd/bases-3.pk \
+  poke.cmd/bases-4.pk \
   poke.cmd/close-sub-1.pk \
   poke.cmd/copy-1.pk \
   poke.cmd/copy-2.pk \

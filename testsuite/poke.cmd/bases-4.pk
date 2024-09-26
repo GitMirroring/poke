@@ -1,0 +1,5 @@
+/* { dg-do run } */
+
+/* { dg-command { .set obase 10 } } */
+/* { dg-command { .bases -1L } } */
+/* { dg-output "0xffffffffffffffffL, -1L, 0o1777777777777777777777L, 0b1111111111111111111111111111111111111111111111111111111111111111L" } */

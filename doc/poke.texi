@@ -8381,6 +8381,7 @@ au BufRead,BufNewFile *.pk set filetype=poke
 * set command::			Querying and setting global options.
 * vm command::			Poke Virtual Machine services.
 * compiler command::            Poke incremental compiler services.
+* bases command::               Printing an integer in all bases (2, 6, 8 and 16).
 * exit command::		Exiting poke :(
 * quit command::                Likewise.
 @end menu
@@ -8890,6 +8891,21 @@ The @command{.compiler ast} command compiles a Poke expression and
 then dumps a printable representation of the corresponding abstract
 syntax tree (AST).  This command is useful when debugging the Poke
 compiler.
+
+@node bases command
+@section @code{.bases}
+@cindex @code{.bases}
+@cindex bases
+The @code{.bases EXPR} prints the value of @code{EXPR} in base 16, 10,
+8 and 2.  This is useful for debugging without changing the global
+output base.
+
+@example
+(poke) .bases 1
+0x1, 1, 0o1, 0b1
+(poke) .bases -1
+0xffffffff, -1, 0o37777777777, 0b11111111111111111111111111111111
+@end example
 
 @node exit command
 @section @code{.exit}

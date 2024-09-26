@@ -390,3 +390,12 @@ pk_help_add_topic
       summary = "display the poke version",
       description = "Print the version of poke and copyright information."
   };
+
+pk_help_add_topic
+  :entry Poke_HelpEntry {
+      category = "dot-commands",
+      topic = ".bases",
+      synopsis = ".bases EXPR",
+      summary = "print the given integral expression in base 16, 10, 8 and 2",
+      description = "Print the given integer (EXPR) in base 16, 10, 8 and 2"
+  };
