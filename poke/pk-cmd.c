@@ -51,8 +51,8 @@ extern const struct pk_cmd nbd_cmd; /* pk-cmd-ios.c */
 #ifdef HAVE_MMAP
 extern const struct pk_cmd mmap_cmd; /* pk-cmd-mmap.c */
 #endif
-extern const struct pk_cmd close_cmd; /* pk-cmd-file.c */
-extern const struct pk_cmd load_cmd; /* pk-cmd-file.c */
+extern const struct pk_cmd close_cmd; /* pk-cmd-ios.c */
+extern const struct pk_cmd load_cmd; /* pk-cmd-ios.c */
 extern const struct pk_cmd source_cmd; /* pk-cmd-ios.c */
 extern const struct pk_cmd info_cmd; /* pk-cmd-info.c  */
 extern const struct pk_cmd exit_cmd; /* pk-cmd-misc.c  */
