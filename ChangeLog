@@ -1,3 +1,10 @@
+2024-10-04  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-gen.pks (atrim): Install a writer when the original
+	original is not mapped.
+	* testsuite/poke.map/ass-map-28.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
 2024-09-27  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* poke/pk-cmd-misc.c ("pk-repl.h"): New include for
