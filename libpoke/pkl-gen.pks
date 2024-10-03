@@ -3717,10 +3717,18 @@
         map                     ; TARR
         ;; Remap!!
         aremap
-        push null
-        push null
+        ba .done
 .notmapped:
-        drop
-        drop
+        drop                    ; TARR ARR
+        drop                    ; TARR
+        ;; Install a writer in the array.
+        .let #array_type_writer = PVM_NULL;
+        .c PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_WRITER);
+        .c RAS_FUNCTION_ARRAY_WRITER (#array_type_writer, @array_type);
+        .c PKL_GEN_POP_CONTEXT;
+        push #array_type_writer
+        pec
+        msetw
+.done:
         popf 1
         .end
