@@ -1798,7 +1798,7 @@ more bytes.  Three bytes? sure:
 
 @example
 (poke) uint<24> @@ 0#B
-(uint<24>) 0x7f454c
+0x7f454c as uint<24>
 @end example
 
 @noindent
@@ -1902,7 +1902,7 @@ bit-concatenation operator implements:
 (poke) var b2 = byte @@ 1#B
 (poke) var b3 = byte @@ 2#B
 (poke) b1:::b2:::b3
-(uint<24>) 0x7f454c
+0x7f454c as uint<24>
 @end example
 
 However, much like in certain human languages the written form is read
@@ -1928,9 +1928,9 @@ interpretations:
 
 @example
 (poke) b1:::b2:::b3
-(uint<24>) 0x7f454c
+0x7f454c as uint<24>
 (poke) b3:::b2:::b1
-(uint<24>) 0x4c457f
+0x4c457f as uint<24>
 @end example
 
 Remember how the type specifier @code{byte} is just a synonym of
@@ -1940,7 +1940,7 @@ do that, like in:
 
 @example
 (poke) uint<24> @@ 0#B
-(uint<24>) 0x7f454c
+0x7f454c as uint<24>
 @end example
 
 @noindent
@@ -1953,7 +1953,7 @@ dot-command: @command{.set endian}:
 @example
 (poke) .set endian little
 (poke) uint<24> @@ 0#B
-(uint<24>) 0x4c457f
+0x4c457f as uint<24>
 @end example
 
 The currently used interpretation (also called @dfn{endianness}) is
@@ -2253,7 +2253,7 @@ Let's map our weird number at offset 0 bytes, using big endian:
 @example
 (poke) .set endian big
 (poke) uint<12> @@ 0#B
-(uint<12>) 0b011111110100
+0b011111110100 as uint<12>
 @end example
 
 @noindent
@@ -2266,7 +2266,7 @@ Now let's map it using little endian:
 
 @example
 (poke) uint<12> @@ 0#B
-(uint<12>) 0b010001111111
+0b010001111111 as uint<12>
 @end example
 
 @noindent
@@ -2324,10 +2324,10 @@ Let's see this in poke:
 (poke) byte @@ 0#B
 0b01111111UB
 (poke) uint<5> @@ 0#B
-(uint<5>) 0b01111
+0b01111 as uint<5>
 (poke) .set endian little
 (poke) uint<5> @@ 0#B
-(uint<5>) 0b01111
+0b01111 as uint<5>
 @end example
 
 @subsection Signed Weird Numbers
@@ -2343,7 +2343,7 @@ Let's summon our unsigned 12-bit integer at the beginning of the file
 @example
 (poke) .set endian big
 (poke) uint<12> @@ 0#B
-(uint<12>) 0b011111110100
+0b011111110100 as uint<12>
 @end example
 
 @noindent
@@ -2353,10 +2353,10 @@ the corresponding signed value.  Let's see:
 
 @example
 (poke) int<12> @@ 0#B
-(int<12>) 0b010001111111
+0b010001111111 as int<12>
 (poke) .set obase 10
 (poke) int<12> @@ 0#B
-(int<12>) 1151
+1151 as int<12>
 @end example
 
 Let's make it a bit more interesting, and change the value of the first
@@ -2366,10 +2366,10 @@ byte in the file so we get a negative number:
 (poke) .set obase 2
 (poke) byte @@ 0#B = 0b1111_1111
 (poke) int<12> @@ 0#B
-(int<12>) 0b111111110100
+0b111111110100 as int<12>
 (poke) .set obase 10
 (poke) int<12> @@ 0#B
-(int<12>) -12
+-12 as int<12>
 @end example
 
 @noindent
@@ -2379,10 +2379,10 @@ Now, let's switch to little endian:
 (poke) .set endian little
 (poke) .set obase 2
 (poke) int<12> @@ 0#B
-(int<12>) 0b010011111111
+0b010011111111 as int<12>
 (poke) .set obase 10
 (poke) int<12> @ 0#B
-(int<12>) 1279
+1279 as int<12>
 @end example
 
 @node Unaligned Integers
@@ -3579,9 +3579,9 @@ like:
 (poke) var bg = 255UB:::255UB:::255UB
 (poke) var fg = 255UB:::99UB:::71UB
 (poke) bg
-(uint<24>) 0xffffff
+0xffffff as uint<24>
 (poke) fg
-(uint<24>) 0xff6347
+0xff6347 as uint<24>
 @end example
 
 @noindent
@@ -9570,7 +9570,7 @@ holding the value 666:
 
 @example
 (poke) 666 as int<12>
-(int<12>) 666
+666 as int<12>
 @end example
 
 Note that the @code{666} literal is originally a 32-bit signed
@@ -9967,7 +9967,7 @@ units bytes:
 
 @example
 (poke) 1024#b as offset<int<12>,B>
-(int<12>) 128#B
+128 as int<12>#B
 @end example
 
 @cindex magnitude
@@ -11907,7 +11907,7 @@ Integers can also be ``structured'' into integral structs:
 @example
 (poke) 0xdeadbeef as Elf32_RelInfo
 Elf32_RelInfo @{
-  r_sym=(uint<24>) 0xdeadbe,
+  r_sym=0xdeadbe as uint<24>,
   r_type=0xefUB
 @}
 @end example

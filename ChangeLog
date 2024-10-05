@@ -1,5 +1,10 @@
 2024-10-05  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* doc/poke.texi: Replace old representation of weird integers
+	with the new one.
+
+2024-10-05  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-gen.c (pkl_gen_ps_op_add): Install a writer for the
 	result of array concatenation.
 	* testsuite/poke.map/ass-map-29.pk: New test.
