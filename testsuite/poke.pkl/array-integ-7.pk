@@ -4,6 +4,6 @@ var a = [0xffUB,0xffUB];
 
 /* { dg-command {.set obase 16} } */
 /* { dg-command {a as int<12>} } */
-/* { dg-output {\(int<12>\) 0xfff\n} } */
+/* { dg-output {0xfff as int<12>\n} } */
 /* { dg-command {[0xffUB,0xffUB] as int<12>} } */
-/* { dg-output {\(int<12>\) 0xfff} } */
+/* { dg-output {0xfff as int<12>} } */

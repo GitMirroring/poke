@@ -5,8 +5,8 @@ var x = 0xcdUH;
 /* { dg-command { .set obase 16 } } */
 
 /* { dg-command { x:::0xab } } */
-/* { dg-output "\\(uint<48>\\) 0x00cd000000ab" } */
+/* { dg-output "0x00cd000000ab as uint<48>" } */
 
 /* For constant folding:  */
 /* { dg-command { 0xcdUH:::0xab } } */
-/* { dg-output "\n\\(uint<48>\\) 0x00cd000000ab" } */
+/* { dg-output "\n0x00cd000000ab as uint<48>" } */

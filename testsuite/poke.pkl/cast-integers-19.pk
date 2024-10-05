@@ -4,4 +4,4 @@ var x = 4;
 
 /* { dg-command {.set obase 10} } */
 /* { dg-command { -4 as int<3> } } */
-/* { dg-output ".int<3>. -4" } */
+/* { dg-output "-4 as int<3>" } */

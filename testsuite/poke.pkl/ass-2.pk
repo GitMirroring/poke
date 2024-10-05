@@ -4,4 +4,4 @@
 
 /* { dg-command { i = 20 as int<9> } } */
 /* { dg-command { i } } */
-/* { dg-output "\\\(int<9>\\\) 20" }*/
+/* { dg-output "20 as int<9>" }*/

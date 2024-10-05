@@ -4,4 +4,4 @@
 /* { dg-command { .set endian big } } */
 /* { dg-command { .set obase 10 } } */
 /* { dg-command { int<9> @ 15#b } } */
-/* { dg-output ".int<9>. -187" } */
+/* { dg-output "-187 as int<9>" } */

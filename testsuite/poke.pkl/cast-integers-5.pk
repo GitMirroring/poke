@@ -5,8 +5,8 @@
 var x = -1;
 
 /* { dg-command { x as int<3> } } */
-/* { dg-output "\\(int<3>\\) 0o7" } */
+/* { dg-output "0o7 as int<3>" } */
 
 /* For constant folding: */
 /* { dg-command { -1 as int<3> } } */
-/* { dg-output "\n\\(int<3>\\) 0o7" } */
+/* { dg-output "\n0o7 as int<3>" } */

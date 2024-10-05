@@ -5,8 +5,8 @@ var x = -2#48;
 /* { dg-command {.set obase 10} } */
 
 /* { dg-command { (x as offset<int<13>,24>) as offset<int<54>,B> } } */
-/* { dg-output ".int<54>. -12#B" } */
+/* { dg-output "-12 as int<54>#B" } */
 
 /* For constant folding: */
 /* { dg-command {((-2)#48 as offset<int<13>,24>) as offset<int<54>,B>} } */
-/* { dg-output "\n.int<54>. -12#B" } */
+/* { dg-output "\n-12 as int<54>#B" } */

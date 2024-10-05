@@ -1,3 +1,83 @@
+2024-10-05  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-rt.pk (_pkl_print_format_any): Emit
+	`NUMBER as INTEGRAL_TYPE' for printing of weird integers which is
+	a valid Poke syntax instead of `(INTEGRAL_TYPE) NUMBER'.
+	* libpoke/pvm-val.c (pvm_print_val_1): Likewise.
+	* testsuite/poke.map/ass-map-20.pk: Update to match the new output.
+	* testsuite/poke.map/maps-int-05.pk: Likewise.
+	* testsuite/poke.map/maps-int-09.pk: Likewise.
+	* testsuite/poke.map/maps-int-11.pk: Likewise.
+	* testsuite/poke.map/maps-int-13.pk: Likewise.
+	* testsuite/poke.map/maps-int-18.pk: Likewise.
+	* testsuite/poke.map/maps-int-19.pk: Likewise.
+	* testsuite/poke.map/maps-int-20.pk: Likewise.
+	* testsuite/poke.map/maps-int-21.pk: Likewise.
+	* testsuite/poke.map/maps-int-22.pk: Likewise.
+	* testsuite/poke.map/maps-int-23.pk: Likewise.
+	* testsuite/poke.map/maps-int-24.pk: Likewise.
+	* testsuite/poke.map/maps-int-26.pk: Likewise.
+	* testsuite/poke.map/maps-int-30.pk: Likewise.
+	* testsuite/poke.map/maps-int-32.pk: Likewise.
+	* testsuite/poke.map/maps-int-34.pk: Likewise.
+	* testsuite/poke.map/maps-int-35.pk: Likewise.
+	* testsuite/poke.map/maps-int-36.pk: Likewise.
+	* testsuite/poke.map/maps-int-38.pk: Likewise.
+	* testsuite/poke.map/maps-int-39.pk: Likewise.
+	* testsuite/poke.map/maps-int-40.pk: Likewise.
+	* testsuite/poke.map/maps-int-42.pk: Likewise.
+	* testsuite/poke.map/maps-int-43.pk: Likewise.
+	* testsuite/poke.map/maps-int-44.pk: Likewise.
+	* testsuite/poke.map/maps-int-46.pk: Likewise.
+	* testsuite/poke.map/maps-int-47.pk: Likewise.
+	* testsuite/poke.map/maps-int-49.pk: Likewise.
+	* testsuite/poke.map/maps-int-structs-11.pk: Likewise.
+	* testsuite/poke.map/maps-int-structs-2.pk: Likewise.
+	* testsuite/poke.map/maps-int-structs-5.pk: Likewise.
+	* testsuite/poke.map/maps-int-structs-6.pk: Likewise.
+	* testsuite/poke.map/maps-int-union-3.pk: Likewise.
+	* testsuite/poke.map/maps-int-union-4.pk: Likewise.
+	* testsuite/poke.map/maps-int-union-5.pk: Likewise.
+	* testsuite/poke.map/maps-uint-19.pk: Likewise.
+	* testsuite/poke.pkl/add-offsets-8.pk: Likewise.
+	* testsuite/poke.pkl/array-integ-10.pk: Likewise.
+	* testsuite/poke.pkl/array-integ-11.pk: Likewise.
+	* testsuite/poke.pkl/array-integ-14.pk: Likewise.
+	* testsuite/poke.pkl/array-integ-15.pk: Likewise.
+	* testsuite/poke.pkl/array-integ-16.pk: Likewise.
+	* testsuite/poke.pkl/array-integ-17.pk: Likewise.
+	* testsuite/poke.pkl/array-integ-18.pk: Likewise.
+	* testsuite/poke.pkl/array-integ-19.pk: Likewise.
+	* testsuite/poke.pkl/array-integ-20.pk: Likewise.
+	* testsuite/poke.pkl/array-integ-22.pk: Likewise.
+	* testsuite/poke.pkl/array-integ-24.pk: Likewise.
+	* testsuite/poke.pkl/array-integ-29.pk: Likewise.
+	* testsuite/poke.pkl/array-integ-30.pk: Likewise.
+	* testsuite/poke.pkl/array-integ-31.pk: Likewise.
+	* testsuite/poke.pkl/array-integ-32.pk: Likewise.
+	* testsuite/poke.pkl/array-integ-34.pk: Likewise.
+	* testsuite/poke.pkl/array-integ-6.pk: Likewise.
+	* testsuite/poke.pkl/array-integ-7.pk: Likewise.
+	* testsuite/poke.pkl/ass-2.pk: Likewise.
+	* testsuite/poke.pkl/ass-3.pk: Likewise.
+	* testsuite/poke.pkl/bconc-4.pk: Likewise.
+	* testsuite/poke.pkl/bconc-6.pk: Likewise.
+	* testsuite/poke.pkl/bconc-7.pk: Likewise.
+	* testsuite/poke.pkl/bconc-lvalue-6.pk: Likewise.
+	* testsuite/poke.pkl/cast-integers-10.pk: Likewise.
+	* testsuite/poke.pkl/cast-integers-11.pk: Likewise.
+	* testsuite/poke.pkl/cast-integers-17.pk: Likewise.
+	* testsuite/poke.pkl/cast-integers-18.pk: Likewise.
+	* testsuite/poke.pkl/cast-integers-19.pk: Likewise.
+	* testsuite/poke.pkl/cast-integers-21.pk: Likewise.
+	* testsuite/poke.pkl/cast-integers-4.pk: Likewise.
+	* testsuite/poke.pkl/cast-integers-5.pk: Likewise.
+	* testsuite/poke.pkl/cast-offsets-6.pk: Likewise.
+	* testsuite/poke.pkl/cast-offsets-7.pk: Likewise.
+	* testsuite/poke.pkl/int-struct-dyn-2.pk: Likewise.
+	* testsuite/poke.pkl/scons-int-struct-4.pk: Likewise.
+	* testsuite/poke.pkl/sub-offsets-1.pk: Likewise.
+
 2024-10-04  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-gen.pks (atrim): Install a writer when the original

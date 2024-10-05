@@ -5,11 +5,11 @@ var x = -2#48;
 /* { dg-command {.set obase 16} } */
 
 /* { dg-command { (x as offset<uint<13>,24>) as offset<int<54>,B> } } */
-/* { dg-output ".int<54>. 0x00000000005ff4#B" } */
+/* { dg-output "0x00000000005ff4 as int<54>#B" } */
 
 /* For constant folding: */
 /* { dg-command {((-2)#48 as offset<uint<13>,24>) as offset<int<54>,B>} } */
-/* { dg-output "\n.int<54>. 0x00000000005ff4#B" } */
+/* { dg-output "\n0x00000000005ff4 as int<54>#B" } */
 
 /* Doing the reverse operation to verify that we're getting the
    math right.  */

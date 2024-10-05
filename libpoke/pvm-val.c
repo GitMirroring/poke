@@ -1080,51 +1080,51 @@ pvm_print_val_1 (pvm vm, int depth, int mode, int base, int indent,
     {
     case 8:
       long64_fmt = "0o%" PRIo64 "L";
-      long_fmt = "(int<%d>) 0o%" PRIo64;
+      long_fmt = "0o%" PRIo64 " as int<%d>";
       ulong64_fmt = "0o%" PRIo64 "UL";
-      ulong_fmt = "(uint<%d>) 0o%" PRIo64;
+      ulong_fmt = "0o%" PRIo64 " as uint<%d>";
       int32_fmt = "0o%" PRIo32;
       int16_fmt = "0o%" PRIo32 "H";
       int8_fmt = "0o%" PRIo32 "B";
       int4_fmt = "0o%" PRIo32 "N";
-      int_fmt = "(int<%d>) 0o%" PRIo32;
+      int_fmt = "0o%" PRIo32 " as int<%d>";
       uint32_fmt = "0o%" PRIo32 "U";
       uint16_fmt = "0o%" PRIo32 "UH";
       uint8_fmt = "0o%" PRIo32 "UB";
       uint4_fmt = "0o%" PRIo32 "UN";
-      uint_fmt = "(uint<%d>) 0o%" PRIo32;
+      uint_fmt = "0o%" PRIo32 " as uint<%d>";
       break;
     case 10:
       long64_fmt = "%" PRIi64 "L";
-      long_fmt = "(int<%d>) %" PRIi64;
+      long_fmt = "%" PRIi64 " as int<%d>";
       ulong64_fmt = "%" PRIu64 "UL";
-      ulong_fmt = "(uint<%d>) %" PRIu64;
+      ulong_fmt = "%" PRIu64 " as uint<%d>";
       int32_fmt = "%" PRIi32;
       int16_fmt = "%" PRIi32 "H";
       int8_fmt = "%" PRIi32 "B";
       int4_fmt = "%" PRIi32 "N";
-      int_fmt = "(int<%d>) %" PRIi32;
+      int_fmt = "%" PRIi32 " as int<%d>";
       uint32_fmt = "%" PRIu32 "U";
       uint16_fmt = "%" PRIu32 "UH";
       uint8_fmt = "%" PRIu32 "UB";
       uint4_fmt = "%" PRIu32 "UN";
-      uint_fmt = "(uint<%d>) %" PRIu32;
+      uint_fmt = "%" PRIu32 " as uint<%d>";
       break;
     case 16:
       long64_fmt = "0x%" PRIx64 "L";
-      long_fmt = "(int<%d>) 0x%" PRIx64;
+      long_fmt = "0x%" PRIx64 " as int<%d>";
       ulong64_fmt = "0x%" PRIx64 "UL";
-      ulong_fmt = "(uint<%d>) 0x%" PRIx64;
+      ulong_fmt = "0x%" PRIx64 " as uint<%d>";
       int32_fmt = "0x%" PRIx32;
       int16_fmt = "0x%" PRIx32 "H";
       int8_fmt = "0x%" PRIx32 "B";
       int4_fmt = "0x%" PRIx32 "N";
-      int_fmt = "(int<%d>) 0x%" PRIx32;
+      int_fmt = "0x%" PRIx32 " as int<%d>";
       uint32_fmt = "0x%" PRIx32 "U";
       uint16_fmt = "0x%" PRIx32 "UH";
       uint8_fmt = "0x%" PRIx32 "UB";
       uint4_fmt = "0x%" PRIx32 "UN";
-      uint_fmt = "(uint<%d>) 0x%" PRIx32;
+      uint_fmt = "0x%" PRIx32 " as uint<%d>";
       break;
     case 2:
       /* This base doesn't use printf's formatting strings, but its
@@ -1212,8 +1212,8 @@ pvm_print_val_1 (pvm vm, int depth, int mode, int base, int indent,
           else if (size == 4)
             pk_printf (int4_fmt, base == 10 ? intval : uintval);
           else
-            pk_printf (int_fmt, PVM_VAL_INT_SIZE (val),
-                       base == 10 ? intval : uintval);
+            pk_printf (int_fmt, base == 10 ? intval : uintval,
+                       PVM_VAL_INT_SIZE (val));
         }
 
       pk_term_end_class ("integer");
@@ -1265,8 +1265,7 @@ pvm_print_val_1 (pvm vm, int depth, int mode, int base, int indent,
           else if (size == 4)
             pk_printf (uint4_fmt, uintval);
           else
-            pk_printf (uint_fmt, PVM_VAL_UINT_SIZE (val),
-                       uintval);
+            pk_printf (uint_fmt, uintval, PVM_VAL_UINT_SIZE (val));
         }
 
       pk_term_end_class ("integer");

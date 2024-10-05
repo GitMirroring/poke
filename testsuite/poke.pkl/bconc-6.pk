@@ -6,8 +6,8 @@ var y = 2B;
 /* { dg-command { .set obase 16 } } */
 
 /* { dg-command { x:::y } } */
-/* { dg-output "\\(int<24>\\) 0x000102" } */
+/* { dg-output "0x000102 as int<24>" } */
 
 /* For constant folding:  */
 /* { dg-command { 1H:::2B } } */
-/* { dg-output "\n\\(int<24>\\) 0x000102" } */
+/* { dg-output "\n0x000102 as int<24>" } */

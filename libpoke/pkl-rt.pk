@@ -1530,16 +1530,17 @@ immutable fun _pkl_print_format_any = (any val,
                       : "");
     var uval = 0UL;
 
-    fun emit_int_prefix = void:
+    fun emit_int_cast = void:
     {
       if (bits != 32 && int_suffix == "")
         {
+          ctx.emit (" as ");
           if (signed_p)
-            ctx.emit ("(int<");
+            ctx.emit ("int<");
           else
-            ctx.emit ("(uint<");
+            ctx.emit ("uint<");
           ctx.emit (lutos (bits, 10));
-          ctx.emit (">) ");
+          ctx.emit (">");
         }
     }
 
@@ -1550,7 +1551,6 @@ immutable fun _pkl_print_format_any = (any val,
         var ival = (long_p ? asm int<64>: ("ltol 64; nip" : val)
                            : asm int<64>: ("itol 64; nip" : val));
 
-        emit_int_prefix;
         if (ival < 0 && obase == 10)
           {
             ctx.emit ("-");
@@ -1568,7 +1568,6 @@ immutable fun _pkl_print_format_any = (any val,
         uval = (long_p ? asm uint<64>: ("lutolu 64; nip" : val)
                        : asm uint<64>: ("iutolu 64; nip" : val));
 
-        emit_int_prefix;
         if (bits != 1 && (bits == 32 || int_suffix != ""))
           int_suffix = "U" + int_suffix;
       }
@@ -1576,6 +1575,7 @@ immutable fun _pkl_print_format_any = (any val,
     ctx.emit (_pkl_base_prefix (obase));
     ctx.emit (lutos (uval, obase, bits));
     ctx.emit (int_suffix);
+    emit_int_cast;
     ctx.end_class ("integer");
   }
 

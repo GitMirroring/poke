@@ -6,4 +6,4 @@
 /* { dg-command { printf "%u29x\n", uint<29> @ 15#b } } */
 /* { dg-output "1ac4b3a2" } */
 /* { dg-command { uint<29> @ 15#b } } */
-/* { dg-output "\n\\(uint<29>\\) 0x1ac4b3a2" } */
+/* { dg-output "\n0x1ac4b3a2 as uint<29>" } */

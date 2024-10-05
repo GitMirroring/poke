@@ -9,4 +9,4 @@ type Foo =
 
 /* { dg-command {.set obase 16} } */
 /* { dg-command {+(Foo { a = 0x12, b = 0xabc})} } */
-/* { dg-output "\\(uint<20>\\) 0x12abc" } */
+/* { dg-output "0x12abc as uint<20>" } */

@@ -14,8 +14,8 @@ type Foo =
 
 /* { dg-command { .set endian little } } */
 /* { dg-command { Foo @ 0#B } } */
-/* { dg-output "Foo {s=0b0T,m=\\(uint<15>\\) 0b010001110000000}" } */
+/* { dg-output "Foo {s=0b0T,m=0b010001110000000 as uint<15>}" } */
 
 /* { dg-command { .set endian big } } */
 /* { dg-command { Foo @ 0#B } } */
-/* { dg-output "\nFoo {s=0b1T,m=\\(uint<15>\\) 0b000000000100011}" } */
+/* { dg-output "\nFoo {s=0b1T,m=0b000000000100011 as uint<15>}" } */
