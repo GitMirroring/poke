@@ -1,5 +1,12 @@
 2024-10-05  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pkl-gen.c (pkl_gen_ps_op_add): Install a writer for the
+	result of array concatenation.
+	* testsuite/poke.map/ass-map-29.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
+2024-10-05  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-rt.pk (_pkl_print_format_any): Emit
 	`NUMBER as INTEGRAL_TYPE' for printing of weird integers which is
 	a valid Poke syntax instead of `(INTEGRAL_TYPE) NUMBER'.
