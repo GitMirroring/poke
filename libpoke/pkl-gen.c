@@ -4249,6 +4249,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_op_add)
   pkl_asm pasm = PKL_GEN_ASM;
   pkl_ast_node node = PKL_PASS_NODE;
   pkl_ast_node type = PKL_AST_TYPE (node);
+  pvm_val array_type_writer = PVM_NULL;
 
   switch (PKL_AST_TYPE_CODE (type))
     {
@@ -4263,6 +4264,14 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_op_add)
     case PKL_TYPE_ARRAY:
       pkl_asm_insn (pasm, PKL_INSN_ACONC);
       pkl_asm_insn (pasm, PKL_INSN_NIP2);
+
+      /* Install a writer in the array.  */
+      PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_WRITER);
+      RAS_FUNCTION_ARRAY_WRITER (array_type_writer, type);
+      PKL_GEN_POP_CONTEXT;
+      pkl_asm_insn (pasm, PKL_INSN_PUSH, array_type_writer);
+      pkl_asm_insn (pasm, PKL_INSN_PEC);
+      pkl_asm_insn (pasm, PKL_INSN_MSETW);
       break;
     case PKL_TYPE_OFFSET:
       {

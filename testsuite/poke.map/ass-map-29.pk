@@ -1,0 +1,15 @@
+/* { dg-do run } */
+/* { dg-data {c*} {0x00 0x00 0x00 0x00  0x00 0x00 0x00 0x00} } */
+
+var a = [1UB, 2UB, 3UB, 4UB, 5UB];
+
+type T =
+  struct
+    {
+      uint<8>[] data;
+    };
+
+/* { dg-command { .set obase 10 } } 8/
+/* { dg-command { T @ 0#B = T{ data=a + [6UB], } } } */
+/* { dg-command { uint<8>[6] @ 0#B } } */
+/* { dg-output "\[1UB,2UB,3UB,4UB,5UB,6UB\]" } */
