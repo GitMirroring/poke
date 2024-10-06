@@ -207,6 +207,7 @@ A $
 S ::
 LT <
 GT >
+NOT_GT [^>]
 
 %x C_COMMENT
 %x SHEBANG_COMMENT
@@ -371,7 +372,7 @@ GT >
 "@!"               { return NSMAP; }
 "@"                { return '@'; }
 
-({A}({L}|{D})({L}|{D}|({S}({L}|{D})))*)|({A}{LT}[^{GT}]*{GT}) {
+({A}({L}|{D})({L}|{D}|({S}({L}|{D})))*)|({A}{LT}{NOT_GT}*{GT}) {
   char *errmsg;
   pkl_alien_token_handler_fn cb = NULL;
   pkl_alien_dtoken_handler_fn dcb = NULL;
