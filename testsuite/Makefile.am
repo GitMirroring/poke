@@ -92,6 +92,7 @@ EXTRA_DIST = \
   poke.cmd/ios-1.pk \
   poke.cmd/ios-2.pk \
   poke.cmd/ios-3.pk \
+  poke.cmd/ios-4.pk \
   poke.cmd/mmap-1.pk \
   poke.cmd/mmap-2.pk \
   poke.cmd/nbd-1.pk \

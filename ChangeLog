@@ -1,3 +1,11 @@
+2024-10-06  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-lex.l: Fix pattern for matching delimited alien token
+	to not use name definitions inside character class.
+	(NOT_GT): New name definition.
+	* testsuite/poke.cmd/ios-4.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
 2024-10-05  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* doc/poke.texi: Replace old representation of weird integers
