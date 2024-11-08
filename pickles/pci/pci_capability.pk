@@ -43,8 +43,6 @@ type PCI_msi_msg_control =
 type PCI_cap_msi =
   struct
   {
-    uint<8> cap_id == PCI_CAP_MSI;
-    offset<uint<8>,B> next_cap;
     PCI_msi_msg_control msg_control;
     uint<32> msg_add;
     if (msg_control.addr_64_bit_capable == 0x1)
@@ -246,8 +244,6 @@ type PCIe_slt_sta_reg = struct uint<16> {
 };
 
 type PCI_cap_pcie = struct {
-    uint<8> cap_id == PCI_CAP_PCIe;
-    offset<uint<8>,B> next_cap;
     PCIe_cap_reg cap_reg;
     PCIe_dev_cap_reg dev_cap;
     PCIe_dev_ctl_reg dev_ctl;
@@ -277,37 +273,18 @@ type PCI_cap_pcie = struct {
     uint<16> slt_sta2 == 0x0;
 };
 
+assert (#PCI_cap_pcie == 464#b);
+
 type PCI_capability =
-  union
+  struct
   {
-    PCI_cap_msi msi;
-    PCI_cap_pcie pcie;
-    // Implement a default struct that still matches the basic structure of a
-    // capability, so we can follow the pointers, even when the capability is
-    // not yet implemented
-    struct
-      {
-        uint<8> cap_id;
-        offset<uint<8>, B> next_cap;
-      } not_implemented;
+      type PCI_cap_na = struct {};
 
-    method _print = void:
-      {
-        if (msi ?! E_elem != 1)
-          printf("%v\n", msi);
-        else if (pcie ?! E_elem != 1)
-          printf("%v\n", pcie);
-        else
-          printf("%v\n", not_implemented);
-      }
-
-    method next_cap = offset<uint<8>, B>:
-      {
-        if (msi ?! E_elem != 1)
-          return msi.next_cap;
-        else if (pcie ?! E_elem != 1)
-          return pcie.next_cap;
-        else
-          return not_implemented.next_cap;
-      }
+      uint<8> cap_id;
+      offset<uint<8>, B> next_cap;
+      union {
+          PCI_cap_msi msi : cap_id == PCI_CAP_MSI;
+          PCI_cap_pcie pcie : cap_id == PCI_CAP_PCIe;
+          PCI_cap_na not_implemented;
+      } cap;
   };
