@@ -85,21 +85,181 @@ type PCIe_cap_reg = struct uint<16> {
     }
 };
 
+type PCIe_dev_cap_reg = struct uint<32> {
+    rsvdp;
+    rsvdp;
+    rsvdp;
+    uint<1> flr_cap;
+    uint<2> capt_slot_pwr_lmt_scale;
+    uint<8> capt_slot_pwr_lmt_val;
+    rsvdp;
+    uint<1> cor_err_subclass_cap;
+    uint<1> rrer;
+    uint<3>;
+    uint<3> l1_acc_lat;
+    uint<3> l0s_acc_lat;
+    uint<1> ext_tag_field_supp;
+    uint<2> phantom_fn_supp;
+    uint<3> max_payload_size;
+
+    method _print_l0s_acc_lat = void:
+    {
+        if (l0s_acc_lat == 0b111)
+            print "#<unlimited>";
+        else
+            printf("#<Max %u16d ns>", 64 <<. l0s_acc_lat);
+    }
+
+    method _print_max_payload_size = void:
+    {
+        printf("#<%u16d bytes>", 128 <<. max_payload_size);
+    }
+
+};
+
+type PCIe_dev_ctl_reg = struct uint<16> {
+    uint<1> enable_bridge_conf_flr;
+    uint<3> max_read_req_size;
+    uint<1> enable_no_snoop;
+    uint<1> enable_aux_pwr_pm;
+    uint<1> phantom_func_enable;
+    uint<1> enable_ext_tag_field;
+    uint<3> max_payload_size;
+    uint<1> enable_relaxed_ordering;
+    uint<1> enable_unsupp_req_report;
+    uint<1> enable_fatal_err;
+    uint<1> enable_nf_err;
+    uint<1> enable_corr_err;
+};
+
+type PCIe_dev_sta_reg = struct uint<16> {
+    rsvdz;
+    rsvdz;
+    rsvdz;
+    rsvdz;
+    rsvdz;
+    rsvdz;
+    rsvdz;
+    rsvdz;
+    rsvdz;
+    uint<1> emerg_pwr_reduction;
+    uint<1> txn_pending;
+    uint<1> aux_pwr;
+    uint<1> unsupp_req;
+    uint<1> fatal_err;
+    uint<1> nf_err;
+    uint<1> corr_err;
+};
+
+type PCIe_lnk_cap_reg = struct uint<32> {
+    uint<8> port;
+    rsvdp;
+    uint<1> aspm_opt_compliance;
+    uint<1> lnk_bndwdt_cap;
+    uint<1> dllar_cap;
+    uint<1> sder_cap;
+    uint<1> clk_pwr_mgmt;
+    uint<3> l1_exit_latency;
+    uint<3> l0s_exit_latency;
+    uint<2> aspm_support;
+    uint<6> max_link_width;
+    uint<4> max_link_speed;
+};
+
+type PCIe_lnk_ctl_reg = struct uint<16> {
+    uint<2> drs_sig_ctl;
+    rsvdp;
+    rsvdp;
+    uint<1> lnk_auto_bandwidth_int_enable;
+    uint<1> lnk_bandwidth_int_enable;
+    uint<1> hw_auto_width_disable;
+    uint<1> enable_clk_pwr_mgmt;
+    uint<1> ext_synch;
+    uint<1> common_clk_config;
+    uint<1> retrain_link;
+    uint<1> lnk_disable;
+    uint<1> read_compl_boundary;
+    rsvdp;
+    uint<2> aspm_ctl;
+};
+
+type PCIe_lnk_sta_reg = struct uint<16> {
+    uint<1> link_auto_bandwidth_sta;
+    uint<1> link_bandwidth_mgmt_sta;
+    uint<1> data_link_layer_link_active;
+    uint<1> slot_clk_config;
+    uint<1> link_training;
+    uint<1>;
+    uint<6> neg_link_width;
+    uint<4> cur_lnk_speed;
+};
+
+type PCIe_slt_cap_reg = struct uint<32> {
+    uint<13> phys_slot_num;
+    uint<1> no_cmd_comp_supp;
+    uint<1> em_interlock_present;
+    uint<2> slot_pwr_lim_scale;
+    uint<8> slot_pwr_lim_val;
+    uint<1> hot_plug_cap;
+    uint<1> hot_plug_surprise;
+    uint<1> pwr_ind_present;
+    uint<1> attn_ind_present;
+    uint<1> mrl_sensor_present;
+    uint<1> pwr_ctl_present;
+    uint<1> attn_btn_present;
+};
+
+type PCIe_slt_ctl_reg = struct uint<16> {
+    rsvdp;
+    uint<1> in_band_pd_disable;
+    uint<1> auto_slt_pwr_limit_dis;
+    uint<1> data_lls_changed_en;
+    uint<1> em_int_ctl;
+    uint<1> pwr_ctl_ctl;
+    uint<2> pwr_in_ctl;
+    uint<2> attn_in_ctl;
+    uint<1> hot_plug_int_en;
+    uint<1> cmd_compl_int_en;
+    uint<1> presence_det_changed_en;
+    uint<1> mrl_sen_changed_en;
+    uint<1> pwr_fault_det_en;
+    uint<1> attn_btn_pressed_en;
+};
+
+type PCIe_slt_sta_reg = struct uint<16> {
+    rsvdp;
+    rsvdp;
+    rsvdp;
+    rsvdp;
+    rsvdp;
+    rsvdp;
+    rsvdp;
+    uint<1> dll_state_changed;
+    uint<1> em_interlock_sta;
+    uint<1> presence_detect;
+    uint<1> mrl_sensor_state;
+    uint<1> command_complete;
+    uint<1> presence_detect_changed;
+    uint<1> mrl_sensor_changed;
+    uint<1> pwr_fault_det;
+    uint<1> att_butt_pressed;
+};
+
 type PCI_cap_pcie = struct {
     uint<8> cap_id == PCI_CAP_PCIe;
     offset<uint<8>,B> next_cap;
     PCIe_cap_reg cap_reg;
-    uint<32> dev_cap;
-    uint<16> dev_ctl;
-    uint<16> dev_sta;
-    uint<32> lnk_cap;
-    uint<16> lnk_ctl;
-    uint<16> lnk_sta;
+    PCIe_dev_cap_reg dev_cap;
+    PCIe_dev_ctl_reg dev_ctl;
+    PCIe_dev_sta_reg dev_sta;
+    PCIe_lnk_cap_reg lnk_cap;
+    PCIe_lnk_ctl_reg lnk_ctl;
+    PCIe_lnk_sta_reg lnk_sta;
     union uint<64> {
         struct uint<64> {
-          uint<32> slt_cap;
-          uint<16> slt_ctl;
-          uint<16> slt_sta;
+          PCIe_slt_cap_reg slt_cap;
+          PCIe_slt_ctl_reg slt_ctl;
+          PCIe_slt_sta_reg slt_sta;
         } PCI_pcie_slot : cap_reg.slot_impl == 0x1;
         uint<64> _undefined;
     } slot;
