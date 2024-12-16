@@ -1,3 +1,21 @@
+2024-12-16  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* pickles/ieee754.pk (IEEE754_binary64.is_qnan_p): Use explicit
+	equality/inequality operator to generate correct code.
+	(IEEE754_binary32.is_qnan_p): Likewise.
+	(IEEE754_binary16.is_qnan_p): Likewise.
+	(IEEE754_binary64.is_snan_p): Likewise.
+	(IEEE754_binary32.is_snan_p): Likewise.
+	(IEEE754_binary16.is_snan_p): Likewise.
+	(IEEE754_binary64.is_zero_p): New function.
+	(IEEE754_binary32.is_zero_p): Likewise.
+	(IEEE754_binary16.is_zero_p): Likewise.
+	(IEEE754_binary64.is_subnormal_p): Likewise.
+	(IEEE754_binary32.is_subnormal_p): Likewise.
+	(IEEE754_binary16.is_subnormal_p): Likewise.
+	* testsuite/poke.pickles/ieee754-test.pk: Update tests for
+	quiet/signalling/signed/unsigned NaNs, and for subnormals.
+
 2024-10-06  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-lex.l: Fix pattern for matching delimited alien token

@@ -54,6 +54,33 @@ var tests = [
 
         assert (posinf.is_inf_p);
         assert (!posinf.is_nan_p);
+
+        var qnan1 = IEEE754_binary16{ sign=1, exp=-1, frac=1T:::(1 as uint<9>) },
+            qnan2 = IEEE754_binary16{ sign=1, exp=-1, frac=1T:::(-1 as uint<9>) },
+            snan1 = IEEE754_binary16{ sign=0, exp=-1, frac=0T:::(1 as uint<9>) },
+            snan2 = IEEE754_binary16{ sign=0, exp=-1, frac=0T:::(-1 as uint<9>) };
+
+        assert (qnan1.is_nan_p);
+        assert (qnan1.is_qnan_p);
+        assert (!qnan1.is_snan_p);
+
+        assert (qnan2.is_nan_p);
+        assert (qnan2.is_qnan_p);
+        assert (!qnan2.is_snan_p);
+
+        assert (snan1.is_nan_p);
+        assert (!snan1.is_qnan_p);
+        assert (snan1.is_snan_p);
+
+        assert (snan2.is_nan_p);
+        assert (!snan2.is_qnan_p);
+        assert (snan2.is_snan_p);
+
+        var subnormal1 = 1 as Float16,
+            subnormal2 = Float16 {sign=1, exp=0, frac=1};
+
+        assert (subnormal1.is_subnormal_p);
+        assert (subnormal2.is_subnormal_p);
       },
   },
   PkTest {
@@ -97,6 +124,38 @@ var tests = [
         var b32 = (big_32 @ data : 0#B).f as Float32;
 
         assert (b32 == l32);
+
+        assert ((stof ("nan") as IEEE754_binary32).is_qnan_p);
+        assert ((stof ("-nan") as IEEE754_binary32).is_qnan_p);
+        assert ((stof ("nan") as IEEE754_binary32).sign == 0);
+        assert ((stof ("-nan") as IEEE754_binary32).sign == 1);
+
+        var qnan1 = IEEE754_binary32{ sign=1, exp=-1, frac=1T:::(1 as uint<22>) },
+            qnan2 = IEEE754_binary32{ sign=1, exp=-1, frac=1T:::(-1 as uint<22>) },
+            snan1 = IEEE754_binary32{ sign=0, exp=-1, frac=0T:::(1 as uint<22>) },
+            snan2 = IEEE754_binary32{ sign=0, exp=-1, frac=0T:::(-1 as uint<22>) };
+
+        assert (qnan1.is_nan_p);
+        assert (qnan1.is_qnan_p);
+        assert (!qnan1.is_snan_p);
+
+        assert (qnan2.is_nan_p);
+        assert (qnan2.is_qnan_p);
+        assert (!qnan2.is_snan_p);
+
+        assert (snan1.is_nan_p);
+        assert (!snan1.is_qnan_p);
+        assert (snan1.is_snan_p);
+
+        assert (snan2.is_nan_p);
+        assert (!snan2.is_qnan_p);
+        assert (snan2.is_snan_p);
+
+        var subnormal1 = 1 as Float32,
+            subnormal2 = Float32 {sign=1, exp=0, frac=1};
+
+        assert (subnormal1.is_subnormal_p);
+        assert (subnormal2.is_subnormal_p);
       },
   },
     PkTest {
@@ -110,6 +169,38 @@ var tests = [
         assert (pi.frac
                 == 0b1001001000011111101101010100010001000010111011101010U);
         assert (format ("%f64d", +pi) == "3.141592653590000");
+
+        assert ((stod ("nan") as IEEE754_binary64).is_qnan_p);
+        assert ((stod ("-nan") as IEEE754_binary64).is_qnan_p);
+        assert ((stod ("nan") as IEEE754_binary64).sign == 0);
+        assert ((stod ("-nan") as IEEE754_binary64).sign == 1);
+
+        var qnan1 = IEEE754_binary64{ sign=1, exp=-1, frac=1T:::(1 as uint<51>) },
+            qnan2 = IEEE754_binary64{ sign=1, exp=-1, frac=1T:::(-1 as uint<51>) },
+            snan1 = IEEE754_binary64{ sign=0, exp=-1, frac=0T:::(1 as uint<51>) },
+            snan2 = IEEE754_binary64{ sign=0, exp=-1, frac=0T:::(-1 as uint<51>) };
+
+        assert (qnan1.is_nan_p);
+        assert (qnan1.is_qnan_p);
+        assert (!qnan1.is_snan_p);
+
+        assert (qnan2.is_nan_p);
+        assert (qnan2.is_qnan_p);
+        assert (!qnan2.is_snan_p);
+
+        assert (snan1.is_nan_p);
+        assert (!snan1.is_qnan_p);
+        assert (snan1.is_snan_p);
+
+        assert (snan2.is_nan_p);
+        assert (!snan2.is_qnan_p);
+        assert (snan2.is_snan_p);
+
+        var subnormal1 = 1 as Float64,
+            subnormal2 = Float64 {sign=1, exp=0, frac=1};
+
+        assert (subnormal1.is_subnormal_p);
+        assert (subnormal2.is_subnormal_p);
       },
   },
 ];

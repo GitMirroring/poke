@@ -24,9 +24,11 @@ type IEEE754_binary16 =
     uint<10> frac; // aka significand, aka mantissa.
 
     method is_nan_p  = int<32>: { return exp == 0x1f && frac != 0; }
-    method is_snan_p = int<32>: { return exp == 0x1f && (frac & 0x200U); }
-    method is_qnan_p = int<32>: { return exp == 0x1f && !(frac & 0x200U); }
+    method is_qnan_p = int<32>: { return exp == 0x1f && (frac & 0x200U) != 0; }
+    method is_snan_p = int<32>: { return exp == 0x1f && (frac & 0x200U) == 0; }
     method is_inf_p  = int<32>: { return exp == 0x1f && frac == 0; }
+    method is_zero_p = int<32>: { return exp == 0 && frac == 0; }
+    method is_subnormal_p = int<32>: { return exp == 0 && frac != 0; }
   };
 
 type IEEE754_binary32 =
@@ -37,9 +39,11 @@ type IEEE754_binary32 =
     uint<23> frac; // aka significand, aka mantissa.
 
     method is_nan_p  = int<32>: { return exp == 0xff && frac != 0; }
-    method is_snan_p = int<32>: { return exp == 0xff && (frac & 0x400000U); }
-    method is_qnan_p = int<32>: { return exp == 0xff && !(frac & 0x400000U); }
+    method is_qnan_p = int<32>: { return exp == 0xff && (frac & 0x400000U) != 0; }
+    method is_snan_p = int<32>: { return exp == 0xff && (frac & 0x400000U) == 0; }
     method is_inf_p  = int<32>: { return exp == 0xff && frac == 0; }
+    method is_zero_p = int<32>: { return exp == 0 && frac == 0; }
+    method is_subnormal_p = int<32>: { return exp == 0 && frac != 0; }
 
     method _print = void: { printf ("#<%f32d>", sign:::exp:::frac); }
   };
@@ -52,9 +56,13 @@ type IEEE754_binary64 =
     uint<52> frac; // aka significand, aka mantissa.
 
     method is_nan_p  = int<32>: { return exp == 0x7ff && frac != 0; }
-    method is_snan_p = int<32>: { return exp == 0x7ff && (frac & 0x4000000000000U); }
-    method is_qnan_p = int<32>: { return exp == 0x7ff && !(frac & 0x4000000000000U); }
+    method is_qnan_p = int<32>:
+      { return exp == 0x7ff && (frac & 0x8000000000000UL) != 0; }
+    method is_snan_p = int<32>:
+      { return exp == 0x7ff && (frac & 0x8000000000000UL) == 0; }
     method is_inf_p  = int<32>: { return exp == 0x7ff && frac == 0; }
+    method is_zero_p = int<32>: { return exp == 0 && frac == 0; }
+    method is_subnormal_p = int<32>: { return exp == 0 && frac != 0; }
 
     method _print = void: { printf ("#<%f64d>", sign:::exp:::frac); }
   };
