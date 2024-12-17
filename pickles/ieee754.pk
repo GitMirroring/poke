@@ -16,6 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// Reference for conversions:
+//   http://www.fox-toolkit.org/ftp/fasthalffloatconversion.pdf
+
 type IEEE754_binary16 =
   struct int<16>
   {
@@ -70,3 +73,71 @@ type IEEE754_binary64 =
 type Float16 = IEEE754_binary16;
 type Float32 = IEEE754_binary32;
 type Float64 = IEEE754_binary64;
+
+fun ieee754_16to32 = (IEEE754_binary16 f16) IEEE754_binary32:
+{
+  if (f16.is_zero_p)
+    return IEEE754_binary32 {sign=f16.sign};
+  if (f16.is_inf_p)
+    return IEEE754_binary32 {sign=f16.sign, exp=-1};
+  if (f16.is_nan_p)
+    return IEEE754_binary32 {
+      sign=f16.sign, exp=-1, frac=f16.frac:::(0 as uint<13>),
+    };
+  if (f16.is_subnormal_p)
+    {
+      var f32 = IEEE754_binary32 {sign=f16.sign, exp=0-15+127},
+          frac = f16.frac as int<11>;
+
+      // Normalize
+      while (1)
+        {
+          frac = frac <<. 1;
+          if (frac < 0)
+            break;
+          --f32.exp;
+        }
+      f32.frac = (frac as uint<10>):::(0 as uint<13>);
+
+      return f32;
+    }
+  return IEEE754_binary32 {
+    sign=f16.sign,
+    exp=f16.exp - 15 + 127, // Change the bias from 15 to 127.
+    frac=f16.frac:::(0 as uint<13>),
+  };
+}
+
+fun ieee754_32to64 = (IEEE754_binary32 f32) IEEE754_binary64:
+{
+  if (f32.is_zero_p)
+    return IEEE754_binary64 {sign=f32.sign};
+  if (f32.is_inf_p)
+    return IEEE754_binary64 {sign=f32.sign, exp=-1};
+  if (f32.is_nan_p)
+    return IEEE754_binary64 {
+      sign=f32.sign, exp=-1, frac=f32.frac:::(0 as uint<29>),
+    };
+  if (f32.is_subnormal_p)
+    {
+      var f64 = IEEE754_binary64 {sign=f32.sign, exp=0-127+1023},
+          frac = f32.frac as int<24>;
+
+      // Normalize
+      while (1)
+        {
+          frac = frac <<. 1;
+          if (frac < 0)
+            break;
+          --f64.exp;
+        }
+      f64.frac = (frac as uint<23>):::(0 as uint<29>);
+
+      return f64;
+    }
+  return IEEE754_binary64 {
+    sign=f32.sign,
+    exp=f32.exp - 127 + 1023, // Change the bias from 127 to 1023.
+    frac=f32.frac:::(0 as uint<29>),
+  };
+}

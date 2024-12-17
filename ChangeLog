@@ -1,3 +1,12 @@
+2024-12-19  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* pickles/ieee754.pk (ieee754_16to32): New function to convert
+	`IEEE754_binary16' to `IEEE754_binary32'.
+	(ieee754_32to64): New function to convert `IEEE754_binary32'
+	to `IEEE754_binary64'.
+	* testsuite/poke.pickles/ieee754-test.pk: Add new tests for
+	conversion of binary16 to binary 32, and binary32 to binary64.
+
 2024-12-16  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* pickles/ieee754.pk (IEEE754_binary64.is_qnan_p): Use explicit
