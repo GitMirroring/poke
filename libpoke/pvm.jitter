@@ -7299,6 +7299,11 @@ into
   dup
 end
 
+rule dup-nip-to-nop rewrite
+  dup; nip
+into
+end
+
 rule swap-tuck-to-over rewrite
   swap; tuck
 into
