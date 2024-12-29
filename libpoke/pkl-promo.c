@@ -832,7 +832,32 @@ PKL_PHASE_BEGIN_HANDLER (pkl_promo_ps_op_binary)
   int restart1, restart2;
 
   pkl_ast_node exp = PKL_PASS_NODE;
-  pkl_ast_node type = PKL_AST_TYPE (exp);
+  pkl_ast_node type;
+
+  switch (PKL_AST_EXP_CODE (exp))
+    {
+    case PKL_AST_OP_AND:
+    case PKL_AST_OP_OR:
+    case PKL_AST_OP_IMPL:
+      {
+        pkl_ast_node op1_type;
+        pkl_ast_node op2_type;
+
+        op1_type = PKL_AST_TYPE (PKL_AST_EXP_OPERAND (exp, 0));
+        op2_type = PKL_AST_TYPE (PKL_AST_EXP_OPERAND (exp, 1));
+
+        if (PKL_AST_TYPE_CODE (op1_type) == PKL_TYPE_STRUCT)
+          op1_type = PKL_AST_TYPE_S_ITYPE (op1_type);
+        if (PKL_AST_TYPE_CODE (op2_type) == PKL_TYPE_STRUCT)
+          op2_type = PKL_AST_TYPE_S_ITYPE (op2_type);
+
+        /* Promote operands to a type that is wide enough for both of them.  */
+        type = pkl_type_integral_promote (PKL_PASS_AST, op1_type, op2_type);
+      }
+      break;
+    default:
+      type = PKL_AST_TYPE (exp);
+    }
 
   if (PKL_AST_TYPE_CODE (type) == PKL_TYPE_INTEGRAL)
     {
@@ -869,8 +894,19 @@ PKL_PHASE_BEGIN_HANDLER (pkl_promo_ps_op_unary)
 
   if (PKL_AST_TYPE_CODE (type) == PKL_TYPE_INTEGRAL)
     {
-      size_t size = PKL_AST_TYPE_I_SIZE (type);
-      int signed_p = PKL_AST_TYPE_I_SIGNED_P (type);
+      size_t size;
+      int signed_p;
+
+      if (PKL_AST_EXP_CODE (node) == PKL_AST_OP_NOT)
+        {
+          pkl_ast_node exp_type = PKL_AST_TYPE (PKL_AST_EXP_OPERAND (node, 0));
+
+          if (PKL_AST_TYPE_CODE (exp_type) == PKL_TYPE_STRUCT)
+            type = PKL_AST_TYPE_S_ITYPE (exp_type);
+        }
+
+      size = PKL_AST_TYPE_I_SIZE (type);
+      signed_p = PKL_AST_TYPE_I_SIGNED_P (type);
 
       if (!promote_integral (PKL_PASS_AST, size, signed_p,
                              &PKL_AST_EXP_OPERAND (node, 0), &restart))

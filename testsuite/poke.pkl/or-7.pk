@@ -1,0 +1,16 @@
+/* { dg-do run } */
+
+var x = (1L <<. 33);
+
+/* { dg-command { .set obase 10 } } */
+
+/* { dg-command { 0L || x } } */
+/* { dg-output 1 } */
+/* { dg-command { x || 0L } } */
+/* { dg-output "\n1" } */
+
+/* For constant folding: */
+/* { dg-command { 0L || (1L <<. 33) } } */
+/* { dg-output "\n1" } */
+/* { dg-command { (1L <<. 33) || 0L } } */
+/* { dg-output "\n1" } */

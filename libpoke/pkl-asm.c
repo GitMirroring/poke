@@ -116,32 +116,6 @@ struct pkl_asm
   pvm_program_label error_label;
 };
 
-/* Return a PVM value to hold an integral value VALUE of size SIZE and
-   sign SIGNED.  */
-
-static pvm_val
-pvm_make_integral (uint64_t value, int size, int signed_p)
-{
-  pvm_val res;
-
-  if (size < 33)
-    {
-      if (signed_p)
-        res = pvm_make_int (value, size);
-      else
-        res = pvm_make_uint (value, size);
-    }
-  else
-    {
-      if (signed_p)
-        res = pvm_make_long (value, size);
-      else
-        res = pvm_make_ulong (value, size);
-    }
-
-  return res;
-}
-
 /* Push a new level to PASM's level stack with ENV.  */
 
 static void

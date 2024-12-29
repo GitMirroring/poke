@@ -219,6 +219,13 @@ pvm_val pvm_make_signed_integral (int64_t value, int size);
 
 pvm_val pvm_make_unsigned_integral (uint64_t value, int size);
 
+/* Make signed or unsigned integral value of specified SIZE.
+
+   SIZE is measured in bits and should be in the range 1 to 64.  If an
+   invalid size is provided these functions return PVM_NULL.  */
+
+pvm_val pvm_make_integral (uint64_t value, int size, int signed_p);
+
 /* Make a string PVM value.  */
 
 pvm_val pvm_make_string (const char *value);

@@ -1,3 +1,28 @@
+2024-12-29  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pvm.h (pvm_make_integral): New function declaration.
+	* libpoke/pvm-val.c (pvm_make_integral): New function moved from
+	`libpoke/pvm-val.c'.
+	* libpoke/pkl-asm.c (pvm_make_integral): Removed.
+	* libpoke/pkl-promo.c (pkl_promo_ps_op_binary): Do not cast to `int<32>'
+	for the following operators: `&&', `||' and `=>' to prevent loss of
+	information due to possible truncation.
+	(pkl_promo_ps_op_unary): Likewise for `!' unary operator.
+	* libpoke/pkl-gen.c (pkl_gen_pr_op_and): Change codegen to work correctly
+	with operands wider than `int<32>'.
+	(pkl_gen_pr_op_or): Likewise.
+	(pkl_gen_pr_op_impl): Likewise.
+	(pkl_gen_pr_op_not): Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+	* testsuite/poke.pkl/and-16.pk: New test.
+	* testsuite/poke.pkl/and-17.pk: Likewise.
+	* testsuite/poke.pkl/and-18.pk: Likewise.
+	* testsuite/poke.pkl/and-int-struct-4.pk: Likewise.
+	* testsuite/poke.pkl/impl-6.pk: Likewise.
+	* testsuite/poke.pkl/or-6.pk: Likewise.
+	* testsuite/poke.pkl/or-7.pk: Likewise.
+	* testsuite/poke.pkl/or-int-struct-4.pk: Likewise.
+
 2024-12-19  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* pickles/ieee754.pk (ieee754_16to32): New function to convert
