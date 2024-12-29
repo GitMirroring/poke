@@ -4518,18 +4518,24 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_op_and)
 {
   pkl_ast_node op1 = PKL_AST_EXP_OPERAND (PKL_PASS_NODE, 0);
   pkl_ast_node op2 = PKL_AST_EXP_OPERAND (PKL_PASS_NODE, 1);
+  /* `op1' and `op2' are expected to be of the same type.  */
+  pkl_ast_node op_type = PKL_AST_TYPE (op1);
 
   pvm_program_label label = pkl_asm_fresh_label (PKL_GEN_ASM);
 
   PKL_PASS_SUBPASS (op1);
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BZI, label);
+  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BZ, op_type, label);
   pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
   PKL_PASS_SUBPASS (op2);
   pkl_asm_label (PKL_GEN_ASM, label);
 
-  /* Normalize the result to 0 or 1.  */
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NOT);
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NOT);
+  assert (PKL_AST_TYPE_CODE (op_type) == PKL_TYPE_INTEGRAL);
+
+  /* Normalize the result to 0 or 1 by computing `TOP != 0'.  */
+  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                pvm_make_integral (0, PKL_AST_TYPE_I_SIZE (op_type),
+                                   PKL_AST_TYPE_I_SIGNED_P (op_type)));
+  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NE, op_type);
   pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP2);
 
   PKL_PASS_BREAK;
@@ -4540,18 +4546,22 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_op_or)
 {
   pkl_ast_node op1 = PKL_AST_EXP_OPERAND (PKL_PASS_NODE, 0);
   pkl_ast_node op2 = PKL_AST_EXP_OPERAND (PKL_PASS_NODE, 1);
+  /* `op1' and `op2' are expected to be of the same type.  */
+  pkl_ast_node op_type = PKL_AST_TYPE (op1);
 
   pvm_program_label label = pkl_asm_fresh_label (PKL_GEN_ASM);
 
   PKL_PASS_SUBPASS (op1);
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BNZI, label);
+  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BNZ, op_type, label);
   pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
   PKL_PASS_SUBPASS (op2);
   pkl_asm_label (PKL_GEN_ASM, label);
 
-  /* Normalize the result to 0 or 1.  */
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NOT);
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NOT);
+  /* Normalize the result to 0 or 1 by computing `TOP != 0'.  */
+  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                pvm_make_integral (0, PKL_AST_TYPE_I_SIZE (op_type),
+                                   PKL_AST_TYPE_I_SIGNED_P (op_type)));
+  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NE, op_type);
   pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP2);
 
   PKL_PASS_BREAK;
@@ -4560,8 +4570,15 @@ PKL_PHASE_END_HANDLER
 
 PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_op_not)
 {
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NOT);
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP);
+  pkl_ast_node op = PKL_AST_EXP_OPERAND (PKL_PASS_NODE, 0);
+  pkl_ast_node op_type = PKL_AST_TYPE (op);
+
+  /* Normalize the result to 0 or 1 by computing `TOP == 0'.  */
+  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                pvm_make_integral (0, PKL_AST_TYPE_I_SIZE (op_type),
+                                   PKL_AST_TYPE_I_SIGNED_P (op_type)));
+  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_EQ, op_type);
+  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP2);
 }
 PKL_PHASE_END_HANDLER
 
@@ -4569,22 +4586,26 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_op_impl)
 {
   pkl_ast_node op1 = PKL_AST_EXP_OPERAND (PKL_PASS_NODE, 0);
   pkl_ast_node op2 = PKL_AST_EXP_OPERAND (PKL_PASS_NODE, 1);
+  /* `op1' and `op2' are expected to be of the same type.  */
+  pkl_ast_node op_type = PKL_AST_TYPE (op1);
 
   pvm_program_label label1 = pkl_asm_fresh_label (PKL_GEN_ASM);
   pvm_program_label label2 = pkl_asm_fresh_label (PKL_GEN_ASM);
 
   PKL_PASS_SUBPASS (op1);
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BNZI, label1);
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NOT);
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP);
+  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BNZ, op_type, label1);
+  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
+  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, pvm_make_int (1, 32));
   pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BA, label2);
 
   pkl_asm_label (PKL_GEN_ASM, label1);
   pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
   PKL_PASS_SUBPASS (op2);
-  /* Normalize the result to 0 or 1.  */
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NOT);
-  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NOT);
+  /* Normalize the result to 0 or 1 by computing `TOP != 0'.  */
+  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                pvm_make_integral (0, PKL_AST_TYPE_I_SIZE (op_type),
+                                   PKL_AST_TYPE_I_SIGNED_P (op_type)));
+  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NE, op_type);
   pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP2);
 
   pkl_asm_label (PKL_GEN_ASM, label2);

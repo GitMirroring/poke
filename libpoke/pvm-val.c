@@ -108,6 +108,20 @@ pvm_make_unsigned_integral (uint64_t value, int size)
     return PVM_MAKE_ULONG (value, size);
 }
 
+pvm_val
+pvm_make_integral (uint64_t value, int size, int signed_p)
+{
+  if (size > 64)
+    return PK_NULL;
+
+  if (size <= 32)
+    return signed_p ? PVM_MAKE_INT ((int32_t)value, size)
+                    : PVM_MAKE_UINT ((uint32_t)value, size);
+  else
+    return signed_p ? PVM_MAKE_LONG (value, size)
+                    : PVM_MAKE_ULONG (value, size);
+}
+
 static pvm_val_box
 pvm_make_box (uint8_t tag)
 {

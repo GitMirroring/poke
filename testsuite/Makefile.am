@@ -761,11 +761,15 @@ EXTRA_DIST = \
   poke.pkl/and-13.pk \
   poke.pkl/and-14.pk \
   poke.pkl/and-15.pk \
+  poke.pkl/and-16.pk \
+  poke.pkl/and-17.pk \
+  poke.pkl/and-18.pk \
   poke.pkl/and-diag-1.pk \
   poke.pkl/and-diag-2.pk \
   poke.pkl/and-int-struct-1.pk \
   poke.pkl/and-int-struct-2.pk \
   poke.pkl/and-int-struct-3.pk \
+  poke.pkl/and-int-struct-4.pk \
   poke.pkl/apop-1.pk \
   poke.pkl/apop-2.pk \
   poke.pkl/apop-diag-1.pk \
@@ -1669,6 +1673,7 @@ EXTRA_DIST = \
   poke.pkl/impl-3.pk \
   poke.pkl/impl-4.pk \
   poke.pkl/impl-5.pk \
+  poke.pkl/impl-6.pk \
   poke.pkl/impl-diag-1.pk \
   poke.pkl/in-1.pk \
   poke.pkl/in-2.pk \
@@ -2103,10 +2108,13 @@ EXTRA_DIST = \
   poke.pkl/or-3.pk \
   poke.pkl/or-4.pk \
   poke.pkl/or-5.pk \
+  poke.pkl/or-6.pk \
+  poke.pkl/or-7.pk \
   poke.pkl/or-diag-1.pk \
   poke.pkl/or-int-struct-1.pk \
   poke.pkl/or-int-struct-2.pk \
   poke.pkl/or-int-struct-3.pk \
+  poke.pkl/or-int-struct-4.pk \
   poke.pkl/pinned-int-struct-1.pk \
   poke.pkl/pinned-union-diag-1.pk \
   poke.pkl/pos-diag-1.pk \

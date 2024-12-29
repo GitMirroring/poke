@@ -1,0 +1,17 @@
+/* { dg-do run } */
+
+type Foo = struct uint<34> { int<2> x; int<32> y; };
+var x = (Foo {x=-1, y=0});
+
+/* { dg-command { .set obase 10 } } */
+
+/* { dg-command { 0B || x } } */
+/* { dg-output 1 } */
+/* { dg-command { x || 0B } } */
+/* { dg-output "\n1" } */
+
+/* For constant folding: */
+/* { dg-command { 0B || (Foo {x=-1, y=0}) } } */
+/* { dg-output "\n1" } */
+/* { dg-command { (Foo {x=-1, y=0}) || 0B } } */
+/* { dg-output "\n1" } */

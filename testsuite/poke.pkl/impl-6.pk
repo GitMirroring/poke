@@ -1,0 +1,10 @@
+/* { dg-do run } */
+
+var a = 1L <<. 63;
+
+/* { dg-command { a => 1 } } */
+/* { dg-output "1" } */
+
+/* For constant folding: */
+/* { dg-command { (1L <<. 63) => 1 } } */
+/* { dg-output "\n1" } */
