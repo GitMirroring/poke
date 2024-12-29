@@ -813,8 +813,8 @@ out:
    type derived from the arguments.  The promotion follows these
    rules:
 
-   - If TYPE1 or TYPE2 are negative, the promoted type is also
-     negative.  Otherwise it is positive.
+   - If TYPE1 or TYPE2 are signed, the promoted type is also
+     signed.  Otherwise it is unsigned.
 
    - The size of the promoted type is the max of the size of TYPE1 and
      TYPE2.

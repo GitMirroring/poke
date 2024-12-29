@@ -1687,7 +1687,7 @@ the contents of the AST nodes, and emit errors/warnings.
 @item trans
 For phases whose main purpose is to alter the structure of the AST,
 and/or the contents of the AST nodes.
-@item tipify
+@item typify
 For phases whose main purpose is to perform type checks, and otherwise
 do work on types.
 @item promo
