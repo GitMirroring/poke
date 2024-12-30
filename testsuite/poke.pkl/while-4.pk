@@ -1,0 +1,5 @@
+/* { dg-do run } */
+
+/* { dg-command { while (1UL <<. 32) { print "while"; break; } } } */
+/* { dg-command { print "1" } } */
+/* { dg-output "while1" } */

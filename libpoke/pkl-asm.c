@@ -2011,9 +2011,12 @@ pkl_asm_while (pkl_asm pasm)
 }
 
 void
-pkl_asm_while_loop (pkl_asm pasm)
+pkl_asm_while_loop (pkl_asm pasm, pkl_ast_node condition_type)
 {
-  pkl_asm_insn (pasm, PKL_INSN_BZI, pasm->level->label2);
+  if (condition_type)
+    pkl_asm_insn (pasm, PKL_INSN_BZ, condition_type, pasm->level->label2);
+  else
+    pkl_asm_insn (pasm, PKL_INSN_BZI, pasm->level->label2);
   /* Pop the loop condition from the stack.  */
   pkl_asm_insn (pasm, PKL_INSN_DROP);
 }

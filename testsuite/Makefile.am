@@ -2825,6 +2825,8 @@ EXTRA_DIST = \
   poke.pkl/while-1.pk \
   poke.pkl/while-2.pk \
   poke.pkl/while-3.pk \
+  poke.pkl/while-4.pk \
+  poke.pkl/while-5.pk \
   poke.pkl/while-int-struct-1.pk \
   poke.pkl/xor-diag-1.pk \
   poke.pkl/xor-diag-2.pk \

@@ -836,7 +836,7 @@ BEGIN {
 # .loop
 /^[ \t]*\.loop[ \t]*(;.*)?$/ {
     out("\t}                                                         \\")
-    out("\tpkl_asm_while_loop (RAS_ASM);                               \\")
+    out("\tpkl_asm_while_loop (RAS_ASM, NULL);                       \\")
     out("\t{                                                         \\")
     next
 }
