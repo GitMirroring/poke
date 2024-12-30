@@ -137,19 +137,20 @@ void pkl_asm_endloop (pkl_asm pasm);
  *
  *   ... condition ...
  *
- * pkl_asm_while_loop (pasm);
+ * pkl_asm_while_loop (pasm, condition_type);
  *
  *   ... loop body ...
  *
  * pkl_asm_while_endloop (pasm);
  *
- * Note that the code in `... condition ...' should result in an
- * int<32> value, and this is assumed by pkl_asm_while_loop.
+ * Note that the code in `... condition ...' should result in a
+ * value of type CONDITION_TYPE, and this is assumed by pkl_asm_while_loop.
+ * If CONDITION_TYPE is NULL, then it'll assume int<32>.
  */
 
 void pkl_asm_while (pkl_asm pasm);
 
-void pkl_asm_while_loop (pkl_asm pasm);
+void pkl_asm_while_loop (pkl_asm pasm, pkl_ast_node condition_type);
 
 void pkl_asm_while_endloop (pkl_asm pasm);
 

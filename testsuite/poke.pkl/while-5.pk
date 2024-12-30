@@ -1,0 +1,7 @@
+/* { dg-do run } */
+
+var x = 1L <<. 33;
+
+/* { dg-command { while (x) { print "while"; break; } } } */
+/* { dg-command { print "1" } } */
+/* { dg-output "while1" } */

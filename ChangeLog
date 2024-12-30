@@ -1,3 +1,17 @@
+2024-12-30  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-asm.h (pkl_asm_while_loop): Accept new parameter: AST
+	type node for the loop condition.
+	* libpoke/pkl-asm.c (pkl_asm_while_loop): Likewise.
+	* libpoke/pkl-gen.c (pkl_gen_pr_loop_stmt): Pass type of condition to
+	`pkl_asm_while_loop' invocation.
+	* libpoke/pkl-promo.c (pkl_promo_ps_if_stmt): Removed. That cast is
+	wrong due to possible truncation of wider integers.
+	* libpoke/ras (.loop): Update `pkl_asm_while_loop' invocation.
+	* testsuite/poke.pkl/while-4.pk: New test.
+	* testsuite/poke.pkl/while-5.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
 2024-12-29  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pvm.h (pvm_make_integral): New function declaration.

@@ -1474,7 +1474,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_loop_stmt)
             {
               PKL_PASS_SUBPASS (condition);
             }
-            pkl_asm_while_loop (PKL_GEN_ASM);
+            pkl_asm_while_loop (PKL_GEN_ASM, PKL_AST_TYPE (condition));
             {
               PKL_PASS_SUBPASS (body);
             }

@@ -1262,37 +1262,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_promo_ps_if_stmt)
 }
 PKL_PHASE_END_HANDLER
 
-/* The condition in loop statements, if present, shall be promoted to
-   int<32>.  */
-
-PKL_PHASE_BEGIN_HANDLER (pkl_promo_ps_loop_stmt)
-{
-  pkl_ast_node loop_stmt = PKL_PASS_NODE;
-  pkl_ast_node condition = PKL_AST_LOOP_STMT_CONDITION (loop_stmt);
-
-  if (condition)
-    {
-      int restart;
-
-      /* Note that the condition node is promoteable as per
-         typify.  */
-
-      if (!promote_integral (PKL_PASS_AST,
-                             32, 1,
-                             &PKL_AST_LOOP_STMT_CONDITION (loop_stmt),
-                             &restart))
-        {
-          PKL_ICE (PKL_AST_LOC (loop_stmt),
-                   "couldn't promote condition of lop-stmt #%" PRIu64,
-                   PKL_AST_UID (loop_stmt));
-          PKL_PASS_ERROR;
-        }
-
-      PKL_PASS_RESTART = restart;
-    }
-}
-PKL_PHASE_END_HANDLER
-
 /* The value returned from a function can be promoted in certain
    circumstances.  Do it!  */
 
@@ -1919,7 +1888,6 @@ struct pkl_phase pkl_phase_promo =
     PKL_PHASE_PS_HANDLER (PKL_AST_RETURN_STMT, pkl_promo_ps_return_stmt),
     PKL_PHASE_PS_HANDLER (PKL_AST_FORMAT, pkl_promo_ps_format),
     PKL_PHASE_PS_HANDLER (PKL_AST_IF_STMT, pkl_promo_ps_if_stmt),
-    PKL_PHASE_PS_HANDLER (PKL_AST_LOOP_STMT, pkl_promo_ps_loop_stmt),
     PKL_PHASE_PS_HANDLER (PKL_AST_STRUCT_TYPE_FIELD, pkl_promo_ps_struct_type_field),
     PKL_PHASE_PS_HANDLER (PKL_AST_COND_EXP, pkl_promo_ps_cond_exp),
     PKL_PHASE_PS_HANDLER (PKL_AST_CONS, pkl_promo_ps_cons),
