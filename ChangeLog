@@ -1,3 +1,11 @@
+2024-12-31  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pvm.jitter (bzl): Normalize branch condition to prevent
+	loss of information due to casting to `jitter_uint' on 32-bit systems.
+	(bzlu): Likewise.
+	(bnzl): Likewise.
+	(bnzlu): Likewise.
+
 2024-12-30  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-asm.h (pkl_asm_while_loop): Accept new parameter: AST

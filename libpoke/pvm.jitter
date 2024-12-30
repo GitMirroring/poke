@@ -4589,7 +4589,9 @@ instruction bzl (?f)
   branching
   code
     pvm_val tmp = JITTER_TOP_STACK ();
-    JITTER_BRANCH_FAST_IF_ZERO (PVM_VAL_LONG (tmp), JITTER_ARGF0);
+    /* JITTER_BRANCH_FAST_IF_ZERO expects word-size value for condition;
+       PVM_VAL_LONG values are not word-size on 32-bit machines.  */
+    JITTER_BRANCH_FAST_IF_ZERO (!!PVM_VAL_LONG (tmp), JITTER_ARGF0);
   end
 end
 
@@ -4604,7 +4606,9 @@ instruction bzlu (?f)
   branching
   code
     pvm_val tmp = JITTER_TOP_STACK ();
-    JITTER_BRANCH_FAST_IF_ZERO (PVM_VAL_ULONG (tmp), JITTER_ARGF0);
+    /* JITTER_BRANCH_FAST_IF_ZERO expects word-size value for condition;
+       PVM_VAL_LONG values are not word-size on 32-bit machines.  */
+    JITTER_BRANCH_FAST_IF_ZERO (!!PVM_VAL_ULONG (tmp), JITTER_ARGF0);
   end
 end
 
@@ -4649,7 +4653,9 @@ instruction bnzl (?f)
   branching
   code
     pvm_val tmp = JITTER_TOP_STACK ();
-    JITTER_BRANCH_FAST_IF_NONZERO (PVM_VAL_LONG (tmp), JITTER_ARGF0);
+    /* JITTER_BRANCH_FAST_IF_ZERO expects word-size value for condition;
+       PVM_VAL_LONG values are not word-size on 32-bit machines.  */
+    JITTER_BRANCH_FAST_IF_NONZERO (!!PVM_VAL_LONG (tmp), JITTER_ARGF0);
   end
 end
 
@@ -4664,7 +4670,9 @@ instruction bnzlu (?f)
   branching
   code
     pvm_val tmp = JITTER_TOP_STACK ();
-    JITTER_BRANCH_FAST_IF_NONZERO (PVM_VAL_ULONG (tmp), JITTER_ARGF0);
+    /* JITTER_BRANCH_FAST_IF_ZERO expects word-size value for condition;
+       PVM_VAL_LONG values are not word-size on 32-bit machines.  */
+    JITTER_BRANCH_FAST_IF_NONZERO (!!PVM_VAL_ULONG (tmp), JITTER_ARGF0);
   end
 end
 
