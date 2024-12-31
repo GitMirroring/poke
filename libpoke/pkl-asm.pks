@@ -63,6 +63,12 @@
         ;; If the IO space where the value is mapped is non-volatile
         ;; and read-only, there is no need to remap.
         mgetios                 ; VAL IOS
+        isios                   ; VAL IOS ISIOS
+        bnzi .valid_ios
+        push PVM_E_NO_IOS
+        raise
+.valid_ios:
+        drop                    ; VAL IOS
         iogetv                  ; VAL IOS VOLATILE
         bnzi .remap
         drop                    ; VAL IOS

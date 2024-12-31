@@ -832,11 +832,9 @@ late-c
       if (ctx->ios_id != -1)
         return;
       if (ctx->index == 0)
-        {
-          ctx->ios_id = ios_get_id (io);
-          return;
-        }
-      --ctx->index;
+        ctx->ios_id = ios_get_id (io);
+      else
+        --ctx->index;
     }
   end
 end
@@ -1593,6 +1591,22 @@ instruction flush ()
   end
 end
 
+# Instruction: isios
+#
+# Push 1 if the given IO space descriptor on the stack is a valid one;
+# otherwise push 0.
+#
+# Stack: ( INT -- INT INT )
+
+instruction isios ()
+  code
+    ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
+    ios io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));
+
+    JITTER_PUSH_STACK (PVM_MAKE_INT (io != NULL, 32));
+  end
+end
+
 # Instruction: pushios
 #
 # Push the descriptor of the current IO space on the stack, as a
@@ -1616,22 +1630,20 @@ end
 # Instruction: popios
 #
 # Pop an IO space descriptor from the stack and set it as the current
-# IO space.  If the specified descriptor doesn't identify an IO space,
-# raise PVM_E_NO_IOS.
+# IO space.
+# The given IO space must exist.
 #
 # Stack: ( INT -- )
-# Exceptions: PVM_E_NO_IOS
 
 instruction popios ()
-  branching # because of PVM_RAISE_DIRECT
   code
     ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
     ios io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));
 
-    if (io == NULL)
-      PVM_RAISE_DFL (PVM_E_NO_IOS);
-    ios_set_cur (ios_ctx, io);
+    PVM_ASSERT (io != NULL);
+
     JITTER_DROP_STACK ();
+    ios_set_cur (ios_ctx, io);
   end
 end
 
@@ -1639,21 +1651,17 @@ end
 #
 # Push an unsigned 64-bit integer with the flags of the given IO space
 # on the stack.  The IO space is identified by a descriptor, which is
-# a signed integer.  If the given IO space doesn't exist, raise
-# PVM_E_NO_IOS.
+# a signed integer.
+# The given IO space must exist.
 #
 # Stack: ( INT -- INT ULONG )
-# Exceptions: PVM_E_NO_IOS
 
 instruction ioflags ()
-  branching # because of PVM_RAISE_DIRECT
   code
     ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
     ios io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));
 
-    if (io == NULL)
-      PVM_RAISE_DFL (PVM_E_NO_IOS);
-
+    PVM_ASSERT (io != NULL);
     JITTER_PUSH_STACK (PVM_MAKE_ULONG (ios_flags (io), 64));
   end
 end
@@ -1662,32 +1670,30 @@ end
 #
 # Push the size of the given IO space on the stack, as an offset.  The
 # IO space is identified by a descriptor, which is a signed integer.
-# If the given IO space doesn't exist, raise PVM_E_NO_IOS.
+# The given IO space must exist.
 #
 # Stack: ( INT -- INT OFF )
-# Exceptions: PVM_E_NO_IOS
 
 instruction iosize ()
-  branching # because of PVM_RAISE_DIRECT
   code
     ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
     ios io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));
+    pvm_val magnitude;
+    pvm_val type;
 
-    if (io == NULL)
-      PVM_RAISE_DFL (PVM_E_NO_IOS);
-    else
-      {
-        pvm_val magnitude = PVM_MAKE_ULONG (ios_size (io), 64);
-        pvm_val type = pvm_make_offset_type (pvm_typeof (magnitude),
-                                             PVM_MAKE_ULONG (8, 64), PVM_NULL /* ref_type */);
-        JITTER_PUSH_STACK (pvm_make_offset (PVM_MAKE_ULONG (ios_size (io), 64), type));
-      }
+    PVM_ASSERT (io != NULL);
+
+    magnitude = PVM_MAKE_ULONG (ios_size (io), 64);
+    type = pvm_make_offset_type (pvm_typeof (magnitude),
+                                 PVM_MAKE_ULONG (8, 64), PVM_NULL /* ref_type */);
+
+    JITTER_PUSH_STACK (pvm_make_offset (PVM_MAKE_ULONG (ios_size (io), 64), type));
   end
 end
 
 # Instruction: ionum
 #
-# Pushe the number of IO spaces on the stack.
+# Push the number of IO spaces on the stack.
 #
 # Stack: ( -- ULONG )
 
@@ -1707,14 +1713,11 @@ end
 # Given an index ULONG, push the descriptor of the IO space on
 # the stack as a signed integer.
 #
-# If the provided index is out of bounds, then raise
-# PVM_E_OUT_OF_BOUNDS.
+# If the provided index is out of bounds, push a negative number.
 #
 # Stack: ( ULONG -- ULONG IOS )
-# Exceptions: PVM_E_OUT_OF_BOUNDS
 
 instruction ioref ()
-  branching # because of PVM_RAISE_DIRECT
   code
     ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
     struct ioref_ctx ctx;
@@ -1722,8 +1725,6 @@ instruction ioref ()
     ctx.index = PVM_VAL_ULONG (JITTER_TOP_STACK ());
     ctx.ios_id = -1;
     ios_map (ios_ctx, ioref_callback, &ctx);
-    if (ctx.ios_id == -1)
-      PVM_RAISE_DIRECT (PVM_E_OUT_OF_BOUNDS);
     JITTER_PUSH_STACK (PVM_MAKE_INT (ctx.ios_id, 32));
   end
 end
@@ -1733,8 +1734,7 @@ end
 # Push the name of the inteface that is implemented of the given IO
 # space on the stack, as a string.  The IO space is identified by a
 # descriptor, which is a signed integer.
-#
-# If the given IO space doesn't exist, raise PVM_E_NO_IOS.
+# The given IO space must exist.
 #
 # Stack: ( INT -- INT STR )
 
@@ -1743,10 +1743,8 @@ instruction iotype ()
     ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
     ios io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));
 
-    if (io == NULL)
-      JITTER_PUSH_STACK (PVM_NULL);
-    else
-      JITTER_PUSH_STACK (pvm_make_string (ios_get_dev_if_name (io)));
+    PVM_ASSERT (io != NULL);
+    JITTER_PUSH_STACK (pvm_make_string (ios_get_dev_if_name (io)));
   end
 end
 
@@ -1754,20 +1752,16 @@ end
 #
 # Push the handler of the given IO space on the stack, as a string.  The
 # IO space is identified by a descriptor, which is a signed integer.
-# If the given IO space doesn't exist, push PVM_NULL instead.
+# The given IO space must exist.
 #
 # Stack: ( INT -- INT OFF )
-# Exceptions: PVM_E_NO_IOS
 
 instruction iohandler ()
-  branching # because of PVM_RAISE_DIRECT
   code
     ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
     ios io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));
 
-    if (io == NULL)
-      PVM_RAISE_DFL (PVM_E_NO_IOS);
-
+    PVM_ASSERT (io != NULL);
     JITTER_PUSH_STACK (pvm_make_string (ios_handler (io)));
   end
 end
@@ -1776,22 +1770,16 @@ end
 #
 # Push 1 on the stack if the IO space on the stack is volatile.
 # Push 0 otherwise.
-#
-# If the given IO space doesn't exist then the exception PVM_E_NO_IOS
-# is raised.
+# The given IO space must exist.
 #
 # Stack: ( INT - INT INT )
-# Exceptions: PVM_E_NO_IOS
 
 instruction iogetv ()
-  non-relocatable
-  branching # because of PVM_RAISE_DIRECT
   code
     ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
     ios io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));
 
-    if (io == NULL)
-      PVM_RAISE_DFL (PVM_E_NO_IOS);
+    PVM_ASSERT (io != NULL);
     JITTER_PUSH_STACK (pvm_make_int (ios_volatile_p (io), 32));
   end
 end
@@ -1803,22 +1791,18 @@ end
 # operation.
 #
 # This instruction pushes the bias associated to the given IO space to
-# the stack, as an offset.  If the given IO space doesn't exist then
-# the exception PVM_E_NO_IOS is raised.
+# the stack, as an offset.
+# The given IO space must exist.
 #
 # Stack: ( INT - INT OFF )
-# Exceptions: PVM_E_NO_IOS
 
 instruction iogetb ()
-  non-relocatable
-  branching # because of PVM_RAISE_DIRECT
   code
     pvm_val type, magnitude, unit;
     ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
     ios io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));
 
-    if (io == NULL)
-      PVM_RAISE_DFL (PVM_E_NO_IOS);
+    PVM_ASSERT (io != NULL);
 
     magnitude = PVM_MAKE_ULONG (ios_get_bias (io), 64);
     unit = PVM_MAKE_ULONG (1, 64);
@@ -1834,25 +1818,21 @@ end
 # operation.
 #
 # This instruction sets the bias associated to the given IO space.
-# The bias is specified as an offset.  If the given IO space doesn't
-# exist, the exception PVM_E_NO_IOS is raised.
+# The bias is specified as an offset.
+# The given IO space must exist.
 #
 # Stack: ( OFF INT -- OFF )
-# Exceptions: PVM_E_NO_IOS
 
 instruction iosetb ()
-  branching # because of PVM_RAISE_DIRECT
   code
     pvm_val bias = JITTER_UNDER_TOP_STACK();
     pvm_val bias_type = PVM_VAL_OFF_TYPE (bias);
     ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
     ios io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));
 
+    PVM_ASSERT (io != NULL);
+
     JITTER_DROP_STACK ();
-
-    if (io == NULL)
-      PVM_RAISE_DFL (PVM_E_NO_IOS);
-
     ios_set_bias (io,
                   (PVM_VAL_INTEGRAL (PVM_VAL_OFF_MAGNITUDE (bias))
                    * PVM_VAL_INTEGRAL (PVM_VAL_TYP_O_UNIT (bias_type))));

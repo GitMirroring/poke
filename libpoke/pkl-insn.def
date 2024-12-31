@@ -497,6 +497,7 @@ PKL_DEF_INSN(PKL_INSN_POPEXITE,"","popexite")
 
 /* IOS related instructions.  */
 
+PKL_DEF_INSN(PKL_INSN_ISIOS,"","isios")
 PKL_DEF_INSN(PKL_INSN_PUSHIOS,"","pushios")
 PKL_DEF_INSN(PKL_INSN_POPIOS,"","popios")
 PKL_DEF_INSN(PKL_INSN_OPEN,"","open")

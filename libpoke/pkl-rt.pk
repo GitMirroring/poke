@@ -917,6 +917,8 @@ immutable fun get_ios = int<32>:
 
 immutable fun set_ios = (int<32> ios) int<32>:
 {
+  if (!asm int<32>: ("isios; nip" : ios))
+    raise E_no_ios;
   asm ("popios" :: ios);
   _pkl_run_ios_set_hook (ios);
   /* Always return `true' to facilitate using this function
@@ -926,35 +928,36 @@ immutable fun set_ios = (int<32> ios) int<32>:
 
 immutable fun iosize = (int<32> ios = get_ios) offset<uint<64>,8>:
 {
+  if (!asm int<32>: ("isios; nip" : ios))
+    raise E_no_ios;
   return asm offset<uint<64>,8>: ("iosize; nip" : ios);
 }
 
 immutable fun iotype = (int<32> ios = get_ios) string:
 {
-  return asm string: ("iotype
-                       nip
-                       bn .gotnull
-                       nip
-                       ba .done
-                     .gotnull:
-                       drop
-                       raise
-                     .done:
-                       " : E_no_ios, ios);
+  if (!asm int<32>: ("isios; nip" : ios))
+    raise E_no_ios;
+  return asm string: ("iotype; nip" : ios);
 }
 
 immutable fun iohandler = (int<32> ios = get_ios) string:
 {
+  if (!asm int<32>: ("isios; nip" : ios))
+    raise E_no_ios;
   return asm string: ("iohandler; nip" : ios);
 }
 
 immutable fun ioflags = (int<32> ios = get_ios) uint<64>:
 {
+  if (!asm int<32>: ("isios; nip" : ios))
+    raise E_no_ios;
   return asm uint<64>: ("ioflags; nip" : ios);
 }
 
 immutable fun iobias = (int<32> ios = get_ios) offset<uint<64>,1>:
 {
+  if (!asm int<32>: ("isios; nip" : ios))
+    raise E_no_ios;
   return asm offset<uint<64>,1>: ("iogetb; nip" : ios);
 }
 
@@ -979,11 +982,15 @@ immutable fun iosearch = (string handler) int<32>:
 
 immutable fun iovolatile = (int<32>ios = get_ios) int<32>:
 {
+  if (!asm int<32>: ("isios; nip" : ios))
+    raise E_no_ios;
   return asm int<32>: ("iogetv; nip" : ios);
 }
 
 immutable fun iosetbias = (offset<uint<64>,1> bias = 0#1, int<32> ios = get_ios) void:
 {
+  if (!asm int<32>: ("isios; nip" : ios))
+    raise E_no_ios;
   asm ("iosetb; drop" :: bias, ios);
 }
 

@@ -116,6 +116,27 @@ var tests = [
   },
   /* IOS related instructions.  */
   PkTest {
+    name = "isios",
+    func = lambda (string name) void:
+      {
+        var is_ios = asm any: ("isios; nip" : 10);
+
+        assert (is_ios isa int<32>);
+        assert (is_ios as int<32> == 0);
+
+        is_ios = asm any: ("isios; nip" : -1);
+
+        assert (is_ios isa int<32>);
+        assert (is_ios as int<32> == 0);
+
+        with_temp_ios
+          :do lambda void:
+            {
+              assert (asm int<32>: ("isios; nip" : get_ios) == 1);
+            };
+      }
+  },
+  PkTest {
     name = "iotype",
     func = lambda (string name) void:
       {

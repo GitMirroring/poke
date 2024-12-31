@@ -1,5 +1,34 @@
 2024-12-31  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pvm.jitter (isios): New instruction to check validity of IOS
+	ID.
+	(popios): Assume that the given IOS ID is valid, and do not raise any
+	exception.
+	(ioflags): Likewise.
+	(iosize): Likewise.
+	(ionum): Likewise.
+	(ioref): Likewise.
+	(iohandler): Likewise.
+	(iogetv): Likewise.
+	(iogetb): Likewise.
+	(iosetb): Likewise.
+	(iotype): Assume that the given IOS ID is valid, and do not push any
+	exception.
+	(late-c): Tweak `ioref_callback'.
+	* libpoke/pkl-rt.pk (set_ios): Add check for validity of given IOS.
+	(iosize): Likewise.
+	(iohandler): Likewise.
+	(ioflags): Likewise.
+	(iobias): Likewise.
+	(iovolatile): Likewise.
+	(iosetbias): Likewise.
+	(iotype): Adapt.
+	* libpoke/pkl-insn.def (isios): New instruction.
+	* testsuite/poke.pvm/pvm-insns-test.pk (tests): Add new tests for
+	`isios' instruction.
+
+2024-12-31  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pvm-alloc.c (pvm_alloc_register_thread): Move side-effects out of
 	`assert'.
 	(pvm_alloc_unregister_thread): Likewise.
