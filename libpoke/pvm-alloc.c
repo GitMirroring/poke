@@ -111,8 +111,10 @@ void
 pvm_alloc_register_thread ()
 {
   struct GC_stack_base sb;
+  int ok_p __attribute__ ((unused));
 
-  assert (GC_get_stack_base (&sb) == GC_SUCCESS);
+  ok_p = GC_get_stack_base (&sb) == GC_SUCCESS;
+  assert (ok_p);
   /* The following call may return GC_SUCCESS or GC_DUPLICATE.  */
   GC_register_my_thread (&sb);
 }
@@ -120,5 +122,8 @@ pvm_alloc_register_thread ()
 void
 pvm_alloc_unregister_thread ()
 {
-  assert (GC_unregister_my_thread () == GC_SUCCESS);
+  int ok_p __attribute__ ((unused));
+
+  ok_p = GC_unregister_my_thread () == GC_SUCCESS;
+  assert (ok_p);
 }
