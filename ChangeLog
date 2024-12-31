@@ -1,5 +1,11 @@
 2024-12-31  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pvm-alloc.c (pvm_alloc_register_thread): Move side-effects out of
+	`assert'.
+	(pvm_alloc_unregister_thread): Likewise.
+
+2024-12-31  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pvm.jitter (bzl): Normalize branch condition to prevent
 	loss of information due to casting to `jitter_uint' on 32-bit systems.
 	(bzlu): Likewise.
