@@ -711,6 +711,13 @@ pkl_resolve_module (pkl_compiler compiler,
   const char *load_path;
   char *full_filename = NULL;
 
+  if (module == NULL)
+    return NULL;
+
+  /* Check if the path is absolute.  */
+  if (*module == '/' && pk_file_readable (module) == NULL)
+    return strdup (module);
+
   /* Get the load path from the run-time environment.  */
   {
     pvm_val val;

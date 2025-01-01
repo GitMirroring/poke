@@ -1,3 +1,8 @@
+2025-01-01  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl.c (pkl_resolve_module): Add support for loading modules
+	using absolute path.
+
 2024-12-31  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pvm.jitter (isios): New instruction to check validity of IOS
