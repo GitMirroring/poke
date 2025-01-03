@@ -1,3 +1,12 @@
+2025-01-03  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-gen.pks (RAS_MACRO_PUSHIOS): New macro to extend
+	`pushios' insn to raise exception if there's no IOS.
+	* libpoke/pkl-gen.c (pkl_gen_pr_map): Replace `pushios' insn with
+	`RAS_MACRO_PUSHIOS'.
+	* testsuite/poke.pkl/map-diag-1.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
 2025-01-01  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl.c (pkl_resolve_module): Add support for loading modules
