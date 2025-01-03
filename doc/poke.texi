@@ -11,7 +11,7 @@
 This manual describes GNU poke (version @value{VERSION},
 @value{UPDATED}).
 
-Copyright @copyright{} 2019, 2020, 2021, 2022, 2023, 2024 The poke
+Copyright @copyright{} 2019, 2020, 2021, 2022, 2023, 2024, 2025 The poke
 authors.
 
 @quotation

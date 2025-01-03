@@ -1,7 +1,7 @@
 
 /* pokefmt.l - Template system to embed Poke code in files.  */
 
-/* Copyright (C) 2023 Mohammad-Reza Nabipoor.  */
+/* Copyright (C) 2023, 2024, 2025 Mohammad-Reza Nabipoor.  */
 
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

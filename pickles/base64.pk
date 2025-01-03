@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* Copyright (C) 2023, 2024 Jose E. Marchesi.
+/* Copyright (C) 2023, 2024, 2025 Jose E. Marchesi.
  *
  * Poke version of the Internet Software Consortium C implementation
  * of base64, which is:

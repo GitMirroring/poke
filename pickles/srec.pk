@@ -1,6 +1,6 @@
 /* srec.pk - Read and write Motorola SREC files.  */
 
-/* Copyright (C) 2023, 2024 Jose E. Marchesi.  */
+/* Copyright (C) 2023, 2024, 2025 Jose E. Marchesi.  */
 
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
