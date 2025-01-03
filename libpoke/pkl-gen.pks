@@ -3789,3 +3789,22 @@
 .done:
         popf 1
         .end
+
+;;; RAS_MACRO_PUSHIOS
+;;; ( - IOS )
+;;;
+;;; Push the descriptor of the current IO space on the stack, as a signed
+;;; integer.  If no IO space is currently opened, raise an exception.
+;;;
+
+        .macro pushios
+        pushios                 ; IOS
+        push int<32>0           ; IOS 0
+        lti                     ; IOS 0 (IOS<0)
+        nip                     ; IOS (IOS<0)
+        bzi .got_ios
+        push PVM_E_NO_IOS
+        raise
+.got_ios:
+        drop                    ; IOS
+        .end
