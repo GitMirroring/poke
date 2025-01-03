@@ -2684,7 +2684,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_map)
           PKL_GEN_POP_CONTEXT;
         }
       else
-        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSHIOS);
+        RAS_MACRO_PUSHIOS;
 
       PKL_GEN_PUSH_CONTEXT;
       PKL_PASS_SUBPASS (map_offset);
@@ -2702,7 +2702,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_map)
       if (map_ios)
         PKL_PASS_SUBPASS (map_ios);
       else
-        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSHIOS);
+        RAS_MACRO_PUSHIOS;
 
       /* Push the offset of the map and convert to a bit-offset.  Note
          that the offset is guaranteed to be an ulong<64> with unit

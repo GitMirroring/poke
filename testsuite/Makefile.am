@@ -1890,6 +1890,7 @@ EXTRA_DIST = \
   poke.pkl/lt-strings-1.pk \
   poke.pkl/lt-strings-2.p \
   poke.pkl/luca-suck-this.pk \
+  poke.pkl/map-diag-1.pk \
   poke.pkl/map-diag-2.pk \
   poke.pkl/map-diag-3.pk \
   poke.pkl/map-diag-4.pk \
