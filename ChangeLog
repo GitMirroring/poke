@@ -1,3 +1,8 @@
+2025-01-05  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pvm-val.c (pvm_allocate_struct_attrs): Do not over-allocate.
+	`fnames' and `ftypes' only need `nfields' number of elements.
+
 2025-01-03  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-gen.pks (RAS_MACRO_PUSHIOS): New macro to extend

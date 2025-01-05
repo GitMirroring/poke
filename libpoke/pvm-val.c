@@ -745,7 +745,7 @@ void
 pvm_allocate_struct_attrs (pvm_val nfields,
                            pvm_val **fnames, pvm_val **ftypes)
 {
-  size_t nbytes = sizeof (pvm_val) * PVM_VAL_ULONG (nfields) * 2;
+  size_t nbytes = sizeof (pvm_val) * PVM_VAL_ULONG (nfields);
   *fnames = pvm_alloc (nbytes);
   *ftypes = pvm_alloc (nbytes);
 }
