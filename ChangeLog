@@ -1,3 +1,8 @@
+2025-03-03  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-gen.pks (struct_constructor): Set name of PVM struct
+	type to provided non-null compile-time name.
+
 2025-03-02  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-gen.c (pkl_gen_pr_type_struct): Add assertion to verify
