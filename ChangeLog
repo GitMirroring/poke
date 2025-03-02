@@ -1,5 +1,14 @@
 2025-03-03  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pkl-gen.c (pkl_gen_pr_decl): Compile constructor/mapper/
+	comparator/integrator/deintegrator/typifier for alias types to have
+	the correct names.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+	* testsuite/poke.map/type-alias-1.pk: New test.
+	* testsuite/poke.pkl/type-alias-1.pk: Likewise.
+
+2025-03-03  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-gen.pks (struct_constructor): Set name of PVM struct
 	type to provided non-null compile-time name.
 

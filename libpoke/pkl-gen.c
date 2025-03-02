@@ -338,11 +338,15 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
         case PKL_TYPE_STRUCT:
           {
             pkl_ast_node type_struct = initial;
+            int is_type_alias_p;
+
+            is_type_alias_p = PKL_AST_TYPE_CODE2 (initial) == PKL_TYPE_ALIAS;
 
             /* Compile the struct closures and complete them using the
                current environment.  */
 
-            if (PKL_AST_TYPE_S_WRITER (type_struct) == PVM_NULL)
+            if (PKL_AST_TYPE_S_WRITER (type_struct) == PVM_NULL
+                || is_type_alias_p)
               {
                 pvm_val writer_closure;
 
@@ -366,7 +370,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
                compiled before the mapper, because the first has to be
                installed in the PVM struct type built by the second.
               */
-            if (PKL_AST_TYPE_S_CONSTRUCTOR (type_struct) == PVM_NULL)
+            if (PKL_AST_TYPE_S_CONSTRUCTOR (type_struct) == PVM_NULL
+                || is_type_alias_p)
               {
                 pvm_val constructor_closure;
 
@@ -381,7 +386,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);                /* CLS */
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);               /* _ */
 
-            if (PKL_AST_TYPE_S_MAPPER (type_struct) == PVM_NULL)
+            if (PKL_AST_TYPE_S_MAPPER (type_struct) == PVM_NULL
+                || is_type_alias_p)
               {
                 pvm_val mapper_closure;
 
@@ -396,7 +402,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);           /* CLS */
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);          /* _ */
 
-            if (PKL_AST_TYPE_S_COMPARATOR (type_struct) == PVM_NULL)
+            if (PKL_AST_TYPE_S_COMPARATOR (type_struct) == PVM_NULL
+                || is_type_alias_p)
               {
                 pvm_val comparator_closure;
 
@@ -418,7 +425,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
 
             if (PKL_AST_TYPE_S_ITYPE (type_struct))
               {
-                if (PKL_AST_TYPE_S_INTEGRATOR (type_struct) == PVM_NULL)
+                if (PKL_AST_TYPE_S_INTEGRATOR (type_struct) == PVM_NULL
+                    || is_type_alias_p)
                   {
                     pvm_val integrator_closure;
 
@@ -438,7 +446,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
                 pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);               /* CLS */
                 pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);              /* _ */
 
-                if (PKL_AST_TYPE_S_DEINTEGRATOR (type_struct) == PVM_NULL)
+                if (PKL_AST_TYPE_S_DEINTEGRATOR (type_struct) == PVM_NULL
+                    || is_type_alias_p)
                   {
                     pvm_val deintegrator_closure;
 
@@ -461,7 +470,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
 
             /* Note that the typifier must be processed last, as it
                uses the closures installed above.  */
-            if (PKL_AST_TYPE_S_TYPIFIER (type_struct) == PVM_NULL)
+            if (PKL_AST_TYPE_S_TYPIFIER (type_struct) == PVM_NULL
+                || is_type_alias_p)
               {
                 pvm_val typifier_closure;
 

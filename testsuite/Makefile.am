@@ -595,6 +595,7 @@ EXTRA_DIST = \
   poke.map/trimmed-map-2.pk \
   poke.map/trimmed-map-3.pk \
   poke.map/trimmed-map-4.pk \
+  poke.map/type-alias-1.pk \
   poke.map/unmap-1.pk \
   poke.map/unmap-2.pk \
   poke.map/unmap-3.pk \
@@ -2763,6 +2764,7 @@ EXTRA_DIST = \
   poke.pkl/try-until-5.pk \
   poke.pkl/try-until-6.pk \
   poke.pkl/try-until-diag-1.pk \
+  poke.pkl/type-alias-1.pk \
   poke.pkl/typename-diag.pk \
   poke.pkl/typeof-1.pk \
   poke.pkl/typeof-2.pk \

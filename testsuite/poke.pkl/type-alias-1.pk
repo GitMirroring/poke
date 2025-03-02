@@ -1,0 +1,11 @@
+/* { dg-do run } */
+
+
+type S = struct {};
+type SS = S;
+
+/* { dg-command { .set omode flat } } */
+/* { dg-command { .set pretty-print no } } */
+/* { dg-command { var s = SS {} } } */
+/* { dg-command { s } } */
+/* { dg-output "SS \\\{\\\}" } */
