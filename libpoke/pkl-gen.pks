@@ -2083,6 +2083,12 @@
         .c PKL_PASS_SUBPASS (@type_struct);
         .c PKL_GEN_POP_CONTEXT;
                                 ; SCT 0UL [OFF STR VAL]... NMETHOD NFIELD TYP
+  .c if (@type_struct_name)
+  .c {
+          .let #type_name = pvm_make_string (PKL_AST_IDENTIFIER_POINTER (@type_struct_name))
+          push #type_name
+          tysctsetn
+  .c }
         mksct                   ; SCT SCT
         nip                     ; SCT
         popf 1
