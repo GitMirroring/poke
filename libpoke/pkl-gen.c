@@ -4045,6 +4045,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_struct)
 
       if (type_struct_constructor == PVM_NULL)
         {
+          assert (!PKL_AST_TYPE_NAMED_P (type_struct));
           RAS_FUNCTION_STRUCT_CONSTRUCTOR (type_struct_constructor, type_struct,
                                            (pkl_ast_node) NULL /* type_name */);
           /* We normally do not install closures in anonymous types,
