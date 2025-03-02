@@ -1,3 +1,8 @@
+2025-03-02  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-gen.c (pkl_gen_pr_type_struct): Add assertion to verify
+	that we're generating constructor for an unnamed struct.
+
 2025-01-05  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pvm-val.c (pvm_allocate_struct_attrs): Do not over-allocate.
