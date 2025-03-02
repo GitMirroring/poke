@@ -1,0 +1,11 @@
+/* { dg-do run } */
+/* { dg-data {c*} {0x10 0x20 0x30 0x40} } */
+
+type S = struct {};
+type SS = S;
+
+/* { dg-command { .set omode flat } } */
+/* { dg-command { .set pretty-print no } } */
+/* { dg-command { var s = SS @ 0#B; } } */
+/* { dg-command { s } } */
+/* { dg-output "SS \\\{\\\}" } */
