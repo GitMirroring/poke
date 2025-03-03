@@ -1,0 +1,111 @@
+#!@bindir@/poke -L
+!#
+
+/* pk-bpfcoredump - Dump BPF CO-RE relocations.  */
+
+/* Copyright (C) 2025 Oracle Inc.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+load elf;
+load bpfcore;
+load argp;
+
+var opt_verbose = 0;
+
+var options = [
+  Argp_Option {
+    name = "v",
+    long_name = "verbose",
+    summary = "print relocation records in detail",
+    handler = lambda (string arg) void: { opt_verbose = 1; }
+  },
+];
+
+/* Print all BPF CO-RE relocations in the given ELF object.  */
+
+fun print_core_relos = (Elf64_File elf, int verbosity) void:
+{
+  if (elf.get_sections_by_name (".BTF")'length == 0)
+    {
+      printf ("No BTF information found.\n");
+      return;
+    }
+  if (elf.get_sections_by_name (".BTF.ext")'length == 0)
+    {
+      printf ("No BTF.ext information found.\n");
+      return;
+    }
+
+  var btf_shdr = elf.get_sections_by_name (".BTF") [0];
+  var ext_shdr = elf.get_sections_by_name (".BTF.ext") [0];
+
+  var btf = BTF_Section @ btf_shdr.sh_offset;
+  var ext = BTF_Ext_Section @ ext_shdr.sh_offset;
+
+  if (ext.header.core_info_len <= 0#B)
+    {
+      printf ("Object contains no CO-RE relocation records.\n");
+      return;
+    }
+
+  var core = ext.core_info;
+  for (section in core.sections)
+    {
+      var secname = btf.get_string (section.header.sec_name_off);
+
+      var bpf_shdr = elf.get_sections_by_name(secname)[0];
+      var insns = BPF_Insn[bpf_shdr.sh_size] @ bpf_shdr.sh_offset;
+
+      printf ("\nCO-RE RELOCATION RECORDS FOR [%s]:  %u32d total\n",
+              secname, section.recs'length);
+
+      for (rec in section.recs)
+        {
+          var insn = insns[rec.insn_off];
+          if (verbosity == 0)
+            bpfcore_print_record_brief (btf, rec);
+          else
+            bpfcore_print_record_detailed (btf, rec, insn);
+        }
+    }
+}
+
+vm_set_obase (10);     /* Print numbers in base 10.  */
+vm_set_opprint (1);    /* Enable pretty-print.  */
+vm_set_autoremap (0);  /* Disable auto-remap.  */
+
+argv = (
+  argp_parse
+    :program "pk-bpfcoredump"
+    :summary "Dump BPF CO-RE relocation records."
+    :opts options
+    :argv argv
+);
+
+var ok_p = (argv'length == 1);
+
+if (!ok_p)
+  {
+    printf ("Usage: pk-bpfcoredump [-v] FILE\n");
+    exit (1);
+  }
+
+var fd = open (argv[0], IOS_M_RDONLY);
+var elf = Elf64_File @ 0#B;
+
+print_core_relos (elf, opt_verbose);
+
+close (fd);

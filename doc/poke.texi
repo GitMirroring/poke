@@ -7981,7 +7981,8 @@ activities.
 
 @menu
 * ELF::                         Editing ELF files.
-* Dwarf::	                Editing DWARF data.
+* Dwarf::                       Editing DWARF data.
+* BPF::                         Dealing with BPF programs.
 @end menu
 
 @node ELF
@@ -7995,6 +7996,34 @@ dumps.  It supports many architectures and extensions.
 @section Dwarf
 
 XXX
+
+@node BPF
+@section BPF
+
+GNU poke includes several pickles and utilities for dealing with BPF
+programs and related information:
+
+@itemize @bullet
+@item
+bpf.pk: the BPF instruction set.
+@item
+btf.pk: the BTF information format.  This is a general-purpose type
+information format that may be used by non-BPF programs as well.
+@item
+btf-ext.pk: the .BTF.ext information format.  Extended BTF information
+highly specific to BPF programs, and depends on an accompanying BTF
+information section to be useful.
+@item
+btf-dump.pk: Utility routines for dumping BTF in a convenient
+human-readable format.
+@item
+bpfcore.pk: Utilities for interacting with BPF programs in ways that
+use BPF, BTF, and .BTF.ext information all at once, such as printing
+BPF CO-RE relocation records.
+@item
+pk-bpfcoredump: A program for dumping BPF CO-RE relocation records
+in a human-readable format.
+@end itemize
 
 @node Programs
 @chapter Programs

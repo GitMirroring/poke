@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-bin_SCRIPTS = pk-strings pk-bin2poke pk-jojopatch
+bin_SCRIPTS = pk-strings pk-bin2poke pk-jojopatch pk-bpfcoredump
 CLEANFILES = $(bin_SCRIPTS)
-EXTRA_DIST = pk-strings.in pk-bin2poke.in pk-jojopatch.in
+EXTRA_DIST = pk-strings.in pk-bin2poke.in pk-jojopatch.in pk-bpfcoredump.in
 
 do_subst = sed -e 's,[@]bindir[@],$(bindir),g'
 
@@ -32,3 +32,7 @@ pk-bin2poke: pk-bin2poke.in Makefile
 pk-jojopatch: pk-jojopatch.in Makefile
 	$(do_subst) < $(srcdir)/pk-jojopatch.in > pk-jojopatch
 	chmod +x pk-jojopatch
+
+pk-bpfcoredump: pk-bpfcoredump.in Makefile
+	$(do_subst) < $(srcdir)/pk-bpfcoredump.in > pk-bpfcoredump
+	chmod +x pk-bpfcoredump

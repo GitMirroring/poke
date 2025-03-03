@@ -1,5 +1,21 @@
 2025-03-03  David Faust  <david.faust@oracle.com>
 
+	* doc/poke.texi (Object Formats): Add entry for BPF.
+	(BPF): New node describing the various BPF-related pickles.
+	* pickles/bpfcore.pk: New pickle for dealing with BPF CO-RE.
+	* pickles/btf.pk (BTF_Type): Minor cleanup and modernization.
+	(BTF_Section): Add several new utility methods.
+	* pickles/btf-dump.pk (btf_dump_type, btf_dump): Small adaptations
+	for above changes.
+	* pickles/Makefile.am (dist_pickles_DATA): Add `bpfcore.pk'.
+	* utils/Makefile.am (bin_SCRIPTS): Add `pk-bpfcoredump'.
+	(EXTRA_DIST): Add `pk-bpfcoredump.in'.
+	(pk-bpfcoredump): Add rule for `pk-bpfcoredump.in`.
+	* utils/pk-bpfcoredump.in: New Poke script for dumping BPF CO-RE
+	relocations.
+
+2025-03-03  David Faust  <david.faust@oracle.com>
+
 	* pickles/bpf.pk: Rewrite to support ISA v3 and v4 instruction
 	formats.
 

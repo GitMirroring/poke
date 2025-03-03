@@ -1,0 +1,116 @@
+/* bpfcore.pk - BPF CO-RE-related utilities for GNU poke.  */
+
+/* Copyright (C) 2025 Oracle Inc.  */
+
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+load bpf;
+load btf;
+load "btf-ext.pk";
+
+var BPFCORE_RELO_KIND_NAMES =
+  ["field:byte_offset", "field:byte_size", "field:exists", "field:signed",
+   "field:lshift", "field:rshift", "type:id_local", "type:id_target",
+   "type:exists", "type:size", "enumval:exists", "enumval:value"];
+
+/* Return a list CO-RE relocations in a given section which operate on
+   a given type ID.  */
+fun bpfcore_get_relos_by_typeid = (BTF_Section btf, BTF_Ext_Core_Info_Sec sec,
+                                   BTF_Type_Id id) BTF_Ext_Core_Info_Rec[]:
+{
+  var recs = BTF_Ext_Core_Info_Rec[]();
+  for (r in sec.recs where r.type_id == id)
+    apush (recs, r);
+  return recs;
+}
+
+/* Pretty-print a brief (one-line) summary of a CO-RE relocation record.  */
+fun bpfcore_print_record_brief = (BTF_Section btf,
+                                  BTF_Ext_Core_Info_Rec rec) void:
+  {
+    var access_str = btf.get_string (rec.access_str_off);
+    var t = btf.types[rec.type_id - 1]; // -1 for the implicit 'void' at id=0.
+    var tname = btf.get_string (t.name);
+    var tid = rec.type_id;
+
+    printf ("%s %v %s %s (id=%u32d) @%v\n",
+            BPFCORE_RELO_KIND_NAMES[rec.kind], access_str,
+            btf_kind_names[t.info.kind], tname, tid,
+            rec.insn_off);
+  }
+
+/* Pretty-print a CO-RE relocation record in detail, including expanding each
+   access index in the relocation and the corresponding type information.  */
+fun bpfcore_print_record_detailed = (BTF_Section btf, BTF_Ext_Core_Info_Rec rec,
+                                     BPF_Insn insn) void:
+  {
+    var access_str = btf.get_string (rec.access_str_off);
+    var t = btf.types[rec.type_id - 1]; // -1 for the implicit 'void' at id=0.
+    var tname = btf.get_string (t.name);
+    var tid = rec.type_id;
+
+    printf ("R %s %v\n", BPFCORE_RELO_KIND_NAMES[rec.kind], access_str);
+    printf ("    @%v\n", rec.insn_off);
+    printf ("    %s\n", insn.as_asm);
+    printf ("  0: %s %s (id=%u32d)\n", btf_kind_names[t.info.kind], tname, tid);
+
+    /* Parse the access string for the member indexes.
+       Skip the leading 0: since it is (almost) always useless.  */
+    var tok = strtok (access_str);
+    var index = atoi (tok.popdelim (":"));
+    var lvl = 1;
+    while (tok.more)
+      {
+        index = atoi (tok.popdelim (":"));
+
+        printf ("  %u32d: %s", index, "  "*lvl);
+        printf ("%s %s (id=%u32d)",
+                btf_kind_names[t.info.kind],
+                tname, tid);
+
+        if (t.info.kind == BTF_KIND_ARRAY)
+          {
+            printf (" <array access at index=%u32d>\n", index);
+            tid = t.data.array.elem_type;
+          }
+        else if (t.info.kind == BTF_KIND_TYPEDEF)
+          {
+            /* A mid-chain typedef will have an associated :0: in the
+               access string to "dereference" the typedef.  */
+            printf("\n");
+            tid = t.attrs.type_id;
+          }
+        else if (t.info.kind == BTF_KIND_STRUCT || t.info.kind == BTF_KIND_UNION)
+          {
+            var member = t.data.members[index];
+            printf (".%s\n",
+                    member.name == 0#B ? "<anon>" : btf.get_string (member.name));
+
+            tid = member.type_id;
+          }
+        else
+          {
+            printf ("\n\t?? record has additional indexes ??");
+            break;
+          }
+        t = btf.types [tid - 1];
+        tname = t.name == 0#B ? "<anon>" : btf.get_string (t.name);
+        lvl += 1;
+      }
+
+    printf ("    ");
+    printf ("%s", btf.get_type_chain_str (tid));
+    printf ("\n\n");
+  }

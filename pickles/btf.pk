@@ -162,6 +162,21 @@ type BTF_Type =
       uint<16> vlen; /* Note that vlen encodes the linkage of
                         BTF_KIND_FUNC entries.  (yes, pfff.)  */
 
+      method has_type_ref = int:
+        {
+          return kind in [BTF_KIND_PTR, BTF_KIND_TYPEDEF, BTF_KIND_VOLATILE,
+                          BTF_KIND_CONST, BTF_KIND_RESTRICT, BTF_KIND_FUNC,
+                          BTF_KIND_FUNC_PROTO, BTF_KIND_VAR, BTF_KIND_DECL_TAG,
+                          BTF_KIND_TYPE_TAG];
+        }
+
+      method has_size = int:
+        {
+          return kind in [BTF_KIND_INT, BTF_KIND_FLOAT, BTF_KIND_ENUM,
+                          BTF_KIND_ENUM64, BTF_KIND_STRUCT, BTF_KIND_UNION,
+                          BTF_KIND_DATASEC];
+        }
+
       method _print = void:
         {
           printf ("#<%s,kind_flag:%u32d,%s>",
@@ -174,14 +189,11 @@ type BTF_Type =
 
     union
     {
-      offset<uint<32>,B> size : (info.kind in [BTF_KIND_INT,
-                                               BTF_KIND_FLOAT,
-                                               BTF_KIND_ENUM,
-                                               BTF_KIND_ENUM64,
-                                               BTF_KIND_STRUCT,
-                                               BTF_KIND_UNION,
-                                               BTF_KIND_DATASEC]);
-      BTF_Type_Id type_id;
+      offset<uint<32>,B> size : info.has_size;
+      BTF_Type_Id type_id : info.has_type_ref;
+
+      /* Some type kinds, such as FWD and ARRAY, do not have any info here.  */
+      uint<32> unused;
     } attrs;
 
     /* XXX move these types to the top-level once we get support to
@@ -263,9 +275,91 @@ type BTF_Section =
     string[header.str_len] strings @ header.hdr_len + header.str_off;
 
     /* Given an offset into the BTF strings section, return the string.  */
-
     method get_string = (offset<uint<32>,B> off) string:
+      { return strings[off]; }
+
+
+    /* Return the lowest type ID of a type with the given name.
+       Raises E_elem if no matching type is found.  */
+    method get_id_by_name = (string name) BTF_Type_Id:
       {
-        return strings[off];
+        for (var i = 0; i < types'length; i++)
+          if (get_string (types[i].name) == name)
+            return i + 1; // +1 for the implicit void at id=0
+        raise E_elem;
+      }
+
+    /* Return types whose names exactly match the given NAME.
+       In most cases, this should return a list with exactly
+       zero or one elements.  */
+    method get_types_by_name = (string name) BTF_Type[]:
+      {
+        var ts = BTF_Type[]();
+        for (t in types where get_string (t.name) == name)
+          apush (ts, t);
+        return ts;
+      }
+
+    /* Return all types in the section of a given kind.
+       For example, get_type_by_kind (BTF_KIND_STRUCT) will return all struct
+       types in the BTF section.  */
+    method get_types_by_kind = (uint<5> kind) BTF_Type[]:
+      {
+        var ts = BTF_Type[]();
+        for (t in types where t.info.kind == kind)
+          apush (ts, t);
+        return ts;
+      }
+
+    /* Given a type ID, return any types which refer directly to that ID.
+       Members of struct/union types and function args are not counted as
+       "direct" references, only things like typedefs and pointers.  */
+    method get_types_by_refid = (BTF_Type_Id tid) BTF_Type[]:
+      {
+        var ts = BTF_Type[]();
+        for (t in types where (t.info.has_type_ref && t.attrs.type_id == tid))
+          apush (ts, t);
+        return ts;
+      }
+
+    /* Return a human-readable string of the chain of types starting from
+       the type with the given type ID.
+       e.g. if TID is the ID of a BTF_Type encoding const pointer to int,
+       return a string like:
+         "const <anon> (id=48) -> ptr <anon> (id=12) -> int int (id=2)".  */
+    method get_type_chain_str = (BTF_Type_Id tid) string:
+      {
+        var s = "";
+        while (1)
+          {
+            if (tid == 0)
+              {
+                s += "void";
+                break;
+              }
+            else if (tid < 1 || tid > types'length)
+              {
+                s += format ("bad type id %u32d", tid);
+                break;
+              }
+
+            var t = types[tid - 1]; // -1 for the implicit 'void' with ID 0.
+            var tname = t.name == 0#B ? "<anon>" : get_string (t.name);
+            s += format ("%s %s (id=%u32d)", btf_kind_names[t.info.kind],
+                                             tname, tid);
+
+            if (t.info.kind in [BTF_KIND_PTR, BTF_KIND_TYPEDEF, BTF_KIND_CONST,
+                                BTF_KIND_VOLATILE, BTF_KIND_RESTRICT,
+                                BTF_KIND_TYPE_TAG])
+              {
+                tid = t.attrs.type_id;
+                s += " -> ";
+              }
+            else
+              break;
+          }
+
+        return s;
       }
   };
+

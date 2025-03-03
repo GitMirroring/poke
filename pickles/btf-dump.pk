@@ -144,14 +144,9 @@ fun btf_dump_type = (BTF_Section btf, BTF_Type t) void:
   {
     var name = btf.get_string (t.name);
     printf ("%s '%s'(%v) ", btf_kind_names[t.info.kind], name, t.name);
-    try
-    {
-      printf ("size=%v", t.attrs.size);
-    }
-    catch if E_elem
-    {
-      printf ("type=%u32d", t.attrs.type_id);
-    }
+
+    ({ printf ("size=%v", t.attrs.size); } ?! E_elem)
+      && ({ printf ("type=%u32d", t.attrs.type_id); } ?! E_elem);
 
     btf_dump_type_vdata (btf, t);
     print "\n";
@@ -170,14 +165,9 @@ fun btf_dump = (BTF_Section btf) void:
           printf ("<anonymous> ");
         else
           printf("'%s'(%v) ", name, t.name);
-        try
-          {
-            printf ("size=%v", t.attrs.size);
-          }
-        catch if E_elem
-          {
-            printf ("type=%u32d", t.attrs.type_id);
-          }
+
+        ({ printf ("size=%v", t.attrs.size); } ?! E_elem)
+          && ({ printf ("type=%u32d", t.attrs.type_id); } ?! E_elem);
 
         btf_dump_type_vdata (btf, t);
 
