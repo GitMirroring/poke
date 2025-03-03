@@ -1,3 +1,8 @@
+2025-03-03  David Faust  <david.faust@oracle.com>
+
+	* pickles/bpf.pk: Rewrite to support ISA v3 and v4 instruction
+	formats.
+
 2025-03-03  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-gen.c (pkl_gen_pr_decl): Compile constructor/mapper/
