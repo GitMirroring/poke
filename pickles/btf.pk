@@ -162,7 +162,7 @@ type BTF_Type =
       uint<16> vlen; /* Note that vlen encodes the linkage of
                         BTF_KIND_FUNC entries.  (yes, pfff.)  */
 
-      method has_type_ref = int:
+      method has_type_ref = int<32>:
         {
           return kind in [BTF_KIND_PTR, BTF_KIND_TYPEDEF, BTF_KIND_VOLATILE,
                           BTF_KIND_CONST, BTF_KIND_RESTRICT, BTF_KIND_FUNC,
@@ -170,7 +170,7 @@ type BTF_Type =
                           BTF_KIND_TYPE_TAG];
         }
 
-      method has_size = int:
+      method has_size = int<32>:
         {
           return kind in [BTF_KIND_INT, BTF_KIND_FLOAT, BTF_KIND_ENUM,
                           BTF_KIND_ENUM64, BTF_KIND_STRUCT, BTF_KIND_UNION,
