@@ -362,4 +362,3 @@ type BTF_Section =
         return s;
       }
   };
-

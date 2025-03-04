@@ -825,4 +825,3 @@ fun bpf_stx = (uint<2> size, uint<4> dr, int<16> off16, uint<4> sr) BPF_Insn:
       }
     };
   }
-
