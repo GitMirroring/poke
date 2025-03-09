@@ -1,3 +1,260 @@
+2025-03-03  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-gen.c (pkl_gen_pr_decl): Compile constructor/mapper/
+	comparator/integrator/deintegrator/typifier for alias types to have
+	the correct names.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+	* testsuite/poke.map/type-alias-1.pk: New test.
+	* testsuite/poke.pkl/type-alias-1.pk: Likewise.
+
+2025-03-03  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-gen.pks (struct_constructor): Set name of PVM struct
+	type to provided non-null compile-time name.
+
+2025-03-02  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-gen.c (pkl_gen_pr_type_struct): Add assertion to verify
+	that we're generating constructor for an unnamed struct.
+
+2024-06-01  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-pass.c (pkl_call_node_handlers): Use
+	PKL_AST_TYPE_CODE2 instead of PKL_AST_TYPE_CODE.
+	(pkl_do_pass_1): Likewise.
+	* libpoke/pkl-tab.y: Pass the ast to pkl_env_register.
+	(TYPENAME): Add a type alias node instead of the aliased type to
+	the AST.
+	* libpoke/pkl-typify.c (pkl_typify1_ps_op_typeof): Create a named
+	type.
+	* libpoke/pkl.c (pkl_defvar): Pass the ast to pkl_env_register.
+	* libpoke/pvm-val.c (pvm_make_struct_type): Do not get a `name' argument.
+	(pvm_type_equal_p): Struct types may have PVM_NULL as name.
+	(pvm_make_exception): Set struct type name explicitly.
+	* libpoke/pvm.jitter (mktysct): Do not get a type name argument.
+	(tysctsetn): New instruction.
+	* testsuite/poke.pkl/redef-diag-7.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new test.
+	* libpoke/pkl-insn.def: New instruction tysctsetn.
+	* libpoke/pkl-gen.pks (field_location_str): Get the name of the
+	struct type in an argument.
+	(check_struct_field_constraint): Likewise.
+	(handle_struct_field_constraints): Likewise.
+	(struct_field_extractor): Likewise.
+	(struct_field_mapper): Likewise.
+	(struct_mapper): Likewise.
+	(struct_constructor): Likewise.
+	(struct_deintegrator): Likewise.
+	(typifier_any_any_wrapper): Likewise.
+	(typifier_any_any_int_wrapper): Likewise.
+	(struct_typifier): Likewise.
+	(typeof): Set the name of the Pk_Type struct explicitly.
+	(common_typifier): Do not set the field `name' of Pk_Type.
+	* libpoke/pkl-gen.c (pkl_gen_pr_decl): Pass type names to RAS
+	macros requiring it.
+	(pkl_gen_pr_ass_stmt): Use PKL_AST_TYPE_NAMED_P instead of
+	PKL_AST_TYPE_NAME to query whether a type is aliased.
+	(pkl_gen_pr_func): Likewise.
+	(pkl_gen_pr_func_arg): Likewise.
+	(pkl_gen_pr_cast): Likewise.
+	(pkl_gen_pr_type_array): Likewise.
+	(pkl_gen_pr_type_struct): Likewise.
+	(pkl_gen_pr_type_alias): New handler.
+	* libpoke/pkl-env.c (register_decl): Get an ast argument.
+	(register_decl): Invoke pkl_ast_rename_decl to rename
+	declarations.
+	(pkl_env_register): Get an ast argument.
+	* libpoke/pkl-env.h: Change prototype of pkl_ast_rename_decl
+	accordingly.
+	* libpoke/pkl-ast.h (enum pkl_ast_type_code): New value
+	PKL_TYPE_ALIAS.
+	(PKL_AST_TYPE_NAME): Redefine to support type aliases nodes.
+	(PKL_AST_TYPE_CODE2): Define.
+	(struct pkl_ast_type): Remove field name, new field named_p, and
+	add fields for type aliases.
+	(PKL_AST_DECL_TYPE_NAMES): Define.
+	(struct pkl_ast_decl): New field type_names.
+	* libpoke/pkl-ast.c (pkl_ast_make_type): Do not initialize name.
+	(pkl_ast_type_resolv): New function.
+	(pkl_ast_make_named_type): Likewise.
+	(pkl_ast_add_type_name_to_decl): Likewise.
+	(pkl_ast_rename_decl): Likewise.
+	(pkl_ast_node_free_1): Support type aliases nodes.
+	(pkl_ast_format_1): Likewise.
+	* libpoke/pk-val.c (pk_make_struct_type): Do not pass name to
+	pvm_make_struct_type.
+
+2025-01-05  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pvm-val.c (pvm_allocate_struct_attrs): Do not over-allocate.
+	`fnames' and `ftypes' only need `nfields' number of elements.
+2025-01-03  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-gen.pks (RAS_MACRO_PUSHIOS): New macro to extend
+	`pushios' insn to raise exception if there's no IOS.
+	* libpoke/pkl-gen.c (pkl_gen_pr_map): Replace `pushios' insn with
+	`RAS_MACRO_PUSHIOS'.
+	* testsuite/poke.pkl/map-diag-1.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
+2024-12-31  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pvm-alloc.c (pvm_alloc_register_thread): Move side-effects out of
+	`assert'.
+	(pvm_alloc_unregister_thread): Likewise.
+
+2024-12-31  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pvm.jitter (bzl): Normalize branch condition to prevent
+	loss of information due to casting to `jitter_uint' on 32-bit systems.
+	(bzlu): Likewise.
+	(bnzl): Likewise.
+	(bnzlu): Likewise.
+
+2024-12-29  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pvm.h (pvm_make_integral): New function declaration.
+	* libpoke/pvm-val.c (pvm_make_integral): New function moved from
+	`libpoke/pvm-val.c'.
+	* libpoke/pkl-asm.c (pvm_make_integral): Removed.
+	* libpoke/pkl-promo.c (pkl_promo_ps_op_binary): Do not cast to `int<32>'
+	for the following operators: `&&', `||' and `=>' to prevent loss of
+	information due to possible truncation.
+	(pkl_promo_ps_op_unary): Likewise for `!' unary operator.
+	* libpoke/pkl-gen.c (pkl_gen_pr_op_and): Change codegen to work correctly
+	with operands wider than `int<32>'.
+	(pkl_gen_pr_op_or): Likewise.
+	(pkl_gen_pr_op_impl): Likewise.
+	(pkl_gen_pr_op_not): Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+	* testsuite/poke.pkl/and-16.pk: New test.
+	* testsuite/poke.pkl/and-17.pk: Likewise.
+	* testsuite/poke.pkl/and-18.pk: Likewise.
+	* testsuite/poke.pkl/and-int-struct-4.pk: Likewise.
+	* testsuite/poke.pkl/impl-6.pk: Likewise.
+	* testsuite/poke.pkl/or-6.pk: Likewise.
+	* testsuite/poke.pkl/or-7.pk: Likewise.
+	* testsuite/poke.pkl/or-int-struct-4.pk: Likewise.
+
+2024-10-06  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-lex.l: Fix pattern for matching delimited alien token
+	to not use name definitions inside character class.
+	(NOT_GT): New name definition.
+	* testsuite/poke.cmd/ios-4.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
+2024-10-05  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-gen.c (pkl_gen_ps_op_add): Install a writer for the
+	result of array concatenation.
+	* testsuite/poke.map/ass-map-29.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
+2024-10-04  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-gen.pks (atrim): Install a writer when the original
+	original is not mapped.
+	* testsuite/poke.map/ass-map-28.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
+2024-09-25  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* doc/learn-poke-language-in-y-minutes.pk: Update and add a few
+        more examples.
+
+2024-09-25  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* etc/poke-ras-mode.el: Replace FSF's address with URL.
+	* testsuite/poke.cmd/cmd.exp: Likewise.
+	* testsuite/poke.map/map.exp: Likewise.
+	* testsuite/poke.pickles/pickles.exp: Likewise.
+	* testsuite/poke.pkl/pkl.exp: Likewise.
+	* testsuite/poke.pktest/pktest.exp: Likewise.
+	* testsuite/poke.pvm/pvm.exp: Likewise.
+	* testsuite/poke.repl/repl.exp: Likewise.
+	* testsuite/poke.std/std.exp: Likewise.
+	* testsuite/poke.time/time.exp: Likewise.
+
+2024-09-25  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* poke/pk-cmd.c (pk_cmd_exec): Clear lexical cuckolding if
+	pk_compile_statement_with_loc fails.
+
+2024-09-24  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* bootstrap.conf (bootstrap_epilogue): Define.
+
+2024-09-24  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* poke/pk-cmd-editor.c (pk_cmd_editor): Do not print a dot at the
+	end of error messages.
+
+2024-09-24  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-fold.c (OP_BINARY_SIS): Signal out of memory.
+	(EMUL_SIS): Use malloc instead of xmalloc.
+	(OP_BINARY_SSS): Call PKL_PASS_ERROR after PKL_ICE.
+	* libpoke/pkl-trans.c (pkl_trans1_ps_format): Likewise.
+	(pkl_trans2_ps_incdecr): Likewise.
+	* libpoke/pkl-trans.c (XSTRDUP): Likewise.
+	(XMALLOC): Likewise.
+	* libpoke/pkl-gen.c (pkl_gen_ps_func): Likewise.
+
+2024-09-24  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-ast.c: Likewise.
+
+	* libpoke/pkl-fold.c: Do not include xalloc.h.
+
+	* libpoke/pkl-tab.y: Do not include xalloc.h.
+	* libpoke/pkl-trans.c: Do not include xalloc.h.
+	(XSTRDUP): Define.
+	(XMALLOC): Likewise.
+
+2024-09-24  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* pickles/btf-ext.pk (BTF_Ext_Header): Improve constraint for
+	`magic' so it handles endianness better.
+
+2024-09-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* poke/pk-cmd-help.pk: Add missing "dispatch" in synopsis for .vm.
+
+2024-09-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pvm.jitter (dup-wap-to-dup): New rewrite.
+	(swap-tuck-to-over): Likewise.
+
+2024-09-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-typify.c (pkl_typify1_ps_struct_type_field): Fix
+	memory leak.
+
+2024-09-20  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* testsuite/poke.cmd/set-oacutoff-2.pk: Escape dots in regexps.
+	* testsuite/poke.pkl/printf-25.pk: Likewise.
+	* testsuite/poke.pkl/format-28.pk: Likewise.
+	* testsuite/poke.pkl/format-20.pk: Likewise.
+	* testsuite/poke.pkl/format-19.pk: Likewise.
+	* testsuite/poke.cmd/set-oindent.pk: Likewise.
+	* testsuite/poke.cmd/set-odepth-1.pk: Likewise.
+
+2024-09-19  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pvm-val.h: Remove spurious definition of
+	pvm_make_mapinfo.
+
+2024-09-16  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* poke/pk-cmd-ios.c (file_cmd): Add flags to command synopsis.
+	(proc_cmd): Likewise.
+
+2024-09-16  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* doc/poke.texi (Write-only Partial Bytes): New section.
+
 2024-06-30  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* testsuite/poke.pkl/break-while-7.pk: New test.
