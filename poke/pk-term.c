@@ -574,21 +574,23 @@ pk_term_hyperlink_1 (pk_compiler pkc __attribute__ ((unused)),
 {
 #ifdef HAVE_TEXTSTYLE_HYPERLINK_SUPPORT
   styled_ostream_set_hyperlink (pk_ostream, url, id);
-  hlcount += 1;
 #endif
+
+  hlcount += 1;
 }
 
 int
 pk_term_end_hyperlink_1 (pk_compiler pkc __attribute__ ((unused)))
 {
-#ifdef HAVE_TEXTSTYLE_HYPERLINK_SUPPORT
   if (hlcount == 0)
     return 0;
 
+#ifdef HAVE_TEXTSTYLE_HYPERLINK_SUPPORT
   styled_ostream_set_hyperlink (pk_ostream, NULL, NULL);
+#endif
+
   hlcount -= 1;
   return 1;
-#endif
 }
 
 int
