@@ -1,0 +1,12 @@
+/* { dg-do run } */
+
+/* Test C pretty-printer using `strace' instruction.
+   `strace' always print in base 16.  */
+
+var a = 2:::1t,
+    b = 2U:::1t;
+
+/* { dg-command {asm ("strace 1; drop" :: a)} } */
+/* { dg-output "0x5 as int<33>\n" } */
+/* { dg-command {asm ("strace 1; drop" :: b)} } */
+/* { dg-output "0x5 as uint<33>\n" } */

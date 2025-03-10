@@ -1191,8 +1191,8 @@ pvm_print_val_1 (pvm vm, int depth, int mode, int base, int indent,
           if (size == 64)
             pk_printf (long64_fmt, base == 10 ? longval : ulongval);
           else
-            pk_printf (long_fmt, PVM_VAL_LONG_SIZE (val),
-                       base == 10 ? longval : ulongval);
+            pk_printf (long_fmt, base == 10 ? longval : ulongval,
+                       PVM_VAL_LONG_SIZE (val));
         }
 
       pk_term_end_class ("integer");
@@ -1251,7 +1251,7 @@ pvm_print_val_1 (pvm vm, int depth, int mode, int base, int indent,
           if (size == 64)
             pk_printf (ulong64_fmt, ulongval);
           else
-            pk_printf (ulong_fmt, PVM_VAL_LONG_SIZE (val), ulongval);
+            pk_printf (ulong_fmt, ulongval, PVM_VAL_LONG_SIZE (val));
         }
 
       pk_term_end_class ("integer");

@@ -1,3 +1,8 @@
+2025-03-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pvm-val.c (pvm_print_val_1): Fix printing of weird integers
+	wider than 32-bits.
+
 2025-03-09  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* poke/pk-term.c (pk_term_hyperlink_1): Only keep invocation of
