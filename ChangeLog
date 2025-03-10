@@ -1,5 +1,10 @@
 2025-03-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* testsuite/poke.pkl/for-in-int-struct-4.pk (Foo): Fix the type to
+	compile!
+
+2025-03-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-asm.h (pkl_asm_for_loop): Add new parameter for type of
 	loop's condition.
 	* libpoke/pkl-asm.c (pkl_asm_for_loop): Use new parameter to generate
