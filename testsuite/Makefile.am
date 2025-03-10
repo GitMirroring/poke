@@ -1465,12 +1465,17 @@ EXTRA_DIST = \
   poke.pkl/for-13.pk \
   poke.pkl/for-diag-1.pk \
   poke.pkl/for-diag-2.pk \
+  poke.pkl/for-diag-3.pk \
   poke.pkl/for-in-1.pk \
   poke.pkl/for-in-2.pk \
   poke.pkl/for-in-3.pk \
   poke.pkl/for-in-4.pk \
   poke.pkl/for-in-5.pk \
+  poke.pkl/for-in-6.pk \
   poke.pkl/for-in-int-struct-1.pk \
+  poke.pkl/for-in-int-struct-2.pk \
+  poke.pkl/for-in-int-struct-3.pk \
+  poke.pkl/for-in-int-struct-4.pk \
   poke.pkl/format-1.pk \
   poke.pkl/format-2.pk \
   poke.pkl/format-3.pk \

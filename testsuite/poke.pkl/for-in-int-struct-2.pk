@@ -2,5 +2,5 @@
 
 type Foo = struct uint<32> { int<16> hi; uint<16> lo; };
 
-/* { dg-command { { print "_"; for (a in [1,0,3] where Foo { lo = a }) { print "-"; } print "_"; } } } */
+/* { dg-command { { print "_"; for (a in [1,0,3] where Foo { hi = a }) { print "-"; } print "_"; } } } */
 /* { dg-output "_--_" } */

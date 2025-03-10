@@ -1,0 +1,6 @@
+/* { dg-do run } */
+
+type Foo = struct uint<23> { int<7> hi; uint<16> lo; };
+
+/* { dg-command { { print "_"; for (a in [1U,0U,3U] where Foo { hi = a }) { print "-"; } print "_"; } } } */
+/* { dg-output "_--_" } */

@@ -1,0 +1,8 @@
+/* { dg-do run } */
+
+var c = (0x80 as uint<16>):::0U;
+
+assert (c isa uint<48>);
+
+/* { dg-command { { print "_"; for (a in [1,2,3] where c) { print "-"; } print "_"; } } } */
+/* { dg-output "_---_" } */

@@ -1,0 +1,9 @@
+/* { dg-do compile } */
+
+type Foo = struct { int<32> a; };
+
+for (a in [1,2,3] where
+    Foo {} /* { dg-error "invalid condition.*\n.*expected boolean" } */
+    )
+{
+}

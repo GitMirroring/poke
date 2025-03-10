@@ -1,3 +1,24 @@
+2025-03-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-asm.h (pkl_asm_for_loop): Add new parameter for type of
+	loop's condition.
+	* libpoke/pkl-asm.c (pkl_asm_for_loop): Use new parameter to generate
+	appropriate variant of BZ insn when available.
+	* libpoke/pkl-promo.c (pkl_promo_ps_loop_stmt): New phase for loops to
+	promote loop's condition if the condition is of type integral struct.
+	(pkl_phase_promo): Register new phase.
+	* libpoke/pkl-gen.c (pkl_gen_pr_loop_stmt): Pass type of condition
+	to `pkl_asm_for_loop' when available.
+	* testsuite/poke.pkl/for-in-int-struct-1: Fix the test to actually
+	verify correctness of codegen.  Test was unable to catch the bug due
+	to "sub-string match" behavior of `dg-output'.
+	* testsuite/poke.pkl/for-in-int-struct-2: New test.
+	* testsuite/poke.pkl/for-in-int-struct-3: Likewise.
+	* testsuite/poke.pkl/for-in-int-struct-4: Likewise.
+	* testsuite/poke.pkl/for-in-6.pk: Likewise.
+	* testsuite/poke.pkl/for-diag-3.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
 2025-03-09  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* poke/pk-term.c (pk_term_hyperlink_1): Only keep invocation of
