@@ -2082,9 +2082,12 @@ pkl_asm_for_condition (pkl_asm pasm)
 }
 
 void
-pkl_asm_for_loop (pkl_asm pasm)
+pkl_asm_for_loop (pkl_asm pasm, pkl_ast_node cond_type)
 {
-  pkl_asm_insn (pasm, PKL_INSN_BZI, pasm->level->label2);
+  if (cond_type)
+    pkl_asm_insn (pasm, PKL_INSN_BZ, cond_type, pasm->level->label2);
+  else
+    pkl_asm_insn (pasm, PKL_INSN_BZI, pasm->level->label2);
   /* Pop the loop condition from the stack.  */
   pkl_asm_insn (pasm, PKL_INSN_DROP);
 }

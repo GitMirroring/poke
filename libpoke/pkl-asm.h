@@ -178,7 +178,7 @@ void pkl_asm_while_endloop (pkl_asm pasm);
 
 void pkl_asm_for (pkl_asm pasm, pkl_ast_node head);
 void pkl_asm_for_condition (pkl_asm pasm);
-void pkl_asm_for_loop (pkl_asm pasm);
+void pkl_asm_for_loop (pkl_asm pasm, pkl_ast_node condition_type);
 void pkl_asm_for_tail (pkl_asm pasm);
 void pkl_asm_for_endloop (pkl_asm pasm);
 

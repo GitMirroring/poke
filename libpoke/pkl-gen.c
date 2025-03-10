@@ -1497,6 +1497,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_loop_stmt)
     case PKL_AST_LOOP_STMT_KIND_FOR:
       {
         pkl_ast_node head = PKL_AST_LOOP_STMT_HEAD (loop_stmt);
+        pkl_ast_node condition = PKL_AST_LOOP_STMT_CONDITION (loop_stmt);
 
         pkl_asm_for (PKL_GEN_ASM, head);
         {
@@ -1505,15 +1506,13 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_loop_stmt)
         }
         pkl_asm_for_condition (PKL_GEN_ASM);
         {
-          pkl_ast_node condition
-            = PKL_AST_LOOP_STMT_CONDITION (loop_stmt);
-
           if (condition)
             PKL_PASS_SUBPASS (condition);
           else
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, pvm_make_int (1, 32));
         }
-        pkl_asm_for_loop (PKL_GEN_ASM);
+        pkl_asm_for_loop (PKL_GEN_ASM,
+                          condition ? PKL_AST_TYPE (condition) : NULL);
         {
           PKL_PASS_SUBPASS (body);
         }
