@@ -7,6 +7,63 @@ See the manual for detailed information.
   are permitted in any medium without royalty provided the copyright
   notice and this notice are preserved.
 
+ Version 4.3 (9 Mar 2025)
+* Bug fixes
+
+  - Fix memory leak in pkl-typify.
+
+  - Clear lexical cuckolding if `pk_compile_statement_with_loc' fails in `poke'.
+
+  - Add missing array writter for trimmed arrays.
+
+  - Add missing array writer for concatenated arrays.
+
+  - Fix flex rule for delimited alien tokens.
+
+  - Handle wide integers correctly in logical operators (`&&', `||', `=>'
+    and `!').
+
+  - Fix `while' loop to not cast the condition to `int<32>'.
+
+  - Fix b{,n}zl{,u} insns for 32-bit systems.
+
+  - Move side-effects out of `assert' in `pvm-alloc'.
+
+  - Fix codegen to generate code for raising an exception when there's no
+    open IO space.
+
+  - Do not over-allocate in `pvm_allocate_struct_attrs'.
+
+  - Fix compiled closures of alias types to use the correct name.
+
+  - Fix poke's hyperlink callbacks for terminal interface on systems that do
+    not have hyperlink support.
+
+  - Generate correct code for condition of `for' and `for-in' loops.
+
+* Documentation update
+
+  - Make it explicit that writing partial bytes requires reading full bytes.
+
+  - Add documentation for `.compiler' command.
+
+* Improvements
+
+  - Improve help of `.file' and `.vm' commands.
+
+  - Add a few peephole optimizations.
+
+  - Properly support type aliasing.
+
+* Pickles update
+
+  - Minor improvement in handling of `magic' field of `BTF_Ext_Header' in
+    `btf-ext.pk' pickle.
+
+* Internal changes
+
+  - Avoid use of `xalloc' and fix ICEs in `libpoke' to no abort the process.
+
  Version 4.2 (30 Jun 2024)
 * Bug fixes
 

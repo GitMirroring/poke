@@ -1,5 +1,10 @@
 2025-03-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* NEWS: Update.
+	* doc/gendocs_template: Update version to `4.3'.
+
+2025-03-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-asm.h (pkl_asm_for_loop): Add new parameter for type of
 	loop's condition.
 	* libpoke/pkl-asm.c (pkl_asm_for_loop): Use new parameter to generate
