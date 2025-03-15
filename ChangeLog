@@ -1,3 +1,8 @@
+2025-03-15  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* poke/poke.c (pk_print_version): Update --version copyright to
+	2025.
+
 2025-03-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* testsuite/poke.pkl/for-in-int-struct-4.pk (Foo): Fix the type to
