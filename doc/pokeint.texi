@@ -207,28 +207,28 @@ handlers are for write access, where @var{username} is the handler of
 your user in @url{https://savannah.gnu.org}.
 
 @table @url
-@item https://git.savannah.gnu.org/git/poke.git
+@item https://https.git.savannah.gnu.org/git/poke.git
 @itemx @var{username}@@git.savannah.gnu.org/srv/git/poke.git
 Main repository, containing the source code of libpoke, the poke
 application, documentation, poked, pokefmt, and testsuite.  The GNU
 poke source distribution is compiled from this repo.
 
-@item https://git.savannah.gnu.org/git/poke/poke-mode.git
+@item https://https.git.savannah.gnu.org/git/poke/poke-mode.git
 @itemx @var{username}@@git.savannah.gnu.org/srv/git/poke/poke-mode.git
 Repository for @code{poke-mode}, an Emacs major mode for editing Poke
 source code.  The poke-mode ELPA package is built from this repo.
 
-@item https://git.savannah.gnu.org/git/poke/poke-el.git
+@item https://https.git.savannah.gnu.org/git/poke/poke-el.git
 @itemx @var{username}@@git.savannah.gnu.org/srv/git/poke/poke-el.git
 Repository for @code{poke.el}, an Emacs interface to GNU poke.  The
 poke ELPA package is built from this repo.
 
-@item https://git.savannah.gnu.org/git/poke/poke/poke-elf.git
+@item https://https.git.savannah.gnu.org/git/poke/poke/poke-elf.git
 @itemx @var{username}@@git.savannah.gnu.org/srv/git/poke/poke-elf.git
 Repository for the poke ELF pickles
 project@footnote{https://jemarch.net/poke-elf}.
 
-@item https://git.savannah.gnu.org/git/poke/poke/poke-dwarf.git
+@item https://https.git.savannah.gnu.org/git/poke/poke/poke-dwarf.git
 @itemx @var{username}@@git.savannah.gnu.org/srv/git/poke/poke-dwarf.git
 Repository for the poke DWARF pickles
 project@footnote{https://jemarch.net/poke-dwarf}.

@@ -8153,7 +8153,7 @@ poke incremental compiler.  The client programs that interact with
 This form of interaction is particularly useful to write user
 interfaces to GNU poke, in the form of several pokelets.  Examples
 of such interfaces are
-@url{https://git.savannah.gnu.org/cgit/poke/poke-el.git,Emacs
+@url{https://cgit.git.savannah.gnu.org/cgit/poke/poke-el.git,Emacs
 interface to poke} and @url{https://sourceware.org/pacme/,pacme}.
 
 @code{poked} is basically a message broker that provides (for now)

@@ -1,6 +1,6 @@
 [submodule "gnulib"]
 	path = gnulib
-	url = https://git.sv.gnu.org/git/gnulib.git
+	url = https://https.git.savannah.gnu.org/git/gnulib.git
 [submodule "jitter"]
 	path = jitter
 	url = https://git.ageinghacker.net/jitter

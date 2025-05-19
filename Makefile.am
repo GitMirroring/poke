@@ -35,7 +35,7 @@ cyclo-$(PACKAGE).html: $(CYCLO_SRCS)
 		| sort -nr \
 		| $(AWK) -f ${top_srcdir}/build-aux/pmccabe2html \
 			-v lang=html -v name="$(PACKAGE_NAME)" \
-			-v vcurl="https://git.savannah.gnu.org/gitweb/?p=$(PACKAGE).git;a=blob;f=%FILENAME%;hb=HEAD" \
+			-v vcurl="https://gitweb.git.savannah.gnu.org/gitweb/?p=$(PACKAGE).git;a=blob;f=%FILENAME%;hb=HEAD" \
 			-v url="https://www.jemarch.net/poke" \
 			-v css=${top_srcdir}/build-aux/pmccabe.css \
 			-v cut_dir=${top_srcdir}/ \
