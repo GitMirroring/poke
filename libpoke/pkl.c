@@ -204,12 +204,12 @@ extern struct pkl_phase pkl_phase_promo;
 extern struct pkl_phase pkl_phase_fold;
 extern struct pkl_phase pkl_phase_gen;
 
-static pvm_program
+static pvm_val
 rest_of_compilation (pkl_compiler compiler,
                      pkl_ast ast,
                      pkl_env env)
 {
-  pvm_program program;
+  pvm_val program;
 
 #define PKL_PHASE(NAME) &pkl_phase_##NAME,
 #define PKL_PASS(FLAGS, LEVEL)                                          \
@@ -232,13 +232,13 @@ rest_of_compilation (pkl_compiler compiler,
       compiler->last_ast_str = pkl_ast_format (ast->ast);
     }
 
-  program = (pvm_program) ast->payload;
+  program = (pvm_val) ast->payload;
   pkl_ast_free (ast);
   return program;
 
  error:
   pkl_ast_free (ast);
-  return NULL;
+  return PVM_NULL;
 }
 
 int
@@ -251,8 +251,8 @@ pkl_execute_buffer (pkl_compiler compiler,
                     pvm_val *exit_exception)
 {
   pkl_ast ast = NULL;
-  pvm_program program;
   int ret;
+  pvm_val program;
   pkl_env env = NULL;
   pvm_val val;
 
@@ -274,7 +274,7 @@ pkl_execute_buffer (pkl_compiler compiler,
     goto error;
 
   program = rest_of_compilation (compiler, ast, env);
-  if (program == NULL)
+  if (program == PVM_NULL)
     goto error;
 
   //  pvm_disassemble_program (program);
@@ -300,12 +300,12 @@ pkl_execute_buffer (pkl_compiler compiler,
   return 0;
 }
 
-pvm_program
+pvm_val
 pkl_compile_statement (pkl_compiler compiler,
                        const char *buffer, const char **end)
 {
   pkl_ast ast = NULL;
-  pvm_program program;
+  pvm_val program;
   int ret;
   pkl_env env = NULL;
 
@@ -330,7 +330,7 @@ pkl_compile_statement (pkl_compiler compiler,
      goto error;
 
    program = rest_of_compilation (compiler, ast, env);
-   if (program == NULL)
+   if (program == PVM_NULL)
      goto error;
 
    pkl_env_free (compiler->env);
@@ -342,7 +342,7 @@ pkl_compile_statement (pkl_compiler compiler,
 
  error:
    pkl_env_free (env);
-   return NULL;
+   return PVM_NULL;
 }
 
 int
@@ -355,7 +355,7 @@ pkl_execute_statement (pkl_compiler compiler,
                        pvm_val *val, pvm_val *exit_exception)
 {
   pkl_ast ast = NULL;
-  pvm_program program;
+  pvm_val program;
   int ret;
   pkl_env env = NULL;
 
@@ -380,7 +380,7 @@ pkl_execute_statement (pkl_compiler compiler,
     goto error;
 
   program = rest_of_compilation (compiler, ast, env);
-  if (program == NULL)
+  if (program == PVM_NULL)
     goto error;
 
   pvm_program_make_executable (program);
@@ -404,12 +404,12 @@ pkl_execute_statement (pkl_compiler compiler,
   return 0;
 }
 
-pvm_program
+pvm_val
 pkl_compile_expression (pkl_compiler compiler,
                         const char *buffer, const char **end)
 {
   pkl_ast ast = NULL;
-  pvm_program program;
+  pvm_val program;
   int ret;
   pkl_env env = NULL;
 
@@ -434,7 +434,7 @@ pkl_compile_expression (pkl_compiler compiler,
      goto error;
 
    program = rest_of_compilation (compiler, ast, env);
-   if (program == NULL)
+   if (program == PVM_NULL)
      goto error;
 
    pkl_env_free (compiler->env);
@@ -446,7 +446,7 @@ pkl_compile_expression (pkl_compiler compiler,
 
  error:
    pkl_env_free (env);
-   return NULL;
+   return PVM_NULL;
 }
 
 int
@@ -459,7 +459,7 @@ pkl_execute_expression (pkl_compiler compiler,
                         pvm_val *val, pvm_val *exit_exception)
 {
   pkl_ast ast = NULL;
-  pvm_program program;
+  pvm_val program;
   int ret;
   pkl_env env = NULL;
 
@@ -484,7 +484,7 @@ pkl_execute_expression (pkl_compiler compiler,
     goto error;
 
   program = rest_of_compilation (compiler, ast, env);
-  if (program == NULL)
+  if (program == PVM_NULL)
     goto error;
 
   pvm_program_make_executable (program);
@@ -514,7 +514,7 @@ pkl_execute_file (pkl_compiler compiler, const char *fname,
 {
   int ret;
   pkl_ast ast = NULL;
-  pvm_program program;
+  pvm_val program;
   FILE *fp;
   pkl_env env = NULL;
   pvm_val val;
@@ -540,7 +540,7 @@ pkl_execute_file (pkl_compiler compiler, const char *fname,
     goto error;
 
   program = rest_of_compilation (compiler, ast, env);
-  if (program == NULL)
+  if (program == PVM_NULL)
     goto error;
 
   pvm_program_make_executable (program);
@@ -672,11 +672,11 @@ pkl_set_alien_dtoken_fn (pkl_compiler compiler,
   compiler->alien_dtoken_fn = cb;
 }
 
-pvm_program
+pvm_val
 pkl_compile_call (pkl_compiler compiler, pvm_val cls, pvm_val *ret,
                   int narg, va_list ap)
 {
-  pvm_program program;
+  pvm_val program;
   pkl_asm pasm;
   pvm_val arg;
   int i;
@@ -725,7 +725,7 @@ pkl_resolve_module (pkl_compiler compiler,
     int back, over;
 
     pkl_env compiler_env = pkl_get_env (compiler);
-    pvm_env runtime_env = pvm_get_env (pkl_get_vm (compiler));
+    pvm_val runtime_env = pvm_get_env (pkl_get_vm (compiler));
 
     if (NULL == pkl_env_lookup (compiler_env,
                                 PKL_ENV_NS_MAIN,
@@ -907,7 +907,7 @@ int
 pkl_tracer_p (pkl_compiler compiler)
 {
   pkl_env compiler_env = compiler->env;
-  pvm_env runtime_env = pvm_get_env (compiler->vm);
+  pvm_val runtime_env = pvm_get_env (compiler->vm);
   int back, over;
   pkl_ast_node decl = pkl_env_lookup (compiler_env,
                                       PKL_ENV_NS_MAIN,

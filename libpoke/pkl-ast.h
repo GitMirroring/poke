@@ -635,7 +635,7 @@ struct pkl_ast_func
   int nargs;
   char *name;
   int method_p;
-  pvm_program program;
+  pvm_val program;
 };
 
 pkl_ast_node pkl_ast_make_func (pkl_ast ast,

@@ -521,7 +521,7 @@ int
 pk_disassemble_function_val (pk_compiler pkc,
                              pk_val val, int native_p)
 {
-  pvm_program program;
+  pvm_val program;
 
   if (!PVM_IS_CLS (val))
     PK_RETURN (PK_ERROR);
@@ -543,7 +543,7 @@ pk_disassemble_function (pk_compiler pkc,
   pvm_val val;
 
   pkl_env compiler_env = pkl_get_env (pkc->compiler);
-  pvm_env runtime_env = pvm_get_env (pkc->vm);
+  pvm_val runtime_env = pvm_get_env (pkc->vm);
 
   pkl_ast_node decl = pkl_env_lookup (compiler_env,
                                       PKL_ENV_NS_MAIN,
@@ -565,14 +565,13 @@ pk_disassemble_expression (pk_compiler pkc, const char *str,
 {
   const char *end;
   const char *program_string;
-
-  pvm_program program;
+  pvm_val program;
 
   program_string = str;
   program = pkl_compile_expression (pkc->compiler,
                                     program_string, &end);
 
-  if (program == NULL)
+  if (program == PVM_NULL)
     /* Invalid expression.  */
     PK_RETURN (PK_ERROR);
 
@@ -594,13 +593,13 @@ int
 pk_disassemble_statement (pk_compiler pkc, const char *program_str,
                           int native_p)
 {
-  pvm_program program;
+  pvm_val program;
   const char *end;
 
   program = pkl_compile_statement (pkc->compiler,
                                    program_str, &end);
 
-  if (program == NULL)
+  if (program == PVM_NULL)
     /* Invalid statement.  */
     PK_RETURN (PK_ERROR);
 
@@ -751,7 +750,7 @@ pk_ios_map (pk_compiler pkc,
 struct decl_map_fn_payload
 {
   pk_map_decl_fn cb;
-  pvm_env runtime_env;
+  pvm_val runtime_env;
   void *data;
 };
 
@@ -859,7 +858,7 @@ pk_val
 pk_decl_val (pk_compiler pkc, const char *name)
 {
   pkl_env compiler_env = pkl_get_env (pkc->compiler);
-  pvm_env runtime_env = pvm_get_env (pkc->vm);
+  pvm_val runtime_env = pvm_get_env (pkc->vm);
   int back, over;
   pkl_ast_node decl = pkl_env_lookup (compiler_env,
                                       PKL_ENV_NS_MAIN,
@@ -880,7 +879,7 @@ void
 pk_decl_set_val (pk_compiler pkc, const char *name, pk_val val)
 {
   pkl_env compiler_env = pkl_get_env (pkc->compiler);
-  pvm_env runtime_env = pvm_get_env (pkc->vm);
+  pvm_val runtime_env = pvm_get_env (pkc->vm);
   int back, over;
   pkl_ast_node decl = pkl_env_lookup (compiler_env,
                                       PKL_ENV_NS_MAIN,
@@ -900,7 +899,7 @@ pk_decl_set_val (pk_compiler pkc, const char *name, pk_val val)
 int
 pk_defvar (pk_compiler pkc, const char *varname, pk_val val)
 {
-  pvm_env runtime_env = pvm_get_env (pkc->vm);
+  pvm_val runtime_env = pvm_get_env (pkc->vm);
 
   if (!pkl_defvar (pkc->compiler, varname, val))
     PK_RETURN (PK_ERROR);
@@ -913,7 +912,7 @@ int
 pk_call (pk_compiler pkc, pk_val cls, pk_val *ret,
          pk_val *exit_exception, int narg, ...)
 {
-  pvm_program program;
+  pvm_val program;
   va_list ap;
   enum pvm_exit_code rret;
 

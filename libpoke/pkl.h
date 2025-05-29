@@ -148,14 +148,14 @@ int pkl_execute_statement (pkl_compiler compiler,
 /* Compile a single Poke statement and return the resulting PVM
    program.  */
 
-pvm_program pkl_compile_statement (pkl_compiler compiler,
-                                   const char *buffer, const char **end);
+pvm_val pkl_compile_statement (pkl_compiler compiler,
+                               const char *buffer, const char **end);
 
 /* Compile a single Poke expression and return the resulting PVM
    program.  */
 
-pvm_program pkl_compile_expression (pkl_compiler compiler,
-                                    const char *buffer, const char **end);
+pvm_val pkl_compile_expression (pkl_compiler compiler,
+                                const char *buffer, const char **end);
 
 /* Compile a program that calls to a function.
 
@@ -172,8 +172,8 @@ pvm_program pkl_compile_expression (pkl_compiler compiler,
    Return the compiled PVM program, or NULL if there is a problem
    performing the operation.  */
 
-pvm_program pkl_compile_call (pkl_compiler compiler, pvm_val cls, pvm_val *ret,
-                              int narg, va_list ap);
+pvm_val pkl_compile_call (pkl_compiler compiler, pvm_val cls, pvm_val *ret,
+                          int narg, va_list ap);
 
 /* Return the VM associated with COMPILER.  */
 

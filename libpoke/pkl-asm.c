@@ -111,7 +111,8 @@ struct pkl_asm_level
 struct pkl_asm
 {
   pkl_compiler compiler;
-  pvm_program program;
+  pvm_val program;
+  void *program_gc_handle;
   struct pkl_asm_level *level;
   pkl_ast ast;
   pvm_program_label error_label;
@@ -123,7 +124,7 @@ static void
 pkl_asm_pushlevel (pkl_asm pasm, int env)
 {
   struct pkl_asm_level *level
-    = pvm_alloc (sizeof (struct pkl_asm_level));
+    = malloc (sizeof (struct pkl_asm_level)); // FIXME FIXME FIXME Leak!
 
   memset (level, 0, sizeof (struct pkl_asm_level));
   level->parent = pasm->level;
@@ -1329,16 +1330,17 @@ pkl_asm
 pkl_asm_new (pkl_ast ast, pkl_compiler compiler,
              int prologue)
 {
-  pkl_asm pasm = pvm_alloc (sizeof (struct pkl_asm));
-  pvm_program program = pvm_program_new ();
+  pkl_asm pasm = malloc (sizeof (struct pkl_asm));
+  pvm_val program = pvm_make_program ();
 
   memset (pasm, 0, sizeof (struct pkl_asm));
   pkl_asm_pushlevel (pasm, PKL_ASM_ENV_NULL);
 
   pasm->compiler = compiler;
   pasm->ast = ast;
-  pasm->error_label = pvm_program_fresh_label (program);
   pasm->program = program;
+  pasm->program_gc_handle = pvm_alloc_add_gc_roots (&pasm->program, 1);
+  pasm->error_label = pvm_program_fresh_label (program);
 
   if (prologue)
     {
@@ -1364,10 +1366,10 @@ pkl_asm_new (pkl_ast ast, pkl_compiler compiler,
    `pkl_asm_new' should be called again in order to assemble another
    program.  */
 
-pvm_program
+pvm_val
 pkl_asm_finish (pkl_asm pasm, int epilogue)
 {
-  pvm_program program = pasm->program;
+  pvm_val program = pasm->program;
 
   if (epilogue)
     {
@@ -1410,6 +1412,9 @@ pkl_asm_finish (pkl_asm pasm, int epilogue)
 
   /* Free the first level.  */
   pkl_asm_poplevel (pasm);
+
+  pvm_alloc_remove_gc_roots (pasm->program_gc_handle);
+  free (pasm);
 
   /* Free the assembler instance and return the assembled program to
      the user.  */

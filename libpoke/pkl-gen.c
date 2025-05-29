@@ -29,6 +29,7 @@
 #include "pkl-asm.h"
 #include "pvm-alloc.h" /* For pvm_alloc.  */
 #include "pvm.h"
+#include "pvm-val.h"
 #include "pk-utils.h"
 
 /* It would be very unlikely to have more than 24 declarations nested
@@ -85,7 +86,8 @@ struct pkl_gen_payload
   enum pkl_ast_endian endian;
   int cur_pasm;
   int cur_context;
-  pvm_program program;
+  pvm_val program;
+  void *program_gc_handle;
   int constructor_depth;
   int mapper_depth;
   int in_file_p;
@@ -100,24 +102,26 @@ typedef struct pkl_gen_payload *pkl_gen_payload;
 static void *
 pkl_gen_initialize (pkl_compiler compiler, pkl_env env)
 {
-  struct pkl_gen_payload *payload = pvm_alloc (sizeof (struct pkl_gen_payload));
+  struct pkl_gen_payload *payload = malloc (sizeof (struct pkl_gen_payload));
 
   if (!payload)
     return NULL;
 
-  /* Note that we are using pvm_alloc for this phase's payload because
-     it contains a pvm_program that indirectly contains PVM
-     values.  */
-
   memset (payload, 0, sizeof (struct pkl_gen_payload));
   payload->compiler = compiler;
   payload->env = env;
+  payload->program = PVM_NULL;
+  payload->program_gc_handle = pvm_alloc_add_gc_roots (&payload->program, 1);
   return payload;
 }
 
 static void
 pkl_gen_finalize (void *payload)
 {
+  if (!payload)
+    return;
+  pvm_alloc_remove_gc_roots (((struct pkl_gen_payload *)payload)->program_gc_handle);
+  free (payload);
 }
 
 /* At any given time the code generation phase can be in a set of
@@ -288,10 +292,12 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_program)
   if (!pkl_compiling_expression_p (PKL_GEN_PAYLOAD->compiler)
       && !(pkl_compiling_statement_p (PKL_GEN_PAYLOAD->compiler)
            && PKL_AST_PROGRAM_ELEMS (PKL_PASS_NODE)
-           && PKL_AST_CODE (PKL_AST_PROGRAM_ELEMS (PKL_PASS_NODE)) == PKL_AST_EXP_STMT))
+           && PKL_AST_CODE (PKL_AST_PROGRAM_ELEMS (PKL_PASS_NODE))
+                  == PKL_AST_EXP_STMT))
     pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL);
 
-  PKL_PASS_AST->payload = pkl_asm_finish (PKL_GEN_ASM, 1 /* epilogue */);
+  PKL_PASS_AST->payload
+      = (void *)(uintptr_t)pkl_asm_finish (PKL_GEN_ASM, 1 /* epilogue */);
 }
 PKL_PHASE_END_HANDLER
 
@@ -587,7 +593,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
       break;
     case PKL_AST_DECL_KIND_FUNC:
       {
-        pvm_program program;
+        pvm_val program;
         pvm_val closure;
         char *program_name = PKL_AST_FUNC_NAME (initial);
 
@@ -802,8 +808,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_lambda)
      current macroassembler.  Finalize the program and put it in a PVM
      closure, along with the current environment.  */
 
-  pvm_program program = pkl_asm_finish (PKL_GEN_ASM,
-                                        0 /* epilogue */);
+  pvm_val program = pkl_asm_finish (PKL_GEN_ASM, 0 /* epilogue */);
   pvm_val closure;
 
   PKL_GEN_POP_ASM;
@@ -3557,7 +3562,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_function)
 
       pkl_ast_node function_type = PKL_PASS_NODE;
       pkl_ast_node function_rtype = PKL_AST_TYPE_F_RTYPE (function_type);
-      pvm_program program;
+      pvm_val program;
 
       /* Compile the body for the function value.  */
       PKL_GEN_PUSH_ASM (pkl_asm_new (PKL_PASS_AST,

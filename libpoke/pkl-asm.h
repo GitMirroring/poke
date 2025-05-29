@@ -28,6 +28,7 @@
 #include "pkl-env.h"
 #include "ios.h" /* For IOS_NENC_* and IOS_ENDIAN_* */
 #include "pvm.h"
+#include "pvm-val.h"
 
 /* The macro-assembler provides constants, enumerations, C macros and
    functions to make it easier to program the Poke Virtual
@@ -76,7 +77,7 @@ pkl_asm pkl_asm_new (pkl_ast ast, pkl_compiler compiler,
    `pkl_asm_new' should be called again in order to assemble another
    program.  */
 
-pvm_program pkl_asm_finish (pkl_asm pasm, int epilogue);
+pvm_val pkl_asm_finish (pkl_asm pasm, int epilogue);
 
 /* Assemble an instruction INSN and append it to the program being
    assembled in PASM.  If the instruction takes any argument, they

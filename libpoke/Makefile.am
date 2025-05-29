@@ -63,7 +63,8 @@ libpoke_la_SOURCES = libpoke.h libpoke.c \
                      ios-dev-file.c ios-dev-mem.c \
                      ios-dev-zero.c ios-dev-sub.c \
                      ios-buffer.h ios-buffer.c \
-                     ios-dev-stream.c
+                     ios-dev-stream.c \
+                     jitter-gc.c jitter-gc.h
 
 libpoke_la_SOURCES += ../common/pk-utils.c ../common/pk-utils.h
 
@@ -210,9 +211,8 @@ libpoke_la_CPPFLAGS = -I$(top_builddir)/gl-libpoke -I$(top_srcdir)/gl-libpoke \
                       -DLOCALEDIR=\"$(localedir)\" \
                       $(CFLAG_VISIBILITY) \
                       -DBUILDING_LIBPOKE
-libpoke_la_CFLAGS = -Wall $(BDW_GC_CFLAGS) $(LIBNBD_CFLAGS)
+libpoke_la_CFLAGS = -Wall $(LIBNBD_CFLAGS)
 libpoke_la_LIBADD = ../gl-libpoke/libgnu.la libpvmjitter.la \
-                    $(BDW_GC_LIBS) \
                     $(LIBNBD_LIBS)
 libpoke_la_LDFLAGS = -version-info $(LTV_CURRENT):$(LTV_REVISION):$(LTV_AGE) \
                      -lc -no-undefined

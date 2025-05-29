@@ -22,6 +22,7 @@
 #include <assert.h>
 #include <string.h>
 #include <inttypes.h>
+#include <stdbool.h>
 #include "xalloc.h"
 
 #include "pkt.h"
@@ -31,6 +32,16 @@
 #include "pvm-val.h"
 #include "pvm-alloc.h"
 #include "pk-utils.h"
+
+// XXX ?
+#include "pvm-vm.h"
+
+/* Unitary special values used internally by GC.
+   Here we're re-using PVM_NULL's "tag".  */
+
+#define PVM_VAL_INVALID_OBJECT          0x17
+#define PVM_VAL_UNINITIALIZED_OBJECT    0x27
+#define PVM_VAL_BROKEN_HEART_TYPE_CODE  0x37
 
 /* Unitary values that are always reused.
 
@@ -56,12 +67,40 @@ static pvm_val void_type;
 
 static pvm_val common_int_types[65][2];
 
+/* Jitter GC heap.
+
+   TODO Move this to `pvm'.
+ */
+
+static struct jitter_gc_shape_table *gc_shapes;
+static struct jitter_gc_heap *gc_heap;
+struct jitter_gc_heaplet *gc_heaplet; // keep in-sync with pvm-alloc.c
+
+#define GC_ALLOCATION_POINTER(HEAPLET)                                        \
+  ((HEAPLET)->convenience_runtime_allocation_pointer)
+#define GC_RUNTIME_LIMIT(HEAPLET) ((HEAPLET)->convenience_runtime_limit)
+
+static inline void *
+pvm_heaplet_alloc (struct jitter_gc_heaplet *heaplet, size_t nbytes)
+{
+  void *p;
+
+  _JITTER_GC_ALLOCATE (heaplet, GC_ALLOCATION_POINTER (heaplet),
+                       GC_RUNTIME_LIMIT (heaplet), p, nbytes);
+  assert (p); // TODO Add error handling.
+  return p;
+}
+
+/* INT */
+
 pvm_val
 pvm_make_int (int32_t value, int size)
 {
   assert (0 < size && size <= 32);
   return PVM_MAKE_INT (value, size);
 }
+
+/* UINT */
 
 pvm_val
 pvm_make_uint (uint32_t value, int size)
@@ -70,20 +109,84 @@ pvm_make_uint (uint32_t value, int size)
   return PVM_MAKE_UINT (value, size);
 }
 
+/* LONG */
+
+static bool
+pvm_gc_is_long_p (pvm_val v)
+{
+  return PVM_IS_LONG (v);
+}
+
+#define PVM_GC_SIZEOF_LONG (sizeof (uint64_t) * 2)
+
+static size_t
+pvm_gc_sizeof_long (pvm_val v __attribute__ ((unused)))
+{
+  return PVM_GC_SIZEOF_LONG;
+}
+
+static size_t
+pvm_gc_copy_long (struct jitter_gc_heaplet *heaplet __attribute__ ((unused)),
+                  pvm_val *new_val, void *from, void *to)
+{
+  memcpy (to, from, PVM_GC_SIZEOF_LONG);
+  *new_val = (uint64_t)((uintptr_t)to | PVM_VAL_TAG_LONG);
+  return PVM_GC_SIZEOF_LONG;
+}
+
 pvm_val
 pvm_make_long (int64_t value, int size)
 {
+  uint64_t *ll;
+
   assert (0 < size && size <= 64);
-  return PVM_MAKE_LONG_ULONG (value, size, PVM_VAL_TAG_LONG);
+
+  _JITTER_GC_ALLOCATE (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
+                       GC_RUNTIME_LIMIT (gc_heaplet), ll, PVM_GC_SIZEOF_LONG);
+  ll[0] = value;
+  ll[1] = (size - 1) & 0x3f;
+
+  return ((uint64_t)(uintptr_t)ll) | PVM_VAL_TAG_LONG;
+}
+
+/* ULONG */
+
+static bool
+pvm_gc_is_ulong_p (pvm_val v)
+{
+  return PVM_IS_ULONG (v);
+}
+
+#define PVM_GC_SIZEOF_ULONG (sizeof (uint64_t) * 2)
+
+static size_t
+pvm_gc_sizeof_ulong (pvm_val v __attribute__ ((unused)))
+{
+  return PVM_GC_SIZEOF_ULONG;
+}
+
+static size_t
+pvm_val_ulong_copy (struct jitter_gc_heaplet *heaplet __attribute__ ((unused)),
+                    pvm_val *new_val, void *from, void *to)
+{
+  memcpy (to, from, PVM_GC_SIZEOF_ULONG);
+  *new_val = (uint64_t)((uintptr_t)to | PVM_VAL_TAG_ULONG);
+  return PVM_GC_SIZEOF_ULONG;
 }
 
 pvm_val
 pvm_make_ulong (uint64_t value, int size)
 {
-  assert (0 < size && size <= 64);
-  return PVM_MAKE_LONG_ULONG (value, size, PVM_VAL_TAG_ULONG);
-}
+  uint64_t *ll;
 
+  assert (0 < size && size <= 64);
+
+  _JITTER_GC_ALLOCATE (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
+                       GC_RUNTIME_LIMIT (gc_heaplet), ll, PVM_GC_SIZEOF_ULONG);
+  ll[0] = value;
+  ll[1] = (size - 1) & 0x3f;
+  return ((uint64_t)(uintptr_t)ll) | PVM_VAL_TAG_ULONG;
+}
 
 pvm_val
 pvm_make_signed_integral (int64_t value, int size)
@@ -92,9 +195,9 @@ pvm_make_signed_integral (int64_t value, int size)
     return PK_NULL;
 
   if (size <= 32)
-    return PVM_MAKE_INT ((int32_t) value, size);
+    return PVM_MAKE_INT ((int32_t)value, size);
   else
-    return PVM_MAKE_LONG (value, size);
+    return pvm_make_long (value, size);
 }
 
 pvm_val
@@ -104,9 +207,9 @@ pvm_make_unsigned_integral (uint64_t value, int size)
     return PK_NULL;
 
   if (size <= 32)
-    return PVM_MAKE_UINT ((uint32_t) value, size);
+    return PVM_MAKE_UINT ((uint32_t)value, size);
   else
-    return PVM_MAKE_ULONG (value, size);
+    return pvm_make_ulong (value, size);
 }
 
 pvm_val
@@ -119,53 +222,205 @@ pvm_make_integral (uint64_t value, int size, int signed_p)
     return signed_p ? PVM_MAKE_INT ((int32_t)value, size)
                     : PVM_MAKE_UINT ((uint32_t)value, size);
   else
-    return signed_p ? PVM_MAKE_LONG (value, size)
-                    : PVM_MAKE_ULONG (value, size);
+    return signed_p ? pvm_make_long (value, size)
+                    : pvm_make_ulong (value, size);
 }
 
-static pvm_val_box
-pvm_make_box (uint8_t tag)
-{
-  pvm_val_box box = pvm_alloc (sizeof (struct pvm_val_box));
+/* STRING */
 
-  PVM_VAL_BOX_TAG (box) = tag;
-  return box;
+#define PVM_GC_SIZEOF_STRING JITTER_GC_HEADER_ONLY_SIZE_IN_BYTES (pvm_string)
+
+static bool
+pvm_gc_is_string_p (pvm_val v)
+{
+  return PVM_IS_STR (v);
+}
+
+static bool
+pvm_gc_is_string_type_code_p (uintptr_t v)
+{
+  return v == PVM_VAL_TAG_STR;
+}
+
+static size_t
+pvm_gc_sizeof_string (pvm_val v __attribute__ ((unused)))
+{
+  return PVM_GC_SIZEOF_STRING;
+}
+
+static size_t
+pvm_gc_copy_string (struct jitter_gc_heaplet *heaplet, pvm_val *new_val,
+                    void *from, void *to)
+{
+  memcpy (to, from, PVM_GC_SIZEOF_STRING);
+  JITTER_GC_FINALIZABLE_COPY (pvm_string, finalization_data, heaplet, from,
+                              to);
+  *new_val = PVM_BOX (to);
+  return PVM_GC_SIZEOF_STRING;
+}
+
+static size_t
+pvm_gc_update_fields_string (struct jitter_gc_heaplet *heaplet
+                             __attribute__ ((unused)),
+                             void *p __attribute__ ((unused)))
+{
+  /* Strings are leaf objects; no fields to update.  */
+  return PVM_GC_SIZEOF_STRING;
+}
+
+static void
+pvm_gc_finalize_string (struct jitter_gc_heap *heap __attribute__ ((unused)),
+                        struct jitter_gc_heaplet *heaplet
+                        __attribute__ ((unused)),
+                        void *obj)
+{
+  struct pvm_string *header = obj;
+
+  free (header->data);
 }
 
 pvm_val
-pvm_make_string (const char *str)
+pvm_make_string_nodup (/*pvm apvm, */ char *str)
 {
-  pvm_val_box box = pvm_make_box (PVM_VAL_TAG_STR);
+  struct pvm_string *header;
 
-  PVM_VAL_BOX_STR (box) = pvm_alloc_strdup (str);
-  return PVM_BOX (box);
+  {
+    void *p;
+
+    _JITTER_GC_ALLOCATE (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
+                         GC_RUNTIME_LIMIT (gc_heaplet), p,
+                         PVM_GC_SIZEOF_STRING);
+    header = p;
+  }
+
+  header->type_code = PVM_VAL_TAG_STR;
+  JITTER_GC_FINALIZABLE_INITIALIZE (pvm_string, finalization_data, header);
+  header->data = str;
+  return PVM_BOX (header);
 }
 
 pvm_val
-pvm_make_string_nodup (char *str)
+pvm_make_string (/*pvm apvm, */ const char *str)
 {
-  pvm_val_box box = pvm_make_box (PVM_VAL_TAG_STR);
+  return pvm_make_string_nodup (strdup (str));
+}
 
-  PVM_VAL_BOX_STR (box) = str;
-  return PVM_BOX (box);
+/* ARRAY */
+
+#define PVM_GC_SIZEOF_ARRAY JITTER_GC_HEADER_ONLY_SIZE_IN_BYTES (pvm_array)
+
+static bool
+pvm_gc_is_array_p (pvm_val v)
+{
+  return PVM_IS_ARR (v);
+}
+
+static size_t
+pvm_gc_sizeof_array (pvm_val v __attribute__ ((unused)))
+{
+  return PVM_GC_SIZEOF_ARRAY;
+}
+
+static bool
+pvm_gc_is_array_type_code_p (uintptr_t v)
+{
+  return v == PVM_VAL_TAG_ARR;
+}
+
+static size_t
+pvm_gc_copy_array (struct jitter_gc_heaplet *heaplet, pvm_val *new_val,
+                   void *from, void *to)
+{
+  memcpy (to, from, PVM_GC_SIZEOF_ARRAY);
+  JITTER_GC_FINALIZABLE_COPY (pvm_array, finalization_data, heaplet, from, to);
+  *new_val = PVM_BOX (to);
+  return PVM_GC_SIZEOF_ARRAY;
+}
+
+static size_t
+pvm_gc_update_fields_array (struct jitter_gc_heaplet *heaplet, void *obj)
+{
+  pvm_array arr = obj;
+  size_t num_elems = PVM_VAL_ULONG (arr->nelem);
+
+  // FIXME Use accessor macros.
+  jitter_gc_handle_word (heaplet, &arr->mapinfo.ios);
+  jitter_gc_handle_word (heaplet, &arr->mapinfo.offset);
+  jitter_gc_handle_word (heaplet, &arr->mapinfo_back.ios);
+  jitter_gc_handle_word (heaplet, &arr->mapinfo_back.offset);
+  jitter_gc_handle_word (heaplet, &arr->elems_bound);
+  jitter_gc_handle_word (heaplet, &arr->size_bound);
+  jitter_gc_handle_word (heaplet, &arr->mapper);
+  jitter_gc_handle_word (heaplet, &arr->writer);
+  jitter_gc_handle_word (heaplet, &arr->type);
+  jitter_gc_handle_word (heaplet, &arr->nelem);
+  for (size_t i = 0; i < num_elems; ++i)
+    {
+      jitter_gc_handle_word (heaplet, &arr->elems[i].offset);
+      jitter_gc_handle_word (heaplet, &arr->elems[i].offset_back);
+      jitter_gc_handle_word (heaplet, &arr->elems[i].value);
+    }
+  return PVM_GC_SIZEOF_ARRAY;
+}
+
+static void
+pvm_gc_finalize_array (struct jitter_gc_heap *heap __attribute__ ((unused)),
+                       struct jitter_gc_heaplet *heaplet
+                       __attribute__ ((unused)),
+                       void *obj)
+{
+  pvm_array arr = obj;
+
+  free (arr->elems);
+  arr->nallocated = 0;
+  arr->elems = NULL;
 }
 
 pvm_val
 pvm_make_array (pvm_val nelem, pvm_val type)
 {
-  pvm_val_box box = pvm_make_box (PVM_VAL_TAG_ARR);
-  pvm_array arr = pvm_alloc (sizeof (struct pvm_array));
   size_t num_elems = PVM_VAL_ULONG (nelem);
   size_t num_allocated = num_elems > 0 ? num_elems : 16;
-  size_t nbytes = (sizeof (struct pvm_array_elem) * num_allocated);
+  size_t nbytes = sizeof (struct pvm_array_elem) * num_allocated;
   size_t i;
+  pvm_array arr;
+  pvm_val arr_nelem;
+  pvm_val arr_mapinfo_off;
+
+  /* All GC-related allocation should happen here.  */
+  JITTER_GC_BLOCK_BEGIN (gc_heaplet);
+  {
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &type);
+
+    arr_nelem = pvm_make_ulong (0, 64);
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &arr_nelem);
+
+    arr_mapinfo_off = pvm_make_ulong (0, 64);
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &arr_mapinfo_off);
+
+    {
+      void *p;
+
+      _JITTER_GC_ALLOCATE (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
+                           GC_RUNTIME_LIMIT (gc_heaplet), p,
+                           PVM_GC_SIZEOF_ARRAY);
+      arr = p;
+    }
+  }
+  JITTER_GC_BLOCK_END (gc_heaplet);
+
+  /* Do not trigger GC-related allocation after this point.  */
+
+  arr->type_code = PVM_VAL_TAG_ARR;
+  JITTER_GC_FINALIZABLE_INITIALIZE (pvm_array, finalization_data, arr);
 
   PVM_MAPINFO_MAPPED_P (arr->mapinfo) = 0;
   PVM_MAPINFO_STRICT_P (arr->mapinfo) = 1;
   PVM_MAPINFO_IOS (arr->mapinfo) = PVM_NULL;
-  PVM_MAPINFO_OFFSET (arr->mapinfo) = pvm_make_ulong (0, 64);
+  PVM_MAPINFO_OFFSET (arr->mapinfo) = arr_mapinfo_off;
 
   PVM_MAPINFO_MAPPED_P (arr->mapinfo_back) = 0;
+  PVM_MAPINFO_STRICT_P (arr->mapinfo_back) = 1;
   PVM_MAPINFO_IOS (arr->mapinfo_back) = PVM_NULL;
   PVM_MAPINFO_OFFSET (arr->mapinfo_back) = PVM_NULL;
 
@@ -173,19 +428,19 @@ pvm_make_array (pvm_val nelem, pvm_val type)
   arr->size_bound = PVM_NULL;
   arr->mapper = PVM_NULL;
   arr->writer = PVM_NULL;
-  arr->nelem = pvm_make_ulong (0, 64);
+  arr->nelem = arr_nelem;
   arr->nallocated = num_allocated;
   arr->type = type;
 
-  arr->elems = pvm_alloc (nbytes);
+  arr->elems = malloc (nbytes);
+  assert (arr->elems); // FIXME Check malloc result.
   for (i = 0; i < num_allocated; ++i)
     {
       arr->elems[i].offset = PVM_NULL;
       arr->elems[i].value = PVM_NULL;
     }
 
-  PVM_VAL_BOX_ARR (box) = arr;
-  return PVM_BOX (box);
+  return PVM_BOX (arr);
 }
 
 int
@@ -199,10 +454,9 @@ pvm_array_insert (pvm_val arr, pvm_val idx, pvm_val val)
   size_t val_size = pvm_sizeof (val);
   size_t array_boffset = PVM_VAL_ULONG (PVM_VAL_ARR_OFFSET (arr));
   size_t elem_boffset
-    = (nelem > 0
-       ? (PVM_VAL_ULONG (PVM_VAL_ARR_ELEM_OFFSET (arr, nelem - 1)) +
-          pvm_sizeof (PVM_VAL_ARR_ELEM_VALUE (arr, nelem - 1)))
-       : array_boffset);
+      = (nelem > 0 ? (PVM_VAL_ULONG (PVM_VAL_ARR_ELEM_OFFSET (arr, nelem - 1))
+                      + pvm_sizeof (PVM_VAL_ARR_ELEM_VALUE (arr, nelem - 1)))
+                   : array_boffset);
   size_t i;
 
   /* First of all, make sure that the given index doesn't correspond
@@ -218,12 +472,14 @@ pvm_array_insert (pvm_val arr, pvm_val idx, pvm_val val)
   /* Make sure there is enough room in the array for the new elements.
      Otherwise, make space for the new elements, plus a buffer of 16
      elements more.  */
+  /* No GC-related allocation should happen here.  */
   if ((nallocated - nelem) < nelem_to_add)
     {
       PVM_VAL_ARR_NALLOCATED (arr) += nelem_to_add + 16;
-      PVM_VAL_ARR_ELEMS (arr) = pvm_realloc (PVM_VAL_ARR_ELEMS (arr),
-                                             PVM_VAL_ARR_NALLOCATED (arr)
+      PVM_VAL_ARR_ELEMS (arr) = realloc (PVM_VAL_ARR_ELEMS (arr),
+                                         PVM_VAL_ARR_NALLOCATED (arr)
                                              * sizeof (struct pvm_array_elem));
+      assert (PVM_VAL_ARR_ELEMS (arr)); // FIXME Handle error.
 
       for (i = index + 1; i < PVM_VAL_ARR_NALLOCATED (arr); ++i)
         {
@@ -232,18 +488,25 @@ pvm_array_insert (pvm_val arr, pvm_val idx, pvm_val val)
         }
     }
 
-  /* Initialize the new elements with the given value, also setting
-     their bit-offset.  */
-  for (i = nelem; i <= PVM_VAL_ULONG (idx); ++i)
-    {
-      PVM_VAL_ARR_ELEM_VALUE (arr, i) = val;
-      PVM_VAL_ARR_ELEM_OFFSET (arr, i) = pvm_make_ulong (elem_boffset, 64);
-      elem_boffset += val_size;
-    }
+  JITTER_GC_BLOCK_BEGIN (gc_heaplet);
+  {
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &arr);
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &val);
 
-  /* Finally, adjust the number of elements.  */
-  PVM_VAL_ARR_NELEM (arr)
-    = pvm_make_ulong (PVM_VAL_ULONG (PVM_VAL_ARR_NELEM (arr)) + nelem_to_add, 64);
+    /* Initialize the new elements with the given value, also setting
+       their bit-offset.  */
+    for (i = nelem; i <= index; ++i)
+      {
+        PVM_VAL_ARR_ELEM_VALUE (arr, i) = val;
+        PVM_VAL_ARR_ELEM_OFFSET (arr, i) = pvm_make_ulong (elem_boffset, 64);
+        elem_boffset += val_size;
+      }
+
+    /* Finally, adjust the number of elements.  */
+    PVM_VAL_ARR_NELEM (arr) = pvm_make_ulong (
+        PVM_VAL_ULONG (PVM_VAL_ARR_NELEM (arr)) + nelem_to_add, 64);
+  }
+  JITTER_GC_BLOCK_END (gc_heaplet);
 
   return 1;
 }
@@ -262,20 +525,27 @@ pvm_array_set (pvm_val arr, pvm_val idx, pvm_val val)
 
   /* Calculate the difference of size introduced by the new
      elemeent.  */
-  size_diff = ((ssize_t) pvm_sizeof (val)
-               - (ssize_t) pvm_sizeof (PVM_VAL_ARR_ELEM_VALUE (arr, index)));
+  size_diff = ((ssize_t)pvm_sizeof (val)
+               - (ssize_t)pvm_sizeof (PVM_VAL_ARR_ELEM_VALUE (arr, index)));
 
   /* Update the element with the given value.  */
   PVM_VAL_ARR_ELEM_VALUE (arr, index) = val;
 
-  /* Recalculate the bit-offset of all the elements following the
-     element just updated.  */
-  for (i = index + 1; i < nelem; ++i)
-    {
-      size_t elem_boffset
-        = (ssize_t) PVM_VAL_ULONG (PVM_VAL_ARR_ELEM_OFFSET (arr, i)) + size_diff;
-      PVM_VAL_ARR_ELEM_OFFSET (arr, i) = pvm_make_ulong (elem_boffset, 64);
-    }
+  JITTER_GC_BLOCK_BEGIN (gc_heaplet);
+  {
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &arr);
+
+    /* Recalculate the bit-offset of all the elements following the
+       element just updated.  */
+    for (i = index + 1; i < nelem; ++i)
+      {
+        size_t elem_boffset
+            = (ssize_t)PVM_VAL_ULONG (PVM_VAL_ARR_ELEM_OFFSET (arr, i))
+              + size_diff;
+        PVM_VAL_ARR_ELEM_OFFSET (arr, i) = pvm_make_ulong (elem_boffset, 64);
+      }
+  }
+  JITTER_GC_BLOCK_END (gc_heaplet);
 
   return 1;
 }
@@ -292,30 +562,143 @@ pvm_array_rem (pvm_val arr, pvm_val idx)
     return 0;
 
   for (i = index; i < (nelem - 1); i++)
-    PVM_VAL_ARR_ELEM (arr,i) = PVM_VAL_ARR_ELEM (arr, i + 1);
-  PVM_VAL_ARR_NELEM (arr) = pvm_make_ulong (nelem - 1, 64);
+    PVM_VAL_ARR_ELEM (arr, i) = PVM_VAL_ARR_ELEM (arr, i + 1);
+
+  JITTER_GC_BLOCK_BEGIN (gc_heaplet);
+  {
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &arr);
+
+    PVM_VAL_ARR_NELEM (arr) = pvm_make_ulong (nelem - 1, 64);
+  }
+  JITTER_GC_BLOCK_END (gc_heaplet);
 
   return 1;
+}
+
+/* STRUCT */
+
+#define PVM_GC_SIZEOF_STRUCT JITTER_GC_HEADER_ONLY_SIZE_IN_BYTES (pvm_struct)
+
+static bool
+pvm_gc_is_struct_p (pvm_val v)
+{
+  return PVM_IS_SCT (v);
+}
+
+static size_t
+pvm_gc_sizeof_struct (pvm_val v)
+{
+  return PVM_GC_SIZEOF_STRUCT;
+}
+
+static bool
+pvm_gc_is_struct_type_code_p (uintptr_t v)
+{
+  return v == PVM_VAL_TAG_SCT;
+}
+
+static size_t
+pvm_gc_copy_struct (struct jitter_gc_heaplet *heaplet, pvm_val *new_val,
+                    void *from, void *to)
+{
+  memcpy (to, from, PVM_GC_SIZEOF_STRUCT);
+  JITTER_GC_FINALIZABLE_COPY (pvm_struct, finalization_data, heaplet, from,
+                              to);
+  *new_val = PVM_BOX (to);
+  return PVM_GC_SIZEOF_STRUCT;
+}
+
+// FIXME struct: move elems and methods to the elements of the?
+// headered object (to be like fast_vector) to avoid finalizability.
+
+static size_t
+pvm_gc_update_fields_struct (struct jitter_gc_heaplet *heaplet, void *obj)
+{
+  pvm_struct sct = obj;
+  size_t num_fields = PVM_VAL_ULONG (sct->nfields);
+  size_t num_methods = PVM_VAL_ULONG (sct->nmethods);
+
+  jitter_gc_handle_word (heaplet, &sct->mapinfo.ios);
+  jitter_gc_handle_word (heaplet, &sct->mapinfo.offset);
+  jitter_gc_handle_word (heaplet, &sct->mapinfo_back.ios);
+  jitter_gc_handle_word (heaplet, &sct->mapinfo_back.offset);
+  jitter_gc_handle_word (heaplet, &sct->mapper);
+  jitter_gc_handle_word (heaplet, &sct->writer);
+  jitter_gc_handle_word (heaplet, &sct->type);
+  for (size_t i = 0; i < num_fields; ++i)
+    {
+      jitter_gc_handle_word (heaplet, &sct->fields[i].offset);
+      jitter_gc_handle_word (heaplet, &sct->fields[i].offset_back);
+      jitter_gc_handle_word (heaplet, &sct->fields[i].name);
+      jitter_gc_handle_word (heaplet, &sct->fields[i].value);
+      jitter_gc_handle_word (heaplet, &sct->fields[i].modified);
+      jitter_gc_handle_word (heaplet, &sct->fields[i].modified_back);
+    }
+  for (size_t i = 0; i < num_methods; ++i)
+    {
+      jitter_gc_handle_word (heaplet, &sct->methods[i].name);
+      jitter_gc_handle_word (heaplet, &sct->methods[i].value);
+    }
+  return PVM_GC_SIZEOF_STRUCT;
+}
+
+static void
+pvm_gc_finalize_struct (struct jitter_gc_heap *heap __attribute__ ((unused)),
+                        struct jitter_gc_heaplet *heaplet
+                        __attribute__ ((unused)),
+                        void *obj)
+{
+  pvm_struct sct = obj;
+
+  free (PVM_VAL_SCT_FIELDS (sct));
+  free (PVM_VAL_SCT_METHODS (sct));
+  PVM_VAL_SCT_FIELDS (sct) = NULL;
+  PVM_VAL_SCT_METHODS (sct) = NULL;
+  PVM_VAL_SCT_NFIELDS (sct) = PVM_NULL;
+  PVM_VAL_SCT_NMETHODS (sct) = PVM_NULL;
 }
 
 pvm_val
 pvm_make_struct (pvm_val nfields, pvm_val nmethods, pvm_val type)
 {
-  pvm_val_box box = pvm_make_box (PVM_VAL_TAG_SCT);
-  pvm_struct sct = pvm_alloc (sizeof (struct pvm_struct));
   size_t i;
   size_t nfieldbytes
-    = sizeof (struct pvm_struct_field) * PVM_VAL_ULONG (nfields);
+      = sizeof (struct pvm_struct_field) * PVM_VAL_ULONG (nfields);
   size_t nmethodbytes
-    = sizeof (struct pvm_struct_method) * PVM_VAL_ULONG (nmethods);
+      = sizeof (struct pvm_struct_method) * PVM_VAL_ULONG (nmethods);
+  pvm_struct sct;
+  pvm_val sct_mapinfo_off;
 
+  JITTER_GC_BLOCK_BEGIN (gc_heaplet);
+  {
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &nfields);
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &nmethods);
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &type);
+
+    sct_mapinfo_off = pvm_make_ulong (0, 64);
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &sct_mapinfo_off);
+
+    {
+      void *p;
+
+      _JITTER_GC_ALLOCATE (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
+                           GC_RUNTIME_LIMIT (gc_heaplet), p,
+                           PVM_GC_SIZEOF_STRUCT);
+      sct = p;
+    }
+  }
+  JITTER_GC_BLOCK_END (gc_heaplet);
+
+  sct->type_code = PVM_VAL_TAG_SCT;
+  JITTER_GC_FINALIZABLE_INITIALIZE (pvm_struct, finalization_data, sct);
 
   PVM_MAPINFO_MAPPED_P (sct->mapinfo) = 0;
   PVM_MAPINFO_STRICT_P (sct->mapinfo) = 1;
   PVM_MAPINFO_IOS (sct->mapinfo) = PVM_NULL;
-  PVM_MAPINFO_OFFSET (sct->mapinfo) = pvm_make_ulong (0, 64);
+  PVM_MAPINFO_OFFSET (sct->mapinfo) = sct_mapinfo_off;
 
   PVM_MAPINFO_MAPPED_P (sct->mapinfo_back) = 0;
+  PVM_MAPINFO_STRICT_P (sct->mapinfo_back) = 1;
   PVM_MAPINFO_IOS (sct->mapinfo_back) = PVM_NULL;
   PVM_MAPINFO_OFFSET (sct->mapinfo_back) = PVM_NULL;
 
@@ -324,12 +707,12 @@ pvm_make_struct (pvm_val nfields, pvm_val nmethods, pvm_val type)
   sct->type = type;
 
   sct->nfields = nfields;
-  sct->fields = pvm_alloc (nfieldbytes);
-  memset (sct->fields, 0, nfieldbytes);
+  sct->fields = malloc (nfieldbytes);
+  assert (sct->fields); // FIXME Check allocation error.
 
   sct->nmethods = nmethods;
-  sct->methods = pvm_alloc (nmethodbytes);
-  memset (sct->methods, 0, nmethodbytes);
+  sct->methods = malloc (nmethodbytes);
+  assert (sct->methods); // FIXME Check for allocation error.
 
   for (i = 0; i < PVM_VAL_ULONG (sct->nfields); ++i)
     {
@@ -347,8 +730,7 @@ pvm_make_struct (pvm_val nfields, pvm_val nmethods, pvm_val type)
       sct->methods[i].value = PVM_NULL;
     }
 
-  PVM_VAL_BOX_SCT (box) = sct;
-  return PVM_BOX (box);
+  return PVM_BOX (sct);
 }
 
 pvm_val
@@ -366,10 +748,8 @@ pvm_ref_struct_cstr (pvm_val sct, const char *name)
 
   for (i = 0; i < nfields; ++i)
     {
-      if (!PVM_VAL_SCT_FIELD_ABSENT_P (sct, i)
-          && fields[i].name != PVM_NULL
-          && STREQ (PVM_VAL_STR (fields[i].name),
-                    name))
+      if (!PVM_VAL_SCT_FIELD_ABSENT_P (sct, i) && fields[i].name != PVM_NULL
+          && STREQ (PVM_VAL_STR (fields[i].name), name))
         return fields[i].value;
     }
 
@@ -379,8 +759,7 @@ pvm_ref_struct_cstr (pvm_val sct, const char *name)
 
   for (i = 0; i < nmethods; ++i)
     {
-      if (STREQ (PVM_VAL_STR (methods[i].name),
-                 name))
+      if (STREQ (PVM_VAL_STR (methods[i].name), name))
         return methods[i].value;
     }
 
@@ -388,8 +767,7 @@ pvm_ref_struct_cstr (pvm_val sct, const char *name)
 }
 
 void
-pvm_ref_set_struct_cstr (pvm_val sct, const char *fname,
-                         pvm_val value)
+pvm_ref_set_struct_cstr (pvm_val sct, const char *fname, pvm_val value)
 {
   size_t nfields, i;
   struct pvm_struct_field *fields;
@@ -401,10 +779,8 @@ pvm_ref_set_struct_cstr (pvm_val sct, const char *fname,
 
   for (i = 0; i < nfields; ++i)
     {
-      if (!PVM_VAL_SCT_FIELD_ABSENT_P (sct, i)
-          && fields[i].name != PVM_NULL
-          && STREQ (PVM_VAL_STR (fields[i].name),
-                    fname))
+      if (!PVM_VAL_SCT_FIELD_ABSENT_P (sct, i) && fields[i].name != PVM_NULL
+          && STREQ (PVM_VAL_STR (fields[i].name), fname))
         fields[i].value = value;
     }
 }
@@ -412,7 +788,7 @@ pvm_ref_set_struct_cstr (pvm_val sct, const char *fname,
 pvm_val
 pvm_ref_struct (pvm_val sct, pvm_val name)
 {
-  assert (PVM_IS_STR (name));
+  assert (PVM_IS_SCT (sct) && PVM_IS_STR (name));
   return pvm_ref_struct_cstr (sct, PVM_VAL_STR (name));
 }
 
@@ -429,10 +805,8 @@ pvm_refo_struct (pvm_val sct, pvm_val name)
 
   for (i = 0; i < nfields; ++i)
     {
-      if (!PVM_VAL_SCT_FIELD_ABSENT_P (sct, i)
-          && fields[i].name != PVM_NULL
-          && STREQ (PVM_VAL_STR (fields[i].name),
-                    PVM_VAL_STR (name)))
+      if (!PVM_VAL_SCT_FIELD_ABSENT_P (sct, i) && fields[i].name != PVM_NULL
+          && STREQ (PVM_VAL_STR (fields[i].name), PVM_VAL_STR (name)))
         return fields[i].offset;
     }
 
@@ -453,12 +827,10 @@ pvm_set_struct (pvm_val sct, pvm_val name, pvm_val val)
   for (i = 0; i < nfields; ++i)
     {
       if (fields[i].name != PVM_NULL
-          && STREQ (PVM_VAL_STR (fields[i].name),
-                    PVM_VAL_STR (name)))
+          && STREQ (PVM_VAL_STR (fields[i].name), PVM_VAL_STR (name)))
         {
-          PVM_VAL_SCT_FIELD_VALUE (sct,i) = val;
-          PVM_VAL_SCT_FIELD_MODIFIED (sct,i) =
-            PVM_MAKE_INT (1, 32);
+          PVM_VAL_SCT_FIELD_VALUE (sct, i) = val;
+          PVM_VAL_SCT_FIELD_MODIFIED (sct, i) = PVM_MAKE_INT (1, 32);
           return 1;
         }
     }
@@ -481,23 +853,169 @@ pvm_get_struct_method (pvm_val sct, const char *name)
   return PVM_NULL;
 }
 
+/* TYPE */
+
+#define PVM_GC_SIZEOF_TYPE JITTER_GC_HEADER_ONLY_SIZE_IN_BYTES (pvm_type)
+
+static bool
+pvm_gc_is_type_p (pvm_val v)
+{
+  return PVM_IS_TYP (v);
+}
+
+static size_t
+pvm_gc_sizeof_type (pvm_val v)
+{
+  return PVM_GC_SIZEOF_TYPE;
+}
+
+static bool
+pvm_gc_is_type_type_code_p (uintptr_t v)
+{
+  return v == PVM_VAL_TAG_TYP;
+}
+
+static size_t
+pvm_gc_copy_type (struct jitter_gc_heaplet *heaplet, pvm_val *new_val,
+                  void *from, void *to)
+{
+  memcpy (to, from, PVM_GC_SIZEOF_TYPE);
+  JITTER_GC_FINALIZABLE_COPY (pvm_type, finalization_data, heaplet, from, to);
+  *new_val = PVM_BOX (to);
+  return PVM_GC_SIZEOF_TYPE;
+}
+
+// TODO
+// Make TYPE a non-finalizable headered object (like fast_vector).
+// TYPE has a defined extent at construction time (e.g., the number of
+// args of a closure and the type of them is known at construction time),
+// so this should be easily possible.
+
+static size_t
+pvm_gc_update_fields_type (struct jitter_gc_heaplet *heaplet, void *obj)
+{
+  pvm_type typ = obj;
+
+  switch (typ->code)
+    {
+    case PVM_TYPE_INTEGRAL:
+      jitter_gc_handle_word (heaplet, &PVM_VAL_TYP_I_SIZE (typ));
+      jitter_gc_handle_word (heaplet, &PVM_VAL_TYP_I_SIGNED_P (typ));
+      break;
+
+    case PVM_TYPE_ARRAY:
+      jitter_gc_handle_word (heaplet, &PVM_VAL_TYP_A_BOUND (typ));
+      jitter_gc_handle_word (heaplet, &PVM_VAL_TYP_A_ETYPE (typ));
+      break;
+
+    case PVM_TYPE_STRUCT:
+      {
+        uint64_t nfields;
+
+        nfields = PVM_VAL_TYP_S_NFIELDS (typ);
+        jitter_gc_handle_word (heaplet, &PVM_VAL_TYP_S_NAME (typ));
+        jitter_gc_handle_word (heaplet, &PVM_VAL_TYP_S_NFIELDS (typ));
+        jitter_gc_handle_word (heaplet, &PVM_VAL_TYP_S_CONSTRUCTOR (typ));
+        for (uint64_t i = 0; i < nfields; ++i)
+          {
+            jitter_gc_handle_word (heaplet, &PVM_VAL_TYP_S_FNAME (typ, i));
+            jitter_gc_handle_word (heaplet, &PVM_VAL_TYP_S_FTYPE (typ, i));
+          }
+      }
+      break;
+
+    case PVM_TYPE_OFFSET:
+      jitter_gc_handle_word (heaplet, &PVM_VAL_TYP_O_BASE_TYPE (typ));
+      jitter_gc_handle_word (heaplet, &PVM_VAL_TYP_O_UNIT (typ));
+      jitter_gc_handle_word (heaplet, &PVM_VAL_TYP_O_REF_TYPE (typ));
+      break;
+
+    case PVM_TYPE_CLOSURE:
+      {
+        uint64_t nargs;
+
+        nargs = PVM_VAL_ULONG (PVM_VAL_TYP_C_NARGS (typ));
+        jitter_gc_handle_word (heaplet, &PVM_VAL_TYP_C_NARGS (typ));
+        jitter_gc_handle_word (heaplet, &PVM_VAL_TYP_C_RETURN_TYPE (typ));
+        for (uint64_t i = 0; i < nargs; ++i)
+          jitter_gc_handle_word (heaplet, &PVM_VAL_TYP_C_ATYPE (typ, i));
+      }
+      break;
+
+    case PVM_TYPE_STRING:
+    case PVM_TYPE_VOID:
+      /* Nothing to do.  */
+      break;
+    }
+  return PVM_GC_SIZEOF_TYPE;
+}
+
+static void
+pvm_gc_finalize_type (struct jitter_gc_heap *heap __attribute__ ((unused)),
+                      struct jitter_gc_heaplet *heaplet
+                      __attribute__ ((unused)),
+                      void *obj)
+{
+  pvm_type typ = obj;
+
+  switch (typ->code)
+    {
+    case PVM_TYPE_INTEGRAL:
+    case PVM_TYPE_STRING:
+    case PVM_TYPE_ARRAY:
+    case PVM_TYPE_OFFSET:
+    case PVM_TYPE_VOID:
+      /* No finalization.  */
+      break;
+
+    case PVM_TYPE_STRUCT:
+      free (PVM_VAL_TYP_S_FNAMES (typ));
+      free (PVM_VAL_TYP_S_FTYPES (typ));
+      break;
+
+    case PVM_TYPE_CLOSURE:
+      free (PVM_VAL_TYP_C_ATYPES (typ));
+      break;
+    }
+}
+
 static pvm_val
 pvm_make_type (enum pvm_type_code code)
 {
-  pvm_val_box box = pvm_make_box (PVM_VAL_TAG_TYP);
-  pvm_type type = pvm_alloc (sizeof (struct pvm_type));
+  pvm_type typ;
 
-  memset (type, 0, sizeof (struct pvm_type));
-  type->code = code;
+  {
+    void *p;
 
-  PVM_VAL_BOX_TYP (box) = type;
-  return PVM_BOX (box);
+    _JITTER_GC_ALLOCATE (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
+                         GC_RUNTIME_LIMIT (gc_heaplet), p, PVM_GC_SIZEOF_TYPE);
+    typ = p;
+  }
+  typ->type_code = PVM_VAL_TAG_TYP;
+  JITTER_GC_FINALIZABLE_INITIALIZE (pvm_type, finalization_data, typ);
+
+  typ->code = code;
+  /* The rest will be filled by the caller.  */
+
+  return PVM_BOX (typ);
 }
+
+/* Only will be called in pvm_val_initialize to fill COMMON_INT_TYPES array.
+ */
 
 static inline pvm_val
 pvm_make_integral_type_1 (pvm_val size, pvm_val signed_p)
 {
-  pvm_val itype = pvm_make_type (PVM_TYPE_INTEGRAL);
+  pvm_val itype;
+
+  JITTER_GC_BLOCK_BEGIN (gc_heaplet);
+  {
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &size);
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &signed_p);
+
+    itype = pvm_make_type (PVM_TYPE_INTEGRAL);
+  }
+  JITTER_GC_BLOCK_END (gc_heaplet);
 
   PVM_VAL_TYP_I_SIZE (itype) = size;
   PVM_VAL_TYP_I_SIGNED_P (itype) = signed_p;
@@ -509,15 +1027,8 @@ pvm_make_integral_type (pvm_val size, pvm_val signed_p)
 {
   uint64_t bits = PVM_VAL_ULONG (size);
   int32_t sign = PVM_VAL_INT (signed_p);
-  pvm_val itype = common_int_types[bits][sign];
 
-  if (itype == PVM_NULL)
-    {
-      itype = pvm_make_integral_type_1 (size, signed_p);
-      common_int_types[bits][sign] = itype;
-    }
-
-  return itype;
+  return common_int_types[bits][sign];
 }
 
 pvm_val
@@ -535,7 +1046,17 @@ pvm_make_void_type (void)
 pvm_val
 pvm_make_offset_type (pvm_val base_type, pvm_val unit, pvm_val ref_type)
 {
-  pvm_val otype = pvm_make_type (PVM_TYPE_OFFSET);
+  pvm_val otype;
+
+  JITTER_GC_BLOCK_BEGIN (gc_heaplet);
+  {
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &base_type);
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &unit);
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &ref_type);
+
+    otype = pvm_make_type (PVM_TYPE_OFFSET);
+  }
+  JITTER_GC_BLOCK_END (gc_heaplet);
 
   PVM_VAL_TYP_O_BASE_TYPE (otype) = base_type;
   PVM_VAL_TYP_O_UNIT (otype) = unit;
@@ -546,9 +1067,18 @@ pvm_make_offset_type (pvm_val base_type, pvm_val unit, pvm_val ref_type)
 pvm_val
 pvm_make_array_type (pvm_val type, pvm_val bounder)
 {
-  pvm_val atype = pvm_make_type (PVM_TYPE_ARRAY);
+  pvm_val atype;
 
   assert (PVM_IS_CLS (bounder));
+
+  JITTER_GC_BLOCK_BEGIN (gc_heaplet);
+  {
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &type);
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &bounder);
+
+    atype = pvm_make_type (PVM_TYPE_ARRAY);
+  }
+  JITTER_GC_BLOCK_END (gc_heaplet);
 
   PVM_VAL_TYP_A_ETYPE (atype) = type;
   PVM_VAL_TYP_A_BOUND (atype) = bounder;
@@ -556,10 +1086,27 @@ pvm_make_array_type (pvm_val type, pvm_val bounder)
 }
 
 pvm_val
-pvm_make_struct_type (pvm_val nfields,
-                      pvm_val *fnames, pvm_val *ftypes)
+pvm_make_struct_type_unsafe (pvm_val nfields, pvm_val **fnames_ptr,
+                             pvm_val **ftypes_ptr)
 {
-  pvm_val stype = pvm_make_type (PVM_TYPE_STRUCT);
+  size_t nfields_val = PVM_VAL_ULONG (nfields);
+  size_t nbytes = sizeof (pvm_val) * nfields_val;
+  pvm_val *fnames;
+  pvm_val *ftypes;
+  pvm_val stype;
+
+  JITTER_GC_BLOCK_BEGIN (gc_heaplet);
+  {
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &nfields);
+
+    stype = pvm_make_type (PVM_TYPE_STRUCT);
+  }
+  JITTER_GC_BLOCK_END (gc_heaplet);
+
+  fnames = malloc (nbytes);
+  assert (fnames); // FIXME Handle error.
+  ftypes = malloc (nbytes);
+  assert (ftypes); // FIXME Handle error.
 
   PVM_VAL_TYP_S_NFIELDS (stype) = nfields;
   PVM_VAL_TYP_S_CONSTRUCTOR (stype) = PVM_NULL;
@@ -567,50 +1114,743 @@ pvm_make_struct_type (pvm_val nfields,
   PVM_VAL_TYP_S_FTYPES (stype) = ftypes;
   PVM_VAL_TYP_S_NAME (stype) = PVM_NULL;
 
+  if (fnames_ptr)
+    *fnames_ptr = fnames;
+  if (ftypes_ptr)
+    *ftypes_ptr = ftypes;
+
   return stype;
 }
 
 pvm_val
-pvm_make_closure_type (pvm_val rtype,
-                       pvm_val nargs, pvm_val *atypes)
+pvm_make_struct_type (pvm_val nfields, pvm_val **fnames, pvm_val **ftypes)
 {
-  pvm_val ctype = pvm_make_type (PVM_TYPE_CLOSURE);
+  size_t nfields_val = PVM_VAL_ULONG (nfields);
+  pvm_val stype;
+
+  stype = pvm_make_struct_type_unsafe (nfields, fnames, ftypes);
+  if (fnames)
+    for (size_t i = 0; i < nfields_val; ++i)
+      (*fnames)[i] = PVM_NULL;
+  if (ftypes)
+    for (size_t i = 0; i < nfields_val; ++i)
+      (*ftypes)[i] = PVM_NULL;
+
+  return stype;
+}
+
+pvm_val
+pvm_make_closure_type_unsafe (pvm_val rtype, pvm_val nargs,
+                              pvm_val **atypes_ptr)
+{
+  uint64_t nbytes = sizeof (pvm_val) * PVM_VAL_ULONG (nargs);
+  pvm_val *atypes;
+  pvm_val ctype;
+
+  JITTER_GC_BLOCK_BEGIN (gc_heaplet);
+  {
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &rtype);
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &nargs);
+
+    ctype = pvm_make_type (PVM_TYPE_CLOSURE);
+  }
+  JITTER_GC_BLOCK_END (gc_heaplet);
+
+  atypes = malloc (nbytes);
+  assert (atypes); // FIXME Handle error.
 
   PVM_VAL_TYP_C_RETURN_TYPE (ctype) = rtype;
   PVM_VAL_TYP_C_NARGS (ctype) = nargs;
   PVM_VAL_TYP_C_ATYPES (ctype) = atypes;
 
+  if (atypes_ptr)
+    *atypes_ptr = atypes;
+
   return ctype;
 }
 
 pvm_val
-pvm_make_cls (pvm_program program, pvm_val name)
+pvm_make_closure_type (pvm_val rtype, pvm_val nargs, pvm_val **atypes)
 {
-  pvm_val_box box = pvm_make_box (PVM_VAL_TAG_CLS);
-  pvm_cls cls = pvm_alloc_cls ();
+  uint64_t nargs_val = PVM_VAL_ULONG (nargs);
+  pvm_val ctype;
 
+  ctype = pvm_make_closure_type_unsafe (rtype, nargs, atypes);
+  for (size_t i = 0; i < nargs_val; ++i)
+    (*atypes)[i] = PVM_NULL;
+
+  return ctype;
+}
+
+/* CLOSURE */
+
+#define PVM_GC_SIZEOF_CLOSURE JITTER_GC_HEADER_ONLY_SIZE_IN_BYTES (pvm_cls)
+
+static bool
+pvm_gc_is_closure_p (pvm_val v)
+{
+  return PVM_IS_CLS (v);
+}
+
+static size_t
+pvm_gc_sizeof_closure (pvm_val v)
+{
+  return PVM_GC_SIZEOF_CLOSURE;
+}
+
+static bool
+pvm_gc_is_closure_type_code_p (uintptr_t v)
+{
+  return v == PVM_VAL_TAG_CLS;
+}
+
+static size_t
+pvm_gc_copy_closure (struct jitter_gc_heaplet *heaplet, pvm_val *new_val,
+                     void *from, void *to)
+{
+  memcpy (to, from, PVM_GC_SIZEOF_CLOSURE);
+  JITTER_GC_FINALIZABLE_COPY (pvm_cls, finalization_data, heaplet, from, to);
+  *new_val = PVM_BOX (to);
+  return PVM_GC_SIZEOF_CLOSURE;
+}
+
+static size_t
+pvm_gc_update_fields_closure (struct jitter_gc_heaplet *heaplet, void *obj)
+{
+  pvm_cls cls = (pvm_cls)(uintptr_t)obj;
+
+  jitter_gc_handle_word (heaplet, &PVM_VAL_CLS_NAME (cls));
+  jitter_gc_handle_word (heaplet, &PVM_VAL_CLS_ENV (cls));
+  jitter_gc_handle_word (heaplet, &PVM_VAL_CLS_PROGRAM (cls));
+  return PVM_GC_SIZEOF_CLOSURE;
+}
+
+static void
+pvm_gc_finalize_closure (struct jitter_gc_heap *heap __attribute__ ((unused)),
+                         struct jitter_gc_heaplet *heaplet
+                         __attribute__ ((unused)),
+                         void *obj)
+{
+  pvm_cls cls = obj;
+
+  pvm_destroy_program (PVM_VAL_CLS_PROGRAM (cls));
+
+  // FIXME FIXME FIXME
+  PVM_VAL_CLS_NAME (cls) = PVM_NULL;
+  PVM_VAL_CLS_ENV (cls) = PVM_NULL;
+  PVM_VAL_CLS_PROGRAM (cls) = PVM_NULL;
+}
+
+pvm_val
+pvm_make_cls (pvm_val program, pvm_val name)
+{
+  pvm_cls cls;
+
+  assert (PVM_IS_PRG (program));
+
+  JITTER_GC_BLOCK_BEGIN (gc_heaplet);
+  {
+    void *p;
+
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &program);
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &name);
+
+    _JITTER_GC_ALLOCATE (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
+                         GC_RUNTIME_LIMIT (gc_heaplet), p,
+                         PVM_GC_SIZEOF_CLOSURE);
+    cls = p;
+  }
+  JITTER_GC_BLOCK_END (gc_heaplet);
+
+  cls->type_code = PVM_VAL_TAG_CLS;
+  JITTER_GC_FINALIZABLE_INITIALIZE (pvm_cls, finalization_data, cls);
+
+  // FIXME FIXME FIXME Use macros.
   cls->name = name;
   cls->program = program;
   cls->entry_point = pvm_program_beginning (program);
-  cls->env = NULL; /* This should be set by a PEC instruction before
-                      using the closure.  */
+  cls->env = PVM_NULL; /* This should be set by a PEC instruction
+                          before using the closure.  */
+  return PVM_BOX (cls);
+}
 
-  PVM_VAL_BOX_CLS (box) = cls;
-  return PVM_BOX (box);
+/* OFFSET */
+
+#define PVM_GC_SIZEOF_OFFSET JITTER_GC_HEADER_ONLY_SIZE_IN_BYTES (pvm_off)
+
+static bool
+pvm_gc_is_offset_p (pvm_val v)
+{
+  return PVM_IS_OFF (v);
+}
+
+static size_t
+pvm_gc_sizeof_offset (pvm_val v)
+{
+  return PVM_GC_SIZEOF_OFFSET;
+}
+
+static bool
+pvm_gc_is_offset_type_code_p (uintptr_t v)
+{
+  return v == PVM_VAL_TAG_OFF;
+}
+
+static size_t
+pvm_gc_copy_offset (struct jitter_gc_heaplet *heaplet, pvm_val *new_val,
+                    void *from, void *to)
+{
+  memcpy (to, from, PVM_GC_SIZEOF_OFFSET);
+  *new_val = PVM_BOX (to);
+  return PVM_GC_SIZEOF_OFFSET;
+}
+
+static size_t
+pvm_gc_update_fields_offset (struct jitter_gc_heaplet *heaplet, void *obj)
+{
+  pvm_off off = obj;
+
+  jitter_gc_handle_word (heaplet, &PVM_VAL_OFF_TYPE (off));
+  jitter_gc_handle_word (heaplet, &PVM_VAL_OFF_MAGNITUDE (off));
+  return PVM_GC_SIZEOF_OFFSET;
 }
 
 pvm_val
 pvm_make_offset (pvm_val magnitude, pvm_val type)
 {
-  pvm_val_box box = pvm_make_box (PVM_VAL_TAG_OFF);
-  pvm_off off = pvm_alloc (sizeof (struct pvm_off));
+  pvm_off off;
 
+  JITTER_GC_BLOCK_BEGIN (gc_heaplet);
+  {
+    void *p;
+
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &magnitude);
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &type);
+
+    _JITTER_GC_ALLOCATE (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
+                         GC_RUNTIME_LIMIT (gc_heaplet), p,
+                         PVM_GC_SIZEOF_OFFSET);
+    off = p;
+  }
+  JITTER_GC_BLOCK_END (gc_heaplet);
+
+  off->type_code = PVM_VAL_TAG_OFF;
   off->type = type;
   off->magnitude = magnitude;
-
-  PVM_VAL_BOX_OFF (box) = off;
-  return PVM_BOX (box);
+  return PVM_BOX (off);
 }
+
+/* IARRAY */
+
+#define PVM_GC_SIZEOF_IARRAY JITTER_GC_HEADER_ONLY_SIZE_IN_BYTES (pvm_iarray)
+
+static bool
+pvm_gc_is_iarray_p (pvm_val v)
+{
+  return PVM_IS_IAR (v);
+}
+
+static size_t
+pvm_gc_sizeof_iarray (pvm_val v)
+{
+  return PVM_GC_SIZEOF_IARRAY;
+}
+
+static bool
+pvm_gc_is_iarray_type_code_p (uintptr_t v)
+{
+  return v == PVM_VAL_TAG_IAR;
+}
+
+static size_t
+pvm_gc_copy_iarray (struct jitter_gc_heaplet *heaplet, pvm_val *new_val,
+                    void *from, void *to)
+{
+  memcpy (to, from, PVM_GC_SIZEOF_IARRAY);
+  JITTER_GC_FINALIZABLE_COPY (pvm_iarray, finalization_data, heaplet, from,
+                              to);
+  *new_val = PVM_BOX (to);
+  return PVM_GC_SIZEOF_IARRAY;
+}
+
+static size_t
+pvm_gc_update_fields_iarray (struct jitter_gc_heaplet *heaplet, void *obj)
+{
+  pvm_iarray iar = obj;
+
+  for (size_t i = 0; i < iar->nelem; ++i)
+    jitter_gc_handle_word (heaplet, &iar->elems[i]);
+  return PVM_GC_SIZEOF_IARRAY;
+}
+
+static void
+pvm_gc_finalize_iarray (struct jitter_gc_heap *heap __attribute__ ((unused)),
+                        struct jitter_gc_heaplet *heaplet
+                        __attribute__ ((unused)),
+                        void *obj)
+{
+  pvm_iarray iar = obj;
+
+  free (iar->elems);
+  iar->elems = NULL;
+}
+
+pvm_val
+pvm_make_iarray (int hint)
+{
+  pvm_iarray iar;
+
+  JITTER_GC_BLOCK_BEGIN (gc_heaplet);
+  {
+    void *p;
+
+    _JITTER_GC_ALLOCATE (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
+                         GC_RUNTIME_LIMIT (gc_heaplet), p,
+                         PVM_GC_SIZEOF_IARRAY);
+    iar = p;
+  }
+  JITTER_GC_BLOCK_END (gc_heaplet);
+
+  iar->type_code = PVM_VAL_TAG_IAR;
+  JITTER_GC_FINALIZABLE_INITIALIZE (pvm_iarray, finalization_data, iar);
+
+  iar->nelem = 0;
+  iar->nallocated = hint == 0 ? 16 : hint;
+  iar->elems = malloc (iar->nallocated * sizeof (pvm_val));
+  assert (iar->elems); // FIXME Handle error.
+
+  return PVM_BOX (iar);
+}
+
+size_t
+pvm_iarray_push (pvm_val iar, pvm_val val)
+{
+  assert (PVM_IS_IAR (iar));
+
+  if (PVM_VAL_IAR_NELEM (iar) == PVM_VAL_IAR_NALLOCATED (iar))
+    {
+      PVM_VAL_IAR_NALLOCATED (iar) += 32;
+      PVM_VAL_IAR_ELEMS (iar)
+          = realloc (PVM_VAL_IAR_ELEMS (iar),
+                     PVM_VAL_IAR_NALLOCATED (iar) * sizeof (pvm_val));
+      assert (PVM_VAL_IAR_ELEMS (iar) != NULL); // FIXME Handle error.
+    }
+  PVM_VAL_IAR_ELEM (iar, PVM_VAL_IAR_NELEM (iar)) = val;
+  return PVM_VAL_IAR_NELEM (iar)++;
+}
+
+pvm_val
+pvm_iarray_pop (pvm_val iar)
+{
+  assert (PVM_IS_IAR (iar));
+
+  if (PVM_VAL_IAR_NELEM (iar))
+    {
+      PVM_VAL_IAR_NELEM (iar) -= 1;
+      return PVM_VAL_IAR_ELEM (iar, PVM_VAL_IAR_NELEM (iar));
+    }
+  return PVM_NULL;
+}
+
+/* ENV */
+
+#define PVM_GC_SIZEOF_ENV JITTER_GC_HEADER_ONLY_SIZE_IN_BYTES (pvm_env_)
+
+static bool
+pvm_gc_is_env_p (pvm_val v)
+{
+  return PVM_IS_ENV (v);
+}
+
+static size_t
+pvm_gc_sizeof_env (pvm_val v)
+{
+  return PVM_GC_SIZEOF_ENV;
+}
+
+static bool
+pvm_gc_is_env_type_code_p (uintptr_t v)
+{
+  return v == PVM_VAL_TAG_ENV;
+}
+
+static size_t
+pvm_gc_copy_env (struct jitter_gc_heaplet *heaplet, pvm_val *new_val,
+                 void *from, void *to)
+{
+  memcpy (to, from, PVM_GC_SIZEOF_ENV);
+  *new_val = PVM_BOX (to);
+  return PVM_GC_SIZEOF_ENV;
+}
+
+static size_t
+pvm_gc_update_fields_env (struct jitter_gc_heaplet *heaplet, void *obj)
+{
+  pvm_env_ env = obj;
+
+  jitter_gc_handle_word (heaplet, &env->vars);
+  jitter_gc_handle_word (heaplet, &env->env_up);
+  return PVM_GC_SIZEOF_ENV;
+}
+
+pvm_val
+pvm_make_env (int hint)
+{
+  pvm_env_ env;
+  pvm_val vars;
+
+  vars = pvm_make_iarray (hint);
+
+  JITTER_GC_BLOCK_BEGIN (gc_heaplet);
+  {
+    void *p;
+
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &vars);
+    _JITTER_GC_ALLOCATE (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
+                         GC_RUNTIME_LIMIT (gc_heaplet), p, PVM_GC_SIZEOF_ENV);
+    env = p;
+  }
+  JITTER_GC_BLOCK_END (gc_heaplet);
+
+  env->type_code = PVM_VAL_TAG_ENV;
+  env->vars = vars;
+  env->env_up = PVM_NULL;
+
+  return PVM_BOX (env);
+}
+
+pvm_val
+pvm_env_push_frame (pvm_val env, int hint)
+{
+  pvm_val frame;
+
+  assert (PVM_IS_ENV (env));
+
+  JITTER_GC_BLOCK_BEGIN (gc_heaplet);
+  {
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &env);
+    frame = pvm_make_env (hint);
+  }
+  JITTER_GC_BLOCK_END (gc_heaplet);
+
+  PVM_VAL_ENV_UP (frame) = env;
+  return frame;
+}
+
+pvm_val
+pvm_env_pop_frame (pvm_val env)
+{
+  pvm_val up;
+
+  assert (PVM_IS_ENV (env));
+  up = PVM_VAL_ENV_UP (env);
+  assert (up != PVM_NULL);
+  return up;
+}
+
+void
+pvm_env_register (pvm_val env, pvm_val val)
+{
+  assert (PVM_IS_ENV (env));
+
+  pvm_iarray_push (PVM_VAL_ENV_VARS (env), val);
+}
+
+/* Given an environment return the frame back frames up from the bottom
+   one.  back is allowed to be zero, but not negative. */
+
+static pvm_val
+pvm_env_back (pvm_val env, int back)
+{
+  pvm_val frame = env;
+  int i;
+
+  for (i = 0; i < back; i++)
+    frame = PVM_VAL_ENV_UP (frame);
+  return frame;
+}
+
+pvm_val
+pvm_env_lookup (pvm_val env, int back, int over)
+{
+  env = pvm_env_back (env, back);
+  return PVM_VAL_ENV_VAR (env, over);
+}
+
+void
+pvm_env_set_var (pvm_val env, int back, int over, pvm_val val)
+{
+  env = pvm_env_back (env, back);
+  PVM_VAL_ENV_VAR (env, over) = val;
+}
+
+int
+pvm_env_toplevel_p (pvm_val env)
+{
+  assert (PVM_IS_ENV (env));
+  return PVM_VAL_ENV_UP (env) == PVM_NULL;
+}
+
+pvm_val
+pvm_env_toplevel (pvm_val env)
+{
+  assert (PVM_IS_ENV (env));
+  while (PVM_VAL_ENV_UP (env) != PVM_NULL)
+    env = PVM_VAL_ENV_UP (env);
+  return env;
+}
+
+/* PROGRAM */
+
+#define PVM_GC_SIZEOF_PROGRAM                                                 \
+  JITTER_GC_HEADER_ONLY_SIZE_IN_BYTES (pvm_program_)
+
+static bool
+pvm_gc_is_program_p (pvm_val v)
+{
+  return PVM_IS_PRG (v);
+}
+
+static size_t
+pvm_gc_sizeof_program (pvm_val v)
+{
+  return PVM_GC_SIZEOF_PROGRAM;
+}
+
+static bool
+pvm_gc_is_program_type_code_p (uintptr_t v)
+{
+  return v == PVM_VAL_TAG_PRG;
+}
+
+static size_t
+pvm_gc_copy_program (struct jitter_gc_heaplet *heaplet, pvm_val *new_val,
+                     void *from, void *to)
+{
+  memcpy (to, from, PVM_GC_SIZEOF_PROGRAM);
+  JITTER_GC_FINALIZABLE_COPY (pvm_program_, finalization_data, heaplet, from,
+                              to);
+  *new_val = PVM_BOX (to);
+  return PVM_GC_SIZEOF_PROGRAM;
+}
+
+static size_t
+pvm_gc_update_fields_program (struct jitter_gc_heaplet *heaplet, void *obj)
+{
+  pvm_program_ prg = obj;
+
+  jitter_gc_handle_word (heaplet, &prg->insn_params);
+  return PVM_GC_SIZEOF_PROGRAM;
+}
+
+static void
+pvm_gc_finalize_program (struct jitter_gc_heap *heap __attribute__ ((unused)),
+                         struct jitter_gc_heaplet *heaplet
+                         __attribute__ ((unused)),
+                         void *obj)
+{
+  pvm_program_ prg = obj;
+
+  pvm_destroy_routine (prg->routine);
+  free (prg->labels);
+  prg->labels = NULL;
+}
+
+pvm_val
+pvm_make_program (void)
+{
+  pvm_program_ prg;
+  pvm_val insn_params;
+
+  insn_params = pvm_make_iarray (64);
+
+  JITTER_GC_BLOCK_BEGIN (gc_heaplet);
+  {
+    void *p;
+
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &insn_params);
+    _JITTER_GC_ALLOCATE (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
+                         GC_RUNTIME_LIMIT (gc_heaplet), p,
+                         PVM_GC_SIZEOF_PROGRAM);
+    prg = p;
+  }
+  JITTER_GC_BLOCK_END (gc_heaplet);
+
+  JITTER_GC_FINALIZABLE_INITIALIZE (pvm_program_, finalization_data, prg);
+
+  prg->type_code = PVM_VAL_TAG_PRG;
+  prg->insn_params = insn_params;
+  prg->routine = pvm_make_routine ();
+  prg->nlabels_max = 16;
+  prg->nlabels = 0;
+  prg->labels = malloc (prg->nlabels_max * sizeof (pvm_val));
+  assert (prg->labels); // FIXME Handle error.
+
+  return PVM_BOX (prg);
+}
+
+/* Keep track of PVM values provided to the instructions as parameter(s).  */
+
+static size_t
+pvm_program_collect_val (pvm_val program, pvm_val val)
+{
+  pvm_val insn_params;
+  size_t nelem;
+
+  assert (PVM_IS_PRG (program));
+
+  insn_params = PVM_VAL_PRG_INSN_PARAMS (program);
+  nelem = PVM_VAL_IAR_NELEM (insn_params);
+  for (size_t i = 0; i < nelem; ++i)
+    if (PVM_VAL_IAR_ELEM (insn_params, i) == val)
+      return i;
+  return pvm_iarray_push (PVM_VAL_PRG_INSN_PARAMS (program), val);
+}
+
+int
+pvm_program_append_instruction (pvm_val program, const char *insn_name)
+{
+  assert (PVM_IS_PRG (program));
+
+  /* For push instructions, pvm_program_append_push_instruction shall
+     be used instead.  That function is to remove when the causing
+     limitation in jitter gets fixed.  */
+  assert (STRNEQ (insn_name, "push"));
+
+  /* XXX Jitter should provide error codes so we can return PVM_EINVAL
+     and PVM_EINSN properly.  */
+  pvm_routine_append_instruction_name (PVM_VAL_PRG_ROUTINE (program),
+                                       insn_name);
+
+  return PVM_OK;
+}
+
+int
+pvm_program_append_push_instruction (pvm_val program, pvm_val val)
+{
+  pvm_routine routine;
+
+  assert (PVM_IS_PRG (program));
+
+  routine = PVM_VAL_PRG_ROUTINE (program);
+  PVM_ROUTINE_APPEND_INSTRUCTION (routine, push);
+  pvm_routine_append_unsigned_literal_parameter (
+      routine, pvm_program_collect_val (program, val));
+
+  return PVM_OK;
+}
+
+int
+pvm_program_append_val_parameter (pvm_val program, pvm_val val)
+{
+  assert (PVM_IS_PRG (program));
+
+  pvm_routine_append_unsigned_literal_parameter (
+      PVM_VAL_PRG_ROUTINE (program), pvm_program_collect_val (program, val));
+
+  return PVM_OK;
+}
+
+int
+pvm_program_append_unsigned_parameter (pvm_val program, unsigned int n)
+{
+  assert (PVM_IS_PRG (program));
+  pvm_routine_append_unsigned_literal_parameter (PVM_VAL_PRG_ROUTINE (program),
+                                                 (jitter_uint)n);
+
+  return PVM_OK;
+}
+
+int
+pvm_program_append_register_parameter (pvm_val program, pvm_register reg)
+{
+  assert (PVM_IS_PRG (program));
+  /* XXX Jitter should return an error code here so we can return
+     PVM_EINVAL whenever appropriate.  */
+  PVM_ROUTINE_APPEND_REGISTER_PARAMETER (PVM_VAL_PRG_ROUTINE (program), r,
+                                         reg);
+
+  return PVM_OK;
+}
+
+int
+pvm_program_append_label_parameter (pvm_val program, pvm_program_label label)
+{
+  assert (PVM_IS_PRG (program));
+  /* XXX Jitter should return an error code here so we can return
+     PVM_EINVAL whenever appropriate.  */
+  pvm_routine_append_label_parameter (PVM_VAL_PRG_ROUTINE (program),
+                                      PVM_VAL_PRG_LABEL (program, label));
+
+  return PVM_OK;
+}
+
+pvm_program_program_point
+pvm_program_beginning (pvm_val program)
+{
+  assert (PVM_IS_PRG (program));
+  return (pvm_program_program_point)PVM_ROUTINE_BEGINNING (
+      PVM_VAL_PRG_ROUTINE (program));
+}
+
+int
+pvm_program_make_executable (pvm_val program)
+{
+  assert (PVM_IS_PRG (program));
+  /* XXX Jitter should return an error code here.  */
+  jitter_routine_make_executable_if_needed (PVM_VAL_PRG_ROUTINE (program));
+
+  return PVM_OK;
+}
+
+void
+pvm_destroy_program (pvm_val program)
+{
+  assert (PVM_IS_PRG (program));
+  pvm_destroy_routine (PVM_VAL_PRG_ROUTINE (program));
+  PVM_VAL_PRG_ROUTINE (program) = NULL;
+}
+
+pvm_routine
+pvm_program_routine (pvm_val program)
+{
+  assert (PVM_IS_PRG (program));
+  return PVM_VAL_PRG_ROUTINE (program);
+}
+
+pvm_program_label
+pvm_program_fresh_label (pvm_val program)
+{
+  assert (PVM_IS_PRG (program));
+  if (PVM_VAL_PRG_NLABELS (program) == PVM_VAL_PRG_NLABELS_MAX (program))
+    {
+      void *p;
+
+      PVM_VAL_PRG_NLABELS_MAX (program) += 32;
+      p = realloc (PVM_VAL_PRG_LABELS (program),
+                   PVM_VAL_PRG_NLABELS_MAX (program));
+      assert (p); // FIXME Handle error.
+      PVM_VAL_PRG_LABELS (program) = p;
+    }
+
+  PVM_VAL_PRG_LABEL (program, PVM_VAL_PRG_NLABELS (program))
+      = jitter_fresh_label (PVM_VAL_PRG_ROUTINE (program));
+  return PVM_VAL_PRG_NLABELS (program)++;
+}
+
+int
+pvm_program_append_label (pvm_val program, pvm_program_label label)
+{
+  assert (PVM_IS_PRG (program));
+  if (label >= PVM_VAL_PRG_NLABELS (program))
+    return PVM_EINVAL;
+
+  pvm_routine_append_label (PVM_VAL_PRG_ROUTINE (program),
+                            PVM_VAL_PRG_LABEL (program, label));
+  return PVM_OK;
+}
+
+/* --- */
 
 int
 pvm_val_equal_p (pvm_val val1, pvm_val val2)
@@ -652,8 +1892,8 @@ pvm_val_equal_p (pvm_val val1, pvm_val val2)
       size_t pvm_sct2_nmethods = PVM_VAL_ULONG (PVM_VAL_SCT_NMETHODS (val2));
 
       if ((pvm_sct1_nfields != pvm_sct2_nfields)
-           || (pvm_sct1_nmethods != pvm_sct2_nmethods))
-          return 0;
+          || (pvm_sct1_nmethods != pvm_sct2_nmethods))
+        return 0;
 
       if (!pvm_val_equal_p (PVM_VAL_SCT_IOS (val1), PVM_VAL_SCT_IOS (val2)))
         return 0;
@@ -665,11 +1905,11 @@ pvm_val_equal_p (pvm_val val1, pvm_val val2)
                             PVM_VAL_SCT_OFFSET (val2)))
         return 0;
 
-      for (size_t i = 0 ; i < pvm_sct1_nfields ; i++)
+      for (size_t i = 0; i < pvm_sct1_nfields; i++)
         {
           if (PVM_VAL_SCT_FIELD_ABSENT_P (val1, i)
               != PVM_VAL_SCT_FIELD_ABSENT_P (val2, i))
-              return 0;
+            return 0;
 
           if (!PVM_VAL_SCT_FIELD_ABSENT_P (val1, i))
             {
@@ -687,7 +1927,7 @@ pvm_val_equal_p (pvm_val val1, pvm_val val2)
             }
         }
 
-      for (size_t i = 0 ; i < pvm_sct1_nmethods ; i++)
+      for (size_t i = 0; i < pvm_sct1_nmethods; i++)
         {
           if (!pvm_val_equal_p (PVM_VAL_SCT_METHOD_NAME (val1, i),
                                 PVM_VAL_SCT_METHOD_NAME (val2, i)))
@@ -722,7 +1962,7 @@ pvm_val_equal_p (pvm_val val1, pvm_val val2)
                             PVM_VAL_ARR_SIZE_BOUND (val2)))
         return 0;
 
-      for (size_t i = 0 ; i < pvm_arr1_nelems ; i++)
+      for (size_t i = 0; i < pvm_arr1_nelems; i++)
         {
           if (!pvm_val_equal_p (PVM_VAL_ARR_ELEM_VALUE (val1, i),
                                 PVM_VAL_ARR_ELEM_VALUE (val2, i)))
@@ -739,22 +1979,6 @@ pvm_val_equal_p (pvm_val val1, pvm_val val2)
     return pvm_type_equal_p (val1, val2);
   else
     return 0;
-}
-
-void
-pvm_allocate_struct_attrs (pvm_val nfields,
-                           pvm_val **fnames, pvm_val **ftypes)
-{
-  size_t nbytes = sizeof (pvm_val) * PVM_VAL_ULONG (nfields);
-  *fnames = pvm_alloc (nbytes);
-  *ftypes = pvm_alloc (nbytes);
-}
-
-void
-pvm_allocate_closure_attrs (pvm_val nargs, pvm_val **atypes)
-{
-  size_t nbytes = sizeof (pvm_val) * PVM_VAL_ULONG (nargs);
-  *atypes = pvm_alloc (nbytes);
 }
 
 pvm_val
@@ -843,12 +2067,13 @@ pvm_val_reloc (pvm_val val, pvm_val ios, pvm_val boffset)
           pvm_val elem_value = PVM_VAL_ARR_ELEM_VALUE (val, i);
           pvm_val elem_offset = PVM_VAL_ARR_ELEM_OFFSET (val, i);
           uint64_t elem_new_offset
-            = boff + (PVM_VAL_ULONG (PVM_VAL_ARR_ELEM_OFFSET (val, i))
-                      - array_offset);
+              = boff
+                + (PVM_VAL_ULONG (PVM_VAL_ARR_ELEM_OFFSET (val, i))
+                   - array_offset);
 
           PVM_VAL_ARR_ELEM_OFFSET_BACK (val, i) = elem_offset;
           PVM_VAL_ARR_ELEM_OFFSET (val, i)
-            = pvm_make_ulong (elem_new_offset, 64);
+              = pvm_make_ulong (elem_new_offset, 64);
 
           pvm_val_reloc (elem_value, ios,
                          pvm_make_ulong (elem_new_offset, 64));
@@ -871,21 +2096,20 @@ pvm_val_reloc (pvm_val val, pvm_val ios, pvm_val boffset)
           pvm_val field_value = PVM_VAL_SCT_FIELD_VALUE (val, i);
           pvm_val field_offset = PVM_VAL_SCT_FIELD_OFFSET (val, i);
           uint64_t field_new_offset
-            = boff + (PVM_VAL_ULONG (PVM_VAL_SCT_FIELD_OFFSET (val, i))
-                      - struct_offset);
+              = boff
+                + (PVM_VAL_ULONG (PVM_VAL_SCT_FIELD_OFFSET (val, i))
+                   - struct_offset);
 
           /* Do not relocate absent fields.  */
           if (PVM_VAL_SCT_FIELD_ABSENT_P (val, i))
             continue;
 
-          PVM_VAL_SCT_FIELD_OFFSET_BACK (val, i)
-            = field_offset;
+          PVM_VAL_SCT_FIELD_OFFSET_BACK (val, i) = field_offset;
           PVM_VAL_SCT_FIELD_OFFSET (val, i)
-            = pvm_make_ulong (field_new_offset, 64);
+              = pvm_make_ulong (field_new_offset, 64);
           PVM_VAL_SCT_FIELD_MODIFIED_BACK (val, i)
-            = PVM_VAL_SCT_FIELD_MODIFIED (val, i);
-          PVM_VAL_SCT_FIELD_MODIFIED (val, i) =
-            PVM_MAKE_INT (1, 32);
+              = PVM_VAL_SCT_FIELD_MODIFIED (val, i);
+          PVM_VAL_SCT_FIELD_MODIFIED (val, i) = PVM_MAKE_INT (1, 32);
 
           pvm_val_reloc (field_value, ios,
                          pvm_make_ulong (field_new_offset, 64));
@@ -911,7 +2135,8 @@ pvm_val_ureloc (pvm_val val)
         {
           pvm_val elem_value = PVM_VAL_ARR_ELEM_VALUE (val, i);
 
-          PVM_VAL_ARR_ELEM_OFFSET (val, i) = PVM_VAL_ARR_ELEM_OFFSET_BACK (val, i);
+          PVM_VAL_ARR_ELEM_OFFSET (val, i)
+              = PVM_VAL_ARR_ELEM_OFFSET_BACK (val, i);
           pvm_val_ureloc (elem_value);
         }
 
@@ -927,9 +2152,9 @@ pvm_val_ureloc (pvm_val val)
           pvm_val field_value = PVM_VAL_SCT_FIELD_VALUE (val, i);
 
           PVM_VAL_SCT_FIELD_OFFSET (val, i)
-            = PVM_VAL_SCT_FIELD_OFFSET_BACK (val, i);
+              = PVM_VAL_SCT_FIELD_OFFSET_BACK (val, i);
           PVM_VAL_SCT_FIELD_MODIFIED (val, i)
-            = PVM_VAL_SCT_FIELD_MODIFIED_BACK (val, i);
+              = PVM_VAL_SCT_FIELD_MODIFIED_BACK (val, i);
 
           pvm_val_ureloc (field_value);
         }
@@ -980,7 +2205,7 @@ pvm_sizeof (pvm_val val)
           pvm_val elem_value = PVM_VAL_SCT_FIELD_VALUE (val, i);
           pvm_val elem_offset = PVM_VAL_SCT_FIELD_OFFSET (val, i);
 
-          if (! PVM_VAL_SCT_FIELD_ABSENT_P (val, i))
+          if (!PVM_VAL_SCT_FIELD_ABSENT_P (val, i))
             {
               uint64_t elem_size_bits = pvm_sizeof (elem_value);
 
@@ -990,8 +2215,9 @@ pvm_sizeof (pvm_val val)
                 {
                   uint64_t elem_offset_bits = PVM_VAL_ULONG (elem_offset);
 
-#define MAX(A,B) ((A) > (B) ? (A) : (B))
-                  size = MAX (size, elem_offset_bits - sct_offset_bits + elem_size_bits);
+#define MAX(A, B) ((A) > (B) ? (A) : (B))
+                  size = MAX (size, elem_offset_bits - sct_offset_bits
+                                        + elem_size_bits);
                 }
             }
         }
@@ -1071,8 +2297,8 @@ print_unit_name (uint64_t unit)
     }
 }
 
-#define PVM_PRINT_VAL_1(...)                    \
-  pvm_print_val_1 (vm, depth, mode, base, indent, acutoff, flags, \
+#define PVM_PRINT_VAL_1(...)                                                  \
+  pvm_print_val_1 (vm, depth, mode, base, indent, acutoff, flags,             \
                    exit_exception, __VA_ARGS__)
 
 static void
@@ -1566,8 +2792,8 @@ pvm_print_val_1 (pvm vm, int depth, int mode, int base, int indent,
             pk_puts (" {");
             for (i = 0; i < nelem; ++i)
               {
-                pvm_val ename = PVM_VAL_TYP_S_FNAME(val, i);
-                pvm_val etype = PVM_VAL_TYP_S_FTYPE(val, i);
+                pvm_val ename = PVM_VAL_TYP_S_FNAME (val, i);
+                pvm_val etype = PVM_VAL_TYP_S_FTYPE (val, i);
 
                 if (i != 0)
                   pk_puts (" ");
@@ -1578,7 +2804,7 @@ pvm_print_val_1 (pvm vm, int depth, int mode, int base, int indent,
                 pk_puts (";");
               }
             pk_puts ("}");
-          break;
+            break;
           }
         default:
           PK_UNREACHABLE ();
@@ -1618,32 +2844,23 @@ pvm_print_val (pvm vm, pvm_val val, pvm_val *exit_exception)
 {
   if (exit_exception)
     *exit_exception = PVM_NULL;
-  pvm_print_val_1 (vm,
-                   pvm_odepth (vm), pvm_omode (vm),
-                   pvm_obase (vm), pvm_oindent (vm),
-                   pvm_oacutoff (vm),
+  pvm_print_val_1 (vm, pvm_odepth (vm), pvm_omode (vm), pvm_obase (vm),
+                   pvm_oindent (vm), pvm_oacutoff (vm),
                    (pvm_omaps (vm) << (PVM_PRINT_F_MAPS - 1)
                     | (pvm_pretty_print (vm) << (PVM_PRINT_F_PPRINT - 1))),
-                   exit_exception,
-                   val,
-                   0 /* ndepth */);
+                   exit_exception, val, 0 /* ndepth */);
 }
 
 void
-pvm_print_val_with_params (pvm vm, pvm_val val,
-                           int depth,int mode, int base,
-                           int indent, int acutoff,
-                           uint32_t flags, pvm_val *exit_exception)
+pvm_print_val_with_params (pvm vm, pvm_val val, int depth, int mode, int base,
+                           int indent, int acutoff, uint32_t flags,
+                           pvm_val *exit_exception)
 {
   if (exit_exception)
     *exit_exception = PVM_NULL;
 
-  pvm_print_val_1 (vm,
-                   depth, mode, base, indent, acutoff,
-                   flags,
-                   exit_exception,
-                   val,
-                   0 /* ndepth */);
+  pvm_print_val_1 (vm, depth, mode, base, indent, acutoff, flags,
+                   exit_exception, val, 0 /* ndepth */);
 }
 
 pvm_val
@@ -1655,14 +2872,14 @@ pvm_typeof (pvm_val val)
     type = pvm_make_integral_type (pvm_make_ulong (PVM_VAL_INT_SIZE (val), 64),
                                    PVM_MAKE_INT (1, 32));
   else if (PVM_IS_UINT (val))
-    type = pvm_make_integral_type (pvm_make_ulong (PVM_VAL_UINT_SIZE (val), 64),
-                                   PVM_MAKE_INT (0, 32));
+    type = pvm_make_integral_type (
+        pvm_make_ulong (PVM_VAL_UINT_SIZE (val), 64), PVM_MAKE_INT (0, 32));
   else if (PVM_IS_LONG (val))
-    type = pvm_make_integral_type (pvm_make_ulong (PVM_VAL_LONG_SIZE (val), 64),
-                                   PVM_MAKE_INT (1, 32));
+    type = pvm_make_integral_type (
+        pvm_make_ulong (PVM_VAL_LONG_SIZE (val), 64), PVM_MAKE_INT (1, 32));
   else if (PVM_IS_ULONG (val))
-    type = pvm_make_integral_type (pvm_make_ulong (PVM_VAL_ULONG_SIZE (val), 64),
-                                   PVM_MAKE_INT (0, 32));
+    type = pvm_make_integral_type (
+        pvm_make_ulong (PVM_VAL_ULONG_SIZE (val), 64), PVM_MAKE_INT (0, 32));
   else if (PVM_IS_STR (val))
     type = pvm_make_string_type ();
   else if (PVM_IS_OFF (val))
@@ -1787,92 +3004,288 @@ pvm_val
 pvm_make_exception (int code, const char *name, int exit_status,
                     const char *location, const char *msg)
 {
-  pvm_val nfields = pvm_make_ulong (5, 64);
-  pvm_val nmethods = pvm_make_ulong (0, 64);
-  pvm_val struct_name = pvm_make_string ("Exception");
-  pvm_val code_name = pvm_make_string ("code");
-  pvm_val name_name = pvm_make_string ("name");
-  pvm_val exit_status_name = pvm_make_string ("exit_status");
-  pvm_val location_name = pvm_make_string ("location");
-  pvm_val msg_name = pvm_make_string ("msg");
-  pvm_val *field_names, *field_types, type;
   pvm_val exception;
 
-  pvm_allocate_struct_attrs (nfields, &field_names, &field_types);
+  JITTER_GC_BLOCK_BEGIN (gc_heaplet);
+  {
+    pvm_val nfields;
+    pvm_val type;
+    pvm_val nmethods;
 
-  field_names[0] = code_name;
-  field_types[0] = pvm_make_integral_type (pvm_make_ulong (32, 64),
-                                           PVM_MAKE_INT (1, 32));
+    nfields = pvm_make_ulong (5, 64);
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &nfields);
 
-  field_names[1] = name_name;
-  field_types[1] = pvm_make_string_type ();
+    type = pvm_make_struct_type (nfields, /*field_names*/ NULL,
+                                 /*field_types*/ NULL);
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &type);
 
-  field_names[2] = exit_status_name;
-  field_types[2] = pvm_make_integral_type (pvm_make_ulong (32, 64),
-                                           PVM_MAKE_INT (1, 32));
+    PVM_VAL_TYP_S_NAME (type) = pvm_make_string ("Exception");
 
-  field_names[3] = location_name;
-  field_types[3] = pvm_make_string_type ();
+    PVM_VAL_TYP_S_FNAME (type, 0) = pvm_make_string ("code");
+    PVM_VAL_TYP_S_FTYPE (type, 0) = pvm_make_integral_type (
+        pvm_make_ulong (32, 64), PVM_MAKE_INT (1, 32));
+    PVM_VAL_TYP_S_FNAME (type, 1) = pvm_make_string ("name");
+    PVM_VAL_TYP_S_FTYPE (type, 1) = pvm_make_string_type ();
+    PVM_VAL_TYP_S_FNAME (type, 2) = pvm_make_string ("exit_status");
+    PVM_VAL_TYP_S_FTYPE (type, 2) = pvm_make_integral_type (
+        pvm_make_ulong (32, 64), PVM_MAKE_INT (1, 32));
+    PVM_VAL_TYP_S_FNAME (type, 3) = pvm_make_string ("location");
+    PVM_VAL_TYP_S_FTYPE (type, 3) = pvm_make_string_type ();
+    PVM_VAL_TYP_S_FNAME (type, 4) = pvm_make_string ("msg");
+    PVM_VAL_TYP_S_FTYPE (type, 4) = pvm_make_string_type ();
 
-  field_names[4] = msg_name;
-  field_types[4] = pvm_make_string_type ();
+    nmethods = pvm_make_ulong (0, 64);
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &nmethods);
 
-  type = pvm_make_struct_type (nfields, field_names, field_types);
-  PVM_VAL_TYP_S_NAME (type) = struct_name;
+    exception = pvm_make_struct (nfields, nmethods, type);
+    JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &exception);
 
-  exception = pvm_make_struct (nfields, nmethods, type);
+    PVM_VAL_SCT_FIELD_NAME (exception, 0) = PVM_VAL_TYP_S_FNAME (type, 0);
+    PVM_VAL_SCT_FIELD_VALUE (exception, 0) = PVM_MAKE_INT (code, 32);
 
-  PVM_VAL_SCT_FIELD_NAME (exception, 0) = code_name;
-  PVM_VAL_SCT_FIELD_VALUE (exception, 0)
-    = PVM_MAKE_INT (code, 32);
+    PVM_VAL_SCT_FIELD_NAME (exception, 1) = PVM_VAL_TYP_S_FNAME (type, 1);
+    PVM_VAL_SCT_FIELD_VALUE (exception, 1) = pvm_make_string (name);
 
-  PVM_VAL_SCT_FIELD_NAME (exception, 1) = name_name;
-  PVM_VAL_SCT_FIELD_VALUE (exception, 1)
-    = pvm_make_string (name);
+    PVM_VAL_SCT_FIELD_NAME (exception, 2) = PVM_VAL_TYP_S_FNAME (type, 2);
+    PVM_VAL_SCT_FIELD_VALUE (exception, 2) = PVM_MAKE_INT (exit_status, 32);
 
-  PVM_VAL_SCT_FIELD_NAME (exception, 2) = exit_status_name;
-  PVM_VAL_SCT_FIELD_VALUE (exception, 2)
-    = PVM_MAKE_INT (exit_status, 32);
+    PVM_VAL_SCT_FIELD_NAME (exception, 3) = PVM_VAL_TYP_S_FNAME (type, 3);
+    PVM_VAL_SCT_FIELD_VALUE (exception, 3)
+        = pvm_make_string (location == NULL ? "" : location);
 
-  PVM_VAL_SCT_FIELD_NAME (exception, 3) = location_name;
-  PVM_VAL_SCT_FIELD_VALUE (exception, 3)
-    = pvm_make_string (location == NULL ? "" : location);
-
-  PVM_VAL_SCT_FIELD_NAME (exception, 4) = msg_name;
-  PVM_VAL_SCT_FIELD_VALUE (exception, 4)
-    = pvm_make_string (msg == NULL ? "" : msg);
+    PVM_VAL_SCT_FIELD_NAME (exception, 4) = PVM_VAL_TYP_S_FNAME (type, 4);
+    PVM_VAL_SCT_FIELD_VALUE (exception, 4)
+        = pvm_make_string (msg == NULL ? "" : msg);
+  }
+  JITTER_GC_BLOCK_END (gc_heaplet);
 
   return exception;
 }
 
-pvm_program
+pvm_val
 pvm_val_cls_program (pvm_val cls)
 {
   return PVM_VAL_CLS_PROGRAM (cls);
 }
 
+static bool
+pvm_gc_is_unboxed_p (pvm_val v)
+{
+  if (PVM_VAL_TAG (v) == 7)
+    return true;
+  return PVM_VAL_BOXED_P (v);
+}
+
+// Debugging.
+#if 1
+
+static void
+print_indicator_pre (struct jitter_gc_heaplet *b, void *useless,
+                     enum jitter_gc_collection_kind k)
+{
+  fprintf (stderr, "[GC-PRE] heaplet:%p kind:%d\n", b, k);
+}
+
+static void
+print_indicator_post (struct jitter_gc_heaplet *b, void *useless,
+                      enum jitter_gc_collection_kind k)
+{
+  fprintf (stderr, "[GC-POST] heaplet:%p kind:%d\n", b, k);
+}
+
+#endif
+
+void *
+pvm_alloc_uncollectable (size_t nelem)
+{
+  uintptr_t *us;
+  size_t nbytes;
+
+  nbytes = nelem * sizeof (uintptr_t);
+
+  us = pvm_heaplet_alloc (gc_heaplet, sizeof (uintptr_t) + nbytes);
+  assert (us); // FIXME Handle error.
+  us[0]
+      = (uintptr_t)jitter_gc_register_global_root (gc_heaplet, us + 1, nbytes);
+  return us + 1;
+}
+
+void
+pvm_free_uncollectable (void *ptr)
+{
+  uintptr_t *us;
+  jitter_gc_global_root root;
+
+  us = (uintptr_t *)ptr;
+  root = (jitter_gc_global_root)us[0];
+  jitter_gc_deregister_global_root (gc_heaplet, root);
+}
+
+void
+pvm_alloc_gc (void)
+{
+  JITTER_GC_COLLECT_EITHER (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
+                            GC_RUNTIME_LIMIT (gc_heaplet));
+}
+
+static struct
+{
+  jitter_gc_global_root void_type;
+  jitter_gc_global_root string_type;
+  jitter_gc_global_root common_int_types;
+
+#if 0
+  size_t roots_nelem;
+  size_t roots_nallocated;
+  jitter_gc_global_root *roots;
+#endif
+} gc_global_roots;
+
 void
 pvm_val_initialize (void)
 {
-  uint64_t i;
-  int32_t j;
+  gc_shapes = jitter_gc_shape_table_make (
+      PVM_VAL_INVALID_OBJECT, PVM_VAL_UNINITIALIZED_OBJECT,
+      PVM_VAL_BROKEN_HEART_TYPE_CODE, pvm_gc_is_unboxed_p);
+  assert (gc_shapes); // FIXME Handle error.
 
-  pvm_alloc_add_gc_roots (&string_type, 1);
-  pvm_alloc_add_gc_roots (&void_type, 1);
-  pvm_alloc_add_gc_roots (&common_int_types, 65 * 2);
+  jitter_gc_shape_add_headerless (gc_shapes, "long", pvm_gc_is_long_p,
+                                  pvm_gc_sizeof_long, pvm_gc_copy_long);
+  jitter_gc_shape_add_headerless (gc_shapes, "ulong", pvm_gc_is_ulong_p,
+                                  pvm_gc_sizeof_ulong, pvm_val_ulong_copy);
+
+#if 0
+  jitter_gc_shape_add_headered_quickly_finalizable (gc_shapes,
+
+  // Cannot be headerless.
+  jitter_gc_shape_add_headerless (gc_shapes, "big",
+                                  pvm_val_is_big_p,
+                                  pvm_val_big_sizeof,
+                                  pvm_val_big_copy);
+  jitter_gc_shape_add_headerless (gc_shapes, "ubig",
+                                  pvm_val_is_ubig_p,
+                                  pvm_val_ubig_sizeof,
+                                  pvm_val_ubig_copy);
+#endif
+
+  jitter_gc_shape_add_headered_quickly_finalizable (
+      gc_shapes, "string", pvm_gc_is_string_p, pvm_gc_sizeof_string,
+      pvm_gc_is_string_type_code_p, pvm_gc_copy_string,
+      pvm_gc_update_fields_string, pvm_gc_finalize_string);
+
+  jitter_gc_shape_add_headered_quickly_finalizable (
+      gc_shapes, "array", pvm_gc_is_array_p, pvm_gc_sizeof_array,
+      pvm_gc_is_array_type_code_p, pvm_gc_copy_array,
+      pvm_gc_update_fields_array, pvm_gc_finalize_array);
+
+  jitter_gc_shape_add_headered_quickly_finalizable (
+      gc_shapes, "struct", pvm_gc_is_struct_p, pvm_gc_sizeof_struct,
+      pvm_gc_is_struct_type_code_p, pvm_gc_copy_struct,
+      pvm_gc_update_fields_struct, pvm_gc_finalize_struct);
+
+  jitter_gc_shape_add_headered_quickly_finalizable (
+      gc_shapes, "type", pvm_gc_is_type_p, pvm_gc_sizeof_type,
+      pvm_gc_is_type_type_code_p, pvm_gc_copy_type, pvm_gc_update_fields_type,
+      pvm_gc_finalize_type);
+
+  /* FIXME Change to non_finalizable.  */
+  jitter_gc_shape_add_headered_quickly_finalizable (
+      gc_shapes, "closure", pvm_gc_is_closure_p, pvm_gc_sizeof_closure,
+      pvm_gc_is_closure_type_code_p, pvm_gc_copy_closure,
+      pvm_gc_update_fields_closure, pvm_gc_finalize_closure);
+
+  jitter_gc_shape_add_headered_non_finalizable (
+      gc_shapes, "offset", pvm_gc_is_offset_p, pvm_gc_sizeof_offset,
+      pvm_gc_is_offset_type_code_p, pvm_gc_copy_offset,
+      pvm_gc_update_fields_offset);
+
+  jitter_gc_shape_add_headered_quickly_finalizable (
+      gc_shapes, "iarray", pvm_gc_is_iarray_p, pvm_gc_sizeof_iarray,
+      pvm_gc_is_iarray_type_code_p, pvm_gc_copy_iarray,
+      pvm_gc_update_fields_iarray, pvm_gc_finalize_iarray);
+
+  jitter_gc_shape_add_headered_quickly_finalizable (
+      gc_shapes, "program", pvm_gc_is_program_p, pvm_gc_sizeof_program,
+      pvm_gc_is_program_type_code_p, pvm_gc_copy_program,
+      pvm_gc_update_fields_program, pvm_gc_finalize_program);
+
+  jitter_gc_shape_add_headered_non_finalizable (
+      gc_shapes, "env", pvm_gc_is_env_p, pvm_gc_sizeof_env,
+      pvm_gc_is_env_type_code_p, pvm_gc_copy_env, pvm_gc_update_fields_env);
+
+  gc_heap = jitter_gc_heap_make (gc_shapes);
+  assert (gc_heap); // FIXME Handle error.
+
+  gc_heaplet = jitter_gc_heaplet_make (gc_heap);
+  assert (gc_heaplet); // FIXME Handle error.
+
+  JITTER_GC_HEAPLET_TO_RUNTIME (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
+                                GC_RUNTIME_LIMIT (gc_heaplet));
+
+  jitter_gc_hook_register_pre_collection (gc_heaplet, print_indicator_pre,
+                                          NULL);
+  jitter_gc_hook_register_post_collection (gc_heaplet, print_indicator_post,
+                                           NULL);
+  jitter_gc_hook_register_pre_ssb_flush (gc_heaplet, print_indicator_pre,
+                                         NULL);
+  jitter_gc_hook_register_post_ssb_flush (gc_heaplet, print_indicator_post,
+                                          NULL);
 
   string_type = pvm_make_type (PVM_TYPE_STRING);
-  void_type = pvm_make_type (PVM_TYPE_VOID);
+  gc_global_roots.string_type
+      = jitter_gc_register_global_root_1 (gc_heaplet, &string_type);
 
-  for (i = 0; i < 65; ++i)
-    for (j = 0; j < 2; ++j)
-      common_int_types[i][j] = PVM_NULL;
+  void_type = pvm_make_type (PVM_TYPE_VOID);
+  gc_global_roots.void_type
+      = jitter_gc_register_global_root_1 (gc_heaplet, &void_type);
+
+  for (int bits = 0; bits < 65; ++bits)
+    {
+      common_int_types[bits][/*signed_p*/ 0] = PVM_NULL;
+      common_int_types[bits][/*signed_p*/ 1] = PVM_NULL;
+    }
+  gc_global_roots.common_int_types = jitter_gc_register_global_root (
+      gc_heaplet, common_int_types, sizeof (common_int_types));
+  /* Now, after registering COMMON_INT_TYPES as a global root, we can safely
+     make all the integral types.  */
+  for (int bits = 1; bits <= 64; ++bits)
+    {
+      pvm_val size;
+
+      size = pvm_make_ulong (bits, 64);
+      common_int_types[bits][0]
+          = pvm_make_integral_type_1 (size, /*signed_p*/ 0);
+      common_int_types[bits][1]
+          = pvm_make_integral_type_1 (size, /*signed_p*/ 1);
+    }
+
+#if 0
+  gc_global_roots.roots_nallocated = 128;
+  gc_global_roots.roots
+      = malloc (gc_global_roots.roots_nallocated * sizeof (uintptr_t));
+  assert (gc_global_rotos.roots); // FIXME Handle error properly.
+#endif
 }
 
 void
 pvm_val_finalize (void)
 {
-  pvm_alloc_remove_gc_roots (&string_type, 1);
-  pvm_alloc_remove_gc_roots (&void_type, 1);
-  pvm_alloc_remove_gc_roots (&common_int_types, 65 * 2);
+#if 0
+  while (gc_global_roots.roots_nelem)
+    {
+      gc_global_roots.roots_nelem--;
+      jitter_gc_deregister_global_root (
+          gc_heaplet, gc_global_roots.roots[gc_global_roots.roots_nelem]);
+    }
+  free (gc_global_roots.roots);
+#endif
+
+  jitter_gc_deregister_global_root (gc_heaplet,
+                                    gc_global_roots.common_int_types);
+  jitter_gc_deregister_global_root (gc_heaplet, gc_global_roots.void_type);
+  jitter_gc_deregister_global_root (gc_heaplet, gc_global_roots.string_type);
+
+  jitter_gc_heaplet_destroy (gc_heaplet);
+  jitter_gc_heap_destroy (gc_heap);
+  jitter_gc_shape_table_destroy (gc_shapes);
 }

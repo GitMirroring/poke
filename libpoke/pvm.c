@@ -44,6 +44,8 @@
   (PVM_STATE_BACKING_FIELD (& (PVM)->pvm_state, exit_code))
 #define PVM_STATE_VM(PVM)                               \
   (PVM_STATE_BACKING_FIELD (& (PVM)->pvm_state, vm))
+#define PVM_STATE_PROGRAM(PVM)                          \
+  (PVM_STATE_BACKING_FIELD (& (PVM)->pvm_state, program))
 #define PVM_STATE_IOS_CONTEXT(PVM)                      \
   (PVM_STATE_BACKING_FIELD (& (PVM)->pvm_state, ios_ctx))
 #define PVM_STATE_ENV(PVM)                              \
@@ -79,6 +81,10 @@ struct pvm
   /* If not NULL, this is the compiler to be used when the PVM needs
      to build programs.  */
   pkl_compiler compiler;
+
+  /* Jitter GC global root handles for VM stacks (main, return, exception),
+     runtime environment, and current program.  */
+  void* gc_handles[5];
 };
 
 static void
@@ -93,25 +99,30 @@ pvm_initialize_state (pvm apvm, struct pvm_state *state)
 
   /* Access stack backings. */
   mainstack_backing
-    = & PVM_STATE_BACKING_FIELD (state, jitter_stack_stack_backing);
+      = &PVM_STATE_BACKING_FIELD (state, jitter_stack_stack_backing);
   returnstack_backing
-    = & PVM_STATE_BACKING_FIELD (state, jitter_stack_returnstack_backing);
+      = &PVM_STATE_BACKING_FIELD (state, jitter_stack_returnstack_backing);
   exceptionstack_backing
-    = & PVM_STATE_BACKING_FIELD (state, jitter_stack_exceptionstack_backing);
+      = &PVM_STATE_BACKING_FIELD (state, jitter_stack_exceptionstack_backing);
 
   /* Register GC roots.  */
-  pvm_alloc_add_gc_roots (& PVM_STATE_RUNTIME_FIELD (state, env), 1);
-  pvm_alloc_add_gc_roots (mainstack_backing->memory,
-                          mainstack_backing->element_no);
-  pvm_alloc_add_gc_roots (returnstack_backing->memory,
-                          returnstack_backing->element_no);
-  pvm_alloc_add_gc_roots (exceptionstack_backing->memory,
-                          exceptionstack_backing->element_no);
+  apvm->gc_handles[0] = pvm_alloc_add_gc_roots (mainstack_backing->memory,
+                                                mainstack_backing->element_no);
+  apvm->gc_handles[1] = pvm_alloc_add_gc_roots (
+      returnstack_backing->memory, returnstack_backing->element_no);
+  apvm->gc_handles[2] = pvm_alloc_add_gc_roots (
+      exceptionstack_backing->memory, exceptionstack_backing->element_no);
 
   /* Initialize the global environment.  Note we do this after
      registering GC roots, since we are allocating memory.  */
-  PVM_STATE_RUNTIME_FIELD (state, env) = pvm_env_new (0 /* hint */);
   PVM_STATE_BACKING_FIELD (state, vm) = apvm;
+  PVM_STATE_RUNTIME_FIELD (state, env) = pvm_make_env (0 /* hint */);
+  PVM_STATE_BACKING_FIELD (state, program) = PVM_NULL;
+
+  apvm->gc_handles[3]
+      = pvm_alloc_add_gc_roots (&PVM_STATE_RUNTIME_FIELD (state, env), 1);
+  apvm->gc_handles[4]
+      = pvm_alloc_add_gc_roots (&PVM_STATE_BACKING_FIELD (state, program), 1);
 }
 
 pvm
@@ -169,14 +180,14 @@ pvm_reset_profile (pvm apvm)
   pvm_profile_runtime_clear (p);
 }
 
-pvm_env
+pvm_val
 pvm_get_env (pvm apvm)
 {
   return PVM_STATE_ENV (apvm);
 }
 
 enum pvm_exit_code
-pvm_run (pvm apvm, pvm_program program, pvm_val *res, pvm_val *exc)
+pvm_run (pvm apvm, pvm_val program, pvm_val *res, pvm_val *exc)
 {
   sighandler_t previous_handler;
   pvm_routine routine = pvm_program_routine (program);
@@ -184,6 +195,7 @@ pvm_run (pvm apvm, pvm_program program, pvm_val *res, pvm_val *exc)
   PVM_STATE_RESULT_VALUE (apvm) = PVM_NULL;
   PVM_STATE_EXIT_EXCEPTION_VALUE (apvm) = PVM_NULL;
   PVM_STATE_EXIT_CODE (apvm) = PVM_EXIT_OK;
+  PVM_STATE_PROGRAM (apvm) = program;
 
   previous_handler = signal (SIGINT, pvm_handle_signal);
   pvm_execute_routine (routine, &apvm->pvm_state);
@@ -200,7 +212,7 @@ pvm_run (pvm apvm, pvm_program program, pvm_val *res, pvm_val *exc)
 void
 pvm_call_closure (pvm vm, pvm_val cls, pvm_val *exit_exception, ...)
 {
-  pvm_program program;
+  pvm_val program;
   pkl_asm pasm;
   va_list valist;
   pvm_val arg;
@@ -229,32 +241,13 @@ pvm_call_closure (pvm vm, pvm_val cls, pvm_val *exit_exception, ...)
 void
 pvm_shutdown (pvm apvm)
 {
-  struct jitter_stack_backing *mainstack_backing;
-  struct jitter_stack_backing *returnstack_backing;
-  struct jitter_stack_backing *exceptionstack_backing;
-
-  /* Access stack backings. */
-  mainstack_backing
-    = & PVM_STATE_BACKING_FIELD (& apvm->pvm_state,
-                                 jitter_stack_stack_backing);
-  returnstack_backing
-    = & PVM_STATE_BACKING_FIELD (& apvm->pvm_state,
-                                 jitter_stack_returnstack_backing);
-  exceptionstack_backing
-    = & PVM_STATE_BACKING_FIELD (& apvm->pvm_state,
-                                 jitter_stack_exceptionstack_backing);
-
   /* Finalize pvm-program.  */
   pvm_program_fini ();
 
   /* Deregister GC roots.  */
-  pvm_alloc_remove_gc_roots (&PVM_STATE_ENV (apvm), 1);
-  pvm_alloc_remove_gc_roots (mainstack_backing->memory,
-                             mainstack_backing->element_no);
-  pvm_alloc_remove_gc_roots (returnstack_backing->memory,
-                             returnstack_backing->element_no);
-  pvm_alloc_remove_gc_roots (exceptionstack_backing->memory,
-                             exceptionstack_backing->element_no);
+  for (size_t i = 0; i < sizeof (apvm->gc_handles) / sizeof (apvm->gc_handles[0]);
+       ++i)
+    pvm_alloc_remove_gc_roots (apvm->gc_handles[i]);
 
   /* Finalize values.  */
   pvm_val_finalize ();

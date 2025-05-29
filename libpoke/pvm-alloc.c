@@ -20,117 +20,48 @@
 #include <config.h>
 #include <assert.h>
 
-#define GC_THREADS
-#include <gc/gc.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include "pvm-alloc.h"
 #include "pvm.h"
 #include "pvm-val.h"
 
-void *
-pvm_alloc (size_t size)
-{
-  return GC_MALLOC (size);
-}
-
-void *
-pvm_alloc_uncollectable (size_t size)
-{
-  return GC_MALLOC_UNCOLLECTABLE (size);
-}
-
-void pvm_free_uncollectable (void *ptr)
-{
-  GC_FREE (ptr);
-}
-
-void *
-pvm_realloc (void *ptr, size_t size)
-{
-  return GC_REALLOC (ptr, size);
-}
-
-char *
-pvm_alloc_strdup (const char *string)
-{
-  return GC_strdup (string);
-}
-
-static void
-pvm_alloc_finalize_closure (void *object, void *client_data)
-{
-  /* XXX this causes a crash because of a cycle in the finalizers:
-     routines of recursive PVM programs contain a reference to
-     themselves, be it directly or indirectly.  */
-  /* pvm_cls cls = (pvm_cls) object; */
-  /*  pvm_destroy_program (PVM_VAL_CLS_PROGRAM (cls)); */
-}
-
-void *
-pvm_alloc_cls (void)
-{
-  pvm_cls cls = pvm_alloc (sizeof (struct pvm_cls));
-
-  GC_register_finalizer_no_order (cls, pvm_alloc_finalize_closure, NULL,
-                                  NULL, NULL);
-  return cls;
-}
+extern struct jitter_gc_heaplet *gc_heaplet; // keep in-sync with pvm-val.c
 
 void
 pvm_alloc_initialize ()
 {
-  /* Initialize the Boehm Garbage Collector, but only if it hasn't
-     been already initialized.  The later may happen if some other
-     library or program uses the boehm GC.  */
-  if (!GC_is_init_called ())
-    {
-      GC_INIT ();
-      GC_allow_register_threads ();
-    }
+  assert (gc_heaplet == NULL);
 }
 
 void
 pvm_alloc_finalize ()
 {
-  GC_gcollect ();
+  pvm_alloc_gc ();
 }
 
-void
+void *
 pvm_alloc_add_gc_roots (void *pointer, size_t nelems)
 {
-  GC_add_roots (pointer,
-                ((char*) pointer) + sizeof (void*) * nelems);
+  return jitter_gc_register_global_root (gc_heaplet, pointer,
+                                         nelems * sizeof (void *));
 }
 
 void
-pvm_alloc_remove_gc_roots (void *pointer, size_t nelems)
+pvm_alloc_remove_gc_roots (void *handle)
 {
-  GC_remove_roots (pointer,
-                   ((char*) pointer) + sizeof (void*) * nelems);
+  jitter_gc_deregister_global_root (gc_heaplet, handle);
 }
 
-void
+int
 pvm_alloc_register_thread ()
 {
-  struct GC_stack_base sb;
-  int ok_p __attribute__ ((unused));
-
-  ok_p = GC_get_stack_base (&sb) == GC_SUCCESS;
-  assert (ok_p);
-  /* The following call may return GC_SUCCESS or GC_DUPLICATE.  */
-  GC_register_my_thread (&sb);
+  return 0;
 }
 
-void
+int
 pvm_alloc_unregister_thread ()
 {
-  int ok_p __attribute__ ((unused));
-
-  ok_p = GC_unregister_my_thread () == GC_SUCCESS;
-  assert (ok_p);
-}
-
-void
-pvm_alloc_gc ()
-{
-  GC_gcollect ();
+  return 0;
 }

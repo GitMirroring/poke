@@ -178,11 +178,6 @@ AX_CHECK_AWK_GENSUB([RAS_AWK=$AWK],
    RAS_AWK=:])
 AC_SUBST([RAS_AWK])
 
-dnl The Boehm-Weiser garbage collector
-
-PKG_PROG_PKG_CONFIG
-PKG_CHECK_MODULES(BDW_GC,[bdw-gc],[have_gc=yes],[have_gc=no])
-
 dnl Jitter
 
 JITTER_JITTER_SUBPACKAGE([jitter])
@@ -380,10 +375,6 @@ dnl Report errors
 if test "x$error_on_awk_gensub" = "xyes"; then
    AC_MSG_ERROR([you need a gensub-capable awk when building from VCS.
      Please install gawk.])
-fi
-
-if test "x$have_gc" = "xno"; then
-   AC_MSG_ERROR([can't find the Boehm GC library.  Please install it.])
 fi
 
 if test "x$gl_cv_lib_readline" = "xno"; then

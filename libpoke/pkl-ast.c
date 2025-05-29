@@ -278,7 +278,7 @@ pkl_ast_make_func (pkl_ast ast, pkl_ast_node ret_type,
   PKL_AST_FUNC_BODY (func) = ASTREF (body);
 
   PKL_AST_FUNC_FIRST_OPT_ARG (func) = NULL;
-  PKL_AST_FUNC_PROGRAM (func) = NULL;
+  PKL_AST_FUNC_PROGRAM (func) = PVM_NULL;
 
   return func;
 }
@@ -429,7 +429,7 @@ pkl_ast_make_array_type (pkl_ast ast, pkl_ast_node etype, pkl_ast_node bound)
 
   /* Prevent GC to collect these PVM values.  */
   PKL_AST_TYPE_A_CLOSURES (type)
-      = pvm_alloc_uncollectable (nclosures * sizeof (pvm_val));
+      = pvm_alloc_uncollectable (nclosures);
   PKL_AST_TYPE_A_MAPPER (type) = PVM_NULL;
   PKL_AST_TYPE_A_WRITER (type) = PVM_NULL;
   PKL_AST_TYPE_A_BOUNDER (type) = PVM_NULL;
@@ -508,7 +508,7 @@ pkl_ast_make_struct_type (pkl_ast ast,
 
   /* Prevent GC to collect these PVM values.  */
   PKL_AST_TYPE_S_CLOSURES (type)
-      = pvm_alloc_uncollectable (nclosures * sizeof (pvm_val));
+      = pvm_alloc_uncollectable (nclosures);
   PKL_AST_TYPE_S_MAPPER (type) = PVM_NULL;
   PKL_AST_TYPE_S_WRITER (type) = PVM_NULL;
   PKL_AST_TYPE_S_CONSTRUCTOR (type) = PVM_NULL;

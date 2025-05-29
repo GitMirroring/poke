@@ -95,7 +95,7 @@ wrapped-functions
   pvm_alloc
   pvm_alloc_gc
   pvm_allocate_struct_attrs
-  pvm_make_struct_type
+  pvm_make_struct_type_unsafe
   pvm_typeof
   pvm_type_equal_p
   pvm_ref_struct
@@ -104,12 +104,11 @@ wrapped-functions
   pvm_val_reloc
   pvm_val_unmap
   pvm_val_ureloc
-  pvm_allocate_closure_attrs
   pvm_elemsof
   pvm_array_rem
   pvm_env_set_var
   pvm_get_struct_method
-  pvm_make_closure_type
+  pvm_make_closure_type_unsafe
   pvm_make_void_type
   pvm_make_cls
   pvm_val_writer
@@ -207,7 +206,7 @@ early-header-c
       jitter_stack_height main_stack_height;
       jitter_stack_height return_stack_height;
       pvm_program_point code;
-      pvm_env env;
+      pvm_val env;
     };
   end
 end
@@ -842,8 +841,6 @@ end
 
 printer-c
   code
-    static jitter_uint printer_hi;
-
     static void
     pvm_literal_printer_cast (jitter_print_context out, jitter_uint val,
                               void *user_data __attribute__ ((unused)))
@@ -867,36 +864,6 @@ printer-c
                                  0 /* flags */,
                                  NULL /* exit_exception */);
       pk_term_flush ();
-    }
-
-    static void
-    pvm_literal_printer_hi (jitter_print_context out, jitter_uint hi,
-                            void *user_data __attribute__ ((unused)))
-    {
-      pk_printf ("%%hi(0x%" JITTER_PRIx ")", hi);
-      pk_term_flush ();
-      printer_hi = hi; /* This sucks */
-    }
-
-    static void
-    pvm_literal_printer_lo (jitter_print_context out, jitter_uint lo,
-                            void *user_data __attribute__ ((unused)))
-    {
-      pk_printf ("%%lo(0x%" JITTER_PRIx") (", lo);
-
-      pvm_print_val_with_params (NULL /* not used since no
-                                         pretty-print */,
-                                 ((pvm_val) printer_hi << 32) | lo,
-                                 1 /* depth */,
-                                 PVM_PRINT_FLAT,
-                                 16 /* base */,
-                                 0 /* indent */,
-                                 2 /* acutoff */,
-                                 0 /* flags */,
-                                 NULL /* exit_exception */);
-      pk_puts (")");
-      pk_term_flush ();
-      printer_hi = 0;
     }
 
     static void
@@ -963,13 +930,14 @@ state-struct-backing-c
       jitter_stack_height canary_returnstack;
       jitter_stack_height canary_exceptionstack;
       pvm vm;
+      pvm_val program;
       ios_context ios_ctx;
   end
 end
 
 state-struct-runtime-c
   code
-      pvm_env env;
+      pvm_val env;
       uint32_t push_hi;
       uint32_t endian;
       uint32_t nenc;
@@ -1864,7 +1832,7 @@ instruction call ()
   code
     pvm_val closure = JITTER_TOP_STACK ();
 
-    PVM_ASSERT (PVM_VAL_CLS_ENV (closure) != NULL);
+    PVM_ASSERT (PVM_VAL_CLS_ENV (closure) != PVM_NULL);
     JITTER_DROP_STACK ();
     PVM_CALL (closure);
   end
@@ -1903,7 +1871,7 @@ instruction return ()
     /* Restore the environment of the caller.  Note the cast to
        jitter_uint is to avoid a warning in 32-bit.  */
     PVM_STATE_RUNTIME_FIELD (env)
-      = (pvm_env) (jitter_uint) JITTER_TOP_RETURNSTACK ();
+      = (pvm_val) (jitter_uint) JITTER_TOP_RETURNSTACK ();
     JITTER_DROP_RETURNSTACK();
 
     return_address = JITTER_TOP_RETURNSTACK();
@@ -1981,7 +1949,7 @@ end
 instruction pushtopvar (?n)
   branching # because of PVM_RAISE_DIRECT
   code
-    pvm_env topenv = pvm_env_toplevel (PVM_STATE_RUNTIME_FIELD (env));
+    pvm_val topenv = pvm_env_toplevel (PVM_STATE_RUNTIME_FIELD (env));
     pvm_val val = pvm_env_lookup (topenv, 0 /* back */,
                                   (int) JITTER_ARGN0 /* over */);
 
@@ -2639,20 +2607,6 @@ end
 instruction revn (?n 3 4 popf_printer)
   code
     JITTER_REVERSE_STACK (JITTER_ARGU0);
-  end
-end
-
-# Instruction: push32 HI LO
-#
-# Push the value passed as two arguments on the stack.
-# This instruction is a workaround to a limitation of Jitter.
-#
-# Stack: ( -- VAL )
-
-instruction push32 (?nl pvm_literal_printer_hi, ?nl pvm_literal_printer_lo)
-  code
-    pvm_val k = ((pvm_val) JITTER_ARGN0 << 32) | JITTER_ARGN1;
-    JITTER_PUSH_STACK (k);
   end
 end
 
@@ -4003,7 +3957,9 @@ instruction sconc ()
      pvm_val res;
      char *sa = PVM_VAL_STR (JITTER_UNDER_TOP_STACK ());
      char *sb = PVM_VAL_STR (JITTER_TOP_STACK ());
-     char *s = pvm_alloc (pvm_strlen (sa) + pvm_strlen (sb) + 1);
+     char *s = malloc (pvm_strlen (sa) + pvm_strlen (sb) + 1);
+
+     s[0] = '\0';
      pvm_strcpy (s, sa);
      pvm_strcat (s, sb);
      res = pvm_make_string_nodup (s);
@@ -4678,11 +4634,11 @@ end
 instruction ctos ()
   code
     uint8_t c = PVM_VAL_UINT (JITTER_TOP_STACK ());
-    char *str = pvm_alloc (2);
+    char str[2];
+
     str[0] = c;
     str[1] = '\0';
-
-    JITTER_PUSH_STACK (pvm_make_string_nodup (str));
+    JITTER_PUSH_STACK (pvm_make_string (str));
   end
 end
 
@@ -5019,7 +4975,8 @@ instruction substr () # ( STR ULONG ULONG -- STR ULONG ULONG STR )
         || PVM_VAL_ULONG (from) > PVM_VAL_ULONG (to))
         PVM_RAISE_DFL (PVM_E_OUT_OF_BOUNDS);
 
-    s = pvm_alloc (slen + 1);
+    s = malloc (slen + 1);
+    s[0] = '\0';
     pvm_strncpy (s,
                  PVM_VAL_STR (str) + PVM_VAL_ULONG (from),
                  slen);
@@ -5043,7 +5000,7 @@ instruction muls ()
   code
     pvm_val str = JITTER_UNDER_TOP_STACK ();
     size_t i, num = PVM_VAL_ULONG (JITTER_TOP_STACK ());
-    char *res = pvm_alloc (pvm_strlen (PVM_VAL_STR (str)) * num + 1);
+    char *res = malloc (pvm_strlen (PVM_VAL_STR (str)) * num + 1);
 
     *res = '\0';
     for (i = 0; i < num; ++i)
@@ -6463,25 +6420,33 @@ end
 
 instruction mktyc ()
   code
+    uint64_t n;
+    pvm_val type;
+    pvm_val *atypes;
     size_t i;
-    pvm_val nargs, rtype, *atypes;
 
-    nargs = JITTER_TOP_STACK ();
-    JITTER_DROP_STACK ();
+    {
+      pvm_val nargs, rtype;
 
-    rtype = JITTER_TOP_STACK ();
-    JITTER_DROP_STACK ();
+      nargs = JITTER_TOP_STACK ();
+      JITTER_DROP_STACK ();
+      n = PVM_VAL_ULONG (nargs);
 
-    pvm_allocate_closure_attrs (nargs, &atypes);
+      rtype = JITTER_TOP_STACK ();
+      JITTER_DROP_STACK ();
 
-    for (i = 0; i < PVM_VAL_ULONG (nargs); ++i)
+      type = pvm_make_closure_type_unsafe (rtype, nargs, &atypes);
+      /* `atypes' is uninitialized.  Do not trigger GC allocation
+         before the completion of initialization.  */
+    }
+
+    for (i = 0; i < n; ++i)
     {
       atypes[i] = JITTER_TOP_STACK ();
       JITTER_DROP_STACK ();
     }
 
-    JITTER_PUSH_STACK (pvm_make_closure_type (rtype,
-                                              nargs, atypes));
+    JITTER_PUSH_STACK (type);
   end
 end
 
@@ -6498,23 +6463,26 @@ end
 instruction mktysct ()
   code
     size_t i;
-    pvm_val nelem, *etypes, *enames;
+    pvm_val *etypes, *enames;
+    pvm_val type;
+    uint64_t nelem;
 
-    nelem = JITTER_TOP_STACK ();
+    nelem = PVM_VAL_ULONG (JITTER_TOP_STACK ());
+    type = pvm_make_struct_type_unsafe (JITTER_TOP_STACK (), &enames, &etypes);
+    /* `enames' and `etypes' are uninitialized.  Do not trigger GC allocation
+       before the completion of initialization.  */
     JITTER_DROP_STACK ();
 
-    pvm_allocate_struct_attrs (nelem, &etypes, &enames);
-
-    for (i = 0; i < PVM_VAL_ULONG (nelem); ++i)
+    for (i = 0; i < nelem; ++i)
     {
-      enames[PVM_VAL_ULONG (nelem) - i - 1] = JITTER_UNDER_TOP_STACK ();
-      etypes[PVM_VAL_ULONG (nelem) - i - 1] = JITTER_TOP_STACK ();
+      enames[nelem - i - 1] = JITTER_UNDER_TOP_STACK ();
+      etypes[nelem - i - 1] = JITTER_TOP_STACK ();
 
       JITTER_DROP_STACK ();
       JITTER_DROP_STACK ();
     }
 
-    JITTER_PUSH_STACK (pvm_make_struct_type (nelem, enames, etypes));
+    JITTER_PUSH_STACK (type);
   end
 end
 

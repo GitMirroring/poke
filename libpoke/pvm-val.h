@@ -23,6 +23,8 @@
 #include <config.h>
 #include <stdint.h>
 #include "pvm-program-point.h"
+#include "jitter-gc.h"
+#include "pvm-vm.h" // ??? For pvm_routine.
 
 /* The least-significative bits of pvm_val are reserved for the tag,
    which specifies the type of the value.  */
@@ -46,7 +48,12 @@
 #define PVM_VAL_TAG_SCT 0xb
 #define PVM_VAL_TAG_TYP 0xc
 #define PVM_VAL_TAG_CLS 0xd
+/* Internal types.  These are not user-visible.  */
+#define PVM_VAL_TAG_IAR 0xe /* Internal array.  */
+#define PVM_VAL_TAG_ENV 0xf
+#define PVM_VAL_TAG_PRG 0x10
 
+// FIXME Doesn't work for PVM_NULL (and for the following 3 values).
 #define PVM_VAL_BOXED_P(V) (PVM_VAL_TAG((V)) > 1)
 
 /* Integers up to 32-bit are unboxed and encoded the following way:
@@ -102,24 +109,16 @@
 #define _PVM_VAL_LONG_ULONG_VAL(V) (((int64_t *) ((((uintptr_t) V) & ~0x7)))[0])
 #define _PVM_VAL_LONG_ULONG_SIZE(V) ((int) (((int64_t *) ((((uintptr_t) V) & ~0x7)))[1]) + 1)
 
-#define PVM_MAKE_LONG_ULONG(V,S,T)                       \
-  ({ uint64_t *ll = pvm_alloc (sizeof (uint64_t) * 2);   \
-    ll[0] = (V);                                         \
-    ll[1] = ((S) - 1) & 0x3f;                            \
-    ((uint64_t) (uintptr_t) ll) | (T); })
-
 #define PVM_VAL_LONG_SIZE(V) (_PVM_VAL_LONG_ULONG_SIZE (V))
 #define PVM_VAL_LONG(V) (((int64_t) ((uint64_t) _PVM_VAL_LONG_ULONG_VAL ((V)) \
                                      << (64 - PVM_VAL_LONG_SIZE ((V))))) \
                          >> (64 - PVM_VAL_LONG_SIZE ((V))))
-#define PVM_MAKE_LONG(V,S)                              \
-  (PVM_MAKE_LONG_ULONG ((V),(S),PVM_VAL_TAG_LONG))
+#define PVM_MAKE_LONG(V,S) (pvm_make_long ((V),(S)))
 
 #define PVM_VAL_ULONG_SIZE(V) (_PVM_VAL_LONG_ULONG_SIZE (V))
 #define PVM_VAL_ULONG(V) (_PVM_VAL_LONG_ULONG_VAL ((V))                 \
                           & ((uint64_t) (~( ((~0ull) << ((PVM_VAL_ULONG_SIZE ((V)))-1)) << 1 ))))
-#define PVM_MAKE_ULONG(V,S)                             \
-  (PVM_MAKE_LONG_ULONG ((V),(S),PVM_VAL_TAG_ULONG))
+#define PVM_MAKE_ULONG(V,S) (pvm_make_ulong ((V),(S)))
 
 #define PVM_MAX_ULONG(size) ((1LU << (size)) - 1)
 
@@ -133,40 +132,36 @@
    all pointers are aligned to 8 bytes.  The allocator for the boxed
    values makes sure this is always the case.  */
 
-#define PVM_VAL_BOX(V) ((pvm_val_box) ((((uintptr_t) V) & ~0x7)))
+#define PVM_VAL_BOX(V) ((void *) (((uintptr_t) (V)) & ~0x7))
 
 /* This constructor should be used in order to build boxes.  */
 
 #define PVM_BOX(PTR) (((uint64_t) (uintptr_t) PTR) | PVM_VAL_TAG_BOX)
 
-/* A box is a header for a boxed value, plus that value.  It is of
-   type `pvm_val_box'.  */
+// FIXME Add a comment.
 
-#define PVM_VAL_BOX_TAG(B) ((B)->tag)
-#define PVM_VAL_BOX_STR(B) ((B)->v.string)
-#define PVM_VAL_BOX_ARR(B) ((B)->v.array)
-#define PVM_VAL_BOX_SCT(B) ((B)->v.sct)
-#define PVM_VAL_BOX_TYP(B) ((B)->v.type)
-#define PVM_VAL_BOX_CLS(B) ((B)->v.cls)
-#define PVM_VAL_BOX_OFF(B) ((B)->v.offset)
-
-struct pvm_val_box
-{
-  uint8_t tag;
-  union
-  {
-    char *string;
-    struct pvm_array *array;
-    struct pvm_struct *sct;
-    struct pvm_type *type;
-    struct pvm_off *offset;
-    struct pvm_cls *cls;
-  } v;
-};
-
-typedef struct pvm_val_box *pvm_val_box;
+#define PVM_VAL_BOX_TAG(B) (*(uintptr_t *)(B))
+#define PVM_VAL_BOX_STR(B) (((pvm_string)(B))->data) // CHKME Backward compat.
+#define PVM_VAL_BOX_ARR(B) ((pvm_array)(B))
+#define PVM_VAL_BOX_SCT(B) ((pvm_struct)(B))
+#define PVM_VAL_BOX_TYP(B) ((pvm_type)(B))
+#define PVM_VAL_BOX_CLS(B) ((pvm_cls)(B))
+#define PVM_VAL_BOX_OFF(B) ((pvm_off)(B))
+#define PVM_VAL_BOX_IAR(B) (((pvm_iarray)(B)))
+#define PVM_VAL_BOX_PRG(B) ((pvm_program_)(B))
+#define PVM_VAL_BOX_ENV(B) ((pvm_env_)(B))
 
 /* Strings are boxed.  */
+
+struct pvm_string
+{
+  uintptr_t type_code;
+  jitter_gc_finalization_data finalization_data;
+
+  char *data;  /* Null-terminated string allocated by malloc.  */
+};
+
+typedef struct pvm_string *pvm_string;
 
 #define PVM_VAL_STR(V) (PVM_VAL_BOX_STR (PVM_VAL_BOX ((V))))
 
@@ -262,6 +257,9 @@ struct pvm_mapinfo
 
 struct pvm_array
 {
+  uintptr_t type_code;
+  jitter_gc_finalization_data finalization_data;
+
   struct pvm_mapinfo mapinfo;
   struct pvm_mapinfo mapinfo_back;
   pvm_val elems_bound;
@@ -334,12 +332,17 @@ struct pvm_array_elem
 #define PVM_VAL_SCT_WRITER(V) (PVM_VAL_SCT((V))->writer)
 #define PVM_VAL_SCT_TYPE(V) (PVM_VAL_SCT((V))->type)
 #define PVM_VAL_SCT_NFIELDS(V) (PVM_VAL_SCT((V))->nfields)
+#define PVM_VAL_SCT_FIELDS(V) (PVM_VAL_SCT((V))->fields)
 #define PVM_VAL_SCT_FIELD(V,I) (PVM_VAL_SCT((V))->fields[(I)])
 #define PVM_VAL_SCT_NMETHODS(V) (PVM_VAL_SCT((V))->nmethods)
+#define PVM_VAL_SCT_METHODS(V) (PVM_VAL_SCT((V))->methods)
 #define PVM_VAL_SCT_METHOD(V,I) (PVM_VAL_SCT((V))->methods[(I)])
 
 struct pvm_struct
 {
+  uintptr_t type_code;
+  jitter_gc_finalization_data finalization_data;
+
   struct pvm_mapinfo mapinfo;
   struct pvm_mapinfo mapinfo_back;
   pvm_val mapper;
@@ -451,6 +454,9 @@ enum pvm_type_code
 
 struct pvm_type
 {
+  uintptr_t type_code;
+  jitter_gc_finalization_data finalization_data;
+
   enum pvm_type_code code;
 
   union
@@ -509,10 +515,13 @@ struct pvm_program;
 
 struct pvm_cls
 {
+  uintptr_t type_code;
+  jitter_gc_finalization_data finalization_data;
+
   pvm_val name;
-  struct pvm_program *program;
+  pvm_val env;
+  pvm_val program;
   pvm_program_program_point entry_point;
-  struct pvm_env *env;
 };
 
 typedef struct pvm_cls *pvm_cls;
@@ -544,11 +553,239 @@ typedef struct pvm_cls *pvm_cls;
 
 struct pvm_off
 {
+  uintptr_t type_code;
+
   pvm_val type;
   pvm_val magnitude;
 };
 
 typedef struct pvm_off *pvm_off;
+
+/* Internal arrays values are boxed, and store sequences of values
+   called array "elements".  Elements can be of different type.
+   This value is only used in the implementation and is not visible
+   to the language user.
+
+   NELEM is the number of elements contained in the array.
+
+   NALLOCATED is the number of elements allocated in the array.
+
+   ELEMS is a list of elements.  The order of the elements is
+   relevant.  */
+
+#define PVM_VAL_IAR(V) (PVM_VAL_BOX_IAR (PVM_VAL_BOX ((V))))
+#define PVM_VAL_IAR_NELEM(V) (PVM_VAL_IAR (V)->nelem)
+#define PVM_VAL_IAR_NALLOCATED(V) (PVM_VAL_IAR (V)->nallocated)
+#define PVM_VAL_IAR_ELEMS(V) (PVM_VAL_IAR (V)->elems)
+#define PVM_VAL_IAR_ELEM(V,I) (PVM_VAL_IAR (V)->elems[(I)])
+
+struct pvm_iarray
+{
+  uintptr_t type_code;
+  jitter_gc_finalization_data finalization_data;
+
+  size_t nallocated;
+  size_t nelem;
+  pvm_val *elems;
+};
+
+typedef struct pvm_iarray *pvm_iarray;
+
+/* Runtime environment (pvm_env) is also declared as a PVM value to ease
+   garbage collection machinery.
+
+   The variables in each frame (VARS) are organized in an pvm_iarray that can
+   be efficiently accessed using OVER.
+
+   ENV_UP is a link to the immediately enclosing frame.  This is PVM_NULL for
+   the top-level frame.  */
+
+#define PVM_VAL_ENV(V) (PVM_VAL_BOX_ENV (PVM_VAL_BOX ((V))))
+
+#define PVM_VAL_ENV_VARS(V) (PVM_VAL_ENV (V)->vars)
+#define PVM_VAL_ENV_VAR(V,I) (PVM_VAL_IAR_ELEM (PVM_VAL_ENV (V), (I)))
+#define PVM_VAL_ENV_UP(V) (PVM_VAL_ENV (V)->env_up)
+
+// FIXME Rename this to pvm_env later when there's no compiliation error.
+struct pvm_env_
+{
+  uintptr_t type_code;
+
+  pvm_val vars;
+  pvm_val env_up;
+};
+
+typedef struct pvm_env_ *pvm_env_;
+
+/* PVM programs are sequences of instructions, labels and directives,
+   that can be run in the virtual machine.  */
+
+#define PVM_VAL_PRG(V) (PVM_VAL_BOX_PRG (PVM_VAL_BOX (V)))
+
+#define PVM_VAL_PRG_INSN_PARAMS(V) (PVM_VAL_PRG (V)->insn_params)
+#define PVM_VAL_PRG_ROUTINE(V) (PVM_VAL_PRG (V)->routine)
+#define PVM_VAL_PRG_NLABELS_MAX(V) (PVM_VAL_PRG (V)->nlabels_max)
+#define PVM_VAL_PRG_NLABELS(V) (PVM_VAL_PRG (V)->nlabels)
+#define PVM_VAL_PRG_LABELS(V) (PVM_VAL_PRG (V)->labels)
+#define PVM_VAL_PRG_LABEL(V,I) (PVM_VAL_PRG_LABELS (V)[(I)])
+
+// FIXME Rename this to pvm_program later when there's no compilation error.
+struct pvm_program_
+{
+  uintptr_t type_code;
+  jitter_gc_finalization_data finalization_data;
+
+  /* PVM value of type "Internal Array" to keep track of the boxed PVM values
+     referenced in PROGRAM.  It is necessary to provide the GC visibility into
+     the routine.  */
+  pvm_val insn_params;
+
+  /* Jitter routine corresponding to this PVM program.  */
+  pvm_routine routine;
+
+  /* Jitter labels used in the program.  */
+  size_t nlabels_max;
+  size_t nlabels;
+  jitter_label *labels;
+};
+
+typedef struct pvm_program_ *pvm_program_;
+
+/* Each PVM program can contain zero or more labels.  Labels are used
+   as targets of branch instructions.  */
+
+typedef int pvm_program_label;
+
+/* The PVM features a set of registers.
+   XXX  */
+
+typedef unsigned int pvm_register;
+
+/* Create a new PVM program.
+
+   The created program is returned.  If there is a problem creating
+   the program then this function returns NULL.  */
+
+pvm_val pvm_make_program (void);
+
+/* Destroy the given PVM program.  */
+
+void pvm_destroy_program (pvm_val program);
+
+/* Make the given PVM program executable so it can be run in the PVM.
+
+   This function returns a status code indicating whether the
+   operation was successful or not.  */
+
+int pvm_program_make_executable (pvm_val program);
+
+/* Print a native disassembly of the given program in the standard
+   output.  */
+
+void pvm_disassemble_program_nat (pvm_val program);
+
+/* Print a disassembly of the given program in the standard
+   output.  */
+
+void pvm_disassemble_program (pvm_val program);
+
+/* **************** Assembling PVM Programs ****************  */
+
+/* Assembling a PVM program involves starting with an empty program
+   and then appending its components, like labels and instructions.
+
+   For each instruction, you need to append its parameters before
+   appending the instruction itself.  For example, in order to build
+   an instruction `foo 1, 2', you would need to:
+
+     append parameter 1
+     append parameter 2
+     append instruction foo
+
+   All the append functions below return a status code.  */
+
+/* Create a fresh label for the given program and return it.  This
+   label should be eventually appended to the program.  */
+
+pvm_program_label pvm_program_fresh_label (pvm_val program);
+
+/* Append a PVM value instruction parameter to a PVM program.
+
+   PROGRAM is the program in which to append the parameter.
+   VAL is the PVM value to use as the instruction parameter.  */
+
+int pvm_program_append_val_parameter (pvm_val program,
+                                      pvm_val val);
+
+/* Append an unsigned integer literal instruction parameter to a PVM
+   program.
+
+   PROGRAM is the program in which to append the parameter.
+   N is the literal to use as the instruction parameter.  */
+
+int pvm_program_append_unsigned_parameter (pvm_val program,
+                                           unsigned int n);
+
+/* Append a PVM register instruction parameter to a PVM program.
+
+   PROGRAM is the program in which to append the parameter.
+   REG is the PVM register to use as the instruction parameter.
+
+   If REG is not a valid register this function returns
+   PVM_EINVAL.  */
+
+int pvm_program_append_register_parameter (pvm_val program,
+                                           pvm_register reg);
+
+/* Appenda PVM label instruction parameter to a PVM program.
+
+   PROGRAM is the program in which to append the parameter.
+   LABEL is the PVM label to use as the instruction parameter.
+
+   If LABEL is not a label in PROGRAM, this function returns
+   PVM_EINVAL.  */
+
+int pvm_program_append_label_parameter (pvm_val program,
+                                        pvm_program_label label);
+
+/* Append an instruction to a PVM program.
+
+   PROGRAM is the program in which to append the instruction.
+   INSN_NAME is the name of the instruction to append.
+
+   If there is no instruction named INSN_NAME, this function returns
+   PVM_EINVAL.
+
+   If not all the parameters required by the instruction have been
+   already appended, this function returns PVM_EINSN.  */
+
+int pvm_program_append_instruction (pvm_val program,
+                                    const char *insn_name);
+
+/* Append a `push' instruction to a PVM program.
+
+   Due to a limitation of Jitter, we can't build push instructions the
+   usual way.  This function should be used instead.
+
+   PROGRAM is the program in which to append the instruction.
+   VAL is the PVM value that will be pushed by the instruction.  */
+
+int pvm_program_append_push_instruction (pvm_val program,
+                                         pvm_val val);
+
+/* Append a PVM label to a PVM program.
+
+   PROGRAM is the program in which to append the label.
+   LABEL is the PVM label to append.
+
+   If LABEL doesn't exist in PROGRAM this function return
+   PVM_EINVAL.  */
+
+int pvm_program_append_label (pvm_val program,
+                              pvm_program_label label);
+
+// XXX
+
 
 #define PVM_IS_INT(V) (PVM_VAL_TAG(V) == PVM_VAL_TAG_INT)
 #define PVM_IS_UINT(V) (PVM_VAL_TAG(V) == PVM_VAL_TAG_UINT)
@@ -572,7 +809,15 @@ typedef struct pvm_off *pvm_off;
 #define PVM_IS_OFF(V)                                                   \
   (PVM_VAL_TAG(V) == PVM_VAL_TAG_BOX                                    \
    && PVM_VAL_BOX_TAG (PVM_VAL_BOX ((V))) == PVM_VAL_TAG_OFF)
-
+#define PVM_IS_IAR(V)                                                   \
+  (PVM_VAL_TAG(V) == PVM_VAL_TAG_BOX                                    \
+   && PVM_VAL_BOX_TAG (PVM_VAL_BOX ((V))) == PVM_VAL_TAG_IAR)
+#define PVM_IS_ENV(V)                                                   \
+  (PVM_VAL_TAG(V) == PVM_VAL_TAG_BOX                                    \
+   && PVM_VAL_BOX_TAG (PVM_VAL_BOX ((V))) == PVM_VAL_TAG_ENV)
+#define PVM_IS_PRG(V)                                                   \
+  (PVM_VAL_TAG(V) == PVM_VAL_TAG_BOX                                    \
+   && PVM_VAL_BOX_TAG (PVM_VAL_BOX ((V))) == PVM_VAL_TAG_PRG)
 
 #define PVM_IS_INTEGRAL(V)                                      \
   (PVM_IS_INT (V) || PVM_IS_UINT (V)                            \
@@ -701,10 +946,6 @@ typedef struct pvm_off *pvm_off;
       if (PVM_IS_ARR ((V)))                     \
         PVM_VAL_ARR_SIZE_BOUND ((V)) = (O);     \
     } while (0)
-
-void pvm_allocate_struct_attrs (pvm_val nfields, pvm_val **fnames,
-                                pvm_val **ftypes);
-void pvm_allocate_closure_attrs (pvm_val nargs, pvm_val **atypes);
 
 void pvm_val_initialize (void);
 void pvm_val_finalize (void);

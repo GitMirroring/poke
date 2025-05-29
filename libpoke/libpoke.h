@@ -1080,22 +1080,19 @@ pk_val pk_offset_type_unit (pk_val type) LIBPOKE_API;
 
    NAME is a string containing the name of a struct type.
 
+   XXX
    FNAMES is a C array containing the name of each struct field.
 
+   XXX
    FTYPES is a C array containing the types of each struct field. */
 
 pk_val pk_make_struct_type (pk_compiler pkc, pk_val nfields, pk_val name,
-                            pk_val *fnames, pk_val *ftypes) LIBPOKE_API;
+                            pk_val **fnames, pk_val **ftypes) LIBPOKE_API;
 
 /* Get the type of a struct.
    This function is DEPRECATED; please use pk_typeof instead.  */
 
 pk_val pk_struct_type (pk_val sct) LIBPOKE_API;
-
-/* Allocate space for struct fields names and field types. */
-
-void pk_allocate_struct_attrs (pk_val nfields,
-pk_val **fnames, pk_val **ftypes) LIBPOKE_API;
 
 /* Get the name of a struct type.
    If the struct type is anonymous, PK_NULL is returned.

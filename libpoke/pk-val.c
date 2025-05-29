@@ -410,7 +410,7 @@ pk_offset_type_unit (pk_val type)
 
 pk_val
 pk_make_struct_type (pk_compiler pkc __attribute__ ((unused)), pk_val nfields,
-                     pk_val name, pk_val *fnames, pk_val *ftypes)
+                     pk_val name, pk_val **fnames, pk_val **ftypes)
 {
   pvm_val struct_type = pvm_make_struct_type (nfields, fnames, ftypes);
 
@@ -422,12 +422,6 @@ pk_val
 pk_struct_type (pk_val sct)
 {
   return PVM_VAL_SCT_TYPE (sct);
-}
-
-void
-pk_allocate_struct_attrs (pk_val nfields, pk_val **fnames, pk_val **ftypes)
-{
-  pvm_allocate_struct_attrs (nfields, fnames, ftypes);
 }
 
 pk_val

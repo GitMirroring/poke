@@ -21,7 +21,6 @@
 #define PVM_ALLOC_H
 
 #include <config.h>
-#include <gc.h>
 
 /* This file provides memory allocation services to the PVM code.  */
 
@@ -33,53 +32,20 @@
 void pvm_alloc_initialize (void);
 void pvm_alloc_finalize (void);
 
-/* Register/unregister NELEM pointers at POINTER as roots for the
-   garbage-collector.  */
+/* Allocate SIZE words and return a pointer to the allocated memory.
+   Allocated memory is not automatically deallocated.  One should
+   explicitly free that using `pvm_free_uncollectable'.
+   On error, return NULL.  */
 
-void pvm_alloc_add_gc_roots (void *pointer, size_t nelems);
-void pvm_alloc_remove_gc_roots (void *pointer, size_t nelems);
-
-/* Allocate SIZE bytes and return a pointer to the allocated memory.
-   SIZE has the same semantics as in malloc(3).  On error, return
-   NULL.  */
-
-void *pvm_alloc (size_t size)
-  __attribute__ ((malloc))
-  __attribute__ ((alloc_size (1)));
-
-
-/* Allocate SIZE bytes and return a pointer to the allocated memory.
-   SIZE has the same semantics as in malloc(3).  This function is
-   identical to pvm_alloc, except that the resulting object is not
-   automatically deallocated.  On error, return NULL.  */
-
-void *pvm_alloc_uncollectable (size_t size)
-  __attribute__ ((malloc))
-  __attribute__ ((alloc_size (1)));
+void *pvm_alloc_uncollectable (size_t size);
 
 void pvm_free_uncollectable (void *ptr);
 
+/* Register/unregister NELEM pointers at POINTER as roots for the
+   garbage-collector.  */
 
-/* Reallocate the given pointer to occupy SIZE bytes and return a
-   pointer to the allocated memory.  SIZE has the same semantics as in
-   realloc(3).  On error, return NULL.  */
-
-void *pvm_realloc (void *ptr, size_t size)
-  __attribute__ ((malloc))
-  __attribute__ ((alloc_size (2)));
-
-/* Allocate a pvm_cls struct and return a pointer to the allocated
-   memory.  This type-specific allocator is needed because the GC
-   needs additional information to free these structs.  */
-
-void *pvm_alloc_cls (void)
-  __attribute__ ((malloc));
-
-/* Allocate and return a copy of the given STRING.  This call has the
-   same semantics than strdup(3).  */
-
-char *pvm_alloc_strdup (const char *string)
-  __attribute__ ((malloc));
+void *pvm_alloc_add_gc_roots (void *pointer, size_t nelems);
+void pvm_alloc_remove_gc_roots (void *handle);
 
 /* Forced collection.  */
 

@@ -29,10 +29,10 @@ void pvm_program_fini (void);
 
 /* Return the program point corresponding to the beginning of the
    given program.  */
-pvm_program_program_point pvm_program_beginning (pvm_program program);
+pvm_program_program_point pvm_program_beginning (pvm_val program);
 
 /* Get the jitter routine associated with the program PROGRAM.  */
-pvm_routine pvm_program_routine (pvm_program program);
+pvm_routine pvm_program_routine (pvm_val program);
 
 /* Expand the given PVM assembler template to a form that is
    acceptable for pvm_program_parse_from_string.
@@ -49,6 +49,6 @@ char *pvm_program_expand_asm_template (const char *str);
    free the memory occupied by that string.  In absence of errors, this
    function returns NULL.  */
 
-char *pvm_program_parse_from_string (const char *str, pvm_program program);
+char *pvm_program_parse_from_string (const char *str, pvm_val program);
 
 #endif /* ! PVM_PROGRAM_H */

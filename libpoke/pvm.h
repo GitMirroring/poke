@@ -55,145 +55,6 @@ typedef uint64_t pvm_val;
 
 #define PVM_NULL 0x7ULL
 
-/* **************** PVM Programs ****************  */
-
-/* PVM programs are sequences of instructions, labels and directives,
-   that can be run in the virtual machine.  */
-
-typedef struct pvm_program *pvm_program;
-
-/* Each PVM program can contain zero or more labels.  Labels are used
-   as targets of branch instructions.  */
-
-typedef int pvm_program_label;
-
-/* The PVM features a set of registers.
-   XXX  */
-
-typedef unsigned int pvm_register;
-
-/* Create a new PVM program.
-
-   The created program is returned.  If there is a problem creating
-   the program then this function returns NULL.  */
-
-pvm_program pvm_program_new (void);
-
-/* Destroy the given PVM program.  */
-
-void pvm_destroy_program (pvm_program program);
-
-/* Make the given PVM program executable so it can be run in the PVM.
-
-   This function returns a status code indicating whether the
-   operation was successful or not.  */
-
-int pvm_program_make_executable (pvm_program program);
-
-/* Print a native disassembly of the given program in the standard
-   output.  */
-
-void pvm_disassemble_program_nat (pvm_program program);
-
-/* Print a disassembly of the given program in the standard
-   output.  */
-
-void pvm_disassemble_program (pvm_program program);
-
-/* **************** Assembling PVM Programs ****************  */
-
-/* Assembling a PVM program involves starting with an empty program
-   and then appending its components, like labels and instructions.
-
-   For each instruction, you need to append its parameters before
-   appending the instruction itself.  For example, in order to build
-   an instruction `foo 1, 2', you would need to:
-
-     append parameter 1
-     append parameter 2
-     append instruction foo
-
-   All the append functions below return a status code.  */
-
-/* Create a fresh label for the given program and return it.  This
-   label should be eventually appended to the program.  */
-
-pvm_program_label pvm_program_fresh_label (pvm_program program);
-
-/* Append a PVM value instruction parameter to a PVM program.
-
-   PROGRAM is the program in which to append the parameter.
-   VAL is the PVM value to use as the instruction parameter.  */
-
-int pvm_program_append_val_parameter (pvm_program program,
-                                      pvm_val val);
-
-/* Append an unsigned integer literal instruction parameter to a PVM
-   program.
-
-   PROGRAM is the program in which to append the parameter.
-   N is the literal to use as the instruction parameter.  */
-
-int pvm_program_append_unsigned_parameter (pvm_program program,
-                                           unsigned int n);
-
-/* Append a PVM register instruction parameter to a PVM program.
-
-   PROGRAM is the program in which to append the parameter.
-   REG is the PVM register to use as the instruction parameter.
-
-   If REG is not a valid register this function returns
-   PVM_EINVAL.  */
-
-int pvm_program_append_register_parameter (pvm_program program,
-                                           pvm_register reg);
-
-/* Appenda PVM label instruction parameter to a PVM program.
-
-   PROGRAM is the program in which to append the parameter.
-   LABEL is the PVM label to use as the instruction parameter.
-
-   If LABEL is not a label in PROGRAM, this function returns
-   PVM_EINVAL.  */
-
-int pvm_program_append_label_parameter (pvm_program program,
-                                        pvm_program_label label);
-
-/* Append an instruction to a PVM program.
-
-   PROGRAM is the program in which to append the instruction.
-   INSN_NAME is the name of the instruction to append.
-
-   If there is no instruction named INSN_NAME, this function returns
-   PVM_EINVAL.
-
-   If not all the parameters required by the instruction have been
-   already appended, this function returns PVM_EINSN.  */
-
-int pvm_program_append_instruction (pvm_program program,
-                                    const char *insn_name);
-
-/* Append a `push' instruction to a PVM program.
-
-   Due to a limitation of Jitter, we can't build push instructions the
-   usual way.  This function should be used instead.
-
-   PROGRAM is the program in which to append the instruction.
-   VAL is the PVM value that will be pushed by the instruction.  */
-
-int pvm_program_append_push_instruction (pvm_program program,
-                                         pvm_val val);
-
-/* Append a PVM label to a PVM program.
-
-   PROGRAM is the program in which to append the label.
-   LABEL is the PVM label to append.
-
-   If LABEL doesn't exist in PROGRAM this function return
-   PVM_EINVAL.  */
-
-int pvm_program_append_label (pvm_program program,
-                              pvm_program_label label);
 
 /* **************** Building PVM Values **************** */
 
@@ -275,7 +136,17 @@ pvm_val pvm_make_struct (pvm_val nfields, pvm_val nmethods, pvm_val type);
    NAME is either PVM_NULL or a PVM string value containing the name of
    the program value.  */
 
-pvm_val pvm_make_cls (pvm_program program, pvm_val name);
+pvm_val pvm_make_cls (pvm_val program, pvm_val name);
+
+/* Make an internal array PVM value.
+
+   XXX hint.  */
+
+pvm_val pvm_make_iarray (int hint);
+
+/* XXX */
+
+pvm_val pvm_make_program (void);
 
 /* Compare two PVM values.
 
@@ -310,12 +181,37 @@ pvm_val pvm_make_void_type (void);
 
 pvm_val pvm_make_array_type (pvm_val type, pvm_val bound);
 
+/* FIXME FIXME FIXME
+
+   Note that FNAMES and FTYPES are uninitialized.  Do NOT trigger GC allocation
+   before the initializing them completely.  */
+
+pvm_val pvm_make_struct_type_unsafe (pvm_val nfields,
+                                     pvm_val **fnames, pvm_val **ftypes);
+
+/* FIXME FIXME FIXME
+
+   Note that FNAMES and FTYPES are initialized to PVM_NULL.  */
+
 pvm_val pvm_make_struct_type (pvm_val nfields,
-                              pvm_val *fnames, pvm_val *ftypes);
+                              pvm_val **fnames, pvm_val **ftypes);
 
 pvm_val pvm_make_offset_type (pvm_val base_type, pvm_val unit, pvm_val ref_type);
+
+/* FIXME FIXME FIXME
+
+   Note that ATYPES is uninitialized.  Do NOT trigger GC allocation
+   before the initializing it completely.  */
+
+pvm_val pvm_make_closure_type_unsafe (pvm_val rtype, pvm_val nargs,
+                                      pvm_val **atypes);
+
+/* FIXME FIXME FIXME
+
+   Note that ATYPES is initialized to PVM_NULL.  */
+
 pvm_val pvm_make_closure_type (pvm_val rtype, pvm_val nargs,
-                               pvm_val *atypes);
+                               pvm_val **atypes);
 
 pvm_val pvm_dup_type (pvm_val type);
 
@@ -323,7 +219,7 @@ pvm_val pvm_typeof (pvm_val val);
 
 int pvm_type_equal_p (pvm_val type1, pvm_val type2);
 
-pvm_program pvm_val_cls_program (pvm_val cls);
+pvm_val pvm_val_cls_program (pvm_val cls);
 
 /* Insert the value VAL in the array ARR past to the last element.
    IDX is an ulong<64> denoting the index of the new element.
@@ -423,8 +319,6 @@ pvm_val pvm_make_exception (int code, const char *name, int exit_status,
    This header file provides the prototypes for the functions used to
    implement the above-mentioned PVM instructions.  */
 
-typedef struct pvm_env *pvm_env;  /* Struct defined in pvm-env.c */
-
 /* Create a new run-time environment, containing an empty top-level
    frame, and return it.
 
@@ -432,7 +326,7 @@ typedef struct pvm_env *pvm_env;  /* Struct defined in pvm-env.c */
    registered in this environment.  If HINT is 0 it indicates that we
    can't provide an estimation.  */
 
-pvm_env pvm_env_new (int hint);
+pvm_val pvm_make_env (int hint);
 
 /* Push a new empty frame to ENV and return the modified run-time
    environment.
@@ -441,39 +335,39 @@ pvm_env pvm_env_new (int hint);
    in the frame.  If HINT is 0, it indicates the number can't be
    estimated at all.  */
 
-pvm_env pvm_env_push_frame (pvm_env env, int hint);
+pvm_val pvm_env_push_frame (pvm_val env, int hint);
 
 /* Pop a frame from ENV and return the modified run-time environment.
    The popped frame will eventually be garbage-collected if there are
    no more references to it.  Trying to pop the top-level frame is an
    error.  */
 
-pvm_env pvm_env_pop_frame (pvm_env env);
+pvm_val pvm_env_pop_frame (pvm_val env);
 
 /* Create a new variable in the current frame of ENV, whose value is
    VAL.  */
 
-void pvm_env_register (pvm_env env, pvm_val val);
+void pvm_env_register (pvm_val env, pvm_val val);
 
 /* Return the value for the variable occupying the position BACK, OVER
    in the run-time environment ENV.  Return PVM_NULL if the variable
    is not found.  */
 
-pvm_val pvm_env_lookup (pvm_env env, int back, int over);
+pvm_val pvm_env_lookup (pvm_val env, int back, int over);
 
 /* Set the value of the variable occupying the position BACK, OVER in
    the run-time environment ENV to VAL.  */
 
-void pvm_env_set_var (pvm_env env, int back, int over, pvm_val val);
+void pvm_env_set_var (pvm_val env, int back, int over, pvm_val val);
 
 /* Return 1 if the given run-time environment ENV contains only one
    frame.  Return 0 otherwise.  */
 
-int pvm_env_toplevel_p (pvm_env env);
+int pvm_env_toplevel_p (pvm_val env);
 
 /* Return the toplevel frame of the given environment.  */
 
-pvm_env pvm_env_toplevel (pvm_env env);
+pvm_val pvm_env_toplevel (pvm_val env);
 
 /*** Other Definitions.  ***/
 
@@ -612,7 +506,7 @@ ios_context pvm_ios_context (pvm apvm);
 
 /* Get the current run-time environment of PVM.  */
 
-pvm_env pvm_get_env (pvm pvm);
+pvm_val pvm_get_env (pvm pvm);
 
 /* Print a profiling summary corresponding to the current state of the
    PVM.  */
@@ -636,7 +530,7 @@ void pvm_reset_profile (pvm pvm);
    execution was successful or not.  */
 
 enum pvm_exit_code pvm_run (pvm vm,
-                            pvm_program program,
+                            pvm_val program,
                             pvm_val *res,
                             pvm_val *exit_exception);
 
