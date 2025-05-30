@@ -2395,8 +2395,17 @@ end
 
 instruction push (?nl pvm_literal_printer)
   code
-    pvm_val k = JITTER_ARGN0;
-    JITTER_PUSH_STACK(k);
+    pvm_val program;
+    pvm_val params;
+    pvm_val val;
+
+    program = PVM_STATE_BACKING_FIELD (program);
+    PVM_ASSERT (PVM_IS_PRG (program)); // FIXME FIXME FIXME Remove me.
+    params = PVM_VAL_PRG_INSN_PARAMS (program);
+    PVM_ASSERT (PVM_IS_IAR (params));
+    PVM_ASSERT (JITTER_ARGN0 < PVM_VAL_IAR_NELEM (params));
+    val = PVM_VAL_IAR_ELEM (params, JITTER_ARGN0);
+    JITTER_PUSH_STACK(val);
   end
 end
 

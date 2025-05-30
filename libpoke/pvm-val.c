@@ -42,6 +42,7 @@
 #define PVM_VAL_INVALID_OBJECT          0x17
 #define PVM_VAL_UNINITIALIZED_OBJECT    0x27
 #define PVM_VAL_BROKEN_HEART_TYPE_CODE  0x37
+#define PVM_VAL_PADDING                 0x47
 
 /* Unitary values that are always reused.
 
@@ -117,7 +118,13 @@ pvm_gc_is_long_p (pvm_val v)
   return PVM_IS_LONG (v);
 }
 
-#define PVM_GC_SIZEOF_LONG (sizeof (uint64_t) * 2)
+static bool
+pvm_gc_is_long_type_code_p (uintptr_t v)
+{
+  return v == PVM_VAL_TAG_LONG;
+}
+
+#define PVM_GC_SIZEOF_LONG JITTER_GC_HEADER_ONLY_SIZE_IN_BYTES (pvm_long)
 
 static size_t
 pvm_gc_sizeof_long (pvm_val v __attribute__ ((unused)))
@@ -130,23 +137,39 @@ pvm_gc_copy_long (struct jitter_gc_heaplet *heaplet __attribute__ ((unused)),
                   pvm_val *new_val, void *from, void *to)
 {
   memcpy (to, from, PVM_GC_SIZEOF_LONG);
-  *new_val = (uint64_t)((uintptr_t)to | PVM_VAL_TAG_LONG);
+  *new_val = PVM_BOX (to);
+  return PVM_GC_SIZEOF_LONG;
+}
+
+static size_t
+pvm_gc_update_fields_long (struct jitter_gc_heaplet *heaplet
+                           __attribute__ ((unused)),
+                           void *p __attribute__ ((unused)))
+{
+  /* Longs are leaf objects; no fields to update.  */
   return PVM_GC_SIZEOF_LONG;
 }
 
 pvm_val
 pvm_make_long (int64_t value, int size)
 {
-  uint64_t *ll;
+  struct pvm_long *lng;
 
   assert (0 < size && size <= 64);
 
-  _JITTER_GC_ALLOCATE (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
-                       GC_RUNTIME_LIMIT (gc_heaplet), ll, PVM_GC_SIZEOF_LONG);
-  ll[0] = value;
-  ll[1] = (size - 1) & 0x3f;
+  {
+    void *p;
 
-  return ((uint64_t)(uintptr_t)ll) | PVM_VAL_TAG_LONG;
+    _JITTER_GC_ALLOCATE (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
+                         GC_RUNTIME_LIMIT (gc_heaplet), p, PVM_GC_SIZEOF_LONG);
+    assert (p); // FIXME FIXME FIXME Handle error.
+    lng = p;
+  }
+
+  lng->type_code = PVM_VAL_TAG_LONG;
+  lng->value = (uint64_t)value;
+  lng->size_minus_one = (size - 1) & 0x3f;
+  return PVM_BOX (lng);
 }
 
 /* ULONG */
@@ -157,7 +180,14 @@ pvm_gc_is_ulong_p (pvm_val v)
   return PVM_IS_ULONG (v);
 }
 
-#define PVM_GC_SIZEOF_ULONG (sizeof (uint64_t) * 2)
+static bool
+pvm_gc_is_ulong_type_code_p (uintptr_t v)
+{
+  return v == PVM_VAL_TAG_ULONG;
+}
+
+#define PVM_GC_SIZEOF_ULONG                                                   \
+  JITTER_GC_HEADER_ONLY_SIZE_IN_BYTES (pvm_long /* not pvm_ulong */)
 
 static size_t
 pvm_gc_sizeof_ulong (pvm_val v __attribute__ ((unused)))
@@ -166,26 +196,44 @@ pvm_gc_sizeof_ulong (pvm_val v __attribute__ ((unused)))
 }
 
 static size_t
-pvm_val_ulong_copy (struct jitter_gc_heaplet *heaplet __attribute__ ((unused)),
+pvm_gc_copy_ulong (struct jitter_gc_heaplet *heaplet __attribute__ ((unused)),
                     pvm_val *new_val, void *from, void *to)
 {
   memcpy (to, from, PVM_GC_SIZEOF_ULONG);
-  *new_val = (uint64_t)((uintptr_t)to | PVM_VAL_TAG_ULONG);
+  *new_val = PVM_BOX (to);
+  return PVM_GC_SIZEOF_ULONG;
+}
+
+static size_t
+pvm_gc_update_fields_ulong (struct jitter_gc_heaplet *heaplet
+                            __attribute__ ((unused)),
+                            void *p __attribute__ ((unused)))
+{
+  /* Ulongs are leaf objects; no fields to update.  */
   return PVM_GC_SIZEOF_ULONG;
 }
 
 pvm_val
 pvm_make_ulong (uint64_t value, int size)
 {
-  uint64_t *ll;
+  struct pvm_long *ulng;
 
   assert (0 < size && size <= 64);
 
-  _JITTER_GC_ALLOCATE (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
-                       GC_RUNTIME_LIMIT (gc_heaplet), ll, PVM_GC_SIZEOF_ULONG);
-  ll[0] = value;
-  ll[1] = (size - 1) & 0x3f;
-  return ((uint64_t)(uintptr_t)ll) | PVM_VAL_TAG_ULONG;
+  {
+    void *p;
+
+    _JITTER_GC_ALLOCATE (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
+                         GC_RUNTIME_LIMIT (gc_heaplet), p, PVM_GC_SIZEOF_LONG);
+    assert (p); // FIXME FIXME FIXME Handle error.
+    ulng = p;
+  }
+
+
+  ulng->type_code = PVM_VAL_TAG_ULONG;
+  ulng->value = value;
+  ulng->size_minus_one = (size - 1) & 0x3f;
+  return PVM_BOX (ulng);
 }
 
 pvm_val
@@ -1681,7 +1729,7 @@ pvm_make_program (void)
   prg->type_code = PVM_VAL_TAG_PRG;
   prg->insn_params = insn_params;
   prg->routine = pvm_make_routine ();
-  prg->nlabels_max = 16;
+  prg->nlabels_max = 128 * 1024;
   prg->nlabels = 0;
   prg->labels = malloc (prg->nlabels_max * sizeof (pvm_val));
   assert (prg->labels); // FIXME Handle error.
@@ -3073,7 +3121,7 @@ pvm_gc_is_unboxed_p (pvm_val v)
 {
   if (PVM_VAL_TAG (v) == 7)
     return true;
-  return PVM_VAL_BOXED_P (v);
+  return !PVM_VAL_BOXED_P (v);
 }
 
 // Debugging.
@@ -3149,11 +3197,6 @@ pvm_val_initialize (void)
       PVM_VAL_BROKEN_HEART_TYPE_CODE, pvm_gc_is_unboxed_p);
   assert (gc_shapes); // FIXME Handle error.
 
-  jitter_gc_shape_add_headerless (gc_shapes, "long", pvm_gc_is_long_p,
-                                  pvm_gc_sizeof_long, pvm_gc_copy_long);
-  jitter_gc_shape_add_headerless (gc_shapes, "ulong", pvm_gc_is_ulong_p,
-                                  pvm_gc_sizeof_ulong, pvm_val_ulong_copy);
-
 #if 0
   jitter_gc_shape_add_headered_quickly_finalizable (gc_shapes,
 
@@ -3167,6 +3210,15 @@ pvm_val_initialize (void)
                                   pvm_val_ubig_sizeof,
                                   pvm_val_ubig_copy);
 #endif
+
+  // FIXME Use the same function sets for long/ulong.
+  jitter_gc_shape_add_headered_non_finalizable (
+      gc_shapes, "long", pvm_gc_is_long_p, pvm_gc_sizeof_long,
+      pvm_gc_is_long_type_code_p, pvm_gc_copy_long, pvm_gc_update_fields_long);
+  jitter_gc_shape_add_headered_non_finalizable (
+      gc_shapes, "ulong", pvm_gc_is_ulong_p, pvm_gc_sizeof_ulong,
+      pvm_gc_is_ulong_type_code_p, pvm_gc_copy_ulong,
+      pvm_gc_update_fields_ulong);
 
   jitter_gc_shape_add_headered_quickly_finalizable (
       gc_shapes, "string", pvm_gc_is_string_p, pvm_gc_sizeof_string,
@@ -3254,9 +3306,9 @@ pvm_val_initialize (void)
 
       size = pvm_make_ulong (bits, 64);
       common_int_types[bits][0]
-          = pvm_make_integral_type_1 (size, /*signed_p*/ 0);
+          = pvm_make_integral_type_1 (size, /*signed_p*/ PVM_MAKE_INT (0, 32));
       common_int_types[bits][1]
-          = pvm_make_integral_type_1 (size, /*signed_p*/ 1);
+          = pvm_make_integral_type_1 (size, /*signed_p*/ PVM_MAKE_INT (1, 32));
     }
 
 #if 0

@@ -597,7 +597,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
         pvm_val closure;
         char *program_name = PKL_AST_FUNC_NAME (initial);
 
-        if (PKL_AST_FUNC_PROGRAM (initial))
+        if (PKL_AST_FUNC_PROGRAM (initial) != PVM_NULL)
           program = PKL_AST_FUNC_PROGRAM (initial);
         else
           {

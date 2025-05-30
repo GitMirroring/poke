@@ -86,42 +86,6 @@
 
 #define PVM_MAX_UINT(size) ((1U << (size)) - 1)
 
-/* Long integers, wider than 32-bit and up to 64-bit, are boxed.  A
-   pointer
-                                             tag
-                                             ---
-         pppp pppp pppp pppp pppp pppp pppp pttt
-
-   points to a pair of 64-bit words:
-
-                           val
-                           ---
-   [0]   vvvv vvvv vvvv vvvv vvvv vvvv vvvv vvvv
-                                           bits
-                                           ----
-   [1]   xxxx xxxx xxxx xxxx xxxx xxxx xxbb bbbb
-
-   BITS+1 is the size of the integral value in bits, from 0 to 63.
-
-   VAL is the value of the integer, sign- or zero-extended to 64 bits.
-   Bits marked with `x' are unused.  */
-
-#define _PVM_VAL_LONG_ULONG_VAL(V) (((int64_t *) ((((uintptr_t) V) & ~0x7)))[0])
-#define _PVM_VAL_LONG_ULONG_SIZE(V) ((int) (((int64_t *) ((((uintptr_t) V) & ~0x7)))[1]) + 1)
-
-#define PVM_VAL_LONG_SIZE(V) (_PVM_VAL_LONG_ULONG_SIZE (V))
-#define PVM_VAL_LONG(V) (((int64_t) ((uint64_t) _PVM_VAL_LONG_ULONG_VAL ((V)) \
-                                     << (64 - PVM_VAL_LONG_SIZE ((V))))) \
-                         >> (64 - PVM_VAL_LONG_SIZE ((V))))
-#define PVM_MAKE_LONG(V,S) (pvm_make_long ((V),(S)))
-
-#define PVM_VAL_ULONG_SIZE(V) (_PVM_VAL_LONG_ULONG_SIZE (V))
-#define PVM_VAL_ULONG(V) (_PVM_VAL_LONG_ULONG_VAL ((V))                 \
-                          & ((uint64_t) (~( ((~0ull) << ((PVM_VAL_ULONG_SIZE ((V)))-1)) << 1 ))))
-#define PVM_MAKE_ULONG(V,S) (pvm_make_ulong ((V),(S)))
-
-#define PVM_MAX_ULONG(size) ((1LU << (size)) - 1)
-
 /* Big integers, wider than 64-bit, are boxed.  They are implemented
    using the GNU mp library.  */
 
@@ -141,6 +105,7 @@
 // FIXME Add a comment.
 
 #define PVM_VAL_BOX_TAG(B) (*(uintptr_t *)(B))
+#define PVM_VAL_BOX_LNG(B) ((pvm_long)(B))
 #define PVM_VAL_BOX_STR(B) (((pvm_string)(B))->data) // CHKME Backward compat.
 #define PVM_VAL_BOX_ARR(B) ((pvm_array)(B))
 #define PVM_VAL_BOX_SCT(B) ((pvm_struct)(B))
@@ -150,6 +115,32 @@
 #define PVM_VAL_BOX_IAR(B) (((pvm_iarray)(B)))
 #define PVM_VAL_BOX_PRG(B) ((pvm_program_)(B))
 #define PVM_VAL_BOX_ENV(B) ((pvm_env_)(B))
+
+#define PVM_VAL_BOX_ULNG(B) ((pvm_ulong)(B)) // FIXME FIXME FIXME
+
+/* Long integers.  */
+
+#define PVM_VAL_LNG(V) (PVM_VAL_BOX_LNG (PVM_VAL_BOX (V)))
+
+#define PVM_VAL_LONG_SIZE(V) (PVM_VAL_LNG (V)->size_minus_one + 1)
+#define PVM_VAL_LONG(V) (PVM_VAL_LNG (V)->value)
+#define PVM_VAL_ULONG_SIZE(V) (PVM_VAL_LNG (V)->size_minus_one + 1)
+#define PVM_VAL_ULONG(V) (PVM_VAL_LNG (V)->value)
+
+struct pvm_long
+{
+  uintptr_t type_code;
+  uint64_t value;
+  unsigned size_minus_one;
+};
+
+typedef struct pvm_long *pvm_long;
+typedef struct pvm_long *pvm_ulong;
+
+#define PVM_MAKE_LONG(V,S) (pvm_make_long ((V),(S))) // FIXME FIXME FIXME Remove.
+#define PVM_MAKE_ULONG(V,S) (pvm_make_ulong ((V),(S))) // FIXME FIXME FIXME Remove.
+
+#define PVM_MAX_ULONG(size) ((1LU << (size)) - 1)
 
 /* Strings are boxed.  */
 

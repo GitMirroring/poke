@@ -23,6 +23,8 @@
    update the pvm_make_exception function in pvm-val.c
    accordingly.  */
 
+asm ("printi 32" :: 12345, 10);
+
 immutable type Exception =
   struct
   {
