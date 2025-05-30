@@ -229,7 +229,6 @@ pvm_make_ulong (uint64_t value, int size)
     ulng = p;
   }
 
-
   ulng->type_code = PVM_VAL_TAG_ULONG;
   ulng->value = value;
   ulng->size_minus_one = (size - 1) & 0x3f;
