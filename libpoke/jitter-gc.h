@@ -78,7 +78,8 @@
 
 /* The stream where log messages are printed.  This is only used if
    JITTER_GC_LOG is defined. */
-#define JITTER_GC_LOG_STREAM stdout
+// #define JITTER_GC_LOG_STREAM stdout
+#define JITTER_GC_LOG_STREAM stderr
 
 
 

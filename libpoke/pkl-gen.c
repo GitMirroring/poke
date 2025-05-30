@@ -597,7 +597,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
         pvm_val closure;
         char *program_name = PKL_AST_FUNC_NAME (initial);
 
-        if (PKL_AST_FUNC_PROGRAM (initial) != PVM_NULL)
+        // if (PKL_AST_FUNC_PROGRAM (initial) != PVM_NULL)
+        if ((PKL_AST_FUNC_PROGRAM (initial) & 7) == 6)
           program = PKL_AST_FUNC_PROGRAM (initial);
         else
           {
@@ -623,11 +624,19 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
 
             /* XXX */
             //            pvm_disassemble_program (program);
+            assert (PVM_IS_PRG (program));
             PKL_AST_FUNC_PROGRAM (initial) = program;
           }
 
-        closure = pvm_make_cls (program,
-                                program_name ? pvm_make_string (program_name) : PVM_NULL);
+        if (!PVM_IS_PRG (program))
+          {
+            fprintf (stderr, "HHH %p\n",
+                     PKL_AST_FUNC_PROGRAM_GC_HANDLE (initial));
+            fprintf (stderr, "PPP %p\n", &PKL_AST_FUNC_PROGRAM (initial));
+            fflush (NULL);
+          }
+        closure = pvm_make_cls (
+            program, program_name ? pvm_make_string (program_name) : PVM_NULL);
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, closure);
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DUC);
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);

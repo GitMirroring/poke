@@ -957,9 +957,12 @@ pvm_gc_update_fields_type (struct jitter_gc_heaplet *heaplet, void *obj)
 
     case PVM_TYPE_STRUCT:
       {
+        pvm_val nfields_val;
         uint64_t nfields;
 
-        nfields = PVM_VAL_TYP_S_NFIELDS (typ);
+        nfields_val = PVM_VAL_TYP_S_NFIELDS (typ);
+        assert (PVM_IS_ULONG (nfields_val));
+        nfields = PVM_VAL_ULONG (nfields_val);
         jitter_gc_handle_word (heaplet, &PVM_VAL_TYP_S_NAME (typ));
         jitter_gc_handle_word (heaplet, &PVM_VAL_TYP_S_NFIELDS (typ));
         jitter_gc_handle_word (heaplet, &PVM_VAL_TYP_S_CONSTRUCTOR (typ));
@@ -1141,6 +1144,8 @@ pvm_make_struct_type_unsafe (pvm_val nfields, pvm_val **fnames_ptr,
   pvm_val *fnames;
   pvm_val *ftypes;
   pvm_val stype;
+
+  assert (PVM_IS_ULONG (nfields));
 
   JITTER_GC_BLOCK_BEGIN (gc_heaplet);
   {
