@@ -3135,14 +3135,16 @@ static void
 print_indicator_pre (struct jitter_gc_heaplet *b, void *useless,
                      enum jitter_gc_collection_kind k)
 {
-  fprintf (stderr, "[GC-PRE] heaplet:%p kind:%d\n", b, k);
+  fprintf (stderr, "[GC-PRE] heaplet:%p kind:%s\n", b,
+           jitter_gc_collection_kind_to_string (k));
 }
 
 static void
 print_indicator_post (struct jitter_gc_heaplet *b, void *useless,
                       enum jitter_gc_collection_kind k)
 {
-  fprintf (stderr, "[GC-POST] heaplet:%p kind:%d\n", b, k);
+  fprintf (stderr, "[GC-POST] heaplet:%p kind:%s\n", b,
+           jitter_gc_collection_kind_to_string (k));
 }
 
 #endif
