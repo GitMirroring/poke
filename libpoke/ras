@@ -696,6 +696,8 @@ BEGIN {
     init_entity()
     out("#define RAS_MACRO_" toupper($2) macro_args " \\")
     out("\tdo {                                                     \\")
+    out("\textern struct jitter_gc_heaplet *gc_heaplet; /* FIXME FIXME FIXME */ \\");
+    out("\tJITTER_GC_BLOCK_BEGIN (gc_heaplet);                      \\")
     out("---LABELDECLS---")
 
     current_entity = "macro"
@@ -729,6 +731,8 @@ BEGIN {
     out("\t                           RAS_COMPILER,              \\")
     out("\t                           0 /* prologue */));        \\")
     out("\t                                                      \\")
+    out("\textern struct jitter_gc_heaplet *gc_heaplet; /* FIXME FIXME FIXME */ \\");
+    out("\tJITTER_GC_BLOCK_BEGIN (gc_heaplet);                   \\")
     out("---LABELDECLS---")
 
     current_entity = "function"
@@ -767,6 +771,7 @@ BEGIN {
         out("\t      program, pvm_make_string (\"" function_name "\"));\\")
         out("\t}                                                       \\")
     }
+    out("\tJITTER_GC_BLOCK_END (gc_heaplet);                           \\")
     out("\t} while (0)")
 
     # If there has been errors while processing the entity, print them
@@ -898,6 +903,8 @@ BEGIN {
         vartype = "pvm_val"
 
     out("\t" vartype " " varname " " cinit "; \\")
+    if (kind == "#")
+        out("\tJITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &" varname "); \\")
     next
 }
 
