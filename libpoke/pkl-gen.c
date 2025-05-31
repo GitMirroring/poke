@@ -32,6 +32,8 @@
 #include "pvm-val.h"
 #include "pk-utils.h"
 
+#include "jitter-gc.h" // FIXME FIXME FIXME
+
 /* It would be very unlikely to have more than 24 declarations nested
    in a poke program... if it ever happens, we will just increase
    this, that's a promise :P (don't worry, there is an assertion that
@@ -595,10 +597,11 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
       {
         pvm_val program;
         pvm_val closure;
-        char *program_name = PKL_AST_FUNC_NAME (initial);
+        char *program_name_str = PKL_AST_FUNC_NAME (initial);
+        pvm_val program_name
+            = program_name_str ? pvm_make_string (program_name_str) : PVM_NULL;
 
-        // if (PKL_AST_FUNC_PROGRAM (initial) != PVM_NULL)
-        if ((PKL_AST_FUNC_PROGRAM (initial) & 7) == 6)
+        if (PKL_AST_FUNC_PROGRAM (initial) != PVM_NULL)
           program = PKL_AST_FUNC_PROGRAM (initial);
         else
           {
@@ -624,19 +627,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
 
             /* XXX */
             //            pvm_disassemble_program (program);
-            assert (PVM_IS_PRG (program));
             PKL_AST_FUNC_PROGRAM (initial) = program;
           }
 
-        if (!PVM_IS_PRG (program))
-          {
-            fprintf (stderr, "HHH %p\n",
-                     PKL_AST_FUNC_PROGRAM_GC_HANDLE (initial));
-            fprintf (stderr, "PPP %p\n", &PKL_AST_FUNC_PROGRAM (initial));
-            fflush (NULL);
-          }
-        closure = pvm_make_cls (
-            program, program_name ? pvm_make_string (program_name) : PVM_NULL);
+        closure = pvm_make_cls (program, program_name);
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, closure);
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DUC);
         pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);
@@ -1704,7 +1698,6 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_format)
         {
           char* cname;
           int cindex, n;
-          pvm_val idx;
 
           assert (nclasses > 0);
           --nclasses;
@@ -1717,24 +1710,37 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_format)
           if (n > 0)
             {
               nstr = cindex + 1;
-              idx = pvm_make_ulong (cindex, 64);
 
-              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DUP);       /* ARR ARR */
-              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, idx); /* ARR ARR IDX */
-              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
-                            pvm_make_ulong (n, 64));         /* ARR ARR IDX LEN */
-              pkl_asm_call (PKL_GEN_ASM, PKL_GEN_PAYLOAD->env,
-                            "_pkl_reduce_string_array"); /* ARR STR */
-              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP);     /* STR ARR */
+              {
+                extern struct jitter_gc_heaplet *gc_heaplet;
 
-              for (; n > 1; --n)
+                JITTER_GC_BLOCK_BEGIN (gc_heaplet);
                 {
-                  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, idx);
-                  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_AREM);
-                }
+                  pvm_val idx;
 
-              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, idx); /* STR ARR IDX */
-              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ROT);       /* ARR IDX STR */
+                  idx = pvm_make_ulong (cindex, 64);
+                  JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &idx);
+
+                  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DUP);  /* ARR ARR */
+                  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                                idx);                        /* ARR ARR IDX */
+                  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                                pvm_make_ulong (n, 64));     /* ARR ARR IDX LEN */
+                  pkl_asm_call (PKL_GEN_ASM, PKL_GEN_PAYLOAD->env,
+                                "_pkl_reduce_string_array"); /* ARR STR */
+                  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP); /* STR ARR */
+
+                  for (; n > 1; --n)
+                    {
+                      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, idx);
+                      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_AREM);
+                    }
+
+                  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, idx); /* STR ARR IDX */
+                  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ROT);       /* ARR IDX STR */
+                }
+                JITTER_GC_BLOCK_END (gc_heaplet);
+              }
 
               /* Set the string style property.  */
               pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SEL);
@@ -3602,6 +3608,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_function)
       }
 
       program = pkl_asm_finish (PKL_GEN_ASM, 0 /* epilogue */);
+      /* Do not trigger GC until passing `program' to `pvm_make_cls'.  */
       PKL_GEN_POP_ASM;
 
       pvm_program_make_executable (program);

@@ -5626,11 +5626,16 @@ end
 
 instruction mkoq ()
   code
-   pvm_val type = pvm_make_offset_type (pvm_typeof (JITTER_UNDER_TOP_STACK ()),
-                                        JITTER_TOP_STACK (), PVM_NULL /* ref_type */);
-   pvm_val res = pvm_make_offset (JITTER_UNDER_TOP_STACK (), type);
-   JITTER_DROP_STACK ();
-   JITTER_TOP_STACK () = res;
+    pvm_val res;
+
+    /* Put temporarily on stack to avoid GC.  */
+    JITTER_TOP_STACK ()
+        = pvm_make_offset_type (pvm_typeof (JITTER_UNDER_TOP_STACK ()),
+                                JITTER_TOP_STACK (), PVM_NULL /* ref_type */);
+
+    res = pvm_make_offset (JITTER_UNDER_TOP_STACK (), JITTER_TOP_STACK ());
+    JITTER_DROP_STACK ();
+    JITTER_TOP_STACK () = res;
   end
 end
 
