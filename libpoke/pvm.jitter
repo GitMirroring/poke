@@ -850,15 +850,16 @@ printer-c
     }
 
     static void
-    pvm_literal_printer (jitter_print_context out, jitter_uint val,
-                         void *user_data __attribute__ ((unused)))
+    pvm_literal_printer (jitter_print_context out, jitter_uint val_index,
+                         void *user_data)
     {
-#if 1
-      extern pvm_val *DISAS_PROGRAM;
-      pvm_val program = *DISAS_PROGRAM;
-      pvm_val insn_params = PVM_VAL_PRG_INSN_PARAMS (program);
+      pvm_val program = (pvm_val)(uintptr_t)user_data;
+      pvm_val insn_params;
       pvm_val val;
 
+      PVM_ASSERT (PVM_IS_PRG (program)); // FIXME FIXME FIXME
+      insn_params = PVM_VAL_PRG_INSN_PARAMS (program);
+      PVM_ASSERT (PVM_IS_IAR (insn_params)); // FIXME FIXME FIXME
       PVM_ASSERT (val_index < PVM_VAL_PRG_NLABELS (insn_params));
       val = PVM_VAL_IAR_ELEM (insn_params, val_index);
 
@@ -871,9 +872,6 @@ printer-c
                                  2 /* acutoff */,
                                  0 /* flags */,
                                  NULL /* exit_exception */);
-#else
-      pk_printf ("%" JITTER_PRIu, val_index);
-#endif
       pk_term_flush ();
     }
 
