@@ -3274,7 +3274,7 @@ pvm_gc_hook_pre (struct jitter_gc_heaplet *b, void *useless,
     end = (struct pvm_exception_handler *)*gc_global_roots.stacks[2].tos_ptr + 1;
     nelem = end - begin;
 
-    fprintf (stderr, "[GC-PRE] stack2 nelem:%td\n", nelem);
+    fprintf (stderr, "[GC-PRE] [stack2] nelem:%td\n", nelem);
 
     for (ptrdiff_t j = 0; j < nelem; ++j)
       jitter_gc_handle_word (gc_heaplet, &begin[j].env);
