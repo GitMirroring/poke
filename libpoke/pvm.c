@@ -84,7 +84,7 @@ struct pvm
 
   /* Jitter GC global root handles for VM stacks (main, return, exception),
      runtime environment, and current program.  */
-  void* gc_handles[5];
+  void* gc_handles[6];
 };
 
 static void
@@ -106,12 +106,22 @@ pvm_initialize_state (pvm apvm, struct pvm_state *state)
       = &PVM_STATE_BACKING_FIELD (state, jitter_stack_exceptionstack_backing);
 
   /* Register GC roots.  */
-  apvm->gc_handles[0] = pvm_alloc_add_gc_roots (mainstack_backing->memory,
-                                                mainstack_backing->element_no);
+  apvm->gc_handles[0] = pvm_gc_register_vm_stack (
+      mainstack_backing->memory, mainstack_backing->element_no,
+      (void **)&PVM_STATE_RUNTIME_FIELD (
+          state, JITTER_STACK_TOS_UNDER_TOP_POINTER_NAME (pvm_val, , stack)));
   apvm->gc_handles[1] = pvm_alloc_add_gc_roots (
-      returnstack_backing->memory, returnstack_backing->element_no);
-  apvm->gc_handles[2] = pvm_alloc_add_gc_roots (
-      exceptionstack_backing->memory, exceptionstack_backing->element_no);
+      &PVM_STATE_RUNTIME_FIELD (state,
+                                JITTER_STACK_TOS_TOP_NAME (pvm_val, , stack)),
+      1);
+  apvm->gc_handles[2] = pvm_gc_register_vm_stack (
+      returnstack_backing->memory, returnstack_backing->element_no,
+      (void **)&PVM_STATE_RUNTIME_FIELD (
+          state, JITTER_STACK_NTOS_TOP_POINTER_NAME (pvm_val, , returnstack)));
+  apvm->gc_handles[3] = pvm_gc_register_vm_stack (
+      exceptionstack_backing->memory, exceptionstack_backing->element_no,
+      (void **)&PVM_STATE_RUNTIME_FIELD (
+          state, JITTER_STACK_NTOS_TOP_POINTER_NAME (pvm_val, , exceptionstack)));
 
   /* Initialize the global environment.  Note we do this after
      registering GC roots, since we are allocating memory.  */
@@ -119,9 +129,9 @@ pvm_initialize_state (pvm apvm, struct pvm_state *state)
   PVM_STATE_RUNTIME_FIELD (state, env) = pvm_make_env (0 /* hint */);
   PVM_STATE_BACKING_FIELD (state, program) = PVM_NULL;
 
-  apvm->gc_handles[3]
-      = pvm_alloc_add_gc_roots (&PVM_STATE_RUNTIME_FIELD (state, env), 1);
   apvm->gc_handles[4]
+      = pvm_alloc_add_gc_roots (&PVM_STATE_RUNTIME_FIELD (state, env), 1);
+  apvm->gc_handles[5]
       = pvm_alloc_add_gc_roots (&PVM_STATE_BACKING_FIELD (state, program), 1);
 }
 
@@ -247,7 +257,7 @@ pvm_shutdown (pvm apvm)
   /* Deregister GC roots.  */
   for (size_t i = 0; i < sizeof (apvm->gc_handles) / sizeof (apvm->gc_handles[0]);
        ++i)
-    pvm_alloc_remove_gc_roots (apvm->gc_handles[i]);
+    ; // FIXME FIXME FIXME pvm_alloc_remove_gc_roots (apvm->gc_handles[i]);
 
   /* Finalize values.  */
   pvm_val_finalize ();

@@ -47,6 +47,11 @@ void pvm_free_uncollectable (void *ptr);
 void *pvm_alloc_add_gc_roots (void *pointer, size_t nelems);
 void pvm_alloc_remove_gc_roots (void *handle);
 
+/* FIXME FIXME FIXME */
+
+void *pvm_gc_register_vm_stack (void *pointer, size_t nelems, void **tos_ptr);
+void pvm_gc_deregister_vm_stack (void* handle);
+
 /* Forced collection.  */
 
 void pvm_alloc_gc (void);

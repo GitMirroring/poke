@@ -853,9 +853,17 @@ printer-c
     pvm_literal_printer (jitter_print_context out, jitter_uint val,
                          void *user_data __attribute__ ((unused)))
     {
-      pvm_print_val_with_params (NULL /* not used since no
-                                         pretty-print */,
-                                 (pvm_val) val,
+#if 1
+      extern pvm_val *DISAS_PROGRAM;
+      pvm_val program = *DISAS_PROGRAM;
+      pvm_val insn_params = PVM_VAL_PRG_INSN_PARAMS (program);
+      pvm_val val;
+
+      PVM_ASSERT (val_index < PVM_VAL_PRG_NLABELS (insn_params));
+      val = PVM_VAL_IAR_ELEM (insn_params, val_index);
+
+      pvm_print_val_with_params (NULL /* not used since no pretty-print */,
+                                 val,
                                  1 /* depth */,
                                  PVM_PRINT_FLAT,
                                  16 /* base */,
@@ -863,6 +871,9 @@ printer-c
                                  2 /* acutoff */,
                                  0 /* flags */,
                                  NULL /* exit_exception */);
+#else
+      pk_printf ("%" JITTER_PRIu, val_index);
+#endif
       pk_term_flush ();
     }
 

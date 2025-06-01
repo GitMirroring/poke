@@ -159,14 +159,18 @@ pvm_program_parse_from_string (const char *str, pvm_val program)
   return NULL;
 }
 
+pvm_val *DISAS_PROGRAM;
+
 void
 pvm_disassemble_program (pvm_val program)
 {
   pvm_routine routine;
 
   assert (PVM_IS_PRG (program));
+  DISAS_PROGRAM = &program;
   routine = PVM_VAL_PRG_ROUTINE (program);
   pvm_routine_print (jitter_context, routine, /*user_data*/ NULL);
+  DISAS_PROGRAM = NULL;
 }
 
 void

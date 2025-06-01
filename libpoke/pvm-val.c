@@ -708,6 +708,9 @@ pvm_gc_finalize_struct (struct jitter_gc_heap *heap __attribute__ ((unused)),
 pvm_val
 pvm_make_struct (pvm_val nfields, pvm_val nmethods, pvm_val type)
 {
+  assert (PVM_IS_ULONG (nfields));
+  assert (PVM_IS_ULONG (nmethods));
+
   size_t i;
   size_t nfieldbytes
       = sizeof (struct pvm_struct_field) * PVM_VAL_ULONG (nfields);
@@ -790,6 +793,7 @@ pvm_ref_struct_cstr (pvm_val sct, const char *name)
   assert (PVM_IS_SCT (sct));
 
   /* Lookup fields.  */
+  assert (PVM_IS_ULONG (PVM_VAL_SCT_NFIELDS (sct)));
   nfields = PVM_VAL_ULONG (PVM_VAL_SCT_NFIELDS (sct));
   fields = PVM_VAL_SCT (sct)->fields;
 
@@ -847,6 +851,7 @@ pvm_refo_struct (pvm_val sct, pvm_val name)
 
   assert (PVM_IS_SCT (sct) && PVM_IS_STR (name));
 
+  assert (PVM_IS_ULONG (PVM_VAL_SCT_NFIELDS (sct)));
   nfields = PVM_VAL_ULONG (PVM_VAL_SCT_NFIELDS (sct));
   fields = PVM_VAL_SCT (sct)->fields;
 
@@ -868,6 +873,7 @@ pvm_set_struct (pvm_val sct, pvm_val name, pvm_val val)
 
   assert (PVM_IS_SCT (sct) && PVM_IS_STR (name));
 
+  assert (PVM_IS_ULONG (PVM_VAL_SCT_NFIELDS (sct)));
   nfields = PVM_VAL_ULONG (PVM_VAL_SCT_NFIELDS (sct));
   fields = PVM_VAL_SCT (sct)->fields;
 
@@ -888,6 +894,9 @@ pvm_set_struct (pvm_val sct, pvm_val name, pvm_val val)
 pvm_val
 pvm_get_struct_method (pvm_val sct, const char *name)
 {
+  assert (PVM_IS_SCT (sct));
+  assert (PVM_IS_ULONG (PVM_VAL_SCT_NMETHODS (sct)));
+
   size_t i, nmethods = PVM_VAL_ULONG (PVM_VAL_SCT_NMETHODS (sct));
   struct pvm_struct_method *methods = PVM_VAL_SCT (sct)->methods;
 
@@ -3128,26 +3137,7 @@ pvm_gc_is_unboxed_p (pvm_val v)
   return !PVM_VAL_BOXED_P (v);
 }
 
-// Debugging.
-#if 1
-
-static void
-print_indicator_pre (struct jitter_gc_heaplet *b, void *useless,
-                     enum jitter_gc_collection_kind k)
-{
-  fprintf (stderr, "[GC-PRE] heaplet:%p kind:%s\n", b,
-           jitter_gc_collection_kind_to_string (k));
-}
-
-static void
-print_indicator_post (struct jitter_gc_heaplet *b, void *useless,
-                      enum jitter_gc_collection_kind k)
-{
-  fprintf (stderr, "[GC-POST] heaplet:%p kind:%s\n", b,
-           jitter_gc_collection_kind_to_string (k));
-}
-
-#endif
+/* */
 
 void *
 pvm_alloc_uncollectable (size_t nelem)
@@ -3188,6 +3178,15 @@ static struct
   jitter_gc_global_root string_type;
   jitter_gc_global_root common_int_types;
 
+#define NSTACKS 3
+  struct
+  {
+    void *memory;
+    size_t nelems;
+    void **tos_ptr;
+  } stacks[NSTACKS];
+  size_t nstacks;
+
 #if 0
   size_t roots_nelem;
   size_t roots_nallocated;
@@ -3195,6 +3194,53 @@ static struct
 #endif
 } gc_global_roots;
 
+void *
+pvm_gc_register_vm_stack (void *pointer, size_t nelems, void **tos_ptr)
+{
+  assert (gc_global_roots.nstacks < NSTACKS);
+  gc_global_roots.stacks[gc_global_roots.nstacks].memory = pointer;
+  gc_global_roots.stacks[gc_global_roots.nstacks].nelems = nelems;
+  gc_global_roots.stacks[gc_global_roots.nstacks].tos_ptr = tos_ptr;
+  return (void *)(uintptr_t)gc_global_roots.nstacks++;
+}
+
+void
+pvm_gc_deregister_vm_stack (void *handle)
+{
+  uintptr_t i = (uintptr_t)handle;
+
+  assert (i < NSTACKS);
+  memset (&gc_global_roots.stacks[i], 0, sizeof (gc_global_roots.stacks[i]));
+}
+
+// Debugging.
+#if 1
+
+static void
+pvm_gc_hook_pre (struct jitter_gc_heaplet *b, void *useless,
+                 enum jitter_gc_collection_kind k)
+{
+  fprintf (stderr, "[GC-PRE] heaplet:%p kind:%s\n", b,
+           jitter_gc_collection_kind_to_string (k));
+
+  if (k == jitter_gc_collection_kind_ssb_flush)
+    return;
+
+  for (int i = 0; i < NSTACKS; ++i)
+    fprintf (stderr, "[GC-PRE] stack%d %d\n", i,
+             (int)((pvm_val *)gc_global_roots.stacks[i].memory
+                   - (pvm_val *)*gc_global_roots.stacks[i].tos_ptr));
+}
+
+static void
+pvm_gc_hook_post (struct jitter_gc_heaplet *b, void *useless,
+                      enum jitter_gc_collection_kind k)
+{
+  fprintf (stderr, "[GC-POST] heaplet:%p kind:%s\n", b,
+           jitter_gc_collection_kind_to_string (k));
+}
+
+#endif
 void
 pvm_val_initialize (void)
 {
@@ -3280,13 +3326,13 @@ pvm_val_initialize (void)
   JITTER_GC_HEAPLET_TO_RUNTIME (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
                                 GC_RUNTIME_LIMIT (gc_heaplet));
 
-  jitter_gc_hook_register_pre_collection (gc_heaplet, print_indicator_pre,
+  jitter_gc_hook_register_pre_collection (gc_heaplet, pvm_gc_hook_pre,
                                           NULL);
-  jitter_gc_hook_register_post_collection (gc_heaplet, print_indicator_post,
+  jitter_gc_hook_register_post_collection (gc_heaplet, pvm_gc_hook_post,
                                            NULL);
-  jitter_gc_hook_register_pre_ssb_flush (gc_heaplet, print_indicator_pre,
+  jitter_gc_hook_register_pre_ssb_flush (gc_heaplet, pvm_gc_hook_pre,
                                          NULL);
-  jitter_gc_hook_register_post_ssb_flush (gc_heaplet, print_indicator_post,
+  jitter_gc_hook_register_post_ssb_flush (gc_heaplet, pvm_gc_hook_post,
                                           NULL);
 
   string_type = pvm_make_type (PVM_TYPE_STRING);
