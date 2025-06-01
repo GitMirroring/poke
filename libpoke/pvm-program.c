@@ -376,7 +376,7 @@ pvm_program_parse_from_string (const char *str, pvm_program program)
 void
 pvm_disassemble_program (pvm_program program)
 {
-  pvm_routine_print (jitter_context, program->routine);
+  pvm_routine_print (jitter_context, program->routine, /*user_data*/ NULL);
 }
 
 

@@ -1,3 +1,17 @@
+2025-06-01  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pvm-program.c (pvm_disassemble_program): Pass NULL as user data
+	to jitter routine printer.
+	* libpoke/pvm.jitter (pvm_literal_printer_cast): Add new (unused) param
+	for user data.
+	(pvm_literal_printer): Likewise.
+	(pvm_literal_printer_hi): Likewise.
+	(pvm_literal_printer_lo): Likewise.
+	(popf_printer): Likewise.
+	(bits_printer): Likewise.
+	(endian_printer): Likewise.
+	(nenc_printer): Likewise.
+
 2025-03-15  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* poke/poke.c (pk_print_version): Update --version copyright to
