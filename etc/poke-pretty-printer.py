@@ -12,12 +12,12 @@ class PVMValPrettyPrinter:
             # INT
             ival = v >> 32
             ibits = ((v >> 3) & 0x1F) + 1
-            return f"{ival} as int<{ibits}>"
+            return f"#<{ival} as int<{ibits}>>"
         elif tag == 1:
             # UINT
             ival = v >> 32
             ibits = ((v >> 3) & 0x1F) + 1
-            return f"{ival} as uint<{ibits}>"
+            return f"#<{ival} as uint<{ibits}>>"
         elif tag == 6:
             # BOX
             ptr = v & ~7
@@ -25,16 +25,17 @@ class PVMValPrettyPrinter:
             if type_code == 0x2:
                 # LONG
                 long = gdb.parse_and_eval(f"*(pvm_long){ptr}")
-                return f"{long['value']} as long<{long['size_minus_one'] + 1}>"
+                return (
+                    f"#<{long['value']} as long<{long['size_minus_one'] + 1}>>"
+                )
             if type_code == 0x3:
                 # ULONG
                 long = gdb.parse_and_eval(f"*(pvm_long){ptr}")
-                return (
-                    f"{long['value']} as ulong<{long['size_minus_one'] + 1}>"
-                )
+                return f"#<{long['value']} as ulong<{long['size_minus_one'] + 1}>>"
             if type_code == 0x8:
                 # STR
-                return gdb.parse_and_eval(f"((pvm_string){ptr})->data")
+                s = gdb.parse_and_eval(f"((pvm_string){ptr})->data")
+                return f"#<string {s}>"
             if type_code == 0x9:
                 # OFF
                 o = gdb.parse_and_eval(f"*(pvm_off){ptr}")
@@ -53,39 +54,48 @@ class PVMValPrettyPrinter:
                 typc = typ["code"]
                 typv = typ["val"]
                 if typc == 0:  # INTEGRAL
-                    return f'INTEGRAL:{typv["integral"]}'
+                    return f'#<INTEGRAL:{typv["integral"]}>'
                 if typc == 1:  # STRING
-                    return "STRING"
+                    return "#<STRING>"
                 if typc == 2:  # ARRAY
-                    return f'ARRAY:{typv["array"]}'
+                    return f'#<ARRAY:{typv["array"]}>'
                 if typc == 3:  # STRUCT
-                    return f'STRUCT:{typv["sct"]}'
+                    return f'#<STRUCT:{typv["sct"]}>'
                 if typc == 4:  # OFFSET
-                    return f'OFFSET:{typv["off"]}'
+                    return f'#<OFFSET:{typv["off"]}>'
                 if typc == 5:  # CLOSURE
-                    return f'CLOSURE:{typv["cls"]}'
+                    return f'#<CLOSURE:{typv["cls"]}>'
                 if typc == 6:  # VOID
-                    return "VOID"
+                    return "#<VOID>"
                 return typ
             if type_code == 0xD:
                 # CLS
                 cls = gdb.parse_and_eval(f"*(pvm_cls){ptr}")
-                return cls
+                clsn = cls["name"]
+                clse = cls["env"]
+                clsp = cls["program"]
+                return f"#<closure name:{clsn}, env:{clse}, program:{clsp}>"
             if type_code == 0xE:
                 # IAR
                 iar = gdb.parse_and_eval(f"*(pvm_iarray){ptr}")
-                return iar
+                na = iar["nallocated"]
+                ne = iar["nelem"]
+                elems = iar["elems"]
+                elems = [str(elems[i]) for i in range(ne)]
+                return f"#<iarray nallocated:{na}, nelem:{ne}, elems:{elems}>"
             if type_code == 0xF:
                 # ENV
                 env = gdb.parse_and_eval(f"*(pvm_env_){ptr}")
-                return env
+                envv = env["vars"]
+                envu = env["env_up"]
+                return f"#<env vars:{envv}, env_up:{envu}>"
             if type_code == 0x10:
                 # PRG
                 prg = gdb.parse_and_eval(
                     f"*(pvm_program_){ptr}"
                 )  # FIXME FIXME FIXME
                 return prg
-            return f"type_code:{type_code}"
+            return f"#<type_code:{type_code}>"
         elif tag == 7:
             if tag == 0x7:
                 return "PVM_NULL"
