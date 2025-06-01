@@ -1,5 +1,10 @@
 2025-06-01  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* etc/pvm-wraps-whitelist: Adapt the list of allowed functions due
+	to recent change in implementation of `jitter_fatal' macro.
+
+2025-06-01  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pvm-program.c (pvm_disassemble_program): Pass NULL as user data
 	to jitter routine printer.
 	* libpoke/pvm.jitter (pvm_literal_printer_cast): Add new (unused) param
