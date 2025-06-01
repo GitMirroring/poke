@@ -283,9 +283,6 @@ pkl_ast_make_func (pkl_ast ast, pkl_ast_node ret_type,
   PKL_AST_FUNC_PROGRAM_GC_HANDLE (func)
       = pvm_alloc_add_gc_roots (&PKL_AST_FUNC_PROGRAM (func), 1);
 
-  fprintf (stderr, "ADD& %p\n", &PKL_AST_FUNC_PROGRAM (func));
-  fprintf (stderr, "ADDh %p\n", PKL_AST_FUNC_PROGRAM_GC_HANDLE (func));
-
   return func;
 }
 
@@ -2621,9 +2618,6 @@ pkl_ast_node_free_1 (gl_set_t visitations, pkl_ast_node ast)
       break;
 
     case PKL_AST_FUNC:
-
-      fprintf (stderr, "DEL& %p\n", &PKL_AST_FUNC_PROGRAM (ast));
-      fprintf (stderr, "DELh %p\n", PKL_AST_FUNC_PROGRAM_GC_HANDLE (ast));
 
       VISIT_AND_FREE (PKL_AST_FUNC_NAME (ast));
       PKL_AST_NODE_FREE (PKL_AST_FUNC_RET_TYPE (ast));
