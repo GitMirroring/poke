@@ -388,7 +388,7 @@ static size_t
 pvm_gc_update_fields_array (struct jitter_gc_heaplet *heaplet, void *obj)
 {
   pvm_array arr = obj;
-  size_t num_elems = PVM_VAL_ULONG (arr->nelem);
+  size_t num_elems;
 
   // FIXME Use accessor macros.
   jitter_gc_handle_word (heaplet, &arr->mapinfo.ios);
@@ -401,6 +401,8 @@ pvm_gc_update_fields_array (struct jitter_gc_heaplet *heaplet, void *obj)
   jitter_gc_handle_word (heaplet, &arr->writer);
   jitter_gc_handle_word (heaplet, &arr->type);
   jitter_gc_handle_word (heaplet, &arr->nelem);
+
+  num_elems = PVM_VAL_ULONG (arr->nelem);
   for (size_t i = 0; i < num_elems; ++i)
     {
       jitter_gc_handle_word (heaplet, &arr->elems[i].offset);
@@ -662,9 +664,11 @@ static size_t
 pvm_gc_update_fields_struct (struct jitter_gc_heaplet *heaplet, void *obj)
 {
   pvm_struct sct = obj;
-  size_t num_fields = PVM_VAL_ULONG (sct->nfields);
-  size_t num_methods = PVM_VAL_ULONG (sct->nmethods);
+  size_t num_fields;
+  size_t num_methods;
 
+  jitter_gc_handle_word (heaplet, &sct->nfields);
+  jitter_gc_handle_word (heaplet, &sct->nmethods);
   jitter_gc_handle_word (heaplet, &sct->mapinfo.ios);
   jitter_gc_handle_word (heaplet, &sct->mapinfo.offset);
   jitter_gc_handle_word (heaplet, &sct->mapinfo_back.ios);
@@ -672,6 +676,9 @@ pvm_gc_update_fields_struct (struct jitter_gc_heaplet *heaplet, void *obj)
   jitter_gc_handle_word (heaplet, &sct->mapper);
   jitter_gc_handle_word (heaplet, &sct->writer);
   jitter_gc_handle_word (heaplet, &sct->type);
+
+  assert (PVM_IS_ULONG (sct->nfields));
+  num_fields = PVM_VAL_ULONG (sct->nfields);
   for (size_t i = 0; i < num_fields; ++i)
     {
       jitter_gc_handle_word (heaplet, &sct->fields[i].offset);
@@ -681,6 +688,9 @@ pvm_gc_update_fields_struct (struct jitter_gc_heaplet *heaplet, void *obj)
       jitter_gc_handle_word (heaplet, &sct->fields[i].modified);
       jitter_gc_handle_word (heaplet, &sct->fields[i].modified_back);
     }
+
+  assert (PVM_IS_ULONG (sct->nmethods));
+  num_methods = PVM_VAL_ULONG (sct->nmethods);
   for (size_t i = 0; i < num_methods; ++i)
     {
       jitter_gc_handle_word (heaplet, &sct->methods[i].name);
@@ -969,12 +979,13 @@ pvm_gc_update_fields_type (struct jitter_gc_heaplet *heaplet, void *obj)
         pvm_val nfields_val;
         uint64_t nfields;
 
-        nfields_val = PVM_VAL_TYP_S_NFIELDS (typ);
-        assert (PVM_IS_ULONG (nfields_val));
-        nfields = PVM_VAL_ULONG (nfields_val);
         jitter_gc_handle_word (heaplet, &PVM_VAL_TYP_S_NAME (typ));
         jitter_gc_handle_word (heaplet, &PVM_VAL_TYP_S_NFIELDS (typ));
         jitter_gc_handle_word (heaplet, &PVM_VAL_TYP_S_CONSTRUCTOR (typ));
+
+        nfields_val = PVM_VAL_TYP_S_NFIELDS (typ);
+        assert (PVM_IS_ULONG (nfields_val));
+        nfields = PVM_VAL_ULONG (nfields_val);
         for (uint64_t i = 0; i < nfields; ++i)
           {
             jitter_gc_handle_word (heaplet, &PVM_VAL_TYP_S_FNAME (typ, i));
@@ -993,9 +1004,10 @@ pvm_gc_update_fields_type (struct jitter_gc_heaplet *heaplet, void *obj)
       {
         uint64_t nargs;
 
-        nargs = PVM_VAL_ULONG (PVM_VAL_TYP_C_NARGS (typ));
         jitter_gc_handle_word (heaplet, &PVM_VAL_TYP_C_NARGS (typ));
         jitter_gc_handle_word (heaplet, &PVM_VAL_TYP_C_RETURN_TYPE (typ));
+
+        nargs = PVM_VAL_ULONG (PVM_VAL_TYP_C_NARGS (typ));
         for (uint64_t i = 0; i < nargs; ++i)
           jitter_gc_handle_word (heaplet, &PVM_VAL_TYP_C_ATYPE (typ, i));
       }
@@ -3120,6 +3132,15 @@ pvm_make_exception (int code, const char *name, int exit_status,
   }
   JITTER_GC_BLOCK_END (gc_heaplet);
 
+  /* FIXME FIXME FIXME */
+  assert (PVM_IS_SCT (exception));
+  assert (PVM_IS_ULONG (PVM_VAL_SCT_NFIELDS (exception)));
+  assert (PVM_IS_INT (PVM_VAL_SCT_FIELD_VALUE (exception, 0)));
+  assert (PVM_IS_STR (PVM_VAL_SCT_FIELD_VALUE (exception, 1)));
+  assert (PVM_IS_INT (PVM_VAL_SCT_FIELD_VALUE (exception, 2)));
+  assert (PVM_IS_STR (PVM_VAL_SCT_FIELD_VALUE (exception, 3)));
+  assert (PVM_IS_STR (PVM_VAL_SCT_FIELD_VALUE (exception, 4)));
+
   return exception;
 }
 
@@ -3226,10 +3247,38 @@ pvm_gc_hook_pre (struct jitter_gc_heaplet *b, void *useless,
   if (k == jitter_gc_collection_kind_ssb_flush)
     return;
 
-  for (int i = 0; i < NSTACKS; ++i)
-    fprintf (stderr, "[GC-PRE] stack%d %d\n", i,
-             (int)((pvm_val *)gc_global_roots.stacks[i].memory
-                   - (pvm_val *)*gc_global_roots.stacks[i].tos_ptr));
+  for (int i = 0; i < 2; ++i)
+    {
+      pvm_val *begin;
+      pvm_val *end;
+      ptrdiff_t nelem;
+
+      /* Half-open interval [begin, end).  */
+      begin = (pvm_val *)gc_global_roots.stacks[i].memory;
+      end = (pvm_val *)*gc_global_roots.stacks[i].tos_ptr + 1;
+      nelem = end - begin;
+
+      fprintf (stderr, "[GC-PRE] [stack%d] nelem:%td\n", i, nelem);
+
+      for (ptrdiff_t j = 0; j < nelem; ++j)
+        jitter_gc_handle_word (gc_heaplet, &begin[j]);
+    }
+
+  {
+    struct pvm_exception_handler *begin;
+    struct pvm_exception_handler *end;
+    ptrdiff_t nelem;
+
+    /* Half-open interval [begin, end).  */
+    begin = (struct pvm_exception_handler *)gc_global_roots.stacks[2].memory;
+    end = (struct pvm_exception_handler *)*gc_global_roots.stacks[2].tos_ptr + 1;
+    nelem = end - begin;
+
+    fprintf (stderr, "[GC-PRE] stack2 nelem:%td\n", nelem);
+
+    for (ptrdiff_t j = 0; j < nelem; ++j)
+      jitter_gc_handle_word (gc_heaplet, &begin[j].env);
+  }
 }
 
 static void

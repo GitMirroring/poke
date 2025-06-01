@@ -860,7 +860,7 @@ printer-c
       PVM_ASSERT (PVM_IS_PRG (program)); // FIXME FIXME FIXME
       insn_params = PVM_VAL_PRG_INSN_PARAMS (program);
       PVM_ASSERT (PVM_IS_IAR (insn_params)); // FIXME FIXME FIXME
-      PVM_ASSERT (val_index < PVM_VAL_PRG_NLABELS (insn_params));
+      PVM_ASSERT (val_index < PVM_VAL_IAR_NELEM (insn_params));
       val = PVM_VAL_IAR_ELEM (insn_params, val_index);
 
       pvm_print_val_with_params (NULL /* not used since no pretty-print */,

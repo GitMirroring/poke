@@ -74,7 +74,7 @@
 /* If defined write a full log of every action performed at garbage collection
    time, which is useful for debugging.  The log has a clean format but is too
    expensive and intrusive for being compiled in by default. */
-#define JITTER_GC_LOG 1
+// #define JITTER_GC_LOG 1
 
 /* The stream where log messages are printed.  This is only used if
    JITTER_GC_LOG is defined. */

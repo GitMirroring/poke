@@ -167,7 +167,7 @@ pvm_disassemble_program (pvm_val program)
   assert (PVM_IS_PRG (program));
   routine = PVM_VAL_PRG_ROUTINE (program);
   pvm_routine_print (jitter_context, routine,
-                     /*user_data*/ (void *)(uintptr_t)routine);
+                     /*user_data*/ (void *)(uintptr_t)program);
 }
 
 void
