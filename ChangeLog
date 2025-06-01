@@ -1,5 +1,10 @@
 2025-06-01  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* doc/poke.texi (Conditional Expressions): Fix indexing by replacing
+	@code{@?} with @code{?}.
+
+2025-06-01  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* etc/pvm-wraps-whitelist: Adapt the list of allowed functions due
 	to recent change in implementation of `jitter_fatal' macro.
 
