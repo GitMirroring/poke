@@ -69,23 +69,119 @@ class PVMOffPP:
         return "map"
 
 
-class PVMValPrettyPrinter:
+class PVMStrPP:
     def __init__(self, val):
-        self.val = val
+        self.__val = val
+
+    def children(self):
+        s = self.__val
+
+        def f(fname):
+            yield "", fname
+            yield "", s[fname]
+
+        yield from f("data")
+
+    def display_hint(self):
+        return "map"
+
+
+class PVMIarPP:
+    def __init__(self, val):
+        self.__val = val
 
     def to_string(self):
-        v = int(self.val)
+        return "iarray"
+
+    def children(self):
+        iar = self.__val
+
+        elems = iar["elems"]
+        nelems = int(iar["nelem"])
+        new_type = elems.type.target().array(nelems)
+
+        for f in ("nallocated", "nelem"):
+            yield "", f
+            yield "", iar[f]
+
+        yield "", "elems"
+        yield "", elems.cast(new_type)
+
+    def display_hint(self):
+        return "map"
+
+
+class PVMValPrettyPrinter:
+    def __init__(self, val):
+        self.__val = val
+
+    def _kind(self):
+        v = int(self.__val)
+        tag = v & 7
+        if tag == 0:
+            return "INT"
+        elif tag == 1:
+            return "UINT"
+        elif tag == 6:
+            # BOX
+            ptr = v & ~7
+            type_code = int(gdb.parse_and_eval(f"*(uintptr_t*){ptr}"))
+            if type_code == 0x2:
+                return "LONG"
+            if type_code == 0x3:
+                return "ULONG"
+            if type_code == 0x8:
+                return "STR"
+            if type_code == 0x9:
+                return "OFF"
+            if type_code == 0xA:
+                return "ARR"
+            if type_code == 0xB:
+                return "SCT"
+            if type_code == 0xC:
+                return "TYP"
+            if type_code == 0xD:
+                return "CLS"
+            if type_code == 0xE:
+                return "IAR"
+            if type_code == 0xF:
+                return "ENV"
+            if type_code == 0x10:
+                return "PRG"
+            return f"BOX:{type_code}"
+        elif tag == 7:
+            if v == 0x7:
+                return "PVM_NULL"
+            elif v == 0x17:
+                return "GC:INVALID_OBJECT"
+            elif v == 0x27:
+                return "GC:UNINITIALIZED_OBJECT"
+            elif v == 0x37:
+                return "GC:BROKEN_HEART"
+            return f"Garbage(NULL):0x{ptr:0x}"
+        return f"Garbage:0x{ptr:0x}"
+
+    def display_hint(self):
+        k = self._kind()
+        if k in ("ARR", "SCT", "TYP", "CLS", "IAR", "ENV", "PRG"):
+            return "map"
+        return "array"
+
+    def children(self):
+        v = int(self.__val)
         tag = v & 7
         if tag == 0:
             # INT
             ival = v >> 32
             ibits = ((v >> 3) & 0x1F) + 1
-            return f"{ival} as int<{ibits}>"
+            yield "", f"{ival} as int<{ibits}>"
+            return
         elif tag == 1:
             # UINT
             ival = v >> 32
             ibits = ((v >> 3) & 0x1F) + 1
-            return f"{ival} as uint<{ibits}>"
+            yield "", f"{ival} as uint<{ibits}>"
+            return
         elif tag == 6:
             # BOX
             ptr = v & ~7
@@ -93,31 +189,39 @@ class PVMValPrettyPrinter:
             if type_code == 0x2:
                 # LONG
                 long = gdb.parse_and_eval(f"*(pvm_long){ptr}")
-                return f"{long['value']} as long<{long['size_minus_one'] + 1}>"
+                yield "", f"{long['value']} as long<{long['size_minus_one'] + 1}>"
+                return
             if type_code == 0x3:
                 # ULONG
                 long = gdb.parse_and_eval(f"*(pvm_long){ptr}")
-                return (
-                    f"{long['value']} as ulong<{long['size_minus_one'] + 1}>"
-                )
+                yield "", f"{long['value']} as ulong<{long['size_minus_one'] + 1}>"
+                return
             if type_code == 0x8:
                 # STR
-                s = gdb.parse_and_eval(f"((pvm_string){ptr})->data")
-                return str(s)
+                yield "", "string"
+                yield "", gdb.parse_and_eval(f"*(pvm_string){ptr}")
+                return
             if type_code == 0x9:
                 # OFF
-                o = gdb.parse_and_eval(f"*(pvm_off){ptr}")
-                return o
+                yield "", "off"
+                yield "", gdb.parse_and_eval(f"*(pvm_off){ptr}")
+                return
             if type_code == 0xA:
                 # ARR
-                arr = gdb.parse_and_eval(f"*(pvm_array){ptr}")
-                return str(arr)
+                yield "", "array"
+                yield "", gdb.parse_and_eval(f"*(pvm_array){ptr}")
+                return
             if type_code == 0xB:
                 # SCT
-                return gdb.parse_and_eval(f"(pvm_struct){ptr}")
+                yield "", "struct"
+                yield "", gdb.parse_and_eval(f"(pvm_struct){ptr}")
+                return
             if type_code == 0xC:
                 # TYP
-                return gdb.parse_and_eval(f"*(pvm_type){ptr}")
+                yield from PVMTypPP(
+                    gdb.parse_and_eval(f"*(pvm_type){ptr}")
+                ).children()
+                return
             if type_code == 0xD:
                 # CLS
                 cls = gdb.parse_and_eval(f"*(pvm_cls){ptr}")
@@ -127,18 +231,10 @@ class PVMValPrettyPrinter:
                 return f"#<closure name:{clsn}, env:{clse}, program:{clsp}>"
             if type_code == 0xE:
                 # IAR
-                iar = gdb.parse_and_eval(f"*(pvm_iarray){ptr}")
-                na = iar["nallocated"]
-                ne = iar["nelem"]
-                tr = ""
-                ne_max = 5
-                if ne > ne_max:
-                    tr = "..."
-                elems = iar["elems"]
-                elems = [str(elems[i]) for i in range(min(ne, ne_max))]
-                return (
-                    f"#<iarray nallocated:{na}, nelem:{ne}, elems:{elems}{tr}>"
-                )
+                yield from PVMIarPP(
+                    gdb.parse_and_eval(f"*(pvm_iarray){ptr}")
+                ).children()
+                return
             if type_code == 0xF:
                 # ENV
                 env = gdb.parse_and_eval(f"*(pvm_env_){ptr}")
@@ -150,19 +246,28 @@ class PVMValPrettyPrinter:
                 prg = gdb.parse_and_eval(
                     f"*(pvm_program_){ptr}"
                 )  # FIXME FIXME FIXME
-                return prg
-            return f"#<type_code:{type_code}>"
+                yield "", "program"
+                yield "", prg
+                return
+            yield "", f"BOXED({type_code})>"
+            return
         elif tag == 7:
-            if tag == 0x7:
-                return "PVM_NULL"
-            elif tag == 0x17:
-                return "GC:INVALID_OBJECT"
-            elif tag == 0x27:
-                return "GC:UNINITIALIZED_OBJECT"
-            elif tag == 0x37:
-                return "GC:BROKEN_HEART"
-            return f"Garbage(NULL):0x{ptr:0x}"
-        return f"Garbage:0x{ptr:0x}"
+            if v == 0x7:
+                yield "", "PMV_NULL"
+                return
+            elif v == 0x17:
+                yield "", "GC:INVALID_OBJECT"
+                return
+            elif v == 0x27:
+                yield "", "GC:UNINITIALIZED_OBJECT"
+                return
+            elif v == 0x37:
+                yield "", "GC:BROKEN_HEART"
+                return
+            yield "", f"Garbage(NULL):0x{ptr:0x}"
+            return
+        yield "", f"Garbage:0x{ptr:0x}"
+        return
 
 
 class PVMPrettyPrinter(gdb.printing.PrettyPrinter):
@@ -185,6 +290,10 @@ class PVMPrettyPrinter(gdb.printing.PrettyPrinter):
             return PVMTypPP(val)
         if typename == "pvm_off":
             return PVMOffPP(val)
+        if typename == "pvm_string":
+            return PVMStrPP(val)
+        if typename == "pvm_iarray":
+            return PVMIarPP(val)
 
 
 gdb.printing.register_pretty_printer(None, PVMPrettyPrinter(), replace=True)
