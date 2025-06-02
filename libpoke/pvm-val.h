@@ -594,7 +594,7 @@ typedef struct pvm_iarray *pvm_iarray;
 #define PVM_VAL_ENV(V) (PVM_VAL_BOX_ENV (PVM_VAL_BOX ((V))))
 
 #define PVM_VAL_ENV_VARS(V) (PVM_VAL_ENV (V)->vars)
-#define PVM_VAL_ENV_VAR(V,I) (PVM_VAL_IAR_ELEM (PVM_VAL_ENV (V), (I)))
+#define PVM_VAL_ENV_VAR(V,I) (PVM_VAL_IAR_ELEM (PVM_VAL_ENV_VARS (V), (I)))
 #define PVM_VAL_ENV_UP(V) (PVM_VAL_ENV (V)->env_up)
 
 // FIXME Rename this to pvm_env later when there's no compiliation error.
