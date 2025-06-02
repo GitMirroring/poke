@@ -1,12 +1,13 @@
 import gdb
+import gdb.printing
 
 
 class PVMSctPP:
     def __init__(self, val):
-        self.val = val
+        self.__val = val
 
     def children(self):
-        sct = self.val
+        sct = self.__val
 
         for f in ("type", "nfields", "nmethods", "fields", "methods"):
             yield "", f
@@ -18,10 +19,10 @@ class PVMSctPP:
 
 class PVMTypPP:
     def __init__(self, val):
-        self.val = val
+        self.__val = val
 
     def children(self):
-        typ = self.val
+        typ = self.__val
 
         typc = typ["code"]
         typv = typ["val"]
@@ -50,6 +51,24 @@ class PVMTypPP:
         return "map"
 
 
+class PVMOffPP:
+    def __init__(self, val):
+        self.__val = val
+
+    def children(self):
+        off = self.__val
+
+        def f(fname):
+            yield "", fname
+            yield "", off[fname]
+
+        yield from f("magnitude")
+        yield from f("type")
+
+    def display_hint(self):
+        return "map"
+
+
 class PVMValPrettyPrinter:
     def __init__(self, val):
         self.val = val
@@ -61,12 +80,12 @@ class PVMValPrettyPrinter:
             # INT
             ival = v >> 32
             ibits = ((v >> 3) & 0x1F) + 1
-            return f"#<{ival} as int<{ibits}>>"
+            return f"{ival} as int<{ibits}>"
         elif tag == 1:
             # UINT
             ival = v >> 32
             ibits = ((v >> 3) & 0x1F) + 1
-            return f"#<{ival} as uint<{ibits}>>"
+            return f"{ival} as uint<{ibits}>"
         elif tag == 6:
             # BOX
             ptr = v & ~7
@@ -74,21 +93,21 @@ class PVMValPrettyPrinter:
             if type_code == 0x2:
                 # LONG
                 long = gdb.parse_and_eval(f"*(pvm_long){ptr}")
-                return (
-                    f"#<{long['value']} as long<{long['size_minus_one'] + 1}>>"
-                )
+                return f"{long['value']} as long<{long['size_minus_one'] + 1}>"
             if type_code == 0x3:
                 # ULONG
                 long = gdb.parse_and_eval(f"*(pvm_long){ptr}")
-                return f"#<{long['value']} as ulong<{long['size_minus_one'] + 1}>>"
+                return (
+                    f"{long['value']} as ulong<{long['size_minus_one'] + 1}>"
+                )
             if type_code == 0x8:
                 # STR
                 s = gdb.parse_and_eval(f"((pvm_string){ptr})->data")
-                return f"#<string {s}>"
+                return str(s)
             if type_code == 0x9:
                 # OFF
                 o = gdb.parse_and_eval(f"*(pvm_off){ptr}")
-                return str(o)
+                return o
             if type_code == 0xA:
                 # ARR
                 arr = gdb.parse_and_eval(f"*(pvm_array){ptr}")
@@ -164,6 +183,8 @@ class PVMPrettyPrinter(gdb.printing.PrettyPrinter):
             return PVMSctPP(val)
         if typename == "pvm_type":
             return PVMTypPP(val)
+        if typename == "pvm_off":
+            return PVMOffPP(val)
 
 
 gdb.printing.register_pretty_printer(None, PVMPrettyPrinter(), replace=True)
