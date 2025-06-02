@@ -1,6 +1,55 @@
 import gdb
 
 
+class PVMSctPP:
+    def __init__(self, val):
+        self.val = val
+
+    def children(self):
+        sct = self.val
+
+        for f in ("type", "nfields", "nmethods", "fields", "methods"):
+            yield "", f
+            yield "", sct[f]
+
+    def display_hint(self):
+        return "map"
+
+
+class PVMTypPP:
+    def __init__(self, val):
+        self.val = val
+
+    def children(self):
+        typ = self.val
+
+        typc = typ["code"]
+        typv = typ["val"]
+
+        def f(fname):
+            yield "", fname
+            yield "", typv[fname]
+
+        if typc == 0:  # INTEGRAL
+            yield from f("integral")
+        if typc == 1:  # STRING
+            yield "", "string"
+        if typc == 2:  # ARRAY
+            yield from f("array")
+        if typc == 3:  # STRUCT
+            yield from f("sct")
+        if typc == 4:  # OFFSET
+            yield from f("off")
+        if typc == 5:  # CLOSURE
+            yield from f("sct")
+        if typc == 6:  # VOID
+            yield "", "void"
+        return typ
+
+    def display_hint(self):
+        return "map"
+
+
 class PVMValPrettyPrinter:
     def __init__(self, val):
         self.val = val
@@ -39,35 +88,17 @@ class PVMValPrettyPrinter:
             if type_code == 0x9:
                 # OFF
                 o = gdb.parse_and_eval(f"*(pvm_off){ptr}")
-                return o
+                return str(o)
             if type_code == 0xA:
                 # ARR
                 arr = gdb.parse_and_eval(f"*(pvm_array){ptr}")
-                return arr
+                return str(arr)
             if type_code == 0xB:
                 # SCT
-                sct = gdb.parse_and_eval(f"*(pvm_struct){ptr}")
-                return str(sct)
+                return gdb.parse_and_eval(f"(pvm_struct){ptr}")
             if type_code == 0xC:
                 # TYP
-                typ = gdb.parse_and_eval(f"*(pvm_type){ptr}")
-                typc = typ["code"]
-                typv = typ["val"]
-                if typc == 0:  # INTEGRAL
-                    return f'#<INTEGRAL:{typv["integral"]}>'
-                if typc == 1:  # STRING
-                    return "#<STRING>"
-                if typc == 2:  # ARRAY
-                    return f'#<ARRAY:{typv["array"]}>'
-                if typc == 3:  # STRUCT
-                    return f'#<STRUCT:{typv["sct"]}>'
-                if typc == 4:  # OFFSET
-                    return f'#<OFFSET:{typv["off"]}>'
-                if typc == 5:  # CLOSURE
-                    return f'#<CLOSURE:{typv["cls"]}>'
-                if typc == 6:  # VOID
-                    return "#<VOID>"
-                return typ
+                return gdb.parse_and_eval(f"*(pvm_type){ptr}")
             if type_code == 0xD:
                 # CLS
                 cls = gdb.parse_and_eval(f"*(pvm_cls){ptr}")
@@ -80,9 +111,15 @@ class PVMValPrettyPrinter:
                 iar = gdb.parse_and_eval(f"*(pvm_iarray){ptr}")
                 na = iar["nallocated"]
                 ne = iar["nelem"]
+                tr = ""
+                ne_max = 5
+                if ne > ne_max:
+                    tr = "..."
                 elems = iar["elems"]
-                elems = [str(elems[i]) for i in range(ne)]
-                return f"#<iarray nallocated:{na}, nelem:{ne}, elems:{elems}>"
+                elems = [str(elems[i]) for i in range(min(ne, ne_max))]
+                return (
+                    f"#<iarray nallocated:{na}, nelem:{ne}, elems:{elems}{tr}>"
+                )
             if type_code == 0xF:
                 # ENV
                 env = gdb.parse_and_eval(f"*(pvm_env_){ptr}")
@@ -123,6 +160,10 @@ class PVMPrettyPrinter(gdb.printing.PrettyPrinter):
 
         if typename == "pvm_val":
             return PVMValPrettyPrinter(val)
+        if typename == "pvm_struct":
+            return PVMSctPP(val)
+        if typename == "pvm_type":
+            return PVMTypPP(val)
 
 
 gdb.printing.register_pretty_printer(None, PVMPrettyPrinter(), replace=True)
