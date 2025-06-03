@@ -176,7 +176,10 @@ class PVMValPrettyPrinter:
         elif tag == 6:
             # BOX
             ptr = v & ~7
-            type_code = int(gdb.parse_and_eval(f"*(uintptr_t*){ptr}"))
+            try:
+                type_code = int(gdb.parse_and_eval(f"*(uintptr_t*){ptr}"))
+            except gdb.MemoryError as ex:
+                type_code = f"BadPtr(0x{ptr:0x})"
             if type_code == 0x2:
                 # LONG
                 long = gdb.parse_and_eval(f"*(pvm_long){ptr}")
