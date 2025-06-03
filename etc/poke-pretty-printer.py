@@ -1,3 +1,5 @@
+# GDB pretty-printer for PVM values
+
 import gdb
 import gdb.printing
 
@@ -126,44 +128,31 @@ class PVMValPrettyPrinter:
             # BOX
             ptr = v & ~7
             type_code = int(gdb.parse_and_eval(f"*(uintptr_t*){ptr}"))
-            if type_code == 0x2:
-                return "LONG"
-            if type_code == 0x3:
-                return "ULONG"
-            if type_code == 0x8:
-                return "STR"
-            if type_code == 0x9:
-                return "OFF"
-            if type_code == 0xA:
-                return "ARR"
-            if type_code == 0xB:
-                return "SCT"
-            if type_code == 0xC:
-                return "TYP"
-            if type_code == 0xD:
-                return "CLS"
-            if type_code == 0xE:
-                return "IAR"
-            if type_code == 0xF:
-                return "ENV"
-            if type_code == 0x10:
-                return "PRG"
-            return f"BOX:{type_code}"
+            return {
+                0x2: "LONG",
+                0x3: "ULONG",
+                0x8: "STR",
+                0x9: "OFF",
+                0xA: "ARR",
+                0xB: "SCT",
+                0xC: "TYP",
+                0xD: "CLS",
+                0xE: "IAR",
+                0xF: "ENV",
+                0x10: "PRG",
+            }.get(type_code, f"BOX:{type_code}")
         elif tag == 7:
-            if v == 0x7:
-                return "PVM_NULL"
-            elif v == 0x17:
-                return "GC:INVALID_OBJECT"
-            elif v == 0x27:
-                return "GC:UNINITIALIZED_OBJECT"
-            elif v == 0x37:
-                return "GC:BROKEN_HEART"
-            return f"Garbage(NULL):0x{ptr:0x}"
-        return f"Garbage:0x{ptr:0x}"
+            return {
+                0x7: "PVM_NULL",
+                0x17: "GC:INVALID_OBJECT",
+                0x27: "GC:UNINITIALIZED_OBJECT",
+                0x37: "GC:BROKEN_HEART",
+            }.get(v, f"Garbage(NULL):0x{v:0x}")
+        return f"Garbage:0x{v:0x}"
 
     def display_hint(self):
         k = self._kind()
-        if k in ("ARR", "SCT", "TYP", "CLS", "IAR", "ENV", "PRG"):
+        if k in ("ARR", "SCT", "TYP", "CLS", "IAR", "ENV", "PRG", "STR"):
             return "map"
         return "array"
 
@@ -264,9 +253,9 @@ class PVMValPrettyPrinter:
             elif v == 0x37:
                 yield "", "GC:BROKEN_HEART"
                 return
-            yield "", f"Garbage(NULL):0x{ptr:0x}"
+            yield "", f"Garbage(NULL):0x{v:0x}"
             return
-        yield "", f"Garbage:0x{ptr:0x}"
+        yield "", f"Garbage:0x{v:0x}"
         return
 
 
