@@ -35,18 +35,20 @@ class PVMTypPP:
 
         if typc == 0:  # INTEGRAL
             yield from f("integral")
-        if typc == 1:  # STRING
+        elif typc == 1:  # STRING
             yield "", "string"
-        if typc == 2:  # ARRAY
+        elif typc == 2:  # ARRAY
             yield from f("array")
-        if typc == 3:  # STRUCT
+        elif typc == 3:  # STRUCT
             yield from f("sct")
-        if typc == 4:  # OFFSET
+        elif typc == 4:  # OFFSET
             yield from f("off")
-        if typc == 5:  # CLOSURE
-            yield from f("sct")
-        if typc == 6:  # VOID
+        elif typc == 5:  # CLOSURE
+            yield from f("cls")
+        elif typc == 6:  # VOID
             yield "", "void"
+        else:
+            yield "", "InvalidType"
         return typ
 
     def display_hint(self):
