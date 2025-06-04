@@ -219,10 +219,15 @@ class PVMValPrettyPrinter:
             if type_code == 0xD:
                 # CLS
                 cls = gdb.parse_and_eval(f"*(pvm_cls){ptr}")
-                clsn = cls["name"]
-                clse = cls["env"]
-                clsp = cls["program"]
-                return f"#<closure name:{clsn}, env:{clse}, program:{clsp}>"
+
+                def f(fname):
+                    yield "", fname
+                    yield "", cls[fname]
+
+                yield from f("name")
+                yield from f("env")
+                yield from f("program")
+                return
             if type_code == 0xE:
                 # IAR
                 yield from PVMIarPP(
@@ -232,9 +237,14 @@ class PVMValPrettyPrinter:
             if type_code == 0xF:
                 # ENV
                 env = gdb.parse_and_eval(f"*(pvm_env_){ptr}")
-                envv = env["vars"]
-                envu = env["env_up"]
-                return f"#<env vars:{envv}, env_up:{envu}>"
+
+                def f(fname):
+                    yield "", fname
+                    yield "", env[fname]
+
+                yield from f("vars")
+                yield from f("env_up")
+                return
             if type_code == 0x10:
                 # PRG
                 prg = gdb.parse_and_eval(
