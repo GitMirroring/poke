@@ -23,8 +23,6 @@
    update the pvm_make_exception function in pvm-val.c
    accordingly.  */
 
-asm ("printi 32" :: 12345, 10);
-
 immutable type Exception =
   struct
   {
@@ -65,6 +63,11 @@ immutable var EC_stack         = 19;
 immutable var EC_noent         = 20;
 
 /* Standard exceptions.  */
+
+
+asm ("printi 32" :: EC_generic, 10);
+asm ("strace 0");
+asm ("printi 32" :: EC_generic, 10);
 
 immutable var E_generic
   = Exception {code = EC_generic, name = "generic", exit_status = 1};

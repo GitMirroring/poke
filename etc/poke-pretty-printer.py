@@ -184,39 +184,32 @@ class PVMValPrettyPrinter:
                 # LONG
                 long = gdb.parse_and_eval(f"*(pvm_long){ptr}")
                 yield "", f"{long['value']} as long<{long['size_minus_one'] + 1}>"
-                return
-            if type_code == 0x3:
+            elif type_code == 0x3:
                 # ULONG
                 long = gdb.parse_and_eval(f"*(pvm_long){ptr}")
                 yield "", f"{long['value']} as ulong<{long['size_minus_one'] + 1}>"
-                return
-            if type_code == 0x8:
+            elif type_code == 0x8:
                 # STR
                 yield "", "string"
                 yield "", gdb.parse_and_eval(f"*(pvm_string){ptr}")
-                return
-            if type_code == 0x9:
+            elif type_code == 0x9:
                 # OFF
                 yield "", "off"
                 yield "", gdb.parse_and_eval(f"*(pvm_off){ptr}")
-                return
-            if type_code == 0xA:
+            elif type_code == 0xA:
                 # ARR
                 yield "", "array"
                 yield "", gdb.parse_and_eval(f"*(pvm_array){ptr}")
-                return
-            if type_code == 0xB:
+            elif type_code == 0xB:
                 # SCT
                 yield "", "struct"
                 yield "", gdb.parse_and_eval(f"(pvm_struct){ptr}")
-                return
-            if type_code == 0xC:
+            elif type_code == 0xC:
                 # TYP
                 yield from PVMTypPP(
                     gdb.parse_and_eval(f"*(pvm_type){ptr}")
                 ).children()
-                return
-            if type_code == 0xD:
+            elif type_code == 0xD:
                 # CLS
                 cls = gdb.parse_and_eval(f"*(pvm_cls){ptr}")
 
@@ -227,14 +220,12 @@ class PVMValPrettyPrinter:
                 yield from f("name")
                 yield from f("env")
                 yield from f("program")
-                return
-            if type_code == 0xE:
+            elif type_code == 0xE:
                 # IAR
                 yield from PVMIarPP(
                     gdb.parse_and_eval(f"*(pvm_iarray){ptr}")
                 ).children()
-                return
-            if type_code == 0xF:
+            elif type_code == 0xF:
                 # ENV
                 env = gdb.parse_and_eval(f"*(pvm_env_){ptr}")
 
@@ -244,16 +235,15 @@ class PVMValPrettyPrinter:
 
                 yield from f("vars")
                 yield from f("env_up")
-                return
-            if type_code == 0x10:
+            elif type_code == 0x10:
                 # PRG
                 prg = gdb.parse_and_eval(
                     f"*(pvm_program_){ptr}"
                 )  # FIXME FIXME FIXME
                 yield "", "program"
                 yield "", prg
-                return
-            yield "", f"BOXED({type_code})>"
+            else:
+                yield "", f"BOXED({type_code})>"
             return
         elif tag == 7:
             if v == 0x7:
@@ -271,7 +261,6 @@ class PVMValPrettyPrinter:
             yield "", f"Garbage(NULL):0x{v:0x}"
             return
         yield "", f"Garbage:0x{v:0x}"
-        return
 
 
 class PVMPrettyPrinter(gdb.printing.PrettyPrinter):
