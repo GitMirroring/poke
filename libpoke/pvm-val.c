@@ -2901,9 +2901,9 @@ pvm_print_val_1 (pvm vm, int depth, int mode, int base, int indent,
 
       pk_term_class ("special");
       if (name == PVM_NULL)
-        pk_puts ("#<closure>");
+        pk_printf ("#<closure(%p)>", (void *)val);
       else
-        pk_printf ("#<closure:%s>", PVM_VAL_STR (name));
+        pk_printf ("#<closure(%p):%s)>", (void *)val, PVM_VAL_STR (name));
       pk_term_end_class ("special");
     }
   else
