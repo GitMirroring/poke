@@ -90,6 +90,12 @@ class PVMStrPP:
         return "map"
 
 
+def cast_ptr_to_array_of_pvm_val(pvm_val_ptr, n):
+    assert n > 0
+    new_type = pvm_val_ptr.type.target().array(n - 1).pointer()
+    return pvm_val_ptr.cast(new_type).dereference()
+
+
 class PVMIarPP:
     def __init__(self, val):
         self.__val = val
@@ -102,14 +108,14 @@ class PVMIarPP:
 
         elems = iar["elems"]
         nelems = int(iar["nelem"])
-        new_type = elems.type.target().array(nelems)
 
         for f in ("nallocated", "nelem"):
             yield "", f
             yield "", iar[f]
 
-        yield "", "elems"
-        yield "", elems.cast(new_type)
+        if nelems:
+            yield "", "elems"
+            yield "", cast_ptr_to_array_of_pvm_val(elems, nelems)
 
     def display_hint(self):
         return "map"
