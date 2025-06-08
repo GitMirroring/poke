@@ -1,5 +1,9 @@
 2025-06-08  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* etc/pvm-wraps-whitelist: Add `__fprintf_chk'.
+
+2025-06-08  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/ras (.end of .function): Use `function_name' variable as
 	the name of closure (instead of `$2' which was wrong).
 	* libpoke/pvm-val.c (pvm_print_val_1): Add name of closure when it's

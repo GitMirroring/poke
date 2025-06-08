@@ -24,6 +24,7 @@ __strcpy_chk
 strlen
 memcpy
 rpl_memcpy
+__fprintf_chk
 fprintf
 rpl_fprintf
 fputc
