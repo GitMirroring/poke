@@ -381,7 +381,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
             if (PKL_AST_TYPE_S_CONSTRUCTOR (type_struct) == PVM_NULL
                 || is_type_alias_p)
               {
-                pvm_val constructor_closure;
+                pvm_val constructor_closure = PVM_NULL;
 
                 PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_CONSTRUCTOR);
                 RAS_FUNCTION_STRUCT_CONSTRUCTOR (constructor_closure,
@@ -397,7 +397,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
             if (PKL_AST_TYPE_S_MAPPER (type_struct) == PVM_NULL
                 || is_type_alias_p)
               {
-                pvm_val mapper_closure;
+                pvm_val mapper_closure = PVM_NULL;
 
                 PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_MAPPER);
                 RAS_FUNCTION_STRUCT_MAPPER (mapper_closure, type_struct, type_name);
@@ -413,7 +413,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
             if (PKL_AST_TYPE_S_COMPARATOR (type_struct) == PVM_NULL
                 || is_type_alias_p)
               {
-                pvm_val comparator_closure;
+                pvm_val comparator_closure = PVM_NULL;
 
                 PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_COMPARATOR);
                 if (PKL_AST_TYPE_S_UNION_P (type_struct))
@@ -436,7 +436,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
                 if (PKL_AST_TYPE_S_INTEGRATOR (type_struct) == PVM_NULL
                     || is_type_alias_p)
                   {
-                    pvm_val integrator_closure;
+                    pvm_val integrator_closure = PVM_NULL;
 
                     PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_INTEGRATOR);
                     if (PKL_AST_TYPE_S_UNION_P (type_struct))
@@ -457,7 +457,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
                 if (PKL_AST_TYPE_S_DEINTEGRATOR (type_struct) == PVM_NULL
                     || is_type_alias_p)
                   {
-                    pvm_val deintegrator_closure;
+                    pvm_val deintegrator_closure = PVM_NULL;
 
                     PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_DEINTEGRATOR);
                     if (PKL_AST_TYPE_S_UNION_P (type_struct))
@@ -481,7 +481,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
             if (PKL_AST_TYPE_S_TYPIFIER (type_struct) == PVM_NULL
                 || is_type_alias_p)
               {
-                pvm_val typifier_closure;
+                pvm_val typifier_closure = PVM_NULL;
 
                 PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_TYPIFIER);
                 RAS_FUNCTION_STRUCT_TYPIFIER (typifier_closure,
@@ -519,7 +519,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
 
             if (PKL_AST_TYPE_A_WRITER (array_type) == PVM_NULL)
               {
-                pvm_val writer_closure;
+                pvm_val writer_closure = PVM_NULL;
 
                 PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_WRITER);
                 RAS_FUNCTION_ARRAY_WRITER (writer_closure, array_type);
@@ -534,7 +534,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
 
             if (PKL_AST_TYPE_A_MAPPER (array_type) == PVM_NULL)
               {
-                pvm_val mapper_closure;
+                pvm_val mapper_closure = PVM_NULL;
 
                 PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_MAPPER);
                 PKL_GEN_PAYLOAD->mapper_depth = 1;
@@ -552,7 +552,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
 
             if (PKL_AST_TYPE_A_CONSTRUCTOR (array_type) == PVM_NULL)
               {
-                pvm_val constructor_closure;
+                pvm_val constructor_closure = PVM_NULL;
 
                 PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_CONSTRUCTOR);
                 PKL_GEN_PAYLOAD->constructor_depth = 1;
@@ -572,7 +572,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
               {
                 if (PKL_AST_TYPE_A_INTEGRATOR (array_type) == PVM_NULL)
                   {
-                    pvm_val integrator_closure;
+                    pvm_val integrator_closure = PVM_NULL;
 
                     PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_INTEGRATOR);
                     RAS_FUNCTION_ARRAY_INTEGRATOR (integrator_closure,
@@ -595,8 +595,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
       break;
     case PKL_AST_DECL_KIND_FUNC:
       {
-        pvm_val program;
-        pvm_val closure;
+        pvm_val program = PVM_NULL;
+        pvm_val closure = PVM_NULL;
         char *program_name_str = PKL_AST_FUNC_NAME (initial);
         pvm_val program_name
             = program_name_str ? pvm_make_string (program_name_str) : PVM_NULL;
@@ -812,7 +812,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_lambda)
      closure, along with the current environment.  */
 
   pvm_val program = pkl_asm_finish (PKL_GEN_ASM, 0 /* epilogue */);
-  pvm_val closure;
+  pvm_val closure = PVM_NULL;
 
   PKL_GEN_POP_ASM;
   pvm_program_make_executable (program);
@@ -2435,7 +2435,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_integer)
 {
   pkl_ast_node integer = PKL_PASS_NODE;
   pkl_ast_node type;
-  pvm_val val;
+  pvm_val val = PVM_NULL;
   int size;
   uint64_t value;
 
@@ -3481,7 +3481,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_type_integral)
     {
       /* Stack: NULL */
       int size = PKL_AST_TYPE_I_SIZE (integral_type);
-      pvm_val zero;
+      pvm_val zero = PVM_NULL;
 
       if (PKL_AST_TYPE_I_SIGNED_P (integral_type))
         {
@@ -3577,7 +3577,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_function)
 
       pkl_ast_node function_type = PKL_PASS_NODE;
       pkl_ast_node function_rtype = PKL_AST_TYPE_F_RTYPE (function_type);
-      pvm_val program;
+      pvm_val program = PVM_NULL;
 
       /* Compile the body for the function value.  */
       PKL_GEN_PUSH_ASM (pkl_asm_new (PKL_PASS_AST,
@@ -3711,19 +3711,23 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_array)
     {
       pkl_ast_node array_type = PKL_PASS_NODE;
       pkl_ast_node etype = PKL_AST_TYPE_A_ETYPE (array_type);
-      pvm_val bounder_closure = PKL_AST_TYPE_A_BOUNDER (array_type);
 
       if (PKL_AST_TYPE_CODE (etype) == PKL_TYPE_ARRAY
           && !PKL_AST_TYPE_NAME (etype))
         PKL_PASS_SUBPASS (etype);
 
       if (PKL_AST_TYPE_A_BOUNDER (array_type) == PVM_NULL)
-        RAS_FUNCTION_ARRAY_BOUNDER (bounder_closure, array_type);
+        {
+          pvm_val bounder_closure;
 
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, bounder_closure); /* CLS */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);                   /* CLS */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);                  /* _ */
-      PKL_AST_TYPE_A_BOUNDER (array_type) = bounder_closure;
+          RAS_FUNCTION_ARRAY_BOUNDER (bounder_closure, array_type);
+          PKL_AST_TYPE_A_BOUNDER (array_type) = bounder_closure;
+        }
+
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                    PKL_AST_TYPE_A_BOUNDER (array_type)); /* CLS */
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);           /* CLS */
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);          /* _ */
 
       PKL_PASS_BREAK;
     }
@@ -3961,22 +3965,20 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_array)
 
       pkl_ast_node array_type = PKL_PASS_NODE;
       pkl_ast_node etype = PKL_AST_TYPE_A_ETYPE (array_type);
-      pvm_val array_bounder = PKL_AST_TYPE_A_BOUNDER (array_type);
 
       PKL_PASS_SUBPASS (etype);
 
       /* Make sure the array type has a bounder.  */
-      if (array_bounder == PVM_NULL)
+      if (PKL_AST_TYPE_A_BOUNDER (array_type) == PVM_NULL)
         {
           assert (!PKL_AST_TYPE_NAMED_P (array_type));
           PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_ARRAY_BOUNDER);
           PKL_PASS_SUBPASS (array_type);
           PKL_GEN_POP_CONTEXT;
-
-          array_bounder = PKL_AST_TYPE_A_BOUNDER (array_type);
         }
 
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, array_bounder);
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                    PKL_AST_TYPE_A_BOUNDER (array_type));
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MKTYA);
       PKL_PASS_BREAK;
     }

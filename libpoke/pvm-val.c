@@ -1500,6 +1500,11 @@ pvm_iarray_push (pvm_val iar, pvm_val val)
 {
   assert (PVM_IS_IAR (iar));
 
+  // FIXME FIXME FIXME
+  assert (val != 0x17);
+  assert (val != 0x27);
+  assert (val != 0x37);
+
   if (PVM_VAL_IAR_NELEM (iar) == PVM_VAL_IAR_NALLOCATED (iar))
     {
       PVM_VAL_IAR_NALLOCATED (iar) += 32;
@@ -3168,7 +3173,7 @@ pvm_alloc_uncollectable (size_t nelem)
 
   nbytes = nelem * sizeof (uintptr_t);
 
-  us = pvm_heaplet_alloc (gc_heaplet, sizeof (uintptr_t) + nbytes);
+  us = calloc (sizeof (uintptr_t) + nbytes, 1);
   assert (us); // FIXME Handle error.
   us[0]
       = (uintptr_t)jitter_gc_register_global_root (gc_heaplet, us + 1, nbytes);
@@ -3184,6 +3189,7 @@ pvm_free_uncollectable (void *ptr)
   us = (uintptr_t *)ptr;
   root = (jitter_gc_global_root)us[0];
   jitter_gc_deregister_global_root (gc_heaplet, root);
+  free (us);
 }
 
 void

@@ -725,7 +725,7 @@ BEGIN {
     init_entity()
     out("#define RAS_FUNCTION_" toupper($2) "(CLOSURE" function_args ") \\")
     out("\tdo {                                         \\")
-    out("\tpvm_val program;                             \\")
+    out("\tpvm_val program = PVM_NULL;                  \\")
     out("\t                                             \\")
     out("\tRAS_PUSH_ASM (pkl_asm_new (PKL_PASS_AST,              \\")
     out("\t                           RAS_COMPILER,              \\")
@@ -733,6 +733,8 @@ BEGIN {
     out("\t                                                      \\")
     out("\textern struct jitter_gc_heaplet *gc_heaplet; /* FIXME FIXME FIXME */ \\");
     out("\tJITTER_GC_BLOCK_BEGIN (gc_heaplet);                   \\")
+    out("\t(CLOSURE) = PVM_NULL;                                 \\")
+    out("\tJITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &(CLOSURE));      \\")
     out("---LABELDECLS---")
 
     current_entity = "function"
@@ -767,8 +769,12 @@ BEGIN {
         out("\t                            0 /* epilogue */);          \\")
         out("\t  RAS_POP_ASM;                                          \\")
         out("\t  pvm_program_make_executable (program);                \\")
-        out("\t  (CLOSURE) = pvm_make_cls (                            \\")
-        out("\t      program, pvm_make_string (\"" function_name "\"));\\")
+        out("\t  JITTER_GC_BLOCK_BEGIN (gc_heaplet);                   \\")
+        out("\t  JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &program);        \\")
+        out("\t  pvm_val cls_name =                                    \\")
+        out("\t      pvm_make_string (\"" function_name "\");          \\")
+        out("\t  JITTER_GC_BLOCK_END (gc_heaplet);                     \\")
+        out("\t  (CLOSURE) = pvm_make_cls (program, cls_name);         \\")
         out("\t}                                                       \\")
     }
     out("\tJITTER_GC_BLOCK_END (gc_heaplet);                           \\")
