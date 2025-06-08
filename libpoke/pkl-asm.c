@@ -1369,8 +1369,6 @@ pkl_asm_new (pkl_ast ast, pkl_compiler compiler,
 pvm_val
 pkl_asm_finish (pkl_asm pasm, int epilogue)
 {
-  pvm_val program = pasm->program;
-
   if (epilogue)
     {
       pkl_asm_note (pasm, "#begin epilogue");
@@ -1413,6 +1411,9 @@ pkl_asm_finish (pkl_asm pasm, int epilogue)
   /* Free the first level.  */
   pkl_asm_poplevel (pasm);
 
+  pvm_val program;
+
+  program = pasm->program;
   pvm_alloc_remove_gc_roots (pasm->program_gc_handle);
   free (pasm);
 

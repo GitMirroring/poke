@@ -84,7 +84,7 @@ struct pvm
 
   /* Jitter GC global root handles for VM stacks (main, return, exception),
      runtime environment, and current program.  */
-  void* gc_handles[6];
+  void* gc_handles[8];
 };
 
 static void
@@ -121,7 +121,8 @@ pvm_initialize_state (pvm apvm, struct pvm_state *state)
   apvm->gc_handles[3] = pvm_gc_register_vm_stack (
       exceptionstack_backing->memory, exceptionstack_backing->element_no,
       (void **)&PVM_STATE_RUNTIME_FIELD (
-          state, JITTER_STACK_NTOS_TOP_POINTER_NAME (pvm_val, , exceptionstack)));
+          state,
+          JITTER_STACK_NTOS_TOP_POINTER_NAME (pvm_val, , exceptionstack)));
 
   /* Initialize the global environment.  Note we do this after
      registering GC roots, since we are allocating memory.  */
@@ -133,6 +134,10 @@ pvm_initialize_state (pvm apvm, struct pvm_state *state)
       = pvm_alloc_add_gc_roots (&PVM_STATE_RUNTIME_FIELD (state, env), 1);
   apvm->gc_handles[5]
       = pvm_alloc_add_gc_roots (&PVM_STATE_BACKING_FIELD (state, program), 1);
+  apvm->gc_handles[6] = pvm_alloc_add_gc_roots (
+      &PVM_STATE_BACKING_FIELD (state, result_value), 1);
+  apvm->gc_handles[7] = pvm_alloc_add_gc_roots (
+      &PVM_STATE_BACKING_FIELD (state, exit_exception_value), 1);
 }
 
 pvm

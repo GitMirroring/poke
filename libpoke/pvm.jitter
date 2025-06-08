@@ -932,15 +932,15 @@ end
 
 state-struct-backing-c
   code
-      enum pvm_exit_code exit_code;
-      pvm_val result_value;
-      pvm_val exit_exception_value;
-      jitter_stack_height canary_stack;
-      jitter_stack_height canary_returnstack;
-      jitter_stack_height canary_exceptionstack;
       pvm vm;
       pvm_val program;
       ios_context ios_ctx;
+      pvm_val result_value;
+      pvm_val exit_exception_value;
+      enum pvm_exit_code exit_code;
+      jitter_stack_height canary_stack;
+      jitter_stack_height canary_returnstack;
+      jitter_stack_height canary_exceptionstack;
   end
 end
 

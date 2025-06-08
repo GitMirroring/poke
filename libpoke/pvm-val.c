@@ -1465,6 +1465,8 @@ pvm_gc_finalize_iarray (struct jitter_gc_heap *heap __attribute__ ((unused)),
   pvm_iarray iar = obj;
 
   free (iar->elems);
+  iar->nelem = 0;
+  iar->nallocated = 0;
   iar->elems = NULL;
 }
 
@@ -1731,6 +1733,13 @@ pvm_gc_finalize_program (struct jitter_gc_heap *heap __attribute__ ((unused)),
 
   pvm_destroy_routine (prg->routine);
   free (prg->labels);
+
+  pvm_val insn_params;
+
+  prg->insn_params = PVM_NULL;
+  prg->routine = NULL;
+  prg->nlabels_max = 0;
+  prg->nlabels = 0;
   prg->labels = NULL;
 }
 
