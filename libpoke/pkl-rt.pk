@@ -1784,18 +1784,13 @@ immutable fun _pkl_print_format_any = (any val,
     handle_type;
   else if (asm int<32>: ("typof; nip; nnn; nip" : val))
     {
-      var closure_name = asm string: ("cgetn
-                                       bn .noname
-                                       nip2
-                                       ba .done
-                                     .noname:
-                                       drop2
-                                     .done:" : "", val);
+      var closure_name = asm any: ("cgetn; nip" : val);
+
       ctx.begin_class ("special");
-      if (closure_name == "")
+      if (asm int<32>: ("nnn; nip" : closure_name))
         ctx.emit ("#<closure>");
       else
-        ctx.emit ("#<closure:" + closure_name + ">");
+        ctx.emit ("#<closure:" + (closure_name as string) + ">");
       ctx.end_class ("special");
     }
   else if (asm int<32>: ("typof; nip; tyisi; nip" : val))

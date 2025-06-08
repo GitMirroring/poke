@@ -1,3 +1,13 @@
+2025-06-08  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/ras (.end of .function): Use `function_name' variable as
+	the name of closure (instead of `$2' which was wrong).
+	* libpoke/pvm-val.c (pvm_print_val_1): Add name of closure when it's
+	non-`PVM_NULL'.
+	* libpoke/pkl-rt.pk (_pkl_print_format_any): Adapt to do the same as
+	`pvm_print_val_1'.
+	* testsuite/poke.pkl/array-bound-1.pk: Adapt output.
+
 2025-06-01  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* doc/poke.texi (Conditional Expressions): Fix indexing by replacing

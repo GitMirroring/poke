@@ -763,8 +763,8 @@ BEGIN {
         out("\t                            0 /* epilogue */);          \\")
         out("\t  RAS_POP_ASM;                                          \\")
         out("\t  pvm_program_make_executable (program);                \\")
-        out("\t  (CLOSURE) = pvm_make_cls (program,                    \\")
-        out("\t                            pvm_make_string (\"" $2 "\")); \\")
+        out("\t  (CLOSURE) = pvm_make_cls (                            \\")
+        out("\t      program, pvm_make_string (\"" function_name "\"));\\")
         out("\t}                                                       \\")
     }
     out("\t} while (0)")
