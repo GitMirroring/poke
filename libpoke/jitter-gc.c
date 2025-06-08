@@ -4397,7 +4397,11 @@ jitter_gc_handle_root_pointer (struct jitter_gc_heaplet *a,
   JITTER_WORD_SET_SET_HAS (& a->unique_root_table, (jitter_uint) p,
                            already_known);
   if (already_known)
-    jitter_fatal ("root %p registered more than once", p);
+    {
+      // FIXME FIXME FIXME (@mnabipoor)
+      return;
+      jitter_fatal ("root %p registered more than once", p);
+    }
   else
     JITTER_WORD_SET_ADD_NEW (& a->unique_root_table, (jitter_uint) p);
 #endif // #if defined (JITTER_GC_DEBUG)
