@@ -764,6 +764,10 @@ int pvm_program_append_instruction (pvm_val program,
 int pvm_program_append_push_instruction (pvm_val program,
                                          pvm_val val);
 
+/* XXX FIXME FIXME FIXME */
+int pvm_program_append_note_instruction (pvm_val program,
+                                         pvm_val val);
+
 /* Append a PVM label to a PVM program.
 
    PROGRAM is the program in which to append the label.

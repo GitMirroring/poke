@@ -1817,11 +1817,7 @@ pkl_asm_insn (pkl_asm pasm, enum pkl_asm_insn insn, ...)
 void
 pkl_asm_note (pkl_asm pasm, const char *str)
 {
-  /* note doesn't work in 32-bit because of jitter's inability to pass
-     64-bit pointers as arguments to instructions in 32-bit.  */
-#if !defined POKE_HOST_32BIT
-  pkl_asm_insn (pasm, PKL_INSN_NOTE, pvm_make_string (str));
-#endif
+  pvm_program_append_note_instruction (pasm->program, pvm_make_string (str));
 }
 
 /* The following functions implement conditional constructions.  The

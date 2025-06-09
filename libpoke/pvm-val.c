@@ -1828,6 +1828,21 @@ pvm_program_append_push_instruction (pvm_val program, pvm_val val)
 }
 
 int
+pvm_program_append_note_instruction (pvm_val program, pvm_val val)
+{
+  pvm_routine routine;
+
+  assert (PVM_IS_PRG (program));
+
+  routine = PVM_VAL_PRG_ROUTINE (program);
+  PVM_ROUTINE_APPEND_INSTRUCTION (routine, note);
+  pvm_routine_append_unsigned_literal_parameter (
+      routine, pvm_program_collect_val (program, val));
+
+  return PVM_OK;
+}
+
+int
 pvm_program_append_val_parameter (pvm_val program, pvm_val val)
 {
   assert (PVM_IS_PRG (program));

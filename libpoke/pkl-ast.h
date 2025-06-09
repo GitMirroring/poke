@@ -2215,6 +2215,7 @@ struct pkl_ast
   FILE *file;
   char *filename;
   void *payload;
+  void *payload_gc_handle;
 };
 
 pkl_ast pkl_ast_init (void);

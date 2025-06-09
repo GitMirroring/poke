@@ -2940,6 +2940,7 @@ pkl_ast_init (void)
 
   /* Allocate a new AST and initialize it to 0.  */
   ast = xzalloc (sizeof (struct pkl_ast));
+  ast->payload_gc_handle = pvm_alloc_add_gc_roots (&ast->payload, 1);
 
   return ast;
 }
@@ -2955,6 +2956,8 @@ pkl_ast_free (pkl_ast ast)
   pkl_ast_node_free (ast->ast);
   free (ast->buffer);
   free (ast->filename);
+  ast->payload = NULL;
+  pvm_alloc_remove_gc_roots (ast->payload_gc_handle);
   free (ast);
 }
 
