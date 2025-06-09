@@ -309,8 +309,10 @@ pvm_gc_copy_string (struct jitter_gc_heaplet *heaplet, pvm_val *new_val,
 static size_t
 pvm_gc_update_fields_string (struct jitter_gc_heaplet *heaplet
                              __attribute__ ((unused)),
-                             void *p __attribute__ ((unused)))
+                             void *obj __attribute__ ((unused)))
 {
+  fprintf (stderr, "%s p:%p \n", __func__, obj);
+
   /* Strings are leaf objects; no fields to update.  */
   return PVM_GC_SIZEOF_STRING;
 }
@@ -322,6 +324,8 @@ pvm_gc_finalize_string (struct jitter_gc_heap *heap __attribute__ ((unused)),
                         void *obj)
 {
   struct pvm_string *header = obj;
+
+  fprintf (stderr, "%s p:%p \n", __func__, obj);
 
   free (header->data);
 }
@@ -390,6 +394,8 @@ pvm_gc_update_fields_array (struct jitter_gc_heaplet *heaplet, void *obj)
   pvm_array arr = obj;
   size_t num_elems;
 
+  fprintf (stderr, "%s p:%p \n", __func__, obj);
+
   // FIXME Use accessor macros.
   jitter_gc_handle_word (heaplet, &arr->mapinfo.ios);
   jitter_gc_handle_word (heaplet, &arr->mapinfo.offset);
@@ -419,6 +425,8 @@ pvm_gc_finalize_array (struct jitter_gc_heap *heap __attribute__ ((unused)),
                        void *obj)
 {
   pvm_array arr = obj;
+
+  fprintf (stderr, "%s p:%p \n", __func__, obj);
 
   free (arr->elems);
   arr->nallocated = 0;
@@ -667,6 +675,8 @@ pvm_gc_update_fields_struct (struct jitter_gc_heaplet *heaplet, void *obj)
   size_t num_fields;
   size_t num_methods;
 
+  fprintf (stderr, "%s p:%p \n", __func__, obj);
+
   jitter_gc_handle_word (heaplet, &sct->nfields);
   jitter_gc_handle_word (heaplet, &sct->nmethods);
   jitter_gc_handle_word (heaplet, &sct->mapinfo.ios);
@@ -706,6 +716,8 @@ pvm_gc_finalize_struct (struct jitter_gc_heap *heap __attribute__ ((unused)),
                         void *obj)
 {
   pvm_struct sct = obj;
+
+  fprintf (stderr, "%s p:%p \n", __func__, obj);
 
   free (PVM_VAL_SCT_FIELDS (sct));
   free (PVM_VAL_SCT_METHODS (sct));
@@ -962,6 +974,8 @@ pvm_gc_update_fields_type (struct jitter_gc_heaplet *heaplet, void *obj)
 {
   pvm_type typ = obj;
 
+  fprintf (stderr, "%s p:%p \n", __func__, obj);
+
   switch (typ->code)
     {
     case PVM_TYPE_INTEGRAL:
@@ -1028,6 +1042,8 @@ pvm_gc_finalize_type (struct jitter_gc_heap *heap __attribute__ ((unused)),
                       void *obj)
 {
   pvm_type typ = obj;
+
+  fprintf (stderr, "%s p:%p \n", __func__, obj);
 
   switch (typ->code)
     {
@@ -1292,6 +1308,8 @@ pvm_gc_update_fields_closure (struct jitter_gc_heaplet *heaplet, void *obj)
 {
   pvm_cls cls = (pvm_cls)(uintptr_t)obj;
 
+  fprintf (stderr, "%s p:%p \n", __func__, obj);
+
   jitter_gc_handle_word (heaplet, &PVM_VAL_CLS_NAME (cls));
   jitter_gc_handle_word (heaplet, &PVM_VAL_CLS_ENV (cls));
   jitter_gc_handle_word (heaplet, &PVM_VAL_CLS_PROGRAM (cls));
@@ -1305,6 +1323,10 @@ pvm_gc_finalize_closure (struct jitter_gc_heap *heap __attribute__ ((unused)),
                          void *obj)
 {
   pvm_cls cls = obj;
+
+  pvm_val name = PVM_VAL_CLS_NAME (cls);
+  fprintf (stderr, "%s p:%p name:0x%zx('%s')\n", __func__, obj, (uintptr_t)name,
+           name == PVM_NULL ? "" : PVM_VAL_STR (name));
 
   pvm_destroy_program (PVM_VAL_CLS_PROGRAM (cls));
 
@@ -1320,6 +1342,9 @@ pvm_make_cls (pvm_val program, pvm_val name)
   pvm_cls cls;
 
   assert (PVM_IS_PRG (program));
+
+  assert (PVM_IS_PRG (program));
+  assert (name == PVM_NULL || PVM_IS_STR (name));
 
   JITTER_GC_BLOCK_BEGIN (gc_heaplet);
   {
@@ -1344,6 +1369,11 @@ pvm_make_cls (pvm_val program, pvm_val name)
   cls->entry_point = pvm_program_beginning (program);
   cls->env = PVM_NULL; /* This should be set by a PEC instruction
                           before using the closure.  */
+  fprintf (stderr, "%s program:0x%zx name:%s -> 0x%zx\n", __func__,
+           (uintptr_t)program,
+           name == PVM_NULL ? "" : PVM_VAL_STR (name),
+           (uintptr_t)PVM_BOX (cls));
+
   return PVM_BOX (cls);
 }
 
@@ -1451,6 +1481,8 @@ pvm_gc_update_fields_iarray (struct jitter_gc_heaplet *heaplet, void *obj)
 {
   pvm_iarray iar = obj;
 
+  fprintf (stderr, "%s p:%p \n", __func__, obj);
+
   for (size_t i = 0; i < iar->nelem; ++i)
     jitter_gc_handle_word (heaplet, &iar->elems[i]);
   return PVM_GC_SIZEOF_IARRAY;
@@ -1463,6 +1495,8 @@ pvm_gc_finalize_iarray (struct jitter_gc_heap *heap __attribute__ ((unused)),
                         void *obj)
 {
   pvm_iarray iar = obj;
+
+  fprintf (stderr, "%s p:%p \n", __func__, obj);
 
   free (iar->elems);
   iar->nelem = 0;
@@ -1567,6 +1601,8 @@ static size_t
 pvm_gc_update_fields_env (struct jitter_gc_heaplet *heaplet, void *obj)
 {
   pvm_env_ env = obj;
+
+  fprintf (stderr, "%s p:%p \n", __func__, obj);
 
   jitter_gc_handle_word (heaplet, &env->vars);
   jitter_gc_handle_word (heaplet, &env->env_up);
@@ -1719,6 +1755,8 @@ pvm_gc_update_fields_program (struct jitter_gc_heaplet *heaplet, void *obj)
 {
   pvm_program_ prg = obj;
 
+  fprintf (stderr, "%s p:%p \n", __func__, obj);
+
   jitter_gc_handle_word (heaplet, &prg->insn_params);
   return PVM_GC_SIZEOF_PROGRAM;
 }
@@ -1731,10 +1769,10 @@ pvm_gc_finalize_program (struct jitter_gc_heap *heap __attribute__ ((unused)),
 {
   pvm_program_ prg = obj;
 
+  fprintf (stderr, "%s p:%p \n", __func__, obj);
+
   pvm_destroy_routine (prg->routine);
   free (prg->labels);
-
-  pvm_val insn_params;
 
   prg->insn_params = PVM_NULL;
   prg->routine = NULL;

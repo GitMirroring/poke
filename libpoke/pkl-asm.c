@@ -1414,8 +1414,9 @@ pkl_asm_finish (pkl_asm pasm, int epilogue)
   pvm_val program;
 
   program = pasm->program;
-  pvm_alloc_remove_gc_roots (pasm->program_gc_handle);
-  free (pasm);
+  // FIXME FIXME FIXME
+  // pvm_alloc_remove_gc_roots (pasm->program_gc_handle);
+  // free (pasm);
 
   /* Free the assembler instance and return the assembled program to
      the user.  */
