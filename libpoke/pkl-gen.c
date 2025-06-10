@@ -490,6 +490,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_decl)
                 PKL_AST_TYPE_S_TYPIFIER (type_struct) = typifier_closure;
               }
 
+            fprintf (stderr, "pkl-gen.c %s PKL_AST_TYPE_S_TYPIFIER(type_struct):0x%zx "
+                     "&:%p\n", PKL_AST_IDENTIFIER_POINTER (type_name),
+                     PKL_AST_TYPE_S_TYPIFIER (type_struct),
+                     &PKL_AST_TYPE_S_TYPIFIER (type_struct));
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
                           PKL_AST_TYPE_S_TYPIFIER (type_struct)); /* CLS */
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PEC);             /* CLS */

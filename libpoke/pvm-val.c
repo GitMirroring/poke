@@ -1298,7 +1298,6 @@ pvm_gc_copy_closure (struct jitter_gc_heaplet *heaplet, pvm_val *new_val,
                      void *from, void *to)
 {
   memcpy (to, from, PVM_GC_SIZEOF_CLOSURE);
-  JITTER_GC_FINALIZABLE_COPY (pvm_cls, finalization_data, heaplet, from, to);
   *new_val = PVM_BOX (to);
   return PVM_GC_SIZEOF_CLOSURE;
 }
@@ -1314,26 +1313,6 @@ pvm_gc_update_fields_closure (struct jitter_gc_heaplet *heaplet, void *obj)
   jitter_gc_handle_word (heaplet, &PVM_VAL_CLS_ENV (cls));
   jitter_gc_handle_word (heaplet, &PVM_VAL_CLS_PROGRAM (cls));
   return PVM_GC_SIZEOF_CLOSURE;
-}
-
-static void
-pvm_gc_finalize_closure (struct jitter_gc_heap *heap __attribute__ ((unused)),
-                         struct jitter_gc_heaplet *heaplet
-                         __attribute__ ((unused)),
-                         void *obj)
-{
-  pvm_cls cls = obj;
-
-  pvm_val name = PVM_VAL_CLS_NAME (cls);
-  fprintf (stderr, "%s p:%p name:0x%zx('%s')\n", __func__, obj, (uintptr_t)name,
-           name == PVM_NULL ? "" : PVM_VAL_STR (name));
-
-  pvm_destroy_program (PVM_VAL_CLS_PROGRAM (cls));
-
-  // FIXME FIXME FIXME
-  PVM_VAL_CLS_NAME (cls) = PVM_NULL;
-  PVM_VAL_CLS_ENV (cls) = PVM_NULL;
-  PVM_VAL_CLS_PROGRAM (cls) = PVM_NULL;
 }
 
 pvm_val
@@ -1361,7 +1340,6 @@ pvm_make_cls (pvm_val program, pvm_val name)
   JITTER_GC_BLOCK_END (gc_heaplet);
 
   cls->type_code = PVM_VAL_TAG_CLS;
-  JITTER_GC_FINALIZABLE_INITIALIZE (pvm_cls, finalization_data, cls);
 
   // FIXME FIXME FIXME Use macros.
   cls->name = name;
@@ -1369,8 +1347,8 @@ pvm_make_cls (pvm_val program, pvm_val name)
   cls->entry_point = pvm_program_beginning (program);
   cls->env = PVM_NULL; /* This should be set by a PEC instruction
                           before using the closure.  */
-  fprintf (stderr, "%s program:0x%zx name:%s -> 0x%zx\n", __func__,
-           (uintptr_t)program,
+  fprintf (stderr, "%s program:0x%zx name:0x%zx('%s') -> 0x%zx\n", __func__,
+           (uintptr_t)program, (uintptr_t)name,
            name == PVM_NULL ? "" : PVM_VAL_STR (name),
            (uintptr_t)PVM_BOX (cls));
 
@@ -1841,6 +1819,7 @@ pvm_program_append_instruction (pvm_val program, const char *insn_name)
      be used instead.  That function is to remove when the causing
      limitation in jitter gets fixed.  */
   assert (STRNEQ (insn_name, "push"));
+  assert (STRNEQ (insn_name, "note"));
 
   /* XXX Jitter should provide error codes so we can return PVM_EINVAL
      and PVM_EINSN properly.  */
@@ -3239,6 +3218,11 @@ pvm_alloc_uncollectable (size_t nelem)
   assert (us); // FIXME Handle error.
   us[0]
       = (uintptr_t)jitter_gc_register_global_root (gc_heaplet, us + 1, nbytes);
+
+  // FIXME FIXME FIXME
+  fprintf (stderr, "%s nelem:%zu handle:%p roots:%p\n", __func__, nelem, (void*)us[0],
+           us + 1);
+
   return us + 1;
 }
 
@@ -3248,10 +3232,15 @@ pvm_free_uncollectable (void *ptr)
   uintptr_t *us;
   jitter_gc_global_root root;
 
+  assert (ptr);
+
   us = (uintptr_t *)ptr;
-  root = (jitter_gc_global_root)us[0];
+
+  fprintf (stderr, "%s ptr:%p\n", __func__, ptr); // FIXME FIXME FIXME
+
+  root = (jitter_gc_global_root)us[-1];
   jitter_gc_deregister_global_root (gc_heaplet, root);
-  free (us);
+  free (&us[-1]);
 }
 
 void
@@ -3410,10 +3399,10 @@ pvm_val_initialize (void)
       pvm_gc_finalize_type);
 
   /* FIXME Change to non_finalizable.  */
-  jitter_gc_shape_add_headered_quickly_finalizable (
+  jitter_gc_shape_add_headered_non_finalizable (
       gc_shapes, "closure", pvm_gc_is_closure_p, pvm_gc_sizeof_closure,
       pvm_gc_is_closure_type_code_p, pvm_gc_copy_closure,
-      pvm_gc_update_fields_closure, pvm_gc_finalize_closure);
+      pvm_gc_update_fields_closure);
 
   jitter_gc_shape_add_headered_non_finalizable (
       gc_shapes, "offset", pvm_gc_is_offset_p, pvm_gc_sizeof_offset,

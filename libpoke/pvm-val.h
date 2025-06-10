@@ -507,7 +507,6 @@ struct pvm_program;
 struct pvm_cls
 {
   uintptr_t type_code;
-  jitter_gc_finalization_data finalization_data;
 
   pvm_val name;
   pvm_val env;

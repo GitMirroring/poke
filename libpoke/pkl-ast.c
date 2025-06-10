@@ -609,10 +609,20 @@ pkl_ast_make_func_type_arg (pkl_ast ast, pkl_ast_node type,
 
 /* Allocate and return a duplicated type AST node.  */
 
+#if 0
 pkl_ast_node
 pkl_ast_dup_type (pkl_ast_node type)
 {
-  pkl_ast_node t, new = pkl_ast_make_type (PKL_AST_AST (type));
+  pkl_ast_node t, new;
+
+  switch (PKL_AST_TYPE_CODE (type))
+    {
+    case PKL_TYPE_ARRAY:
+    case PKL_TYPE_STRUCT:
+      break;
+    default:
+      new = pkl_ast_make_type (PKL_AST_AST (type));
+    }
 
   PKL_AST_TYPE_CODE (new) = PKL_AST_TYPE_CODE (type);
   PKL_AST_TYPE_COMPLETE (new) = PKL_AST_TYPE_COMPLETE (type);
@@ -629,15 +639,22 @@ pkl_ast_dup_type (pkl_ast_node type)
       break;
     case PKL_TYPE_ARRAY:
       {
-        pkl_ast_node etype
-          = pkl_ast_dup_type (PKL_AST_TYPE_A_ETYPE (type));
-        PKL_AST_TYPE_A_BOUND (new) = ASTREF (PKL_AST_TYPE_A_BOUND (type));
-        PKL_AST_TYPE_A_ETYPE (new) = ASTREF (etype);
+        pkl_ast_node etype = pkl_ast_dup_type (PKL_AST_TYPE_A_ETYPE (type));
+
+        new = pkl_ast_make_array_type (PKL_AST_AST (type), ASTREF (etype),
+                                       ASTREF (PKL_AST_TYPE_A_BOUND (type)));
       }
       break;
     case PKL_TYPE_STRUCT:
-      PKL_AST_TYPE_S_NELEM (new) = PKL_AST_TYPE_S_NELEM (type);
-      PKL_AST_TYPE_S_NFIELD (new) = PKL_AST_TYPE_S_NFIELD (type);
+    #if 0
+      new = pkl_ast_make_struct_type (PKL_AST_AST (type),
+                          PKL_AST_TYPE_S_NELEM (type),
+                          PKL_AST_TYPE_S_NFIELD (type),
+                          PKL_AST_TYPE_S_NDECL (type),
+                          PKL_AST_TYPE_S_ITYPE (type),
+                          pkl_ast_node struct_type_elems,
+                          int pinned_p, int union_p)
+    #endif
       PKL_AST_TYPE_S_NCFIELD (new) = PKL_AST_TYPE_S_NCFIELD (type);
       PKL_AST_TYPE_S_NDECL (new) = PKL_AST_TYPE_S_NDECL (type);
       for (t = PKL_AST_TYPE_S_ELEMS (type); t; t = PKL_AST_CHAIN (t))
@@ -745,6 +762,7 @@ pkl_ast_dup_type (pkl_ast_node type)
 
   return new;
 }
+#endif
 
 /* Given a struct type node AST and a string in the form BB.CC.CC.xx,
    check that the intermediate fields are valid struct references, and return
