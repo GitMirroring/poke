@@ -5650,43 +5650,6 @@ instruction mkoq ()
   non-relocatable # FIXME FIXME FIXME
   code
     pvm_val res;
-    volatile pvm_val under_top;
-    volatile pvm_val top;
-
-    top = JITTER_TOP_STACK ();
-    under_top = JITTER_UNDER_TOP_STACK ();
-    fprintf (stderr, "under-top:%zx top:%zx\n", under_top, top);
-
-
-    puts ("\n{{{\n");
-    //{
-      int i = 0;
-      int num_elems = 0;
-      volatile int num_elems_in_stack;
-
-      PVM_ASSERT (PVM_STATE_BACKING_FIELD (canary_stack) != NULL);
-
-      num_elems_in_stack = (pvm_val *)JITTER_HEIGHT_STACK ()
-                           - (pvm_val *)PVM_STATE_BACKING_FIELD (canary_stack);
-      if (num_elems == 0 || num_elems > num_elems_in_stack)
-        num_elems = num_elems_in_stack;
-
-      while (i < num_elems)
-        {
-          pvm_print_val_with_params (PVM_STATE_BACKING_FIELD (vm),
-                                     JITTER_AT_DEPTH_STACK (i),
-                                     0 /* depth */,
-                                     PVM_PRINT_FLAT,
-                                     16 /* base */,
-                                     2 /* indent */,
-                                     0 /* acutoff */,
-                                     PVM_PRINT_F_MAPS,
-                                     NULL /* exit_exception */);
-          pk_puts (pvm_literal_newline);
-          i++;
-        }
-    //}
-    puts ("\n}}}\n");
 
     /* Put temporarily on stack to avoid GC.  */
     JITTER_TOP_STACK ()
