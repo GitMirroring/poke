@@ -464,6 +464,11 @@ late-header-c
        /* anonymous functions.  */                                           \
        JITTER_PUSH_RETURNSTACK (PVM_VAL_CLS_NAME ((CLS)));                   \
                                                                              \
+       /* XXX FIXME FIXME FIXME  */                                          \
+       JITTER_PUSH_RETURNSTACK (                                             \
+         (jitter_uint) (uintptr_t) PVM_STATE_BACKING_FIELD (program));       \
+       PVM_STATE_BACKING_FIELD (program) = PVM_VAL_CLS_PROGRAM ((CLS));      \
+                                                                             \
        /* Make place for the return address in the return stack.  */         \
        /* actual value will be written by the callee. */                     \
        JITTER_PUSH_UNSPECIFIED_RETURNSTACK();                                \
@@ -750,8 +755,8 @@ late-header-c
       if (num_elems == 0 || num_elems > num_elems_in_stack)                 \
         num_elems = num_elems_in_stack;                                     \
                                                                             \
-      PVM_ASSERT (num_elems_in_stack % 3 == 0);                             \
-      for (i = 2; i < num_elems; i += 3)                                    \
+      PVM_ASSERT (num_elems_in_stack % 4 == 0);                             \
+      for (i = 2; i < num_elems; i += 4)                                    \
         {                                                                   \
           pvm_val name = JITTER_AT_DEPTH_RETURNSTACK (i);                   \
                                                                             \
@@ -1877,13 +1882,17 @@ instruction return ()
   code
     jitter_uint return_address;
 
-    /* Restore the environment of the caller.  Note the cast to
-       jitter_uint is to avoid a warning in 32-bit.  */
+    /* Restore the environment of the caller.  */
     PVM_STATE_RUNTIME_FIELD (env)
-      = (pvm_val) (jitter_uint) JITTER_TOP_RETURNSTACK ();
+      = (pvm_val) JITTER_TOP_RETURNSTACK ();
     JITTER_DROP_RETURNSTACK();
 
     return_address = JITTER_TOP_RETURNSTACK();
+    JITTER_DROP_RETURNSTACK();
+
+    /* Restore the program of the caller.  */
+    PVM_STATE_BACKING_FIELD (program)
+      = (pvm_val) JITTER_TOP_RETURNSTACK ();
     JITTER_DROP_RETURNSTACK();
 
     /* Drop the caller's name.  */
