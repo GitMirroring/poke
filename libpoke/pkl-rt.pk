@@ -64,11 +64,6 @@ immutable var EC_noent         = 20;
 
 /* Standard exceptions.  */
 
-
-asm ("printi 32" :: EC_generic, 10);
-asm ("strace 0");
-asm ("printi 32" :: EC_generic, 10);
-
 immutable var E_generic
   = Exception {code = EC_generic, name = "generic", exit_status = 1};
 immutable var E_div_by_zero
