@@ -448,6 +448,7 @@ pvm_make_array (pvm_val nelem, pvm_val type)
   JITTER_GC_BLOCK_BEGIN (gc_heaplet);
   {
     JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &type);
+    // FIXME Comment about nelem use.
 
     arr_nelem = pvm_make_ulong (0, 64);
     JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &arr_nelem);
@@ -494,6 +495,7 @@ pvm_make_array (pvm_val nelem, pvm_val type)
   for (i = 0; i < num_allocated; ++i)
     {
       arr->elems[i].offset = PVM_NULL;
+      arr->elems[i].offset_back = PVM_NULL;
       arr->elems[i].value = PVM_NULL;
     }
 
@@ -542,6 +544,7 @@ pvm_array_insert (pvm_val arr, pvm_val idx, pvm_val val)
         {
           PVM_VAL_ARR_ELEM_VALUE (arr, i) = PVM_NULL;
           PVM_VAL_ARR_ELEM_OFFSET (arr, i) = PVM_NULL;
+          PVM_VAL_ARR_ELEM_OFFSET_BACK (arr, i) = PVM_NULL;
         }
     }
 
@@ -620,6 +623,7 @@ pvm_array_rem (pvm_val arr, pvm_val idx)
 
   for (i = index; i < (nelem - 1); i++)
     PVM_VAL_ARR_ELEM (arr, i) = PVM_VAL_ARR_ELEM (arr, i + 1);
+  // FIXME TODO Offset?!
 
   JITTER_GC_BLOCK_BEGIN (gc_heaplet);
   {
@@ -1766,6 +1770,9 @@ pvm_make_program (void)
   pvm_val insn_params;
 
   insn_params = pvm_make_iarray (64);
+
+  // Make PVM_NULL available ... FIXME FIXME FIXME
+  pvm_iarray_push (insn_params, PVM_NULL);
 
   JITTER_GC_BLOCK_BEGIN (gc_heaplet);
   {
@@ -3468,6 +3475,8 @@ pvm_val_initialize (void)
       common_int_types[bits][1]
           = pvm_make_integral_type_1 (size, /*signed_p*/ PVM_MAKE_INT (1, 32));
     }
+
+  jitter_gc_disable_collection (gc_heaplet);
 
 #if 0
   gc_global_roots.roots_nallocated = 128;
