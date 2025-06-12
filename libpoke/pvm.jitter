@@ -198,7 +198,9 @@ early-header-c
        CODE is the program point where the exception handler starts.
 
        ENV is the run-time environment to restore before transferring
-       control to the exception handler.  */
+       control to the exception handler.
+
+       XXX.  */
 
     struct pvm_exception_handler
     {
@@ -207,6 +209,7 @@ early-header-c
       jitter_stack_height return_stack_height;
       pvm_program_point code;
       pvm_val env;
+      pvm_val program;
     };
   end
 end
@@ -276,6 +279,7 @@ late-header-c
        JITTER_PUSH_STACK ((EXCEPTION));                               \
                                                                       \
        PVM_STATE_RUNTIME_FIELD (env) = ehandler.env;                  \
+       PVM_STATE_BACKING_FIELD (program) = ehandler.program;          \
        JITTER_BRANCH (ehandler.code);                                 \
        break;                                                         \
      }                                                                \
@@ -7016,6 +7020,7 @@ instruction pushe (?l)
    ehandler.return_stack_height = JITTER_HEIGHT_RETURNSTACK ();
    ehandler.code = JITTER_ARGP0;
    ehandler.env = PVM_STATE_RUNTIME_FIELD (env);
+   ehandler.program = PVM_STATE_BACKING_FIELD (program);
 
    JITTER_PUSH_EXCEPTIONSTACK (ehandler);
   end
