@@ -562,6 +562,12 @@ pvm_array_insert (/* XXX pvm_gc gc */ pvm_val arr, pvm_val idx, pvm_val val)
         }
     }
 
+  /* It is possible that VAL is younger than ARR, so a write barrier
+     is needed here.  */
+  JITTER_GC_WRITE_BARRIER (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
+                           GC_RUNTIME_LIMIT (gc_heaplet), /*old*/ arr,
+                           /*new*/ val);
+
   JITTER_GC_BLOCK_BEGIN (gc_heaplet);
   {
     JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &arr);
@@ -573,12 +579,24 @@ pvm_array_insert (/* XXX pvm_gc gc */ pvm_val arr, pvm_val idx, pvm_val val)
       {
         PVM_VAL_ARR_ELEM_VALUE (arr, i) = val;
         PVM_VAL_ARR_ELEM_OFFSET (arr, i) = pvm_make_ulong (elem_boffset, 64);
+
+        /* New ELEM_OFFSET is younger than ARR.  */
+        JITTER_GC_WRITE_BARRIER (gc_heaplet,
+                                 GC_ALLOCATION_POINTER (gc_heaplet),
+                                 GC_RUNTIME_LIMIT (gc_heaplet), /*old*/ arr,
+                                 /*new*/ PVM_VAL_ARR_ELEM_OFFSET (arr, i));
+
         elem_boffset += val_size;
       }
 
     /* Finally, adjust the number of elements.  */
     PVM_VAL_ARR_NELEM (arr) = pvm_make_ulong (
         PVM_VAL_ULONG (PVM_VAL_ARR_NELEM (arr)) + nelem_to_add, 64);
+
+    /* New NELEM is younger than ARR.  */
+    JITTER_GC_WRITE_BARRIER (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
+                             GC_RUNTIME_LIMIT (gc_heaplet), /*old*/ arr,
+                             /*new*/ PVM_VAL_ARR_NELEM (arr));
   }
   JITTER_GC_BLOCK_END (gc_heaplet);
 
@@ -602,6 +620,11 @@ pvm_array_set (pvm_val arr, pvm_val idx, pvm_val val)
   size_diff = ((ssize_t)pvm_sizeof (val)
                - (ssize_t)pvm_sizeof (PVM_VAL_ARR_ELEM_VALUE (arr, index)));
 
+  /* In case VAL is younger than ARR.  */
+  JITTER_GC_WRITE_BARRIER (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
+                           GC_RUNTIME_LIMIT (gc_heaplet), /*old*/ arr,
+                           /*new*/ val);
+
   /* Update the element with the given value.  */
   PVM_VAL_ARR_ELEM_VALUE (arr, index) = val;
 
@@ -616,7 +639,14 @@ pvm_array_set (pvm_val arr, pvm_val idx, pvm_val val)
         size_t elem_boffset
             = (ssize_t)PVM_VAL_ULONG (PVM_VAL_ARR_ELEM_OFFSET (arr, i))
               + size_diff;
+
         PVM_VAL_ARR_ELEM_OFFSET (arr, i) = pvm_make_ulong (elem_boffset, 64);
+
+        /* ELEM_OFFSET is younger than ARR.  */
+        JITTER_GC_WRITE_BARRIER (gc_heaplet,
+                                 GC_ALLOCATION_POINTER (gc_heaplet),
+                                 GC_RUNTIME_LIMIT (gc_heaplet), /*old*/ arr,
+                                 /*new*/ PVM_VAL_ARR_ELEM_OFFSET (arr, i));
       }
   }
   JITTER_GC_BLOCK_END (gc_heaplet);
@@ -644,6 +674,11 @@ pvm_array_rem (pvm_val arr, pvm_val idx)
     JITTER_GC_BLOCK_ROOT_1 (gc_heaplet, &arr);
 
     PVM_VAL_ARR_NELEM (arr) = pvm_make_ulong (nelem - 1, 64);
+
+    /* NELEM is younger than ARR.  */
+    JITTER_GC_WRITE_BARRIER (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
+                             GC_RUNTIME_LIMIT (gc_heaplet), /*old*/ arr,
+                             /*new*/ PVM_VAL_ARR_NELEM (arr));
   }
   JITTER_GC_BLOCK_END (gc_heaplet);
 
@@ -872,7 +907,14 @@ pvm_ref_set_struct_cstr (pvm_val sct, const char *fname, pvm_val value)
     {
       if (!PVM_VAL_SCT_FIELD_ABSENT_P (sct, i) && fields[i].name != PVM_NULL
           && STREQ (PVM_VAL_STR (fields[i].name), fname))
-        fields[i].value = value;
+        {
+          fields[i].value = value;
+
+          /* VALUE could be younger than SCT.  */
+          JITTER_GC_WRITE_BARRIER (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
+                                   GC_RUNTIME_LIMIT (gc_heaplet), /*old*/ sct,
+                                   /*new*/ value);
+        }
     }
 }
 
@@ -922,6 +964,10 @@ pvm_set_struct (pvm_val sct, pvm_val name, pvm_val val)
       if (fields[i].name != PVM_NULL
           && STREQ (PVM_VAL_STR (fields[i].name), PVM_VAL_STR (name)))
         {
+          /* VAL could be younger than SCT.  */
+          JITTER_GC_WRITE_BARRIER (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
+                                   GC_RUNTIME_LIMIT (gc_heaplet), /*old*/ sct,
+                                   /*new*/ val);
           PVM_VAL_SCT_FIELD_VALUE (sct, i) = val;
           PVM_VAL_SCT_FIELD_MODIFIED (sct, i) = PVM_MAKE_INT (1, 32);
           return 1;
@@ -1545,6 +1591,10 @@ pvm_iarray_push (pvm_val iar, pvm_val val)
                      PVM_VAL_IAR_NALLOCATED (iar) * sizeof (pvm_val));
       assert (PVM_VAL_IAR_ELEMS (iar) != NULL); // FIXME Handle error.
     }
+  /* VAL could be younger than IAR.  */
+  JITTER_GC_WRITE_BARRIER (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
+                           GC_RUNTIME_LIMIT (gc_heaplet), /*old*/ iar,
+                           /*new*/ val);
   PVM_VAL_IAR_ELEM (iar, PVM_VAL_IAR_NELEM (iar)) = val;
   return PVM_VAL_IAR_NELEM (iar)++;
 }
