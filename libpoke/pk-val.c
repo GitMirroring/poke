@@ -34,6 +34,7 @@ _pk_add_to_current_gc_scope (pk_compiler pkc, pvm_val v)
   return (pk_val)pkc->iarray_stack_index << 32 | index;
 }
 
+#endif
 
 pk_val
 pk_make_int (pk_compiler pkc __attribute__ ((unused)), int64_t value, int size)
