@@ -469,6 +469,7 @@ struct pvm_type
       pvm_val name;
       pvm_val nfields;
       pvm_val constructor;
+      // TODO Make these two also IAR, then pvm_type doesn't need be finalizable.
       pvm_val *fnames;
       pvm_val *ftypes;
     } sct;
@@ -484,7 +485,7 @@ struct pvm_type
     {
       pvm_val nargs;
       pvm_val return_type;
-      pvm_val *atypes;
+      pvm_val *atypes; // TODO Make this iarray
     } cls;
   } val;
 };

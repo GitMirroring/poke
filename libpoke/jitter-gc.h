@@ -65,7 +65,7 @@
    expensive, and therefore must be explicitly enabled for debugging.
    Testing with debugging enabled is highly recommended for new systems and
    after changes involving the heap. */
-#define JITTER_GC_DEBUG 1
+// #define JITTER_GC_DEBUG 1
 
 /* If JITTER_GC_EXPENSIVE_STATISTICS is defined then also keep statistics which
    may be expensive to update, negatively affecting the total run time. */
@@ -74,7 +74,7 @@
 /* If defined write a full log of every action performed at garbage collection
    time, which is useful for debugging.  The log has a clean format but is too
    expensive and intrusive for being compiled in by default. */
-#define JITTER_GC_LOG 1
+// #define JITTER_GC_LOG 1
 
 /* The stream where log messages are printed.  This is only used if
    JITTER_GC_LOG is defined. */

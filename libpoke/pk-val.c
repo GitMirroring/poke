@@ -23,10 +23,29 @@
 #include "pvm-val.h"
 #include "libpoke.h"
 
+#if 0
+
+pk_val
+_pk_add_to_current_gc_scope (pk_compiler pkc, pvm_val v)
+{
+  size_t index;
+
+  index = pvm_iarray_push (pkc->iarray_stack[pkc->iarray_stack_index], v);
+  return (pk_val)pkc->iarray_stack_index << 32 | index;
+}
+
+
 pk_val
 pk_make_int (pk_compiler pkc __attribute__ ((unused)), int64_t value, int size)
 {
-  return pvm_make_signed_integral (value, size);
+  pvm_val v = pvm_make_signed_integral (value, size);
+
+#if 0
+  pk_val i = _pk_add_to_current_gc_scope (pkc, v);
+  return i;
+#end
+
+  return v;
 }
 
 int64_t
