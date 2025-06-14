@@ -508,6 +508,10 @@ struct pvm_gc
   struct jitter_gc_shape_table *shapes;
   struct jitter_gc_heap *heap;
   struct jitter_gc_heaplet *heaplet;
+
+  pvm_val string_type;
+  pvm_val void_type;
+  pvm_val common_int_types[65][2];
 };
 
 typedef struct pvm_gc *pvm_gc;
