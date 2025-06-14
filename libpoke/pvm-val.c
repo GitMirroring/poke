@@ -197,7 +197,7 @@ pvm_gc_sizeof_ulong (pvm_val v __attribute__ ((unused)))
 
 static size_t
 pvm_gc_copy_ulong (struct jitter_gc_heaplet *heaplet __attribute__ ((unused)),
-                    pvm_val *new_val, void *from, void *to)
+                   pvm_val *new_val, void *from, void *to)
 {
   memcpy (to, from, PVM_GC_SIZEOF_ULONG);
   *new_val = PVM_BOX (to);
@@ -502,8 +502,18 @@ pvm_make_array (pvm_val nelem, pvm_val type)
   return PVM_BOX (arr);
 }
 
+// FIXME FIXME FIXME
+struct pvm_gc
+{
+  struct jitter_gc_shape_table *shapes;
+  struct jitter_gc_heap *heap;
+  struct jitter_gc_heaplet *heaplet;
+};
+
+typedef struct pvm_gc *pvm_gc;
+
 int
-pvm_array_insert (pvm_val arr, pvm_val idx, pvm_val val)
+pvm_array_insert (/* XXX pvm_gc gc */ pvm_val arr, pvm_val idx, pvm_val val)
 {
   size_t index = PVM_VAL_ULONG (idx);
   size_t nelem = PVM_VAL_ULONG (PVM_VAL_ARR_NELEM (arr));
@@ -3227,8 +3237,8 @@ pvm_alloc_uncollectable (size_t nelem)
       = (uintptr_t)jitter_gc_register_global_root (gc_heaplet, us + 1, nbytes);
 
   // FIXME FIXME FIXME
-  fprintf (stderr, "%s nelem:%zu handle:%p roots:%p\n", __func__, nelem, (void*)us[0],
-           us + 1);
+  fprintf (stderr, "%s nelem:%zu handle:%p roots:%p\n", __func__, nelem,
+           (void *)us[0], us + 1);
 
   return us + 1;
 }
@@ -3335,7 +3345,8 @@ pvm_gc_hook_pre (struct jitter_gc_heaplet *b, void *useless,
 
     /* Half-open interval [begin, end).  */
     begin = (struct pvm_exception_handler *)gc_global_roots.stacks[2].memory;
-    end = (struct pvm_exception_handler *)*gc_global_roots.stacks[2].tos_ptr + 1;
+    end = (struct pvm_exception_handler *)*gc_global_roots.stacks[2].tos_ptr
+          + 1;
     nelem = end - begin;
 
     fprintf (stderr, "[GC-PRE] [stack2] nelem:%td\n", nelem);
@@ -3347,7 +3358,7 @@ pvm_gc_hook_pre (struct jitter_gc_heaplet *b, void *useless,
 
 static void
 pvm_gc_hook_post (struct jitter_gc_heaplet *b, void *useless,
-                      enum jitter_gc_collection_kind k)
+                  enum jitter_gc_collection_kind k)
 {
   fprintf (stderr, "[GC-POST] heaplet:%p kind:%s\n", b,
            jitter_gc_collection_kind_to_string (k));
@@ -3439,14 +3450,10 @@ pvm_val_initialize (void)
   JITTER_GC_HEAPLET_TO_RUNTIME (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
                                 GC_RUNTIME_LIMIT (gc_heaplet));
 
-  jitter_gc_hook_register_pre_collection (gc_heaplet, pvm_gc_hook_pre,
-                                          NULL);
-  jitter_gc_hook_register_post_collection (gc_heaplet, pvm_gc_hook_post,
-                                           NULL);
-  jitter_gc_hook_register_pre_ssb_flush (gc_heaplet, pvm_gc_hook_pre,
-                                         NULL);
-  jitter_gc_hook_register_post_ssb_flush (gc_heaplet, pvm_gc_hook_post,
-                                          NULL);
+  jitter_gc_hook_register_pre_collection (gc_heaplet, pvm_gc_hook_pre, NULL);
+  jitter_gc_hook_register_post_collection (gc_heaplet, pvm_gc_hook_post, NULL);
+  jitter_gc_hook_register_pre_ssb_flush (gc_heaplet, pvm_gc_hook_pre, NULL);
+  jitter_gc_hook_register_post_ssb_flush (gc_heaplet, pvm_gc_hook_post, NULL);
 
   string_type = pvm_make_type (PVM_TYPE_STRING);
   gc_global_roots.string_type
