@@ -44,7 +44,7 @@ pk_make_int (pk_compiler pkc __attribute__ ((unused)), int64_t value, int size)
 #if 0
   pk_val i = _pk_add_to_current_gc_scope (pkc, v);
   return i;
-#end
+#endif
 
   return v;
 }
