@@ -249,8 +249,6 @@ pvm_call_closure (pvm vm, pvm_val cls, pvm_val *exit_exception, ...)
   program = pkl_asm_finish (pasm, 1 /* epilogue */);
   pvm_program_make_executable (program);
   (void) pvm_run (vm, program, NULL, exit_exception);
-  pvm_destroy_program (program);
-
 }
 
 void
