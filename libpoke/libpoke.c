@@ -576,10 +576,7 @@ pk_disassemble_expression (pk_compiler pkc, const char *str,
     PK_RETURN (PK_ERROR);
 
   if (*end != '\0')
-    {
-      pvm_destroy_program (program);
-      PK_RETURN (PK_ERROR);
-    }
+    PK_RETURN (PK_ERROR);
 
   if (native_p)
     pvm_disassemble_program_nat (program);
@@ -604,10 +601,7 @@ pk_disassemble_statement (pk_compiler pkc, const char *program_str,
     PK_RETURN (PK_ERROR);
 
   if (*end != '\0')
-    {
-      pvm_destroy_program (program);
-      PK_RETURN (PK_ERROR);
-    }
+    PK_RETURN (PK_ERROR);
 
   if (native_p)
     pvm_disassemble_program_nat (program);
@@ -927,7 +921,6 @@ pk_call (pk_compiler pkc, pk_val cls, pk_val *ret,
   pvm_program_make_executable (program);
   rret = pvm_run (pkc->vm, program, ret, exit_exception);
 
-  pvm_destroy_program (program);
   PK_RETURN (rret == PVM_EXIT_OK ? PK_OK : PK_ERROR);
 }
 

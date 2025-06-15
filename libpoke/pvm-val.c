@@ -1993,14 +1993,6 @@ pvm_program_make_executable (pvm_val program)
   return PVM_OK;
 }
 
-void
-pvm_destroy_program (pvm_val program)
-{
-  assert (PVM_IS_PRG (program));
-  pvm_destroy_routine (PVM_VAL_PRG_ROUTINE (program));
-  PVM_VAL_PRG_ROUTINE (program) = NULL;
-}
-
 pvm_routine
 pvm_program_routine (pvm_val program)
 {

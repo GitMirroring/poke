@@ -283,7 +283,6 @@ pkl_execute_buffer (pkl_compiler compiler,
   /* Execute the program in the poke vm.  Note the return value is
      discarded.  */
   pvm_run (compiler->vm, program, &val, exit_exception);
-  pvm_destroy_program (program);
 
   if (*exit_exception == PVM_NULL)
     {
@@ -387,7 +386,6 @@ pkl_execute_statement (pkl_compiler compiler,
 
   /* Execute the routine in the poke vm.  */
   pvm_run (compiler->vm, program, val, exit_exception);
-  pvm_destroy_program (program);
 
   if (*exit_exception == PVM_NULL)
     {
@@ -491,7 +489,6 @@ pkl_execute_expression (pkl_compiler compiler,
 
   /* Execute the routine in the poke vm.  */
   pvm_run (compiler->vm, program, val, exit_exception);
-  pvm_destroy_program (program);
 
   if (*exit_exception == PVM_NULL)
     {
@@ -548,7 +545,6 @@ pkl_execute_file (pkl_compiler compiler, const char *fname,
 
   /* Execute the program in the poke vm.  */
   pvm_run (compiler->vm, program, &val, exit_exception);
-  pvm_destroy_program (program);
 
   if (*exit_exception == PVM_NULL)
     {

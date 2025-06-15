@@ -659,10 +659,6 @@ typedef unsigned int pvm_register;
 
 pvm_val pvm_make_program (void);
 
-/* Destroy the given PVM program.  */
-
-void pvm_destroy_program (pvm_val program);
-
 /* Make the given PVM program executable so it can be run in the PVM.
 
    This function returns a status code indicating whether the
