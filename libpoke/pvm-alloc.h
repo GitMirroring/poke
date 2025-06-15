@@ -54,7 +54,7 @@ void pvm_gc_deregister_vm_stack (void* handle);
 
 /* Forced collection.  */
 
-void pvm_alloc_gc (void);
+void pvm_gc_collect (void);
 
 /* Register/unregister a new thread whose stack that may contain PVM
    values.  This is used for memory management.  */

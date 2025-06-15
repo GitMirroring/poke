@@ -3307,7 +3307,7 @@ pvm_free_uncollectable (void *ptr)
 }
 
 void
-pvm_alloc_gc (void)
+pvm_gc_collect (void)
 {
   JITTER_GC_COLLECT_EITHER (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
                             GC_RUNTIME_LIMIT (gc_heaplet));
@@ -3560,4 +3560,8 @@ pvm_val_finalize (void)
   jitter_gc_heaplet_destroy (gc_heaplet);
   jitter_gc_heap_destroy (gc_heap);
   jitter_gc_shape_table_destroy (gc_shapes);
+
+  gc_heaplet = NULL;
+  gc_heap = NULL;
+  gc_shapes = NULL;
 }

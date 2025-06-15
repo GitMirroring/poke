@@ -93,7 +93,7 @@ wrapped-functions
   pk_upow
   pk_format_binary
   pvm_alloc
-  pvm_alloc_gc
+  pvm_gc_collect
   pvm_allocate_struct_attrs
   pvm_make_struct_type_unsafe
   pvm_typeof
@@ -7255,7 +7255,7 @@ end
 
 instruction gc ()
   code
-    pvm_alloc_gc ();
+    pvm_gc_collect ();
   end
 end
 

@@ -38,7 +38,7 @@ pvm_alloc_initialize ()
 void
 pvm_alloc_finalize ()
 {
-  pvm_alloc_gc ();
+  assert (gc_heaplet == NULL);
 }
 
 void *
