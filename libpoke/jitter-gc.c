@@ -2245,7 +2245,6 @@ jitter_gc_heaplet_initialize (struct jitter_gc_heaplet *a,
                               struct jitter_gc_heap *h)
 {
   jitter_gc_log ("Make heaplet for heap %p at %p\n", h, a);
-  printf ("| making heaplet %p\n", a);
   a->heap = h;
   a->shape_table = (const struct jitter_gc_shape_table *) h->shape_table;
   a->collection_enabled = true;
@@ -2419,7 +2418,6 @@ jitter_gc_heaplet_initialize (struct jitter_gc_heaplet *a,
   a->used_state = jitter_gc_heaplet_used_state_in_use;
   jitter_gc_heap_lock (h);
   jitter_gc_heaplet_link_first(& h->heaplets_in_use, a);
-  printf ("+ made heaplet   %p\n", a);
   jitter_gc_global_gc_if_needed_and_unlock (h, a);
 }
 
@@ -2542,7 +2540,6 @@ jitter_gc_heaplet_finalize (struct jitter_gc_heaplet *a)
 #endif // #if defined (JITTER_GC_DEBUG)
 
   jitter_point_in_time_destroy (a->time_at_the_end_of_initialization);
-  printf ("- destroyed heaplet %p\n", a);
 }
 
 struct jitter_gc_heaplet *
