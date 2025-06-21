@@ -128,7 +128,10 @@
   ((int64_t)(PVM_VAL_LNG (V)->value << (64 - PVM_VAL_LONG_SIZE (V)))          \
    >> (64 - PVM_VAL_LONG_SIZE (V)))
 #define PVM_VAL_ULONG_SIZE(V) (PVM_VAL_LNG (V)->size_minus_one + 1)
-#define PVM_VAL_ULONG(V) (PVM_VAL_LNG (V)->value)
+/* TODO Move this normalization to construction time.  */
+#define PVM_VAL_ULONG(V)                                                      \
+  (PVM_VAL_LNG (V)->value                                                     \
+   & ((uint64_t)(~(((~0ull) << ((PVM_VAL_ULONG_SIZE ((V))) - 1)) << 1))))
 
 struct pvm_long
 {
