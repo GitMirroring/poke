@@ -123,7 +123,10 @@
 #define PVM_VAL_LNG(V) (PVM_VAL_BOX_LNG (PVM_VAL_BOX (V)))
 
 #define PVM_VAL_LONG_SIZE(V) (PVM_VAL_LNG (V)->size_minus_one + 1)
-#define PVM_VAL_LONG(V) (PVM_VAL_LNG (V)->value)
+/* TODO Move this normalization to construction time.  */
+#define PVM_VAL_LONG(V)                                                       \
+  ((int64_t)(PVM_VAL_LNG (V)->value << (64 - PVM_VAL_LONG_SIZE (V)))          \
+   >> (64 - PVM_VAL_LONG_SIZE (V)))
 #define PVM_VAL_ULONG_SIZE(V) (PVM_VAL_LNG (V)->size_minus_one + 1)
 #define PVM_VAL_ULONG(V) (PVM_VAL_LNG (V)->value)
 
