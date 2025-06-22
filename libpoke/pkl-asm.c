@@ -1340,8 +1340,10 @@ pkl_asm_new (pkl_ast ast, pkl_compiler compiler,
   pasm->ast = ast;
   pasm->program = program;
   pasm->program_gc_handle = pvm_alloc_add_gc_roots (&pasm->program, 1);
+  /*
   fprintf (stderr, "pkl_asm_new program:0x%zx &program:%p\n",
            pasm->program, &pasm->program); // FIXME FIXME FIXME
+  */
   pasm->error_label = pvm_program_fresh_label (program);
 
   if (prologue)

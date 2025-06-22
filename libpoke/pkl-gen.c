@@ -34,6 +34,8 @@
 
 #include "jitter-gc.h" // FIXME FIXME FIXME
 
+// #define fprintf(...) /* FIXME FIXME FIXME */
+
 /* It would be very unlikely to have more than 24 declarations nested
    in a poke program... if it ever happens, we will just increase
    this, that's a promise :P (don't worry, there is an assertion that

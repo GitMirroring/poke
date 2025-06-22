@@ -39,6 +39,8 @@
 /* Unitary special values used internally by GC.
    Here we're re-using PVM_NULL's "tag".  */
 
+// #define fprintf(...) /* FIXME FIXME FIXME */
+
 #define PVM_VAL_INVALID_OBJECT          0x17
 #define PVM_VAL_UNINITIALIZED_OBJECT    0x27
 #define PVM_VAL_BROKEN_HEART_TYPE_CODE  0x37
@@ -3352,6 +3354,7 @@ pvm_gc_deregister_vm_stack (void *handle)
 
   assert (i < NSTACKS);
   memset (&gc_global_roots.stacks[i], 0, sizeof (gc_global_roots.stacks[i]));
+  gc_global_roots.nstacks--;
 }
 
 // Debugging.
@@ -3529,7 +3532,7 @@ pvm_val_initialize (void)
           = pvm_make_integral_type_1 (size, /*signed_p*/ PVM_MAKE_INT (1, 32));
     }
 
-  jitter_gc_disable_collection (gc_heaplet);
+  // jitter_gc_disable_collection (gc_heaplet);
 
 #if 0
   gc_global_roots.roots_nallocated = 128;
