@@ -29,10 +29,10 @@
 
 #include <jitter/jitter-aligned-block.h>
 #include <jitter/jitter-dynamic-buffer.h>
+#include <jitter/jitter-fatal.h>
 #include <jitter/jitter-word-set.h>
 #include <jitter/jitter-list.h>
 #include <jitter/jitter-time.h>
-#include <jitter/jitter-fatal.h>
 
 
 
@@ -240,6 +240,25 @@
 # undef  JITTER_GC_DEFAULT_TARGET_MAJOR_SURVIVAL_RATE
 # define JITTER_GC_DEFAULT_TARGET_MAJOR_SURVIVAL_RATE  .99
 #endif // #if defined (JITTER_GC_STRESS)
+
+
+
+
+/* Debugging.
+ * ************************************************************************** */
+
+#if defined (JITTER_GC_DEBUG)
+# define _JITTER_GC_ASSERT(expression)                         \
+    do                                                         \
+      {                                                        \
+        if (! (expression))                                    \
+          jitter_fatal ("assertion violated: " # expression);  \
+      }                                                        \
+    while (false)
+#else  /* ! defined (JITTER_GC_DEBUG) */
+# define _JITTER_GC_ASSERT(expression)  \
+    do { /* nothing */ } while (false)
+#endif /* #if defined (JITTER_GC_DEBUG) */
 
 
 
@@ -456,14 +475,20 @@ struct jitter_gc_heaplet;
    is never called on objects which have been overwritten with broken hearts. */
 typedef bool (* jitter_gc_object_has_shape_f) (jitter_gc_tagged_object);
 
+/* Given an untagged pointer to an object return its tagged version.  This only
+   makes sense for boxed shapes. */
+typedef jitter_gc_tagged_object (* jitter_gc_object_encode_f) (void *);
+
 /* Given a tagged object of this shape return its size in bytes. */
 typedef size_t (* jitter_gc_object_size_in_bytes_f) (jitter_gc_tagged_object);
 
 /* Given a word in the heap, return non-false iff the word is a type code
    for an object of this shape.  A type code field, when used, occupies the
    first position in an object header.  It does not need to be the same value
-   for every object of the same shape.
-   For shapes with no headers the pointer to this function will be NULL. */
+   for every object of the same shape (Rationale examples: the colour in a
+   Red-Black tree node or the balance in an AVL tree node might be encoded in
+   the type code for a single shape).
+   For headerless shapes the pointer to this function will be NULL. */
 typedef bool (* jitter_gc_is_type_code_f) (jitter_gc_tagged_object);
 
 /* Given an initial untagged pointer of an object of this shape (in a fromspace)
@@ -473,11 +498,11 @@ typedef bool (* jitter_gc_is_type_code_f) (jitter_gc_tagged_object);
    Return the size of the new copy in bytes, which is allowed to be less
    than or equal to the original size.  This function is allowed to change the
    shape of the copied object.
-   Rationale: changing the shape of certain objects, and reducing their shape,
-   is an important optimisation in lazy functional language where already
-   evaluated closures are replaced with their result.  Unfortunately cdr-coding
-   appears difficult to implement with this design, without breaking the
-   abstraction between the garbage collector and user code in a complex way. */
+   Rationale: changing the shape of certain objects is an important optimisation
+   in lazy functional language where already evaluated closures are replaced
+   with their result.  Unfortunately cdr-coding appears difficult to implement
+   with this design, without breaking the abstraction between the garbage
+   collector and user code in a complex way. */
 typedef size_t (* jitter_gc_object_copy_f) (struct jitter_gc_heaplet *a,
                                             jitter_gc_tagged_object *tagged_to_p,
                                             void *from, void *to)  // FIXME: do I want void * ? ///////////////////////////////
@@ -498,11 +523,28 @@ typedef size_t (* jitter_gc_object_update_fields_f)
 
 /* A function finalising a finalisable object.  This same type is used for both
    quick and complete-object finalisers.
-   The function receives an untagged initial untagged pointer to the object,
-   from which the user will be able to extract any required information.
+   The function receives an untagged initial pointer to the object, from which
+   the user will be able to extract any required information.
+   - In case of complete-object finalisation the object is guaranteed to be
+     “complete” at finalisation time, in the sense that every object it refers
+     through its fields will be available and alive when this function runs.
+   - In the case of quick finalisation there is no such guarantee: with quick
+     finalisation only the “C” fields (such as file descriptors, socket,
+     pointers to malloc-allocated memory and the like) will be guaranteed to be
+     correct, but the object tagged fields may be invalid or overwritten by
+     broken hearts.
    Notice that the function might receive a NULL heaplet pointer, in case the
    object being finalised belongs to the shared space of a heap for which no
-   heaplet exists any longer. */
+   heaplet exists any longer.  On the other hand the heap pointer is guaranteed
+   to be non-NULL.
+   This function must not allocate GC-heap memory, since it runs at finalisation
+   time.  It is possible to mutate alive objects (without allocating from the GC
+   heap), or to set non-GC-heap fields.  In the case of complete finalisation
+   one might want, for example, to link finalised (resurrected) objects into a
+   list or queue, for the mutator to handle asynchronously.
+   There is no guarantee of the order in which objects are finalised.  In
+   particular it is not necessarily the case that, if an object A points to an
+   object B, B is finalised before A. */
 typedef void (*jitter_gc_object_finalize_f) (struct jitter_gc_heap *h,
                                              struct jitter_gc_heaplet *a,
                                              void *untagged_pointer);
@@ -546,6 +588,7 @@ struct jitter_gc_shape
      comments associated to the function types above, with respect to this
      shape. */
   jitter_gc_object_has_shape_f object_has_shape;
+  jitter_gc_object_encode_f object_encode;  /* non-NULL, as the shape is boxed. */
   jitter_gc_object_size_in_bytes_f object_size_in_bytes;
   jitter_gc_is_type_code_f is_type_code; /* This is allowed to be NULL. */
   jitter_gc_object_copy_f object_copy;
@@ -602,6 +645,10 @@ struct jitter_gc_shape_table
   /* Like headerful_shapes, but hold the shapes with a complete-object
      finaliser. */
   jitter_gc_shapes complete_object_finalizable_shapes;
+
+  /* Non-false iff the table contains at least one complete-object finalisable
+     shape. */
+  int /* bool */ has_complete_object_finalizable;
 };
 
 // FIXME: comment ////////////////////////////////////////////////////////
@@ -639,6 +686,7 @@ jitter_gc_shape_add_headerless
    (struct jitter_gc_shape_table *shape_table_p,
     const char *name, // memory copied by the function
     jitter_gc_object_has_shape_f object_has_shape,
+    jitter_gc_object_encode_f object_encode,
     jitter_gc_object_size_in_bytes_f object_size_in_bytes,
     jitter_gc_object_copy_f object_copy)
   __attribute__ ((nonnull (1), nonnull (2), nonnull (3), nonnull (4),
@@ -649,6 +697,7 @@ jitter_gc_shape_add_headered_non_finalizable
    (struct jitter_gc_shape_table *shape_table_p,
     const char *name, // memory copied by the function
     jitter_gc_object_has_shape_f object_has_shape,
+    jitter_gc_object_encode_f object_encode,
     jitter_gc_object_size_in_bytes_f object_size_in_bytes,
     jitter_gc_is_type_code_f is_type_code,
     jitter_gc_object_copy_f object_copy,
@@ -661,6 +710,7 @@ jitter_gc_shape_add_headered_quickly_finalizable
    (struct jitter_gc_shape_table *shape_table_p,
     const char *name, // memory copied by the function
     jitter_gc_object_has_shape_f object_has_shape,
+    jitter_gc_object_encode_f object_encode,
     jitter_gc_object_size_in_bytes_f object_size_in_bytes,
     jitter_gc_is_type_code_f is_type_code,
     jitter_gc_object_copy_f object_copy,
@@ -674,6 +724,7 @@ jitter_gc_shape_add_headered_complete_object_finalizable
    (struct jitter_gc_shape_table *shape_table_p,
     const char *name, // memory copied by the function
     jitter_gc_object_has_shape_f object_has_shape,
+    jitter_gc_object_encode_f object_encode,
     jitter_gc_object_size_in_bytes_f object_size_in_bytes,
     jitter_gc_is_type_code_f is_type_code,
     jitter_gc_object_copy_f object_copy,
@@ -842,69 +893,30 @@ struct jitter_gc_block
 /* Object finalisation.
  * ************************************************************************** */
 
-// FIXME: comments are now wrong.
-/* Each finalisable object belongs to one of a few possible finalisable lists:
-   an object of this type specifies which list.  See the comment inside
-   struct jitter_gc_finalization_data for an explanation. */
-enum jitter_gc_finalizable_place
-  {
-    /* The object is in one of the following lists:
-       - mutation_time_finalizables list of the object's space;
-       - candidate_dead_finalizables in the heaplet the object space belongs to.
-       We do not distinguish between those two lists, for reasons of
-       performance: at the beginning of collections we move every list
-       mutation_time_finalizables for a heaplet's fromspaces into
-       candidate_dead_finalizables , which is an O(1) operation.  Making
-       this information more precise would not be needed, and would make the
-       operation O(n). */
-    jitter_gc_finalisable_place_not_to_be_finalized,
-
-    /* The to_be_finalized_finalizables list of the heaplet the object space
-       belongs to. */
-    jitter_gc_finalisable_place_to_be_finalized
-  };
-
-/* // FIXME: comment. //////////////////////////////////////////////////////////////////
-   This entire structure is opaque from the point of view of the user, who
+/* This entire structure is opaque from the point of view of the user, who
    should only initialise and update it via JITTER_GC_FINALIZABLE_INITIALIZE and
    JITTER_GC_FINALIZABLE_COPY , defined below.
    This structure *must* be the second element of the finalisable object header,
-   coming immediately after the type code. */
+   coming immediately after the type code.  Finalisable objects *must* be
+   headered, therefore they always have a type code. */
 struct jitter_gc_finalization_data
 {
-  /* This links the struct jitter_gc_finalization_data within one of the
-     following lists:
-     - the mutation_time_finalizables list of its space (used at mutation time
-       when the object is potentially accessible to the mutator and not known to
-       be dead);
-     - the candidate_dead_finalizables list in its heaplet (used at collection
-       time: all fromspace objects are initially in candidate_dead_finalizables
-       before the ones proved to be syntactically alive are moved to
-       mutation_time_finalizables;
-     - the to_be_finalized_finalizables list in its heaplet (used at collection
-       time, to hold complete-object-finalisable objects that have been
-       resurrected and are queued for their finaliser to run). */
+  /* This links the struct jitter_gc_finalization_data within the finalizables
+     list in its space. */
   struct jitter_list_links links;
 
-  /* Which list this finalisable object currently belongs to.  This could be a
-     small-sized enum jitter_gc_finalizable_place (for example defined as :
-     char) in C23, but for compatibility with older compilers I can simply use a
-     small numeric type to hold what is actuall an enum
-     jitter_gc_finalizable_where . */
-  char /* enum jitter_gc_finalizable_place */ which_list;
-
-  /* Non-false if we need to run the finaliser for this object when it is
-     proven to be dead.  This field is completely independent from
-     which_list.  It may be reasonable that some objects be only finalised
-     once even if they resurrect and then die again; for others it may be
-     sensible to run the finaliser at each death. */
-  char /*bool*/ need_to_run_finaliser;
+  /* Non-false if we need to run the finaliser for this object when it is proven
+     to be dead.  Unless this field is changed explicitly by a finalisation
+     function run under full-object finalisation each object will be finalised
+     only once, even if resurrected.  With quick finalisation finalisable
+     objects are always finalised once and never resurrected. */
+  char /*bool*/ need_to_run_finalizer;
 };
 
 # define JITTER_GC_FINALIZABLE_SET_TO_BE_FINALIZED(finalizable_data_p, value)  \
   do                                                                           \
     {                                                                          \
-      (finalizable_data_p)->need_to_run_finaliser = (value);                   \
+      (finalizable_data_p)->need_to_run_finalizer = (value);                   \
     }                                                                          \
   while (false)
 
@@ -1011,44 +1023,16 @@ struct jitter_gc_finalizable_list
       struct jitter_gc_space *_jitter_gc_s                                      \
         = JITTER_GC_BOXED_TO_SPACE (_jitter_gc_untagged);                       \
       JITTER_LIST_LINK_LAST (jitter_gc_finalization_data, links,                \
-                             & _jitter_gc_s->mutation_time_finalizables.header, \
+                             & _jitter_gc_s->finalizables.header, \
                              _jitter_gc_field_p);                               \
-      _jitter_gc_field_p->which_list =                                          \
-        jitter_gc_finalisable_place_not_to_be_finalized;                        \
       /* The object's finaliser has never been run and therefore will need to
          run, at least for the first time. */                                   \
-      _jitter_gc_field_p->need_to_run_finaliser = true;                         \
-jitter_gc_log_i (0, "initialising finalisable %s at %p [FIXME: speak about lists]\n", \
+      _jitter_gc_field_p->need_to_run_finalizer = true;                         \
+jitter_gc_log_i (0, "initialising finalisable %s at %p\n", \
                  # object_header_struct_name, \
                  _jitter_gc_untagged);        \
     }                                                                           \
   while (false)
-
-/* If debugging expand to a statement which fails fatally if the which_list
-   field of the pointed struct jitter_gc_finalization_data object is not
-   jitter_gc_finalisable_place_not_to_be_finalized . */
-#if defined (JITTER_GC_DEBUG)
-# define _JITTER_GC_ASSERT_IN_NOT_TO_BE_FINALIZED(finalization_data_p)  \
-  do                                                                    \
-    {                                                                   \
-      struct jitter_gc_finalization_data *_jitter_gc_assert_f_p         \
-        = (finalization_data_p);                                        \
-      if (_jitter_gc_assert_f_p->which_list                             \
-          != jitter_gc_finalisable_place_not_to_be_finalized)           \
-        {                                                               \
-          void * _jitter_gc_assert_untagged                             \
-            = _JITTER_GC_FINALIZABLE_FINALIZATION_FIELD_TO_UNTAGGED     \
-                 (_jitter_gc_assert_f_p);                               \
-          jitter_fatal ("object at %p is in the to-be-finalised list "  \
-                        "when it should not be",                        \
-                        _jitter_gc_assert_untagged);                    \
-        }                                                               \
-    }                                                                   \
-  while (false)
-#else
-# define _JITTER_GC_ASSERT_IN_NOT_TO_BE_FINALIZED(finalization_data_p)  \
-  do { /* Nothing */ } while (false)
-#endif /* #if defined (JITTER_GC_DEBUG) */
 
 /* Update the finalisation data of an object that is being copied.  This must
    be called from the shape copy function.  FIXME: comment ?????????????????????????????????????? */
@@ -1059,7 +1043,7 @@ jitter_gc_log_i (0, "initialising finalisable %s at %p [FIXME: speak about lists
                                    untagged_to)                                \
   do                                                                           \
     {                                                                          \
-      struct jitter_gc_heaplet *_jitter_gc_a = (heaplet_p);                    \
+/*      struct jitter_gc_heaplet *_jitter_gc_a = (heaplet_p);*/                    \
       /* Find the (to)space now containing the object, which has already been  \
          copied.  It is perfectly acceptable to find this from a pointer to a  \
          header field rather than an initial tagged or untagged pointer: each  \
@@ -1074,27 +1058,26 @@ jitter_gc_log_i (0, "initialising finalisable %s at %p [FIXME: speak about lists
         = _JITTER_GC_FINALIZABLE_FINALIZATION_DATA_FIELD_P                     \
              (object_header_struct_name, finalization_data_field_name,         \
               _jitter_gc_untagged_to);                                         \
+      struct jitter_gc_block *_jitter_gc_from_b                                \
+        = JITTER_GC_BOXED_TO_BLOCK (_jitter_gc_from_field_p);                  \
+      struct jitter_gc_space *_jitter_gc_from_s = _jitter_gc_from_b->space;    \
       struct jitter_gc_block *_jitter_gc_to_b                                  \
         = JITTER_GC_BOXED_TO_BLOCK (_jitter_gc_to_field_p);                    \
       struct jitter_gc_space *_jitter_gc_to_s = _jitter_gc_to_b->space;        \
+      _JITTER_GC_ASSERT (_jitter_gc_from_s != _jitter_gc_to_s);                \
       /* Unlink the old object (field) from the candidate_dead_finalizables    \
          list in the heaplet, since the object has been found to be alive;     \
-         link the new object (field) to the mutation_time_finalizables list
+         link the new object (field) to the finalizables list
          in the tospace.  Notice that it is important to unlink the original
          field, and not its copy: objects are compared by identity in
          JITTER_LIST_UNLINK . */                                               \
       JITTER_LIST_UNLINK (jitter_gc_finalization_data, links,                  \
-                          & _jitter_gc_a->candidate_dead_finalizables.header,  \
+                          & _jitter_gc_from_s->finalizables.header,            \
                           _jitter_gc_from_field_p);                            \
       JITTER_LIST_LINK_LAST (jitter_gc_finalization_data, links,               \
-                             & _jitter_gc_to_s->                               \
-                                  mutation_time_finalizables.header,           \
+                             & _jitter_gc_to_s->finalizables.header,           \
                              _jitter_gc_to_field_p);                           \
-      /* This is being run when the object was in candidate_dead_finalizables,
-         so there is not need to change the which_list field.  Just assert
-         that its current value is correct. */                                 \
-      _JITTER_GC_ASSERT_IN_NOT_TO_BE_FINALIZED (_jitter_gc_to_field_p);        \
-jitter_gc_log_i (8, "copying finalisable %s [FIXME: speak about lists]\n", \
+jitter_gc_log_i (8, "copying finalisable %s\n", \
                  # object_header_struct_name);  \
       /* The other struct jitter_gc_finalization_data fields do not change:
          the kind of lists this object belongs to is the same, and whether we
@@ -1141,10 +1124,10 @@ struct jitter_gc_space
      collection, and set while scavenging.  It is useful for sharing, in order
      to know what kind of collection, if any, is needed in order to find every
      pointer to an object that is being shared.
-     Remark: this field could conceptually belong to a generation rather than to
-     a space, but keeping a generation field up-to-date would require one more
-     derefence per scavenged object; this solution instead requires just a store
-     to a structure to which we already hold a pointer.
+     Remark: this field could conceptually belong to a generation object rather
+     than to a space, but keeping a generation field up-to-date would require
+     one more derefence per scavenged object; this solution instead requires
+     just a store to a structure to which we already hold a pointer.
      Checking this field once per space in a given generation is fast enough,
      and not remotely as critical. */
   jitter_int scavenged_from;
@@ -1214,14 +1197,14 @@ struct jitter_gc_space
   bool clean_completely_after;
 
   /* A list of finalisable objects contained within this space, in any of its
-     blocks.  This list holds every finalisable object in the space at mutation
-     time.  At the beginning of a collection all the lists from fromspaces are
-     emptied into the heaplet candidate_dead_finalizables field; surivors will
-     get unlinked from that list and re-linked to the mutation_time_finalizables list of
-     their desination space. */
-  struct jitter_gc_finalizable_list mutation_time_finalizables;
+     blocks. */
+  struct jitter_gc_finalizable_list finalizables;
 
-  // FIXME: remove what follows. /////////////////////////////////////////////////
+  /* A field containing a copy of the list above in a previous state, only used
+     at collection time.  By convention this is kept empty when not in use. */
+  struct jitter_gc_finalizable_list finalizables_copy;
+
+
   /* The space name as a string, malloc-allocated.  Only used for debugging. */
   char *name;
 };
@@ -1552,16 +1535,6 @@ struct jitter_gc_heaplet
      These objects are considered roots in minor collections.  Major collections
      empty the set. */
   struct jitter_word_set remembered_set;
-
-  /* A list of finalisable objects candidate to die during this collection,
-     filled at the beginning of a collection (see the comment for the field
-     mutation_time_finalizables in struct jitter_gc_space ); each object from
-     this list found to be alive is detached and attached to the
-     mutation_time_finalizables list in its tospace. */
-  struct jitter_gc_finalizable_list candidate_dead_finalizables;
-
-  /* A list of objects on which we have to call a finaliser. */
-  struct jitter_gc_finalizable_list to_be_finalized_finalizables;
 
   /* Collection tuning parameters. */
   double minimum_nursery_size_in_bytes;
@@ -2406,15 +2379,15 @@ jitter_gc_resize_heap (struct jitter_gc_heaplet *a,
                                      (result_lvalue),                       \
                                      _jitter_gc_a_size_in_bytes)            \
         {                                                                   \
-          /* ...Use the slower alternative, which might involve a garbage   \
+          /* ...Use the slower alternative, which might involve a garbage
              collection. */                                                 \
-          _JITTER_GC_ALLOCATION_SLOW_PATH (_jitter_gc_a_heaplet_p,          \
-                                           (allocation_pointer_lvalue),     \
-                                           (allocation_limit_lvalue),       \
-                                           (result_lvalue),                 \
-                                           _jitter_gc_a_size_in_bytes);     \
+          _JITTER_GC_ALLOCATION_UNCOMMON_PATH (_jitter_gc_a_heaplet_p,      \
+                                               (allocation_pointer_lvalue), \
+                                               (allocation_limit_lvalue),   \
+                                               (result_lvalue),             \
+                                               _jitter_gc_a_size_in_bytes); \
         }                                                                   \
-      /* Fill the allocated buffer with the "uninitialized" value when      \
+      /* Fill the allocated buffer with the "uninitialized" value when
          debugging; do nothing more otherwise. */                           \
       _JITTER_GC_SET_UINITIALIZED (_jitter_gc_a_heaplet_p,                  \
                                    (((char *) (allocation_pointer_lvalue))  \
@@ -2429,20 +2402,22 @@ jitter_gc_resize_heap (struct jitter_gc_heaplet *a,
    and writing both runtime fields, which must be l-values.  It sets the
    result in the given l-value.  It uses the given heaplet, an r-value.
    Arguments may be evaluated more than once. */
-#define _JITTER_GC_ALLOCATION_SLOW_PATH(_jitter_gc_heaplet_p,                 \
-                                        _jitter_gc_allocation_pointer,        \
-                                        _jitter_gc_allocation_limit,          \
-                                        _jitter_result_lvalue,                \
-                                        _jitter_gc_size_in_bytes)             \
+#define _JITTER_GC_ALLOCATION_UNCOMMON_PATH(_jitter_gc_heaplet_p,             \
+                                            _jitter_gc_allocation_pointer,    \
+                                            _jitter_gc_allocation_limit,      \
+                                            _jitter_result_lvalue,            \
+                                            _jitter_gc_size_in_bytes)         \
   do                                                                          \
     {                                                                         \
-      /* First fix the allocation-pointer, by undoing the update that         \
-         made it overflow. */                                                 \
+      /* First fix the allocation-pointer, by undoing the update that made
+         it overflow. */                                                      \
       (_jitter_gc_allocation_pointer) -= (_jitter_gc_size_in_bytes);          \
-      /* Now flush the write barrier SSB: that alone might free enough        \
-         space for a further attempt to succeed.  An easy way to do that      \
-         is by updating the heaplet runtime fields, which will be needed      \
-         anyway if we are to collect. */                                      \
+      char *_jitter_gc_allocation_pointer_copy                                \
+        = (_jitter_gc_allocation_pointer);                                    \
+      /* Now flush the write barrier SSB: that alone might free enough space
+         for a further attempt to succeed.  An easy way to do that is by
+         updating the heaplet runtime fields, which will be needed anyway if
+         we are to collect. */                                                \
       JITTER_GC_RUNTIME_TO_HEAPLET ((_jitter_gc_heaplet_p),                   \
                                     (_jitter_gc_allocation_pointer),          \
                                     (_jitter_gc_allocation_limit));           \
@@ -2451,10 +2426,8 @@ jitter_gc_resize_heap (struct jitter_gc_heaplet *a,
       JITTER_GC_HEAPLET_TO_RUNTIME ((_jitter_gc_heaplet_p),                   \
                                     (_jitter_gc_allocation_pointer),          \
                                     (_jitter_gc_allocation_limit));           \
-      /* Try to allocate again.  If this attempt fails as well we really      \
+      /* Try to allocate again.  If this attempt fails as well we really
          need to go through the slow path, and possibly collect. */           \
-      char *_jitter_gc_allocation_pointer_copy                                \
-        = (_jitter_gc_allocation_pointer);                                    \
       _JITTER_GC_IF_ALLOCATE_FAILS_ ((_jitter_gc_allocation_pointer),         \
                                      (_jitter_gc_allocation_limit),           \
                                      (_jitter_result_lvalue),                 \
@@ -2673,7 +2646,7 @@ _jitter_gc_ssb_flush_0 (struct jitter_gc_heaplet *a,
          be boxed.  Only if the object being updated is shared we need to go
          through the slow path.  The slow path contains conditionals and may
          still end up being trivial, in the case of a shared object pointing to
-         an immortal object. */                                                 \
+         another shared object or an immortal object . */                       \
       enum jitter_gc_generation _jitter_gc_updated_generation                   \
         = JITTER_GC_TAGGED_BOXED_TO_GENERATION (_jitter_gc_updated_object);     \
       if (__builtin_expect ((_jitter_gc_updated_generation                      \
@@ -2710,11 +2683,40 @@ _jitter_gc_ssb_flush_0 (struct jitter_gc_heaplet *a,
     }                                                                           \
   while (false)
 
-/* Define the actual write barrier, which according to whether sharing is
-   enabled will be a write-share barrier or a simple write barrier. */
+/* The write barrier macro.
+   Arguments:
+   * heaplet pointer
+   * allocation pointer l-value
+   * allocation limit l-value
+   * tagged_updated_object, r-value
+   * tagged_new_pointed_object, r-value
+
+   The write barrier must be executed *before* tagged_updated_object is modified
+   to point to tagged_updated_object which is an object possibly younger than
+   tagged_updated_object.
+
+   In the sharing case a write barrier can trigger a collection (for simplicity
+   I suggest assuming that a write barrier can always trigger a collection):
+   roots must be registered correctly while the write barrier runs: in
+   particular the new pointed object *may* need to be registered as a root (in
+   case the C expression expressing it is used again in the code after the write
+   barrier).
+
+   When updating an object A to point to an object B, it is allowed that
+   tagged_new_pointed_object is not B, but rather some object C pointing to B.
+   The rationale is that one may be updating many different fields of A, using
+   objects B1, B2, ... Bn; instead of executing the write barrier n times on
+   A and Bi, one can have all the Bi objects inside a (possibly temporary) heap
+   structure and then call the barrier only once on A and the heap structure.
+   The difference in performance is important in the sharing case, when barriers
+   are expensive. */
 #if defined (JITTER_GC_ENABLE_SHARING)
+  /* Define the actual write barrier as the write-share barrier, expensive but
+     correct in this case. */
 # define JITTER_GC_WRITE_BARRIER  _JITTER_GC_WRITE_SHARE_BARRIER
 #else
+  /* Define the actual barrier as the cheaper non-sharing write barrier, which
+     is enough for the non-sharing case. */
 # define JITTER_GC_WRITE_BARRIER  _JITTER_GC_SIMPLE_WRITE_BARRIER
 #endif // #if defined (JITTER_GC_ENABLE_SHARING)
 
@@ -2833,7 +2835,7 @@ jitter_gc_after_blocking (struct jitter_gc_heaplet *a)
    left pending.  Explicit collection requests while collection is disabled
    result in fatal errors.
    Notice that sharing is also forbidden while collection is disabled, since any
-   non-trivial sharing involves a collectio.  [FIXME: do I want to relax this?]
+   non-trivial sharing involves a collection.  [FIXME: do I want to relax this?]
    Collection is enabled by default. */
 void
 jitter_gc_disable_collection (struct jitter_gc_heaplet *a)
@@ -2936,8 +2938,6 @@ printf("OK-Z 400\n");\
 const char *
 jitter_gc_shape_finalization_kind_to_string
    (enum jitter_gc_shape_finalization_kind kind);
-const char *
-jitter_gc_finalizable_list_to_string (enum jitter_gc_finalizable_place list);
 const char *
 jitter_gc_collection_kind_to_string (enum jitter_gc_collection_kind kind);
 const char *

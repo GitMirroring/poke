@@ -134,6 +134,12 @@ pvm_gc_sizeof_long (pvm_val v __attribute__ ((unused)))
   return PVM_GC_SIZEOF_LONG;
 }
 
+static pvm_val
+pvm_gc_encode_long (void *ptr)
+{
+  return PVM_BOX (ptr);
+}
+
 static size_t
 pvm_gc_copy_long (struct jitter_gc_heaplet *heaplet __attribute__ ((unused)),
                   pvm_val *new_val, void *from, void *to)
@@ -186,6 +192,12 @@ static bool
 pvm_gc_is_ulong_type_code_p (uintptr_t v)
 {
   return v == PVM_VAL_TAG_ULONG;
+}
+
+static pvm_val
+pvm_gc_encode_ulong (void *ptr)
+{
+  return PVM_BOX (ptr);
 }
 
 #define PVM_GC_SIZEOF_ULONG                                                   \
@@ -291,6 +303,12 @@ pvm_gc_is_string_type_code_p (uintptr_t v)
   return v == PVM_VAL_TAG_STR;
 }
 
+static pvm_val
+pvm_gc_encode_string (void *ptr)
+{
+  return PVM_BOX (ptr);
+}
+
 static size_t
 pvm_gc_sizeof_string (pvm_val v __attribute__ ((unused)))
 {
@@ -366,6 +384,12 @@ static bool
 pvm_gc_is_array_p (pvm_val v)
 {
   return PVM_IS_ARR (v);
+}
+
+static pvm_val
+pvm_gc_encode_array (void *ptr)
+{
+  return PVM_BOX (ptr);
 }
 
 static size_t
@@ -697,6 +721,12 @@ pvm_gc_is_struct_p (pvm_val v)
   return PVM_IS_SCT (v);
 }
 
+static pvm_val
+pvm_gc_encode_struct (void *ptr)
+{
+  return PVM_BOX (ptr);
+}
+
 static size_t
 pvm_gc_sizeof_struct (pvm_val v)
 {
@@ -1005,6 +1035,12 @@ static bool
 pvm_gc_is_type_p (pvm_val v)
 {
   return PVM_IS_TYP (v);
+}
+
+static pvm_val
+pvm_gc_encode_type (void *ptr)
+{
+  return PVM_BOX (ptr);
 }
 
 static size_t
@@ -1347,6 +1383,12 @@ pvm_gc_is_closure_p (pvm_val v)
   return PVM_IS_CLS (v);
 }
 
+static pvm_val
+pvm_gc_encode_closure (void *ptr)
+{
+  return PVM_BOX (ptr);
+}
+
 static size_t
 pvm_gc_sizeof_closure (pvm_val v)
 {
@@ -1431,6 +1473,12 @@ pvm_gc_is_offset_p (pvm_val v)
   return PVM_IS_OFF (v);
 }
 
+static pvm_val
+pvm_gc_encode_offset (void *ptr)
+{
+  return PVM_BOX (ptr);
+}
+
 static size_t
 pvm_gc_sizeof_offset (pvm_val v)
 {
@@ -1495,6 +1543,12 @@ static bool
 pvm_gc_is_iarray_p (pvm_val v)
 {
   return PVM_IS_IAR (v);
+}
+
+static pvm_val
+pvm_gc_encode_iarray (void *ptr)
+{
+  return PVM_BOX (ptr);
 }
 
 static size_t
@@ -1622,6 +1676,12 @@ static bool
 pvm_gc_is_env_p (pvm_val v)
 {
   return PVM_IS_ENV (v);
+}
+
+static pvm_val
+pvm_gc_encode_env (void *ptr)
+{
+  return PVM_BOX (ptr);
 }
 
 static size_t
@@ -1773,6 +1833,12 @@ static bool
 pvm_gc_is_program_p (pvm_val v)
 {
   return PVM_IS_PRG (v);
+}
+
+static pvm_val
+pvm_gc_encode_program (void *ptr)
+{
+  return PVM_BOX (ptr);
 }
 
 static size_t
@@ -3414,6 +3480,7 @@ pvm_gc_hook_post (struct jitter_gc_heaplet *b, void *useless,
 }
 
 #endif
+
 void
 pvm_val_initialize (void)
 {
@@ -3422,72 +3489,60 @@ pvm_val_initialize (void)
       PVM_VAL_BROKEN_HEART_TYPE_CODE, pvm_gc_is_unboxed_p);
   assert (gc_shapes); // FIXME Handle error.
 
-#if 0
-  jitter_gc_shape_add_headered_quickly_finalizable (gc_shapes,
-
-  // Cannot be headerless.
-  jitter_gc_shape_add_headerless (gc_shapes, "big",
-                                  pvm_val_is_big_p,
-                                  pvm_val_big_sizeof,
-                                  pvm_val_big_copy);
-  jitter_gc_shape_add_headerless (gc_shapes, "ubig",
-                                  pvm_val_is_ubig_p,
-                                  pvm_val_ubig_sizeof,
-                                  pvm_val_ubig_copy);
-#endif
-
   // FIXME Use the same function sets for long/ulong.
   jitter_gc_shape_add_headered_non_finalizable (
-      gc_shapes, "long", pvm_gc_is_long_p, pvm_gc_sizeof_long,
-      pvm_gc_is_long_type_code_p, pvm_gc_copy_long, pvm_gc_update_fields_long);
+      gc_shapes, "long", pvm_gc_is_long_p, pvm_gc_encode_long,
+      pvm_gc_sizeof_long, pvm_gc_is_long_type_code_p, pvm_gc_copy_long,
+      pvm_gc_update_fields_long);
   jitter_gc_shape_add_headered_non_finalizable (
-      gc_shapes, "ulong", pvm_gc_is_ulong_p, pvm_gc_sizeof_ulong,
-      pvm_gc_is_ulong_type_code_p, pvm_gc_copy_ulong,
+      gc_shapes, "ulong", pvm_gc_is_ulong_p, pvm_gc_encode_ulong,
+      pvm_gc_sizeof_ulong, pvm_gc_is_ulong_type_code_p, pvm_gc_copy_ulong,
       pvm_gc_update_fields_ulong);
 
   jitter_gc_shape_add_headered_quickly_finalizable (
-      gc_shapes, "string", pvm_gc_is_string_p, pvm_gc_sizeof_string,
-      pvm_gc_is_string_type_code_p, pvm_gc_copy_string,
+      gc_shapes, "string", pvm_gc_is_string_p, pvm_gc_encode_string,
+      pvm_gc_sizeof_string, pvm_gc_is_string_type_code_p, pvm_gc_copy_string,
       pvm_gc_update_fields_string, pvm_gc_finalize_string);
 
   jitter_gc_shape_add_headered_quickly_finalizable (
-      gc_shapes, "array", pvm_gc_is_array_p, pvm_gc_sizeof_array,
-      pvm_gc_is_array_type_code_p, pvm_gc_copy_array,
+      gc_shapes, "array", pvm_gc_is_array_p, pvm_gc_encode_array,
+      pvm_gc_sizeof_array, pvm_gc_is_array_type_code_p, pvm_gc_copy_array,
       pvm_gc_update_fields_array, pvm_gc_finalize_array);
 
   jitter_gc_shape_add_headered_quickly_finalizable (
-      gc_shapes, "struct", pvm_gc_is_struct_p, pvm_gc_sizeof_struct,
-      pvm_gc_is_struct_type_code_p, pvm_gc_copy_struct,
+      gc_shapes, "struct", pvm_gc_is_struct_p, pvm_gc_encode_struct,
+      pvm_gc_sizeof_struct, pvm_gc_is_struct_type_code_p, pvm_gc_copy_struct,
       pvm_gc_update_fields_struct, pvm_gc_finalize_struct);
 
   jitter_gc_shape_add_headered_quickly_finalizable (
-      gc_shapes, "type", pvm_gc_is_type_p, pvm_gc_sizeof_type,
-      pvm_gc_is_type_type_code_p, pvm_gc_copy_type, pvm_gc_update_fields_type,
-      pvm_gc_finalize_type);
+      gc_shapes, "type", pvm_gc_is_type_p, pvm_gc_encode_type,
+      pvm_gc_sizeof_type, pvm_gc_is_type_type_code_p, pvm_gc_copy_type,
+      pvm_gc_update_fields_type, pvm_gc_finalize_type);
 
   /* FIXME Change to non_finalizable.  */
   jitter_gc_shape_add_headered_non_finalizable (
-      gc_shapes, "closure", pvm_gc_is_closure_p, pvm_gc_sizeof_closure,
-      pvm_gc_is_closure_type_code_p, pvm_gc_copy_closure,
-      pvm_gc_update_fields_closure);
+      gc_shapes, "closure", pvm_gc_is_closure_p, pvm_gc_encode_closure,
+      pvm_gc_sizeof_closure, pvm_gc_is_closure_type_code_p,
+      pvm_gc_copy_closure, pvm_gc_update_fields_closure);
 
   jitter_gc_shape_add_headered_non_finalizable (
-      gc_shapes, "offset", pvm_gc_is_offset_p, pvm_gc_sizeof_offset,
-      pvm_gc_is_offset_type_code_p, pvm_gc_copy_offset,
+      gc_shapes, "offset", pvm_gc_is_offset_p, pvm_gc_encode_offset,
+      pvm_gc_sizeof_offset, pvm_gc_is_offset_type_code_p, pvm_gc_copy_offset,
       pvm_gc_update_fields_offset);
 
   jitter_gc_shape_add_headered_quickly_finalizable (
-      gc_shapes, "iarray", pvm_gc_is_iarray_p, pvm_gc_sizeof_iarray,
-      pvm_gc_is_iarray_type_code_p, pvm_gc_copy_iarray,
+      gc_shapes, "iarray", pvm_gc_is_iarray_p, pvm_gc_encode_iarray,
+      pvm_gc_sizeof_iarray, pvm_gc_is_iarray_type_code_p, pvm_gc_copy_iarray,
       pvm_gc_update_fields_iarray, pvm_gc_finalize_iarray);
 
   jitter_gc_shape_add_headered_quickly_finalizable (
-      gc_shapes, "program", pvm_gc_is_program_p, pvm_gc_sizeof_program,
-      pvm_gc_is_program_type_code_p, pvm_gc_copy_program,
-      pvm_gc_update_fields_program, pvm_gc_finalize_program);
+      gc_shapes, "program", pvm_gc_is_program_p, pvm_gc_encode_program,
+      pvm_gc_sizeof_program, pvm_gc_is_program_type_code_p,
+      pvm_gc_copy_program, pvm_gc_update_fields_program,
+      pvm_gc_finalize_program);
 
   jitter_gc_shape_add_headered_non_finalizable (
-      gc_shapes, "env", pvm_gc_is_env_p, pvm_gc_sizeof_env,
+      gc_shapes, "env", pvm_gc_is_env_p, pvm_gc_encode_env, pvm_gc_sizeof_env,
       pvm_gc_is_env_type_code_p, pvm_gc_copy_env, pvm_gc_update_fields_env);
 
   gc_heap = jitter_gc_heap_make (gc_shapes);
@@ -3532,7 +3587,7 @@ pvm_val_initialize (void)
           = pvm_make_integral_type_1 (size, /*signed_p*/ PVM_MAKE_INT (1, 32));
     }
 
-  // jitter_gc_disable_collection (gc_heaplet);
+    // jitter_gc_disable_collection (gc_heaplet);
 
 #if 0
   gc_global_roots.roots_nallocated = 128;
