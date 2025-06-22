@@ -1804,7 +1804,15 @@ pvm_env_lookup (pvm_val env, int back, int over)
 void
 pvm_env_set_var (pvm_val env, int back, int over, pvm_val val)
 {
+  assert (PVM_IS_ENV (env));
+
+  pvm_val vars;
+
   env = pvm_env_back (env, back);
+  assert (PVM_IS_ENV (env));
+  vars = PVM_VAL_ENV_VARS (env);
+  assert (PVM_IS_IAR (vars));
+  assert (over < PVM_VAL_IAR_NELEM (vars));
   PVM_VAL_ENV_VAR (env, over) = val;
 }
 
@@ -3387,7 +3395,7 @@ static struct
   jitter_gc_global_root string_type;
   jitter_gc_global_root common_int_types;
 
-#define NSTACKS 3
+#define NSTACKS 2
   struct
   {
     void *memory;
@@ -3452,23 +3460,6 @@ pvm_gc_hook_pre (struct jitter_gc_heaplet *b, void *useless,
       for (ptrdiff_t j = 0; j < nelem; ++j)
         jitter_gc_handle_word (gc_heaplet, &begin[j]);
     }
-
-  {
-    struct pvm_exception_handler *begin;
-    struct pvm_exception_handler *end;
-    ptrdiff_t nelem;
-
-    /* Half-open interval [begin, end).  */
-    begin = (struct pvm_exception_handler *)gc_global_roots.stacks[2].memory;
-    end = (struct pvm_exception_handler *)*gc_global_roots.stacks[2].tos_ptr
-          + 1;
-    nelem = end - begin;
-
-    fprintf (stderr, "[GC-PRE] [stack2] nelem:%td\n", nelem);
-
-    for (ptrdiff_t j = 0; j < nelem; ++j)
-      jitter_gc_handle_word (gc_heaplet, &begin[j].env);
-  }
 }
 
 static void

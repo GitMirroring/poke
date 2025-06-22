@@ -212,6 +212,8 @@ early-header-c
       pvm_program_point code;
       pvm_val env;
       pvm_val program;
+      void *env_gc_handle;
+      void *program_gc_handle;
     };
   end
 end
@@ -271,6 +273,12 @@ late-header-c
      int handler_exception = ehandler.exception;                      \
                                                                       \
      JITTER_DROP_EXCEPTIONSTACK ();                                   \
+     /* We don't expect any GC after this point, until either */      \
+     /* installing then in ENV and PROGRAM field, or dropping */      \
+     /* them on the floor!  So it's safe to remove them as    */      \
+     /* global roots.  */                                             \
+     pvm_alloc_remove_gc_roots (ehandler.env_gc_handle);              \
+     pvm_alloc_remove_gc_roots (ehandler.program_gc_handle);          \
                                                                       \
      if (handler_exception == 0                                       \
          || handler_exception == exception_code)                      \
@@ -480,7 +488,7 @@ late-header-c
                                                                              \
        /* Make place for the return address in the return stack.  */         \
        /* actual value will be written by the callee. */                     \
-       JITTER_PUSH_UNSPECIFIED_RETURNSTACK();                                \
+       JITTER_PUSH_RETURNSTACK(PVM_NULL);                                    \
                                                                              \
        /* Save the current environment and use the callee's environment. */  \
        JITTER_PUSH_RETURNSTACK (                                             \
@@ -6975,6 +6983,7 @@ end
 instruction pushe (?l)
   code
    struct pvm_exception_handler ehandler;
+   struct pvm_exception_handler *ehandler_ptr;
    pvm_val exception = JITTER_TOP_STACK ();
    pvm_val exception_code = pvm_ref_struct_cstr (exception, pvm_literal_code);
 
@@ -6985,8 +6994,18 @@ instruction pushe (?l)
    ehandler.code = JITTER_ARGP0;
    ehandler.env = PVM_STATE_RUNTIME_FIELD (env);
    ehandler.program = PVM_STATE_BACKING_FIELD (program);
+   /* To make compiler happy.
+      These fields will be over-written below.  */
+   ehandler.env_gc_handle = NULL;
+   ehandler.program_gc_handle = NULL;
 
    JITTER_PUSH_EXCEPTIONSTACK (ehandler);
+
+   ehandler_ptr = &JITTER_TOP_EXCEPTIONSTACK ();
+   ehandler_ptr->env_gc_handle =
+      pvm_alloc_add_gc_roots (&ehandler_ptr->env, 1);
+   ehandler_ptr->program_gc_handle =
+      pvm_alloc_add_gc_roots (&ehandler_ptr->program, 1);
   end
 end
 
@@ -6999,7 +7018,13 @@ end
 
 instruction pope ()
   code
+    struct pvm_exception_handler ehandler;
+
+    ehandler = JITTER_TOP_EXCEPTIONSTACK ();
     JITTER_DROP_EXCEPTIONSTACK ();
+
+    pvm_alloc_remove_gc_roots (ehandler.env_gc_handle);
+    pvm_alloc_remove_gc_roots (ehandler.program_gc_handle);
   end
 end
 
