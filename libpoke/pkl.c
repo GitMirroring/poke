@@ -256,6 +256,12 @@ pkl_execute_buffer (pkl_compiler compiler,
   pkl_env env = NULL;
   pvm_val val;
 
+  // FIXME FIXME FIXME
+  {
+    extern void *gc_heaplet;
+    jitter_gc_disable_collection (gc_heaplet);
+  }
+
   env = pkl_env_dup_toplevel (compiler->env);
   if (!env)
     goto error;
@@ -279,6 +285,12 @@ pkl_execute_buffer (pkl_compiler compiler,
 
   //  pvm_disassemble_program (program);
   pvm_program_make_executable (program);
+
+  // FIXME FIXME FIXME
+  {
+    extern void *gc_heaplet;
+    jitter_gc_enable_collection (gc_heaplet);
+  }
 
   /* Execute the program in the poke vm.  Note the return value is
      discarded.  */
@@ -358,6 +370,12 @@ pkl_execute_statement (pkl_compiler compiler,
   int ret;
   pkl_env env = NULL;
 
+  // FIXME FIXME FIXME
+  {
+    extern void *gc_heaplet;
+    jitter_gc_disable_collection (gc_heaplet);
+  }
+
   env = pkl_env_dup_toplevel (compiler->env);
   if (!env)
     goto error;
@@ -383,6 +401,12 @@ pkl_execute_statement (pkl_compiler compiler,
     goto error;
 
   pvm_program_make_executable (program);
+
+  // FIXME FIXME FIXME
+  {
+    extern void *gc_heaplet;
+    jitter_gc_enable_collection (gc_heaplet);
+  }
 
   /* Execute the routine in the poke vm.  */
   pvm_run (compiler->vm, program, val, exit_exception);
@@ -461,6 +485,12 @@ pkl_execute_expression (pkl_compiler compiler,
   int ret;
   pkl_env env = NULL;
 
+  // FIXME FIXME FIXME
+  {
+    extern void *gc_heaplet;
+    jitter_gc_disable_collection (gc_heaplet);
+  }
+
   env = pkl_env_dup_toplevel (compiler->env);
   if (!env)
     goto error;
@@ -486,6 +516,12 @@ pkl_execute_expression (pkl_compiler compiler,
     goto error;
 
   pvm_program_make_executable (program);
+
+  // FIXME FIXME FIXME
+  {
+    extern void *gc_heaplet;
+    jitter_gc_enable_collection (gc_heaplet);
+  }
 
   /* Execute the routine in the poke vm.  */
   pvm_run (compiler->vm, program, val, exit_exception);
@@ -516,6 +552,12 @@ pkl_execute_file (pkl_compiler compiler, const char *fname,
   pkl_env env = NULL;
   pvm_val val;
 
+  // FIXME FIXME FIXME
+  {
+    extern void *gc_heaplet;
+    jitter_gc_disable_collection (gc_heaplet);
+  }
+
   compiler->compiling = PKL_COMPILING_PROGRAM;
 
   fp = fopen (fname, "rb");
@@ -542,6 +584,12 @@ pkl_execute_file (pkl_compiler compiler, const char *fname,
 
   pvm_program_make_executable (program);
   fclose (fp);
+
+  // FIXME FIXME FIXME
+  {
+    extern void *gc_heaplet;
+    jitter_gc_enable_collection (gc_heaplet);
+  }
 
   /* Execute the program in the poke vm.  */
   pvm_run (compiler->vm, program, &val, exit_exception);
