@@ -950,7 +950,7 @@ int pvm_program_append_label (pvm_val program,
         PVM_VAL_ARR_SIZE_BOUND ((V)) = (O);     \
     } while (0)
 
-void pvm_val_initialize (void);
+void pvm_val_initialize (struct pvm_state *pvm_state);
 void pvm_val_finalize (void);
 
 #endif /* ! PVM_VAL_H */

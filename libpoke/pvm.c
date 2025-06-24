@@ -97,20 +97,6 @@ pvm_initialize_state (pvm apvm, struct pvm_state *state)
   PVM_STATE_BACKING_FIELD (state, vm) = apvm;
   PVM_STATE_RUNTIME_FIELD (state, env) = PVM_NULL;
   PVM_STATE_BACKING_FIELD (state, program) = PVM_NULL;
-
-  apvm->gc_handles[0]
-      = pvm_alloc_add_gc_roots (&PVM_STATE_RUNTIME_FIELD (state, env), 1);
-  apvm->gc_handles[1]
-      = pvm_alloc_add_gc_roots (&PVM_STATE_BACKING_FIELD (state, program), 1);
-  apvm->gc_handles[2] = pvm_alloc_add_gc_roots (
-      &PVM_STATE_BACKING_FIELD (state, result_value), 1);
-  apvm->gc_handles[3] = pvm_alloc_add_gc_roots (
-      &PVM_STATE_BACKING_FIELD (state, exit_exception_value), 1);
-
-  /* We registered GC global roots and after this point it's safe to trigger
-     GC allocation.  */
-
-  PVM_STATE_RUNTIME_FIELD (state, env) = pvm_make_env (0 /* hint */);
 }
 
 pvm
@@ -134,15 +120,33 @@ pvm_init (void)
   /* Initialize the memory allocation subsystem.  */
   pvm_alloc_initialize ();
 
-  /* Initialize values.  */
-  pvm_val_initialize ();
-
   /* Initialize the VM subsystem.  */
   pvm_initialize ();
 
   /* Initialize the VM state.  */
   pvm_initialize_state (apvm, &apvm->pvm_state);
   PVM_STATE_IOS_CONTEXT (apvm) = ios_ctx;
+
+  /* Initialize values.  */
+  pvm_val_initialize (&apvm->pvm_state);
+
+  {
+    struct pvm_state *state = &apvm->pvm_state;
+
+    apvm->gc_handles[0]
+        = pvm_alloc_add_gc_roots (&PVM_STATE_RUNTIME_FIELD (state, env), 1);
+    apvm->gc_handles[1]
+        = pvm_alloc_add_gc_roots (&PVM_STATE_BACKING_FIELD (state, program), 1);
+    apvm->gc_handles[2] = pvm_alloc_add_gc_roots (
+        &PVM_STATE_BACKING_FIELD (state, result_value), 1);
+    apvm->gc_handles[3] = pvm_alloc_add_gc_roots (
+        &PVM_STATE_BACKING_FIELD (state, exit_exception_value), 1);
+
+    /* We registered GC global roots and after this point it's safe to trigger
+       GC allocation.  */
+
+    PVM_STATE_RUNTIME_FIELD (state, env) = pvm_make_env (0 /* hint */);
+  }
 
   /* Initialize pvm-program.  */
   pvm_program_init ();

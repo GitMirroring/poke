@@ -25,6 +25,7 @@
 
 #include <config.h>
 #include <stdarg.h>
+#include <stddef.h>
 
 #include "ios.h"
 #include "pkl-compiler.h"
@@ -720,5 +721,11 @@ int pvm_stof (const char *str, float *flt) __attribute__ ((nonnull));
    Note that the whole STR should be a valid floating-point number and
    leading whitespace(s) will be ignored.  */
 int pvm_stod (const char *str, double *dbl) __attribute__ ((nonnull));
+
+/* XXX */
+
+struct pvm_state;
+
+pvm_val *pvm_stack_memory (struct pvm_state *state);
 
 #endif /* ! PVM_H */

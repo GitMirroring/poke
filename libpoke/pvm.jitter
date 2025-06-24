@@ -785,11 +785,25 @@ late-header-c
     }                                                                       \
   while (0)
 
+    static pvm_val *
+    pvm_stack_memory_1 (struct pvm_state *state)
+    {
+      fprintf (stderr, "pvm_stack_memory_1 %p\n", PVM_HEIGHT_STACK (state));
+      PVM_PUSH_STACK (state, 0);
+      PVM_DROP_STACK (state);
+      return (pvm_val *)PVM_HEIGHT_STACK (state);
+    }
   end
 end
 
 late-c
   code
+    pvm_val *
+    pvm_stack_memory (struct pvm_state *state)
+    {
+      return pvm_stack_memory_1 (state);
+    }
+
     void
     pvm_handle_signal (int signal_number)
     {

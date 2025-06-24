@@ -3435,7 +3435,7 @@ pvm_gc_deregister_vm_stack (void *handle)
 #if 1
 
 static void
-pvm_gc_hook_pre (struct jitter_gc_heaplet *b, void *useless,
+pvm_gc_hook_pre (struct jitter_gc_heaplet *b, void *pvm_state,
                  enum jitter_gc_collection_kind k)
 {
   fprintf (stderr, "[GC-PRE] heaplet:%p kind:%s\n", b,
@@ -3444,22 +3444,18 @@ pvm_gc_hook_pre (struct jitter_gc_heaplet *b, void *useless,
   if (k == jitter_gc_collection_kind_ssb_flush)
     return;
 
-  for (int i = 0; i < 2; ++i)
-    {
-      pvm_val *begin;
-      pvm_val *end;
-      ptrdiff_t nelem;
+  struct pvm_state *state;
+  pvm_val *stack;
+  size_t nelem;
 
-      /* Half-open interval [begin, end).  */
-      begin = (pvm_val *)gc_global_roots.stacks[i].memory;
-      end = (pvm_val *)*gc_global_roots.stacks[i].tos_ptr + 1;
-      nelem = end - begin;
+  state = (struct pvm_state *)pvm_state;
 
-      fprintf (stderr, "[GC-PRE] [stack%d] nelem:%td\n", i, nelem);
-
-      for (ptrdiff_t j = 0; j < nelem; ++j)
-        jitter_gc_handle_word (gc_heaplet, &begin[j]);
-    }
+  stack = pvm_stack_memory (state) + 1 + 1;
+  nelem = stack
+          - (pvm_val *)
+                state->pvm_state_backing.jitter_stack_stack_backing.memory;
+  for (size_t j = 0; j < nelem; ++j)
+    jitter_gc_handle_word (gc_heaplet, &stack[j]);
 }
 
 static void
@@ -3473,7 +3469,7 @@ pvm_gc_hook_post (struct jitter_gc_heaplet *b, void *useless,
 #endif
 
 void
-pvm_val_initialize (void)
+pvm_val_initialize (struct pvm_state *pvm_state)
 {
   gc_shapes = jitter_gc_shape_table_make (
       PVM_VAL_INVALID_OBJECT, PVM_VAL_UNINITIALIZED_OBJECT,
@@ -3545,7 +3541,7 @@ pvm_val_initialize (void)
   JITTER_GC_HEAPLET_TO_RUNTIME (gc_heaplet, GC_ALLOCATION_POINTER (gc_heaplet),
                                 GC_RUNTIME_LIMIT (gc_heaplet));
 
-  jitter_gc_hook_register_pre_collection (gc_heaplet, pvm_gc_hook_pre, NULL);
+  jitter_gc_hook_register_pre_collection (gc_heaplet, pvm_gc_hook_pre, pvm_state);
   jitter_gc_hook_register_post_collection (gc_heaplet, pvm_gc_hook_post, NULL);
   jitter_gc_hook_register_pre_ssb_flush (gc_heaplet, pvm_gc_hook_pre, NULL);
   jitter_gc_hook_register_post_ssb_flush (gc_heaplet, pvm_gc_hook_post, NULL);
