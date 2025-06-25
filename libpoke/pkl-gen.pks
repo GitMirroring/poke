@@ -3532,7 +3532,7 @@
         .end
 
 ;;; RAS_MACRO_AOREF @array_type @index_type
-;;; ( ARR IDX -- ARR IDX VAL )
+;;; ( ARR IDX -- VAL )
 ;;;
 ;;; Generate code for indexing the array ARR by offset IDX.
 ;;;
@@ -3860,7 +3860,8 @@
         nip                     ; TARR IOS TARR OFF SIZ
         ioregval                ; TARR
         ;; Remap!!
-        aremap
+        aremap                  ; TARR REMAPPED_P
+        drop                    ; TARR
         ba .done
 .notmapped:
         drop                    ; TARR ARR
