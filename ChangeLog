@@ -1,4 +1,9 @@
 2025-06-25  David Faust  <david.faust@oracle.com>
+
+	* testsuite/poke.map/map-struct-fun-1.pk: Update dg-output
+	expectation since the value is no longer remapped.
+
+2025-06-25  David Faust  <david.faust@oracle.com>
             Jose E. Marchesi  <jemarch@gnu.org>
 
 	* libpoke/pkl-asm.pks (RAS_MACRO_AREMAP): Push a new REMAPPED_P on
