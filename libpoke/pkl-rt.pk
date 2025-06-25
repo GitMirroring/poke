@@ -175,6 +175,19 @@ immutable fun set_endian = (int<32> endian) int<32>:
  return 1;
 }
 
+immutable fun dirty = (any val) void:
+{
+  asm ("msetd
+        drop" :: val);
+}
+
+/* Mark all of IOS dirty.  */
+immutable fun dirty_ios = (int<32> ios) void:
+{
+  asm ("iodirtyall
+        drop" :: ios);
+}
+
 immutable fun flush = (int<32> ios, offset<uint<64>,1> offset) void:
 {
   asm ("ogetm
