@@ -5899,11 +5899,18 @@ end
 # IO space is ignored.
 #
 # Stack: ( VAL INT -- VAL )
+# Exceptions: PVM_E_NO_IOS
 
 instruction msetios ()
+  branching
   code
+    ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
+    ios io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));
+    if (io < 0)
+      PVM_RAISE_DFL (PVM_E_NO_IOS);
     PVM_VAL_SET_IOS (JITTER_UNDER_TOP_STACK (),
                      JITTER_TOP_STACK ());
+    PVM_VAL_SET_IOS_PTR (JITTER_UNDER_TOP_STACK (), io);
     JITTER_DROP_STACK ();
   end
 end
@@ -5959,6 +5966,46 @@ instruction msetw ()
   code
     PVM_VAL_SET_WRITER (JITTER_UNDER_TOP_STACK (), JITTER_TOP_STACK ());
     JITTER_DROP_STACK ();
+  end
+end
+
+# Instruction: mgetd
+#
+# Given a value, push a boolean indicating whether the value is dirty.
+# If the given value is not map-able then push false, i.e. 0.
+#
+# Stack: ( VAL -- VAL INT )
+
+instruction mgetd ()
+  code
+    int dirty_p = PVM_VAL_DIRTY_P (JITTER_TOP_STACK ());
+    JITTER_PUSH_STACK (PVM_MAKE_INT (dirty_p, 32));
+  end
+end
+
+# Instruction: msetd
+#
+# Given a value, mark it dirty.  If the value is not map-able,
+# this is a no-op.
+#
+# Stack: ( VAL -- VAL )
+
+instruction msetd ()
+  code
+    PVM_VAL_SET_DIRTY_P (JITTER_TOP_STACK (), 1);
+  end
+end
+
+# Instruction: mcleard
+#
+# Given a value, clear its dirty bit.  If the value is not map-able,
+# this is a no-op.
+#
+# Stack: ( VAL -- VAL )
+
+instruction mcleard ()
+  code
+    PVM_VAL_SET_DIRTY_P (JITTER_TOP_STACK (), 0);
   end
 end
 

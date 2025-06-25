@@ -1876,3 +1876,12 @@ pvm_val_finalize (void)
   pvm_alloc_remove_gc_roots (&void_type, 1);
   pvm_alloc_remove_gc_roots (&common_int_types, 65 * 2);
 }
+
+void
+pvm_val_set_dirty (pvm_val val)
+{
+  if (PVM_IS_ARR (val))
+    PVM_VAL_ARR_DIRTY_P (val)= 1;
+  else if (PVM_IS_SCT (val))
+    PVM_VAL_SCT_DIRTY_P (val) = 1;
+}

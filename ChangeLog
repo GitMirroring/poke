@@ -1,3 +1,14 @@
+2025-06-25  David Faust  <david.faust@oracle.com>
+
+	* libpoke/pvm-val.c (pvm_val_set_dirty): New.
+	* libpoke/pvm-val.h (PVM_MAPINFO_DIRTY_P, PVM_MAPINFO_IOS_PTR) New macros.
+	(struct pvm_mapinfo): Add dirty_p and io members.
+	(PVM_VAL_ARR_DIRTY_P, PVM_VAL_ARR_IOS_PTR, PVM_VAL_SCT_DIRTY)
+	(PVM_VAL_SCT_IOS_PTR, PVM_VAL_SET_IOS_PTR, PVM_VAL_DIRTY_P)
+	(PVM_VAL_SET_DIRTY_P): New macros.
+	* libpoke/pvm.jitter (msetios): Also set ios ptr in the mapped value.
+	(mgetd, msetd, mcleard): New instructions.
+
 2026-03-05  Brian Witte  <brianwitte@mailfence.com>
 
 	pkl-gen: fix writes to nested integral struct fields.

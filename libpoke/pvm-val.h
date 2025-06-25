@@ -194,14 +194,18 @@ typedef struct pvm_val_box *pvm_val_box;
 
 #define PVM_MAPINFO_MAPPED_P(MINFO) ((MINFO).mapped_p)
 #define PVM_MAPINFO_STRICT_P(MINFO) ((MINFO).strict_p)
+#define PVM_MAPINFO_DIRTY_P(MINFO)  ((MINFO).dirty_p)
 #define PVM_MAPINFO_IOS(MINFO) ((MINFO).ios)
+#define PVM_MAPINFO_IOS_PTR(MINFO)  ((MINFO).io)
 #define PVM_MAPINFO_OFFSET(MINFO) ((MINFO).offset)
 
 struct pvm_mapinfo
 {
   int mapped_p;
   int strict_p;
+  int dirty_p;
   pvm_val ios;
+  ios io;
   pvm_val offset;
 };
 
@@ -248,7 +252,9 @@ struct pvm_mapinfo
 #define PVM_VAL_ARR_MAPINFO_BACK(V) (PVM_VAL_ARR(V)->mapinfo_back)
 #define PVM_VAL_ARR_MAPPED_P(V) (PVM_MAPINFO_MAPPED_P (PVM_VAL_ARR_MAPINFO ((V))))
 #define PVM_VAL_ARR_STRICT_P(V) (PVM_MAPINFO_STRICT_P (PVM_VAL_ARR_MAPINFO ((V))))
+#define PVM_VAL_ARR_DIRTY_P(V) (PVM_MAPINFO_DIRTY_P (PVM_VAL_ARR_MAPINFO ((V))))
 #define PVM_VAL_ARR_IOS(V) (PVM_MAPINFO_IOS (PVM_VAL_ARR_MAPINFO ((V))))
+#define PVM_VAL_ARR_IOS_PTR(V) (PVM_MAPINFO_IOS_PTR (PVM_VAL_ARR_MAPINFO ((V))))
 #define PVM_VAL_ARR_OFFSET(V) (PVM_MAPINFO_OFFSET (PVM_VAL_ARR_MAPINFO ((V))))
 #define PVM_VAL_ARR_ELEMS_BOUND(V) (PVM_VAL_ARR(V)->elems_bound)
 #define PVM_VAL_ARR_SIZE_BOUND(V) (PVM_VAL_ARR(V)->size_bound)
@@ -328,7 +334,9 @@ struct pvm_array_elem
 #define PVM_VAL_SCT_MAPINFO_BACK(V) (PVM_VAL_SCT((V))->mapinfo_back)
 #define PVM_VAL_SCT_MAPPED_P(V) (PVM_MAPINFO_MAPPED_P (PVM_VAL_SCT_MAPINFO ((V))))
 #define PVM_VAL_SCT_STRICT_P(V) (PVM_MAPINFO_STRICT_P (PVM_VAL_SCT_MAPINFO ((V))))
+#define PVM_VAL_SCT_DIRTY_P(V) (PVM_MAPINFO_DIRTY_P (PVM_VAL_SCT_MAPINFO ((V))))
 #define PVM_VAL_SCT_IOS(V) (PVM_MAPINFO_IOS (PVM_VAL_SCT_MAPINFO ((V))))
+#define PVM_VAL_SCT_IOS_PTR(V) (PVM_MAPINFO_IOS_PTR (PVM_VAL_SCT_MAPINFO ((V))))
 #define PVM_VAL_SCT_OFFSET(V) (PVM_MAPINFO_OFFSET (PVM_VAL_SCT_MAPINFO ((V))))
 #define PVM_VAL_SCT_MAPPER(V) (PVM_VAL_SCT((V))->mapper)
 #define PVM_VAL_SCT_WRITER(V) (PVM_VAL_SCT((V))->writer)
@@ -622,6 +630,16 @@ typedef struct pvm_off *pvm_off;
         PVM_VAL_SCT_IOS ((V)) = (I);             \
     } while (0)
 
+#define PVM_VAL_SET_IOS_PTR(V,P)		\
+  do						\
+    {						\
+      if (PVM_IS_ARR ((V)))			\
+	PVM_VAL_ARR_IOS_PTR ((V)) = (P);	\
+      else if (PVM_IS_SCT (V))			\
+	PVM_VAL_SCT_IOS_PTR ((V)) = (P);	\
+    } while (0)
+
+
 #define PVM_VAL_MAPPED_P(V)                             \
   (PVM_IS_ARR ((V)) ? PVM_VAL_ARR_MAPPED_P ((V))        \
    : PVM_IS_SCT ((V)) ? PVM_VAL_SCT_MAPPED_P ((V))      \
@@ -650,6 +668,21 @@ typedef struct pvm_off *pvm_off;
       else if (PVM_IS_SCT ((V)))                \
         PVM_VAL_SCT_STRICT_P ((V)) = (I);       \
     }                                           \
+  while (0)
+
+#define PVM_VAL_DIRTY_P(V)				\
+  (PVM_IS_ARR ((V)) ? PVM_VAL_ARR_DIRTY_P ((V))		\
+   : PVM_IS_SCT ((V)) ? PVM_VAL_SCT_DIRTY_P ((V))	\
+   : 0)
+
+#define PVM_VAL_SET_DIRTY_P(V,I)		\
+  do						\
+    {						\
+      if (PVM_IS_ARR ((V)))			\
+	PVM_VAL_ARR_DIRTY_P ((V)) = (I);	\
+      else if (PVM_IS_SCT ((V)))		\
+	PVM_VAL_SCT_DIRTY_P ((V)) = (I);	\
+    }						\
   while (0)
 
 #define PVM_VAL_MAPPER(V)                               \
