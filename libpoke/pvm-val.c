@@ -154,7 +154,7 @@ pvm_val
 pvm_make_array (pvm_val nelem, pvm_val type)
 {
   pvm_val_box box = pvm_make_box (PVM_VAL_TAG_ARR);
-  pvm_array arr = pvm_alloc (sizeof (struct pvm_array));
+  pvm_array arr = pvm_alloc_arr ();
   size_t num_elems = PVM_VAL_ULONG (nelem);
   size_t num_allocated = num_elems > 0 ? num_elems : 16;
   size_t nbytes = (sizeof (struct pvm_array_elem) * num_allocated);
@@ -302,7 +302,7 @@ pvm_val
 pvm_make_struct (pvm_val nfields, pvm_val nmethods, pvm_val type)
 {
   pvm_val_box box = pvm_make_box (PVM_VAL_TAG_SCT);
-  pvm_struct sct = pvm_alloc (sizeof (struct pvm_struct));
+  pvm_struct sct = pvm_alloc_sct ();
   size_t i;
   size_t nfieldbytes
     = sizeof (struct pvm_struct_field) * PVM_VAL_ULONG (nfields);

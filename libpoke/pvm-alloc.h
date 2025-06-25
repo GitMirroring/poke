@@ -75,6 +75,12 @@ void *pvm_realloc (void *ptr, size_t size)
 void *pvm_alloc_cls (void)
   __attribute__ ((malloc));
 
+void *pvm_alloc_arr (void)
+  __attribute__ ((malloc));
+
+void *pvm_alloc_sct (void)
+  __attribute__ ((malloc));
+
 /* Allocate and return a copy of the given STRING.  This call has the
    same semantics than strdup(3).  */
 

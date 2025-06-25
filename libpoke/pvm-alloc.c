@@ -65,6 +65,28 @@ pvm_alloc_finalize_closure (void *object, void *client_data)
   /*  pvm_destroy_program (PVM_VAL_CLS_PROGRAM (cls)); */
 }
 
+static void
+pvm_alloc_finalize_struct (void *object, void *client_data)
+{
+  /* Remove from range map table.  */
+  pvm_struct sct = (pvm_struct) object;
+  pvm_val val = (uint64_t) sct | PVM_VAL_TAG_SCT;
+
+  if (sct->mapinfo.mapped_p)
+    ios_deregister_range (val, sct->mapinfo.io, sct->mapinfo.offset);
+}
+
+static void
+pvm_alloc_finalize_array (void *object, void *client_data)
+{
+  /* Remove from range map table.  */
+  pvm_array arr = (pvm_array) object;
+  pvm_val val = (uint64_t) arr | PVM_VAL_TAG_ARR;
+
+  if (arr->mapinfo.mapped_p)
+    ios_deregister_range (val, arr->mapinfo.io, arr->mapinfo.offset);
+}
+
 void *
 pvm_alloc_cls (void)
 {
@@ -73,6 +95,24 @@ pvm_alloc_cls (void)
   GC_register_finalizer_no_order (cls, pvm_alloc_finalize_closure, NULL,
                                   NULL, NULL);
   return cls;
+}
+
+void *
+pvm_alloc_arr (void)
+{
+  pvm_array arr = pvm_alloc (sizeof (struct pvm_array));
+  GC_register_finalizer_no_order (arr, pvm_alloc_finalize_array, NULL,
+				  NULL, NULL);
+  return arr;
+}
+
+void *
+pvm_alloc_sct (void)
+{
+  pvm_struct sct = pvm_alloc (sizeof (struct pvm_struct));
+  GC_register_finalizer_no_order (sct, pvm_alloc_finalize_struct, NULL,
+				  NULL, NULL);
+  return sct;
 }
 
 void

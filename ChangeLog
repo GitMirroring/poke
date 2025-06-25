@@ -1,5 +1,37 @@
 2025-06-25  David Faust  <david.faust@oracle.com>
 
+	* libpoke/ios.c (struct interval_node, struct range_table): New.
+	(struct ios): Add ranges member.
+	(ios_open): Allocate and initialize range table for the ios.
+	(ios_close): Empty and free the range table.
+	(ios_write_int, ios_write_uint): Mark the affected range dirty.
+	(interval_mknode, interval_tree_insert, interval_tree_lookup)
+	(recalc_max)
+	(interval_tree_min, replace_node, interval_tree_delete)
+	(interval_tree_remove, interval_node_overlap, interval_tree_mark)
+	(interval_tree_mark_all, interval_tree_empty): New static
+	functions implementing the interval tree.
+	(range_table_remove, range_table_empty, range_table_insert)
+	(range_table_mark_dirty, range_table_mark_dirty_all): New
+	functions implenting the interface to the range table.
+	(ios_register_range, ios_get_ranges, ios_deregister_range)
+	(ios_mark_dirty_range, ios_mark_dirty_all): New functions
+	implementing the ios range interface.
+	* libpoke/ios.h (ios_register_range, ios_deregister_range)
+	(ios_mark_dirty_range, ios_get_ranges, ios_mark_dirty_all):
+	Declare them here.
+	* libpoke/pvm-alloc.c (pvm_alloc_finalize_struct)
+	(pvm_alloc_finalize_array): New.
+	(pvm_alloc_arr, pvm_alloc_sct): New.
+	* libpoke/pvm-alloc.h (pvm_alloc_arr, pvm_alloc_sct): Declarations here.
+	* libpoke/pvm-val.c (pvm_make_array): Use pvm_alloc_arr.
+	(pvm_make_sct): Likewise use pvm_alloc_sct.
+	* libpoke/pvm.c (pvm_shutdown): Trigger a GC pass between
+	finalizing values and calling ios_shutdown.
+	* libpoke/pvm.jitter (ioregval, iodirtyall): New.
+
+2025-06-25  David Faust  <david.faust@oracle.com>
+
 	* libpoke/pvm-val.c (pvm_val_set_dirty): New.
 	* libpoke/pvm-val.h (PVM_MAPINFO_DIRTY_P, PVM_MAPINFO_IOS_PTR) New macros.
 	(struct pvm_mapinfo): Add dirty_p and io members.
