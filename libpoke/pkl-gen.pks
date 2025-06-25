@@ -222,6 +222,15 @@
         pushvar $strict       ; ARRAY STRICT
         msets                 ; ARRAY
         map                   ; ARRAY
+        ;; Register the newly mapped array in the IOS
+        dup                   ; ARRAY ARRAY
+        mgetios               ; ARRAY ARRAY IOS
+        swap                  ; ARRAY IOS ARRAY
+        mgeto                 ; ARRAY IOS ARRAY OFF
+        over                  ; ARRAY IOS ARRAY OFF ARRAY
+        siz                   ; ARRAY IOS ARRAY OFF ARRAY SIZ
+        nip                   ; ARRAY IOS ARRAY OFF SIZ
+        ioregval              ; ARRAY
         popf 1
         return
 .bounds_fail:
@@ -1458,6 +1467,15 @@
         pushvar $strict         ; SCT STRICT
         msets                   ; SCT
         map                     ; SCT
+        ;; Register the newly mapped struct in the IOS
+        dup                   ; SCT SCT
+        mgetios               ; SCT SCT IOS
+        swap                  ; SCT IOS SCT
+        mgeto                 ; SCT IOS SCT OFF
+        over                  ; SCT IOS SCT OFF SCT
+        siz                   ; SCT IOS SCT OFF SCT SIZ
+        nip                   ; SCT IOS SCT OFF SIZ
+        ioregval              ; ... SCT
         popf 1
         return
         .end
@@ -3778,6 +3796,15 @@
         mseto                   ; TARR
         ;; Mark the new array as mapped.
         map                     ; TARR
+        ;; Register the new array in the ios.
+        dup                     ; TARR TARR
+        mgetios                 ; TARR TARR IOS
+        swap                    ; TARR IOS TARR
+        mgeto                   ; TARR IOS TARR OFF
+        over                    ; TARR IOS TARR OFF ARRAY
+        siz                     ; TARR IOS TARR OFF ARRAY SIZ
+        nip                     ; TARR IOS TARR OFF SIZ
+        ioregval                ; TARR
         ;; Remap!!
         aremap
         ba .done

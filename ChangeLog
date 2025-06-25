@@ -1,5 +1,16 @@
 2025-06-25  David Faust  <david.faust@oracle.com>
 
+	* libpoke/pkl-gen.pks (RAS_FUNCTION_ARRAY_MAPPER)
+	(RAS_FUNCTION_STRUCT_MAPPER, ATRIM): Register newly mapped value
+	in the ios.
+	* libpoke/pkl-insn.def (PKL_INSN_MGETD, PKL_INSN_MSETD)
+	(PKL_INSN_MCLEARD): New instructions.
+	(PKL_INSN_IOREGVAL, PKL_INSN_IOGETRANGES, PKL_INSN_IOGETRANGE):
+	Likewise.
+	* libpoke/pkl-rt.pk (ioregval): New function.
+
+2025-06-25  David Faust  <david.faust@oracle.com>
+
 	* libpoke/ios.c (struct interval_node, struct range_table): New.
 	(struct ios): Add ranges member.
 	(ios_open): Allocate and initialize range table for the ios.
