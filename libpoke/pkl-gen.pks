@@ -3732,6 +3732,43 @@
         addlu
         nip2                    ; ATYP (TO-FROM+1)
         mka                     ; TARR
+        ;; Set offset of new array before adding elements, so that
+        ;; elements inherit the proper base offset.
+        ;; If the trimmed array is mapped then the resulting array
+        ;; is mapped as well, with the following attributes:
+        ;;
+        ;;   OFFSET = original OFFSET + (OFF(FROM) - original OFFSET)
+        ;;   EBOUND = TO - FROM + 1
+        ;;
+        ;; The mapping of the resulting array is always
+        ;; bounded by number of elements, regardless of the
+        ;; characteristics of the mapping of the trimmed array.
+        pushvar $array          ; TARR ARR
+        mm                      ; TARR ARR MAPPED_P
+        bzi .skipoffset
+        drop                    ; TARR ARR
+        ;; Calculate the new offset.
+        mgeto                   ; TARR ARR BOFFSET
+        swap                    ; TARR BOFFSET ARR
+        pushvar $from           ; TARR BOFFSET ARR FROM
+        arefo                   ; TARR BOFFSET ARR FROM BOFF(FROM)
+        nip                     ; TARR BOFFSET ARR BOFF(FROM)
+        rot                     ; TARR ARR BOFF(FROM) BOFFSET
+        dup                     ; TARR ARR BOFF(FROM) BOFFSET BOFFSET
+        quake                   ; TARR ARR BOFFSET BOFF(FROM) BOFFSET
+        sublu
+        nip2                    ; TARR ARR BOFFSET (BOFF(FROM)-BOFFSET)
+        addlu
+        nip2                    ; TARR ARR BOFFSET
+        rot                     ; ARR BOFFSET TARR
+        swap                    ; ARR TARR BOFFSET
+        mseto                   ; ARR TARR
+        nip                     ; TARR
+        ba .addelems
+      .skipoffset:
+        drop                    ; TARR ARR
+        drop                    ; ARR
+      .addelems:
         ;; Now add the elements to the new array.
         pushvar $from
         regvar $idx

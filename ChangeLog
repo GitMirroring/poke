@@ -1,5 +1,10 @@
 2025-06-25  David Faust  <david.faust@oracle.com>
 
+	* libpoke/pkl-gen.pks (ATRIM): Set offset of new array before
+	adding elements so the elements inherit the proper base offset.
+
+2025-06-25  David Faust  <david.faust@oracle.com>
+
 	* libpoke/pkl-gen.pks (RAS_FUNCTION_STRUCT_MAPPER): Mark newly
 	mapped struct dirty if endianness changed while mapping its
 	fields.
