@@ -11,6 +11,8 @@ fun func = (int i, long l, string s) uint:
 
 /* { dg-command {var foo = Foo2 @ 0#B } } */
 /* { dg-command {foo.f = func} } */
+/* { dg-command {foo.f (1,2,"foo")} }
+/* { dg-output "6U\n" } */
 /* { dg-command {foo.a = 20} }
 /* { dg-command {foo.f (1,2,"foo")} } */
 /* Note that the expected output is 0U due to the remap of the mapped
