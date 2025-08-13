@@ -57,8 +57,8 @@ type USTAR_Sector =
         return atoi (catos (file_size), 8)#B;
       }
 
-     method get_last_mod_time = offset<uint<64>,B>:
-       {
-         return atoi (catos (file_size), 8)#B;
-       }
+    method get_last_mod_time = int<64>:
+      {
+        return atoi (catos (last_mod_time), 8);
+      }
   };
