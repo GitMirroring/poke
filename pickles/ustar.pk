@@ -41,7 +41,7 @@ type USTAR_Sector =
                                       USTAR_CHAR_DEV, USTAR_BLOCK_DEV, USTAR_DIRECTORY,
                                       USTAR_FIFO];
     uint<8>[100] linked_file_name;
-    uint<48> ustar;
+    string ustar == "ustar";
     uint<8>[2] ustar_version == ['0','0'];
     uint<8>[32] owner_user_name;
     uint<8>[32] owner_group_name;
@@ -49,8 +49,15 @@ type USTAR_Sector =
     uint<64> device_minor_number;
     uint<8>[155] filename_prefix;
 
+    uint<8>[12]; /* Padding.  */
+
     /* Both file_size and last_mod_time are encoded as ASCII strings
        containing octal digits.  */
+
+    method get_file_name = string:
+      {
+        return catos (file_name);
+      }
 
     method get_file_size = offset<uint<64>,B>:
       {
@@ -60,5 +67,15 @@ type USTAR_Sector =
     method get_last_mod_time = int<64>:
       {
         return atoi (catos (last_mod_time), 8);
+      }
+
+    method get_owner_user_name = string:
+      {
+        return catos (owner_user_name);
+      }
+
+    method get_owner_group_name = string:
+      {
+        return catos (owner_group_name);
       }
   };

@@ -1,3 +1,13 @@
+2025-08-15  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* pickles/ustar.pk (USTAR_Sector.ustar): Change type to string
+	and add constraint.
+	(USTAR_Sector): Add 12#B of padding at the end.
+	(USTAR_Sector.get_file_name): New helper method.
+	(USTAR_Sector.get_owner_user_name): Likewise.
+	(USTAR_Sector.get_owner_group_name): Likewise.
+	* testsuite/poke.pickles/ustar-test.pk: Add tests.
+
 2025-08-13  Paul Bolle <pebolle@tiscali.nl>
 
 	* pickles/ustar.pk: Make get_last_mod_time() do what it was intended
