@@ -2381,7 +2381,7 @@ Now, let's switch to little endian:
 (poke) int<12> @@ 0#B
 0b010011111111 as int<12>
 (poke) .set obase 10
-(poke) int<12> @ 0#B
+(poke) int<12> @@ 0#B
 1279 as int<12>
 @end example
 
@@ -5183,7 +5183,7 @@ be able to access them the same way than fields, right?''.
 So you will want to do:
 
 @example
-(poke) var p = Packet @ 12#B
+(poke) var p = Packet @@ 12#B
 (poke) p.real_size
 (poke) p.corrected_crc
 @end example
@@ -5268,7 +5268,7 @@ can be invoked using dot-notation, once a Packet value is
 mapped/constructed:
 
 @example
-(poke) var p = Packet @ 12#B
+(poke) var p = Packet @@ 12#B
 (poke) p.c_crc
 0xdeadbeef
 @end example
@@ -5873,7 +5873,7 @@ This definition is simple enough, but it doesn't allow us to just map
 an array of inodes like this:
 
 @example
-(poke) Inode[] @ 0#B
+(poke) Inode[] @@ 0#B
 @end example
 
 We could of course add the data and padding explicitly to the inode
@@ -5998,7 +5998,7 @@ Let's take a look to the different elements:
 
 @example
 (poke) .load bson.pk
-(poke) var d = BSON_Doc @ 0#B
+(poke) var d = BSON_Doc @@ 0#B
 (poke) d.elements'length
 0x3UL
 (poke) d.elements[0]
@@ -7359,7 +7359,7 @@ try
 
   var b = byte @@ stdin : offset;
   if (b >= 0x20 && b <= 0x7e)
-    byte @ stdout : iosize (stdout) = b;
+    byte @@ stdout : iosize (stdout) = b;
 
   offset = offset + 1#B;
 @}
@@ -8576,8 +8576,8 @@ Beaglebone black board and reading the output enable (GPIO_OE) and data out
 @example
 $ poke
 (poke) .mmap /dev/mem, 0x4804c000, 0x1000
-(poke) int @ 0x13C#B
-(poke) int @ 0x134#B
+(poke) int @@ 0x13C#B
+(poke) int @@ 0x134#B
 @end example
 
 When using int on 32 bit systems the full address bus width is used when reading
@@ -11540,13 +11540,13 @@ labels:
 type COFF_LINENO_32 =
   struct
   @{
-    uint<32> l_lnno @ 4#B; /* Line number.  */
+    uint<32> l_lnno @@ 4#B; /* Line number.  */
 
     union
     @{
       uint<32> l_symndx : l_lnno == 0;
       offset<uint<32>,B> l_paddr;
-    @} l_addr @ 0#B;
+    @} l_addr @@ 0#B;
   @};
 @end example
 
@@ -12619,7 +12619,7 @@ value:
 1
 (poke) "foo" isa string
 1
-(poke) (Packet @ 0#B) isa Packet
+(poke) (Packet @@ 0#B) isa Packet
 1
 (poke) 2 as int<3> isa uint<4>
 0
@@ -16203,9 +16203,9 @@ with_cur_ios
   :handler "*buf*"
   :do lambda void:
   @{
-    var arr = uint<32>[1] @ 0#B;
+    var arr = uint<32>[1] @@ 0#B;
     arr[0] = 0x1234;
-    printf("%v", byte[4] @ 0#b);
+    printf("%v", byte[4] @@ 0#b);
   @}
 @end example
 
