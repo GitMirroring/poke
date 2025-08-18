@@ -5749,7 +5749,7 @@ Using this method you can easily access the payload (again as an array
 of ULEB128 numbers) like this:
 
 @example
-var numbers = ULEB128[packet.payload_size @@ packet.get_payload_offset
+var numbers = ULEB128[packet.payload_size] @@ packet.get_payload_offset
 @end example
 
 Finally, using labels for this purpose makes the printed
