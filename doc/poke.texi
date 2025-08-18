@@ -6078,7 +6078,7 @@ type BSON_Elem =
 
     struct
     @{
-      byte tag : tag == 0x12;
+      byte tag : tag == 0x02;
       string name;
       BSON_String value;
     @} str;
