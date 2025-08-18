@@ -1,5 +1,10 @@
 2025-08-15  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* doc/poke.texi (Payloads): Fix example to use megabits instead of
+	megabytes.
+
+2025-08-15  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* pickles/ustar.pk (USTAR_Sector.ustar): Change type to string
 	and add constraint.
 	(USTAR_Sector): Add 12#B of padding at the end.

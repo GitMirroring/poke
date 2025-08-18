@@ -5703,16 +5703,16 @@ type Packet =
 (poke) Packet @{ payload_size = 500#Mb @}
 Packet @{
   payload_size=62500000U#B @@ 0UL#b,
-  flags=0 @@ 4000000032UL#b
+  flags=0 @@ 500000032UL#b
 @} @@ 0UL#b
 @end example
 
 In this example we used the @code{omaps} option, which asks poke to
 print the offsets of the fields.  The offset of @code{flags} is
-4000000032 bits, or 500 megabytes:
+500000032 bits, or 500 megabits:
 
 @example
-(poke) 4000000032UL #b/#MB
+(poke) 500000032UL #b/#Mb
 500UL
 @end example
 
