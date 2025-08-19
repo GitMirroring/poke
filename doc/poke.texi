@@ -9762,8 +9762,7 @@ The following attributes are defined for integer values.
 
 @table @code
 @item size
-Gives an offset with the storage occupied by the string.  This
-includes the terminating null.  Examples:
+Gives an offset with the storage occupied by the integer.  Examples:
 
 @example
 (poke) 10'size
