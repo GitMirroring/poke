@@ -16198,7 +16198,7 @@ It can be used to deal with files without risk of leaking file
 descriptors.
 
 @example
-with_cur_ios
+with_temp_ios
   :handler "*buf*"
   :do lambda void:
   @{
