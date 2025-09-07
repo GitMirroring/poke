@@ -1,3 +1,12 @@
+2025-09-07  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-asm.c (pkl_asm_insn_binop): Use correct insn for
+	converting UINT to ULONG.
+	* libpoke/pkl-gen.pks (RAS_MACRO_TYPEOF): Fix value of `code' field
+	to be of type UINT instead of INT.
+	* libpoke/pvm.jitter (PVM_BOOL_BINOP): Add assertion for run-time type
+	checking.
+
 2025-08-15  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* doc/poke.texi (Payloads): Fix example to use megabits instead of

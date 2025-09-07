@@ -310,6 +310,8 @@ late-header-c
 # define PVM_BOOL_BINOP(TYPE,OP)                                             \
    do                                                                        \
     {                                                                        \
+      PVM_ASSERT (PVM_IS_##TYPE (JITTER_UNDER_TOP_STACK ()));                \
+      PVM_ASSERT (PVM_IS_##TYPE (JITTER_TOP_STACK ()));                      \
       pvm_val res = PVM_MAKE_INT (PVM_VAL_##TYPE (JITTER_UNDER_TOP_STACK ()) \
                                   OP PVM_VAL_##TYPE (JITTER_TOP_STACK ()), 32); \
       JITTER_PUSH_STACK (res);                                               \

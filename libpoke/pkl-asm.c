@@ -729,7 +729,7 @@ pkl_asm_insn_binop (pkl_asm pasm,
             = pvm_program_fresh_label (pasm->program);
 
           /* VAL UINT */
-          pkl_asm_insn (pasm, PKL_INSN_IUTOL, 64); /* VAL UINT ULONG */
+          pkl_asm_insn (pasm, PKL_INSN_IUTOLU, 64);/* VAL UINT ULONG */
           pkl_asm_insn (pasm, PKL_INSN_ROT);       /* UINT ULONG VAL */
           pkl_asm_insn (pasm, PKL_INSN_SIZ);       /* UINT ULONG VAL SIZ */
           pkl_asm_insn (pasm, PKL_INSN_QUAKE);     /* UINT VAL ULONG SIZ */

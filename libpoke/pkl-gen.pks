@@ -2949,7 +2949,7 @@
   .c  default:
   .c      pk_type_code = pk_type_unknown;
   .c }
-        .let #type_code = pvm_make_int (pk_type_code, 32)
+        .let #type_code = pvm_make_uint (pk_type_code, 32)
         push #type_code         ; OFF EOFF ENAME EVAL
         ;; Number of methods
         push ulong<64>0         ; OFF EOFF ENAME EVAL 0UL
