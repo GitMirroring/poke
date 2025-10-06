@@ -32,6 +32,8 @@
 #include "pk-utils.h"
 #include "ios.h"
 #include "ios-dev.h"
+/* #include "pvm.h" */
+#include "pvm-val.h"
 
 #define IOS_GET_C_ERR_CHCK(c, io, off)                                 \
   {                                                                    \
@@ -1750,12 +1752,12 @@ interval_mknode (uint64_t val, uint64_t low, uint64_t high)
 
 /* Insert the interval [LOW, HIGH] with value VAL into the interval tree
    rooted at NODE.  */
-static void
+static int
 interval_tree_insert (struct interval_node *node,
 		      uint64_t val, uint64_t low, uint64_t high)
 {
   if (!node)
-    return;
+    return IOS_ERROR;
 
   /* Update high-water marker for this node.  */
   if (high > node->highest)
@@ -1766,23 +1768,29 @@ interval_tree_insert (struct interval_node *node,
   if (low < node->low)
     {
       if (node->left)
-	interval_tree_insert (node->left, val, low, high);
+	return interval_tree_insert (node->left, val, low, high);
       else
 	{
 	  node->left = interval_mknode (val, low, high);
+	  if (!node->left)
+	    return IOS_ENOMEM;
 	  node->left->parent = node;
 	}
     }
   else
     {
       if (node->right)
-	interval_tree_insert (node->right, val, low, high);
+	return interval_tree_insert (node->right, val, low, high);
       else
 	{
 	  node->right = interval_mknode (val, low, high);
+	  if (!node->left)
+	    return IOS_ENOMEM;
 	  node->right->parent = node;
 	}
     }
+
+  return IOS_OK;
 }
 
 /* Locate the node containing VAL in the tree rooted at NODE, using OFFS as
@@ -1966,7 +1974,8 @@ interval_tree_mark (struct interval_node *node, uint64_t low,
 
   /* Check this node.  */
   if (interval_node_overlap (node, low, high))
-    pvm_val_set_dirty (node->val);
+    /* pvm_val_set_dirty (node->val); */
+    PVM_VAL_SET_DIRTY_P (node->val, 1);
 
   /* If the high end of the interval is less than the low of this node,
      there will be no matches in the right subtree.  */
@@ -2019,20 +2028,25 @@ range_table_empty (struct range_table *tbl)
   tbl->num_entries = 0;
 }
 
-static void
+static int
 range_table_insert (struct range_table *tbl, uint64_t val,
 		    uint64_t low, uint64_t high)
 {
+  int res = IOS_OK;
   if (tbl->tree)
     {
-      interval_tree_insert (tbl->tree, val, low, high);
+      res = interval_tree_insert (tbl->tree, val, low, high);
       tbl->num_entries++;
     }
   else
     {
       tbl->tree = interval_mknode (val, low, high);
+      if (!tbl->tree)
+	res = IOS_ENOMEM;
       tbl->num_entries = 1;
     }
+
+  return res;
 }
 
 static void
@@ -2051,11 +2065,11 @@ range_table_mark_dirty_all (struct range_table *tbl)
   interval_tree_mark_all (tbl->tree);
 }
 
-void
+int
 ios_register_range (uint64_t val, ios io, ios_off offset, unsigned long size)
 {
   uint64_t offs = (uint64_t) offset;
-  range_table_insert (io->ranges, val, offs, offs + size);
+  return range_table_insert (io->ranges, val, offs, offs + size);
 }
 
 uint64_t

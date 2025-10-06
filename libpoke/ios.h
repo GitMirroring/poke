@@ -400,8 +400,9 @@ void ios_dec_sub_dev (ios io);
 
 /* **************** Range Mapping ************** */
 
-/* Register VAL to be mapped in IO having given OFFSET and SIZE.  */
-void ios_register_range (uint64_t val, ios io, ios_off offset, unsigned long size);
+/* Register VAL to be mapped in IO having given OFFSET and SIZE.
+   Return IOS_OK or IOS_ENOMEM.  */
+int ios_register_range (uint64_t val, ios io, ios_off offset, unsigned long size);
 
 /* De-register VAL from IO's range table.  OFFSET is the offset where VAL
    is mapped.  Called from pvm-alloc finalizers for struct and array values.  */
