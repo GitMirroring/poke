@@ -1,3 +1,13 @@
+2025-10-06  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* pickles/time.pk (ptime_str): New function to return string instead of
+	printing the time on stdout.  This function zero-pad two-digits numbers
+	for `day', `hour', `minute' and `seconds'.
+	(ptime): Update to use `ptime_str'.
+	* testsuite/poke.pickles/time-test.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+	* testsuite/poke.time/time32.pk: Update outputs accordingly.
+
 2025-09-07  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-asm.c (pkl_asm_insn_binop): Use correct insn for

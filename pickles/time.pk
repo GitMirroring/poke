@@ -28,7 +28,7 @@ fun gettimeofday = Timespec:
   return Timespec {sec = time[0], nsec = time[1]};
 }
 
-fun ptime = (uint<64> seconds) void:
+fun ptime_str = (uint<64> seconds) string:
 {
     fun days_in_year = (int<32> year) int<32>:
     {
@@ -92,9 +92,19 @@ fun ptime = (uint<64> seconds) void:
 	  }
       }
 
-    printf ("%<date-time:%i32d-%s-%i32d %i32d:%i32d:%i32d%>",
-	    year, month_names[month], day + 1,
-	    hour, minute, seconds);
+    fun pad = (int<32> i) string:
+    {
+      return i < 10 ? format ("0%i32d", i) : format ("%i32d", i);
+    }
+
+    return format ("%<date-time:%i32d-%s-%s %s:%s:%s%>",
+                   year, month_names[month], pad (day + 1),
+                   pad (hour), pad (minute), pad (seconds));
+}
+
+fun ptime = (uint<64> seconds) void:
+{
+  print (ptime_str (seconds));
 }
 
 type POSIX_Time32 = struct

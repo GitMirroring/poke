@@ -9,10 +9,10 @@ load time;
 /* { dg-data {i*} {0 1576140896 68173323} } */
 
 /* { dg-command {POSIX_Time32 @ 0#B} } */
-/* { dg-output "#<1970-Jan-1 0:0:0>\n" } */
+/* { dg-output "#<1970-Jan-01 00:00:00>\n" } */
 
 /* { dg-command {POSIX_Time32 @ 4#B} } */
-/* { dg-output "#<2019-Dec-12 8:54:56>\n" } */
+/* { dg-output "#<2019-Dec-12 08:54:56>\n" } */
 
 /* { dg-command {POSIX_Time32 @ 8#B} } */
-/* { dg-output "#<1972-Feb-29 1:2:3>\n" } */
+/* { dg-output "#<1972-Feb-29 01:02:03>\n" } */
