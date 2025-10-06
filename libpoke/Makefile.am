@@ -63,7 +63,8 @@ libpoke_la_SOURCES = libpoke.h libpoke.c \
                      ios-dev-file.c ios-dev-mem.c \
                      ios-dev-zero.c ios-dev-sub.c \
                      ios-buffer.h ios-buffer.c \
-                     ios-dev-stream.c
+                     ios-dev-stream.c \
+                     ios-range.h ios-range.c
 
 libpoke_la_SOURCES += ../common/pk-utils.c ../common/pk-utils.h
 

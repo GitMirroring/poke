@@ -402,19 +402,19 @@ void ios_dec_sub_dev (ios io);
 
 /* Register VAL to be mapped in IO having given OFFSET and SIZE.
    Return IOS_OK or IOS_ENOMEM.  */
-int ios_register_range (uint64_t val, ios io, ios_off offset, unsigned long size);
+int ios_register_range (uint64_t val, ios io, ios_off offset, ios_off size);
 
 /* De-register VAL from IO's range table.  OFFSET is the offset where VAL
    is mapped.  Called from pvm-alloc finalizers for struct and array values.  */
 void ios_deregister_range (uint64_t val, ios io, ios_off offset);
 
 /* Mark everything mapped in IO overlapping the interval [begin, end] dirty.  */
-void ios_mark_dirty_range (ios io, unsigned long begin, unsigned long end);
-
-/* Return the number of ranges currently mapped in IOS.  */
-uint64_t ios_get_ranges (ios io);
+void ios_mark_dirty_range (ios io, ios_off begin, ios_off end);
 
 /* Mark everything currently mapped in IOS dirty.  */
 void ios_mark_dirty_all (ios io);
+
+/* Return the number of ranges currently mapped in IOS.  */
+uint64_t ios_get_ranges (ios io);
 
 #endif /* ! IOS_H */

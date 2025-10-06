@@ -34,6 +34,7 @@
 #include "ios-dev.h"
 /* #include "pvm.h" */
 #include "pvm-val.h"
+#include "ios-range.h"
 
 #define IOS_GET_C_ERR_CHCK(c, io, off)                                 \
   {                                                                    \
@@ -55,23 +56,6 @@
     if (ret != IOD_OK)                                          \
       return IOD_ERROR_TO_IOS_ERROR (ret);                      \
   }
-
-struct interval_node;
-struct range_table {
-  uint64_t num_entries;
-  struct interval_node *tree;
-
-  /* Could store multiple trees for each ios, e.g. if the offset of this
-     value/write is at tree->highest * 4, then start a new tree.
-     Then when checking overlaps we check each tree, but all trees are
-     potentially smaller and easier to balance.
-     Helps in cases where workloads have many changes in local areas
-     but those areas are each disjoint.
-     Suggested by Jose.  */
-
-};
-
-static void range_table_empty (struct range_table *);
 
 /* The following struct implements an instance of an IO space.
 
@@ -101,7 +85,7 @@ struct ios
   void *dev;
   const struct ios_dev_if *dev_if;
   ios_off bias;
-  struct range_table *ranges;
+  struct ios_rangetbl *ranges;
 
   struct ios *next;
 };
@@ -223,11 +207,9 @@ ios_open (ios_context ios_ctx, const char *handler, uint64_t flags,
     return IOS_ENOMEM;
 
   /* Allocate and initialze the range table for the new IO space.  */
-  struct range_table *tbl = malloc (sizeof (struct range_table));
+  struct ios_rangetbl *tbl = ios_rangetbl_create ();
   if (!tbl)
     return IOS_ENOMEM;
-  tbl->tree = NULL;
-  tbl->num_entries = 0;
 
   io->zombie_p = 0;
   io->num_sub_devs = 0;
@@ -341,8 +323,7 @@ ios_close (ios_context ios_ctx, ios io)
     --ios_ctx->next_id;
 
   /* Free the range table of this io.  */
-  range_table_empty (io->ranges);
-  free (io->ranges);
+  ios_rangetbl_destroy (io->ranges);
   io->ranges = NULL;
 
   if (io->num_sub_devs == 0)
@@ -1693,409 +1674,36 @@ ios_dec_sub_dev (ios io)
     free (io);
 }
 
-void pvm_val_set_dirty (uint64_t);
-
-/* Range table implemented as an augmented interval tree.
-   See e.g.
-    https://en.wikipedia.org/wiki/Interval_tree#Augmented_tree
-
-   Every interval is represented as a node in a binary search tree, ordered
-   by the low end of the interval (which corresponds to the offset where
-   a value is mapped; the high end is offset + size).
-
-   Each node additionally stores the highest high-value of any range of itself
-   or any of its children.  This "high-water" mark gives a fast way to avoid
-   checking subtrees for interval overlaps.  */
-struct interval_node {
-  uint64_t low;	  /* Low end of interval,  i.e. mapped value offset. */
-  uint64_t high;  /* High end of interval, i.e. mapped value offset + size.  */
-
-  /* The highest high-value of any interval in this node or its subtrees.
-     Used to speed up interval overlap checks: if the low end of an interval we
-     want to check is higher than this, then it can never overlap any interval
-     in the subtree rooted at this node.  */
-  uint64_t highest;
-
-  /* The relevant mapped pvm_val this node represents.  */
-  uint64_t val;
-
-  struct interval_node *left;
-  struct interval_node *right;
-  struct interval_node *parent;
-};
-
-/* TODO: The tree implemented here does not (yet) do any self-balancing.
-   This may lead to very degraded performance by imbalancing the tree.
-   For example, if the first value mapped in an IOS is mapped at offset 0,
-   then every subsequently mapped value will go in the right subtree... */
-
-/* Allocate and return a new interval node.  */
-static struct interval_node *
-interval_mknode (uint64_t val, uint64_t low, uint64_t high)
-{
-  struct interval_node *new
-    = (struct interval_node *) malloc (sizeof (struct interval_node));
-
-  if (!new)
-    return NULL;
-
-  new->val = val;
-  new->low = low;
-  new->high = high;
-  new->highest = high;
-  new->left = NULL;
-  new->right = NULL;
-  new->parent = NULL;
-
-  return new;
-}
-
-/* Insert the interval [LOW, HIGH] with value VAL into the interval tree
-   rooted at NODE.  */
-static int
-interval_tree_insert (struct interval_node *node,
-		      uint64_t val, uint64_t low, uint64_t high)
-{
-  if (!node)
-    return IOS_ERROR;
-
-  /* Update high-water marker for this node.  */
-  if (high > node->highest)
-    node->highest = high;
-
-  /* TODO: this tree is simple and does not do any sort of self-balancing.  */
-
-  if (low < node->low)
-    {
-      if (node->left)
-	return interval_tree_insert (node->left, val, low, high);
-      else
-	{
-	  node->left = interval_mknode (val, low, high);
-	  if (!node->left)
-	    return IOS_ENOMEM;
-	  node->left->parent = node;
-	}
-    }
-  else
-    {
-      if (node->right)
-	return interval_tree_insert (node->right, val, low, high);
-      else
-	{
-	  node->right = interval_mknode (val, low, high);
-	  if (!node->left)
-	    return IOS_ENOMEM;
-	  node->right->parent = node;
-	}
-    }
-
-  return IOS_OK;
-}
-
-/* Locate the node containing VAL in the tree rooted at NODE, using OFFS as
-   the offset of the mapped value to guide the search.
-   VAL is assumed to be unique in the tree.
-   If OFFS is wrong, the node may not be located.  */
-static struct interval_node *
-interval_tree_lookup (struct interval_node *node, uint64_t val, uint64_t offs)
-{
-  if (!node)
-    return NULL;
-
-  /* If the low offset is above the high-water of this node, it cannot be
-     anywhere in the subtree from this node.  */
-  if (offs > node->highest)
-    return NULL;
-
-  /* Check this node, assuming val unique */
-  if (node->val == val)
-    return node;
-
-  if (offs < node->low)
-    return interval_tree_lookup (node->left, val, offs);
-  else
-    return interval_tree_lookup (node->right, val, offs);
-}
-
-static uint64_t
-recalc_max (struct interval_node *node)
-{
-  uint64_t hw = node->high;
-  if (node->left && node->left->highest > hw)
-    hw = node->left->highest;
-  if (node->right && node->right->highest > node->highest)
-    hw = node->right->highest;
-
-  return hw;
-}
-
-/* Return the minimum node in the tree rooted at NODE.  */
-static struct interval_node *
-interval_tree_min (struct interval_node *node)
-{
-  while (node->left)
-    node = node->left;
-  return node;
-}
-
-/* Replace node OLD with NEW in place. Helper for deletion.
-   Does not free OLD.  */
-static void
-replace_node (struct interval_node *old, struct interval_node *new)
-{
-  if (old->parent == NULL)
-    ;
-  else if (old == old->parent->left)
-    old->parent->left = new;
-  else /* u == u->parent->right */
-    old->parent->right = new;
-
-  if (new)
-    new->parent = old->parent;
-}
-
-/* Delete NODE from its tree (and maintain the tree).
-   Return whatever node now occupies its place.  */
-static struct interval_node *
-interval_tree_delete (struct interval_node *node)
-{
-  struct interval_node *s = NULL;
-  if (node->left == NULL && node->right == NULL)
-    {
-      /* No children, replace with NULL (updates the parent).  */
-      replace_node (node, NULL);
-    }
-  else if (node->left == NULL)
-    {
-      /* No left subtree -> replace with right child.  */
-      replace_node (node, node->right);
-      s = node->right;
-    }
-  else if (node->right == NULL)
-    {
-      /* No right subtree -> replace with left child.  */
-      replace_node (node, node->left);
-      s = node->left;
-    }
-  else
-    {
-      /* NODE is somewhere in the middle, with both left and right subtrees.
-	 Replace it with the in-order successor, S, which is just the minimum
-	 node in the right subtree.
-	 Note that S does not have a left subtree.  */
-      s = interval_tree_min (node->right);
-
-      if (s != node->right)
-	{
-	  /* Replace S by its own right child (it has no left). */
-	  replace_node (s, s->right);
-
-	  /* S takes NODE's right subtree.  */
-	  s->right = node->right;
-	  s->right->parent = s;
-	}
-
-      replace_node (node, s);
-
-      /* S takes NODE's left subtree.  */
-      s->left = node->left;
-      s->left->parent = s;
-
-      /* Recalculate the high-water mark for S since it has new children.  */
-      s->highest =  recalc_max (s);
-    }
-
-  /* After replacing NODE, recalculate the high-water mark in the parent,
-     which may have been from NODE's interval.  */
-  if (node->parent)
-    node->parent->highest = recalc_max (node->parent);
-
-  free (node);
-  return s;
-}
-
-/* Remove the node containing VAL if it is in the tree rooted at NODE,
-   which should be mapped at OFFS.
-   VAL is assumed to be unique in the tree.
-   If OFFS is incorrect, the node may not be removed even if VAL was
-   present in the tree.
-
-   Return value is the new root of the tree, in case the node we are
-   removing was the root.  */
-
-static struct interval_node *
-interval_tree_remove (struct interval_node *node, uint64_t val, uint64_t offs)
-{
-  if (!node)
-    return NULL;
-
-  struct interval_node *target;
-  target = interval_tree_lookup (node, val, offs);
-
-  if (!target)
-    return node;
-
-  if (!target->parent)
-    {
-      /* We are removing the root of the tree. */
-      return interval_tree_delete (target);
-    }
-
-  interval_tree_delete (target);
-  return node;
-}
-
-/* Check a single interval node for overlap against the given interval.  */
-
-static int
-interval_node_overlap (struct interval_node *node, uint64_t low, uint64_t high)
-{
-  return (node->low <= high && node->high >= low);
-}
-
-/* Traverse the interval tree rooted at ROOT and mark any values in it dirty
-   if their interval overlaps with the one provided by [LOW,HIGH].  */
-
-static void
-interval_tree_mark (struct interval_node *node, uint64_t low,
-		    uint64_t high)
-{
-  if (!node)
-    return;
-
-  /* If the low end of the interval is above the high-water mark of this node,
-     then it cannot overlap any interval in this (sub)tree.  */
-  if (low > node->highest)
-    return;
-
-  /* Check left subtree.  */
-  interval_tree_mark (node->left, low, high);
-
-  /* Check this node.  */
-  if (interval_node_overlap (node, low, high))
-    /* pvm_val_set_dirty (node->val); */
-    PVM_VAL_SET_DIRTY_P (node->val, 1);
-
-  /* If the high end of the interval is less than the low of this node,
-     there will be no matches in the right subtree.  */
-  if (high < node->low)
-    return;
-
-  /* Check right subtree.  */
-  interval_tree_mark (node->right, low, high);
-}
-
-/* Unconditionally mark every value in the tree dirty.  */
-
-static void
-interval_tree_mark_all (struct interval_node *node)
-{
-  if (!node)
-    return;
-
-  interval_tree_mark_all (node->left);
-  pvm_val_set_dirty (node->val);
-  interval_tree_mark_all (node->right);
-}
-
-static void
-interval_tree_empty (struct interval_node *node)
-{
-  if (!node)
-    return;
-
-  interval_tree_empty (node->left);
-  interval_tree_empty (node->right);
-  free (node);
-}
-
-static void
-range_table_remove (struct range_table *tbl, uint64_t val, uint64_t offs)
-{
-  struct interval_node *new_root = interval_tree_remove (tbl->tree, val, offs);
-  tbl->tree = new_root;
-}
-
-static void
-range_table_empty (struct range_table *tbl)
-{
-  if (!tbl)
-    return;
-
-  struct interval_node *node = tbl->tree;
-  interval_tree_empty (node);
-  tbl->num_entries = 0;
-}
-
-static int
-range_table_insert (struct range_table *tbl, uint64_t val,
-		    uint64_t low, uint64_t high)
-{
-  int res = IOS_OK;
-  if (tbl->tree)
-    {
-      res = interval_tree_insert (tbl->tree, val, low, high);
-      tbl->num_entries++;
-    }
-  else
-    {
-      tbl->tree = interval_mknode (val, low, high);
-      if (!tbl->tree)
-	res = IOS_ENOMEM;
-      tbl->num_entries = 1;
-    }
-
-  return res;
-}
-
-static void
-range_table_mark_dirty (struct range_table *tbl, uint64_t low, uint64_t high)
-{
-  if (!tbl)
-    return;
-  interval_tree_mark (tbl->tree, low, high);
-}
-
-static void
-range_table_mark_dirty_all (struct range_table *tbl)
-{
-  if (!tbl)
-    return;
-  interval_tree_mark_all (tbl->tree);
-}
-
 int
-ios_register_range (uint64_t val, ios io, ios_off offset, unsigned long size)
+ios_register_range (pvm_val val, ios io, ios_off offset, ios_off size)
 {
-  uint64_t offs = (uint64_t) offset;
-  return range_table_insert (io->ranges, val, offs, offs + size);
-}
-
-uint64_t
-ios_get_ranges (ios io)
-{
-  return io->ranges->num_entries;
+  return ios_rangetbl_insert (io->ranges, val, offset, offset + size);
 }
 
 /* De-register VAL from the IO space, where it should be mapped at OFFSET.
    Called from the pvm-alloc finalizers for structs and arrays, which means
    this gets called from GC passes.  */
 void
-ios_deregister_range (uint64_t val, ios io, ios_off offset)
+ios_deregister_range (pvm_val val, ios io, ios_off offset)
 {
   if (io && io->ranges)
-    range_table_remove (io->ranges, val, offset);
+    ios_rangetbl_remove (io->ranges, val, offset);
+}
+
+uint64_t
+ios_get_ranges (ios io)
+{
+  return ios_rangetbl_nentries (io->ranges);
 }
 
 void
-ios_mark_dirty_range (ios io, unsigned long begin, unsigned long end)
+ios_mark_dirty_range (ios io, ios_off begin, ios_off end)
 {
-  range_table_mark_dirty (io->ranges, begin, end);
+  ios_rangetbl_dirty (io->ranges, begin, end);
 }
 
 void
 ios_mark_dirty_all (ios io)
 {
-  range_table_mark_dirty_all (io->ranges);
+  ios_rangetbl_dirty_all (io->ranges);
 }
