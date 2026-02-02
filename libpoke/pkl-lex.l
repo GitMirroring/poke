@@ -1,6 +1,6 @@
 /* pkl-lex.l - Lexer for Poke.  */
 
-/* Copyright (C) 2019, 2020, 2021, 2022, 2023, 2024, 2025 Jose E.
+/* Copyright (C) 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026 Jose E.
  * Marchesi */
 
 /* This program is free software: you can redistribute it and/or modify

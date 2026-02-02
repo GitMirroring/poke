@@ -1,7 +1,8 @@
 /* -*- mode: antlr -*- */
 /* poke.g4 - LL Poke grammar for Antlr4  */
 
-/* Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025 Jose E. Marchesi */
+/* Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025, 2026 Jose E.
+ * Marchesi */
 
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

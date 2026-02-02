@@ -1,5 +1,5 @@
 # Autoconf macros for GNU poke.
-# Copyright (C) 2023, 2024, 2025 Jose E. Marchesi
+# Copyright (C) 2023, 2024, 2025, 2026 Jose E. Marchesi
 
 # This file is part of GNU poke.
 
