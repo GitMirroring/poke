@@ -1,5 +1,16 @@
 2026-02-02  Darshit Shah  <darnir@gnu.org>
 
+	* poke/poke.c: Introduce new global to hold the Port that poke's
+	Hyperlink Server will listen to. Also update the getopt
+	options (long and short) to accept a new option.
+	(initialize): Set the hserver port in the PK Compiler before
+	starting the hyperlink server. Once this variable is set, the
+	listening socket will be created with the port defined in the
+	variable. However, if it is not defined / is 0, then a random
+	port will be selected.
+
+2026-02-02  Darshit Shah  <darnir@gnu.org>
+
 	* poke/pk-cmd.c (pk_atoi, pk_atou): Move the functions from here ...
 	* common/pk-utils.c: ... to here
 	* pk-hserver.c (parse_int): Delete this function, we will use the method

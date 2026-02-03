@@ -96,6 +96,12 @@ char *poke_docdir;
 
 int poke_no_hserver_arg = 0;
 
+/* The following global defines a specific port on which the Hyperlink
+ * server should listen. This is helpful for forwarding a fixed port
+ * from a remote machine to a local one
+ */
+uint64_t poke_hserver_port = 0;
+
 /* The following global determines whether the user specified to not
    load "standard" types in the Poke incremental compiler.  */
 
@@ -132,6 +138,7 @@ enum
   STYLE_DARK_ARG,
   STYLE_BRIGHT_ARG,
   NO_HSERVER_ARG,
+  HSERVER_PORT_ARG,
   NO_STDTYPES_ARG
 };
 
@@ -149,12 +156,13 @@ static const struct option long_options[] =
   {"style-dark", no_argument, NULL, STYLE_DARK_ARG},
   {"style-bright", no_argument, NULL, STYLE_BRIGHT_ARG},
   {"no-hserver", no_argument, NULL, NO_HSERVER_ARG},
+  {"hserver-port", required_argument, NULL, HSERVER_PORT_ARG},
   {"no-stdtypes", no_argument, NULL, NO_STDTYPES_ARG},
   {NULL, 0, NULL, 0},
 };
 
 /* String passed to getopt_long.  */
-static const char *const poke_getopt_string = "ql:c:s:L:";
+static const char *const poke_getopt_string = "ql:c:s:L:p:";
 
 static void
 print_help (void)
@@ -194,6 +202,7 @@ print_help (void)
   puts (_("  -q, --no-init-file                  do not load an init file"));
 #if HAVE_HSERVER
   puts (_("      --no-hserver                    do not run the hyperlinks server"));
+  puts (_("  -p, --hserver-port                  set the port the hyperlink server will listen on"));
 #endif
   puts (_("      --no-stdtypes                   do not define standard types"));
   puts (_("      --quiet                         be as terse as possible"));
@@ -386,6 +395,12 @@ parse_args_1 (int argc, char *argv[])
         case NO_HSERVER_ARG:
           poke_no_hserver_arg = 1;
           break;
+#if HAVE_HSERVER
+        case HSERVER_PORT_ARG:
+        case 'p':
+          const char *port_arg = optarg;
+          pk_atou(&port_arg, &poke_hserver_port);
+#endif
         case NO_STDTYPES_ARG:
           poke_no_stdtypes_arg = 1;
           break;
@@ -485,6 +500,11 @@ parse_args_2 (int argc, char *argv[])
             exit (exit_status);
             break;
           }
+#if HAVE_HSERVER
+        case 'p':
+        case HSERVER_PORT_ARG:
+        break;
+#endif
         case NO_HSERVER_ARG:
         case NO_STDTYPES_ARG:
         case 'q':
@@ -742,6 +762,9 @@ initialize (int argc, char *argv[])
   /* Initialize and start the terminal hyperlinks server.  */
   if (poke_hserver_p)
     {
+      pk_decl_set_val (poke_compiler, "hserver_port",
+        pk_make_int (poke_compiler, poke_hserver_port, 32));
+
       pk_hserver_init ();
       pk_hserver_start ();
     }
