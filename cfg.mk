@@ -60,7 +60,7 @@ sc_pvm_wrappers:
           { diff -u globals-list wrapped-list; \
             msg='found non-wrapped globals in pvm.jitter' $(_sc_say_and_exit) }
 
-update-copyright-env = UPDATE_COPYRIGHT_HOLDER="Jose E. Marchesi"
+update-copyright-env = UPDATE_COPYRIGHT_HOLDER="Jose E. Marchesi" UPDATE_COPYRIGHT_USE_INTERVALS=1
 
 gendocs_options_ = -I $(abs_builddir)/doc/
 
