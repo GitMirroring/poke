@@ -1,3 +1,10 @@
+2026-02-03  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* bootstrap: Updated by `./bootstrap --bootstrap-sync'.
+	* autogen.sh: Likewise.
+	* autopull.sh: Likewise.
+	* bootstrap-funclib.sh: Likewise.
+
 2025-10-06  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* pickles/time.pk (ptime_str): New function to return string instead of
