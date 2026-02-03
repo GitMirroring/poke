@@ -40,6 +40,7 @@
 #include "pk-cmd.h"
 #include "pk-hserver.h"
 #include "pk-repl.h"
+#include "pk-utils.h"
 
 /* The app:// protocol defines a maximum length of messages of two
    kilobytes.  */
@@ -179,23 +180,6 @@ make_socket (uint16_t port)
 }
 
 static int
-parse_int (char **p, int *number)
-{
-  long int li;
-  char *end;
-
-  errno = 0;
-  li = strtoll (*p, &end, 0);
-  if ((errno != 0 && li == 0)
-      || end == *p)
-    return 0;
-
-  *number = li;
-  *p = end;
-  return 1;
-}
-
-static int
 read_from_client (int filedes)
 {
   char buffer[MAXMSG];
@@ -214,9 +198,9 @@ read_from_client (int filedes)
     return -1;
   else
     {
-      int token;
+      uint64_t token;
       char kind;
-      char *p = buffer;
+      const char *p = buffer;
       const char *cmd;
       pk_val cls;
 
@@ -227,7 +211,7 @@ read_from_client (int filedes)
          [0-9]+/{e,i} */
 
       /* Get the token and check it.  */
-      if (!parse_int (&p, &token))
+      if (!pk_atou (&p, &token))
         {
           printf ("PARSING INT\n");
           return 0;

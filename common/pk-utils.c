@@ -202,6 +202,41 @@ pk_str_trim (char **str)
   *(end + 1) = '\0';
 }
 
+inline int
+pk_atoi (const char **p, int64_t *number)
+{
+  long int li;
+  char *end;
+
+  errno = 0;
+  li = strtoll (*p, &end, 0);
+  if ((errno != 0 && li == 0)
+      || end == *p)
+    return 0;
+
+  *number = li;
+  *p = end;
+  return 1;
+}
+
+inline int
+pk_atou (const char **p, uint64_t *number)
+{
+  unsigned long int li;
+  char *end;
+
+  errno = 0;
+  li = strtoull (*p, &end, 0);
+  if ((errno != 0 && li == 0)
+      || end == *p)
+    return 0;
+
+  *number = li;
+  *p = end;
+  return 1;
+}
+
+
 void
 pk_unreachable (const char *funcname, const char *filename, int line)
 {

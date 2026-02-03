@@ -1,3 +1,13 @@
+2026-02-02  Darshit Shah  <darnir@gnu.org>
+
+	* poke/pk-cmd.c (pk_atoi, pk_atou): Move the functions from here ...
+	* common/pk-utils.c: ... to here
+	* pk-hserver.c (parse_int): Delete this function, we will use the method
+	  in pk-utils
+	* pk-hserver.c (read_from_client): Make the token an unsigned int. Poke will
+	  never generate negative token values. Similarly, make the copy of buffer a
+	  const pointer to satisfy the requirements in pk_atou()
+
 2026-02-03  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* bootstrap: Updated by `./bootstrap --bootstrap-sync'.

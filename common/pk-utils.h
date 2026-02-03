@@ -92,6 +92,16 @@ char *pk_str_replace (const char *in, const char *search, const char *replace);
 /* Left and right trim the given string from whitespaces.  */
 void pk_str_trim (char **str);
 
+/* A safer and more sensible implementation of atoi()
+ * for use in Poke
+ */
+int pk_atoi (const char **p, int64_t *number);
+
+/* A safer and more sensible implementation of atou()
+ * for use in Poke
+ */
+int pk_atou (const char **p, uint64_t *number);
+
 /* This function is called when the program reaches a supposedly
    unreachable point; print an error message and abort the execution.
 
