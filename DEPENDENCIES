@@ -35,7 +35,7 @@ The following packages should be installed before GNU poke is installed
       BDW_GC_CFLAGS="-I/usr/local/include" BDW_GC_LIBS="-L/usr/local/lib -lgc"
     - If it is installed from source with the same --prefix as you are using
       for GNU poke, set
-      BDW_GC_LIBS="-lgc"
+      BDW_GC_CFLAGS=" " BDW_GC_LIBS="-lgc"
     - If it is installed from source with a different --prefix, set
       PKG_CONFIG_PATH as shown above.
 
