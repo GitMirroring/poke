@@ -1,3 +1,10 @@
+2026-02-09  Darshit Shah  <darnir@gnu.org>
+
+	* poke/poke.c (parse_args_1): Add a missing break statement and
+	fix syntax for C11 compilers by not having a statement right
+	after a label. Instead, use a sub-block as gnulib's coding style
+	recommends
+
 2026-02-02  Darshit Shah  <darnir@gnu.org>
 
 	* poke/poke.c: Introduce new global to hold the Port that poke's

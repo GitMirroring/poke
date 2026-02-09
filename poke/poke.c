@@ -398,8 +398,11 @@ parse_args_1 (int argc, char *argv[])
 #if HAVE_HSERVER
         case HSERVER_PORT_ARG:
         case 'p':
-          const char *port_arg = optarg;
-          pk_atou(&port_arg, &poke_hserver_port);
+          {
+            const char *port_arg = optarg;
+            pk_atou(&port_arg, &poke_hserver_port);
+          }
+          break;
 #endif
         case NO_STDTYPES_ARG:
           poke_no_stdtypes_arg = 1;
