@@ -25,7 +25,7 @@
 #include <assert.h>
 #include <limits.h>
 #define _(str) gettext (str)
-#include <streq.h>
+#include <streq-opt.h>
 
 #include <byteswap.h>
 

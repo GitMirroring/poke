@@ -1,3 +1,10 @@
+2026-02-21  Bruno Haible  <bruno@clisp.org>
+
+	Update after gnulib changed.
+	* bootstrap.conf (gnulib_modules, libpoke_modules): Use module streq-opt
+	instead of streq.
+	* libpoke/ios.c: Include streq-opt.h instead of streq.h.
+
 2026-02-09  Darshit Shah  <darnir@gnu.org>
 
 	* poke/poke.c (parse_args_1): Add a missing break statement and
