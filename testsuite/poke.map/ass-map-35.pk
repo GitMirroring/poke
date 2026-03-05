@@ -1,0 +1,17 @@
+/* { dg-do run } */
+/* { dg-data {c*} {0x00 0x00 0x00 0x00  0x00 0x00 0x00 0x00   0x00 0x00 0x00 0x00} } */
+
+/* Write to nested field of integral struct (24-bit).
+   Regression test for https://sourceware.org/bugzilla/show_bug.cgi?id=32213 */
+
+type Foo = struct int<24> { byte a; byte b; byte c; };
+type Bar = struct int<24> { Foo i; };
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {.set endian big} } */
+/* { dg-command {var b = Bar[2] @ 0#B} } */
+/* { dg-command {b[1].i.a = 0xaaUB} } */
+/* { dg-command {b[1].i.b = 0xbbUB} } */
+/* { dg-command {b[1].i.c = 0xccUB} } */
+/* { dg-command {byte[3] @ 3#B} } */
+/* { dg-output "\\\[0xaaUB,0xbbUB,0xccUB\\\]" } */

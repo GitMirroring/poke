@@ -1,0 +1,15 @@
+/* { dg-do run } */
+/* { dg-data {c*} {0x00 0x00 0x00 0x00  0x00 0x00 0x00 0x00} } */
+
+/* Write to nested field of integral union (16-bit) - little endian.
+   Regression test for https://sourceware.org/bugzilla/show_bug.cgi?id=32213 */
+
+type Foo = union uint<16> { uint<16> a; };
+type Bar = union uint<16> { Foo i; };
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {.set endian little} } */
+/* { dg-command {var b = Bar[4] @ 0#B} } */
+/* { dg-command {b[2].i.a = 0xabcdUH} } */
+/* { dg-command {byte[2] @ 4#B} } */
+/* { dg-output "\\\[0xcdUB,0xabUB\\\]" } */

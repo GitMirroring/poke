@@ -1,0 +1,17 @@
+/* { dg-do run } */
+/* { dg-data {c*} {0x00 0x00 0x00 0x00  0x00 0x00 0x00 0x00   0x00 0x00 0x00 0x00  0x00 0x00 0x00 0x00   0x00 0x00 0x00 0x00} } */
+
+/* Write to deeply nested field (3 levels) of integral structs (32-bit).
+   Regression test for https://sourceware.org/bugzilla/show_bug.cgi?id=32213 */
+
+type L1 = struct uint<32> { uint<16> a; uint<16> b; };
+type L2 = struct uint<32> { L1 inner; };
+type L3 = struct uint<32> { L2 mid; };
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {.set endian big} } */
+/* { dg-command {var x = L3[2] @ 0#B} } */
+/* { dg-command {x[1].mid.inner.a = 0xcafeUH} } */
+/* { dg-command {x[1].mid.inner.b = 0xbabeUH} } */
+/* { dg-command {uint<32> @ 4#B} } */
+/* { dg-output "0xcafebabeU" } */

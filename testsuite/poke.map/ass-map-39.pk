@@ -1,0 +1,16 @@
+/* { dg-do run } */
+/* { dg-data {c*} {0x00 0x00 0x00 0x00  0x00 0x00 0x00 0x00   0x00 0x00 0x00 0x00} } */
+
+/* Write to nested field: integral union containing integral struct (32-bit).
+   Regression test for https://sourceware.org/bugzilla/show_bug.cgi?id=32213 */
+
+type Inner = struct uint<32> { uint<16> a; uint<16> b; };
+type Outer = union uint<32> { Inner i; };
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {.set endian big} } */
+/* { dg-command {var o = Outer[2] @ 0#B} } */
+/* { dg-command {o[1].i.a = 0xdeadUH} } */
+/* { dg-command {o[1].i.b = 0xbeefUH} } */
+/* { dg-command {uint<32> @ 4#B} } */
+/* { dg-output "0xdeadbeefU" } */

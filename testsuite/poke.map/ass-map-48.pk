@@ -1,0 +1,16 @@
+/* { dg-do run } */
+/* { dg-data {c*} {0x00 0x00 0x00 0x00  0x00 0x00 0x00 0x00   0x00 0x00 0x00 0x00} } */
+
+/* Write to nested field: mixed width integral types (union<16> in struct<32>).
+   Regression test for https://sourceware.org/bugzilla/show_bug.cgi?id=32213 */
+
+type Inner = union uint<16> { uint<16> a; };
+type Outer = struct uint<32> { uint<16> pre; Inner i; };
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {.set endian big} } */
+/* { dg-command {var o = Outer[2] @ 0#B} } */
+/* { dg-command {o[1].pre = 0xaabbUH} } */
+/* { dg-command {o[1].i.a = 0xccddUH} } */
+/* { dg-command {byte[4] @ 4#B} } */
+/* { dg-output "\\\[0xaaUB,0xbbUB,0xccUB,0xddUB\\\]" } */

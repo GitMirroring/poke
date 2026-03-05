@@ -1,0 +1,16 @@
+/* { dg-do run } */
+/* { dg-data {c*} {0x00 0x00 0x00 0x00  0x00 0x00 0x00 0x00   0x00 0x00 0x00 0x00} } */
+
+/* Write to nested field of integral struct (32-bit) - little endian.
+   Regression test for https://sourceware.org/bugzilla/show_bug.cgi?id=32213 */
+
+type Foo = struct uint<32> { uint<16> a; uint<16> b; };
+type Bar = struct uint<32> { Foo i; };
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {.set endian little} } */
+/* { dg-command {var b = Bar[2] @ 0#B} } */
+/* { dg-command {b[1].i.a = 0xbeefUH} } */
+/* { dg-command {b[1].i.b = 0xdeadUH} } */
+/* { dg-command {byte[4] @ 4#B} } */
+/* { dg-output "\\\[0xadUB,0xdeUB,0xefUB,0xbeUB\\\]" } */

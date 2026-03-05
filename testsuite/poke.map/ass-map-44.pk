@@ -1,0 +1,15 @@
+/* { dg-do run } */
+/* { dg-data {c*} {0x00 0x00 0x00 0x00  0x00 0x00 0x00 0x00} } */
+
+/* Write to nested field of integral union via direct var (32-bit).
+   Regression test for https://sourceware.org/bugzilla/show_bug.cgi?id=32213 */
+
+type Foo = union int<32> { int a; };
+type Bar = union int<32> { Foo i; };
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {.set endian big} } */
+/* { dg-command {var b = Bar @ 0#B} } */
+/* { dg-command {b.i.a = 0xaabbccdd} } */
+/* { dg-command {int @ 0#B} } */
+/* { dg-output "0xaabbccdd" } */

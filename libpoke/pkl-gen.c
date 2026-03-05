@@ -1334,7 +1334,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
 
             /* Strict value: set with integrity.  */
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ROT);
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ROT); /* SCT ID VAL */
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SSETC, struct_type);
 
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BA, label2);
@@ -1342,13 +1342,119 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_ass_stmt)
 
             /* Non-strict value: set with no integrity.  */
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ROT);
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ROT); /* SCT ID VAL */
             pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SSET, struct_type);
 
             pkl_asm_label (PKL_GEN_ASM, label2);
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_WRITE);
-            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* The struct
-                                                          value.  */
+            /* For unmapped integral structs (from deintegration), propagate
+               the write up through the parent chain until we find a mapped
+               ancestor, then integrate and poke directly.  */
+            if (PKL_AST_TYPE_S_ITYPE (struct_type))
+              {
+                pvm_program_label mapped_label = pkl_asm_fresh_label (PKL_GEN_ASM);
+                pvm_program_label write_done = pkl_asm_fresh_label (PKL_GEN_ASM);
+
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DUP); /* SCT SCT */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MM);  /* SCT SCT MAPPED_P */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BNZI, mapped_label);
+
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* SCT SCT */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* SCT */
+
+                {
+                  pkl_ast_node cur = sct, parent_exp;
+
+                  for (; cur && PKL_AST_CODE (cur) == PKL_AST_STRUCT_REF;
+                       cur = parent_exp)
+                    {
+                      pkl_ast_node parent_type;
+                      pkl_ast_node field_id;
+                      const char *field_name;
+                      pvm_program_label parent_not_mapped_label;
+
+                      parent_exp = PKL_AST_STRUCT_REF_STRUCT (cur);
+                      parent_type = PKL_AST_TYPE (parent_exp);
+
+                      if (PKL_AST_TYPE_CODE (parent_type) != PKL_TYPE_STRUCT
+                          || !PKL_AST_TYPE_S_ITYPE (parent_type))
+                        break;
+
+                      field_id = PKL_AST_STRUCT_REF_IDENTIFIER (cur);
+                      field_name = PKL_AST_IDENTIFIER_POINTER (field_id);
+                      parent_not_mapped_label
+                        = pkl_asm_fresh_label (PKL_GEN_ASM);
+
+                      /* Fetch parent.  Use PUSHVAR directly for variables to
+                         avoid AREMAP reading a fresh copy from IO.  */
+                      if (PKL_AST_CODE (parent_exp) == PKL_AST_VAR)
+                        pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSHVAR,
+                                      PKL_AST_VAR_BACK (parent_exp),
+                                      PKL_AST_VAR_OVER (parent_exp));
+                      else
+                        {
+                          PKL_GEN_PUSH_CONTEXT;
+                          PKL_PASS_SUBPASS (parent_exp);
+                          PKL_GEN_POP_CONTEXT;
+                        }
+
+                      /* SSET field in parent: SCT PARENT -> PARENT */
+                      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH,
+                                    pvm_make_string (field_name)); /* SCT PARENT STR */
+                      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ROT); /* PARENT STR SCT */
+                      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SSET);
+
+                      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DUP);
+                      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MM);
+                      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BZI, parent_not_mapped_label);
+
+                      /* Parent is mapped.  Integrate and poke directly since
+                         WRITE would skip unmapped child fields.  */
+                      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
+                      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
+
+                      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DUP);
+                      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MGETIOS);
+                      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP);
+                      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MGETO);
+                      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP);
+                      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ROT);
+
+                      PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_INTEGRATOR);
+                      PKL_PASS_SUBPASS (parent_type);
+                      PKL_GEN_POP_CONTEXT;
+
+                      {
+                        pkl_ast_node parent_itype = PKL_AST_TYPE_S_ITYPE (parent_type);
+                        PKL_GEN_PUSH_SET_CONTEXT (PKL_GEN_CTX_IN_WRITER);
+                        PKL_PASS_SUBPASS (parent_itype);
+                        PKL_GEN_POP_CONTEXT;
+                      }
+
+                      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BA, write_done);
+
+                      pkl_asm_label (PKL_GEN_ASM, parent_not_mapped_label);
+                      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
+                      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
+                    }
+                                                             /* SCT */
+                  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
+                }
+
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BA, write_done);
+
+                pkl_asm_label (PKL_GEN_ASM, mapped_label);  /* SCT SCT MAPPED_P */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);  /* SCT SCT */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);  /* SCT */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_WRITE); /* SCT */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
+
+                pkl_asm_label (PKL_GEN_ASM, write_done);
+              }
+            else
+              {
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_WRITE); /* SCT */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);
+              }
           }
         break;
       }

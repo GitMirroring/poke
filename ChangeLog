@@ -1,3 +1,30 @@
+2026-03-05  Brian Witte  <brianwitte@mailfence.com>
+
+	pkl-gen: fix writes to nested integral struct fields.
+	* libpoke/pkl-gen.c (pkl_gen_pr_ass_stmt): For unmapped integral
+	structs, propagate modifications up the parent chain until a mapped
+	ancestor is found, then integrate and poke directly.
+	* testsuite/poke.map/ass-map-30.pk: New test.
+	* testsuite/poke.map/ass-map-31.pk: Likewise.
+	* testsuite/poke.map/ass-map-32.pk: Likewise.
+	* testsuite/poke.map/ass-map-33.pk: Likewise.
+	* testsuite/poke.map/ass-map-34.pk: Likewise.
+	* testsuite/poke.map/ass-map-35.pk: Likewise.
+	* testsuite/poke.map/ass-map-36.pk: Likewise.
+	* testsuite/poke.map/ass-map-37.pk: Likewise.
+	* testsuite/poke.map/ass-map-38.pk: Likewise.
+	* testsuite/poke.map/ass-map-39.pk: Likewise.
+	* testsuite/poke.map/ass-map-40.pk: Likewise.
+	* testsuite/poke.map/ass-map-41.pk: Likewise.
+	* testsuite/poke.map/ass-map-42.pk: Likewise.
+	* testsuite/poke.map/ass-map-43.pk: Likewise.
+	* testsuite/poke.map/ass-map-44.pk: Likewise.
+	* testsuite/poke.map/ass-map-45.pk: Likewise.
+	* testsuite/poke.map/ass-map-46.pk: Likewise.
+	* testsuite/poke.map/ass-map-47.pk: Likewise.
+	* testsuite/poke.map/ass-map-48.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Add new tests.
+
 2026-02-21  Bruno Haible  <bruno@clisp.org>
 
 	Update after gnulib changed.

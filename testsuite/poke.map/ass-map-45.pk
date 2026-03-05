@@ -1,0 +1,16 @@
+/* { dg-do run } */
+/* { dg-data {c*} {0x00 0x00 0x00 0x00  0x00 0x00 0x00 0x00} } */
+
+/* Write to nested field of integral struct via direct var (64-bit).
+   Regression test for https://sourceware.org/bugzilla/show_bug.cgi?id=32213 */
+
+type Foo = struct int<64> { int<32> a; int<32> b; };
+type Bar = struct int<64> { Foo i; };
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {.set endian little} } */
+/* { dg-command {var b = Bar @ 0#B} } */
+/* { dg-command {b.i.a = 0xddccbbaa} } */
+/* { dg-command {b.i.b = 0x44332211} } */
+/* { dg-command {byte[8] @ 0#B} } */
+/* { dg-output "\\\[0x11UB,0x22UB,0x33UB,0x44UB,0xaaUB,0xbbUB,0xccUB,0xddUB\\\]" } */
