@@ -4,7 +4,7 @@
 #include "pvm-val.h"
 #include "ios-range.h"
 
-
+#if 0
 /* Range table implemented as an augmented interval tree.
    See e.g.
     https://en.wikipedia.org/wiki/Interval_tree#Augmented_tree
@@ -334,36 +334,78 @@ interval_tree_destroy (struct interval_node *node)
   interval_tree_destroy (node->right);
   free (node);
 }
+#endif
 
 
 /* ************** Interface via ios_rangetbl ******************** */
+
+struct NODE_IMPL;
+struct ios_rangetbl
+{
+  size_t count;
+  struct NODE_IMPL *root;
+};
+
+/* typedef struct ios_rangetbl_impl * container_t; */
+
+/* #define CONTAINER_T struct ios_rangetbl_impl * */
+typedef struct ios_rangetbl * CONTAINER_T;
+#define NODE_PAYLOAD_FIELDS pvm_val val;
+#define NODE_PAYLOAD_ASSIGN(node) \
+  node->val = val;
+#define NODE_PAYLOAD_PARAMS \
+  const pvm_val val
+#define NODE_PAYLOAD_ARGS val
+#define NODE_PAYLOAD_COMPARE(node) \
+  (node->val == val)
+
+#include "ios-ivtree.h"
+
+/* struct ios_rangetbl_impl */
+/* { */
+/*   size_t count; */
+/*   NODE_T root; */
+/* }; */
 
 int
 ios_rangetbl_insert (struct ios_rangetbl *tbl, uint64_t val,
 		     ios_off begin, ios_off end)
 {
+  /* ios_ivtree_insert (tbl, begin, end, val) */
+
+  return ios_ivtree_insert (tbl, tbl->root, begin, end, val);
+
+  #if 0
   int res = IOS_OK;
-  if (tbl->tree)
+  if (tbl->root)
     {
-      res = interval_tree_insert (tbl->tree, (pvm_val) val, begin, end);
-      tbl->num_entries++;
+      res = ios_ivtree_insert (tbl, begin, end, val);
+      tbl->count++;
     }
   else
     {
-      tbl->tree = interval_mknode ((pvm_val) val, begin, end);
-      if (!tbl->tree)
+      tbl->root = interval_mknode (begin, end);
+      if (!tbl->root)
 	res = IOS_ENOMEM;
-      tbl->num_entries = 1;
+      tbl->count = 1;
     }
 
   return res;
+  #endif
 }
 
 void
 ios_rangetbl_remove (struct ios_rangetbl *tbl, uint64_t val, ios_off offs)
 {
+
+  NODE_T target = ios_ivtree_lookup (tbl->root, offs, val);
+  if (target)
+    gl_tree_remove_node (tbl, target);
+
+  #if 0
   struct interval_node *new_root = interval_tree_remove (tbl->tree, val, offs);
   tbl->tree = new_root;
+  #endif
 }
 
 
@@ -373,8 +415,9 @@ ios_rangetbl_create (void)
   struct ios_rangetbl *tbl = malloc (sizeof (struct ios_rangetbl));
   if (!tbl)
     return NULL;
-  tbl->tree = NULL;
-  tbl->num_entries = 0;
+
+  tbl->root = NULL;
+  tbl->count = 0;
   return tbl;
 }
 
@@ -384,10 +427,12 @@ ios_rangetbl_destroy (struct ios_rangetbl *tbl)
   if (!tbl)
     return;
 
-  struct interval_node *node = tbl->tree;
-  interval_tree_destroy (node);
-  tbl->num_entries = 0;
-  free (tbl);
+  ios_ivtree_destroy (tbl);
+
+  /* struct interval_node *node = tbl->tree; */
+  /* interval_tree_destroy (node); */
+  /* tbl->count = 0; */
+  /* free (tbl); */
 }
 
 void
@@ -395,7 +440,10 @@ ios_rangetbl_dirty (struct ios_rangetbl *tbl, ios_off begin, ios_off end)
 {
   if (!tbl)
     return;
-  interval_tree_mark (tbl->tree, (uint64_t) begin, (uint64_t) end);
+
+  ios_ivtree_mark_overlaps (tbl->root, begin, end);
+
+  /* interval_tree_mark (tbl->tree, (uint64_t) begin, (uint64_t) end); */
 }
 
 void
@@ -403,11 +451,14 @@ ios_rangetbl_dirty_all (struct ios_rangetbl *tbl)
 {
   if (!tbl)
     return;
-  interval_tree_mark_all (tbl->tree);
+
+  ios_ivtree_mark_all (tbl->root);
+  /* interval_tree_mark_all (tbl->tree); */
 }
 
 uint64_t
 ios_rangetbl_nentries (struct ios_rangetbl *tbl)
 {
-  return tbl->num_entries;
+  /* return tbl->num_entries; */
+  return tbl->count;
 }
