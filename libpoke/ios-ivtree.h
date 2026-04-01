@@ -673,7 +673,7 @@ ios_ivtree_insert (CONTAINER_T container, NODE_T node,
       if (!new_node)
 	return IOS_ENOMEM;
       /* NODE_PAYLOAD_ASSIGN (new_node); */
-      container->root = node;
+      container->root = new_node;
       container->count = 1;
       return IOS_OK;
     }
