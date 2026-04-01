@@ -356,8 +356,14 @@ typedef struct ios_rangetbl * CONTAINER_T;
 #define NODE_PAYLOAD_PARAMS \
   const pvm_val val
 #define NODE_PAYLOAD_ARGS val
+#define NODE_PAYLOAD_ACCESS(node) \
+  node->val
 #define NODE_PAYLOAD_COMPARE(node) \
   (node->val == val)
+
+typedef void (*node_visitor_fn)(NODE_PAYLOAD_PARAMS);
+
+#define NODE_VISITOR_FN node_visitor_fn
 
 #include "ios-ivtree.h"
 
@@ -436,14 +442,18 @@ ios_rangetbl_destroy (struct ios_rangetbl *tbl)
 }
 
 void
+mark_dirty (const pvm_val val)
+{
+  PVM_VAL_SET_DIRTY_P (val, 1);
+}
+
+void
 ios_rangetbl_dirty (struct ios_rangetbl *tbl, ios_off begin, ios_off end)
 {
   if (!tbl)
     return;
 
-  ios_ivtree_mark_overlaps (tbl->root, begin, end);
-
-  /* interval_tree_mark (tbl->tree, (uint64_t) begin, (uint64_t) end); */
+  ios_ivtree_visit_overlaps (tbl->root, begin, end, mark_dirty);
 }
 
 void
@@ -452,8 +462,7 @@ ios_rangetbl_dirty_all (struct ios_rangetbl *tbl)
   if (!tbl)
     return;
 
-  ios_ivtree_mark_all (tbl->root);
-  /* interval_tree_mark_all (tbl->tree); */
+  ios_ivtree_visit_all (tbl->root, mark_dirty);
 }
 
 uint64_t

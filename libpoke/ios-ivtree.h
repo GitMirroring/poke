@@ -108,7 +108,8 @@ overlaps (NODE_T node, unsigned long low, unsigned long high)
    the interval specified by [LOW, HIGH].  */
 
 static void
-ios_ivtree_mark_overlaps (NODE_T node, uint64_t low, uint64_t high)
+ios_ivtree_visit_overlaps (NODE_T node, uint64_t low, uint64_t high,
+			   NODE_VISITOR_FN fn)
 {
   if (!node)
     return;
@@ -118,30 +119,34 @@ ios_ivtree_mark_overlaps (NODE_T node, uint64_t low, uint64_t high)
   if (low > node->highest)
     return;
 
-  ios_ivtree_mark_overlaps (node->left, low, high);
+  ios_ivtree_visit_overlaps (node->left, low, high, fn);
 
   if (overlaps (node, low, high))
-    PVM_VAL_SET_DIRTY_P (node->val, 1);
+    /* PVM_VAL_SET_DIRTY_P (node->val, 1); */
+    fn (NODE_PAYLOAD_ACCESS (node));
 
   /* If high end of the interval is below the low end of this node,
      then we know it does not overlap any interval in right subtree.  */
   if (high < node->low)
     return;
 
-  ios_ivtree_mark_overlaps (node->right, low, high);
+  ios_ivtree_visit_overlaps (node->right, low, high, fn);
 }
 
 /* Mark every interval in the tree rooted at NODE.  */
 
 static void
-ios_ivtree_mark_all (NODE_T node)
+ios_ivtree_visit_all (NODE_T node, NODE_VISITOR_FN fn)
 {
   if (!node)
     return;
 
-  PVM_VAL_SET_DIRTY_P (node->val, 1);
-  ios_ivtree_mark_all (node->left);
-  ios_ivtree_mark_all (node->right);
+  /* PVM_VAL_SET_DIRTY_P (node->val, 1); */
+  /* ios_ivtree_mark_all (node->left); */
+  /* ios_ivtree_mark_all (node->right); */
+  fn (NODE_PAYLOAD_ACCESS (node));
+  ios_ivtree_visit_all (node->left, fn);
+  ios_ivtree_visit_all (node->right, fn);
 }
 
 /* Rotates left a subtree.
