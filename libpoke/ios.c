@@ -1686,6 +1686,14 @@ ios_register_range (pvm_val val, ios io, ios_off offset, ios_off size)
 void
 ios_deregister_range (pvm_val val, ios io, ios_off offset)
 {
+  /* FIXME: checking io / io->ranges against NULL doesn't work,
+     because if they have been gc'd they are a bit pattern not 0.
+     This can segv on pvm_shutdown if the ios was manually closed
+     while values were still mapped
+     like
+       close (some_ios)
+       .exit
+     */
   if (io && io->ranges)
     ios_rangetbl_remove (io->ranges, val, offset);
 }
