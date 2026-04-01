@@ -322,6 +322,11 @@ ios_close (ios_context ios_ctx, ios io)
   if (ios_ctx->next_id == io->id + 1)
     --ios_ctx->next_id;
 
+  /* Notify all values mapped in the io that it is being closed,
+     so that they do not attempt to deregister themselves later
+     after the io is freed.  */
+  ios_rangetbl_notify_close (io->ranges);
+
   /* Free the range table of this io.  */
   ios_rangetbl_destroy (io->ranges);
   io->ranges = NULL;

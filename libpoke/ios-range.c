@@ -90,7 +90,7 @@ ios_rangetbl_destroy (struct ios_rangetbl *tbl)
 
 }
 
-void
+static void
 mark_dirty (const pvm_val val)
 {
   PVM_VAL_SET_DIRTY_P (val, 1);
@@ -118,4 +118,22 @@ size_t
 ios_rangetbl_nentries (struct ios_rangetbl *tbl)
 {
   return tbl->count;
+}
+
+
+static void
+notify_ios_closed (pvm_val val)
+{
+  if (PVM_IS_SCT (val))
+    PVM_MAPINFO_IOSLIVE_P (PVM_VAL_SCT_MAPINFO (val)) = 0;
+  else if (PVM_IS_ARR (val))
+    PVM_MAPINFO_IOSLIVE_P (PVM_VAL_ARR_MAPINFO (val)) = 0;
+}
+
+/* Visit all entries in the table and update their mapinfo to
+   reflect that the IOS where they are mapped has been closed.  */
+void
+ios_rangetbl_notify_close (struct ios_rangetbl *tbl)
+{
+  ios_ivtree_visit_all (tbl->root, notify_ios_closed);
 }

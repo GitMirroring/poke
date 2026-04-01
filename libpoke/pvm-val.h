@@ -196,6 +196,7 @@ typedef struct pvm_val_box *pvm_val_box;
 #define PVM_MAPINFO_MAPPED_P(MINFO) ((MINFO).mapped_p)
 #define PVM_MAPINFO_STRICT_P(MINFO) ((MINFO).strict_p)
 #define PVM_MAPINFO_DIRTY_P(MINFO)  ((MINFO).dirty_p)
+#define PVM_MAPINFO_IOSLIVE_P(MINFO) ((MINFO).ioslive_p)
 #define PVM_MAPINFO_IOS(MINFO) ((MINFO).ios)
 #define PVM_MAPINFO_IOS_PTR(MINFO)  ((MINFO).io)
 #define PVM_MAPINFO_OFFSET(MINFO) ((MINFO).offset)
@@ -205,6 +206,7 @@ struct pvm_mapinfo
   int mapped_p;
   int strict_p;
   int dirty_p;
+  int ioslive_p;
   pvm_val ios;
   ios io;
   pvm_val offset;
@@ -254,6 +256,7 @@ struct pvm_mapinfo
 #define PVM_VAL_ARR_MAPPED_P(V) (PVM_MAPINFO_MAPPED_P (PVM_VAL_ARR_MAPINFO ((V))))
 #define PVM_VAL_ARR_STRICT_P(V) (PVM_MAPINFO_STRICT_P (PVM_VAL_ARR_MAPINFO ((V))))
 #define PVM_VAL_ARR_DIRTY_P(V) (PVM_MAPINFO_DIRTY_P (PVM_VAL_ARR_MAPINFO ((V))))
+#define PVM_VAL_ARR_IOSLIVE_P(V) (PVM_MAPINFO_IOSLIVE_P (PVM_VAL_ARR_MAPINFO ((V))))
 #define PVM_VAL_ARR_IOS(V) (PVM_MAPINFO_IOS (PVM_VAL_ARR_MAPINFO ((V))))
 #define PVM_VAL_ARR_IOS_PTR(V) (PVM_MAPINFO_IOS_PTR (PVM_VAL_ARR_MAPINFO ((V))))
 #define PVM_VAL_ARR_OFFSET(V) (PVM_MAPINFO_OFFSET (PVM_VAL_ARR_MAPINFO ((V))))
@@ -336,6 +339,7 @@ struct pvm_array_elem
 #define PVM_VAL_SCT_MAPPED_P(V) (PVM_MAPINFO_MAPPED_P (PVM_VAL_SCT_MAPINFO ((V))))
 #define PVM_VAL_SCT_STRICT_P(V) (PVM_MAPINFO_STRICT_P (PVM_VAL_SCT_MAPINFO ((V))))
 #define PVM_VAL_SCT_DIRTY_P(V) (PVM_MAPINFO_DIRTY_P (PVM_VAL_SCT_MAPINFO ((V))))
+#define PVM_VAL_SCT_IOSLIVE_P(V) (PVM_MAPINFO_IOSLIVE_P (PVM_VAL_SCT_MAPINFO ((V))))
 #define PVM_VAL_SCT_IOS(V) (PVM_MAPINFO_IOS (PVM_VAL_SCT_MAPINFO ((V))))
 #define PVM_VAL_SCT_IOS_PTR(V) (PVM_MAPINFO_IOS_PTR (PVM_VAL_SCT_MAPINFO ((V))))
 #define PVM_VAL_SCT_OFFSET(V) (PVM_MAPINFO_OFFSET (PVM_VAL_SCT_MAPINFO ((V))))

@@ -72,7 +72,7 @@ pvm_alloc_finalize_struct (void *object, void *client_data)
   pvm_struct sct = (pvm_struct) object;
   pvm_val val = (uint64_t) sct | PVM_VAL_TAG_SCT;
 
-  if (sct->mapinfo.mapped_p)
+  if (sct->mapinfo.mapped_p && sct->mapinfo.ioslive_p)
     ios_deregister_range (val, sct->mapinfo.io, sct->mapinfo.offset);
 }
 
@@ -83,7 +83,7 @@ pvm_alloc_finalize_array (void *object, void *client_data)
   pvm_array arr = (pvm_array) object;
   pvm_val val = (uint64_t) arr | PVM_VAL_TAG_ARR;
 
-  if (arr->mapinfo.mapped_p)
+  if (arr->mapinfo.mapped_p && arr->mapinfo.ioslive_p)
     ios_deregister_range (val, arr->mapinfo.io, arr->mapinfo.offset);
 }
 

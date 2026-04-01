@@ -858,6 +858,7 @@ pvm_val_reloc (pvm_val val, pvm_val ios, pvm_val boffset)
 
       PVM_VAL_ARR_MAPPED_P (val) = 1;
       PVM_VAL_ARR_IOS (val) = ios;
+      PVM_VAL_ARR_IOSLIVE_P (val) = 1;
       PVM_VAL_ARR_OFFSET (val) = pvm_make_ulong (boff, 64);
     }
   else if (PVM_IS_SCT (val))
@@ -895,6 +896,7 @@ pvm_val_reloc (pvm_val val, pvm_val ios, pvm_val boffset)
 
       PVM_VAL_SCT_MAPPED_P (val) = 1;
       PVM_VAL_SCT_IOS (val) = ios;
+      PVM_VAL_SCT_IOSLIVE_P (val) = 1;
       PVM_VAL_SCT_OFFSET (val) = pvm_make_ulong (boff, 64);
     }
 }
