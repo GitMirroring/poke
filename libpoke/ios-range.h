@@ -20,4 +20,4 @@ void ios_rangetbl_remove (struct ios_rangetbl *tbl, uint64_t val,
 void ios_rangetbl_dirty (struct ios_rangetbl *, ios_off begin, ios_off end);
 void ios_rangetbl_dirty_all (struct ios_rangetbl *);
 
-uint64_t ios_rangetbl_nentries (struct ios_rangetbl *);
+size_t ios_rangetbl_nentries (struct ios_rangetbl *);

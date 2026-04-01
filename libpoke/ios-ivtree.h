@@ -1,5 +1,3 @@
-#include "pvm-val.h"
-
 /* Interval tree for ios range trackign implemented by a red-black
    binary tree.
    Copyright (C) 2006-2007, 2009-2026 Free Software Foundation, Inc.
@@ -122,7 +120,6 @@ ios_ivtree_visit_overlaps (NODE_T node, uint64_t low, uint64_t high,
   ios_ivtree_visit_overlaps (node->left, low, high, fn);
 
   if (overlaps (node, low, high))
-    /* PVM_VAL_SET_DIRTY_P (node->val, 1); */
     fn (NODE_PAYLOAD_ACCESS (node));
 
   /* If high end of the interval is below the low end of this node,
@@ -141,9 +138,6 @@ ios_ivtree_visit_all (NODE_T node, NODE_VISITOR_FN fn)
   if (!node)
     return;
 
-  /* PVM_VAL_SET_DIRTY_P (node->val, 1); */
-  /* ios_ivtree_mark_all (node->left); */
-  /* ios_ivtree_mark_all (node->right); */
   fn (NODE_PAYLOAD_ACCESS (node));
   ios_ivtree_visit_all (node->left, fn);
   ios_ivtree_visit_all (node->right, fn);
@@ -721,125 +715,6 @@ ios_ivtree_insert (CONTAINER_T container, NODE_T node,
   return IOS_OK;
 }
 
-static NODE_T
-gl_tree_nx_add_first (CONTAINER_T container, NODE_PAYLOAD_PARAMS)
-{
-  /* Create new node.  */
-  NODE_T new_node =
-    (struct NODE_IMPL *) malloc (sizeof (struct NODE_IMPL));
-
-  if (new_node == NULL)
-    return NULL;
-
-  new_node->left = NULL;
-  new_node->right = NULL;
-  NODE_PAYLOAD_ASSIGN(new_node)
-
-  /* Add it to the tree.  */
-  if (container->root == NULL)
-    {
-      new_node->color = BLACK;
-      container->root = new_node;
-      new_node->parent = NULL;
-    }
-  else
-    {
-      NODE_T node;
-
-      for (node = container->root; node->left != NULL; )
-        node = node->left;
-
-      node->left = new_node;
-      new_node->parent = node;
-
-      /* Color and rebalance.  */
-      rebalance_after_add (container, new_node, node);
-    }
-
-  container->count++;
-  return new_node;
-}
-
-/* Adds the already allocated NEW_NODE to the tree, right before NODE.  */
-static void
-gl_tree_add_node_before (CONTAINER_T container, NODE_T node, NODE_T new_node)
-{
-  new_node->left = NULL;
-  new_node->right = NULL;
-
-  /* Add it to the tree.  */
-  if (node->left == NULL)
-    node->left = new_node;
-  else
-    {
-      for (node = node->left; node->right != NULL; )
-        node = node->right;
-      node->right = new_node;
-    }
-  new_node->parent = node;
-
-  /* Color and rebalance.  */
-  rebalance_after_add (container, new_node, node);
-
-  container->count++;
-}
-
-static NODE_T
-gl_tree_nx_add_before (CONTAINER_T container, NODE_T node, NODE_PAYLOAD_PARAMS)
-{
-  /* Create new node.  */
-  NODE_T new_node =
-    (struct NODE_IMPL *) malloc (sizeof (struct NODE_IMPL));
-
-  if (new_node == NULL)
-    return NULL;
-
-  NODE_PAYLOAD_ASSIGN(new_node)
-
-  gl_tree_add_node_before (container, node, new_node);
-  return new_node;
-}
-
-/* Adds the already allocated NEW_NODE to the tree, right after NODE.  */
-static void
-gl_tree_add_node_after (CONTAINER_T container, NODE_T node, NODE_T new_node)
-{
-  new_node->left = NULL;
-  new_node->right = NULL;
-
-  /* Add it to the tree.  */
-  if (node->right == NULL)
-    node->right = new_node;
-  else
-    {
-      for (node = node->right; node->left != NULL; )
-        node = node->left;
-      node->left = new_node;
-    }
-  new_node->parent = node;
-
-  /* Color and rebalance.  */
-  rebalance_after_add (container, new_node, node);
-
-  container->count++;
-}
-
-static NODE_T
-gl_tree_nx_add_after (CONTAINER_T container, NODE_T node, NODE_PAYLOAD_PARAMS)
-{
-  /* Create new node.  */
-  NODE_T new_node =
-    (struct NODE_IMPL *) malloc (sizeof (struct NODE_IMPL));
-
-  if (new_node == NULL)
-    return NULL;
-
-  NODE_PAYLOAD_ASSIGN(new_node)
-
-  gl_tree_add_node_after (container, node, new_node);
-  return new_node;
-}
-
 static void
 gl_tree_remove_node_no_free (CONTAINER_T container, NODE_T node)
 {
@@ -982,15 +857,6 @@ ios_ivtree_lookup (NODE_T node, uint64_t offs, NODE_PAYLOAD_PARAMS)
   else
     return ios_ivtree_lookup (node->right, offs, NODE_PAYLOAD_ARGS);
 }
-
-/* static NODE_T */
-/* ios_ivtree_remove (NODE_T node, uint64_t offs, NODE_PAYLOAD_PARAMS) */
-/* { */
-/*   if (!node) */
-/*     return NULL; */
-
-/*   NODE_T *target = ios_ivtree_lookup */
-/* } */
 
 /* For debugging.  */
 static unsigned int
