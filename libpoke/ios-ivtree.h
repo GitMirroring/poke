@@ -1,4 +1,4 @@
-/* Interval tree for ios range trackign implemented by a red-black
+/* Interval tree for ios range tracking implemented by a red-black
    binary tree.
    Copyright (C) 2006-2007, 2009-2026 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2006.
@@ -18,6 +18,34 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+/* This file implements an augmented interval tree on top of gnulib's
+   red-black tree (from gl_rbtree_ordered.h).
+   An interval tree is a binary tree where each node represents
+   an interval rather than a single value, and facilitates fast overlap
+   checks for a given interval against the set stored in the tree.
+   In this case, each interval corresponds to the range of offsets in
+   an IOS where a value is mapped.
+   The interval tree is used to decide, after a write to the IOS, which
+   values mapped in that IOS are affected by the write and therefore need
+   to be remapped the next time they are read.
+   Each tree node stores:
+    - The relevant pvm_val that is mapped (the NODE_PAYLOAD)
+    - The lower and upper bounds of the range in the ios where that
+      value is mapped
+    - The highest upper bound of any node in the subtree below this node.
+      This is used to speed up overlap searches, and is what makes the
+      interval tree "augmented".
+
+   Nodes in the tree are ordered by the low-end of the interval, then
+   by the high end.
+   Duplicate intervals are allowed, subsequent intervals with the same
+   bounds are considered "greater than" the existing one(s).
+
+   Overlap checks are O(log n + m) where n is the number of nodes in
+   the tree, and m is the number of nodes which do overlap the query.
+
+   */
 
 /* A red-black tree is a binary tree where every node is colored black or
    red such that
@@ -83,6 +111,10 @@ struct CONTAINER_IMPL
    this would exceed the address space of the machine.  */
 #define MAXHEIGHT 116
 
+
+/* Update the "high-water" mark of NODE after one of its children
+   has changed.  */
+
 static void
 recalc_highest (NODE_T node)
 {
@@ -102,8 +134,8 @@ overlaps (NODE_T node, unsigned long low, unsigned long high)
   return (node->low <= high && node->high >= low);
 }
 
-/* Mark any interval in the tree rooted at NODE which overlaps
-   the interval specified by [LOW, HIGH].  */
+/* Visit every interval in the tree rooted at NODE which overlaps
+   the interval specified by [LOW, HIGH] and invoke FN on the payload.  */
 
 static void
 ios_ivtree_visit_overlaps (NODE_T node, uint64_t low, uint64_t high,
@@ -130,7 +162,8 @@ ios_ivtree_visit_overlaps (NODE_T node, uint64_t low, uint64_t high,
   ios_ivtree_visit_overlaps (node->right, low, high, fn);
 }
 
-/* Mark every interval in the tree rooted at NODE.  */
+/* Visit every node in the tree rooted at NODE and invoke FN on
+   the payload.  */
 
 static void
 ios_ivtree_visit_all (NODE_T node, NODE_VISITOR_FN fn)
@@ -166,6 +199,8 @@ rotate_left (NODE_T b_node, NODE_T d_node)
   if (c_node != NULL)
     c_node->parent = b_node;
 
+  /* Interval tree optimization: update B and D notions of the highest
+     high-end of any interval in their subtrees.  */
   recalc_highest (b_node);
   recalc_highest (d_node);
 
@@ -195,6 +230,8 @@ rotate_right (NODE_T b_node, NODE_T d_node)
   if (c_node != NULL)
     c_node->parent = d_node;
 
+  /* Interval tree optimization: update B and D notions of the highest
+     high-end of any interval in their subtrees.  */
   recalc_highest (d_node);
   recalc_highest (b_node);
 
@@ -611,6 +648,7 @@ rebalance_after_remove (CONTAINER_T container, NODE_T child, NODE_T parent)
     }
 }
 
+/* Free all nodes in the tree rooted at NODE, then NODE itself.  */
 static void
 ios_ivtree_destroy_sub (NODE_T node)
 {
@@ -622,6 +660,9 @@ ios_ivtree_destroy_sub (NODE_T node)
   free (node);
 }
 
+/* Free the entire tree in CONTAINER from the root, and then
+   CONTAINER itself.  */
+
 static void
 ios_ivtree_destroy (CONTAINER_T container)
 {
@@ -632,6 +673,9 @@ ios_ivtree_destroy (CONTAINER_T container)
   free (container);
 }
 
+/* Allocate and initialize a new node representing the interval
+   [LOW,HIGH] and holding the given payload.  */
+
 static NODE_T
 interval_mknode (uint64_t low, uint64_t high, NODE_PAYLOAD_PARAMS)
 {
@@ -641,21 +685,23 @@ interval_mknode (uint64_t low, uint64_t high, NODE_PAYLOAD_PARAMS)
   if (!new_node)
     return NULL;
 
-  /* new_node->val = val; */
   new_node->low = low;
   new_node->high = high;
   new_node->highest = high;
   new_node->left = NULL;
   new_node->right = NULL;
   new_node->parent = NULL;
-  new_node->color = BLACK;
+
+  /* Initially the node does not really have a color until
+     rebalance_after_add is called.  */
+  new_node->color = RED;
 
   NODE_PAYLOAD_ASSIGN (new_node);
 
   return new_node;
 }
 
-/* Insert a new node holding the interval [LOW,HIGH] and value VAL
+/* Insert a new node holding the interval [LOW,HIGH] and given payload
    at its appropriate place in the tree rooted at NODE, updating the
    tree as necessary.  */
 
@@ -671,13 +717,14 @@ ios_ivtree_insert (CONTAINER_T container, NODE_T node,
       NODE_T new_node = interval_mknode (low, high, NODE_PAYLOAD_ARGS);
       if (!new_node)
 	return IOS_ENOMEM;
-      /* NODE_PAYLOAD_ASSIGN (new_node); */
       container->root = new_node;
       container->count = 1;
+      new_node->color = BLACK; /* RB-tree invariant: root is BLACK */
       return IOS_OK;
     }
 
-  if (low < node->low)
+  if (low < node->low
+      || ((low == node->low) && (high < node->high)))
     {
       if (node->left)
 	return ios_ivtree_insert (container, node->left, low, high,
@@ -687,7 +734,6 @@ ios_ivtree_insert (CONTAINER_T container, NODE_T node,
 	  NODE_T new_node = interval_mknode (low, high, NODE_PAYLOAD_ARGS);
 	  if (!new_node)
 	    return IOS_ENOMEM;
-	  /* NODE_PAYLOAD_ASSIGN (new_node) */
 	  node->left = new_node;
 	  new_node->parent = node;
 	  /* Color and rebalance. */
@@ -704,7 +750,6 @@ ios_ivtree_insert (CONTAINER_T container, NODE_T node,
 	  NODE_T new_node = interval_mknode (low, high, NODE_PAYLOAD_ARGS);
 	  if (!new_node)
 	    return IOS_ENOMEM;
-	  /* NODE_PAYLOAD_ASSIGN (new_node); */
 	  node->right = new_node;
 	  new_node->parent = node;
 	  /* Color and rebalance.  */
