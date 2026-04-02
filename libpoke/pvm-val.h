@@ -182,6 +182,12 @@ typedef struct pvm_val_box *pvm_val_box;
    STRICT_P is 0 if data integrity shouldn't be enforced in the value,
    or has any other value if data integrity should be enforced.
 
+   DIRTY_P is 1 if a write to the IO space overlapping where the value
+   is mapped has happend since the value was last remapped.
+
+   IOSLIVE_P is 0 if the IO space where the value is mapped has been
+   closed.
+
    IOS is an int<32> value that identifies the IO space where the
    value is mapped.  If the value si not mapped then this is PVM_NULL.
 
@@ -687,6 +693,21 @@ typedef struct pvm_off *pvm_off;
 	PVM_VAL_ARR_DIRTY_P ((V)) = (I);	\
       else if (PVM_IS_SCT ((V)))		\
 	PVM_VAL_SCT_DIRTY_P ((V)) = (I);	\
+    }						\
+  while (0)
+
+#define PVM_VAL_IOSLIVE_P(V) \
+  (PVM_IS_ARR ((V)) ? PVM_VAL_ARR_IOSLIVE_P ((V))	\
+   : PVM_IS_SCT ((V)) ? PVM_VAL_SCT_DIRTY_P ((V))	\
+   : 0)
+
+#define PVM_VAL_SET_IOSLIVE_P(V,I)		\
+  do						\
+    {						\
+      if (PVM_IS_ARR ((V)))			\
+	PVM_VAL_ARR_IOSLIVE_P ((V)) = (I);	\
+      else if (PVM_IS_SCT ((V)))		\
+	PVM_VAL_SCT_IOSLIVE_P ((V)) = (I);	\
     }						\
   while (0)
 

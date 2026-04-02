@@ -61,7 +61,6 @@ ios_rangetbl_insert (struct ios_rangetbl *tbl, pvm_val val,
 void
 ios_rangetbl_remove (struct ios_rangetbl *tbl, pvm_val val, ios_off offs)
 {
-
   NODE_T target = ios_ivtree_lookup (tbl->root, offs, val);
   if (target)
     gl_tree_remove_node (tbl, target);
@@ -87,7 +86,6 @@ ios_rangetbl_destroy (struct ios_rangetbl *tbl)
     return;
 
   ios_ivtree_destroy (tbl);
-
 }
 
 static void
@@ -124,10 +122,7 @@ ios_rangetbl_nentries (struct ios_rangetbl *tbl)
 static void
 notify_ios_closed (pvm_val val)
 {
-  if (PVM_IS_SCT (val))
-    PVM_MAPINFO_IOSLIVE_P (PVM_VAL_SCT_MAPINFO (val)) = 0;
-  else if (PVM_IS_ARR (val))
-    PVM_MAPINFO_IOSLIVE_P (PVM_VAL_ARR_MAPINFO (val)) = 0;
+  PVM_VAL_SET_IOSLIVE_P (val, 0);
 }
 
 /* Visit all entries in the table and update their mapinfo to
