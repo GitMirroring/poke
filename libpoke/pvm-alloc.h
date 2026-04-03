@@ -81,6 +81,9 @@ void *pvm_alloc_arr (void)
 void *pvm_alloc_sct (void)
   __attribute__ ((malloc));
 
+void *pvm_alloc_boxed (uint8_t tag)
+  __attribute__ ((malloc));
+
 /* Allocate and return a copy of the given STRING.  This call has the
    same semantics than strdup(3).  */
 

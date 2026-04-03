@@ -72,7 +72,8 @@ pvm_alloc_finalize_struct (void *object, void *client_data)
   pvm_struct sct = (pvm_struct) object;
   pvm_val val = (uint64_t) sct | PVM_VAL_TAG_SCT;
 
-  if (sct->mapinfo.mapped_p && sct->mapinfo.ioslive_p)
+  /* if (sct->mapinfo.mapped_p && sct->mapinfo.ioslive_p) */
+  if (sct->mapinfo.io)
     ios_deregister_range (val, sct->mapinfo.io, sct->mapinfo.offset);
 }
 
@@ -83,7 +84,8 @@ pvm_alloc_finalize_array (void *object, void *client_data)
   pvm_array arr = (pvm_array) object;
   pvm_val val = (uint64_t) arr | PVM_VAL_TAG_ARR;
 
-  if (arr->mapinfo.mapped_p && arr->mapinfo.ioslive_p)
+  /* if (arr->mapinfo.mapped_p && arr->mapinfo.ioslive_p) */
+  if (arr->mapinfo.io)
     ios_deregister_range (val, arr->mapinfo.io, arr->mapinfo.offset);
 }
 
@@ -114,6 +116,54 @@ pvm_alloc_sct (void)
 				  NULL, NULL);
   return sct;
 }
+
+static void
+pvm_alloc_finalize_boxed (void *object, void *client_data)
+{
+  pvm_val_box box = (pvm_val_box) object;
+  pvm_val val = PVM_BOX (box);
+
+  if (PVM_IS_SCT (val))
+    {
+      if (PVM_VAL_SCT_MAPPED_P (val) && PVM_VAL_SCT_IOSLIVE_P (val))
+	ios_deregister_range (val, PVM_VAL_SCT_IOS_PTR (val),
+			      PVM_VAL_SCT_OFFSET (val));
+    }
+  else if (PVM_IS_ARR (val))
+    {
+      if (PVM_VAL_ARR_MAPPED_P (val) && PVM_VAL_ARR_IOSLIVE_P (val))
+	ios_deregister_range (val, PVM_VAL_ARR_IOS_PTR (val),
+			      PVM_VAL_ARR_OFFSET (val));
+    }
+}
+
+void *
+pvm_alloc_boxed (uint8_t tag)
+{
+  pvm_val_box box = pvm_alloc (sizeof (struct pvm_val_box));
+  if (tag == PVM_VAL_TAG_SCT)
+    {
+      /* pvm_struct sct = pvm_alloc_sct (); */
+      pvm_struct sct = pvm_alloc (sizeof (struct pvm_struct));
+      PVM_VAL_BOX_SCT (box) = sct;
+    }
+  else if (tag == PVM_VAL_TAG_ARR)
+    {
+      /* pvm_array arr = pvm_alloc_arr (); */
+      pvm_array arr = pvm_alloc (sizeof (struct pvm_array));
+      PVM_VAL_BOX_ARR (box) = arr;
+    }
+  else
+    {
+      assert (false);
+    }
+  PVM_VAL_BOX_TAG (box) = tag;
+
+  GC_register_finalizer_no_order (box, pvm_alloc_finalize_boxed, NULL,
+				  NULL, NULL);
+  return box;
+}
+
 
 void
 pvm_alloc_initialize ()

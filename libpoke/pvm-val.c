@@ -153,8 +153,12 @@ pvm_make_string_nodup (char *str)
 pvm_val
 pvm_make_array (pvm_val nelem, pvm_val type)
 {
-  pvm_val_box box = pvm_make_box (PVM_VAL_TAG_ARR);
-  pvm_array arr = pvm_alloc_arr ();
+  /* pvm_val_box box = pvm_make_box (PVM_VAL_TAG_ARR); */
+  /* pvm_array arr = pvm_alloc_arr (); */
+
+  pvm_val_box box = pvm_alloc_boxed (PVM_VAL_TAG_ARR);
+  pvm_array arr = PVM_VAL_BOX_ARR (box);
+
   size_t num_elems = PVM_VAL_ULONG (nelem);
   size_t num_allocated = num_elems > 0 ? num_elems : 16;
   size_t nbytes = (sizeof (struct pvm_array_elem) * num_allocated);
@@ -301,8 +305,12 @@ pvm_array_rem (pvm_val arr, pvm_val idx)
 pvm_val
 pvm_make_struct (pvm_val nfields, pvm_val nmethods, pvm_val type)
 {
-  pvm_val_box box = pvm_make_box (PVM_VAL_TAG_SCT);
-  pvm_struct sct = pvm_alloc_sct ();
+  /* pvm_val_box box = pvm_make_box (PVM_VAL_TAG_SCT); */
+  /* pvm_struct sct = pvm_alloc_sct (); */
+
+  pvm_val_box box = pvm_alloc_boxed (PVM_VAL_TAG_SCT);
+  pvm_struct sct = PVM_VAL_BOX_SCT (box);
+
   size_t i;
   size_t nfieldbytes
     = sizeof (struct pvm_struct_field) * PVM_VAL_ULONG (nfields);
