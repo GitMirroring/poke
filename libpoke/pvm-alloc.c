@@ -127,13 +127,13 @@ pvm_alloc_finalize_boxed (void *object, void *client_data)
     {
       if (PVM_VAL_SCT_MAPPED_P (val) && PVM_VAL_SCT_IOSLIVE_P (val))
 	ios_deregister_range (val, PVM_VAL_SCT_IOS_PTR (val),
-			      PVM_VAL_SCT_OFFSET (val));
+			      PVM_VAL_INTEGRAL (PVM_VAL_SCT_OFFSET (val)));
     }
   else if (PVM_IS_ARR (val))
     {
       if (PVM_VAL_ARR_MAPPED_P (val) && PVM_VAL_ARR_IOSLIVE_P (val))
 	ios_deregister_range (val, PVM_VAL_ARR_IOS_PTR (val),
-			      PVM_VAL_ARR_OFFSET (val));
+			      PVM_VAL_INTEGRAL (PVM_VAL_ARR_OFFSET (val)));
     }
 }
 
