@@ -233,6 +233,8 @@ pvm_shutdown (pvm apvm)
   struct jitter_stack_backing *returnstack_backing;
   struct jitter_stack_backing *exceptionstack_backing;
 
+  ios_debug_all (PVM_STATE_IOS_CONTEXT (apvm));
+
   /* Access stack backings. */
   mainstack_backing
     = & PVM_STATE_BACKING_FIELD (& apvm->pvm_state,

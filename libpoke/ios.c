@@ -178,6 +178,21 @@ ios_init (void)
 }
 
 void
+ios_debug_all (ios_context ios_ctx)
+{
+   ios inext;
+
+  if (!ios_ctx)
+    return;
+  /* Close and free all open IO spaces.  */
+  for (ios i = ios_ctx->io_list; i; i = inext)
+    {
+      inext = i->next;
+      ios_rangetbl_debug (i->ranges);
+    }
+}
+
+void
 ios_shutdown (ios_context ios_ctx)
 {
   ios inext;
@@ -1679,10 +1694,21 @@ ios_dec_sub_dev (ios io)
     free (io);
 }
 
+void
+ios_range_debug (ios io)
+{
+  ios_rangetbl_debug (io->ranges);
+}
+
 int
 ios_register_range (pvm_val val, ios io, ios_off offset, ios_off size)
 {
-  return ios_rangetbl_insert (io->ranges, val, offset, offset + size);
+  if (PVM_IS_ARR (val) || PVM_IS_SCT (val))
+    {
+      PVM_VAL_SET_IOSLIVE_P (val, 1);
+      return ios_rangetbl_insert (io->ranges, val, offset, offset + size);
+    }
+  return IOS_EINVAL;
 }
 
 /* De-register VAL from the IO space, where it should be mapped at OFFSET.

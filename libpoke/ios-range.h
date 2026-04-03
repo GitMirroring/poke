@@ -23,3 +23,5 @@ void ios_rangetbl_dirty_all (struct ios_rangetbl *);
 size_t ios_rangetbl_nentries (struct ios_rangetbl *);
 
 void ios_rangetbl_notify_close (struct ios_rangetbl *);
+
+void ios_rangetbl_debug (struct ios_rangetbl *);

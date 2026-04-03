@@ -31,6 +31,8 @@ typedef struct ios_context *ios_context;
 
 ios_context ios_init (void);
 
+void ios_debug_all (ios_context ios_ctx);
+
 void ios_shutdown (ios_context ios_ctx);
 
 /* "IO spaces" are the entities used in poke in order to abstract the
