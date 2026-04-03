@@ -812,6 +812,9 @@ pvm_val_unmap (pvm_val val)
   if (PVM_IS_ARR (val))
     {
       size_t nelem, i;
+      struct ios *io = PVM_VAL_ARR_IOS_PTR (val);
+      if (io && PVM_VAL_IOSLIVE_P (val))
+	ios_deregister_range (val, io, PVM_VAL_ARR_OFFSET (val));
 
       nelem = PVM_VAL_ULONG (PVM_VAL_ARR_NELEM (val));
       for (i = 0; i < nelem; ++i)
@@ -820,6 +823,9 @@ pvm_val_unmap (pvm_val val)
   else if (PVM_IS_SCT (val))
     {
       size_t nfields, i;
+      struct ios *io = PVM_VAL_SCT_IOS_PTR (val);
+      if (io && PVM_VAL_IOSLIVE_P (val))
+	ios_deregister_range (val, io, PVM_VAL_SCT_OFFSET (val));
 
       nfields = PVM_VAL_ULONG (PVM_VAL_SCT_NFIELDS (val));
       for (i = 0; i < nfields; ++i)
