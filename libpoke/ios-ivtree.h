@@ -701,6 +701,78 @@ interval_mknode (uint64_t low, uint64_t high, NODE_PAYLOAD_PARAMS)
   return new_node;
 }
 
+static int
+ios_ivtree_insert_c (CONTAINER_T container, uint64_t low, uint64_t high,
+		     NODE_PAYLOAD_PARAMS)
+{
+  NODE_T node = container->root;
+  if (!node)
+    {
+      node = interval_mknode (low, high, NODE_PAYLOAD_ARGS);
+      if (!node)
+	return IOS_ENOMEM;
+      container->root = node;
+      container->count = 1;
+      node->color = BLACK;
+      return IOS_OK;
+    }
+
+  for (;;)
+    {
+      if (low < node->low)
+	{
+	  left:
+	  if (node->left)
+	    node = node->left;
+	  else
+	    {
+	      NODE_T new_node = interval_mknode (low, high, NODE_PAYLOAD_ARGS);
+	      if (!new_node)
+		return IOS_ENOMEM;
+	      node->left = new_node;
+	      new_node->parent = node;
+	      /* Color and rebalance. */
+	      rebalance_after_add (container, new_node, node);
+	      return IOS_OK;
+	    }
+	}
+
+      else if (low == node->low)
+	{
+	  int cmp = container->compar (NODE_PAYLOAD_ACCESS (node), NODE_PAYLOAD_ARGS);
+	  if (cmp < 0)
+	    {
+	      goto right;
+	      /* if (node->right) */
+	      /* 	node = node->right; */
+	    }
+	  else if (cmp == 0)
+	    return IOS_OK; /* Should not happen; do not add duplicate.  */
+	  else
+	    goto left;
+	    /* node = node->left; */
+	}
+
+      else
+	{
+	  right:
+	  if (node->right)
+	    node = node->right;
+	  else
+	    {
+	      right_insert:
+	      NODE_T new_node = interval_mknode (low, high, NODE_PAYLOAD_ARGS);
+	      if (!new_node)
+		return IOS_ENOMEM;
+	      node->right = new_node;
+	      new_node->parent = node;
+	      /* Color and rebalance.  */
+	      rebalance_after_add (container, new_node, node);
+	    }
+	}
+    }
+}
+
 /* Insert a new node holding the interval [LOW,HIGH] and given payload
    at its appropriate place in the tree rooted at NODE, updating the
    tree as necessary.  */
@@ -723,8 +795,8 @@ ios_ivtree_insert (CONTAINER_T container, NODE_T node,
       return IOS_OK;
     }
 
-  if (low < node->low
-      || ((low == node->low) && (high < node->high)))
+  if (low < node->low)
+      /* || ((low == node->low) && (high < node->high))) */
     {
       if (node->left)
 	return ios_ivtree_insert (container, node->left, low, high,
@@ -889,15 +961,38 @@ gl_tree_remove_node (CONTAINER_T container, NODE_T node)
 }
 
 static NODE_T
+ios_ivtree_lookup_c (CONTAINER_T container, uint64_t offs, NODE_PAYLOAD_PARAMS)
+{
+  for (NODE_T node = container->root; node != NULL; )
+    {
+      if (offs < node->low)
+	node = node->left;
+      else if (offs == node->low)
+	{
+	  int cmp = container->compar (NODE_PAYLOAD_ACCESS (node), NODE_PAYLOAD_ARGS);
+	  if (cmp < 0)
+	    node = node->right;
+	  else if (cmp == 0)
+	    return node;
+	  else
+	    node = node->left;
+	}
+      else
+	node = node->right;
+    }
+  return NULL;
+}
+
+static NODE_T
 ios_ivtree_lookup (NODE_T node, uint64_t offs, NODE_PAYLOAD_PARAMS)
 {
   if (!node)
     return NULL;
-  if (offs > node->highest)
-    return NULL;
-  if (NODE_PAYLOAD_COMPARE (node))
+  /* if (offs > node->highest) */
+    /* return NULL; */
+  else if (NODE_PAYLOAD_EQUALS (node))
     return node;
-  if (offs < node->low)
+  else if (offs < node->low)
     return ios_ivtree_lookup (node->left, offs, NODE_PAYLOAD_ARGS);
   else
     return ios_ivtree_lookup (node->right, offs, NODE_PAYLOAD_ARGS);

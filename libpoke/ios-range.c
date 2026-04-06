@@ -25,11 +25,14 @@
 
 #include <stdio.h>
 
+typedef int (*payload_compar_fn)(pvm_val v1, pvm_val v2);
+
 struct NODE_IMPL;
 struct ios_rangetbl
 {
   size_t count;
   struct NODE_IMPL *root;
+  payload_compar_fn compar;
 };
 
 typedef struct ios_rangetbl * CONTAINER_T;
@@ -37,15 +40,29 @@ typedef struct ios_rangetbl * CONTAINER_T;
 #define NODE_PAYLOAD_ASSIGN(node) \
   node->val = val;
 #define NODE_PAYLOAD_PARAMS \
-  const pvm_val val
+  pvm_val val
 #define NODE_PAYLOAD_ARGS val
 #define NODE_PAYLOAD_ACCESS(node) \
   node->val
-#define NODE_PAYLOAD_COMPARE(node) \
+#define NODE_PAYLOAD_EQUALS(node) \
   (node->val == val)
 
+
 typedef void (*node_visitor_fn)(NODE_PAYLOAD_PARAMS);
+
 #define NODE_VISITOR_FN node_visitor_fn
+
+
+int
+ivtree_payload_compar (pvm_val v1, pvm_val v2)
+{
+  if (v1 < v2)
+    return -1;
+  else if (v1 == v2)
+    return 0;
+  else
+    return 1;
+}
 
 #include "ios-ivtree.h"
 
@@ -56,15 +73,33 @@ int
 ios_rangetbl_insert (struct ios_rangetbl *tbl, pvm_val val,
 		     ios_off begin, ios_off end)
 {
-  return ios_ivtree_insert (tbl, tbl->root, begin, end, val);
+  /* ios_rangetbl_debug (tbl); */
+  printf ("ios_rangetbl_insert val=%lx offset=%lu end=%lu\n",
+	  val, begin, end);
+  /* return ios_ivtree_insert (tbl, tbl->root, begin, end, val); */
+  return ios_ivtree_insert_c (tbl, begin, end, val);
 }
 
 void
 ios_rangetbl_remove (struct ios_rangetbl *tbl, pvm_val val, ios_off offs)
 {
-  NODE_T target = ios_ivtree_lookup (tbl->root, offs, val);
+
+  size_t counter;
+  unsigned int ok = check_invariants (tbl->root->right, tbl->root, &counter);
+
+  /* NODE_T target = ios_ivtree_lookup (tbl->root, offs, val); */
+  NODE_T target = ios_ivtree_lookup_c (tbl, offs, val);
   if (target)
-    gl_tree_remove_node (tbl, target);
+    {
+      printf ("ios_rangetbl_remove found valid target: val=%lx offset=%lu\n",
+	      val, offs);
+      gl_tree_remove_node (tbl, target);
+    }
+  else
+    {
+      printf ("ios_rangetbl_remove no target val=%lx offset=%lu\n", val, offs);
+    }
+  printf ("  ok = %u\n", ok);
 }
 
 
@@ -77,6 +112,7 @@ ios_rangetbl_create (void)
 
   tbl->root = NULL;
   tbl->count = 0;
+  tbl->compar = ivtree_payload_compar;
   return tbl;
 }
 
@@ -90,7 +126,7 @@ ios_rangetbl_destroy (struct ios_rangetbl *tbl)
 }
 
 static void
-mark_dirty (const pvm_val val)
+mark_dirty (pvm_val val)
 {
   PVM_VAL_SET_DIRTY_P (val, 1);
 }
