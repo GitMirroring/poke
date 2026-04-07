@@ -1885,8 +1885,10 @@ instruction ioregval ()
     JITTER_DROP_STACK ();
     JITTER_DROP_STACK ();
 
-    PVM_VAL_SET_IOSLIVE_P (val, 1);
-    ios_register_range (val, io, begin, size);
+    PVM_VAL_SET_DIRTY_P (val, 0);
+    int ret = ios_register_range (val, io, begin, size);
+    if (ret != IOS_OK)
+        PVM_RAISE_DFL (PVM_E_GENERIC);
   end
 end
 
