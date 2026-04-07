@@ -33,6 +33,8 @@ struct ios_rangetbl
   size_t count;
   struct NODE_IMPL *root;
   payload_compar_fn compar;
+
+  struct NODE_IMPL *tail;
 };
 
 typedef struct ios_rangetbl * CONTAINER_T;
@@ -47,6 +49,7 @@ typedef struct ios_rangetbl * CONTAINER_T;
 #define NODE_PAYLOAD_EQUALS(node) \
   (node->val == val)
 
+#define NODE_PAYLOAD_DISPOSE(container, node) ;
 
 typedef void (*node_visitor_fn)(NODE_PAYLOAD_PARAMS);
 
@@ -64,7 +67,8 @@ ivtree_payload_compar (pvm_val v1, pvm_val v2)
     return 1;
 }
 
-#include "ios-ivtree.h"
+/* #include "ios-ivtree.h" */
+#include "ios-ivlist.h"
 
 
 /* ************** Interface via ios_rangetbl ******************** */
@@ -74,32 +78,34 @@ ios_rangetbl_insert (struct ios_rangetbl *tbl, pvm_val val,
 		     ios_off begin, ios_off end)
 {
   /* ios_rangetbl_debug (tbl); */
-  printf ("ios_rangetbl_insert val=%lx offset=%lu end=%lu\n",
-	  val, begin, end);
+  /* printf ("ios_rangetbl_insert val=%lx offset=%lu end=%lu\n", */
+	  /* val, begin, end); */
   /* return ios_ivtree_insert (tbl, tbl->root, begin, end, val); */
-  return ios_ivtree_insert_c (tbl, begin, end, val);
+
+  /* int res = ios_ivtree_insert_c (tbl, begin, end, val); */
+
+  int res = ios_ivlist_insert (tbl, begin, end, val);
+  return res;
 }
 
 void
 ios_rangetbl_remove (struct ios_rangetbl *tbl, pvm_val val, ios_off offs)
 {
 
-  size_t counter;
-  unsigned int ok = check_invariants (tbl->root->right, tbl->root, &counter);
-
   /* NODE_T target = ios_ivtree_lookup (tbl->root, offs, val); */
-  NODE_T target = ios_ivtree_lookup_c (tbl, offs, val);
+  /* NODE_T target = ios_ivtree_lookup_c (tbl, offs, val); */
+  NODE_T target = ios_ivlist_lookup (tbl, val);
   if (target)
     {
-      printf ("ios_rangetbl_remove found valid target: val=%lx offset=%lu\n",
-	      val, offs);
-      gl_tree_remove_node (tbl, target);
+      /* printf ("ios_rangetbl_remove found valid target: val=%lx offset=%lu\n", */
+	      /* val, offs); */
+      /* gl_tree_remove_node (tbl, target); */
+      ios_ivlist_remove (tbl, target);
     }
   else
     {
-      printf ("ios_rangetbl_remove no target val=%lx offset=%lu\n", val, offs);
+      /* printf ("XXX ios_rangetbl_remove no target val=%lx offset=%lu\n", val, offs); */
     }
-  printf ("  ok = %u\n", ok);
 }
 
 
@@ -113,6 +119,9 @@ ios_rangetbl_create (void)
   tbl->root = NULL;
   tbl->count = 0;
   tbl->compar = ivtree_payload_compar;
+
+  tbl->tail = NULL;
+
   return tbl;
 }
 
@@ -122,7 +131,8 @@ ios_rangetbl_destroy (struct ios_rangetbl *tbl)
   if (!tbl)
     return;
 
-  ios_ivtree_destroy (tbl);
+  /* ios_ivtree_destroy (tbl); */
+  ios_ivlist_destroy (tbl);
 }
 
 static void
@@ -137,7 +147,8 @@ ios_rangetbl_dirty (struct ios_rangetbl *tbl, ios_off begin, ios_off end)
   if (!tbl)
     return;
 
-  ios_ivtree_visit_overlaps (tbl->root, begin, end, mark_dirty);
+  /* ios_ivtree_visit_overlaps (tbl->root, begin, end, mark_dirty); */
+  ios_ivlist_visit_overlaps (tbl, begin, end, mark_dirty);
 }
 
 void
@@ -146,7 +157,8 @@ ios_rangetbl_dirty_all (struct ios_rangetbl *tbl)
   if (!tbl)
     return;
 
-  ios_ivtree_visit_all (tbl->root, mark_dirty);
+  /* ios_ivtree_visit_all (tbl->root, mark_dirty); */
+  ios_ivlist_visit_all (tbl, mark_dirty);
 }
 
 size_t
@@ -167,7 +179,8 @@ notify_ios_closed (pvm_val val)
 void
 ios_rangetbl_notify_close (struct ios_rangetbl *tbl)
 {
-  ios_ivtree_visit_all (tbl->root, notify_ios_closed);
+  /* ios_ivtree_visit_all (tbl->root, notify_ios_closed); */
+  ios_ivlist_visit_all (tbl, notify_ios_closed);
 }
 
 static void
@@ -202,5 +215,6 @@ debug (pvm_val val)
 void
 ios_rangetbl_debug (struct ios_rangetbl *tbl)
 {
-  ios_ivtree_visit_all (tbl->root, debug);
+  /* ios_ivtree_visit_all (tbl->root, debug); */
+  /* ios_ivlist_visit_all (tbl, debug); */
 }
