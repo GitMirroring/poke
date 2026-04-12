@@ -287,7 +287,7 @@ See the manual for detailed information.
      as if they were methods.  As functions, they can have any
      signature as they are no special in any way.
 
-   - Do not emit an empty table for computed fiels in the output of
+   - Do not emit an empty table for computed fields in the output of
      .info type if the type has no computed fields.
 
    - Use tar-ustar in AM_INIT_AUTOMAKE.  The usage older algorithms in
@@ -482,7 +482,7 @@ See the manual for detailed information.
     profusedly apologize for the backwards incompatibility, but this
     is way better than the previous (reversed) logic.
 
-  - The containing struct or union value can now be refered as SELF in
+  - The containing struct or union value can now be referred as SELF in
     the body of methods.  SELF is of type =any=.
 
   - Integer literal suffixes (B, H, U, etc) are case-insensitive.  But
@@ -1248,7 +1248,7 @@ See the manual for detailed information.
   - New pickles =jffs2.pk= provides definitions to poke JFFS2 file
     systems.
 
-  - The =elf.pk= pickle has been splitted in 32-bit and 64-bit
+  - The =elf.pk= pickle has been split in 32-bit and 64-bit
     variants, and ELF-32 definitions have been added.
 
   - The output messages emitted by =argp.pk= have been improved.

@@ -136,7 +136,7 @@ Currently the Poke language supports three kind of array types:
 
    When mapped, exactly that number of values are read from the IO space
    to conform the elements of the new array.  If an array of the
-   specified numer of elements cannot be mapped, i.e. if the bound is
+   specified number of elements cannot be mapped, i.e. if the bound is
    not satisfied, then an exception gets raised.
 
    Constructing an array bounded by number of elements results in an
@@ -455,7 +455,7 @@ Result at OFFSET: Packet { ... }
 The default for :aligned should be 1#B unless the struct type
 has an aligned attribute.
 
-Syntax for struct tyep attributes:
+Syntax for struct type attributes:
 
 type Packet =
   struct
@@ -767,7 +767,7 @@ type in question.
 
 ** Include call stacks in Exception
 
-This requies new PVM instructions:
+This requires new PVM instructions:
 
 : framedepth ( -- ULONG )  Number of frames
 : stackframe ( ULONG -- ULONG STR ) Info for frame N: Stack_Frame { na
@@ -870,7 +870,7 @@ In case the array's element type is promoteable.  This shall be recursive.
 
 Multiple assignments are executed from left to right.
 
-** Support for multiple field assigment
+** Support for multiple field assignment
 
 : xsct.{f1,f2,f3} = e1, e2, e3;
 
@@ -1100,7 +1100,7 @@ This service will quote a Poke string:
 ** Add pk_get_unused_identifier
 
 This will allow libpoke clients to compute identifiers that are not defined in
-the poke incremental compiler's top level enviroment:
+the poke incremental compiler's top level environment:
 
 : char *pk_get_unused_identifier (const char *prefix);
 

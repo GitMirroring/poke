@@ -1,5 +1,11 @@
 2026-04-12  Jose E. Marchesi  <jemarch@gnu.org>
 
+	* .x-sc_codespell: New file.
+	* NEWS: Fix typos.
+	* TODO: Likewise.
+
+2026-04-12  Jose E. Marchesi  <jemarch@gnu.org>
+
 	* libpoke/pkl-tab.y (expression): Remove START_STMT load rules.
 
 2026-03-05  Brian Witte  <brianwitte@mailfence.com>

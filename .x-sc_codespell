@@ -1,0 +1,6 @@
+poke/*
+libpoke/*
+ChangeLog
+*.pk
+*.pks
+m4/*
