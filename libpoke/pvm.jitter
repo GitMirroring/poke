@@ -152,6 +152,14 @@ wrapped-functions
   pvm_stof
   pvm_stod
   pvm_popcount
+  powf
+  pow
+  sqrtf
+  sqrt
+  fmodf
+  fmod
+  ceilf
+  ceil
 end
 
 wrapped-globals
@@ -230,6 +238,7 @@ early-c
 #   include <stdlib.h>
 #   include <assert.h>
 #   include <errno.h>
+#   include <math.h>
 #   include "intprops.h"
 
 #   include "pvm-alloc.h"
@@ -350,6 +359,91 @@ late-header-c
                                                                             \
      JITTER_PUSH_STACK (pvm_make_##TYPELC (res, size));                     \
   }                                                                         \
+  while (0)
+
+/* Binary floating-point operations.  */
+
+#define NOROUND(x) (x)
+#define NEGATION(x) (-(x))
+
+/* Floating-point binary operations.
+   ( TYPE TYPE -- TYPE TYPE TYPE ) */
+#define PVM_FP_BINOP(FTYPEC,UTYPEC,TYPE,WIDTH,OP,ROUND)                       \
+  do                                                                          \
+    {                                                                         \
+      union                                                                   \
+      {                                                                       \
+        FTYPEC f;                                                             \
+        UTYPEC u;                                                             \
+      } n[2];                                                                 \
+                                                                              \
+      n[0].u = PVM_VAL_##TYPE (JITTER_UNDER_TOP_STACK ());                    \
+      n[1].u = PVM_VAL_##TYPE (JITTER_TOP_STACK ());                          \
+                                                                              \
+      n[0].f = ROUND (n[0].f OP n[1].f);                                      \
+      JITTER_PUSH_STACK (PVM_MAKE_##TYPE (n[0].u, WIDTH));                    \
+    }                                                                         \
+  while (0)
+
+/* Floating-point dyadic functions.
+   ( TYPE TYPE -- TYPE TYPE TYPE ) */
+#define PVM_FP_DYOP(FTYPEC,UTYPEC,TYPE,WIDTH,OPFUNC)                          \
+  do                                                                          \
+    {                                                                         \
+      union                                                                   \
+      {                                                                       \
+        FTYPEC f;                                                             \
+        UTYPEC u;                                                             \
+      } n[2];                                                                 \
+                                                                              \
+      n[0].u = PVM_VAL_##TYPE (JITTER_UNDER_TOP_STACK ());                    \
+      n[1].u = PVM_VAL_##TYPE (JITTER_TOP_STACK ());                          \
+                                                                              \
+      n[0].f = OPFUNC (n[0].f, n[1].f);                                       \
+      JITTER_PUSH_STACK (PVM_MAKE_##TYPE (n[0].u, WIDTH));                    \
+    }                                                                         \
+  while (0)
+
+/* Floating-point monadic functions.
+   ( TYPE -- TYPE TYPE ) */
+#define PVM_FP_MOOP(FTYPEC,UTYPEC,TYPE,WIDTH,OPFUNC)                          \
+  do                                                                          \
+    {                                                                         \
+      union                                                                   \
+      {                                                                       \
+        FTYPEC f;                                                             \
+        UTYPEC u;                                                             \
+      } n;                                                                    \
+                                                                              \
+      n.u = PVM_VAL_##TYPE (JITTER_TOP_STACK ());                             \
+      n.f = OPFUNC (n.f);                                                     \
+      JITTER_PUSH_STACK (PVM_MAKE_##TYPE (n.u, WIDTH));                       \
+    }                                                                         \
+  while (0)
+
+/* Floating-point comparison operations.
+   ( TYPE TYPE -- TYPE TYPE INT ) */
+#define PVM_FP_CMP(FTYPEC,UTYPEC,TYPE)                                        \
+  do                                                                          \
+    {                                                                         \
+      union                                                                   \
+      {                                                                       \
+        FTYPEC f;                                                             \
+        UTYPEC u;                                                             \
+      } n[2];                                                                 \
+      int cmp;                                                                \
+                                                                              \
+      n[0].u = PVM_VAL_##TYPE (JITTER_UNDER_TOP_STACK ());                    \
+      n[1].u = PVM_VAL_##TYPE (JITTER_TOP_STACK ());                          \
+                                                                              \
+      if (n[0].f < n[1].f)                                                    \
+        cmp = -1;                                                             \
+      else if (n[0].f == n[1].f)                                              \
+        cmp = 0;                                                              \
+      else                                                                    \
+        cmp = 1;                                                              \
+      JITTER_PUSH_STACK (PVM_MAKE_INT (cmp, 32));                             \
+    }                                                                         \
   while (0)
 
 /* Conversion instructions.
@@ -3512,6 +3606,288 @@ end
 instruction powlu ()
   code
     PVM_POWOP (ULONG,uint64_t,ulong);
+  end
+end
+
+
+## Floating-point arithmetic and relational instructions
+
+# The following instructions assume that both operands have the same
+# size in bits.
+
+# Instruction: f32add
+#
+# Push the result of adding the two 32-bit floating-point numbers at
+# the top of the stack given that they're represented as 32-bit unsigned
+# integers.
+#
+# Stack: ( UINT UINT -- UINT UINT UINT )
+
+instruction f32add ()
+  code
+    PVM_FP_BINOP (float, uint32_t, UINT, 32, +, NOROUND);
+  end
+end
+
+# Instruction: f32sub
+#
+# Push the result of subtraction of the two 32-bit floating-point numbers
+# at the top of the stack given that they're represented as 32-bit unsigned
+# integers.
+#
+# Stack: ( UINT UINT -- UINT UINT UINT )
+
+instruction f32sub ()
+  code
+    PVM_FP_BINOP (float, uint32_t, UINT, 32, -, NOROUND);
+  end
+end
+
+# Instruction: f32mul
+#
+# Push the result of multiplying the two 32-bit floating-point numbers at
+# the top of the stack given that they're represented as 32-bit unsigned
+# integers.
+#
+# Stack: ( UINT UINT -- UINT UINT UINT )
+
+instruction f32mul ()
+  code
+    PVM_FP_BINOP (float, uint32_t, UINT, 32, *, NOROUND);
+  end
+end
+
+# Instruction: f32div
+#
+# Push the result of dividing the two 32-bit floating-point numbers at
+# the top of the stack given that they're represented as 32-bit unsigned
+# integers.
+#
+# Stack: ( UINT UINT -- UINT UINT UINT )
+
+instruction f32div ()
+  code
+    PVM_FP_BINOP (float, uint32_t, UINT, 32, /, NOROUND);
+  end
+end
+
+# Instruction: f32cdiv
+#
+# Push the result of ceiling of dividing the two 32-bit floating-point
+# numbers at the top of the stack given that they're represented as
+# 32-bit unsigned integers.
+#
+# Stack: ( UINT UINT -- UINT UINT UINT )
+
+instruction f32cdiv ()
+  code
+    PVM_FP_BINOP (float, uint32_t, UINT, 32, /, ceilf);
+  end
+end
+
+# Instruction: f32pow
+#
+# Push the result of exponentiation of the two 32-bit floating-point
+# numbers at the top of the stack given that they're represented as
+# 32-bit unsigned integers.
+#
+# Stack: ( UINT UINT -- UINT UINT UINT )
+
+instruction f32pow ()
+  code
+    PVM_FP_DYOP (float, uint32_t, UINT, 32, powf);
+  end
+end
+
+# Instruction: f32mod
+#
+# Push the remainder of dividing the two 32-bit floating-point
+# numbers at the top of the stack given that they're represented as
+# 32-bit unsigned integers.
+#
+# Stack: ( UINT UINT -- UINT UINT UINT )
+
+instruction f32mod ()
+  code
+    PVM_FP_DYOP (float, uint32_t, UINT, 32, fmodf);
+  end
+end
+
+# Instruction: f32neg
+#
+# Push the negation of the 32-bit floating-point number at the top
+# of the stack given that it is represented as 32-bit unsigned integer.
+#
+# Stack: ( UINT UINT -- UINT UINT UINT )
+
+instruction f32neg ()
+  code
+    PVM_FP_MOOP (float, uint32_t, UINT, 32, NEGATION);
+  end
+end
+
+# Instruction: f32sqrt
+#
+# Push the square root of the 32-bit floating-point number at the top
+# of the stack given that it is represented as a 32-bit unsigned integer.
+#
+# Stack: ( UINT -- UINT UINT )
+
+instruction f32sqrt ()
+  code
+    PVM_FP_MOOP (float, uint32_t, UINT, 32, sqrtf);
+  end
+end
+
+# Instruction: f32cmp
+#
+# Push the result of comparison of the two 32-bit floating-point
+# numbers at the top of the stack given that they're represented as
+# 32-bit unsigned integers.
+#
+# Stack: ( ULONG ULONG -- ULONG ULONG INT )
+
+instruction f32cmp ()
+  code
+    PVM_FP_CMP (float, uint32_t, UINT);
+  end
+end
+
+# Instruction: f64add
+#
+# Push the result of adding the two 64-bit floating-point numbers at
+# the top of the stack given that they're represented as 64-bit unsigned
+# integers.
+#
+# Stack: ( ULONG ULONG -- ULONG ULONG ULONG )
+
+instruction f64add ()
+  code
+    PVM_FP_BINOP (double, uint64_t, ULONG, 64, +, NOROUND);
+  end
+end
+
+# Instruction: f64sub
+#
+# Push the result of subtraction of the two 64-bit floating-point numbers
+# at the top of the stack given that they're represented as 64-bit unsigned
+# integers.
+#
+# Stack: ( ULONG ULONG -- ULONG ULONG ULONG )
+
+instruction f64sub ()
+  code
+    PVM_FP_BINOP (double, uint64_t, ULONG, 64, -, NOROUND);
+  end
+end
+
+# Instruction: f64mul
+#
+# Push the result of multiplying the two 64-bit floating-point numbers at
+# the top of the stack given that they're represented as 64-bit unsigned
+# integers.
+#
+# Stack: ( ULONG ULONG -- ULONG ULONG ULONG )
+
+instruction f64mul ()
+  code
+    PVM_FP_BINOP (double, uint64_t, ULONG, 64, *, NOROUND);
+  end
+end
+
+# Instruction: f64div
+#
+# Push the result of dividing the two 64-bit floating-point numbers at
+# the top of the stack given that they're represented as 64-bit unsigned
+# integers.
+#
+# Stack: ( ULONG ULONG -- ULONG ULONG ULONG )
+
+instruction f64div ()
+  code
+    PVM_FP_BINOP (double, uint64_t, ULONG, 64, /, NOROUND);
+  end
+end
+
+# Instruction: f64cdiv
+#
+# Push the result of ceiling of dividing the two 64-bit floating-point
+# numbers at the top of the stack given that they're represented as
+# 64-bit unsigned integers.
+#
+# Stack: ( ULONG ULONG -- ULONG ULONG ULONG )
+
+instruction f64cdiv ()
+  code
+    PVM_FP_BINOP (double, uint64_t, ULONG, 64, /, ceil);
+  end
+end
+
+# Instruction: f64pow
+#
+# Push the result of exponentiation of the two 64-bit floating-point
+# numbers at the top of the stack given that they're represented as
+# 64-bit unsigned integers.
+#
+# Stack: ( ULONG ULONG -- ULONG ULONG ULONG )
+
+instruction f64pow ()
+  code
+    PVM_FP_DYOP (double, uint64_t, ULONG, 64, pow);
+  end
+end
+
+# Instruction: f64mod
+#
+# Push the remainder of dividing the two 64-bit floating-point
+# numbers at the top of the stack given that they're represented as
+# 64-bit unsigned integers.
+#
+# Stack: ( ULONG ULONG -- ULONG ULONG ULONG )
+
+instruction f64mod ()
+  code
+    PVM_FP_DYOP (double, uint64_t, ULONG, 64, fmod);
+  end
+end
+
+# Instruction: f64neg
+#
+# Push the negation of the 64-bit floating-point number at the top
+# of the stack given that it is represented as 64-bit unsigned integer.
+#
+# Stack: ( ULONG ULONG -- ULONG ULONG ULONG )
+
+instruction f64neg ()
+  code
+    PVM_FP_MOOP (double, uint64_t, ULONG, 64, NEGATION);
+  end
+end
+
+# Instruction: f64sqrt
+#
+# Push the square root of the 64-bit floating-point number at the top
+# of the stack given that it is represented as a 64-bit unsigned integer.
+#
+# Stack: ( ULONG -- ULONG ULONG )
+
+instruction f64sqrt ()
+  code
+    PVM_FP_MOOP (double, uint64_t, ULONG, 64, sqrt);
+  end
+end
+
+# Instruction: f64cmp
+#
+# Push the result of comparison of the two 64-bit floating-point
+# numbers at the top of the stack given that they're represented as
+# 64-bit unsigned integers.
+#
+# Stack: ( ULONG ULONG -- ULONG ULONG INT )
+
+instruction f64cmp ()
+  code
+    PVM_FP_CMP (double, uint64_t, ULONG);
   end
 end
 

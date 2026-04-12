@@ -1103,6 +1103,135 @@ pkl_asm_insn_cmp (pkl_asm pasm,
     PK_UNREACHABLE ();
 }
 
+/* Macro-instruction: FNEG type
+   ( VAL -- VAL )
+
+   Macro-instruction: FADD type
+   ( VAL VAL -- VAL VAL VAL )
+
+   Macro-instruction: FSUB type
+   ( VAL VAL -- VAL VAL VAL )
+
+   Macro-instruction: FMUL type
+   ( VAL VAL -- VAL VAL VAL )
+
+   Macro-instruction: FDIV type
+   ( VAL VAL -- VAL VAL VAL )
+
+   Macro-instruction: FCDIV type
+   ( VAL VAL -- VAL VAL VAL )
+
+   Macro-instruction: FMOD type
+   ( VAL VAL -- VAL VAL VAL )
+
+   Macro-instruction: FPOW type
+   ( VAL VAL -- VAL VAL VAL )
+
+   Generate code for performing negation, addition, subtraction,
+   multiplication, division, remainder and bit shift to integral and
+   offset operands.  Also exponentiation.  Also overflow-checking
+   instructions.  INSN identifies the operation to perform, and TYPE
+   the type of the operands and the result.  */
+
+static void
+pkl_asm_insn_fbinop (pkl_asm pasm, enum pkl_asm_insn insn, pkl_ast_node type)
+{
+  int fp32_p;
+
+  assert (PKL_AST_TYPE_CODE (type) == PKL_TYPE_INTEGRAL);
+
+  fp32_p = PKL_AST_TYPE_I_SIZE (type) == 32;
+  switch (insn)
+    {
+    case PKL_INSN_FNEG:
+      insn = fp32_p ? PKL_INSN_F32NEG : PKL_INSN_F64NEG;
+      break;
+    case PKL_INSN_FADD:
+      insn = fp32_p ? PKL_INSN_F32ADD : PKL_INSN_F64ADD;
+      break;
+    case PKL_INSN_FSUB:
+      insn = fp32_p ? PKL_INSN_F32SUB : PKL_INSN_F64SUB;
+      break;
+    case PKL_INSN_FMUL:
+      insn = fp32_p ? PKL_INSN_F32MUL : PKL_INSN_F64MUL;
+      break;
+    case PKL_INSN_FDIV:
+      insn = fp32_p ? PKL_INSN_F32DIV : PKL_INSN_F64DIV;
+      break;
+    case PKL_INSN_FCDIV:
+      insn = fp32_p ? PKL_INSN_F32CDIV : PKL_INSN_F64CDIV;
+      break;
+    case PKL_INSN_FMOD:
+      insn = fp32_p ? PKL_INSN_F32MOD : PKL_INSN_F64MOD;
+      break;
+    case PKL_INSN_FPOW:
+      insn = fp32_p ? PKL_INSN_F32POW : PKL_INSN_F64POW;
+      break;
+    default:
+      PK_UNREACHABLE ();
+    }
+
+  pkl_asm_insn (pasm, insn);
+}
+
+/* Macro-instruction: FEQ type
+   ( VAL VAL -- INT )
+
+   Macro-instruction: FNE type
+   ( VAL VAL -- INT )
+
+   Macro-instruction: FLT type
+   ( VAL VAL -- INT )
+
+   Macro-instruction: FGT type
+   ( VAL VAL -- INT )
+
+   Macro-instruction: FGE type
+   ( VAL VAL -- INT )
+
+   Macro-instruction: FLE type
+   ( VAL VAL -- INT )
+
+   Generate code for performing a comparison operation of floating-point
+   numbers.  INSN identifies the operation to perform, and TYPE the type
+   of the operands.  */
+
+static void
+pkl_asm_insn_fcmp (pkl_asm pasm, enum pkl_asm_insn insn, pkl_ast_node type)
+{
+  int fp32_p;
+
+  assert (PKL_AST_TYPE_CODE (type) == PKL_TYPE_INTEGRAL);
+
+  fp32_p = PKL_AST_TYPE_I_SIZE (type) == 32;
+  pkl_asm_insn (pasm, fp32_p ? PKL_INSN_F32CMP : PKL_INSN_F64CMP);
+  pkl_asm_insn (pasm, PKL_INSN_PUSH, PVM_MAKE_INT (0, 32));
+  switch (insn)
+    {
+    case PKL_INSN_FEQ:
+      pkl_asm_insn (pasm, PKL_INSN_EQI);  /* FCMP 0 FCMP==0 */
+      break;
+    case PKL_INSN_FNE:
+      pkl_asm_insn (pasm, PKL_INSN_NEI);  /* FCMP 0 FCMP!=0 */
+      break;
+    case PKL_INSN_FLT:
+      pkl_asm_insn (pasm, PKL_INSN_LTI);  /* FCMP 0 FCMP<0 */
+      break;
+    case PKL_INSN_FGT:
+      pkl_asm_insn (pasm, PKL_INSN_GTI);  /* FCMP 0 FCMP>0 */
+      break;
+    case PKL_INSN_FGE:
+      pkl_asm_insn (pasm, PKL_INSN_GEI);  /* FCMP 0 FCMP>=0 */
+      break;
+    case PKL_INSN_FLE:
+      pkl_asm_insn (pasm, PKL_INSN_LEI);  /* FCMP 0 FCMP<=0 */
+      break;
+    default:
+      PK_UNREACHABLE ();
+    }
+  pkl_asm_insn (pasm, PKL_INSN_NIP2);
+}
+
 /* Macro-instruction: ASETC array_type
    ( ARR ULONG VAL -- ARR )
 
@@ -1719,6 +1848,40 @@ pkl_asm_insn (pkl_asm pasm, enum pkl_asm_insn insn, ...)
             va_end (valist);
 
             pkl_asm_insn_cmp (pasm, insn, type);
+            break;
+          }
+        case PKL_INSN_FNEG:
+        case PKL_INSN_FADD:
+        case PKL_INSN_FSUB:
+        case PKL_INSN_FMUL:
+        case PKL_INSN_FDIV:
+        case PKL_INSN_FCDIV:
+        case PKL_INSN_FMOD:
+        case PKL_INSN_FPOW:
+          {
+            pkl_ast_node type;
+
+            va_start (valist, insn);
+            type = va_arg (valist, pkl_ast_node);
+            va_end (valist);
+
+            pkl_asm_insn_fbinop (pasm, insn, type);
+            break;
+          }
+        case PKL_INSN_FEQ:
+        case PKL_INSN_FNE:
+        case PKL_INSN_FLT:
+        case PKL_INSN_FGT:
+        case PKL_INSN_FGE:
+        case PKL_INSN_FLE:
+          {
+            pkl_ast_node type;
+
+            va_start (valist, insn);
+            type = va_arg (valist, pkl_ast_node);
+            va_end (valist);
+
+            pkl_asm_insn_fcmp (pasm, insn, type);
             break;
           }
         case PKL_INSN_GCD:

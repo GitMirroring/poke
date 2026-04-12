@@ -517,6 +517,22 @@ load_module (struct pkl_parser *parser,
 %token UNSIGNED         _("keyword `unsigned'")
 %token THREEDOTS        _("varargs indicator")
 
+%token FEQ              _("floating-point equality operator")
+%token FNE              _("floating-point inequality operator")
+%token FLT              _("floating-point less-than operator")
+%token FGT              _("floating-point greater-than operator")
+%token FLE              _("floating-point less-or-equal operator")
+%token FGE              _("floating-point greater-than-or-equal operator")
+%token FADD             _("floating-point addition operator")
+%token FSUB             _("floating-point subtraction operator")
+%token FPOW             _("floating-point power operator")
+%token FMUL             _("floating-point multiplication operator")
+%token FDIV             _("floating-point division operator")
+%token FCEILDIV         _("floating-point ceiling division operator")
+%token FMOD             _("floating-point modulus operator")
+%token FINC             _("floating-point increment operator")
+%token FDEC             _("floating-point decrement operator")
+
 %token <ast> ARRSUF     _("array suffix")
 
 /* This is for the dangling ELSE.  */
@@ -534,15 +550,15 @@ load_module (struct pkl_parser *parser,
 %left '|'
 %left '^'
 %left '&'
-%left EQ NE EXCOND
-%left LE GE '<' '>'
+%left EQ NE EXCOND FEQ FNE
+%left LE GE '<' '>' FLE FGE FLT FGT
 %left SL SR
-%left '+' '-'
-%left '*' '/' CEILDIV '%'
-%left POW
+%left '+' '-' FADD FSUB
+%left '*' '/' CEILDIV '%' FMUL FDIV FCEILDIV FMOD
+%left POW FPOW
 %left BCONC
 %right '@' NSMAP
-%nonassoc UNIT INC DEC
+%nonassoc UNIT INC DEC FINC FDEC
 %right AS ISA
 %right UNARY
 %left HYPERUNARY
@@ -859,6 +875,48 @@ expression:
                                                 $1, $3);
                   PKL_AST_LOC ($$) = @$;
                 }
+        | expression FADD expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast, PKL_AST_OP_FADD,
+                                                $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression FSUB expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast, PKL_AST_OP_FSUB,
+                                                $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression FMUL expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast, PKL_AST_OP_FMUL,
+                                                $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression FDIV expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast, PKL_AST_OP_FDIV,
+                                                $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression FCEILDIV expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast,
+                                                PKL_AST_OP_FCEILDIV, $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression FPOW expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast,
+                                                PKL_AST_OP_FPOW, $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression FMOD expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast,
+                                                PKL_AST_OP_FMOD, $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
         | expression SL expression
                 {
                   $$ = pkl_ast_make_binary_exp (pkl_parser->ast, PKL_AST_OP_SL,
@@ -904,6 +962,42 @@ expression:
         | expression GE expression
                 {
                   $$ = pkl_ast_make_binary_exp (pkl_parser->ast, PKL_AST_OP_GE,
+                                                $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression FEQ expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast, PKL_AST_OP_FEQ,
+                                                $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression FNE expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast, PKL_AST_OP_FNE,
+                                                $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression FLT expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast, PKL_AST_OP_FLT,
+                                                $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression FGT expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast, PKL_AST_OP_FGT,
+                                                $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression FLE expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast, PKL_AST_OP_FLE,
+                                                $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression FGE expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast, PKL_AST_OP_FGE,
                                                 $1, $3);
                   PKL_AST_LOC ($$) = @$;
                 }
@@ -1015,13 +1109,29 @@ expression:
         | INC expression
                 {
                   $$ = pkl_ast_make_incrdecr (pkl_parser->ast, $2,
-                                              PKL_AST_ORDER_PRE, PKL_AST_SIGN_INCR);
+                                              PKL_AST_ORDER_PRE, PKL_AST_SIGN_INCR,
+                                              /*float_p*/ 0);
                   PKL_AST_LOC ($$) = @$;
                 }
         | DEC expression
                 {
                   $$ = pkl_ast_make_incrdecr (pkl_parser->ast, $2,
-                                              PKL_AST_ORDER_PRE, PKL_AST_SIGN_DECR);
+                                              PKL_AST_ORDER_PRE, PKL_AST_SIGN_DECR,
+                                              /*float_p*/ 0);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | FINC expression
+                {
+                  $$ = pkl_ast_make_incrdecr (pkl_parser->ast, $2,
+                                              PKL_AST_ORDER_PRE, PKL_AST_SIGN_INCR,
+                                              /*float_p*/ 1);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | FDEC expression
+                {
+                  $$ = pkl_ast_make_incrdecr (pkl_parser->ast, $2,
+                                              PKL_AST_ORDER_PRE, PKL_AST_SIGN_DECR,
+                                              /*float_p*/ 1);
                   PKL_AST_LOC ($$) = @$;
                 }
         | bconc
@@ -1064,6 +1174,7 @@ unary_operator:
         | '!'                { $$ = PKL_AST_OP_NOT; }
         | UNMAP              { $$ = PKL_AST_OP_UNMAP; }
         | REMAP              { $$ = PKL_AST_OP_REMAP; }
+        | FSUB               { $$ = PKL_AST_OP_FNEG; }
         ;
 
 primary:
@@ -1215,13 +1326,29 @@ primary:
         | expression INC
                 {
                   $$ = pkl_ast_make_incrdecr (pkl_parser->ast, $1,
-                                              PKL_AST_ORDER_POST, PKL_AST_SIGN_INCR);
+                                              PKL_AST_ORDER_POST, PKL_AST_SIGN_INCR,
+                                              /*float_p*/ 0);
                   PKL_AST_LOC ($$) = @$;
                 }
         | expression DEC
                 {
                   $$ = pkl_ast_make_incrdecr (pkl_parser->ast, $1,
-                                              PKL_AST_ORDER_POST, PKL_AST_SIGN_DECR);
+                                              PKL_AST_ORDER_POST, PKL_AST_SIGN_DECR,
+                                              /*float_p*/ 0);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression FINC
+                {
+                  $$ = pkl_ast_make_incrdecr (pkl_parser->ast, $1,
+                                              PKL_AST_ORDER_POST, PKL_AST_SIGN_INCR,
+                                              /*float_p*/ 1);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression FDEC
+                {
+                  $$ = pkl_ast_make_incrdecr (pkl_parser->ast, $1,
+                                              PKL_AST_ORDER_POST, PKL_AST_SIGN_DECR,
+                                              /*float_p*/ 1);
                   PKL_AST_LOC ($$) = @$;
                 }
         | TYPEOF '(' expression ')' %prec HYPERUNARY

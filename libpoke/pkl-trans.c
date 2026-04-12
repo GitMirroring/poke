@@ -1892,13 +1892,19 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans2_ps_incrdecr)
       pkl_ast_node incrdecr_exp_type = PKL_AST_TYPE (incrdecr_exp);
       int incrdecr_sign = PKL_AST_INCRDECR_SIGN (incrdecr);
       pkl_ast_node step, ass_stmt, exp_plus_one;
+      int op;
 
-      int op = (incrdecr_sign == PKL_AST_SIGN_INCR
-                ? PKL_AST_OP_ADD : PKL_AST_OP_SUB);
+      if (PKL_AST_INCRDECR_FLOAT_P (incrdecr))
+        op = (incrdecr_sign == PKL_AST_SIGN_INCR ? PKL_AST_OP_FADD
+                                                 : PKL_AST_OP_FSUB);
+      else
+        op = (incrdecr_sign == PKL_AST_SIGN_INCR ? PKL_AST_OP_ADD
+                                                 : PKL_AST_OP_SUB);
 
       /* Get the step.  The type of the expression is safe as per
          typify.  */
-      step = pkl_ast_type_incr_step (PKL_PASS_AST, incrdecr_exp_type);
+      step = pkl_ast_type_incr_step (PKL_PASS_AST, incrdecr_exp_type,
+                                     PKL_AST_INCRDECR_FLOAT_P (incrdecr));
       if (!step)
         {
           PKL_ICE (PKL_AST_NOLOC,
@@ -1907,11 +1913,11 @@ PKL_PHASE_BEGIN_HANDLER (pkl_trans2_ps_incrdecr)
         }
 
       /* Build a statement EXP = EXP +/- STEP  */
-      exp_plus_one = pkl_ast_make_binary_exp (PKL_PASS_AST, op,
-                                              incrdecr_exp, step);
+      exp_plus_one
+          = pkl_ast_make_binary_exp (PKL_PASS_AST, op, incrdecr_exp, step);
       PKL_AST_TYPE (exp_plus_one) = ASTREF (incrdecr_exp_type);
-      ass_stmt = pkl_ast_make_ass_stmt (PKL_PASS_AST,
-                                        incrdecr_exp, exp_plus_one);
+      ass_stmt
+          = pkl_ast_make_ass_stmt (PKL_PASS_AST, incrdecr_exp, exp_plus_one);
       PKL_AST_LOC (ass_stmt) = PKL_AST_LOC (incrdecr);
 
       PKL_AST_INCRDECR_ASS_STMT (incrdecr) = ASTREF (ass_stmt);

@@ -1,5 +1,42 @@
 2026-05-14  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* pkl-insn.def: Add new instructions for floating-points.
+	* libpoke/pvm.jitter (wrapped-functions): Add `powf', `pow',
+	`sqrtf' and `sqrt'.
+	(early-c): Include `math.h'.
+	(late-header-c): New macros: `PVM_FP_BINOP', `PVM_FP_DYOP',
+	`PVM_FP_MOOP', `PVM_FP_CMP'.
+	(f32add): New instruction.
+	(f32sub): Likewise.
+	(f32mul): Likewise.
+	(f32div): Likewise.
+	(f32pow): Likewise.
+	(f32sqrt): Likewise.
+	(f32cmp): Likewise.
+	(f64add): Likewise.
+	(f64sub): Likewise.
+	(f64mul): Likewise.
+	(f64div): Likewise.
+	(f64pow): Likewise.
+	(f64sqrt): Likewise.
+	(f64cmp): Likewise.
+	* libpoke/std.pk (f32add): New function.
+	(f32sub): Likewise.
+	(f32mul): Likewise.
+	(f32div): Likewise.
+	(f32pow): Likewise.
+	(f32sqrt): Likewise.
+	(f32cmp): Likewise.
+	(f64add): Likewise.
+	(f64sub): Likewise.
+	(f64mul): Likewise.
+	(f64div): Likewise.
+	(f64pow): Likewise.
+	(f64sqrt): Likewise.
+	(f64cmp): Likewise.
+
+2026-05-14  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* configure.ac: Add note for broken gensub() in Gawk 5.4.0 .
 	* libpoke/Makefile.am (.pks.pkc): Likewise.
 

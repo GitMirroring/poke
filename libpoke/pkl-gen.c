@@ -4749,6 +4749,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_op_binexp)
     case PKL_AST_OP_BAND: insn = PKL_INSN_BAND; break;
     case PKL_AST_OP_BNOT: insn = PKL_INSN_BNOT; break;
     case PKL_AST_OP_NEG: insn = PKL_INSN_NEG; break;
+    case PKL_AST_OP_FNEG: insn = PKL_INSN_FNEG; break;
     case PKL_AST_OP_IOR: insn = PKL_INSN_BOR; break;
     case PKL_AST_OP_XOR: insn = PKL_INSN_BXOR; break;
     case PKL_AST_OP_SL: insn = PKL_INSN_SL; break;
@@ -4767,6 +4768,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_op_binexp)
       pkl_asm_insn (pasm, insn, type);
       pkl_asm_insn (pasm, PKL_INSN_NIP);
       if (insn != PKL_INSN_NEG
+          && insn != PKL_INSN_FNEG
           && insn != PKL_INSN_BNOT)
         pkl_asm_insn (pasm, PKL_INSN_NIP);
       break;
@@ -5347,6 +5349,69 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_asm_exp)
 }
 PKL_PHASE_END_HANDLER
 
+/*
+ * Expression handlers.
+ *
+ * | OPERAND1
+ * | [OPERAND2]
+ * EXP
+ */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_op_fbin)
+{
+  pkl_asm pasm = PKL_GEN_ASM;
+  pkl_ast_node node = PKL_PASS_NODE;
+  pkl_ast_node type = PKL_AST_TYPE (node);
+  enum pkl_asm_insn insn;
+
+  switch (PKL_AST_EXP_CODE (node))
+    {
+    case PKL_AST_OP_FADD: insn = PKL_INSN_FADD; break;
+    case PKL_AST_OP_FSUB: insn = PKL_INSN_FSUB; break;
+    case PKL_AST_OP_FMUL: insn = PKL_INSN_FMUL; break;
+    case PKL_AST_OP_FDIV: insn = PKL_INSN_FDIV; break;
+    case PKL_AST_OP_FMOD: insn = PKL_INSN_FMOD; break;
+    case PKL_AST_OP_FPOW: insn = PKL_INSN_FPOW; break;
+    case PKL_AST_OP_FCEILDIV: insn = PKL_INSN_FCDIV; break;
+    default:
+      PK_UNREACHABLE ();
+      break;
+    }
+
+  pkl_asm_insn (pasm, insn, type);
+  pkl_asm_insn (pasm, PKL_INSN_NIP2);
+}
+PKL_PHASE_END_HANDLER
+
+PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_op_frela)
+{
+  pkl_asm pasm = PKL_GEN_ASM;
+  pkl_ast_node exp = PKL_PASS_NODE;
+  int exp_code = PKL_AST_EXP_CODE (exp);
+  pkl_ast_node op1 = PKL_AST_EXP_OPERAND (exp, 0);
+  pkl_ast_node op1_type = PKL_AST_TYPE (op1);
+  enum pkl_asm_insn insn;
+
+  assert (PKL_AST_TYPE_CODE (op1_type) == PKL_TYPE_INTEGRAL);
+
+  switch (exp_code)
+    {
+    case PKL_AST_OP_FEQ: insn = PKL_INSN_FEQ; break;
+    case PKL_AST_OP_FNE: insn = PKL_INSN_FNE; break;
+    case PKL_AST_OP_FLT: insn = PKL_INSN_FLT; break;
+    case PKL_AST_OP_FGT: insn = PKL_INSN_FGT; break;
+    case PKL_AST_OP_FLE: insn = PKL_INSN_FLE; break;
+    case PKL_AST_OP_FGE: insn = PKL_INSN_FGE; break;
+    default:
+      PK_UNREACHABLE ();
+      break;
+    }
+
+  pkl_asm_insn (pasm, insn, op1_type);
+  pkl_asm_insn (pasm, PKL_INSN_NIP2);
+}
+PKL_PHASE_END_HANDLER
+
 struct pkl_phase pkl_phase_gen =
   {
     .initialize = pkl_gen_initialize,
@@ -5430,6 +5495,20 @@ struct pkl_phase pkl_phase_gen =
     PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_LE, pkl_gen_ps_op_rela),
     PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_GT, pkl_gen_ps_op_rela),
     PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_GE, pkl_gen_ps_op_rela),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_FNEG, pkl_gen_ps_op_binexp),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_FEQ, pkl_gen_ps_op_frela),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_FNE, pkl_gen_ps_op_frela),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_FLT, pkl_gen_ps_op_frela),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_FGT, pkl_gen_ps_op_frela),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_FLE, pkl_gen_ps_op_frela),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_FGE, pkl_gen_ps_op_frela),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_FADD, pkl_gen_ps_op_fbin),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_FSUB, pkl_gen_ps_op_fbin),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_FMUL, pkl_gen_ps_op_fbin),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_FPOW, pkl_gen_ps_op_fbin),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_FDIV, pkl_gen_ps_op_fbin),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_FCEILDIV, pkl_gen_ps_op_fbin),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_FMOD, pkl_gen_ps_op_fbin),
     PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_ATTR, pkl_gen_ps_op_attr),
     PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_BCONC, pkl_gen_ps_op_bconc),
     PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_UNMAP, pkl_gen_ps_op_unmap),

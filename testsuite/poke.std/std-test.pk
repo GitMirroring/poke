@@ -552,6 +552,30 @@ var tests = [
         assert (stod ("+ 3") ?! E_conv);
       }
   },
+  PkTest {
+    name = "floating-point arithmetic",
+    func = lambda (string name) void:
+      {
+        var pi1 = stof ("3.14159265359"), // It'll round to 3.1415927.
+            pi2 = stod ("3.14159265359"),
+            pi3 = stof ("+3.1415"),
+            pi4 = stod ("+3.1415");
+
+        assert (pi1 isa uint<32>);
+        assert (pi1 == 0x40490fdbU);
+
+        assert (pi2 isa uint<64>);
+        assert (pi2 == 0x400921fb54442eeaUL);
+
+        assert (pi3 isa uint<32>);
+        assert (pi3 == 0x40490e56U);
+
+        assert (pi4 isa uint<64>);
+        assert (pi4 == 0x400921cac083126fUL);
+
+        ;
+      }
+  },
 ];
 
 exit (pktest_run (tests) ? 0 : 1);

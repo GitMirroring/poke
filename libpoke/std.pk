@@ -922,6 +922,110 @@ fun stod = (string s) uint<64>:
   };
 }
 
+/* */
+
+// fun ftoi = (uint<32> f)
+
+/* Add 32-bit floating-point numbers represented as uint<32>.  */
+
+fun f32add = (uint<32> a, uint<32> b) uint<32>:
+{
+  return asm uint<32>: ("f32add; nip2" : a, b);
+}
+
+/* Subtract 32-bit floating-point numbers represented as uint<32>.  */
+
+fun f32sub = (uint<32> a, uint<32> b) uint<32>:
+{
+  return asm uint<32>: ("f32sub; nip2" : a, b);
+}
+
+/* Multiply 32-bit floating-point numbers represented as uint<32>.  */
+
+fun f32mul = (uint<32> a, uint<32> b) uint<32>:
+{
+  return asm uint<32>: ("f32mul; nip2" : a, b);
+}
+
+/* Divide 32-bit floating-point numbers represented as uint<32>.  */
+
+fun f32div = (uint<32> a, uint<32> b) uint<32>:
+{
+  return asm uint<32>: ("f32div; nip2" : a, b);
+}
+
+/* Return square root of 32-bit floating-point number represented
+   as uint<32>.  */
+
+fun f32sqrt = (uint<32> a) uint<32>:
+{
+  return asm uint<32>: ("f32sqrt; nip" : a);
+}
+
+/* Compare a pair of 32-bit floating-point numbers represented
+   as uint<32>.  */
+
+fun f32cmp = (uint<32> a, uint<32> b) int<32>:
+{
+  return asm int<32>: ("f32cmp; nip2" : a, b);
+}
+
+/* Add 64-bit floating-point numbers represented as uint<64>.  */
+
+fun f64add = (uint<64> a, uint<64> b) uint<64>:
+{
+  return asm uint<64>: ("f64add; nip2" : a, b);
+}
+
+/* Subtract 64-bit floating-point numbers represented as uint<64>.  */
+/* A by B given that both are representing 64-bit
+   floating-point numbers.  */
+
+fun f64sub = (uint<64> a, uint<64> b) uint<64>:
+{
+  return asm uint<64>: ("f64sub; nip2" : a, b);
+}
+
+/* Multiply A by B given that both are representing 64-bit
+   floating-point numbers.  */
+
+fun f64mul = (uint<64> a, uint<64> b) uint<64>:
+{
+  return asm uint<64>: ("f64mul; nip2" : a, b);
+}
+
+/* Divide A by B given that both are representing 64-bit
+   floating-point numbers.  */
+
+fun f64div = (uint<64> a, uint<64> b) uint<64>:
+{
+  return asm uint<64>: ("f64div; nip2" : a, b);
+}
+
+/* Raise A to the power of B given that both are representing 64-bit
+   floating-point numbers.  */
+
+fun f64pow = (uint<64> a, uint<64> b) uint<64>:
+{
+  return asm uint<64>: ("f64pow; nip2" : a, b);
+}
+
+/* Return square root of A given that it's representing a 64-bit
+   floating-point numbers.  */
+
+fun f64sqrt = (uint<64> a) uint<64>:
+{
+  return asm uint<64>: ("f64sqrt; nip" : a);
+}
+
+/* Compare a pair of 64-bit floating-point numbers represented
+   as uint<64>.  */
+
+fun f64cmp = (uint<64> a, uint<64> b) int<32>:
+{
+  return asm int<32>: ("f64cmp; nip2" : a, b);
+}
+
 /* Count one bits in an integer or magnitude of an offset.  */
 
 fun popcount = (any v) int<32>:
