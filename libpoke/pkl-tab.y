@@ -646,18 +646,6 @@ start:
                   PKL_AST_LOC ($$) = @$;
                   pkl_parser->ast->ast = ASTREF ($$);
                 }
-        | START_STMT load
-                {
-                  $$ = pkl_ast_make_program (pkl_parser->ast, $2);
-                  PKL_AST_LOC ($$) = @$;
-                  pkl_parser->ast->ast = ASTREF ($$);
-                }
-        | START_STMT load ';'
-                {
-                  $$ = pkl_ast_make_program (pkl_parser->ast, $2);
-                  PKL_AST_LOC ($$) = @$;
-                  pkl_parser->ast->ast = ASTREF ($$);
-                }
         | START_PROGRAM program
                 {
                   $$ = pkl_ast_make_program (pkl_parser->ast, $2);
