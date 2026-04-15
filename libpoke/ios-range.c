@@ -77,13 +77,7 @@ int
 ios_rangetbl_insert (struct ios_rangetbl *tbl, pvm_val val,
 		     ios_off begin, ios_off end)
 {
-  /* ios_rangetbl_debug (tbl); */
-  /* printf ("ios_rangetbl_insert val=%lx offset=%lu end=%lu\n", */
-	  /* val, begin, end); */
-  /* return ios_ivtree_insert (tbl, tbl->root, begin, end, val); */
-
-  int res = ios_ivtree_insert_c (tbl, begin, end, val);
-
+  int res = ios_ivtree_insert (tbl, begin, end, val);
   return res;
 }
 
@@ -91,17 +85,12 @@ void
 ios_rangetbl_remove (struct ios_rangetbl *tbl, pvm_val val, ios_off offs)
 {
 
-  /* NODE_T target = ios_ivtree_lookup (tbl->root, offs, val); */
-  NODE_T target = ios_ivtree_lookup_c (tbl, offs, val);
+  NODE_T target = ios_ivtree_lookup (tbl, offs, val);
   if (target)
-    {
-      /* printf ("ios_rangetbl_remove found valid target: val=%lx offset=%lu\n", */
-	      /* val, offs); */
-      gl_tree_remove_node (tbl, target);
-    }
+    gl_tree_remove_node (tbl, target);
   else
     {
-      printf ("XXX ios_rangetbl_remove no target val=%lx offset=%lu\n", val, offs);
+      /* printf ("XXX ios_rangetbl_remove no target val=%lx offset=%lu\n", val, offs); */
     }
 }
 
