@@ -657,7 +657,7 @@ ios_ivtree_destroy_sub (NODE_T node)
 
   ios_ivtree_destroy_sub (node->left);
   ios_ivtree_destroy_sub (node->right);
-  free (node);
+  GC_FREE (node);
 }
 
 /* Free the entire tree in CONTAINER from the root, and then
@@ -669,8 +669,6 @@ ios_ivtree_destroy (CONTAINER_T container)
   NODE_T node = container->root;
   if (node)
     ios_ivtree_destroy_sub (node);
-
-  free (container);
 }
 
 /* Allocate and initialize a new node representing the interval
@@ -680,7 +678,7 @@ static NODE_T
 interval_mknode (uint64_t low, uint64_t high, NODE_PAYLOAD_PARAMS)
 {
   NODE_T new_node =
-    (struct NODE_IMPL *) malloc (sizeof (struct NODE_IMPL));
+    (struct NODE_IMPL *) GC_MALLOC (sizeof (struct NODE_IMPL));
 
   if (!new_node)
     return NULL;
@@ -955,8 +953,7 @@ static bool
 gl_tree_remove_node (CONTAINER_T container, NODE_T node)
 {
   gl_tree_remove_node_no_free (container, node);
-  /* NODE_PAYLOAD_DISPOSE (container, node) */
-  free (node);
+  GC_FREE (node);
   return true;
 }
 
