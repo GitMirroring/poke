@@ -220,6 +220,6 @@ debug (pvm_val val)
 void
 ios_rangetbl_debug (struct ios_rangetbl *tbl)
 {
-  ios_ivtree_visit_all (tbl->root, debug);
+  /* ios_ivtree_visit_all (tbl->root, debug); */
   /* ios_ivlist_visit_all (tbl, debug); */
 }
