@@ -740,6 +740,7 @@ ios_ivtree_insert (CONTAINER_T container, ios_off low, ios_off high,
 	      new_node->parent = node;
 	      /* Color and rebalance.  */
 	      rebalance_after_add (container, new_node, node);
+	      return IOS_OK;
 	    }
 	}
     }
