@@ -76,11 +76,11 @@ struct NODE_IMPL
   struct NODE_IMPL *parent;
   color_t color;                    /* node's color */
 
-  uint64_t low;   /* Lower end of interval */
-  uint64_t high;  /* Upper end of interval */
+  ios_off low;   /* Lower end of interval */
+  ios_off high;  /* Upper end of interval */
   /* The highest 'high' value of any interval in the subtree rooted
      at this node.  */
-  uint64_t highest;
+  ios_off highest;
 
   NODE_PAYLOAD_FIELDS
 };
@@ -112,7 +112,7 @@ recalc_highest (NODE_T node)
 /* Return whether the interval in NODE overlaps with [LOW,HIGH].  */
 
 static bool
-overlaps (NODE_T node, unsigned long low, unsigned long high)
+overlaps (NODE_T node, ios_off low, ios_off high)
 {
   return (node->low <= high && node->high >= low);
 }
@@ -121,7 +121,7 @@ overlaps (NODE_T node, unsigned long low, unsigned long high)
    the interval specified by [LOW, HIGH] and invoke FN on the payload.  */
 
 static void
-ios_ivtree_visit_overlaps (NODE_T node, uint64_t low, uint64_t high,
+ios_ivtree_visit_overlaps (NODE_T node, ios_off low, ios_off high,
 			   NODE_VISITOR_FN fn)
 {
   if (!node)
@@ -658,7 +658,7 @@ ios_ivtree_destroy (CONTAINER_T container)
    [LOW,HIGH] and holding the given payload.  */
 
 static NODE_T
-interval_mknode (uint64_t low, uint64_t high, NODE_PAYLOAD_PARAMS)
+interval_mknode (ios_off low, ios_off high, NODE_PAYLOAD_PARAMS)
 {
   NODE_T new_node =
     (struct NODE_IMPL *) GC_MALLOC (sizeof (struct NODE_IMPL));
@@ -683,7 +683,7 @@ interval_mknode (uint64_t low, uint64_t high, NODE_PAYLOAD_PARAMS)
 }
 
 static int
-ios_ivtree_insert (CONTAINER_T container, uint64_t low, uint64_t high,
+ios_ivtree_insert (CONTAINER_T container, ios_off low, ios_off high,
 		   NODE_PAYLOAD_PARAMS)
 {
   NODE_T node = container->root;
@@ -875,7 +875,7 @@ gl_tree_remove_node (CONTAINER_T container, NODE_T node)
 }
 
 static NODE_T
-ios_ivtree_lookup (CONTAINER_T container, uint64_t offs, NODE_PAYLOAD_PARAMS)
+ios_ivtree_lookup (CONTAINER_T container, ios_off offs, NODE_PAYLOAD_PARAMS)
 {
   for (NODE_T node = container->root; node != NULL; )
     {
