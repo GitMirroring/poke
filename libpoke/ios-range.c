@@ -118,6 +118,7 @@ ios_rangetbl_destroy (struct ios_rangetbl *tbl)
     return;
 
   ios_ivtree_destroy (tbl);
+  free (tbl);
 }
 
 static void

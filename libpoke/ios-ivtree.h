@@ -643,8 +643,7 @@ ios_ivtree_destroy_sub (NODE_T node)
   GC_FREE (node);
 }
 
-/* Free the entire tree in CONTAINER from the root, and then
-   CONTAINER itself.  */
+/* Free the entire tree in CONTAINER from the root.  */
 
 static void
 ios_ivtree_destroy (CONTAINER_T container)
