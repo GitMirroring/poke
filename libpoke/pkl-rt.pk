@@ -181,7 +181,6 @@ immutable fun dirty = (any val) void:
         drop" :: val);
 }
 
-/* Mark all of IOS dirty.  */
 immutable fun dirty_ios = (int<32> ios) void:
 {
   asm ("iodirtyall
