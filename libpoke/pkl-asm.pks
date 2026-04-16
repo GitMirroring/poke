@@ -141,6 +141,24 @@
         drop                    ; VAL
         .end
 
+;;; RAS_MACRO_CMSETIOS
+;;; ( VAL INT -- VAL )
+;;;
+;;; Checked version of PKL_INSN_MSETIOS.  Given a map-able PVM value
+;;; and integer representing an IOS, either issue an msetios or raise
+;;; an error if the IOS is invalid.
+
+        .macro cmsetios
+        isios                   ; VAL INT INT
+        bnzi .iosok
+        push PVM_E_NO_IOS
+        raise
+.iosok:
+        drop                    ; VAL INT
+        msetios
+        .end
+
+
 ;;; GCD type
 ;;; ( VAL VAL -- VAL VAL VAL )
 ;;;
@@ -793,3 +811,4 @@
         popf 1
 .done2:
         .end
+

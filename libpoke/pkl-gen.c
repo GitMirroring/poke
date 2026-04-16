@@ -4009,7 +4009,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_array)
 
       /* Install the IOS into the value.  */
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP);    /* STRICT VAL IOS */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MSETIOS); /* STRICT VAL */
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_CMSETIOS); /* STRICT VAL */
 
       /* Install the strictness attribute of the value.  */
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP);  /* VAL STRICT */
@@ -4295,7 +4295,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_type_struct)
 
       /* Install the ios into the value.  */
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP);    /* STRICT VAL IOS */
-      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_MSETIOS); /* STRICT VAL */
+      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_CMSETIOS); /* STRICT VAL */
 
       /* Install the strictness property into the value.  */
       pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP);  /* VAL STRICT */
