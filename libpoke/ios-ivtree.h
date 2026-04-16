@@ -2,8 +2,8 @@
    binary tree.
    Copyright (C) 2006-2007, 2009-2026 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2006.
-   Hacked into an interval tree for poke io range tracking by
-   David Faust <david.faust@oracle.com>, 2026.
+   Adapted from gnulib into an interval tree for poke io range tracking
+   by David Faust, 2026.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -30,22 +30,19 @@
    values mapped in that IOS are affected by the write and therefore need
    to be remapped the next time they are read.
    Each tree node stores:
-    - The relevant pvm_val that is mapped (the NODE_PAYLOAD)
+    - The relevant pvm_val that is mapped (the NODE_PAYLOAD).
     - The lower and upper bounds of the range in the ios where that
-      value is mapped
+      value is mapped.
     - The highest upper bound of any node in the subtree below this node.
       This is used to speed up overlap searches, and is what makes the
       interval tree "augmented".
 
-   Nodes in the tree are ordered by the low-end of the interval, then
-   by the high end.
-   Duplicate intervals are allowed, subsequent intervals with the same
-   bounds are considered "greater than" the existing one(s).
+   Nodes in the tree are ordered first by the low-end of the interval, and
+   then by the pvm_val stored in the nodes.  This forms a total order.
+   Duplicate intervals with different pvm_vals are allowed and expected.
 
    Overlap checks are O(log n + m) where n is the number of nodes in
-   the tree, and m is the number of nodes which do overlap the query.
-
-   */
+   the tree, and m is the number of nodes which do overlap the query.  */
 
 /* A red-black tree is a binary tree where every node is colored black or
    red such that
