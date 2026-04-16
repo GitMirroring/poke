@@ -178,21 +178,6 @@ ios_init (void)
 }
 
 void
-ios_debug_all (ios_context ios_ctx)
-{
-   ios inext;
-
-  if (!ios_ctx)
-    return;
-  /* Close and free all open IO spaces.  */
-  for (ios i = ios_ctx->io_list; i; i = inext)
-    {
-      inext = i->next;
-      ios_rangetbl_debug (i->ranges);
-    }
-}
-
-void
 ios_shutdown (ios_context ios_ctx)
 {
   ios inext;
@@ -1692,12 +1677,6 @@ ios_dec_sub_dev (ios io)
   --io->num_sub_devs;
   if (io->zombie_p && io->num_sub_devs == 0)
     free (io);
-}
-
-void
-ios_range_debug (ios io)
-{
-  ios_rangetbl_debug (io->ranges);
 }
 
 int

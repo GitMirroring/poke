@@ -39,6 +39,4 @@ size_t ios_rangetbl_nentries (struct ios_rangetbl *);
    themselves from a closed ios when they get GC'd.  */
 void ios_rangetbl_notify_close (struct ios_rangetbl *);
 
-void ios_rangetbl_debug (struct ios_rangetbl *);
-
 #endif /* ! IOS_RANGE_H */

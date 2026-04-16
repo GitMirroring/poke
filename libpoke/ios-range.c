@@ -170,37 +170,3 @@ ios_rangetbl_notify_close (struct ios_rangetbl *tbl)
   ios_ivtree_visit_all (tbl->root, notify_ios_closed);
 }
 
-static void
-debug (pvm_val val)
-{
-  struct pvm_mapinfo *mi;
-  uint8_t tag = PVM_VAL_TAG (val);
-  printf ("%lx tag=%x\n", val, tag);
-
-  if (PVM_IS_ARR (val))
-    {
-      mi = &(PVM_VAL_ARR_MAPINFO (val));
-      printf (" arr, mi=%p\n", mi);
-      printf ("  mapped_p=%i, strict_p=%i, dirty_p=%i, ioslive_p=%i, offset=%lu\n",
-	      mi->mapped_p, mi->strict_p, mi->dirty_p, mi->ioslive_p,
-	      PVM_VAL_INTEGRAL (PVM_VAL_ARR_OFFSET (val)));
-    }
-  else if (PVM_IS_SCT (val))
-    {
-      mi = &(PVM_VAL_SCT_MAPINFO (val));
-      printf (" sct, mi=%p\n", mi);
-      printf ("  mapped_p=%i, strict_p=%i, dirty_p=%i, ioslive_p=%i, offset=%lu\n",
-	      mi->mapped_p, mi->strict_p, mi->dirty_p, mi->ioslive_p,
-	      PVM_VAL_INTEGRAL (PVM_VAL_ARR_OFFSET (val)));
-    }
-  else
-    {
-      printf ("  ?????\n");
-    }
-}
-
-void
-ios_rangetbl_debug (struct ios_rangetbl *tbl)
-{
-  /* ios_ivtree_visit_all (tbl->root, debug); */
-}
