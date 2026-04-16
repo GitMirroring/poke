@@ -416,7 +416,4 @@ void ios_mark_dirty_range (ios io, ios_off begin, ios_off end);
 /* Mark everything currently mapped in IOS dirty.  */
 void ios_mark_dirty_all (ios io);
 
-/* Return the number of ranges currently mapped in IOS.  */
-uint64_t ios_get_ranges (ios io);
-
 #endif /* ! IOS_H */
