@@ -3810,21 +3810,24 @@
         mm                      ; TARR ARR MAPPED_P
         bzi .notmapped
         drop                    ; TARR ARR
-        ;; Calculate the new offset.
-        mgeto                   ; TARR ARR BOFFSET
-        swap                    ; TARR BOFFSET ARR
-        pushvar $from           ; TARR BOFFSET ARR FROM
-        arefo                   ; TARR BOFFSET ARR FROM BOFF(FROM)
-        nip                     ; TARR BOFFSET ARR BOFF(FROM)
-        rot                     ; TARR ARR BOFF(FROM) BOFFSET
-        dup                     ; TARR ARR BOFF(FROM) BOFFSET BOFFSET
-        quake                   ; TARR ARR BOFFSET BOFF(FROM) BOFFSET
-        sublu
-        nip2                    ; TARR ARR BOFFSET (BOFF(FROM)-BOFFSET)
-        addlu
-        nip2                    ; TARR ARR BOFFSET
-        rot                     ; ARR BOFFSET TARR
-        regvar $tarr
+        ; ;; Calculate the new offset.
+        ; mgeto                   ; TARR ARR BOFFSET
+        ; swap                    ; TARR BOFFSET ARR
+        ; pushvar $from           ; TARR BOFFSET ARR FROM
+        ; arefo                   ; TARR BOFFSET ARR FROM BOFF(FROM)
+        ; nip                     ; TARR BOFFSET ARR BOFF(FROM)
+        ; rot                     ; TARR ARR BOFF(FROM) BOFFSET
+        ; dup                     ; TARR ARR BOFF(FROM) BOFFSET BOFFSET
+        ; quake                   ; TARR ARR BOFFSET BOFF(FROM) BOFFSET
+        ; sublu
+        ; nip2                    ; TARR ARR BOFFSET (BOFF(FROM)-BOFFSET)
+        ; addlu
+        ; nip2                    ; TARR ARR BOFFSET
+        ; rot                     ; ARR BOFFSET TARR
+        swap                    ; ARR TARR
+        mgeto                   ; ARR TARR BOFFSET
+        swap                    ; ARR BOFFSET TARR
+        regvar $tarr            ; ARR BOFFSET
         ;; Calculate the new EBOUND.
         swap                    ; BOFFSET ARR
         mgetm                   ; BOFFSET ARR MAPPER
