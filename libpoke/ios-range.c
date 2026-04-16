@@ -30,15 +30,26 @@
 
 typedef int (*payload_compar_fn)(pvm_val v1, pvm_val v2);
 
+/* The IOS range table tracks, for every pvm_val mapped in a given
+   IOS, the interval where that val is mapped.  Its purpose is to
+   be able to quickly determine which mapped values are affected
+   by a write to the IOS at some interval.
+
+   The table is implemented as an augmented interval tree, a type of
+   self-balancing binary search tree specialized to storing intervals,
+   and facilitating quickly identifying all stored intervals which
+   overlap with some query interval.  */
+
 struct NODE_IMPL;
 struct ios_rangetbl
 {
-  size_t count;
-  struct NODE_IMPL *root;
-  payload_compar_fn compar;
+  size_t count;			/* Number of values currently tracked.  */
+  struct NODE_IMPL *root;	/* Root of the tree.  */
+  payload_compar_fn compar;	/* Payload comparison function.  */
 };
 
 typedef struct ios_rangetbl * CONTAINER_T;
+
 #define NODE_PAYLOAD_FIELDS pvm_val val;
 #define NODE_PAYLOAD_ASSIGN(node) \
   node->val = val;
@@ -47,15 +58,13 @@ typedef struct ios_rangetbl * CONTAINER_T;
 #define NODE_PAYLOAD_ARGS val
 #define NODE_PAYLOAD_ACCESS(node) \
   node->val
-#define NODE_PAYLOAD_EQUALS(node) \
-  (node->val == val)
 
-#define NODE_PAYLOAD_DISPOSE(container, node) ;
-
+/* Prototype for visitor functions which operate on entries of the
+   range table.  */
 typedef void (*node_visitor_fn)(NODE_PAYLOAD_PARAMS);
-
 #define NODE_VISITOR_FN node_visitor_fn
 
+/* Payload (i.e., pvm_val) comparator a la qsort.  */
 
 int
 ivtree_payload_compar (pvm_val v1, pvm_val v2)
@@ -68,8 +77,8 @@ ivtree_payload_compar (pvm_val v1, pvm_val v2)
     return 1;
 }
 
+/* The actual tree implementation.  */
 #include "ios-ivtree.h"
-
 
 /* ************** Interface via ios_rangetbl ******************** */
 
@@ -84,16 +93,13 @@ ios_rangetbl_insert (struct ios_rangetbl *tbl, pvm_val val,
 void
 ios_rangetbl_remove (struct ios_rangetbl *tbl, pvm_val val, ios_off offs)
 {
-
   NODE_T target = ios_ivtree_lookup (tbl, offs, val);
   if (target)
     gl_tree_remove_node (tbl, target);
-  else
-    {
-      /* printf ("XXX ios_rangetbl_remove no target val=%lx offset=%lu\n", val, offs); */
-    }
-}
 
+  /* N.B. Attempting to remove an entry which is not in the tree is most
+     likely an error.  */
+}
 
 struct ios_rangetbl *
 ios_rangetbl_create (void)
@@ -152,15 +158,12 @@ ios_rangetbl_nentries (struct ios_rangetbl *tbl)
   return tbl->count;
 }
 
-
 static void
 notify_ios_closed (pvm_val val)
 {
   PVM_VAL_SET_IOSLIVE_P (val, 0);
 }
 
-/* Visit all entries in the table and update their mapinfo to
-   reflect that the IOS where they are mapped has been closed.  */
 void
 ios_rangetbl_notify_close (struct ios_rangetbl *tbl)
 {
