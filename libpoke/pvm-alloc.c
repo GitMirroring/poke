@@ -75,6 +75,56 @@ pvm_alloc_cls (void)
   return cls;
 }
 
+static void
+pvm_alloc_finalize_boxed (void *object, void *client_data)
+{
+  /* Finalizer for structs and arrays, which are boxed values that
+     may be mapped in an IOS.  If it was mapped in an IOS that is
+     still live, de-register it from the IOS' range table.
+     Note that the range table holds pvm_vals, i.e. the box rather
+     than the struct/array in the box.  Therefore de-registering
+     the value requires the box rather than the struct or array.  */
+  pvm_val_box box = (pvm_val_box) object;
+  pvm_val val = PVM_BOX (box);
+
+  if (PVM_IS_SCT (val)
+      && PVM_VAL_SCT_MAPPED_P (val)
+      && PVM_VAL_SCT_IOSLIVE_P (val))
+    ios_deregister_range (val, PVM_VAL_SCT_IOS_PTR (val),
+                          PVM_VAL_INTEGRAL (PVM_VAL_SCT_OFFSET (val)));
+  else if (PVM_IS_ARR (val)
+           && PVM_VAL_ARR_MAPPED_P (val)
+           && PVM_VAL_ARR_IOSLIVE_P (val))
+    ios_deregister_range (val, PVM_VAL_ARR_IOS_PTR (val),
+                          PVM_VAL_INTEGRAL (PVM_VAL_ARR_OFFSET (val)));
+}
+
+void *
+pvm_alloc_boxed (uint8_t tag)
+{
+  /* Allocator for boxed structs/arrays.  See the finalizer for more.  */
+  pvm_val_box box = pvm_alloc (sizeof (struct pvm_val_box));
+  if (tag == PVM_VAL_TAG_SCT)
+    {
+      pvm_struct sct = pvm_alloc (sizeof (struct pvm_struct));
+      PVM_VAL_BOX_SCT (box) = sct;
+    }
+  else if (tag == PVM_VAL_TAG_ARR)
+    {
+      pvm_array arr = pvm_alloc (sizeof (struct pvm_array));
+      PVM_VAL_BOX_ARR (box) = arr;
+    }
+  else
+    assert (false); /* Only used for struct and arrays.  */
+
+  PVM_VAL_BOX_TAG (box) = tag;
+
+  GC_register_finalizer_no_order (box, pvm_alloc_finalize_boxed, NULL,
+				  NULL, NULL);
+  return box;
+}
+
+
 void
 pvm_alloc_initialize ()
 {

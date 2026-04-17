@@ -259,6 +259,9 @@ pvm_shutdown (pvm apvm)
   /* Finalize values.  */
   pvm_val_finalize ();
 
+  /* Do a GC pass before shutting down IO space.  */
+  pvm_alloc_gc ();
+
   /* Shutdown the IO space.  */
   ios_shutdown (PVM_STATE_IOS_CONTEXT (apvm));
 

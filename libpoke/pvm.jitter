@@ -1850,6 +1850,56 @@ instruction iosetb ()
   end
 end
 
+# Instruction: ioregval
+#
+# Register the given range in the given IO space as to correspond
+# to the mapped area of the given value.
+#
+# Stack: ( IOS VAL BEGIN SIZE -- )
+
+instruction ioregval ()
+  branching
+  code
+    pvm_val val;
+    uint64_t size, begin;
+    ios io;
+    ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
+
+    size = PVM_VAL_ULONG (JITTER_TOP_STACK ());
+    begin = PVM_VAL_ULONG (JITTER_UNDER_TOP_STACK ());
+    JITTER_DROP_STACK ();
+    JITTER_DROP_STACK ();
+    val = JITTER_TOP_STACK ();
+    io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_UNDER_TOP_STACK ()));
+    if (io == NULL)
+        PVM_RAISE_DFL (PVM_E_NO_IOS);
+    JITTER_DROP_STACK ();
+    JITTER_DROP_STACK ();
+
+    PVM_VAL_SET_DIRTY_P (val, 0);
+    int ret = ios_register_range (val, io, begin, size);
+    if (ret != IOS_OK)
+        PVM_RAISE_DFL (PVM_E_GENERIC);
+  end
+end
+
+
+# Instruction: iodirtyall
+#
+# Given an integer specifying an IO space, mark all values mapped in that
+# io space as dirty so that they will be remapped.
+# The given io space must exist.
+#
+# Stack: (VAL -- VAL)
+instruction iodirtyall ()
+  code
+    ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
+    ios io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));
+    PVM_ASSERT (io != NULL);
+    ios_mark_dirty_all (io);
+  end
+end
+
 
 ## Function management instructions
 
