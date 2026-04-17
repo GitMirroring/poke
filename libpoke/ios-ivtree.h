@@ -98,7 +98,7 @@ typedef struct NODE_IMPL * NODE_T;
 static void
 recalc_highest (NODE_T node)
 {
-  unsigned long hw = node->high;
+  ios_off hw = node->high;
   if (node->left && node->left->highest > hw)
     hw = node->left->highest;
   if (node->right && node->right->highest > hw)
@@ -629,6 +629,7 @@ rebalance_after_remove (CONTAINER_T container, NODE_T child, NODE_T parent)
 }
 
 /* Free all nodes in the tree rooted at NODE, then NODE itself.  */
+
 static void
 ios_ivtree_destroy_sub (NODE_T node)
 {
@@ -677,6 +678,10 @@ interval_mknode (ios_off low, ios_off high, NODE_PAYLOAD_PARAMS)
 
   return new_node;
 }
+
+/* Insert a new node with the interval [LOW,HIGH] and given payload
+   into the tree at its appropriate location and rebalance the tree
+   as necessary.  */
 
 static int
 ios_ivtree_insert (CONTAINER_T container, ios_off low, ios_off high,
@@ -871,6 +876,12 @@ gl_tree_remove_node (CONTAINER_T container, NODE_T node)
   gl_tree_remove_node_no_free (container, node);
   GC_FREE (node);
   return true;
+}
+
+static void
+ios_ivtree_remove (CONTAINER_T container, NODE_T node)
+{
+  gl_tree_remove_node (container, node);
 }
 
 static NODE_T

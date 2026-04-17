@@ -47,6 +47,8 @@ struct ios_rangetbl
   payload_compar_fn compar;	/* Payload comparison function.  */
 };
 
+/* Definitions for the tree implementation.  */
+
 typedef struct ios_rangetbl * CONTAINER_T;
 
 #define NODE_PAYLOAD_FIELDS pvm_val val;
@@ -60,6 +62,7 @@ typedef struct ios_rangetbl * CONTAINER_T;
 
 /* Prototype for visitor functions which operate on entries of the
    range table.  */
+
 typedef void (*node_visitor_fn)(NODE_PAYLOAD_PARAMS);
 #define NODE_VISITOR_FN node_visitor_fn
 
@@ -77,6 +80,7 @@ ivtree_payload_compar (pvm_val v1, pvm_val v2)
 }
 
 /* The actual tree implementation.  */
+
 #include "ios-ivtree.h"
 
 /* ************** Interface via ios_rangetbl ******************** */
@@ -85,8 +89,7 @@ int
 ios_rangetbl_insert (struct ios_rangetbl *tbl, pvm_val val,
 		     ios_off begin, ios_off end)
 {
-  int res = ios_ivtree_insert (tbl, begin, end, val);
-  return res;
+  return ios_ivtree_insert (tbl, begin, end, val);
 }
 
 void
@@ -94,7 +97,7 @@ ios_rangetbl_remove (struct ios_rangetbl *tbl, pvm_val val, ios_off offs)
 {
   NODE_T target = ios_ivtree_lookup (tbl, offs, val);
   if (target)
-    gl_tree_remove_node (tbl, target);
+    ios_ivtree_remove (tbl, target);
 
   /* N.B. Attempting to remove an entry which is not in the tree is most
      likely an error.  */
@@ -107,6 +110,8 @@ ios_rangetbl_create (void)
   if (!tbl)
     return NULL;
 
+  /* Nodes of the table are stored in GC memory; register the
+     table container as GC root.  */
   GC_add_roots (tbl, tbl + sizeof (struct ios_rangetbl));
 
   tbl->root = NULL;
@@ -122,7 +127,11 @@ ios_rangetbl_destroy (struct ios_rangetbl *tbl)
   if (!tbl)
     return;
 
+  /* Free all nodes in the tree including the root.  */
+  /* Note: With the tree in GC memory, this isn't really necessary
+     to do. TBD whether it's worth manually freeing or leave to GC.  */
   ios_ivtree_destroy (tbl);
+
   GC_remove_roots (tbl, tbl + sizeof (struct ios_rangetbl));
   free (tbl);
 }
