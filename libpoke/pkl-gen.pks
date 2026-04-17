@@ -1240,8 +1240,12 @@
         push ulong<64>1
         mkoq
         regvar $OFFSET
-        pushvar $boff           ; BOFF
-        dup                     ; BOFF BOFF
+        ;; Push the original endianness to the stack.  This is checked
+        ;; after mapping the fields, which may change VM endianness, to
+        ;; determine whether the struct may be dirty.
+        pushend                 ; ORIGEND
+        pushvar $boff           ; ORIGEND BOFF
+        dup                     ; ... BOFF BOFF
         ;; Iterate over the elements of the struct type.
         .let @field
  .c size_t vars_registered = 0;
@@ -1476,6 +1480,19 @@
         siz                   ; SCT IOS SCT OFF SCT SIZ
         nip                   ; SCT IOS SCT OFF SIZ
         ioregval              ; ... SCT
+        ;; Mark the newly mapped struct as dirty if the VM endianness
+        ;; changed while mapping fields.
+        pushend               ; ORIGEND SCT NEWEND
+        quake                 ; SCT ORIGEND NEWEND
+        eqi                   ; SCT ORIGEND NEWEND END_SAME_P
+        nip2                  ; SCT END_SAME_P
+        bnzi .endsame
+        drop                  ; SCT
+        msetd
+        ba .done
+.endsame:
+        drop                  ; SCT
+.done:
         popf 1
         return
         .end
