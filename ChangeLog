@@ -1,5 +1,13 @@
 2026-04-17  David Faust  <david.faust@oracle.com>
 
+	* libpoke/pkl-gen.pks (RAS_FUNCTION_ARRAY_MAPPER)
+	(RAS_FUNCTION_STRUCT_MAPPER, ATRIM): Register newly mapped value
+	in the ios.
+	* libpoke/pkl-insn.def (PKL_INSN_IOREGVAL): New instruction.
+	* libpoke/pkl-rt.pk (ioregval): New.
+
+2026-04-17  David Faust  <david.faust@oracle.com>
+
 	* libpoke/Makefile.am (libpoke_la_SOURCES): Add ios-ivtree.h,
 	ios-range.h and ios-range.c.
 	* libpoke/ios-ivtree.h: New.
