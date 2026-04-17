@@ -1,5 +1,15 @@
 2026-04-17  David Faust  <david.faust@oracle.com>
 
+	* libpoke/pkl-gen.pks (RAS_FUNCTION_STRUCT_MAPPER): Mark newly
+	mapped struct dirty if endianness changed while mapping its
+	fields.
+	* libpoke/pkl-rt.pk (dirty, dirty_ios): New.
+	* libpoke/pvm.c (pvm_set_endian): Mark every mapped value in every
+	ios dirty when the VM endianness changes.
+	* libpoke/pvm.jitter (popend): Likewise.
+
+2026-04-17  David Faust  <david.faust@oracle.com>
+
 	* libpoke/pkl-gen.pks (RAS_FUNCTION_ARRAY_MAPPER)
 	(RAS_FUNCTION_STRUCT_MAPPER, ATRIM): Register newly mapped value
 	in the ios.
