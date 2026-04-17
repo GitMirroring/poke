@@ -1,5 +1,19 @@
 2026-04-17  David Faust  <david.faust@oracle.com>
 
+	* libpoke/ios.c (ios_search): Initialize io pointer to NULL.
+	* libpoke/pkl-asm.c (pkl_asm_insn_cmsetios): New.
+	(pkl_asm_insn): Use it here.
+	* libpoke/pkl-asm.pks (RAS_MACRO_CMSETIOS): New.
+	* libpoke/pkl-gen.c (pkl_gen_pr_type_array)
+	(pkl_gen_pr_type_struct): Issue cmsetios instead of msetios
+	instruction.
+	* libpoke/pkl-gen.pks (RAS_FUNCTION_ARRAY_MAPPER)
+	(RAS_FUNCTION_STRUCT_MAPPER): Likewise.
+	* libpoke/pkl-insn.def (PKL_INSN_CMSETIOS): New.
+	* libpoke/pvm.jitter (msetios): Set mapinfo ios pointer.
+
+2026-04-17  David Faust  <david.faust@oracle.com>
+
 	* libpoke/pkl-insn.def (PKL_INSN_MGETD, PKL_INSN_MSETD)
 	(PKL_INSN_MCLEARD): New instructions.
 	* libpoke/pvm-val.h: Include pvm.h.

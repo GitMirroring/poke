@@ -346,6 +346,18 @@ pkl_asm_insn_write (pkl_asm pasm)
   RAS_MACRO_WRITE;
 }
 
+/* Macro-instruction: CMSETIOS
+   ( VAL INT -- VAL )
+
+   Checked version of PKL_INSN_MSETIOS: either issues an msetios
+   or raises an error if the given IOS is invalid.  */
+
+static void
+pkl_asm_insn_cmsetios (pkl_asm pasm)
+{
+  RAS_MACRO_CMSETIOS;
+}
+
 /* Macro-instruction: PEEK type, endian, nenc
    ( -- VAL )
 
@@ -1770,6 +1782,9 @@ pkl_asm_insn (pkl_asm pasm, enum pkl_asm_insn insn, ...)
           break;
         case PKL_INSN_WRITE:
           pkl_asm_insn_write (pasm);
+          break;
+        case PKL_INSN_CMSETIOS:
+          pkl_asm_insn_cmsetios (pasm);
           break;
         case PKL_INSN_ACONC:
           pkl_asm_insn_aconc (pasm);
