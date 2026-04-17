@@ -387,7 +387,7 @@ ios_search (ios_context ios_ctx, const char *handler, uint32_t flags)
 ios
 ios_search_by_id (ios_context ios_ctx, int id)
 {
-  ios io;
+  ios io = NULL;
 
   for (io = ios_ctx->io_list; io; io = io->next)
     if (io->id == id)
