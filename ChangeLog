@@ -1,5 +1,33 @@
 2026-04-17  David Faust  <david.faust@oracle.com>
 
+	* libpoke/Makefile.am (libpoke_la_SOURCES): Add ios-ivtree.h,
+	ios-range.h and ios-range.c.
+	* libpoke/ios-ivtree.h: New.
+	* libpoke/ios-range.c: New.
+	* libpoke/ios-range.h: New.
+	* libpoke/ios.c: Include pvm-val.h instead of pvm.h directly.
+	Include new ios-range.h.
+	(struct ios): Add struct ios_rangetbl *ranges member.
+	(ios_open): Allocate and initialize range table.
+	(ios_close): Notify range table of close.  Deallocate range table.
+	(ios_write_int, ios_write_uint): Mark affected range dirty.
+	(ios_register_range, ios_deregister_range, ios_mark_dirty_range)
+	(ios_mark_dirty_all): New functions.
+	* libpoke/ios.h (ios_register_range, ios_deregister_range)
+	(ios_mark_dirty_range, ios_mark_dirty_all): Prototypes for new
+	functions.
+	* libpoke/pvm-alloc.c (pvm_alloc_finalize_boxed, pvm_alloc_boxed):
+	New allocator and finalizer for boxed structs and arrays.
+	* libpoke/pvm-alloc.h (pvm_alloc_boxed): New proto.
+	* libpoke/pvm-val.c (pvm_make_array, pvm_make_struct): Use new box
+	allocator.
+	(pvm_val_reloc): Ensure mapinfo ioslive_p is set after reloc.
+	* libpoke/pvm.c (pvm_shutdown): Trigger a GC pass between
+	finalizing values and ios_shutdown.
+	* libpoke/pvm.jitter (ioregval, iodirtyall): New.
+
+2026-04-17  David Faust  <david.faust@oracle.com>
+
 	* libpoke/ios.c (ios_search): Initialize io pointer to NULL.
 	* libpoke/pkl-asm.c (pkl_asm_insn_cmsetios): New.
 	(pkl_asm_insn): Use it here.

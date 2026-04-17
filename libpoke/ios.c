@@ -32,6 +32,8 @@
 #include "pk-utils.h"
 #include "ios.h"
 #include "ios-dev.h"
+#include "pvm-val.h"
+#include "ios-range.h"
 
 #define IOS_GET_C_ERR_CHCK(c, io, off)                                 \
   {                                                                    \
@@ -82,6 +84,7 @@ struct ios
   void *dev;
   const struct ios_dev_if *dev_if;
   ios_off bias;
+  struct ios_rangetbl *ranges;
 
   struct ios *next;
 };
@@ -202,11 +205,18 @@ ios_open (ios_context ios_ctx, const char *handler, uint64_t flags,
   if (!io)
     return IOS_ENOMEM;
 
+  /* Allocate and initialze the range table for the new IO space.  */
+  struct ios_rangetbl *tbl = ios_rangetbl_create ();
+  if (!tbl)
+    return IOS_ENOMEM;
+
   io->zombie_p = 0;
   io->num_sub_devs = 0;
   io->handler = NULL;
   io->next = NULL;
   io->bias = 0;
+
+  io->ranges = tbl;
 
   /* Look for a device interface suitable to operate on the given
      handler.  */
@@ -310,6 +320,15 @@ ios_close (ios_context ios_ctx, ios io)
   /* Re-use the ID if this IOS was the most-recently opened IOS.  */
   if (ios_ctx->next_id == io->id + 1)
     --ios_ctx->next_id;
+
+  /* Notify all values mapped in the io that it is being closed,
+     so that they do not attempt to deregister themselves later
+     after the io is freed.  */
+  ios_rangetbl_notify_close (io->ranges);
+
+  /* Free the range table of this io.  */
+  ios_rangetbl_destroy (io->ranges);
+  io->ranges = NULL;
 
   if (io->num_sub_devs == 0)
     free (io);
@@ -1561,6 +1580,10 @@ ios_write_int (ios io, ios_off offset, int flags,
   /* Apply the IOS bias.  */
   offset += ios_get_bias (io);
 
+  /* Mark the range written as dirty, so that mapped values which
+     overlap the range will be remapped.  */
+  ios_mark_dirty_range (io, offset, offset + bits);
+
   /* Fast track for byte-aligned 8x bits  */
   if (offset % 8 == 0 && bits % 8 == 0)
     return ios_write_int_fast (io, offset, flags, bits, endian, value);
@@ -1585,6 +1608,10 @@ ios_write_uint (ios io, ios_off offset, int flags,
 
   /* Apply the IOS bias.  */
   offset += ios_get_bias (io);
+
+  /* Mark the range of bits written as dirty, so that mapped values which
+     overlap the range will be remapped.  */
+  ios_mark_dirty_range (io, offset, offset + bits);
 
   /* Fast track for byte-aligned 8x bits  */
   if (offset % 8 == 0 && bits % 8 == 0)
@@ -1649,4 +1676,34 @@ ios_dec_sub_dev (ios io)
   --io->num_sub_devs;
   if (io->zombie_p && io->num_sub_devs == 0)
     free (io);
+}
+
+int
+ios_register_range (pvm_val val, ios io, ios_off offset, ios_off size)
+{
+  if (PVM_IS_ARR (val) || PVM_IS_SCT (val))
+    {
+      PVM_VAL_SET_IOSLIVE_P (val, 1);
+      return ios_rangetbl_insert (io->ranges, val, offset, offset + size);
+    }
+  return IOS_EINVAL;
+}
+
+void
+ios_deregister_range (pvm_val val, ios io, ios_off offset)
+{
+  if (io && io->ranges)
+    ios_rangetbl_remove (io->ranges, val, offset);
+}
+
+void
+ios_mark_dirty_range (ios io, ios_off begin, ios_off end)
+{
+  ios_rangetbl_dirty (io->ranges, begin, end);
+}
+
+void
+ios_mark_dirty_all (ios io)
+{
+  ios_rangetbl_dirty_all (io->ranges);
 }
