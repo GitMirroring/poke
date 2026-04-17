@@ -988,6 +988,13 @@ immutable fun iovolatile = (int<32>ios = get_ios) int<32>:
   return asm int<32>: ("iogetv; nip" : ios);
 }
 
+immutable fun ioregval = (any val, int<32> ios = val'ios,
+                          offset<uint<64>,1> begin = val'offset,
+                          offset<uint<64>,1> size = val'size) void:
+{
+  asm ("ioregval" :: ios, val, begin, size);
+}
+
 immutable fun iosetbias = (offset<uint<64>,1> bias = 0#1, int<32> ios = get_ios) void:
 {
   if (!asm int<32>: ("isios; nip" : ios))
