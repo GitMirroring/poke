@@ -34,7 +34,7 @@
         .end
 
 ;;; RAS_MACRO_AREMAP
-;;; ( VAL -- VAL )
+;;; ( VAL -- VAL REMAPPED_P )
 ;;;
 ;;; Given a map-able PVM value on the TOS, remap it if auto-remap
 ;;; is enabled in the PVM.  This is the implementation of the
@@ -42,71 +42,82 @@
 
         .macro aremap
         pusharem                ; VAL AREM_P
-        bzi .label
-        drop
-        remap
-        push null               ; NVAL null
-.label:
-        drop                    ; NVAL
+        bzi .done
+        drop                    ; VAL
+        remap                   ; NVAL REMAPPED_P
+.done:
         .end
 
 ;;; RAS_MACRO_REMAP
-;;; ( VAL -- VAL )
+;;; ( VAL -- VAL REMAPPED_P )
 ;;;
 ;;; Given a map-able PVM value on the TOS, remap it.  This is the
 ;;; implementation of the PKL_INSN_REMAP macro-instruction.
 
         .macro remap
+        push int<32>0           ; VAL 0
+        swap                    ; 0 VAL
         ;; The re-map should be done only if the value is mapped.
-        mm                      ; VAL MAPPED_P
-        bzi .done               ; VAL MAPPED_P
-        drop                    ; VAL
+        mm                      ; 0 VAL MAPPED_P
+        bzi .done               ; 0 VAL MAPPED_P
+        drop                    ; 0 VAL
+        ;; If the dirty flag is not set, no need to re-map.
+        mgetd                   ; 0 VAL DIRTY_P
+        bzi .done
+        drop
         ;; If the IO space where the value is mapped is non-volatile
         ;; and read-only, there is no need to remap.
-        mgetios                 ; VAL IOS
-        isios                   ; VAL IOS ISIOS
+        mgetios                 ; 0 VAL IOS
+        isios                   ; 0 VAL IOS ISIOS
         bnzi .valid_ios
         push PVM_E_NO_IOS
         raise
 .valid_ios:
-        drop                    ; VAL IOS
-        iogetv                  ; VAL IOS VOLATILE
-        bnzi .remap
-        drop                    ; VAL IOS
-        ioflags                 ; VAL IOS FLAGS
-        push IOS_F_WRITE        ; VAL IOS FLAGS F_WRITE
+        drop                    ; 0 VAL IOS
+        iogetv                  ; 0 VAL IOS VOLATILE
+        bnzi .volatile
+        drop                    ; 0 VAL IOS
+        ioflags                 ; 0 VAL IOS FLAGS
+        push IOS_F_WRITE        ; 0 VAL IOS FLAGS F_WRITE
         bandlu
-        nip2                    ; VAL IOS FLAGS WRITABLE
+        nip2                    ; 0 VAL IOS FLAGS WRITABLE
         bzlu .done2
-        drop2                   ; VAL
+.volatile:
+        drop2                   ; 0 VAL
 .remap:
-        mgetw                   ; VAL WCLS
-        swap                    ; WCLS VAL
-        mgetm                   ; WCLS VAL MCLS
-        swap                    ; WCLS MCLS VAL
-        mgets                   ; WCLS MCLS VAL STRICT
-        swap                    ; WCLS MCLS STRICT VAL
-        mgetios                 ; WCLS MCLS STRICT VAL IOS
-        swap                    ; WLCS MCLS STRICT IOS VAL
-        mgeto                   ; WCLS MCLS STRICT IOS VAL OFF
-        swap                    ; WCLS MCLS STRICT IOS OFF VAL
-        mgetsel                 ; WCLS MCLS STRICT IOS OFF VAL EBOUND
-        swap                    ; WCLS MCLS STRICT IOS OFF EBOUND VAL
-        mgetsiz                 ; WCLS MCLS STRICT IOS OFF EBOUND VAL SBOUND
-        swap                    ; WCLS MCLS STRICT IOS OFF EBOUND SBOUND VAL
-        mgetm                   ; WCLS MCLS STRICT IOS OFF EBOUND SBOUND VAL MCLS
-        nip                     ; WCLS MCLS STRICT IOS OFF EBOUND SBOUND MCLS
-        call                    ; WCLS MCLS NVAL
-        swap                    ; WCLS NVAL MCLS
-        msetm                   ; WCLS NVAL
-        swap                    ; NVAL WCLS
-        msetw                   ; NVAL
-        push null               ; NVAL null
+        nip                     ; VAL
+        push int<32>1           ; VAL 1
+        swap                    ; 1 VAL
+        mgetw                   ; 1 VAL WCLS
+        swap                    ; 1 WCLS VAL
+        mgetm                   ; 1 WCLS VAL MCLS
+        swap                    ; 1 WCLS MCLS VAL
+        mgets                   ; 1 WCLS MCLS VAL STRICT
+        swap                    ; 1 WCLS MCLS STRICT VAL
+        mgetios                 ; 1 WCLS MCLS STRICT VAL IOS
+        swap                    ; 1 WLCS MCLS STRICT IOS VAL
+        mgeto                   ; 1 WCLS MCLS STRICT IOS VAL OFF
+        swap                    ; 1 WCLS MCLS STRICT IOS OFF VAL
+        mgetsel                 ; 1 WCLS MCLS STRICT IOS OFF VAL EBOUND
+        swap                    ; 1 WCLS MCLS STRICT IOS OFF EBOUND VAL
+        mgetsiz                 ; 1 WCLS MCLS STRICT IOS OFF EBOUND VAL SBOUND
+        swap                    ; 1 WCLS MCLS STRICT IOS OFF EBOUND SBOUND VAL
+        mgetm                   ; 1 WCLS MCLS STRICT IOS OFF EBOUND SBOUND VAL MCLS
+        nip                     ; 1 WCLS MCLS STRICT IOS OFF EBOUND SBOUND MCLS
+        call                    ; 1 WCLS MCLS NVAL
+        swap                    ; 1 WCLS NVAL MCLS
+        msetm                   ; 1 WCLS NVAL
+        swap                    ; 1 NVAL WCLS
+        msetw                   ; 1 NVAL
+        push null               ; 1 NVAL null
         ba .done
 .done2:
-        drop
+        drop                   ; 0 VAL IOS FLAGS WRITABLE
+        drop                   ; 0 VAL IOS FLAGS
+        drop                   ; 0 VAL IOS
 .done:
-        drop                    ; NVAL
+        drop                    ; (0|1) NVAL
+        swap                    ; NVAL (0|1)
         .end
 
 ;;; RAS_MACRO_WRITE

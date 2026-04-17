@@ -1,4 +1,20 @@
 2026-04-17  David Faust  <david.faust@oracle.com>
+            Jose E. Marchesi  <jemarch@gnu.org>
+
+	* libpoke/pkl-asm.pks (RAS_MACRO_AREMAP): Push a new REMAPPED_P on
+	the stack along with the NVAL to indicate whether or not the value
+	was actually remapped.
+	(RAS_MACRO_REMAP): Likewise. Skip remapping a value if its dirty
+	flag is not set.
+	* libpoke/pkl-gen.c (pkl_gen_ps_var): Replace old value in
+	corresponding frame if it was remapped.
+	(pkl_gen_pr_indexer): Likewise.
+	(pkl_gen_ps_struct_ref): Likewise.
+	(pkl_gen_ps_op_remap): Accomodate new value on stack after remap.
+	* libpoke/pkl-gen.pks (RAS_MACRO_AOREF): Likewise. Correct
+	macro-level comment on stack state at finish.
+
+2026-04-17  David Faust  <david.faust@oracle.com>
 
 	* libpoke/pkl-gen.pks (ATRIM): Set offset of new array before
 	adding elements so the elements inherit the proper base offset.
