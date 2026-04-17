@@ -1,3 +1,16 @@
+2026-04-17  David Faust  <david.faust@oracle.com>
+
+	* libpoke/pkl-insn.def (PKL_INSN_MGETD, PKL_INSN_MSETD)
+	(PKL_INSN_MCLEARD): New instructions.
+	* libpoke/pvm-val.h: Include pvm.h.
+	(struct pvm_mapinfo): Add dirty_p, ioslive_p, and io.  Update comment.
+	(PVM_MAPINFO_DIRTY_P, PVM_MAPINFO_IOSLIVE_P, PVM_MAPINFO_IOS)
+	(PVM_VAL_ARR_DIRTY_P, PVM_VAL_ARR_IOSLIVE_P, PVM_VAL_ARR_IOS_PTR)
+	(PVM_VAL_SCT_DIRTY_P, PVM_VAL_SCT_IOSLIVE_P, PVM_VAL_SCT_IOS_PTR)
+	(PVM_VAL_SET_IOS_PTR, PVM_VAL_DIRTY_P, PVM_VAL_SET_DIRTY_P)
+	(PVM_VAL_IOSLIVE_P, PVM_VAL_SET_IOSLIVE_P): New macros.
+	* libpoke/pvm.jitter (mgetd, msetd, mcleard): New instructions.
+
 2026-03-05  Brian Witte  <brianwitte@mailfence.com>
 
 	pkl-gen: fix writes to nested integral struct fields.

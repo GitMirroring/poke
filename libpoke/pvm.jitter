@@ -5962,6 +5962,46 @@ instruction msetw ()
   end
 end
 
+# Instruction: mgetd
+#
+# Given a value, push a boolean indicating whether the value is dirty.
+# If the given value is not map-able then push false, i.e. 0.
+#
+# Stack: ( VAL -- VAL INT )
+
+instruction mgetd ()
+  code
+    int dirty_p = PVM_VAL_DIRTY_P (JITTER_TOP_STACK ());
+    JITTER_PUSH_STACK (PVM_MAKE_INT (dirty_p, 32));
+  end
+end
+
+# Instruction: msetd
+#
+# Given a value, mark it dirty.  If the value is not map-able,
+# this is a no-op.
+#
+# Stack: ( VAL -- VAL )
+
+instruction msetd ()
+  code
+    PVM_VAL_SET_DIRTY_P (JITTER_TOP_STACK (), 1);
+  end
+end
+
+# Instruction: mcleard
+#
+# Given a value, clear its dirty bit.  If the value is not map-able,
+# this is a no-op.
+#
+# Stack: ( VAL -- VAL )
+
+instruction mcleard ()
+  code
+    PVM_VAL_SET_DIRTY_P (JITTER_TOP_STACK (), 0);
+  end
+end
+
 # Instruction: mgetsel
 #
 # Given a map-able value in the TOS, push the number of elements to
