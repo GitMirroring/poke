@@ -1,3 +1,8 @@
+2026-04-19  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* bootstrap.conf (gnulib_modules): Add arpa_inet-h and netinet_in-h
+	modules to enable compilation on MinGW platform.
+
 2026-04-12  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* .x-sc_codespell: New file.
