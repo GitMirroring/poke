@@ -722,7 +722,7 @@ pkl_ast_node pkl_ast_make_trimmer (pkl_ast ast,
 
 /* PKL_AST_INDEXER nodes represent references to an array element.
 
-   BASE must point to a PKL_AST_ARRAY node.
+   ENTITY must point to a PKL_AST_ARRAY node.
 
    INDEX must point to an expression whose evaluation is either an
    integer with the 0 base index of the indexed element, or an offset
