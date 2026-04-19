@@ -1,3 +1,8 @@
+2026-04-20  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* poke/pk-term.c (pk_term_init): Fix invocation of `tgetstr' to pass
+	NULL as the 2nd arg.
+
 2026-04-19  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* bootstrap.conf (gnulib_modules): Add arpa_inet-h and netinet_in-h

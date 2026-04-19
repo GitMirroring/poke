@@ -339,9 +339,9 @@ pk_term_init (int argc, char *argv[])
         static char termcap_buffer[2048];
         if (tgetent (termcap_buffer, termtype) > 0)
           {
-            erase_line_str = tgetstr ("ce");
+            erase_line_str = tgetstr ("ce", NULL);
             if (erase_line_str == NULL)
-              erase_line_str = tgetstr ("cd");
+              erase_line_str = tgetstr ("cd", NULL);
             screen_lines = tgetnum ("li");
             screen_cols = tgetnum ("co");
             done = 1;
