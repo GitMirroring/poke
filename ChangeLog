@@ -1,5 +1,9 @@
 2026-04-20  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* poke/pk-hserver.c: Add missing include <sys/select.h>.
+
+2026-04-20  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* bootstrap.conf (gnulib_modules): Add netdb-h, listen and select
 	modules to enable compilation on MinGW platform.
 
