@@ -401,7 +401,8 @@ void ios_dec_sub_dev (ios io);
 /* **************** Range Mapping ************** */
 
 /* Register VAL to be mapped in IO having given OFFSET and SIZE.
-   Return IOS_OK or IOS_ENOMEM.  */
+   Return IOS_OK normally, IOS_ENOMEM if out of memory, or IOS_EINVAL if
+   the VAL is not a map-able value.  */
 int ios_register_range (uint64_t val, ios io, ios_off offset, ios_off size);
 
 /* De-register VAL from IO's range table.  OFFSET is the offset where VAL

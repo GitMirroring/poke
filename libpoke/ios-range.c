@@ -26,6 +26,7 @@
 #include <gc/gc.h>
 
 #include <stdio.h>
+#include <assert.h>
 
 typedef int (*payload_compar_fn)(pvm_val v1, pvm_val v2);
 
@@ -53,12 +54,12 @@ typedef struct ios_rangetbl * CONTAINER_T;
 
 #define NODE_PAYLOAD_FIELDS pvm_val val;
 #define NODE_PAYLOAD_ASSIGN(node) \
-  node->val = val;
+  (node->val) = val;
 #define NODE_PAYLOAD_PARAMS \
   pvm_val val
 #define NODE_PAYLOAD_ARGS val
 #define NODE_PAYLOAD_ACCESS(node) \
-  node->val
+  (node->val)
 
 /* Prototype for visitor functions which operate on entries of the
    range table.  */
@@ -95,12 +96,11 @@ ios_rangetbl_insert (struct ios_rangetbl *tbl, pvm_val val,
 void
 ios_rangetbl_remove (struct ios_rangetbl *tbl, pvm_val val, ios_off offs)
 {
+  /* N.B. Attempting to remove an entry which is not in the tree is either
+     a logic error by the caller or a bug in the GC.  */
   NODE_T target = ios_ivtree_lookup (tbl, offs, val);
-  if (target)
-    ios_ivtree_remove (tbl, target);
-
-  /* N.B. Attempting to remove an entry which is not in the tree is most
-     likely an error.  */
+  assert (target);
+  ios_ivtree_remove (tbl, target);
 }
 
 struct ios_rangetbl *
@@ -124,8 +124,7 @@ ios_rangetbl_create (void)
 void
 ios_rangetbl_destroy (struct ios_rangetbl *tbl)
 {
-  if (!tbl)
-    return;
+  assert (tbl);
 
   /* Free all nodes in the tree including the root.  */
   /* Note: With the tree in GC memory, this isn't really necessary
@@ -145,17 +144,14 @@ mark_dirty (pvm_val val)
 void
 ios_rangetbl_dirty (struct ios_rangetbl *tbl, ios_off begin, ios_off end)
 {
-  if (!tbl)
-    return;
-
+  assert (tbl);
   ios_ivtree_visit_overlaps (tbl->root, begin, end, mark_dirty);
 }
 
 void
 ios_rangetbl_dirty_all (struct ios_rangetbl *tbl)
 {
-  if (!tbl)
-    return;
+  assert (tbl);
 
   ios_ivtree_visit_all (tbl->root, mark_dirty);
 }
