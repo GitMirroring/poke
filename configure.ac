@@ -169,9 +169,19 @@ dnl particular version of awk installed.  We therefore set RAS_AWK
 dnl here, using the value ':' for when no suitable awk is found.  Then
 dnl in the `.pkc : .pks' rule in Makefile.am an error message is
 dnl emitted in case no proper AWK is present.
+dnl GNU Awk 5.4.0 has a broken gensub(); to fix it one should export
+dnl GAWK_GNU_MATCHERS environment variable while running awk to
+dnl disable new MinRX matcher.
 
 error_on_awk_gensub=no
 AX_CHECK_AWK_GENSUB([RAS_AWK=$AWK],
+  [if test -d $srcdir/.git ; then
+     error_on_awk_gensub=yes
+   fi
+   RAS_AWK=:])
+AX_TRY_AWK_EXPOUT([a working gensub()],
+  [uu],[print gensub(/(u)/, "X\\\\1Y", "g", $0)],[XuYXuY],
+  [],
   [if test -d $srcdir/.git ; then
      error_on_awk_gensub=yes
    fi
@@ -379,7 +389,9 @@ dnl Report errors
 
 if test "x$error_on_awk_gensub" = "xyes"; then
    AC_MSG_ERROR([you need a gensub-capable awk when building from VCS.
-     Please install gawk.])
+     Please install gawk (gawk 5.4.0 has a broken gensub,
+     export GAWK_GNU_MATCHERS= environment variable and
+     re-configure to mitigate the problem).])
 fi
 
 if test "x$have_gc" = "xno"; then

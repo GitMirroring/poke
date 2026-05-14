@@ -84,8 +84,10 @@ endif HAVE_PROC
 # (see <https://www.gnu.org/prep/standards/html_node/Makefile-Basics.html>).
 .pks.pkc:
 	if test "$(RAS_AWK)" = ":"; then \
-	  echo "your AWK is not powerful enough.  Please install gawk" \
-	  1>&2 && exit 1 || : ; \
+	  echo 1>&1 && \
+          echo "  Your AWK is not powerful enough.  Please install gawk." 1>&2 \
+	  && echo "  Also note that gawk 5.4.0 has a broken gensub, in that case" \
+	  1>&2 && echo "  export GAWK_GNU_MATCHERS= and re-configure." 1>&2 && exit 1 || : ; \
 	fi
 	outfile=`basename "$@"`; \
 	srcdir=$(srcdir) $(RAS_AWK) -f $(srcdir)/ras $< > $$outfile.tmp \

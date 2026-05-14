@@ -1,3 +1,8 @@
+2026-05-14  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* configure.ac: Add note for broken gensub() in Gawk 5.4.0 .
+	* libpoke/Makefile.am (.pks.pkc): Likewise.
+
 2026-04-20  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* poke/pk-hserver.c: Add missing include <sys/select.h>.
