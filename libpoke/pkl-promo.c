@@ -675,7 +675,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_promo_ps_op_rela)
       && PKL_AST_TYPE_S_ITYPE (op1_type))
     op1_type = PKL_AST_TYPE_S_ITYPE (op1_type);
   if (PKL_AST_TYPE_CODE (op2_type) == PKL_TYPE_STRUCT
-      && PKL_AST_TYPE_S_ITYPE (op1_type))
+      && PKL_AST_TYPE_S_ITYPE (op2_type))
     op2_type = PKL_AST_TYPE_S_ITYPE (op2_type);
 
   switch (PKL_AST_TYPE_CODE (op1_type))
