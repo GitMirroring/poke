@@ -1,0 +1,19 @@
+/* { dg-do run } */
+
+var a = stod ("3.14159265358979323"),
+    b = stod ("2.71828182845904523"),
+    c = stod ("2.00000000000000000");
+
+assert (a == 0x400921fb54442d18L);
+assert (b == 0x4005bf0a8b145769L);
+assert (c == 0x4000000000000000L);
+
+/* { dg-command { .set obase 10 } } */
+/* { dg-command { (a ./^ b) == c } } */
+/* { dg-output 1 } */
+
+/* For constant folding: */
+/* { dg-command { .set obase 16 } } */
+/* { dg-command { 0x400921fb54442d18L ./^ 0x4005bf0a8b145769L } } */
+/* { dg-output "\n0x4000000000000000UL" } */
+

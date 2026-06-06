@@ -1,0 +1,5 @@
+/* { dg-do compile } */
+
+var a = 1H;
+
+var b = a.--; /* { dg-error "invalid operand.*" } */

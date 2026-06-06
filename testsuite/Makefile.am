@@ -753,6 +753,8 @@ EXTRA_DIST = \
   poke.pkl/add-int-struct-2.pk \
   poke.pkl/add-int-struct-3.pk \
   poke.pkl/add-int-struct-4.pk \
+  poke.pkl/add-f32-1.pk \
+  poke.pkl/add-f64-1.pk \
   poke.pkl/add-offsets-1.pk \
   poke.pkl/add-offsets-2.pk \
   poke.pkl/add-offsets-3.pk \
@@ -1229,6 +1231,8 @@ EXTRA_DIST = \
   poke.pkl/cdiv-integers-3.pk \
   poke.pkl/cdiv-integers-diag-1.pk \
   poke.pkl/cdiv-integers-diag-2.pk \
+  poke.pkl/cdiv-f32-1.pk \
+  poke.pkl/cdiv-f64-1.pk \
   poke.pkl/ioflags-1.pk \
   poke.pkl/ioflags-2.pk \
   poke.pkl/ioflags-3.pk \
@@ -1358,6 +1362,8 @@ EXTRA_DIST = \
   poke.pkl/div-int-struct-1.pk \
   poke.pkl/div-int-struct-2.pk \
   poke.pkl/div-int-struct-3.pk \
+  poke.pkl/div-f32-1.pk \
+  poke.pkl/div-f64-1.pk \
   poke.pkl/cdiv-offset-int-1.pk \
   poke.pkl/cdiv-offset-int-2.pk \
   poke.pkl/cdiv-offset-int-3.pk \
@@ -1955,6 +1961,8 @@ EXTRA_DIST = \
   poke.pkl/mod-integers-overflow-2.pk \
   poke.pkl/mod-integers-overflow-diag-1.pk \
   poke.pkl/mod-integers-overflow-diag-2.pk \
+  poke.pkl/mod-f32-1.pk \
+  poke.pkl/mod-f64-1.pk \
   poke.pkl/mod-offsets-1.pk \
   poke.pkl/mod-offsets-2.pk \
   poke.pkl/mod-offsets-3.pk \
@@ -1982,6 +1990,8 @@ EXTRA_DIST = \
   poke.pkl/mul-int-struct-1.pk \
   poke.pkl/mul-int-struct-2.pk \
   poke.pkl/mul-int-struct-3.pk \
+  poke.pkl/mul-f32-1.pk \
+  poke.pkl/mul-f64-1.pk \
   poke.pkl/mul-offsets-1.pk \
   poke.pkl/mul-offsets-2.pk \
   poke.pkl/mul-offsets-3.pk \
@@ -2181,6 +2191,8 @@ EXTRA_DIST = \
   poke.pkl/pow-integers-3.pk \
   poke.pkl/pow-integers-overflow-1.pk \
   poke.pkl/pow-integers-overflow-2.pk \
+  poke.pkl/pow-f32-1.pk \
+  poke.pkl/pow-f64-1.pk \
   poke.pkl/pow-offsets-1.pk \
   poke.pkl/pow-offsets-2.pk \
   poke.pkl/pow-offsets-3.pk \
@@ -2713,6 +2725,8 @@ EXTRA_DIST = \
   poke.pkl/sub-int-struct-1.pk \
   poke.pkl/sub-int-struct-2.pk \
   poke.pkl/sub-int-struct-3.pk \
+  poke.pkl/sub-f32-1.pk \
+  poke.pkl/sub-f64-1.pk \
   poke.pkl/sub-offsets-1.pk \
   poke.pkl/sub-offsets-2.pk \
   poke.pkl/sub-offsets-3.pk \

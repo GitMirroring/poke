@@ -1766,6 +1766,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_op_fneg)
   else
     INVALID_OPERAND (op1, "expected integral of width either 32 or 64 bits");
 
+  type = pkl_ast_make_integral_type (PKL_PASS_AST, PKL_AST_TYPE_I_SIZE (type),
+                                     /*signed*/ 0);
   PKL_AST_TYPE (exp) = ASTREF (type);
 }
 PKL_PHASE_END_HANDLER

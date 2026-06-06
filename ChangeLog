@@ -34,6 +34,21 @@
 	(f64pow): Likewise.
 	(f64sqrt): Likewise.
 	(f64cmp): Likewise.
+	* testsuite/poke.pkl/add-f32-1.pk: New test.
+	* testsuite/poke.pkl/add-f64-1.pk: Likewise.
+	* testsuite/poke.pkl/cdiv-f32-1.pk: Likewise.
+	* testsuite/poke.pkl/cdiv-f64-1.pk: Likewise.
+	* testsuite/poke.pkl/div-f32-1.pk: Likewise.
+	* testsuite/poke.pkl/div-f64-1.pk: Likewise.
+	* testsuite/poke.pkl/mod-f32-1.pk: Likewise.
+	* testsuite/poke.pkl/mod-f64-1.pk: Likewise.
+	* testsuite/poke.pkl/mul-f32-1.pk: Likewise.
+	* testsuite/poke.pkl/mul-f64-1.pk: Likewise.
+	* testsuite/poke.pkl/pow-f32-1.pk: Likewise.
+	* testsuite/poke.pkl/pow-f64-1.pk: Likewise.
+	* testsuite/poke.pkl/sub-f32-1.pk: Likewise.
+	* testsuite/poke.pkl/sub-f64-1.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
 
 2026-05-14  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 

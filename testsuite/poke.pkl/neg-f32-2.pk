@@ -1,0 +1,12 @@
+/* { dg-do run } */
+
+var a = 0x40490e56, // 3.141500
+    neg_a = 0xc0490e56U; // -3.141500
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {(.-a)} } */
+/* { dg-output "0xc0490e56U" } */
+
+/* { dg-command {.set obase 10} } */
+/* { dg-command {(.-a) == neg_a} } */
+/* { dg-output "\n1" } */

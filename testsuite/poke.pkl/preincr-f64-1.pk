@@ -1,0 +1,10 @@
+/* { dg-do run } */
+
+var a = 0x0000000000000000L, // 0.000000
+    pp_a = 0x3ff0000000000000L; // 1.000000
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {(.++a)} } */
+/* { dg-output "0x3ff0000000000000L" } */
+/* { dg-command {a} } */
+/* { dg-output "\n0x3ff0000000000000L" } */

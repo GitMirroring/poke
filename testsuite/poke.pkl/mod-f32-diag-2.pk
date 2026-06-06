@@ -1,0 +1,4 @@
+/* { dg-do compile } */
+
+var res
+  = 1 .% 11L; /* { dg-error "invalid operand .*" } */

@@ -1,0 +1,21 @@
+/* { dg-do run } */
+
+type F = struct int<64>
+  { uint<1> sign; uint<11> exp; uint<52> frac; };
+var a = stod ("3.14159265358979323") as F,
+    b = stod ("2.71828182845904523") as F,
+    c = stod ("5.85987448204883776") as F;
+
+assert (+a == 0x400921fb54442d18L);
+assert (+b == 0x4005bf0a8b145769L);
+assert (+c == 0x40177082efac4240L);
+
+/* { dg-command { .set obase 16 } } */
+/* { dg-command { a .+ b } } */
+/* { dg-output "0x40177082efac4240UL" } */
+/* { dg-command { .set obase 10 } } */
+/* { dg-command { (a .+ +b) == +c } } */
+/* { dg-output "\n1" } */
+/* { dg-command { (a .+ b) == +c } } */
+/* { dg-output "\n1" } */
+

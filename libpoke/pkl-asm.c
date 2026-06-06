@@ -1172,6 +1172,14 @@ pkl_asm_insn_fbinop (pkl_asm pasm, enum pkl_asm_insn insn, pkl_ast_node type)
     }
 
   pkl_asm_insn (pasm, insn);
+  if (PKL_AST_TYPE_I_SIGNED_P (type))
+    {
+      if (fp32_p)
+        pkl_asm_insn (pasm, PKL_INSN_IUTOI, 32);
+      else
+        pkl_asm_insn (pasm, PKL_INSN_LUTOL, 64);
+      pkl_asm_insn (pasm, PKL_INSN_NIP);
+    }
 }
 
 /* Macro-instruction: FEQ type

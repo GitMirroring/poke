@@ -1,0 +1,10 @@
+/* { dg-do run } */
+
+var a = 0x4005bedfa43fe5c9L, // 2.718200
+    a_mm = 0x3ffb7dbf487fcb92L; // 1.718200
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {a.--} } */
+/* { dg-output "0x4005bedfa43fe5c9L" } */
+/* { dg-command {a} } */
+/* { dg-output "\n0x3ffb7dbf487fcb92L" } */
