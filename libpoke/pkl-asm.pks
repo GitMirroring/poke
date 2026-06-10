@@ -68,19 +68,19 @@
         push PVM_E_NO_IOS
         raise
 .valid_ios:
-        ;; Remap iff either (first) the IO space is volatile...
+        ;; Remap iff either the IO space is volatile or the value is dirty.
+        ;; For a non-volatile read-only IOS, the value will never be dirty
+        ;; unless the user manually sets its dirty flag to force a remap.
         drop                    ; 0 VAL IOS
-        iogetv                  ; 0 VAL IOS VOLATILE
-        bnzi .volatile
+        iogetv                  ; 0 VAL IOS VOLATILE_P
+        bnzi .remap
         drop                    ; 0 VAL IOS
-        ;; ... or (second) the value is dirty.
         swap                    ; 0 IOS VAL
         mgetd                   ; 0 IOS VAL DIRTY_P
         quake                   ; 0 VAL IOS DIRTY_P
         bzi .notdirty
-.volatile:
-        drop2                   ; 0 VAL
 .remap:
+        drop2                   ; 0 VAL
         nip                     ; VAL
         push int<32>1           ; VAL 1
         swap                    ; 1 VAL
