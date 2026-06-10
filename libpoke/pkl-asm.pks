@@ -61,27 +61,23 @@
         mm                      ; 0 VAL MAPPED_P
         bzi .done               ; 0 VAL MAPPED_P
         drop                    ; 0 VAL
-        ;; If the dirty flag is not set, no need to re-map.
-        mgetd                   ; 0 VAL DIRTY_P
-        bzi .done
-        drop
-        ;; If the IO space where the value is mapped is non-volatile
-        ;; and read-only, there is no need to remap.
+        ;; Verify the IO space is valid or raise E_NO_IOS.
         mgetios                 ; 0 VAL IOS
         isios                   ; 0 VAL IOS ISIOS
         bnzi .valid_ios
         push PVM_E_NO_IOS
         raise
 .valid_ios:
+        ;; Remap iff either (first) the IO space is volatile...
         drop                    ; 0 VAL IOS
         iogetv                  ; 0 VAL IOS VOLATILE
         bnzi .volatile
         drop                    ; 0 VAL IOS
-        ioflags                 ; 0 VAL IOS FLAGS
-        push IOS_F_WRITE        ; 0 VAL IOS FLAGS F_WRITE
-        bandlu
-        nip2                    ; 0 VAL IOS FLAGS WRITABLE
-        bzlu .done2
+        ;; ... or (second) the value is dirty.
+        swap                    ; 0 IOS VAL
+        mgetd                   ; 0 IOS VAL DIRTY_P
+        quake                   ; 0 VAL IOS DIRTY_P
+        bzi .notdirty
 .volatile:
         drop2                   ; 0 VAL
 .remap:
@@ -111,10 +107,8 @@
         msetw                   ; 1 NVAL
         push null               ; 1 NVAL null
         ba .done
-.done2:
-        drop                   ; 0 VAL IOS FLAGS WRITABLE
-        drop                   ; 0 VAL IOS FLAGS
-        drop                   ; 0 VAL IOS
+.notdirty:
+        drop                    ; 0 VAL IOS
 .done:
         drop                    ; (0|1) NVAL
         swap                    ; NVAL (0|1)
