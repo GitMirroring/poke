@@ -295,6 +295,15 @@ void
 pvm_set_endian (pvm apvm, enum ios_endian endian)
 {
   PVM_STATE_ENDIAN (apvm) = endian;
+  /* On endianness change, mark every mapped value in every ios dirty
+     so that they will be remapped in the new endianness.  */
+  ios_context ios_ctx = PVM_STATE_IOS_CONTEXT (apvm);
+  ios io = ios_begin (ios_ctx);
+  while (!ios_end (io))
+    {
+      ios_mark_dirty_all (io);
+      io = ios_next (io);
+    }
 }
 
 enum ios_nenc
