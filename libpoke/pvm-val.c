@@ -153,8 +153,9 @@ pvm_make_string_nodup (char *str)
 pvm_val
 pvm_make_array (pvm_val nelem, pvm_val type)
 {
-  pvm_val_box box = pvm_make_box (PVM_VAL_TAG_ARR);
-  pvm_array arr = pvm_alloc (sizeof (struct pvm_array));
+  pvm_val_box box = pvm_alloc_boxed (PVM_VAL_TAG_ARR);
+  pvm_array arr = PVM_VAL_BOX_ARR (box);
+
   size_t num_elems = PVM_VAL_ULONG (nelem);
   size_t num_allocated = num_elems > 0 ? num_elems : 16;
   size_t nbytes = (sizeof (struct pvm_array_elem) * num_allocated);
@@ -184,7 +185,6 @@ pvm_make_array (pvm_val nelem, pvm_val type)
       arr->elems[i].value = PVM_NULL;
     }
 
-  PVM_VAL_BOX_ARR (box) = arr;
   return PVM_BOX (box);
 }
 
@@ -301,8 +301,9 @@ pvm_array_rem (pvm_val arr, pvm_val idx)
 pvm_val
 pvm_make_struct (pvm_val nfields, pvm_val nmethods, pvm_val type)
 {
-  pvm_val_box box = pvm_make_box (PVM_VAL_TAG_SCT);
-  pvm_struct sct = pvm_alloc (sizeof (struct pvm_struct));
+  pvm_val_box box = pvm_alloc_boxed (PVM_VAL_TAG_SCT);
+  pvm_struct sct = PVM_VAL_BOX_SCT (box);
+
   size_t i;
   size_t nfieldbytes
     = sizeof (struct pvm_struct_field) * PVM_VAL_ULONG (nfields);
@@ -347,7 +348,6 @@ pvm_make_struct (pvm_val nfields, pvm_val nmethods, pvm_val type)
       sct->methods[i].value = PVM_NULL;
     }
 
-  PVM_VAL_BOX_SCT (box) = sct;
   return PVM_BOX (box);
 }
 
@@ -858,6 +858,7 @@ pvm_val_reloc (pvm_val val, pvm_val ios, pvm_val boffset)
 
       PVM_VAL_ARR_MAPPED_P (val) = 1;
       PVM_VAL_ARR_IOS (val) = ios;
+      PVM_VAL_ARR_IOSLIVE_P (val) = 1;
       PVM_VAL_ARR_OFFSET (val) = pvm_make_ulong (boff, 64);
     }
   else if (PVM_IS_SCT (val))
@@ -895,6 +896,7 @@ pvm_val_reloc (pvm_val val, pvm_val ios, pvm_val boffset)
 
       PVM_VAL_SCT_MAPPED_P (val) = 1;
       PVM_VAL_SCT_IOS (val) = ios;
+      PVM_VAL_SCT_IOSLIVE_P (val) = 1;
       PVM_VAL_SCT_OFFSET (val) = pvm_make_ulong (boff, 64);
     }
 }
