@@ -1,3 +1,17 @@
+2026-06-11  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pvm.jitter (wrapped-functions): Add new functions.
+	* cfg.mk (sc_pvm_wrappers): Fix regexp for `grep -v end' to not
+	exclude function names containing `end' (like `ios_end').
+	* libpoke/ios-ivtree.h: Replace TAB with SPACES. Remove empty line
+	at the end.
+	* libpoke/ios-range.c: Replace TAB with SPACES. Remove empty line
+	at the end. Include <config.h>.
+	* libpoke/ios-range.h: Replace TAB with SPACES.
+	* libpoke/pvm-alloc.c: Likewise.
+	* libpoke/pvm-val.h: Likewise.
+	* libpoke/pkl-gen.c: Likewise.
+
 2026-06-11  David Faust  <david.faust@oracle.com>
 
 	* testsuite/poke.map/map-struct-fun-1.pk: Update with a write to

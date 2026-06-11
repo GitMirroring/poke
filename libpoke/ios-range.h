@@ -34,11 +34,11 @@ void ios_rangetbl_destroy (struct ios_rangetbl *);
 
 /* Track VAL in TBL with interval [BEGIN, END].  */
 int  ios_rangetbl_insert (struct ios_rangetbl *tbl, pvm_val val,
-			  ios_off begin, ios_off end);
+                          ios_off begin, ios_off end);
 
 /* Remove VAL from TBL, given that it is mapped at offset OFFS.  */
 void ios_rangetbl_remove (struct ios_rangetbl *tbl, pvm_val val,
-			  ios_off offs);
+                          ios_off offs);
 
 /* Mark any values stored in the table which overlap the interval
    [BEGIN,END] as dirty.  */

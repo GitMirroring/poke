@@ -120,7 +120,7 @@ pvm_alloc_boxed (uint8_t tag)
   PVM_VAL_BOX_TAG (box) = tag;
 
   GC_register_finalizer_no_order (box, pvm_alloc_finalize_boxed, NULL,
-				  NULL, NULL);
+                                  NULL, NULL);
   return box;
 }
 

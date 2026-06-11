@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <config.h>
+
 #include "pk-utils.h"
 #include "ios.h"
 #include "ios-dev.h"
@@ -43,9 +45,9 @@ typedef int (*payload_compar_fn)(pvm_val v1, pvm_val v2);
 struct NODE_IMPL;
 struct ios_rangetbl
 {
-  size_t count;			/* Number of values currently tracked.  */
-  struct NODE_IMPL *root;	/* Root of the tree.  */
-  payload_compar_fn compar;	/* Payload comparison function.  */
+  size_t count;                 /* Number of values currently tracked.  */
+  struct NODE_IMPL *root;       /* Root of the tree.  */
+  payload_compar_fn compar;     /* Payload comparison function.  */
 };
 
 /* Definitions for the tree implementation.  */
@@ -88,7 +90,7 @@ ivtree_payload_compar (pvm_val v1, pvm_val v2)
 
 int
 ios_rangetbl_insert (struct ios_rangetbl *tbl, pvm_val val,
-		     ios_off begin, ios_off end)
+                     ios_off begin, ios_off end)
 {
   return ios_ivtree_insert (tbl, begin, end, val);
 }
@@ -173,4 +175,3 @@ ios_rangetbl_notify_close (struct ios_rangetbl *tbl)
 {
   ios_ivtree_visit_all (tbl->root, notify_ios_closed);
 }
-

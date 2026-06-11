@@ -772,22 +772,22 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_var)
         {
           pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_AREMAP); /* NVAL REMAPPED_P */
 
-	  pvm_program_label done
-	    = pkl_asm_fresh_label (PKL_GEN_ASM);
+          pvm_program_label done
+            = pkl_asm_fresh_label (PKL_GEN_ASM);
 
-	  /* If the value was remapped, replace the old value of the
-	     variable with the new in the corresponding frame.  */
+          /* If the value was remapped, replace the old value of the
+             variable with the new in the corresponding frame.  */
           pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BZI, done);
-	  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* NVAL */
-	  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DUP);  /* NVAL NVAL */
-	  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_POPVAR,
-			PKL_AST_VAR_BACK (var),
-			PKL_AST_VAR_OVER (var));     /* NVAL */
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* NVAL */
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DUP);  /* NVAL NVAL */
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_POPVAR,
+                        PKL_AST_VAR_BACK (var),
+                        PKL_AST_VAR_OVER (var));     /* NVAL */
 
-	  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL); /* NVAL null */
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL); /* NVAL null */
           pkl_asm_label (PKL_GEN_ASM, done);
-	  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* NVAL */
-	}
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* NVAL */
+        }
     }
 }
 PKL_PHASE_END_HANDLER
@@ -3141,13 +3141,13 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_indexer)
         {
         case PKL_TYPE_ARRAY:
           if (PKL_AST_TYPE_CODE (index_type) == PKL_TYPE_INTEGRAL)
-	    pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_AREF); /* ARR IDX VAL */
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_AREF); /* ARR IDX VAL */
           else
-	    {
-	      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_OVER); /* ARR IDX ARR */
-	      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_OVER); /* ARR IDX ARR IDX */
-	      RAS_MACRO_AOREF (container_type, index_type); /* ARR IDX VAL */
-	    }
+            {
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_OVER); /* ARR IDX ARR */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_OVER); /* ARR IDX ARR IDX */
+              RAS_MACRO_AOREF (container_type, index_type); /* ARR IDX VAL */
+            }
           /* To cover cases where the referenced array is not mapped, but
              the value stored in it is a mapped value, we issue a
              REMAP.  */
@@ -3161,46 +3161,46 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_pr_indexer)
               if (PKL_AST_INDEXER_IS_INDEXED (indexer)
                   && (PKL_AST_TYPE_COMPLETE (indexer_type)
                       == PKL_AST_TYPE_COMPLETE_YES))
-		{
-		  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP2);
-		  break;
-		}
-	    case PKL_TYPE_STRUCT:
-	      {
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_AREMAP); /* ARR IDX NVAL REMAPPED_P */
+                {
+                  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP2);
+                  break;
+                }
+            case PKL_TYPE_STRUCT:
+              {
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_AREMAP); /* ARR IDX NVAL REMAPPED_P */
 
-		/* ARR IDX NVAL REMAPPED_P */
-		pvm_program_label done
-		  = pkl_asm_fresh_label (PKL_GEN_ASM);
+                /* ARR IDX NVAL REMAPPED_P */
+                pvm_program_label done
+                  = pkl_asm_fresh_label (PKL_GEN_ASM);
 
-		/* If the value was remapped, replace the old value of the
-		   variable with the new in the corresponding frame.  */
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BZI, done);
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* ARR IDX NVAL */
+                /* If the value was remapped, replace the old value of the
+                   variable with the new in the corresponding frame.  */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BZI, done);
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* ARR IDX NVAL */
 
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_TOR); /* ARR IDX (NVAL) */
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ATR); /* ARR IDX NVAL (NVAL) */
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NROT); /* NVAL ARR IDX (NVAL) */
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_FROMR); /* NVAL ARR IDX NVAL */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_TOR); /* ARR IDX (NVAL) */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ATR); /* ARR IDX NVAL (NVAL) */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NROT); /* NVAL ARR IDX (NVAL) */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_FROMR); /* NVAL ARR IDX NVAL */
 
-		/* target: NVAL ARR IDX NVAL */
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ASET); /* NVAL ARR */
+                /* target: NVAL ARR IDX NVAL */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ASET); /* NVAL ARR */
 
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* NVAL */
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL); /* NVAL null*/
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP); /* null NVAL */
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_OVER); /* null NVAL null */
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP); /* null null NVAL */
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_OVER); /* null null NVAL null */
-		pkl_asm_label (PKL_GEN_ASM, done);
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* NVAL */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL); /* NVAL null*/
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP); /* null NVAL */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_OVER); /* null NVAL null */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP); /* null null NVAL */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_OVER); /* null null NVAL null */
+                pkl_asm_label (PKL_GEN_ASM, done);
 
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* ARR IDX NVAL */
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP2); /* NVAL */
-	      }
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* ARR IDX NVAL */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP2); /* NVAL */
+              }
               break;
-	    default:
-	      /* ARR IDX VAL */
-	      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP2); /* VAL */
+            default:
+              /* ARR IDX VAL */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP2); /* VAL */
               break;
             }
           break;
@@ -3375,7 +3375,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_struct_ref)
         {
           /* This is either a field or a method.  */
           pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SREF); /* STRUCT STR ELEM */
-	  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_QUAKE); /* STR STRUCT ELEM */
+          pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_QUAKE); /* STR STRUCT ELEM */
 
           /* If this is an indirecting struct_ref, now we have to map
              the value using the offset that is on top of the stack,
@@ -3437,42 +3437,42 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_struct_ref)
         {
         case PKL_TYPE_ARRAY:
         case PKL_TYPE_STRUCT:
-	  {
-	    pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_AREMAP); /* STR [SCT] NVAL REMAPPED_P */
+          {
+            pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_AREMAP); /* STR [SCT] NVAL REMAPPED_P */
 
-	    if (!PKL_AST_STRUCT_REF_INDIRECTION_P (struct_ref))
-	      {
-		/* STR SCT NVAL REMAPPED_P */
-		pvm_program_label done
-		  = pkl_asm_fresh_label (PKL_GEN_ASM);
+            if (!PKL_AST_STRUCT_REF_INDIRECTION_P (struct_ref))
+              {
+                /* STR SCT NVAL REMAPPED_P */
+                pvm_program_label done
+                  = pkl_asm_fresh_label (PKL_GEN_ASM);
 
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BZI, done);
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* STR SCT NVAL */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_BZI, done);
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* STR SCT NVAL */
                 pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_QUAKE); /* SCT STR NVAL */
 
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_TOR); /* SCT STR (NVAL) */
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ATR); /* SCT STR NVAL (NVAL) */
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NROT); /* NVAL SCT STR (NVAL) */
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_FROMR); /* NVAL SCT STR NVAL */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_TOR); /* SCT STR (NVAL) */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ATR); /* SCT STR NVAL (NVAL) */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NROT); /* NVAL SCT STR (NVAL) */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_FROMR); /* NVAL SCT STR NVAL */
 
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SSET); /* NVAL SCT */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SSET); /* NVAL SCT */
 
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* NVAL */
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL); /* NVAL null*/
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP); /* null NVAL */
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_OVER); /* null NVAL null */
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP); /* null null NVAL */
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_OVER); /* null null NVAL null */
-		pkl_asm_label (PKL_GEN_ASM, done);
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* NVAL */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_PUSH, PVM_NULL); /* NVAL null*/
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP); /* null NVAL */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_OVER); /* null NVAL null */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_SWAP); /* null null NVAL */
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_OVER); /* null null NVAL null */
+                pkl_asm_label (PKL_GEN_ASM, done);
 
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* STR SCT NVAL */
-	      }
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* STR SCT NVAL */
+              }
             else
               {
                 /* STR NVAL REMAPPED_P */
                 pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP);  /* STR NVAL */
               }
-	  }
+          }
           break;
         default:
           break;
@@ -3480,30 +3480,30 @@ PKL_PHASE_BEGIN_HANDLER (pkl_gen_ps_struct_ref)
 
       /* STR [SCT] ELEM */
       if (!is_computed_p)
-	{
-	  if (PKL_AST_STRUCT_REF_INDIRECTION_P (struct_ref))
-	    {
-	      /* STR ELEM */
-	      pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP); /* ELEM */
-	    }
-	  else
-	    {
-	      /* STR SCT ELEM */
-	      if (!(PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_FUNCALL)
-		    && !PKL_PASS_PARENT && !is_field_p))
-		pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP2); /* ELEM */
-	      else
-		{
-		  /* If the parent is a funcall and the referred field was
-		     a struct method, then leave both the struct and the
-		     closure.
-		     i.e. this is a struct method being called, preserve
-		     the struct because it is the implicit first arg.  */
-		  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ROT); /* SCT ELEM STR */
-		  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* SCT ELEM */
-		}
-	    }
-	}
+        {
+          if (PKL_AST_STRUCT_REF_INDIRECTION_P (struct_ref))
+            {
+              /* STR ELEM */
+              pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP); /* ELEM */
+            }
+          else
+            {
+              /* STR SCT ELEM */
+              if (!(PKL_GEN_IN_CTX_P (PKL_GEN_CTX_IN_FUNCALL)
+                    && !PKL_PASS_PARENT && !is_field_p))
+                pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_NIP2); /* ELEM */
+              else
+                {
+                  /* If the parent is a funcall and the referred field was
+                     a struct method, then leave both the struct and the
+                     closure.
+                     i.e. this is a struct method being called, preserve
+                     the struct because it is the implicit first arg.  */
+                  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_ROT); /* SCT ELEM STR */
+                  pkl_asm_insn (PKL_GEN_ASM, PKL_INSN_DROP); /* SCT ELEM */
+                }
+            }
+        }
     }
 }
 PKL_PHASE_END_HANDLER

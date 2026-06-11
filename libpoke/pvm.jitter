@@ -117,18 +117,23 @@ wrapped-functions
   pvm_print_val_with_params
   pvm_refo_struct
   pvm_sizeof
+  ios_begin
   ios_close
   ios_cur
+  ios_end
   ios_flags
   ios_flush
   ios_get_id
   ios_map
+  ios_mark_dirty_all
+  ios_next
   ios_handler
   ios_size
   ios_volatile_p
   ios_open
   ios_read_int
   ios_read_uint
+  ios_register_range
   ios_write_int
   ios_write_uint
   ios_search_by_id

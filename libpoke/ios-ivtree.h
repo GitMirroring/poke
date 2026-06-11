@@ -119,7 +119,7 @@ overlaps (NODE_T node, ios_off low, ios_off high)
 
 static void
 ios_ivtree_visit_overlaps (NODE_T node, ios_off low, ios_off high,
-			   NODE_VISITOR_FN fn)
+                           NODE_VISITOR_FN fn)
 {
   if (!node)
     return;
@@ -685,14 +685,14 @@ interval_mknode (ios_off low, ios_off high, NODE_PAYLOAD_PARAMS)
 
 static int
 ios_ivtree_insert (CONTAINER_T container, ios_off low, ios_off high,
-		   NODE_PAYLOAD_PARAMS)
+                   NODE_PAYLOAD_PARAMS)
 {
   NODE_T node = container->root;
   if (!node)
     {
       node = interval_mknode (low, high, NODE_PAYLOAD_ARGS);
       if (!node)
-	return IOS_ENOMEM;
+        return IOS_ENOMEM;
       container->root = node;
       container->count = 1;
       node->color = BLACK;
@@ -702,51 +702,51 @@ ios_ivtree_insert (CONTAINER_T container, ios_off low, ios_off high,
   for (;;)
     {
       if (low < node->low)
-	{
-	  left:
-	  if (node->left)
-	    node = node->left;
-	  else
-	    {
-	      NODE_T new_node = interval_mknode (low, high, NODE_PAYLOAD_ARGS);
-	      if (!new_node)
-		return IOS_ENOMEM;
-	      node->left = new_node;
-	      new_node->parent = node;
-	      /* Color and rebalance. */
-	      rebalance_after_add (container, new_node, node);
-	      container->count++;
-	      return IOS_OK;
-	    }
-	}
+        {
+          left:
+          if (node->left)
+            node = node->left;
+          else
+            {
+              NODE_T new_node = interval_mknode (low, high, NODE_PAYLOAD_ARGS);
+              if (!new_node)
+                return IOS_ENOMEM;
+              node->left = new_node;
+              new_node->parent = node;
+              /* Color and rebalance. */
+              rebalance_after_add (container, new_node, node);
+              container->count++;
+              return IOS_OK;
+            }
+        }
       else if (low == node->low)
-	{
-	  int cmp = container->compar (NODE_PAYLOAD_ACCESS (node), NODE_PAYLOAD_ARGS);
-	  if (cmp < 0)
-	    goto right;
-	  else if (cmp == 0)
-	    return IOS_OK; /* Should not happen; do not add duplicate.  */
-	  else
-	    goto left;
-	}
+        {
+          int cmp = container->compar (NODE_PAYLOAD_ACCESS (node), NODE_PAYLOAD_ARGS);
+          if (cmp < 0)
+            goto right;
+          else if (cmp == 0)
+            return IOS_OK; /* Should not happen; do not add duplicate.  */
+          else
+            goto left;
+        }
       else
-	{
-	  right:
-	  if (node->right)
-	    node = node->right;
-	  else
-	    {
-	      NODE_T new_node = interval_mknode (low, high, NODE_PAYLOAD_ARGS);
-	      if (!new_node)
-		return IOS_ENOMEM;
-	      node->right = new_node;
-	      new_node->parent = node;
-	      /* Color and rebalance.  */
-	      rebalance_after_add (container, new_node, node);
-	      container->count++;
-	      return IOS_OK;
-	    }
-	}
+        {
+          right:
+          if (node->right)
+            node = node->right;
+          else
+            {
+              NODE_T new_node = interval_mknode (low, high, NODE_PAYLOAD_ARGS);
+              if (!new_node)
+                return IOS_ENOMEM;
+              node->right = new_node;
+              new_node->parent = node;
+              /* Color and rebalance.  */
+              rebalance_after_add (container, new_node, node);
+              container->count++;
+              return IOS_OK;
+            }
+        }
     }
 }
 
@@ -890,20 +890,19 @@ ios_ivtree_lookup (CONTAINER_T container, ios_off offs, NODE_PAYLOAD_PARAMS)
   for (NODE_T node = container->root; node != NULL; )
     {
       if (offs < node->low)
-	node = node->left;
+        node = node->left;
       else if (offs == node->low)
-	{
-	  int cmp = container->compar (NODE_PAYLOAD_ACCESS (node), NODE_PAYLOAD_ARGS);
-	  if (cmp < 0)
-	    node = node->right;
-	  else if (cmp == 0)
-	    return node;
-	  else
-	    node = node->left;
-	}
+        {
+          int cmp = container->compar (NODE_PAYLOAD_ACCESS (node), NODE_PAYLOAD_ARGS);
+          if (cmp < 0)
+            node = node->right;
+          else if (cmp == 0)
+            return node;
+          else
+            node = node->left;
+        }
       else
-	node = node->right;
+        node = node->right;
     }
   return NULL;
 }
-

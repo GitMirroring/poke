@@ -641,13 +641,13 @@ typedef struct pvm_off *pvm_off;
         PVM_VAL_SCT_IOS ((V)) = (I);             \
     } while (0)
 
-#define PVM_VAL_SET_IOS_PTR(V,P)		\
-  do						\
-    {						\
-      if (PVM_IS_ARR ((V)))			\
-	PVM_VAL_ARR_IOS_PTR ((V)) = (P);	\
-      else if (PVM_IS_SCT (V))			\
-	PVM_VAL_SCT_IOS_PTR ((V)) = (P);	\
+#define PVM_VAL_SET_IOS_PTR(V,P)                \
+  do                                            \
+    {                                           \
+      if (PVM_IS_ARR ((V)))                     \
+        PVM_VAL_ARR_IOS_PTR ((V)) = (P);        \
+      else if (PVM_IS_SCT (V))                  \
+        PVM_VAL_SCT_IOS_PTR ((V)) = (P);        \
     } while (0)
 
 
@@ -681,34 +681,34 @@ typedef struct pvm_off *pvm_off;
     }                                           \
   while (0)
 
-#define PVM_VAL_DIRTY_P(V)				\
-  (PVM_IS_ARR ((V)) ? PVM_VAL_ARR_DIRTY_P ((V))		\
-   : PVM_IS_SCT ((V)) ? PVM_VAL_SCT_DIRTY_P ((V))	\
+#define PVM_VAL_DIRTY_P(V)                              \
+  (PVM_IS_ARR ((V)) ? PVM_VAL_ARR_DIRTY_P ((V))         \
+   : PVM_IS_SCT ((V)) ? PVM_VAL_SCT_DIRTY_P ((V))       \
    : 0)
 
-#define PVM_VAL_SET_DIRTY_P(V,I)		\
-  do						\
-    {						\
-      if (PVM_IS_ARR ((V)))			\
-	PVM_VAL_ARR_DIRTY_P ((V)) = (I);	\
-      else if (PVM_IS_SCT ((V)))		\
-	PVM_VAL_SCT_DIRTY_P ((V)) = (I);	\
-    }						\
+#define PVM_VAL_SET_DIRTY_P(V,I)                \
+  do                                            \
+    {                                           \
+      if (PVM_IS_ARR ((V)))                     \
+        PVM_VAL_ARR_DIRTY_P ((V)) = (I);        \
+      else if (PVM_IS_SCT ((V)))                \
+        PVM_VAL_SCT_DIRTY_P ((V)) = (I);        \
+    }                                           \
   while (0)
 
 #define PVM_VAL_IOSLIVE_P(V) \
-  (PVM_IS_ARR ((V)) ? PVM_VAL_ARR_IOSLIVE_P ((V))	\
-   : PVM_IS_SCT ((V)) ? PVM_VAL_SCT_DIRTY_P ((V))	\
+  (PVM_IS_ARR ((V)) ? PVM_VAL_ARR_IOSLIVE_P ((V))       \
+   : PVM_IS_SCT ((V)) ? PVM_VAL_SCT_DIRTY_P ((V))       \
    : 0)
 
-#define PVM_VAL_SET_IOSLIVE_P(V,I)		\
-  do						\
-    {						\
-      if (PVM_IS_ARR ((V)))			\
-	PVM_VAL_ARR_IOSLIVE_P ((V)) = (I);	\
-      else if (PVM_IS_SCT ((V)))		\
-	PVM_VAL_SCT_IOSLIVE_P ((V)) = (I);	\
-    }						\
+#define PVM_VAL_SET_IOSLIVE_P(V,I)              \
+  do                                            \
+    {                                           \
+      if (PVM_IS_ARR ((V)))                     \
+        PVM_VAL_ARR_IOSLIVE_P ((V)) = (I);      \
+      else if (PVM_IS_SCT ((V)))                \
+        PVM_VAL_SCT_IOSLIVE_P ((V)) = (I);      \
+    }                                           \
   while (0)
 
 #define PVM_VAL_MAPPER(V)                               \
