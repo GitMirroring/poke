@@ -218,7 +218,7 @@
         msetsel               ; ARRAY
         ;; Set the other map attributes.
         pushvar $ios          ; ARRAY IOS
-        msetios               ; ARRAY
+        cmsetios              ; ARRAY
         pushvar $strict       ; ARRAY STRICT
         msets                 ; ARRAY
         map                   ; ARRAY
@@ -1454,7 +1454,7 @@
         mksct                   ; SCT
         ;; Install the attributes of the mapped object.
         pushvar $ios            ; SCT IOS
-        msetios                 ; SCT
+        cmsetios                ; SCT
         pushvar $strict         ; SCT STRICT
         msets                   ; SCT
         map                     ; SCT

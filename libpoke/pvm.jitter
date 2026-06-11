@@ -5902,8 +5902,12 @@ end
 
 instruction msetios ()
   code
+    ios_context ios_ctx = PVM_STATE_BACKING_FIELD (ios_ctx);
+    ios io = ios_search_by_id (ios_ctx, PVM_VAL_INT (JITTER_TOP_STACK ()));
     PVM_VAL_SET_IOS (JITTER_UNDER_TOP_STACK (),
                      JITTER_TOP_STACK ());
+    if (io)
+      PVM_VAL_SET_IOS_PTR (JITTER_UNDER_TOP_STACK (), io);
     JITTER_DROP_STACK ();
   end
 end
