@@ -421,6 +421,22 @@ NOT_GT [^>]
 "@!"               { return NSMAP; }
 "@"                { return '@'; }
 
+".=="              { return EQF; }
+".!="              { return NEF; }
+".<"               { return LTF; }
+".>"               { return GTF; }
+".<="              { return LEF; }
+".>="              { return GEF; }
+".+"               { return ADDF; }
+".-"               { return SUBF; }
+".**"              { return POWF; }
+".*"               { return MULF; }
+"./^"              { return CEILDIVF; }
+"./"               { return DIVF; }
+".%"               { return MODF; }
+".++"              { return INCF; }
+".--"              { return DECF; }
+
 ({A}({L}|{D})({L}|{D}|({S}({L}|{D})))*)|({A}{LT}{NOT_GT}*{GT}) {
   char *errmsg;
   pkl_alien_token_handler_fn cb = NULL;

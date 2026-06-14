@@ -9413,6 +9413,7 @@ of bits and a rich set of accompanying operators.
 * Arithmetic Operators::	Operating with integers.
 * Bitwise Operators::		Getting and setting integer bits.
 * Boolean Operators::		Equality and inequality.
+* Floating-point Operators::	Treating integers as floating-point numbers.
 * Integer Attributes::		Accessing properties of integer values.
 @end menu
 
@@ -9753,6 +9754,65 @@ The following right-associative unary logical operators are supported:
 @item Logical negation @code{!}.
 @cindex negation
 @end itemize
+
+@node Floating-point Operators
+@subsection Floating-point Operators
+@cindex floating-point
+
+Poke is capable of interpreting @code{uint<32>}/@code{uint<64>} integers
+as single/double-precision floating-point numbers.
+
+@subsubsection Floating-point Arithmetic Operators
+
+The following left-associative binary floating-point arithmetic operators
+are supported in descending precedence order:
+
+@itemize
+@item Exponentiation @code{.**}, multiplication @code{.*},
+division @code{./}, ceil-division @code{./^} and modulus @code{.%}.
+@item Addition @code{.+} and subtraction @code{.-}.
+@end itemize
+
+Unary minus @code{.-} is supported and is a right-associative operator.
+
+Pre-increment, pre-decrement, post-increment and post-decrement
+operators @code{.++} and @code{.--} are also supported.
+
+These operators resolve in unsigned integers of the same size of operands.
+
+Examples:
+
+@example
+(poke) stof ("3.14") .+ stof ("1")
+0x40847ae2U
+(poke) format ("%f32d", stof ("3.14") .+ stof ("1"))
+"4.1400003"
+(poke) stod ("3.14") .+ stod ("1")
+0x40108f5c28f5c290UL
+(poke) format ("%f64d", stod ("3.14") .+ stod ("1"))
+"4.140000000000001"
+@end example
+
+@subsubsection Floating-point Relational Operators
+
+The following binary floating-point relational operators are supported
+in descending precedence order:
+
+@itemize
+@item Equality @code{.==} and inequality @code{.!=}.
+@item Less than @code{.<} and less or equal than @code{.<=}.
+@item Greater than @code{.>} and greater or equal than @code{.>=}.
+@end itemize
+
+These operators resolve in boolean values encoded as 32-bit integers:
+@code{0} meaning false and @code{1} meaning true.
+
+@example
+(poke) stof ("3.14") .> stof ("1")
+1
+(poke) stod ("3.14") .== stod ("1")
+0
+@end example
 
 @node Integer Attributes
 @subsection Integer Attributes
@@ -15702,6 +15762,8 @@ useful conversions.
 * ltos::		converting integers to strings.
 * stof::                converting strings to 32-bit floating-points.
 * stod::                converting strings to 64-bit floating-points.
+* sqrtf::               square-root of 32-bit floating-points.
+* sqrtd::               square-root of 64-bit floating-points.
 @end menu
 
 @node catos
@@ -15862,6 +15924,30 @@ integer.  It has the following prototype:
 
 @example
 fun stod = (string s) uint<64>:
+@end example
+
+@node sqrtf
+@subsection @code{sqrtf}
+@cindex @code{sqrtf}
+
+The @code{sqrtf} standard function calculates square root of the
+given 32-bit floating-point number represented as a @code{uint<32>}
+integer.  It has the following prototype:
+
+@example
+fun sqrtf = (uint<32> u) uint<32>:
+@end example
+
+@node sqrtd
+@subsection @code{sqrtd}
+@cindex @code{sqrtd}
+
+The @code{sqrtd} standard function calculates square root of the
+given 64-bit floating-point number represented as a @code{uint<64>}
+integer.  It has the following prototype:
+
+@example
+fun sqrtd = (uint<64> u) uint<64>:
 @end example
 
 @node Array Functions

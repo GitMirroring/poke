@@ -1,0 +1,4 @@
+/* { dg-do compile } */
+
+var res
+  = 1 .== (5 as int<31>); /* { dg-error "invalid operand .*" } */

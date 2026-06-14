@@ -1,0 +1,14 @@
+/* { dg-do run } */
+
+type F = struct int<64> { uint<1> sign; uint<11> exp; uint<52> frac; };
+
+var a = F {sign=0,exp=0x400,frac=0x921fb54442d18} /* 3.141592653589793 */,
+    b = stod ("-2.71828182845904523");
+
+/* { dg-command { .set obase 10 } } */
+/* { dg-command { a .> b } } */
+/* { dg-output "1\n" } */
+
+/* For constant folding: */
+/* { dg-command { F {sign=0,exp=0x400,frac=0x921fb54442d18} .> stod ("-2.71828182845904523") } } */
+/* { dg-output "1\n" } */

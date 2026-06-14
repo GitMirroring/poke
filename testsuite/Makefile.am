@@ -675,6 +675,18 @@ EXTRA_DIST = \
   poke.pkl/postincr-2.pk \
   poke.pkl/postdecr-1.pk \
   poke.pkl/postdecr-2.pk \
+  poke.pkl/postdecr-f32-1.pk \
+  poke.pkl/postdecr-f32-2.pk \
+  poke.pkl/postdecr-f64-1.pk \
+  poke.pkl/postdecr-f64-2.pk \
+  poke.pkl/postdecr-f64-diag-1.pk \
+  poke.pkl/postdecr-f64-diag-2.pk \
+  poke.pkl/postincr-f32-1.pk \
+  poke.pkl/postincr-f32-2.pk \
+  poke.pkl/postincr-f64-1.pk \
+  poke.pkl/postincr-f64-2.pk \
+  poke.pkl/postincr-f64-diag-1.pk \
+  poke.pkl/postincr-f64-diag-2.pk \
   poke.pkl/postincr-offset-1.pk \
   poke.pkl/postincr-offset-2.pk \
   poke.pkl/postdecr-offset-1.pk \
@@ -753,6 +765,18 @@ EXTRA_DIST = \
   poke.pkl/add-int-struct-2.pk \
   poke.pkl/add-int-struct-3.pk \
   poke.pkl/add-int-struct-4.pk \
+  poke.pkl/add-f32-1.pk \
+  poke.pkl/add-f32-2.pk \
+  poke.pkl/add-f32-3.pk \
+  poke.pkl/add-f32-4.pk \
+  poke.pkl/add-f32-diag-1.pk \
+  poke.pkl/add-f32-diag-2.pk \
+  poke.pkl/add-f64-1.pk \
+  poke.pkl/add-f64-2.pk \
+  poke.pkl/add-f64-3.pk \
+  poke.pkl/add-f64-4.pk \
+  poke.pkl/add-f64-diag-1.pk \
+  poke.pkl/add-f64-diag-2.pk \
   poke.pkl/add-offsets-1.pk \
   poke.pkl/add-offsets-2.pk \
   poke.pkl/add-offsets-3.pk \
@@ -1229,6 +1253,18 @@ EXTRA_DIST = \
   poke.pkl/cdiv-integers-3.pk \
   poke.pkl/cdiv-integers-diag-1.pk \
   poke.pkl/cdiv-integers-diag-2.pk \
+  poke.pkl/cdiv-f32-1.pk \
+  poke.pkl/cdiv-f32-2.pk \
+  poke.pkl/cdiv-f32-3.pk \
+  poke.pkl/cdiv-f32-4.pk \
+  poke.pkl/cdiv-f32-diag-1.pk \
+  poke.pkl/cdiv-f32-diag-2.pk \
+  poke.pkl/cdiv-f64-1.pk \
+  poke.pkl/cdiv-f64-2.pk \
+  poke.pkl/cdiv-f64-3.pk \
+  poke.pkl/cdiv-f64-4.pk \
+  poke.pkl/cdiv-f64-diag-1.pk \
+  poke.pkl/cdiv-f64-diag-2.pk \
   poke.pkl/ioflags-1.pk \
   poke.pkl/ioflags-2.pk \
   poke.pkl/ioflags-3.pk \
@@ -1358,6 +1394,18 @@ EXTRA_DIST = \
   poke.pkl/div-int-struct-1.pk \
   poke.pkl/div-int-struct-2.pk \
   poke.pkl/div-int-struct-3.pk \
+  poke.pkl/div-f32-1.pk \
+  poke.pkl/div-f32-2.pk \
+  poke.pkl/div-f32-3.pk \
+  poke.pkl/div-f32-4.pk \
+  poke.pkl/div-f32-diag-1.pk \
+  poke.pkl/div-f32-diag-2.pk \
+  poke.pkl/div-f64-1.pk \
+  poke.pkl/div-f64-2.pk \
+  poke.pkl/div-f64-3.pk \
+  poke.pkl/div-f64-4.pk \
+  poke.pkl/div-f64-diag-1.pk \
+  poke.pkl/div-f64-diag-2.pk \
   poke.pkl/cdiv-offset-int-1.pk \
   poke.pkl/cdiv-offset-int-2.pk \
   poke.pkl/cdiv-offset-int-3.pk \
@@ -1411,6 +1459,24 @@ EXTRA_DIST = \
   poke.pkl/eq-arrays-diag-2.pk \
   poke.pkl/eq-arrays-diag-3.pk \
   poke.pkl/eq-arrays-diag-4.pk \
+  poke.pkl/eq-f32-1.pk \
+  poke.pkl/eq-f32-2.pk \
+  poke.pkl/eq-f32-3.pk \
+  poke.pkl/eq-f32-4.pk \
+  poke.pkl/eq-f32-5.pk \
+  poke.pkl/eq-f32-6.pk \
+  poke.pkl/eq-f32-7.pk \
+  poke.pkl/eq-f32-diag-1.pk \
+  poke.pkl/eq-f32-diag-2.pk \
+  poke.pkl/eq-f64-1.pk \
+  poke.pkl/eq-f64-2.pk \
+  poke.pkl/eq-f64-3.pk \
+  poke.pkl/eq-f64-4.pk \
+  poke.pkl/eq-f64-5.pk \
+  poke.pkl/eq-f64-6.pk \
+  poke.pkl/eq-f64-7.pk \
+  poke.pkl/eq-f64-diag-1.pk \
+  poke.pkl/eq-f64-diag-2.pk \
   poke.pkl/eq-functions-1.pk \
   poke.pkl/eq-functions-2.pk \
   poke.pkl/eq-functions-diag-1.pk \
@@ -1665,6 +1731,24 @@ EXTRA_DIST = \
   poke.pkl/ge-integers-2.pk \
   poke.pkl/ge-integers-3.pk \
   poke.pkl/ge-integers-4.pk \
+  poke.pkl/ge-f32-1.pk \
+  poke.pkl/ge-f32-2.pk \
+  poke.pkl/ge-f32-3.pk \
+  poke.pkl/ge-f32-4.pk \
+  poke.pkl/ge-f32-5.pk \
+  poke.pkl/ge-f32-6.pk \
+  poke.pkl/ge-f32-7.pk \
+  poke.pkl/ge-f32-diag-1.pk \
+  poke.pkl/ge-f32-diag-2.pk \
+  poke.pkl/ge-f64-1.pk \
+  poke.pkl/ge-f64-2.pk \
+  poke.pkl/ge-f64-3.pk \
+  poke.pkl/ge-f64-4.pk \
+  poke.pkl/ge-f64-5.pk \
+  poke.pkl/ge-f64-6.pk \
+  poke.pkl/ge-f64-7.pk \
+  poke.pkl/ge-f64-diag-1.pk \
+  poke.pkl/ge-f64-diag-2.pk \
   poke.pkl/ge-offsets-1.pk \
   poke.pkl/ge-offsets-2.pk \
   poke.pkl/ge-offsets-3.pk \
@@ -1687,6 +1771,24 @@ EXTRA_DIST = \
   poke.pkl/gt-integers-2.pk \
   poke.pkl/gt-integers-3.pk \
   poke.pkl/gt-integers-diag-1.pk \
+  poke.pkl/gt-f32-1.pk \
+  poke.pkl/gt-f32-2.pk \
+  poke.pkl/gt-f32-3.pk \
+  poke.pkl/gt-f32-4.pk \
+  poke.pkl/gt-f32-5.pk \
+  poke.pkl/gt-f32-6.pk \
+  poke.pkl/gt-f32-7.pk \
+  poke.pkl/gt-f32-diag-1.pk \
+  poke.pkl/gt-f32-diag-2.pk \
+  poke.pkl/gt-f64-1.pk \
+  poke.pkl/gt-f64-2.pk \
+  poke.pkl/gt-f64-3.pk \
+  poke.pkl/gt-f64-4.pk \
+  poke.pkl/gt-f64-5.pk \
+  poke.pkl/gt-f64-6.pk \
+  poke.pkl/gt-f64-7.pk \
+  poke.pkl/gt-f64-diag-1.pk \
+  poke.pkl/gt-f64-diag-2.pk \
   poke.pkl/gt-offsets-1.pk \
   poke.pkl/gt-offsets-2.pk \
   poke.pkl/gt-offsets-3.pk \
@@ -1900,6 +2002,24 @@ EXTRA_DIST = \
   poke.pkl/le-integers-2.pk \
   poke.pkl/le-integers-3.pk \
   poke.pkl/le-integers-4.pk \
+  poke.pkl/le-f32-1.pk \
+  poke.pkl/le-f32-2.pk \
+  poke.pkl/le-f32-3.pk \
+  poke.pkl/le-f32-4.pk \
+  poke.pkl/le-f32-5.pk \
+  poke.pkl/le-f32-6.pk \
+  poke.pkl/le-f32-7.pk \
+  poke.pkl/le-f32-diag-1.pk \
+  poke.pkl/le-f32-diag-2.pk \
+  poke.pkl/le-f64-1.pk \
+  poke.pkl/le-f64-2.pk \
+  poke.pkl/le-f64-3.pk \
+  poke.pkl/le-f64-4.pk \
+  poke.pkl/le-f64-5.pk \
+  poke.pkl/le-f64-6.pk \
+  poke.pkl/le-f64-7.pk \
+  poke.pkl/le-f64-diag-1.pk \
+  poke.pkl/le-f64-diag-2.pk \
   poke.pkl/le-offsets-1.pk \
   poke.pkl/le-offsets-2.pk \
   poke.pkl/le-offsets-3.pk \
@@ -1929,6 +2049,24 @@ EXTRA_DIST = \
   poke.pkl/lt-integers-2.pk \
   poke.pkl/lt-integers-3.pk \
   poke.pkl/lt-integers-4.pk \
+  poke.pkl/lt-f32-1.pk \
+  poke.pkl/lt-f32-2.pk \
+  poke.pkl/lt-f32-3.pk \
+  poke.pkl/lt-f32-4.pk \
+  poke.pkl/lt-f32-5.pk \
+  poke.pkl/lt-f32-6.pk \
+  poke.pkl/lt-f32-7.pk \
+  poke.pkl/lt-f32-diag-1.pk \
+  poke.pkl/lt-f32-diag-2.pk \
+  poke.pkl/lt-f64-1.pk \
+  poke.pkl/lt-f64-2.pk \
+  poke.pkl/lt-f64-3.pk \
+  poke.pkl/lt-f64-4.pk \
+  poke.pkl/lt-f64-5.pk \
+  poke.pkl/lt-f64-6.pk \
+  poke.pkl/lt-f64-7.pk \
+  poke.pkl/lt-f64-diag-1.pk \
+  poke.pkl/lt-f64-diag-2.pk \
   poke.pkl/lt-offsets-1.pk \
   poke.pkl/lt-offsets-2.pk \
   poke.pkl/lt-offsets-3.pk \
@@ -1955,6 +2093,18 @@ EXTRA_DIST = \
   poke.pkl/mod-integers-overflow-2.pk \
   poke.pkl/mod-integers-overflow-diag-1.pk \
   poke.pkl/mod-integers-overflow-diag-2.pk \
+  poke.pkl/mod-f32-1.pk \
+  poke.pkl/mod-f32-2.pk \
+  poke.pkl/mod-f32-3.pk \
+  poke.pkl/mod-f32-4.pk \
+  poke.pkl/mod-f32-diag-1.pk \
+  poke.pkl/mod-f32-diag-2.pk \
+  poke.pkl/mod-f64-1.pk \
+  poke.pkl/mod-f64-2.pk \
+  poke.pkl/mod-f64-3.pk \
+  poke.pkl/mod-f64-4.pk \
+  poke.pkl/mod-f64-diag-1.pk \
+  poke.pkl/mod-f64-diag-2.pk \
   poke.pkl/mod-offsets-1.pk \
   poke.pkl/mod-offsets-2.pk \
   poke.pkl/mod-offsets-3.pk \
@@ -1982,6 +2132,18 @@ EXTRA_DIST = \
   poke.pkl/mul-int-struct-1.pk \
   poke.pkl/mul-int-struct-2.pk \
   poke.pkl/mul-int-struct-3.pk \
+  poke.pkl/mul-f32-1.pk \
+  poke.pkl/mul-f32-2.pk \
+  poke.pkl/mul-f32-3.pk \
+  poke.pkl/mul-f32-4.pk \
+  poke.pkl/mul-f32-diag-1.pk \
+  poke.pkl/mul-f32-diag-2.pk \
+  poke.pkl/mul-f64-1.pk \
+  poke.pkl/mul-f64-2.pk \
+  poke.pkl/mul-f64-3.pk \
+  poke.pkl/mul-f64-4.pk \
+  poke.pkl/mul-f64-diag-1.pk \
+  poke.pkl/mul-f64-diag-2.pk \
   poke.pkl/mul-offsets-1.pk \
   poke.pkl/mul-offsets-2.pk \
   poke.pkl/mul-offsets-3.pk \
@@ -2013,6 +2175,24 @@ EXTRA_DIST = \
   poke.pkl/ne-arrays-10.pk \
   poke.pkl/ne-arrays-diag-1.pk \
   poke.pkl/ne-arrays-diag-2.pk \
+  poke.pkl/ne-f32-1.pk \
+  poke.pkl/ne-f32-2.pk \
+  poke.pkl/ne-f32-3.pk \
+  poke.pkl/ne-f32-4.pk \
+  poke.pkl/ne-f32-5.pk \
+  poke.pkl/ne-f32-6.pk \
+  poke.pkl/ne-f32-7.pk \
+  poke.pkl/ne-f32-diag-1.pk \
+  poke.pkl/ne-f32-diag-2.pk \
+  poke.pkl/ne-f64-1.pk \
+  poke.pkl/ne-f64-2.pk \
+  poke.pkl/ne-f64-3.pk \
+  poke.pkl/ne-f64-4.pk \
+  poke.pkl/ne-f64-5.pk \
+  poke.pkl/ne-f64-6.pk \
+  poke.pkl/ne-f64-7.pk \
+  poke.pkl/ne-f64-diag-1.pk \
+  poke.pkl/ne-f64-diag-2.pk \
   poke.pkl/ne-functions-1.pk \
   poke.pkl/ne-functions-2.pk \
   poke.pkl/ne-structs-1.pk \
@@ -2026,6 +2206,14 @@ EXTRA_DIST = \
   poke.pkl/neg-integers-1.pk \
   poke.pkl/neg-integers-2.pk \
   poke.pkl/neg-int-struct-1.pk \
+  poke.pkl/neg-f32-1.pk \
+  poke.pkl/neg-f32-2.pk \
+  poke.pkl/neg-f32-diag-1.pk \
+  poke.pkl/neg-f64-1.pk \
+  poke.pkl/neg-f64-2.pk \
+  poke.pkl/neg-f64-diag-1.pk \
+  poke.pkl/neg-f64-diag-2.pk \
+  poke.pkl/neg-f64-diag-3.pk \
   poke.pkl/neg-offsets-1.pk \
   poke.pkl/neq-any-array-1.pk \
   poke.pkl/neq-any-array-2.pk \
@@ -2181,6 +2369,18 @@ EXTRA_DIST = \
   poke.pkl/pow-integers-3.pk \
   poke.pkl/pow-integers-overflow-1.pk \
   poke.pkl/pow-integers-overflow-2.pk \
+  poke.pkl/pow-f32-1.pk \
+  poke.pkl/pow-f32-2.pk \
+  poke.pkl/pow-f32-3.pk \
+  poke.pkl/pow-f32-4.pk \
+  poke.pkl/pow-f32-diag-1.pk \
+  poke.pkl/pow-f32-diag-2.pk \
+  poke.pkl/pow-f64-1.pk \
+  poke.pkl/pow-f64-2.pk \
+  poke.pkl/pow-f64-3.pk \
+  poke.pkl/pow-f64-4.pk \
+  poke.pkl/pow-f64-diag-1.pk \
+  poke.pkl/pow-f64-diag-2.pk \
   poke.pkl/pow-offsets-1.pk \
   poke.pkl/pow-offsets-2.pk \
   poke.pkl/pow-offsets-3.pk \
@@ -2194,6 +2394,18 @@ EXTRA_DIST = \
   poke.pkl/predecr-aelem-1.pk \
   poke.pkl/predecr-2.pk \
   poke.pkl/predecr-1.pk \
+  poke.pkl/predecr-f32-1.pk \
+  poke.pkl/predecr-f32-2.pk \
+  poke.pkl/predecr-f64-1.pk \
+  poke.pkl/predecr-f64-2.pk \
+  poke.pkl/predecr-f64-diag-1.pk \
+  poke.pkl/predecr-f64-diag-2.pk \
+  poke.pkl/preincr-f32-1.pk \
+  poke.pkl/preincr-f32-2.pk \
+  poke.pkl/preincr-f64-1.pk \
+  poke.pkl/preincr-f64-2.pk \
+  poke.pkl/preincr-f64-diag-1.pk \
+  poke.pkl/preincr-f64-diag-2.pk \
   poke.pkl/preincr-offset-1.pk \
   poke.pkl/print-any-1.pk \
   poke.pkl/print-any-2.pk \
@@ -2713,6 +2925,18 @@ EXTRA_DIST = \
   poke.pkl/sub-int-struct-1.pk \
   poke.pkl/sub-int-struct-2.pk \
   poke.pkl/sub-int-struct-3.pk \
+  poke.pkl/sub-f32-1.pk \
+  poke.pkl/sub-f32-2.pk \
+  poke.pkl/sub-f32-3.pk \
+  poke.pkl/sub-f32-4.pk \
+  poke.pkl/sub-f32-diag-1.pk \
+  poke.pkl/sub-f32-diag-2.pk \
+  poke.pkl/sub-f64-1.pk \
+  poke.pkl/sub-f64-2.pk \
+  poke.pkl/sub-f64-3.pk \
+  poke.pkl/sub-f64-4.pk \
+  poke.pkl/sub-f64-diag-1.pk \
+  poke.pkl/sub-f64-diag-2.pk \
   poke.pkl/sub-offsets-1.pk \
   poke.pkl/sub-offsets-2.pk \
   poke.pkl/sub-offsets-3.pk \

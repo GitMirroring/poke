@@ -1,0 +1,18 @@
+/* { dg-do run } */
+
+var a = stof ("3.14"),
+    b = stof ("2.71"),
+    c = stof ("0.430000067");
+
+assert (a == 0x4048f5c3);
+assert (b == 0x402d70a4);
+assert (c == 0x3edc28f8);
+
+/* { dg-command { .set obase 10 } } */
+/* { dg-command { (a .- b) == c } } */
+/* { dg-output 1 } */
+
+/* For constant folding: */
+/* { dg-command { .set obase 16 } } */
+/* { dg-command { 0x4048f5c3 .- 0x402d70a4 } } */
+/* { dg-output "\n0x3edc28f8U" } */

@@ -1,0 +1,14 @@
+/* { dg-do run } */
+
+type F = struct int<32> { uint<1> sign; uint<8> exp; uint<23> frac; };
+
+var a = stof ("-2.718280"),
+    b = F {sign=1,exp=0x80,frac=0x2df851} /* -2.718281 */;
+
+/* { dg-command { .set obase 10 } } */
+/* { dg-command { a .< b } } */
+/* { dg-output "0\n" } */
+
+/* For constant folding: */
+/* { dg-command { stof ("-2.718280") .< F {sign=1,exp=0x80,frac=0x2df851} } } */
+/* { dg-output "0\n" } */

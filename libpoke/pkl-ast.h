@@ -1163,10 +1163,14 @@ pkl_ast_node pkl_ast_get_struct_type_method (pkl_ast_node struct_type,
                                              const char *method_name);
 
 /* Return an expression that evaluates to an increment step for the
-   given TYPE.  If the provided type doesn't support the notion of
-   increment step this function returns NULL.  */
+   given TYPE. In case of floating-point operators (non-zero FLOAT_P),
+   it uses IEEE754 representation of 1.0.
 
-pkl_ast_node pkl_ast_type_incr_step (pkl_ast ast, pkl_ast_node type);
+   If the provided type doesn't support the notion of increment step
+   this function returns NULL.  */
+
+pkl_ast_node pkl_ast_type_incr_step (pkl_ast ast, pkl_ast_node type,
+                                     int float_p);
 
 /* PKL_AST_DECL nodes represent the declaration of a named entity:
    function, type, variable....
@@ -1697,6 +1701,7 @@ pkl_ast_node pkl_ast_make_asm_exp (pkl_ast ast, pkl_ast_node type,
 
 #define PKL_AST_INCRDECR_ORDER(AST) ((AST)->incrdecr.order)
 #define PKL_AST_INCRDECR_SIGN(AST) ((AST)->incrdecr.sign)
+#define PKL_AST_INCRDECR_FLOAT_P(AST) ((AST)->incrdecr.float_p)
 #define PKL_AST_INCRDECR_EXP(AST) ((AST)->incrdecr.exp)
 #define PKL_AST_INCRDECR_ASS_STMT(AST) ((AST)->incrdecr.ass_stmt)
 
@@ -1712,12 +1717,14 @@ struct pkl_ast_incrdecr
 
   int order;
   int sign;
+  int float_p;
   union pkl_ast_node *exp;
   union pkl_ast_node *ass_stmt;
 };
 
 pkl_ast_node pkl_ast_make_incrdecr (pkl_ast ast,
-                                    pkl_ast_node exp, int order, int sign);
+                                    pkl_ast_node exp, int order, int sign,
+                                    int float_p);
 
 
 /* PKL_AST_COMP_STMT nodes represent compound statements in the

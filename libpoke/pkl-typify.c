@@ -326,7 +326,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_op_boolean)
 }
 PKL_PHASE_END_HANDLER
 
-/* The type of an unary operation NEG, POS, BNOT is the type of its
+/* The type of an unary operation NEG, POS, is the type of its
    single operand.  They are only valid on certain types.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_neg_pos_bnot)
@@ -1743,6 +1743,162 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_struct_ref)
 }
 PKL_PHASE_END_HANDLER
 
+/* Floating-points */
+
+/* Floating-point negation.  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_op_fneg)
+{
+  pkl_ast_node exp = PKL_PASS_NODE;
+  pkl_ast_node op1 = PKL_AST_EXP_OPERAND (exp, 0);
+  pkl_ast_node op1_type = PKL_AST_TYPE (op1);
+  pkl_ast_node type = NULL;
+
+  /* Handle an integral struct operand.  */
+  if (PKL_AST_TYPE_CODE (op1_type) == PKL_TYPE_STRUCT
+      && PKL_AST_TYPE_S_ITYPE (op1_type))
+    op1_type = PKL_AST_TYPE_S_ITYPE (op1_type);
+
+  if (PKL_AST_TYPE_CODE (op1_type) == PKL_TYPE_INTEGRAL
+      && (PKL_AST_TYPE_I_SIZE (op1_type) == 32
+          || PKL_AST_TYPE_I_SIZE (op1_type) == 64))
+    type = op1_type;
+  else
+    INVALID_OPERAND (op1, "expected integral of width either 32 or 64 bits");
+
+  type = pkl_ast_make_integral_type (PKL_PASS_AST, PKL_AST_TYPE_I_SIZE (type),
+                                     /*signed*/ 0);
+  PKL_AST_TYPE (exp) = ASTREF (type);
+}
+PKL_PHASE_END_HANDLER
+
+/* Floating-point relational operators.
+
+   The type of the relational operations FEQ, FNE, FLT, FGT, FLE and FGE is
+   a boolean encoded as a 32-bit signed integer type.  Their operands
+   should be either both integral types of the same size (either 32/64).  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_op_frela)
+{
+  enum pkl_ast_op exp_code = PKL_AST_EXP_CODE (PKL_PASS_NODE);
+
+  pkl_ast_node op1 = PKL_AST_EXP_OPERAND (PKL_PASS_NODE, 0);
+  pkl_ast_node op1_type = PKL_AST_TYPE (op1);
+  int op1_type_code = PKL_AST_TYPE_CODE (op1_type);
+
+  pkl_ast_node op2 = PKL_AST_EXP_OPERAND (PKL_PASS_NODE, 1);
+  pkl_ast_node op2_type = PKL_AST_TYPE (op2);
+  int op2_type_code = PKL_AST_TYPE_CODE (op2_type);
+
+  pkl_ast_node exp_type;
+
+  /* Handle an integral struct operand.  */
+  if (PKL_AST_TYPE_CODE (op1_type) == PKL_TYPE_STRUCT
+      && PKL_AST_TYPE_S_ITYPE (op1_type))
+    op1_type = PKL_AST_TYPE_S_ITYPE (op1_type);
+  if (PKL_AST_TYPE_CODE (op2_type) == PKL_TYPE_STRUCT
+      && PKL_AST_TYPE_S_ITYPE (op2_type))
+    op2_type = PKL_AST_TYPE_S_ITYPE (op2_type);
+
+  if (PKL_AST_TYPE_CODE (op1_type) == PKL_TYPE_INTEGRAL
+      && (PKL_AST_TYPE_I_SIZE (op1_type) == 32
+          || PKL_AST_TYPE_I_SIZE (op1_type) == 64))
+    ;
+  else
+    INVALID_OPERAND (op1, "expected integral of width either 32 or 64 bits");
+
+  if (PKL_AST_TYPE_CODE (op2_type) == PKL_TYPE_INTEGRAL
+      && (PKL_AST_TYPE_I_SIZE (op2_type) == 32
+          || PKL_AST_TYPE_I_SIZE (op2_type) == 64))
+    ;
+  else
+    INVALID_OPERAND (op2, "expected integral of width either 32 or 64 bits");
+
+  if (PKL_AST_TYPE_I_SIZE (op1_type) != PKL_AST_TYPE_I_SIZE (op2_type))
+    {
+      PKL_ERROR (PKL_AST_LOC (PKL_PASS_NODE),
+                 "mismatch between the width of LHS and RHS\n"
+                 "they should be both of width 32 or 64");
+      PKL_PASS_ERROR;
+    }
+
+  /* Set the type of the expression node.  */
+  exp_type = pkl_ast_make_integral_type (PKL_PASS_AST, 32, 1);
+  PKL_AST_TYPE (PKL_PASS_NODE) = ASTREF (exp_type);
+}
+PKL_PHASE_END_HANDLER
+
+/* Floating-point binary operators.
+
+     {,u}int<32> OP {,u}int<32>
+     {,u}int<64> OP {,u}int<64>  */
+
+PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_fbin)
+{
+  pkl_ast_node exp = PKL_PASS_NODE;
+  pkl_ast_node op1 = PKL_AST_EXP_OPERAND (exp, 0);
+  pkl_ast_node op2 = PKL_AST_EXP_OPERAND (exp, 1);
+  pkl_ast_node op1_type = PKL_AST_TYPE (op1);
+  pkl_ast_node op2_type = PKL_AST_TYPE (op2);
+
+  int op1_type_code;
+  int op2_type_code;
+
+  pkl_ast_node type;
+
+  /* Integral structs are integers for binary operators.  */
+  if (PKL_AST_TYPE_CODE (op1_type) == PKL_TYPE_STRUCT
+      && PKL_AST_TYPE_S_ITYPE (op1_type))
+    op1_type = PKL_AST_TYPE_S_ITYPE (op1_type);
+
+  if (PKL_AST_TYPE_CODE (op2_type) == PKL_TYPE_STRUCT
+      && PKL_AST_TYPE_S_ITYPE (op2_type))
+    op2_type = PKL_AST_TYPE_S_ITYPE (op2_type);
+
+  op1_type_code = PKL_AST_TYPE_CODE (op1_type);
+  op2_type_code = PKL_AST_TYPE_CODE (op2_type);
+
+  if (op1_type_code != PKL_TYPE_INTEGRAL)
+    INVALID_OPERAND (op1, "expected integral");
+  if (op2_type_code != PKL_TYPE_INTEGRAL)
+    INVALID_OPERAND (op2, "expected integral");
+
+  switch (PKL_AST_TYPE_I_SIZE (op1_type))
+    {
+    case 32:
+    case 64:
+      break;
+
+    default:
+      INVALID_OPERAND (op1,
+                       "the width of LHS operand should be either 32 or 64");
+    }
+
+  switch (PKL_AST_TYPE_I_SIZE (op2_type))
+    {
+    case 32:
+    case 64:
+      break;
+
+    default:
+      INVALID_OPERAND (op2,
+                       "the width of RHS operand should be either 32 or 64");
+    }
+
+  if (PKL_AST_TYPE_I_SIZE (op1_type) != PKL_AST_TYPE_I_SIZE (op2_type))
+    {
+      PKL_ERROR (PKL_AST_LOC (exp),
+                 "mismatch between the width of LHS and RHS\n"
+                 "they should be both of width 32 or 64");
+      PKL_PASS_ERROR;
+    }
+
+  type = pkl_ast_make_integral_type (
+      PKL_PASS_AST, PKL_AST_TYPE_I_SIZE (op1_type), /*signed_p*/ 0);
+  PKL_AST_TYPE (exp) = ASTREF (type);
+}
+PKL_PHASE_END_HANDLER
+
 /* The bit width in integral types should be between 1 and 64, unless
    the size is dynamic.  Note that the width is a constant integer as
    per the parser for non-dynamic types.  */
@@ -2290,7 +2446,10 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_var)
 PKL_PHASE_END_HANDLER
 
 /* The type of an incrdecr expression is the type of the expression it
-   applies to.  Not all types support this operations though.  */
+   applies to.  Not all types support this operations though.
+
+   In case of floating-point operation, we only accept expressions
+   of type {,u}int<{32,64}>.  */
 
 PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_incrdecr)
 {
@@ -2299,6 +2458,31 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_incrdecr)
   pkl_ast_node incrdecr_exp_type = PKL_AST_TYPE (incrdecr_exp);
   int incrdecr_order = PKL_AST_INCRDECR_ORDER (incrdecr);
   int incrdecr_sign = PKL_AST_INCRDECR_SIGN (incrdecr);
+
+  /* In case we're incrementing/decrementing a floating-point number.  */
+  if (PKL_AST_INCRDECR_FLOAT_P (incrdecr))
+    {
+      if (!(PKL_AST_TYPE_CODE (incrdecr_exp_type) == PKL_TYPE_INTEGRAL
+            && (PKL_AST_TYPE_I_SIZE (incrdecr_exp_type) == 32
+                || PKL_AST_TYPE_I_SIZE (incrdecr_exp_type) == 64)))
+        {
+          char *type_str = pkl_type_str (incrdecr_exp_type, 1);
+
+          PKL_ERROR (PKL_AST_LOC (incrdecr_exp),
+                     "invalid operand to floating-point %s%s\n"
+                     "expected integral of width either 32 or 64, got %s",
+                     incrdecr_order == PKL_AST_ORDER_PRE ? "pre" : "post",
+                     incrdecr_sign == PKL_AST_SIGN_INCR ? "increment"
+                                                        : "decrement",
+                     type_str);
+          free (type_str);
+          PKL_PASS_ERROR;
+        }
+
+      /* The type of the construction is the type of the expression.  */
+      PKL_AST_TYPE (incrdecr) = ASTREF (incrdecr_exp_type);
+      PKL_PASS_DONE;
+    }
 
   /* Only values of certain types can be decremented/incremented.  */
   switch (PKL_AST_TYPE_CODE (incrdecr_exp_type))
@@ -2314,7 +2498,8 @@ PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_incrdecr)
                    "invalid operand to %s%s\n"
                    "expected integral or offset, got %s",
                    incrdecr_order == PKL_AST_ORDER_PRE ? "pre" : "post",
-                   incrdecr_sign == PKL_AST_SIGN_INCR ? "increment" : "decrement",
+                   incrdecr_sign == PKL_AST_SIGN_INCR ? "increment"
+                                                      : "decrement",
                    type_str);
         free (type_str);
         PKL_PASS_ERROR;
@@ -3445,6 +3630,21 @@ struct pkl_phase pkl_phase_typify1 =
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_EXCOND, pkl_typify1_ps_op_excond),
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_APUSH, pkl_typify1_ps_op_apush),
    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_APOP, pkl_typify1_ps_op_apop),
+
+   PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_NEGF, pkl_typify1_ps_op_fneg),
+   PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_EQF, pkl_typify1_ps_op_frela),
+   PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_NEF, pkl_typify1_ps_op_frela),
+   PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_LTF, pkl_typify1_ps_op_frela),
+   PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_GTF, pkl_typify1_ps_op_frela),
+   PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_LEF, pkl_typify1_ps_op_frela),
+   PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_GEF, pkl_typify1_ps_op_frela),
+   PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_ADDF, pkl_typify1_ps_fbin),
+   PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_SUBF, pkl_typify1_ps_fbin),
+   PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_MULF, pkl_typify1_ps_fbin),
+   PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_POWF, pkl_typify1_ps_fbin),
+   PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_DIVF, pkl_typify1_ps_fbin),
+   PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_CEILDIVF, pkl_typify1_ps_fbin),
+   PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_MODF, pkl_typify1_ps_fbin),
 
    PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_INTEGRAL, pkl_typify1_ps_type_integral),
    PKL_PHASE_PS_TYPE_HANDLER (PKL_TYPE_ARRAY, pkl_typify1_ps_type_array),

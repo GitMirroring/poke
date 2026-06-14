@@ -517,6 +517,22 @@ load_module (struct pkl_parser *parser,
 %token UNSIGNED         _("keyword `unsigned'")
 %token THREEDOTS        _("varargs indicator")
 
+%token EQF              _("floating-point equality operator")
+%token NEF              _("floating-point inequality operator")
+%token LTF              _("floating-point less-than operator")
+%token GTF              _("floating-point greater-than operator")
+%token LEF              _("floating-point less-or-equal operator")
+%token GEF              _("floating-point greater-than-or-equal operator")
+%token ADDF             _("floating-point addition operator")
+%token SUBF             _("floating-point subtraction operator")
+%token POWF             _("floating-point power operator")
+%token MULF             _("floating-point multiplication operator")
+%token DIVF             _("floating-point division operator")
+%token CEILDIVF         _("floating-point ceiling division operator")
+%token MODF             _("floating-point modulus operator")
+%token INCF             _("floating-point increment operator")
+%token DECF             _("floating-point decrement operator")
+
 %token <ast> ARRSUF     _("array suffix")
 
 /* This is for the dangling ELSE.  */
@@ -534,15 +550,15 @@ load_module (struct pkl_parser *parser,
 %left '|'
 %left '^'
 %left '&'
-%left EQ NE EXCOND
-%left LE GE '<' '>'
+%left EQ NE EXCOND EQF NEF
+%left LE GE '<' '>' LEF GEF LTF GTF
 %left SL SR
-%left '+' '-'
-%left '*' '/' CEILDIV '%'
-%left POW
+%left '+' '-' ADDF SUBF
+%left '*' '/' CEILDIV '%' MULF DIVF CEILDIVF MODF
+%left POW POWF
 %left BCONC
 %right '@' NSMAP
-%nonassoc UNIT INC DEC
+%nonassoc UNIT INC DEC INCF DECF
 %right AS ISA
 %right UNARY
 %left HYPERUNARY
@@ -859,6 +875,48 @@ expression:
                                                 $1, $3);
                   PKL_AST_LOC ($$) = @$;
                 }
+        | expression ADDF expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast, PKL_AST_OP_ADDF,
+                                                $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression SUBF expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast, PKL_AST_OP_SUBF,
+                                                $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression MULF expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast, PKL_AST_OP_MULF,
+                                                $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression DIVF expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast, PKL_AST_OP_DIVF,
+                                                $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression CEILDIVF expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast,
+                                                PKL_AST_OP_CEILDIVF, $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression POWF expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast,
+                                                PKL_AST_OP_POWF, $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression MODF expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast,
+                                                PKL_AST_OP_MODF, $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
         | expression SL expression
                 {
                   $$ = pkl_ast_make_binary_exp (pkl_parser->ast, PKL_AST_OP_SL,
@@ -904,6 +962,42 @@ expression:
         | expression GE expression
                 {
                   $$ = pkl_ast_make_binary_exp (pkl_parser->ast, PKL_AST_OP_GE,
+                                                $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression EQF expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast, PKL_AST_OP_EQF,
+                                                $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression NEF expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast, PKL_AST_OP_NEF,
+                                                $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression LTF expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast, PKL_AST_OP_LTF,
+                                                $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression GTF expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast, PKL_AST_OP_GTF,
+                                                $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression LEF expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast, PKL_AST_OP_LEF,
+                                                $1, $3);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression GEF expression
+                {
+                  $$ = pkl_ast_make_binary_exp (pkl_parser->ast, PKL_AST_OP_GEF,
                                                 $1, $3);
                   PKL_AST_LOC ($$) = @$;
                 }
@@ -1015,13 +1109,29 @@ expression:
         | INC expression
                 {
                   $$ = pkl_ast_make_incrdecr (pkl_parser->ast, $2,
-                                              PKL_AST_ORDER_PRE, PKL_AST_SIGN_INCR);
+                                              PKL_AST_ORDER_PRE, PKL_AST_SIGN_INCR,
+                                              /*float_p*/ 0);
                   PKL_AST_LOC ($$) = @$;
                 }
         | DEC expression
                 {
                   $$ = pkl_ast_make_incrdecr (pkl_parser->ast, $2,
-                                              PKL_AST_ORDER_PRE, PKL_AST_SIGN_DECR);
+                                              PKL_AST_ORDER_PRE, PKL_AST_SIGN_DECR,
+                                              /*float_p*/ 0);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | INCF expression
+                {
+                  $$ = pkl_ast_make_incrdecr (pkl_parser->ast, $2,
+                                              PKL_AST_ORDER_PRE, PKL_AST_SIGN_INCR,
+                                              /*float_p*/ 1);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | DECF expression
+                {
+                  $$ = pkl_ast_make_incrdecr (pkl_parser->ast, $2,
+                                              PKL_AST_ORDER_PRE, PKL_AST_SIGN_DECR,
+                                              /*float_p*/ 1);
                   PKL_AST_LOC ($$) = @$;
                 }
         | bconc
@@ -1064,6 +1174,7 @@ unary_operator:
         | '!'                { $$ = PKL_AST_OP_NOT; }
         | UNMAP              { $$ = PKL_AST_OP_UNMAP; }
         | REMAP              { $$ = PKL_AST_OP_REMAP; }
+        | SUBF               { $$ = PKL_AST_OP_NEGF; }
         ;
 
 primary:
@@ -1215,13 +1326,29 @@ primary:
         | expression INC
                 {
                   $$ = pkl_ast_make_incrdecr (pkl_parser->ast, $1,
-                                              PKL_AST_ORDER_POST, PKL_AST_SIGN_INCR);
+                                              PKL_AST_ORDER_POST, PKL_AST_SIGN_INCR,
+                                              /*float_p*/ 0);
                   PKL_AST_LOC ($$) = @$;
                 }
         | expression DEC
                 {
                   $$ = pkl_ast_make_incrdecr (pkl_parser->ast, $1,
-                                              PKL_AST_ORDER_POST, PKL_AST_SIGN_DECR);
+                                              PKL_AST_ORDER_POST, PKL_AST_SIGN_DECR,
+                                              /*float_p*/ 0);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression INCF
+                {
+                  $$ = pkl_ast_make_incrdecr (pkl_parser->ast, $1,
+                                              PKL_AST_ORDER_POST, PKL_AST_SIGN_INCR,
+                                              /*float_p*/ 1);
+                  PKL_AST_LOC ($$) = @$;
+                }
+        | expression DECF
+                {
+                  $$ = pkl_ast_make_incrdecr (pkl_parser->ast, $1,
+                                              PKL_AST_ORDER_POST, PKL_AST_SIGN_DECR,
+                                              /*float_p*/ 1);
                   PKL_AST_LOC ($$) = @$;
                 }
         | TYPEOF '(' expression ')' %prec HYPERUNARY

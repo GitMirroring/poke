@@ -1,0 +1,4 @@
+/* { dg-do compile } */
+
+var res
+  = 1L .!= (9 as uint<33>); /* { dg-error "invalid operand .*" } */

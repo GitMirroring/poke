@@ -552,6 +552,31 @@ var tests = [
         assert (stod ("+ 3") ?! E_conv);
       }
   },
+  PkTest {
+    name = "square root of floating-points",
+    func = lambda (string name) void:
+      {
+        {
+          var four = stof ("4"),
+              two = stof ("2"),
+              sqrt_four = sqrtf (four);
+
+          assert (four isa uint<32>);
+          assert (two isa uint<32>);
+          assert (sqrt_four == two);
+        }
+
+        {
+          var four = stod ("4"),
+              two = stod ("2"),
+              sqrt_four = sqrtd (four);
+
+          assert (four isa uint<64>);
+          assert (two isa uint<64>);
+          assert (sqrt_four == two);
+        }
+      }
+  },
 ];
 
 exit (pktest_run (tests) ? 0 : 1);

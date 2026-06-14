@@ -1,0 +1,5 @@
+/* { dg-do compile } */
+
+var a = 0 as uint<48>;
+
+var b = (.++a); /* { dg-error "invalid operand.*" } */

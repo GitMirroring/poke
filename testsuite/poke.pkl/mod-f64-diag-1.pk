@@ -1,0 +1,4 @@
+/* { dg-do compile } */
+
+var res
+  = (11 as uint<63>) .% 1L; /* { dg-error "invalid operand .*" } */

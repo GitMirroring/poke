@@ -1,0 +1,10 @@
+/* { dg-do run } */
+
+var a = 0x40490e56, // 3.141500
+    mm_a = 0x40090e56; // 2.141500
+
+/* { dg-command {.set obase 16} } */
+/* { dg-command {(.--a)} } */
+/* { dg-output "0x40090e56" } */
+/* { dg-command {a} } */
+/* { dg-output "\n0x40090e56" } */

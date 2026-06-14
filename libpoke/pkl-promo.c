@@ -755,6 +755,46 @@ PKL_PHASE_BEGIN_HANDLER (pkl_promo_ps_op_rela)
 }
 PKL_PHASE_END_HANDLER
 
+PKL_PHASE_BEGIN_HANDLER (pkl_promo_ps_op_frela)
+{
+  pkl_ast_node exp = PKL_PASS_NODE;
+  pkl_ast_node op1 = PKL_AST_EXP_OPERAND (exp, 0);
+  pkl_ast_node op2 = PKL_AST_EXP_OPERAND (exp, 1);
+  pkl_ast_node op1_type = PKL_AST_TYPE (op1);
+  pkl_ast_node op2_type = PKL_AST_TYPE (op2);
+  int size;
+  int restart1, restart2;
+
+  /* Handle integral struct operands.  */
+  if (PKL_AST_TYPE_CODE (op1_type) == PKL_TYPE_STRUCT
+      && PKL_AST_TYPE_S_ITYPE (op1_type))
+    op1_type = PKL_AST_TYPE_S_ITYPE (op1_type);
+  if (PKL_AST_TYPE_CODE (op2_type) == PKL_TYPE_STRUCT
+      && PKL_AST_TYPE_S_ITYPE (op2_type))
+    op2_type = PKL_AST_TYPE_S_ITYPE (op2_type);
+
+  assert (PKL_AST_TYPE_CODE (op1_type) == PKL_TYPE_INTEGRAL);
+  assert (PKL_AST_TYPE_CODE (op2_type) == PKL_TYPE_INTEGRAL);
+
+  size = PKL_AST_TYPE_I_SIZE (op1_type);
+  if (!promote_integral (PKL_PASS_AST, size, /*signed_p*/ 0,
+                         &PKL_AST_EXP_OPERAND (exp, 0), &restart1))
+    goto error;
+  if (!promote_integral (PKL_PASS_AST, size, /*signed_p*/ 0,
+                         &PKL_AST_EXP_OPERAND (exp, 1), &restart2))
+    goto error;
+
+  PKL_PASS_RESTART = restart1 || restart2;
+  PKL_PASS_DONE;
+
+ error:
+  PKL_ICE (PKL_AST_LOC (exp),
+           "couldn't promote operands of expression #%" PRIu64,
+           PKL_AST_UID (exp));
+  PKL_PASS_ERROR;
+}
+PKL_PHASE_END_HANDLER
+
 /* The bit shift operations, and also exponentiation, are defined on
    the following configurations of operand and result types:
 
@@ -1916,6 +1956,20 @@ struct pkl_phase pkl_phase_promo =
     PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_IN, pkl_promo_ps_op_in),
     PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_ATTR, pkl_promo_ps_op_attr),
     PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_APUSH, pkl_promo_ps_op_apush),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_EQF, pkl_promo_ps_op_frela),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_NEF, pkl_promo_ps_op_frela),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_LTF, pkl_promo_ps_op_frela),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_GTF, pkl_promo_ps_op_frela),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_LEF, pkl_promo_ps_op_frela),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_GEF, pkl_promo_ps_op_frela),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_NEGF, pkl_promo_ps_op_unary),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_ADDF, pkl_promo_ps_op_binary),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_SUBF, pkl_promo_ps_op_binary),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_MULF, pkl_promo_ps_op_binary),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_POWF, pkl_promo_ps_op_binary),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_DIVF, pkl_promo_ps_op_binary),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_CEILDIVF, pkl_promo_ps_op_binary),
+    PKL_PHASE_PS_OP_HANDLER (PKL_AST_OP_MODF, pkl_promo_ps_op_binary),
     PKL_PHASE_PS_HANDLER (PKL_AST_FUNC_ARG, pkl_promo_ps_func_arg),
     PKL_PHASE_PS_HANDLER (PKL_AST_MAP, pkl_promo_ps_map),
     PKL_PHASE_PS_HANDLER (PKL_AST_INDEXER, pkl_promo_ps_indexer),

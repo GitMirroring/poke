@@ -922,6 +922,22 @@ fun stod = (string s) uint<64>:
   };
 }
 
+/* Square root of 32-bit floating-point number represented as
+   `uint<32>'.  */
+
+fun sqrtf = (uint<32> f32) uint<32>:
+{
+  return asm uint<32>: ("sqrtf32; nip" : f32);
+}
+
+/* Square root of 64-bit floating-point number represented as
+   `uint<64>'.  */
+
+fun sqrtd = (uint<64> f64) uint<64>:
+{
+  return asm uint<64>: ("sqrtf64; nip" : f64);
+}
+
 /* Count one bits in an integer or magnitude of an offset.  */
 
 fun popcount = (any v) int<32>:

@@ -2097,7 +2097,7 @@ pkl_ast_make_var (pkl_ast ast, pkl_ast_node name,
 
 pkl_ast_node
 pkl_ast_make_incrdecr (pkl_ast ast,
-                       pkl_ast_node exp, int order, int sign)
+                       pkl_ast_node exp, int order, int sign, int float_p)
 {
   pkl_ast_node incrdecr = pkl_ast_make_node (ast,
                                              PKL_AST_INCRDECR);
@@ -2109,6 +2109,7 @@ pkl_ast_make_incrdecr (pkl_ast ast,
   PKL_AST_INCRDECR_EXP (incrdecr) = ASTREF (exp);
   PKL_AST_INCRDECR_ORDER (incrdecr) = order;
   PKL_AST_INCRDECR_SIGN (incrdecr) = sign;
+  PKL_AST_INCRDECR_FLOAT_P (incrdecr) = !!float_p;
 
   return incrdecr;
 }
@@ -3021,11 +3022,25 @@ pkl_ast_get_struct_type_method (pkl_ast_node struct_type,
 }
 
 pkl_ast_node
-pkl_ast_type_incr_step (pkl_ast ast, pkl_ast_node type)
+pkl_ast_type_incr_step (pkl_ast ast, pkl_ast_node type, int float_p)
 {
   pkl_ast_node step = NULL;
 
   assert (PKL_AST_CODE (type) == PKL_AST_TYPE);
+
+  if (float_p)
+    {
+      assert (PKL_AST_TYPE_CODE (type) == PKL_TYPE_INTEGRAL);
+
+      /* We need to use the IEEE754 representation of 1.0 for 32-bit and 64-bit
+         numbers.  */
+      step = pkl_ast_make_integer (ast, PKL_AST_TYPE_I_SIZE (type) == 32
+                                            ? 0x3f800000
+                                            : 0x3ff0000000000000);
+      PKL_AST_TYPE (step) = ASTREF (type);
+
+      return step;
+    }
 
   switch (PKL_AST_TYPE_CODE (type))
     {
@@ -3704,6 +3719,7 @@ pkl_ast_format_1 (struct string_buffer *buffer,
       PRINT_COMMON_FIELDS;
       PRINT_AST_IMM (order, INCRDECR_ORDER, "%d");
       PRINT_AST_IMM (sign, INCRDECR_SIGN, "%d");
+      PRINT_AST_IMM (float_p, INCRDECR_FLOAT_P, "%d");
       PRINT_AST_SUBAST (exp, INCRDECR_EXP);
       break;
 

@@ -1,0 +1,4 @@
+/* { dg-do compile } */
+
+var res
+  = 1L .+ 7U; /* { dg-error "mismatch between the width of LHS and RHS.*" } */
