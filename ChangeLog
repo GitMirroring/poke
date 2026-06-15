@@ -1,3 +1,8 @@
+2026-06-16  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* testsuite/poke.pkl/pow-f32-2.pk: Remove NaN.
+	* testsuite/poke.pkl/pow-f32-4.pk: Likewise.
+
 2026-06-15  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* bootstrap.conf (gnulib_modules): Add `{ceil{,f},fmod{,f}}-ieee'

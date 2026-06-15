@@ -1,12 +1,12 @@
 /* { dg-do run } */
 
-var a = stof ("-3.14"),
-    b = stof ("2.71"),
-    c = stof ("-nan");
+var a = stof ("2.71"),
+    b = stof ("-3.14"),
+    c = stof ("0.043699488");
 
-assert (a == 0xc048f5c3U);
-assert (b == 0x402d70a4);
-assert (c == 0xffc00000U);
+assert (a == 0x402d70a4);
+assert (b == 0xc048f5c3U);
+assert (c == 0x3d32fe3c);
 
 /* { dg-command { .set obase 10 } } */
 /* { dg-command { (a .** b) == c } } */
@@ -14,5 +14,5 @@ assert (c == 0xffc00000U);
 
 /* For constant folding: */
 /* { dg-command { .set obase 16 } } */
-/* { dg-command { 0xc048f5c3U .** 0x402d70a4 } } */
-/* { dg-output "\n0xffc00000U" } */
+/* { dg-command { 0x402d70a4 .** 0xc048f5c3U } } */
+/* { dg-output "\n0x3d32fe3cU" } */
