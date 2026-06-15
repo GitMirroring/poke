@@ -1,3 +1,350 @@
+2026-06-15  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* bootstrap.conf (gnulib_modules): Add `{ceil{,f},fmod{,f}}-ieee'
+	* libpoke/pkl-lex.l: Recognize tokens for floating-point operators.
+	* libpoke/pkl-ops.def: Add new floating-point operators.
+	* libpoke/pkl-ast.h (struct pkl_ast_incrdecr): Add new field `float_p'.
+	(PKL_AST_INCRDECR_FLOAT_P): New macro.
+	(pkl_ast_make_incrdecr): Add new param `float_p'.
+	(pkl_ast_type_incr_step): Likewise.
+	* libpoke/pkl-ast.c (pkl_ast_make_incrdecr): Likewise.
+	(pkl_ast_type_incr_step): Likewise.
+	* libpoke/pkl-ast.c (pkl_ast_format_1): Handle `float_p' field.
+	* libpoke/pkl-tab.y: Add new tokens for floating-point operators with
+	new associativity.
+	(expression): Add new rules.
+	(primary): Likewise.
+	* libpoke/pkl-trans.c (pkl_trans2_ps_incrdecr): Handle floating-point.
+	* libpoke/pkl-typify.c (pkl_typify1_ps_op_fneg): Handle unary negation
+	for floating-points.
+	(pkl_typify1_ps_fbin): Handle binary floating-point operators.
+	(pkl_typify1_ps_incrdecr): Handle floating-points.
+	(pkl_phase_typify1): Likewise.
+	(pkl_typify1_ps_op_frela): Handle floating-point relational operators.
+	* libpoke/pkl-promo.c (pkl_promo_ps_op_frela): Likewise.
+	(pkl_phase_promo): Likewise.
+	* libpoke/pkl-insn.def: Add new instructions for floating-point
+	operations.
+	(addf32): New instruction.
+	(subf32): Likewise.
+	(mulf32): Likewise.
+	(divf32): Likewise.
+	(cdivf32): Likewise.
+	(modf32): Likewise.
+	(powf32): Likewise.
+	(negf32): Likewise.
+	(sqrtf32): Likewise.
+	(ltf32): Likewise.
+	(lef32): Likewise.
+	(gtf32): Likewise.
+	(gef32): Likewise.
+	(eqf32): Likewise.
+	(nef32): Likewise.
+	(addf64): Likewise.
+	(subf64): Likewise.
+	(mulf64): Likewise.
+	(divf64): Likewise.
+	(cdivf64): Likewise.
+	(modf64): Likewise.
+	(powf64): Likewise.
+	(negf64): Likewise.
+	(sqrtf64): Likewise.
+	(ltf64): Likewise.
+	(lef64): Likewise.
+	(gtf64): Likewise.
+	(gef64): Likewise.
+	(eqf64): Likewise.
+	(nef64): Likewise.
+	(addf): New macro instructions.
+	(subf): Likewise.
+	(mulf): Likewise.
+	(divf): Likewise.
+	(cdivf): Likewise.
+	(modf): Likewise.
+	(powf): Likewise.
+	(negf): Likewise.
+	(sqrtf): Likewise.
+	(ltf): Likewise.
+	(lef): Likewise.
+	(gtf): Likewise.
+	(gef): Likewise.
+	(eqf): Likewise.
+	(nef): Likewise.
+	* libpoke/pvm.jitter (wrapped-functions): Add `pow{,f}`, `sqrt{,f}',
+	`fmod{,f}', `ceil{,f}'.
+	(early-c): Include `math.h'.
+	(late-header-c): New macros: `PVM_FP_BINOP', `PVM_FP_DYOP',
+	`PVM_FP_MOOP', `PVM_FP_CMP', `NOROUND', `NEGATION'.
+	(addf32): New instruction.
+	(subf32): Likewise.
+	(mulf32): Likewise.
+	(divf32): Likewise.
+	(cdivf32): Likewise.
+	(modf32): Likewise.
+	(powf32): Likewise.
+	(negf32): Likewise.
+	(sqrtf32): Likewise.
+	(ltf32): Likewise.
+	(lef32): Likewise.
+	(gtf32): Likewise.
+	(gef32): Likewise.
+	(eqf32): Likewise.
+	(nef32): Likewise.
+	(addf64): Likewise.
+	(subf64): Likewise.
+	(mulf64): Likewise.
+	(divf64): Likewise.
+	(cdivf64): Likewise.
+	(modf64): Likewise.
+	(powf64): Likewise.
+	(negf64): Likewise.
+	(sqrtf64): Likewise.
+	(ltf64): Likewise.
+	(lef64): Likewise.
+	(gtf64): Likewise.
+	(gef64): Likewise.
+	(eqf64): Likewise.
+	(nef64): Likewise.
+	* libpoke/pkl-asm.c (pkl_asm_insn_fbinop): New function.
+	(pkl_asm_insn_fcmp): Likewise.
+	(pkl_asm_insn): Handle floating-point arithmetic and relational
+	operations.
+	and `powf' modules.
+	* libpoke/pkl-gen.c (pkl_gen_ps_op_binexp): Handle `PKL_AST_OP_FNEG'.
+	(pkl_gen_ps_op_fbin): Generate code for floating-point binary
+	operators.
+	(pkl_gen_ps_op_frela): Generate code for floating-point relational
+	operators.
+	(pkl_phase_gen): Handle floating-point operators.
+	* libpoke/std.pk (sqrtf): New function.
+	(sqrtd): Likewise.
+	* testsuite/poke.std/std-test.pk: Add new tests for `sqrt{f,d}'.
+	* testsuite/poke.pkl/add-f32-1.pk: New test.
+	* testsuite/poke.pkl/add-f32-2.pk: Likewise.
+	* testsuite/poke.pkl/add-f32-3.pk: Likewise.
+	* testsuite/poke.pkl/add-f32-4.pk: Likewise.
+	* testsuite/poke.pkl/add-f32-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/add-f32-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/add-f64-1.pk: Likewise.
+	* testsuite/poke.pkl/add-f64-2.pk: Likewise.
+	* testsuite/poke.pkl/add-f64-3.pk: Likewise.
+	* testsuite/poke.pkl/add-f64-4.pk: Likewise.
+	* testsuite/poke.pkl/add-f64-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/add-f64-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/cdiv-f32-1.pk: Likewise.
+	* testsuite/poke.pkl/cdiv-f32-2.pk: Likewise.
+	* testsuite/poke.pkl/cdiv-f32-3.pk: Likewise.
+	* testsuite/poke.pkl/cdiv-f32-4.pk: Likewise.
+	* testsuite/poke.pkl/cdiv-f32-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/cdiv-f32-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/cdiv-f64-1.pk: Likewise.
+	* testsuite/poke.pkl/cdiv-f64-2.pk: Likewise.
+	* testsuite/poke.pkl/cdiv-f64-3.pk: Likewise.
+	* testsuite/poke.pkl/cdiv-f64-4.pk: Likewise.
+	* testsuite/poke.pkl/cdiv-f64-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/cdiv-f64-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/div-f32-1.pk: Likewise.
+	* testsuite/poke.pkl/div-f32-2.pk: Likewise.
+	* testsuite/poke.pkl/div-f32-3.pk: Likewise.
+	* testsuite/poke.pkl/div-f32-4.pk: Likewise.
+	* testsuite/poke.pkl/div-f32-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/div-f32-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/div-f64-1.pk: Likewise.
+	* testsuite/poke.pkl/div-f64-2.pk: Likewise.
+	* testsuite/poke.pkl/div-f64-3.pk: Likewise.
+	* testsuite/poke.pkl/div-f64-4.pk: Likewise.
+	* testsuite/poke.pkl/div-f64-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/div-f64-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/eq-f32-1.pk: Likewise.
+	* testsuite/poke.pkl/eq-f32-2.pk: Likewise.
+	* testsuite/poke.pkl/eq-f32-3.pk: Likewise.
+	* testsuite/poke.pkl/eq-f32-4.pk: Likewise.
+	* testsuite/poke.pkl/eq-f32-5.pk: Likewise.
+	* testsuite/poke.pkl/eq-f32-6.pk: Likewise.
+	* testsuite/poke.pkl/eq-f32-7.pk: Likewise.
+	* testsuite/poke.pkl/eq-f32-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/eq-f32-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/eq-f64-1.pk: Likewise.
+	* testsuite/poke.pkl/eq-f64-2.pk: Likewise.
+	* testsuite/poke.pkl/eq-f64-3.pk: Likewise.
+	* testsuite/poke.pkl/eq-f64-4.pk: Likewise.
+	* testsuite/poke.pkl/eq-f64-5.pk: Likewise.
+	* testsuite/poke.pkl/eq-f64-6.pk: Likewise.
+	* testsuite/poke.pkl/eq-f64-7.pk: Likewise.
+	* testsuite/poke.pkl/eq-f64-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/eq-f64-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/ge-f32-1.pk: Likewise.
+	* testsuite/poke.pkl/ge-f32-2.pk: Likewise.
+	* testsuite/poke.pkl/ge-f32-3.pk: Likewise.
+	* testsuite/poke.pkl/ge-f32-4.pk: Likewise.
+	* testsuite/poke.pkl/ge-f32-5.pk: Likewise.
+	* testsuite/poke.pkl/ge-f32-6.pk: Likewise.
+	* testsuite/poke.pkl/ge-f32-7.pk: Likewise.
+	* testsuite/poke.pkl/ge-f32-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/ge-f32-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/ge-f64-1.pk: Likewise.
+	* testsuite/poke.pkl/ge-f64-2.pk: Likewise.
+	* testsuite/poke.pkl/ge-f64-3.pk: Likewise.
+	* testsuite/poke.pkl/ge-f64-4.pk: Likewise.
+	* testsuite/poke.pkl/ge-f64-5.pk: Likewise.
+	* testsuite/poke.pkl/ge-f64-6.pk: Likewise.
+	* testsuite/poke.pkl/ge-f64-7.pk: Likewise.
+	* testsuite/poke.pkl/ge-f64-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/ge-f64-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/gt-f32-1.pk: Likewise.
+	* testsuite/poke.pkl/gt-f32-2.pk: Likewise.
+	* testsuite/poke.pkl/gt-f32-3.pk: Likewise.
+	* testsuite/poke.pkl/gt-f32-4.pk: Likewise.
+	* testsuite/poke.pkl/gt-f32-5.pk: Likewise.
+	* testsuite/poke.pkl/gt-f32-6.pk: Likewise.
+	* testsuite/poke.pkl/gt-f32-7.pk: Likewise.
+	* testsuite/poke.pkl/gt-f32-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/gt-f32-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/gt-f64-1.pk: Likewise.
+	* testsuite/poke.pkl/gt-f64-2.pk: Likewise.
+	* testsuite/poke.pkl/gt-f64-3.pk: Likewise.
+	* testsuite/poke.pkl/gt-f64-4.pk: Likewise.
+	* testsuite/poke.pkl/gt-f64-5.pk: Likewise.
+	* testsuite/poke.pkl/gt-f64-6.pk: Likewise.
+	* testsuite/poke.pkl/gt-f64-7.pk: Likewise.
+	* testsuite/poke.pkl/gt-f64-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/gt-f64-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/le-f32-1.pk: Likewise.
+	* testsuite/poke.pkl/le-f32-2.pk: Likewise.
+	* testsuite/poke.pkl/le-f32-3.pk: Likewise.
+	* testsuite/poke.pkl/le-f32-4.pk: Likewise.
+	* testsuite/poke.pkl/le-f32-5.pk: Likewise.
+	* testsuite/poke.pkl/le-f32-6.pk: Likewise.
+	* testsuite/poke.pkl/le-f32-7.pk: Likewise.
+	* testsuite/poke.pkl/le-f32-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/le-f32-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/le-f64-1.pk: Likewise.
+	* testsuite/poke.pkl/le-f64-2.pk: Likewise.
+	* testsuite/poke.pkl/le-f64-3.pk: Likewise.
+	* testsuite/poke.pkl/le-f64-4.pk: Likewise.
+	* testsuite/poke.pkl/le-f64-5.pk: Likewise.
+	* testsuite/poke.pkl/le-f64-6.pk: Likewise.
+	* testsuite/poke.pkl/le-f64-7.pk: Likewise.
+	* testsuite/poke.pkl/le-f64-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/le-f64-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/lt-f32-1.pk: Likewise.
+	* testsuite/poke.pkl/lt-f32-2.pk: Likewise.
+	* testsuite/poke.pkl/lt-f32-3.pk: Likewise.
+	* testsuite/poke.pkl/lt-f32-4.pk: Likewise.
+	* testsuite/poke.pkl/lt-f32-5.pk: Likewise.
+	* testsuite/poke.pkl/lt-f32-6.pk: Likewise.
+	* testsuite/poke.pkl/lt-f32-7.pk: Likewise.
+	* testsuite/poke.pkl/lt-f32-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/lt-f32-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/lt-f64-1.pk: Likewise.
+	* testsuite/poke.pkl/lt-f64-2.pk: Likewise.
+	* testsuite/poke.pkl/lt-f64-3.pk: Likewise.
+	* testsuite/poke.pkl/lt-f64-4.pk: Likewise.
+	* testsuite/poke.pkl/lt-f64-5.pk: Likewise.
+	* testsuite/poke.pkl/lt-f64-6.pk: Likewise.
+	* testsuite/poke.pkl/lt-f64-7.pk: Likewise.
+	* testsuite/poke.pkl/lt-f64-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/lt-f64-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/mod-f32-1.pk: Likewise.
+	* testsuite/poke.pkl/mod-f32-2.pk: Likewise.
+	* testsuite/poke.pkl/mod-f32-3.pk: Likewise.
+	* testsuite/poke.pkl/mod-f32-4.pk: Likewise.
+	* testsuite/poke.pkl/mod-f32-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/mod-f32-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/mod-f64-1.pk: Likewise.
+	* testsuite/poke.pkl/mod-f64-2.pk: Likewise.
+	* testsuite/poke.pkl/mod-f64-3.pk: Likewise.
+	* testsuite/poke.pkl/mod-f64-4.pk: Likewise.
+	* testsuite/poke.pkl/mod-f64-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/mod-f64-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/mul-f32-1.pk: Likewise.
+	* testsuite/poke.pkl/mul-f32-2.pk: Likewise.
+	* testsuite/poke.pkl/mul-f32-3.pk: Likewise.
+	* testsuite/poke.pkl/mul-f32-4.pk: Likewise.
+	* testsuite/poke.pkl/mul-f32-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/mul-f32-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/mul-f64-1.pk: Likewise.
+	* testsuite/poke.pkl/mul-f64-2.pk: Likewise.
+	* testsuite/poke.pkl/mul-f64-3.pk: Likewise.
+	* testsuite/poke.pkl/mul-f64-4.pk: Likewise.
+	* testsuite/poke.pkl/mul-f64-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/mul-f64-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/ne-f32-1.pk: Likewise.
+	* testsuite/poke.pkl/ne-f32-2.pk: Likewise.
+	* testsuite/poke.pkl/ne-f32-3.pk: Likewise.
+	* testsuite/poke.pkl/ne-f32-4.pk: Likewise.
+	* testsuite/poke.pkl/ne-f32-5.pk: Likewise.
+	* testsuite/poke.pkl/ne-f32-6.pk: Likewise.
+	* testsuite/poke.pkl/ne-f32-7.pk: Likewise.
+	* testsuite/poke.pkl/ne-f32-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/ne-f32-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/ne-f64-1.pk: Likewise.
+	* testsuite/poke.pkl/ne-f64-2.pk: Likewise.
+	* testsuite/poke.pkl/ne-f64-3.pk: Likewise.
+	* testsuite/poke.pkl/ne-f64-4.pk: Likewise.
+	* testsuite/poke.pkl/ne-f64-5.pk: Likewise.
+	* testsuite/poke.pkl/ne-f64-6.pk: Likewise.
+	* testsuite/poke.pkl/ne-f64-7.pk: Likewise.
+	* testsuite/poke.pkl/ne-f64-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/ne-f64-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/neg-f32-1.pk: Likewise.
+	* testsuite/poke.pkl/neg-f32-2.pk: Likewise.
+	* testsuite/poke.pkl/neg-f32-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/neg-f64-1.pk: Likewise.
+	* testsuite/poke.pkl/neg-f64-2.pk: Likewise.
+	* testsuite/poke.pkl/neg-f64-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/neg-f64-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/neg-f64-diag-3.pk: Likewise.
+	* testsuite/poke.pkl/postdecr-f32-1.pk: Likewise.
+	* testsuite/poke.pkl/postdecr-f32-2.pk: Likewise.
+	* testsuite/poke.pkl/postdecr-f64-1.pk: Likewise.
+	* testsuite/poke.pkl/postdecr-f64-2.pk: Likewise.
+	* testsuite/poke.pkl/postdecr-f64-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/postdecr-f64-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/postincr-f32-1.pk: Likewise.
+	* testsuite/poke.pkl/postincr-f32-2.pk: Likewise.
+	* testsuite/poke.pkl/postincr-f64-1.pk: Likewise.
+	* testsuite/poke.pkl/postincr-f64-2.pk: Likewise.
+	* testsuite/poke.pkl/postincr-f64-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/postincr-f64-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/pow-f32-1.pk: Likewise.
+	* testsuite/poke.pkl/pow-f32-2.pk: Likewise.
+	* testsuite/poke.pkl/pow-f32-3.pk: Likewise.
+	* testsuite/poke.pkl/pow-f32-4.pk: Likewise.
+	* testsuite/poke.pkl/pow-f32-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/pow-f32-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/pow-f64-1.pk: Likewise.
+	* testsuite/poke.pkl/pow-f64-2.pk: Likewise.
+	* testsuite/poke.pkl/pow-f64-3.pk: Likewise.
+	* testsuite/poke.pkl/pow-f64-4.pk: Likewise.
+	* testsuite/poke.pkl/pow-f64-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/pow-f64-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/predecr-f32-1.pk: Likewise.
+	* testsuite/poke.pkl/predecr-f32-2.pk: Likewise.
+	* testsuite/poke.pkl/predecr-f64-1.pk: Likewise.
+	* testsuite/poke.pkl/predecr-f64-2.pk: Likewise.
+	* testsuite/poke.pkl/predecr-f64-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/predecr-f64-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/preincr-f32-1.pk: Likewise.
+	* testsuite/poke.pkl/preincr-f32-2.pk: Likewise.
+	* testsuite/poke.pkl/preincr-f64-1.pk: Likewise.
+	* testsuite/poke.pkl/preincr-f64-2.pk: Likewise.
+	* testsuite/poke.pkl/preincr-f64-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/preincr-f64-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/sub-f32-1.pk: Likewise.
+	* testsuite/poke.pkl/sub-f32-2.pk: Likewise.
+	* testsuite/poke.pkl/sub-f32-3.pk: Likewise.
+	* testsuite/poke.pkl/sub-f32-4.pk: Likewise.
+	* testsuite/poke.pkl/sub-f32-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/sub-f32-diag-2.pk: Likewise.
+	* testsuite/poke.pkl/sub-f64-1.pk: Likewise.
+	* testsuite/poke.pkl/sub-f64-2.pk: Likewise.
+	* testsuite/poke.pkl/sub-f64-3.pk: Likewise.
+	* testsuite/poke.pkl/sub-f64-4.pk: Likewise.
+	* testsuite/poke.pkl/sub-f64-diag-1.pk: Likewise.
+	* testsuite/poke.pkl/sub-f64-diag-2.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
 2026-06-11  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pvm.jitter (wrapped-functions): Add new functions.
