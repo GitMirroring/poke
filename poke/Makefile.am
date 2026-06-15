@@ -64,8 +64,8 @@ poke_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl \
                 -DPKGINFODIR=\"$(infodir)\" \
                 -DLOCALEDIR=\"$(localedir)\"
 poke_CFLAGS = -Wall
-poke_LDADD = $(top_builddir)/gl/libgnu.la \
-             $(top_builddir)/libpoke/libpoke.la \
+poke_LDADD = $(top_builddir)/libpoke/libpoke.la \
+             $(top_builddir)/gl/libgnu.la \
              $(LTLIBREADLINE) \
              $(LTLIBTEXTSTYLE) \
              $(LTLIBTERMINFO)

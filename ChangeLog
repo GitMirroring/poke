@@ -1,5 +1,10 @@
 2026-06-16  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* poke/Makefile.am (poke_LDADD): Re-order `libgnu.la' and
+	`libpoke.la' to have `-lm' after `libpoke'.
+
+2026-06-16  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* testsuite/poke.pkl/pow-f32-2.pk: Remove NaN.
 	* testsuite/poke.pkl/pow-f32-4.pk: Likewise.
 
