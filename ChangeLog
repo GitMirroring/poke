@@ -1,3 +1,12 @@
+2026-06-17  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pvm.h (pvm_ceilf): Wrapper for `ceilf'.
+	(pvm_ceil): Wrapper for `ceil'.
+	* libpoke/pvm.h (pvm_ceilf): New function.
+	(pvm_ceil): Likewise.
+	* libpoke/pvm.jitter (wrapped-functions): Remove `ceilf/ceil', and
+	add `pvm_ceilf/pvm_ceil'.
+
 2026-06-16  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* poke/Makefile.am (poke_LDADD): Re-order `libgnu.la' and

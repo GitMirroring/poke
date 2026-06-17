@@ -827,4 +827,9 @@ int pvm_stof (const char *str, float *flt) __attribute__ ((nonnull));
    leading whitespace(s) will be ignored.  */
 int pvm_stod (const char *str, double *dbl) __attribute__ ((nonnull));
 
+/* Wrapper for ceilf/ceil functions.  */
+
+float pvm_ceilf (float f);
+double pvm_ceil (double d);
+
 #endif /* ! PVM_H */

@@ -163,8 +163,8 @@ wrapped-functions
   sqrt
   fmodf
   fmod
-  ceilf
-  ceil
+  pvm_ceilf
+  pvm_ceil
 end
 
 wrapped-globals
@@ -3740,7 +3740,7 @@ end
 
 instruction cdivf32 ()
   code
-    PVM_FP_BINOP (float, uint32_t, UINT, 32, /, ceilf);
+    PVM_FP_BINOP (float, uint32_t, UINT, 32, /, pvm_ceilf);
   end
 end
 
@@ -3948,7 +3948,7 @@ end
 
 instruction cdivf64 ()
   code
-    PVM_FP_BINOP (double, uint64_t, ULONG, 64, /, ceil);
+    PVM_FP_BINOP (double, uint64_t, ULONG, 64, /, pvm_ceil);
   end
 end
 

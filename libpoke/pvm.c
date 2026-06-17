@@ -25,6 +25,7 @@
 #include <errno.h> /* For errno.  */
 #include <c-strtod.h> /* for c_strtof and c_strtod.  */
 #include <assert.h>
+#include <math.h>
 
 #include "pkl.h"
 #include "pkl-asm.h"
@@ -477,4 +478,16 @@ int pvm_stod (const char *str, double *d)
   *d = c_strtod (str, &end);
   /* No ERANGE and it should do a conversion and consume the whole string.  */
   return errno != 0 || end == str || *end != '\0';
+}
+
+float
+pvm_ceilf (float f)
+{
+  return ceilf (f);
+}
+
+double
+pvm_ceil (double d)
+{
+  return ceil (d);
 }
