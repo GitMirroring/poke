@@ -2,17 +2,17 @@
 
 var a = stof ("2.71"),
     b = stof ("-3.14"),
-    c = stof ("0.043699488");
+    c = stof ("0.043699488") & ~7 /* Ignore 3 least-significant bits */;
 
 assert (a == 0x402d70a4);
 assert (b == 0xc048f5c3U);
-assert (c == 0x3d32fe3c);
+assert (c == (0x3d32fe3c & ~7));
 
 /* { dg-command { .set obase 10 } } */
-/* { dg-command { (a .** b) == c } } */
+/* { dg-command { ((a .** b) & ~7) == c } } */
 /* { dg-output 1 } */
 
 /* For constant folding: */
 /* { dg-command { .set obase 16 } } */
-/* { dg-command { 0x402d70a4 .** 0xc048f5c3U } } */
-/* { dg-output "\n0x3d32fe3cU" } */
+/* { dg-command { (0x402d70a4 .** 0xc048f5c3U) & ~7 } } */
+/* { dg-output "\n0x3d32fe38U" } */

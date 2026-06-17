@@ -1,5 +1,13 @@
 2026-06-17  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* testsuite/poke.pkl/pow-f32-1.pk: Mask 3-LSB of results to prevent
+	failure on OpenBSD (7.9).
+	* testsuite/poke.pkl/pow-f32-2.pk: Likewise.
+	* testsuite/poke.pkl/pow-f32-3.pk: Likewise.
+	* testsuite/poke.pkl/pow-f32-4.pk: Likewise.
+
+2026-06-17  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pvm.h (pvm_ceilf): Wrapper for `ceilf'.
 	(pvm_ceil): Wrapper for `ceil'.
 	* libpoke/pvm.h (pvm_ceilf): New function.
