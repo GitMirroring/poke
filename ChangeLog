@@ -1,3 +1,11 @@
+2026-07-09  David Faust  <david.faust@oracle.com>
+
+	* libpoke/ios-ivtree.h (interval_mknode, ios_ivtree_destory)
+	(ios_ivtree_destroy_sub): Use non-GC memory for the tree.
+	* libpoke/ios-range.c (ios_rangetbl_create): Do not register the table
+	as GC root.
+	(ios_rangetbl_destroy): Do not de-register the table as GC root.
+
 2026-06-17  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* testsuite/poke.pkl/pow-f32-1.pk: Mask 3-LSB of results to prevent

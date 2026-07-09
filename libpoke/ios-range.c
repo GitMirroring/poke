@@ -24,9 +24,6 @@
 #include "pvm-val.h"
 #include "ios-range.h"
 
-#define GC_THREADS
-#include <gc/gc.h>
-
 #include <stdio.h>
 #include <assert.h>
 
@@ -112,10 +109,6 @@ ios_rangetbl_create (void)
   if (!tbl)
     return NULL;
 
-  /* Nodes of the table are stored in GC memory; register the
-     table container as GC root.  */
-  GC_add_roots (tbl, tbl + sizeof (struct ios_rangetbl));
-
   tbl->root = NULL;
   tbl->count = 0;
   tbl->compar = ivtree_payload_compar;
@@ -129,11 +122,7 @@ ios_rangetbl_destroy (struct ios_rangetbl *tbl)
   assert (tbl);
 
   /* Free all nodes in the tree including the root.  */
-  /* Note: With the tree in GC memory, this isn't really necessary
-     to do. TBD whether it's worth manually freeing or leave to GC.  */
   ios_ivtree_destroy (tbl);
-
-  GC_remove_roots (tbl, tbl + sizeof (struct ios_rangetbl));
   free (tbl);
 }
 
