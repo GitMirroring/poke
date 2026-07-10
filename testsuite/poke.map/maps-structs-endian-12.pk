@@ -1,0 +1,36 @@
+/* { dg-do run } */
+
+type Foo =
+  struct
+  {
+    struct
+    {
+      little struct
+      {
+        big int<16> a = 0x1020;
+        int<16> b = 0x3040;
+      } s3;
+
+      int<16> c = 0x5060;
+    } s2;
+    int<16> d = 0x7080;
+  };
+
+/* { dg-command {.mem foo} } */
+/* { dg-command {.set obase 16 } } */
+/* { dg-command {.set endian little} } */
+/* { dg-command {Foo @ 0#B = Foo {}} } */
+/* { dg-command {var t = Foo @ 0#B} } */
+/* { dg-command { t.d } } */
+/* { dg-output  "0x7080H\n" } */
+/* { dg-command { t.s2.c } } */
+/* { dg-output  "0x5060H\n" } */
+/* { dg-command { t.s2.s3.a } } */
+/* { dg-output  "0x1020H\n" } */
+/* { dg-command {.set endian big} }*/
+/* { dg-command { t.d } } */
+/* { dg-output  "0x8070H\n" } */
+/* { dg-command { t.s2.c } } */
+/* { dg-output  "0x6050H\n" } */
+/* { dg-command { t.s2.s3.a } } */
+/* { dg-output  "0x1020H\n" } */
