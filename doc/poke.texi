@@ -935,12 +935,21 @@ case.
 
 Gnome Terminal doesn't use @command{xdg-open} to start the
 applications. Instead, it parses the @file{mimeapps.list} file
-manually to find the right application.
+to find the right application.
 
-Edit your @file{mimeapps.list}, it is usually located at
-@file{$HOME/.local/share/applications/mimeapps.list}, but it might
-also be at @file{$XDG_CONFIG_DIR/mimeapps.list}, and add the following
-line to it:
+There are two options here: either use @code{gio} to register the
+MIME handler, or manually edit your @file{mimeapps.list}.
+
+Using @code{gio}:
+
+@example
+gio mime x-scheme-handler/app app-client.desktop
+@end example
+
+Or edit your @file{mimeapps.list}, it is usually located at
+@file{$XDG_CONFIG_DIR/mimeapps.list}, but it might
+also be at @file{$HOME/.local/share/applications/mimeapps.list},
+and add the following line to it:
 
 @example
 x-scheme-handler/app=app-client.desktop
@@ -3793,7 +3802,7 @@ pixel occupies 3 bytes, so calculating@dots{}
 @example
 (poke) var ppl = byte @@ 3#B
 (poke) var lines = byte @@ 4#B
-(poke) save :from 0#B :size 5#B + ppl#B * lines :file "p.sbm"
+(poke) save :from 0#B :size 5#B + ppl#B * lines * 3 :file "p.sbm"
 @end example
 
 @noindent
@@ -3819,7 +3828,7 @@ size of the pixels in the image:
 
 @example
 (poke) image_data'size
-720UL#b
+840UL#b
 @end example
 
 @noindent
@@ -4314,11 +4323,11 @@ And then update the lines in the mapped image data:
 
 @example
 (poke) image_data[0] = l0[1:4]
-(poke) image_data[0] = l1[1:4]
-(poke) image_data[1] = l2[1:4]
-(poke) image_data[2] = l3[1:4]
-(poke) image_data[3] = l4[1:4]
-(poke) image_data[4] = l5[1:4]
+(poke) image_data[1] = l1[1:4]
+(poke) image_data[2] = l2[1:4]
+(poke) image_data[3] = l3[1:4]
+(poke) image_data[4] = l4[1:4]
+(poke) image_data[5] = l5[1:4]
 @end example
 
 @subsection Updating the Header

@@ -1,3 +1,10 @@
+2026-07-19  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* doc/poke.texi (subsection GNOME Terminal): Add example for use
+	of `gio'.
+	(subsection Saving the Image): Fix typo.
+	(subsection Shortening and Shifting Lines): Likewise.
+
 2026-07-10  David Faust  <david.faust@oracle.com>
 
 	* libpoke/pvm.jitter (popend): Check whether the new endianness is
