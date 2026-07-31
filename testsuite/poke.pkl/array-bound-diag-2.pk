@@ -1,0 +1,12 @@
+/* { dg-do run } */
+
+var ppl   = 5;
+var lines = 7;
+var data  = uint<8>[3][ppl][lines] ();
+var l0  = data[0];
+
+assert (data[0]'length == 5);
+assert (l0[1:4]'length == 3);
+
+/* { dg-command { data[0] = l0[1:4] } } */
+/* { dg-output "unhandled conversion error exception.*expected array with 5 element.s., got with 3 element.s." } */

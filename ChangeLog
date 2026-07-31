@@ -1,3 +1,13 @@
+2026-07-31  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	BZ 34404
+	* libpoke/pkl-asm.pks (macro array_conv_sel): Build a more expressive
+	message field for `E_conv' exception.
+	(macro array_conv_siz): Likewise.
+	* testsuite/poke.pkl/array-bound-diag-2.pk: New test.
+	* testsuite/poke.pkl/array-siz-diag-4.pk: Likewise.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
 2026-07-19  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* doc/poke.texi (subsection GNOME Terminal): Add example for use

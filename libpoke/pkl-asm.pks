@@ -571,7 +571,34 @@
         call                    ; ARR SEL BOUND
         eqlu                    ; ARR SEL BOUND (SEL==BOUND)
         bnzi .bound_ok
-        push PVM_E_CONV
+        drop                    ; ARR SEL BOUND
+        ;; Now we have to build `msg' field of Exception.  Unfortunately,
+        ;; we cannot delegate this task to a function in `pkl-rt.pk', as
+        ;; runtime itself is relying on this macro.
+        ;; Final string will be:
+        ;;   "expected array with BOUND element(s), got with SEL element(s)"
+        push "expected array with "
+                                ; ARR SEL BOUND STR
+        nrot                    ; ARR STR SEL BOUND
+        push int<32>10          ; ARR STR SEL BOUND 10
+        formatlu 64             ; ARR STR SEL BOUND_STR
+        push " element(s), got with "
+        sconc
+        nip2                    ; ARR STR SEL BOUND_STR'
+        swap                    ; ARR STR BOUND_STR' SEL
+        push int<32>10          ; ARR STR BOUND_STR' SEL 10
+        formatlu 64             ; ARR STR BOUND_STR' SEL_STR
+        push " element(s)"
+        sconc
+        nip2                    ; ARR STR BOUND_STR' SEL_STR'
+        sconc
+        nip2                    ; ARR STR SEL_STR'+BOUND_STR'
+        sconc
+        nip2                    ; ARR STR+SEL_STR'+BOUND_STR'
+        push PVM_E_CONV         ; ARR STR+SEL_STR'+BOUND_STR' EXC
+        push "msg"              ; ARR STR+SEL_STR'+BOUND_STR' EXC "msg"
+        rot                     ; ARR EXC "msg" STR+SEL_STR'+BOUND_STR'
+        sset                    ; ARR EXC
         raise
 .bound_ok:
         drop3                   ; ARR
@@ -600,11 +627,39 @@
         .e ogetmn               ; ARR SIZ BOUND BOUNDM
         rot                     ; ARR BOUND BOUNDM SIZ
         eqlu                    ; ARR BOUND BOUNDM SIZ (BOUNDM==SIZ)
-        nip2                    ; ARR BOUND (BOUNDM==SIZ)
         bnzi .bound_ok
-        push PVM_E_CONV
+        drop                    ; ARR BOUND BOUNDM SIZ
+        swap                    ; ARR BOUND SIZ BOUNDM
+        ;; Now we have to build `msg' field of Exception.  Unfortunately,
+        ;; we cannot delegate this task to a function in `pkl-rt.pk', as
+        ;; runtime itself is relying on this macro.
+        ;; Final string will be:
+        ;;   "expected array with size BOUNDM bit(s), got with size SIZ bit(s)"
+        push "expected array with size "
+                                ; ARR BOUND SIZ BOUNDM STR
+        nrot                    ; ARR BOUND STR SIZ BOUNDM
+        push int<32>10          ; ARR BOUND STR SIZ BOUNDM 10
+        formatlu 64             ; ARR BOUND STR SIZ BOUNDM_STR
+        push " bit(s), got with size "
+        sconc
+        nip2                    ; ARR BOUND STR SIZ BOUNDM_STR'
+        swap                    ; ARR BOUND STR BOUNDM_STR' SIZ
+        push int<32>10          ; ARR BOUND STR BOUNDM_STR' SIZ 10
+        formatlu 64             ; ARR BOUND STR BOUNDM_STR' SIZ_STR
+        push " bit(s)"
+        sconc
+        nip2                    ; ARR BOUND STR BOUNDM_STR' SIZ_STR'
+        sconc
+        nip2                    ; ARR BOUND STR SIZ_STR'+BOUNDM_STR'
+        sconc
+        nip2                    ; ARR BOUND STR+SIZ_STR'+BOUNDM_STR'
+        push PVM_E_CONV         ; ARR BOUND STR+SIZ_STR'+BOUNDM_STR' EXC
+        push "msg"              ; ARR BOUND STR+SIZ_STR'+BOUNDM_STR' EXC "msg"
+        rot                     ; ARR BOUND EXC "msg" STR+SIZ_STR'+BOUNDM_STR'
+        sset                    ; ARR BOUND EXC
         raise
 .bound_ok:
+        drop2                   ; ARR BOUND BOUNDM
         drop2                   ; ARR
         typof                   ; ARR TYP
         push #bounder           ; ARR TYP BOUNDER
