@@ -30,7 +30,7 @@
         ogetu                   ; OGETM OFF OGETU
         rot                     ; OFF OGETU OGETM
         mullu
-        nip2                    ; OFF (OGETU*OGETM
+        nip2                    ; OFF (OGETU*OGETM)
         .end
 
 ;;; RAS_MACRO_AREMAP
