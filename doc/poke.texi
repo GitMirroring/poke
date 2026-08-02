@@ -4318,18 +4318,6 @@ of pixels for our cropped image:
 (poke) var l5 = image_data[5]
 @end example
 
-@noindent
-And then update the lines in the mapped image data:
-
-@example
-(poke) image_data[0] = l0[1:4]
-(poke) image_data[1] = l1[1:4]
-(poke) image_data[2] = l2[1:4]
-(poke) image_data[3] = l3[1:4]
-(poke) image_data[4] = l4[1:4]
-(poke) image_data[5] = l5[1:4]
-@end example
-
 @subsection Updating the Header
 
 The last step is to update the header to reflect the new dimensions of
