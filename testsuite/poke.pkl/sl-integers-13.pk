@@ -1,0 +1,12 @@
+/* { dg-do run } */
+
+var x = 1L;
+
+/* { dg-command { .set obase 16 } } */
+
+/* { dg-command { x <<. 63 } } */
+/* { dg-output "0x8000000000000000L" } */
+
+/* For constant folding:  */
+/* { dg-command { 1L <<. 63 } } */
+/* { dg-output "\n0x8000000000000000L" } */

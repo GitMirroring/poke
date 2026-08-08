@@ -343,14 +343,17 @@ late-header-c
 
 /* Binary numeric operations.
   ( TYPE TYPE -- TYPE TYPE TYPE ) */
-# define PVM_BINOP(TYPEA,TYPEB,TYPER,OP)                                     \
-   do                                                                        \
-    {                                                                        \
-      int size = PVM_VAL_##TYPER##_SIZE (JITTER_UNDER_TOP_STACK ());       \
-      pvm_val res = PVM_MAKE_##TYPER (PVM_VAL_##TYPEA (JITTER_UNDER_TOP_STACK ()) \
-                                      OP PVM_VAL_##TYPEB (JITTER_TOP_STACK ()), size); \
-      JITTER_PUSH_STACK (res);                                               \
-    } while (0)
+# define PVM_BINOP(TYPEA,TYPEB,TYPER,OP,TYPECAST)                             \
+  do                                                                          \
+    {                                                                         \
+      int size = PVM_VAL_##TYPER##_SIZE (JITTER_UNDER_TOP_STACK ());          \
+      pvm_val res = PVM_MAKE_##TYPER (                                        \
+          (TYPECAST)PVM_VAL_##TYPEA (JITTER_UNDER_TOP_STACK ())               \
+              OP PVM_VAL_##TYPEB (JITTER_TOP_STACK ()),                       \
+          size);                                                              \
+      JITTER_PUSH_STACK (res);                                                \
+    }                                                                         \
+  while (0)
 
 /* Unsigned exponentiation.  */
 
@@ -3236,7 +3239,7 @@ end
 
 instruction addi ()
   code
-    PVM_BINOP (INT, INT, INT, +);
+    PVM_BINOP (INT, INT, INT, +, int32_t);
   end
 end
 
@@ -3249,7 +3252,7 @@ end
 
 instruction addiu ()
   code
-    PVM_BINOP (UINT, UINT, UINT, +);
+    PVM_BINOP (UINT, UINT, UINT, +, uint32_t);
   end
 end
 
@@ -3266,7 +3269,7 @@ end
 
 instruction addl ()
   code
-    PVM_BINOP (LONG, LONG, LONG, +);
+    PVM_BINOP (LONG, LONG, LONG, +, int64_t);
   end
 end
 
@@ -3279,7 +3282,7 @@ end
 
 instruction addlu ()
   code
-    PVM_BINOP (ULONG, ULONG, ULONG, +);
+    PVM_BINOP (ULONG, ULONG, ULONG, +, uint64_t);
   end
 end
 
@@ -3295,7 +3298,7 @@ end
 
 instruction subi ()
   code
-    PVM_BINOP (INT, INT, INT, -);
+    PVM_BINOP (INT, INT, INT, -, int32_t);
   end
 end
 
@@ -3308,7 +3311,7 @@ end
 
 instruction subiu ()
   code
-    PVM_BINOP (UINT, UINT, UINT, -);
+    PVM_BINOP (UINT, UINT, UINT, -, uint32_t);
   end
 end
 
@@ -3324,7 +3327,7 @@ end
 
 instruction subl ()
   code
-    PVM_BINOP (LONG, LONG, LONG, -);
+    PVM_BINOP (LONG, LONG, LONG, -, int64_t);
   end
 end
 
@@ -3337,7 +3340,7 @@ end
 
 instruction sublu ()
   code
-    PVM_BINOP (ULONG, ULONG, ULONG, -);
+    PVM_BINOP (ULONG, ULONG, ULONG, -, uint64_t);
   end
 end
 
@@ -3353,7 +3356,7 @@ end
 
 instruction muli ()
   code
-    PVM_BINOP (INT, INT, INT, *);
+    PVM_BINOP (INT, INT, INT, *, int32_t);
   end
 end
 
@@ -3366,7 +3369,7 @@ end
 
 instruction muliu ()
   code
-    PVM_BINOP (UINT, UINT, UINT, *);
+    PVM_BINOP (UINT, UINT, UINT, *, uint32_t);
   end
 end
 
@@ -3382,7 +3385,7 @@ end
 
 instruction mull ()
   code
-    PVM_BINOP (LONG, LONG, LONG, *);
+    PVM_BINOP (LONG, LONG, LONG, *, int64_t);
   end
 end
 
@@ -3396,7 +3399,7 @@ end
 instruction mullu ()
   # branching # because of PVM_RAISE_DIRECT
   code
-    PVM_BINOP (ULONG, ULONG, ULONG, *);
+    PVM_BINOP (ULONG, ULONG, ULONG, *, uint64_t);
   end
 end
 
@@ -3417,7 +3420,7 @@ end
 
 instruction divi ()
   code
-    PVM_BINOP (INT, INT, INT, /);
+    PVM_BINOP (INT, INT, INT, /, int32_t);
   end
 end
 
@@ -3435,7 +3438,7 @@ end
 
 instruction diviu ()
   code
-    PVM_BINOP (UINT, UINT, UINT, /);
+    PVM_BINOP (UINT, UINT, UINT, /, uint32_t);
   end
 end
 
@@ -3455,7 +3458,7 @@ end
 
 instruction divl ()
   code
-    PVM_BINOP (LONG, LONG, LONG, /);
+    PVM_BINOP (LONG, LONG, LONG, /, int64_t);
   end
 end
 
@@ -3473,7 +3476,7 @@ end
 
 instruction divlu ()
   code
-    PVM_BINOP (ULONG, ULONG, ULONG, /);
+    PVM_BINOP (ULONG, ULONG, ULONG, /, uint64_t);
   end
 end
 
@@ -3493,7 +3496,7 @@ end
 
 instruction modi ()
   code
-    PVM_BINOP (INT, INT, INT, %);
+    PVM_BINOP (INT, INT, INT, %, int32_t);
   end
 end
 
@@ -3511,7 +3514,7 @@ end
 
 instruction modiu ()
   code
-    PVM_BINOP (UINT, UINT, UINT, %);
+    PVM_BINOP (UINT, UINT, UINT, %, uint32_t);
   end
 end
 
@@ -3531,7 +3534,7 @@ end
 
 instruction modl ()
   code
-    PVM_BINOP (LONG, LONG, LONG, %);
+    PVM_BINOP (LONG, LONG, LONG, %, int64_t);
   end
 end
 
@@ -3548,7 +3551,7 @@ end
 
 instruction modlu ()
   code
-    PVM_BINOP (ULONG, ULONG, ULONG, %);
+    PVM_BINOP (ULONG, ULONG, ULONG, %, uint64_t);
   end
 end
 
@@ -4645,7 +4648,7 @@ end
 
 instruction bxori ()
   code
-    PVM_BINOP (INT, INT, INT, ^);
+    PVM_BINOP (INT, INT, INT, ^, int32_t);
   end
 end
 
@@ -4658,7 +4661,7 @@ end
 
 instruction bxoriu ()
   code
-    PVM_BINOP (UINT, UINT, UINT, ^);
+    PVM_BINOP (UINT, UINT, UINT, ^, uint32_t);
   end
 end
 
@@ -4671,7 +4674,7 @@ end
 
 instruction bxorl ()
   code
-    PVM_BINOP (LONG, LONG, LONG, ^);
+    PVM_BINOP (LONG, LONG, LONG, ^, int64_t);
   end
 end
 
@@ -4684,7 +4687,7 @@ end
 
 instruction bxorlu ()
   code
-    PVM_BINOP (ULONG, ULONG, ULONG, ^);
+    PVM_BINOP (ULONG, ULONG, ULONG, ^, uint64_t);
   end
 end
 
@@ -4696,7 +4699,7 @@ end
 
 instruction bori ()
   code
-    PVM_BINOP (INT, INT, INT, |);
+    PVM_BINOP (INT, INT, INT, |, int32_t);
   end
 end
 
@@ -4709,7 +4712,7 @@ end
 
 instruction boriu ()
   code
-    PVM_BINOP (UINT, UINT, UINT, |);
+    PVM_BINOP (UINT, UINT, UINT, |, uint32_t);
   end
 end
 
@@ -4721,7 +4724,7 @@ end
 
 instruction borl ()
   code
-    PVM_BINOP (LONG, LONG, LONG, |);
+    PVM_BINOP (LONG, LONG, LONG, |, int64_t);
   end
 end
 
@@ -4733,7 +4736,7 @@ end
 
 instruction borlu ()
   code
-    PVM_BINOP (ULONG, ULONG, ULONG, |);
+    PVM_BINOP (ULONG, ULONG, ULONG, |, uint64_t);
   end
 end
 
@@ -4745,7 +4748,7 @@ end
 
 instruction bandi ()
   code
-    PVM_BINOP (INT, INT, INT, &);
+    PVM_BINOP (INT, INT, INT, &, int32_t);
   end
 end
 
@@ -4758,7 +4761,7 @@ end
 
 instruction bandiu ()
   code
-    PVM_BINOP (UINT, UINT, UINT, &);
+    PVM_BINOP (UINT, UINT, UINT, &, uint32_t);
   end
 end
 
@@ -4770,7 +4773,7 @@ end
 
 instruction bandl ()
   code
-    PVM_BINOP (LONG, LONG, LONG, &);
+    PVM_BINOP (LONG, LONG, LONG, &, int64_t);
   end
 end
 
@@ -4783,7 +4786,7 @@ end
 
 instruction bandlu ()
   code
-    PVM_BINOP (ULONG, ULONG, ULONG, &);
+    PVM_BINOP (ULONG, ULONG, ULONG, &, uint64_t);
   end
 end
 
@@ -4884,7 +4887,9 @@ end
 
 instruction bsli () # ( INT UINT -- INT UINT INT )
   code
-    PVM_BINOP (INT, UINT, INT, <<);
+    /* Left-shifting a signed 32-bit number by 31 is UB, hence the
+       uint32_t cast.  */
+    PVM_BINOP (INT, UINT, INT, <<, uint32_t);
   end
 end
 
@@ -4902,7 +4907,7 @@ end
 
 instruction bsliu () # ( UINT UINT -- UINT UINT UINT )
   code
-    PVM_BINOP (UINT, UINT, UINT, <<);
+    PVM_BINOP (UINT, UINT, UINT, <<, uint32_t);
   end
 end
 
@@ -4919,7 +4924,9 @@ end
 
 instruction bsll () # ( LONG UINT -- LONG UINT LONG )
   code
-    PVM_BINOP (LONG, UINT, LONG, <<);
+    /* Left-shifting a signed 64-bit number by 63 is UB, hence the
+       uint64_t cast.  */
+    PVM_BINOP (LONG, UINT, LONG, <<, uint64_t);
   end
 end
 
@@ -4937,7 +4944,7 @@ end
 
 instruction bsllu () # ( ULONG UINT -- ULONG UINT ULONG )
   code
-    PVM_BINOP (ULONG, UINT, ULONG, <<);
+    PVM_BINOP (ULONG, UINT, ULONG, <<, uint64_t);
   end
 end
 
@@ -4950,7 +4957,7 @@ end
 
 instruction bsri ()
   code
-    PVM_BINOP (INT, UINT, INT, >>);
+    PVM_BINOP (INT, UINT, INT, >>, int32_t);
   end
 end
 
@@ -4963,7 +4970,7 @@ end
 
 instruction bsriu ()
   code
-    PVM_BINOP (UINT, UINT, UINT, >>);
+    PVM_BINOP (UINT, UINT, UINT, >>, uint32_t);
   end
 end
 
@@ -4976,7 +4983,7 @@ end
 
 instruction bsrl ()
   code
-    PVM_BINOP (LONG, UINT, LONG, >>);
+    PVM_BINOP (LONG, UINT, LONG, >>, int64_t);
   end
 end
 
@@ -4989,7 +4996,7 @@ end
 
 instruction bsrlu ()
   code
-    PVM_BINOP (ULONG, UINT, ULONG, >>);
+    PVM_BINOP (ULONG, UINT, ULONG, >>, uint64_t);
   end
 end
 

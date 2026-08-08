@@ -2777,6 +2777,7 @@ EXTRA_DIST = \
   poke.pkl/sl-integers-10.pk \
   poke.pkl/sl-integers-11.pk \
   poke.pkl/sl-integers-12.pk \
+  poke.pkl/sl-integers-13.pk \
   poke.pkl/sl-int-struct-1.pk \
   poke.pkl/sl-int-struct-2.pk \
   poke.pkl/sl-offsets-1.pk \

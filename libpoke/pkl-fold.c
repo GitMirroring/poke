@@ -134,7 +134,7 @@ EMUL_UUU (gcd) { return fold_gcd (op1, op2); }
 EMUL_III (gcd) { PK_UNREACHABLE (); return 0; }
 
 EMUL_UUU (sl) { return op1 << op2; }
-EMUL_III (sl) { return op1 << op2; }
+EMUL_III (sl) { return (uint64_t)op1 << op2; }
 EMUL_UUU (sr) { return op1 >> op2; }
 EMUL_III (sr) { return op1 >> op2; }
 

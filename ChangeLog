@@ -1,3 +1,52 @@
+2026-08-08  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-fold.c (EMUL_III): Cast LHS to `uint64_t' to avoid
+	UB by left shifting a int64_t number by 63.
+	* libpoke/pvm.jitter (PVM_BINOP): Add `TYPECAST' argument to get
+	the type to cast LHS operand.
+	(instruction addi): Add cast.
+	(instruction addiu): Likewise.
+	(instrucction addl): Likewise.
+	(instrucction addlu): Likewise.
+	(instrucction subi): Likewise.
+	(instrucction subiu): Likewise.
+	(instrucction subl): Likewise.
+	(instrucction sublu): Likewise.
+	(instrucction muli): Likewise.
+	(instrucction muliu): Likewise.
+	(instrucction mull): Likewise.
+	(instrucction mullu): Likewise.
+	(instrucction divi): Likewise.
+	(instrucction diviu): Likewise.
+	(instrucction divl): Likewise.
+	(instrucction divlu): Likewise.
+	(instrucction modi): Likewise.
+	(instrucction modiu): Likewise.
+	(instrucction modl): Likewise.
+	(instrucction modlu): Likewise.
+	(instrucction bxori): Likewise.
+	(instrucction bxoriu): Likewise.
+	(instrucction bxorl): Likewise.
+	(instrucction bxorlu): Likewise.
+	(instrucction bori): Likewise.
+	(instrucction boriu): Likewise.
+	(instrucction borl): Likewise.
+	(instrucction borlu): Likewise.
+	(instrucction bandi): Likewise.
+	(instrucction bandiu): Likewise.
+	(instrucction bandl): Likewise.
+	(instrucction bandlu): Likewise.
+	(instrucction bsli): Likewise.
+	(instrucction bsliu): Likewise.
+	(instrucction bsll): Likewise.
+	(instrucction bsllu): Likewise.
+	(instrucction bsri): Likewise.
+	(instrucction bsriu): Likewise.
+	(instrucction bsrl): Likewise.
+	(instrucction bsrlu): Likewise.
+	* testsuite/poke.pkl/sl-integers-13.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Update
+
 2026-08-02  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	BZ 34404
