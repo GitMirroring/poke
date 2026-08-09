@@ -1,3 +1,8 @@
+2026-08-09  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* testsuite/poke.pkl/pow-f32-4.pk: Add one missing mask to
+	floating-point result.
+
 2026-08-08  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-fold.c (EMUL_III): Cast LHS to `uint64_t' to avoid
