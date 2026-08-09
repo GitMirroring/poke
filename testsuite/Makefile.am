@@ -2282,6 +2282,7 @@ EXTRA_DIST = \
   poke.pkl/open-1.pk \
   poke.pkl/open-2.pk \
   poke.pkl/open-3.pk \
+  poke.pkl/open-4.pk \
   poke.pkl/open-file-1.pk \
   poke.pkl/open-set-1.pk \
   poke.pkl/open-sub-1.pk \

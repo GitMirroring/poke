@@ -90,6 +90,9 @@ ios_dev_file_convert_flags (int mode_flags, char **mode_for_fdopen)
     /* Cannot open a file neither to write nor to read.  */
     return -1;
 
+  if (mode_flags & IOS_F_TRUNCATE)
+    flags_for_open |= O_TRUNC;
+
   if (mode_flags & IOS_F_CREATE)
     flags_for_open |= O_CREAT;
 

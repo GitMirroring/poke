@@ -1,3 +1,15 @@
+2026-08-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/ios.h: Add new flag: IOS_F_TRUNCATE.
+	* libpoke/ios-dev-file.c: Likewise.
+	* libpoke/ios-dev-nbd.c: Likewise.
+	* libpoke/libpoke.h: Likewise.
+	* libpoke/pkl-rt.pk: Likewise.
+	* doc/poke.texi (subsubsection open): Likewise.
+	* etc/vim/syntax/poke.vim: Likewise.
+	* testsuite/poke.pkl/open-4.pk: New test.
+	* testsuite/Makefile.am (EXTRA_DIST): Update.
+
 2026-08-09  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* testsuite/poke.pkl/pow-f32-4.pk: Add one missing mask to

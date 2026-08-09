@@ -1,0 +1,17 @@
+/* { dg-do run } */
+/* { dg-data {c*} {0x01 0x02 0x03 0x04 0x05 0x06 0x07 0x08} pkl-open-4.data } */
+
+/* To test if IOS_F_TRUNCATE actually truncates file to length 0.  */
+
+var f = open ("pkl-open-4.data", IOS_F_READ),
+    tflags = IOS_M_RDWR | IOS_F_TRUNCATE;
+
+/* { dg-command { .set obase 10 } } */
+/* { dg-command { iosize == 8#B } } */
+/* { dg-output "1\n" } */
+/* { dg-command { (uint<8>[iosize] @ 0#B) == [1,2,3,4,5,6,7,8]UB } } */
+/* { dg-output "1\n" } */
+/* { dg-command { close (f) } } */
+/* { dg-command { f = open ("pkl-open-4.data", tflags) } } */
+/* { dg-command { iosize == 0#B } } */
+/* { dg-output "1\n" } */

@@ -378,6 +378,7 @@ immutable var ENDIAN_BIG = 1;
 
 immutable var IOS_F_READ   = 1;
 immutable var IOS_F_WRITE  = 2;
+immutable var IOS_F_TRUNCATE = 8;
 immutable var IOS_F_CREATE = 16;
 
 immutable var IOS_F_VOLATILE = 1 <<. 8;
