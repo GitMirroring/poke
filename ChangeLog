@@ -1,5 +1,15 @@
 2026-08-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/libpoke.h (pk_register_thread): Add function parameter of
+	type `pk_compiler'.
+	(pk_unregister_thread): Likewise.
+	* libpoke/libpoke.c (pk_register_thread): Likewise.
+	(pk_unregister_thread): Likewise.
+	* poke/pk-hserver.c (hserver_thread_worker): Pass `poke_compiler'
+	to `pk_{,un}register_thread'.
+
+2026-08-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/ios.h: Add new flag: IOS_F_TRUNCATE.
 	* libpoke/ios-dev-file.c: Likewise.
 	* libpoke/ios-dev-nbd.c: Likewise.

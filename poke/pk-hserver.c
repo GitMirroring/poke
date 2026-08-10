@@ -277,7 +277,7 @@ hserver_thread_worker (void *data)
   struct sockaddr_in clientname;
   socklen_t size;
 
-  pk_register_thread ();
+  pk_register_thread (poke_compiler);
 
   /* Initialize the set of active sockets. */
   FD_ZERO (&active_fd_set);
@@ -331,13 +331,13 @@ hserver_thread_worker (void *data)
       if (hserver_finish)
         {
           pthread_mutex_unlock (&hserver_mutex);
-          pk_unregister_thread ();
+          pk_unregister_thread (poke_compiler);
           pthread_exit (NULL);
         }
       pthread_mutex_unlock (&hserver_mutex);
     }
 
-  pk_unregister_thread ();
+  pk_unregister_thread (poke_compiler);
 }
 
 void

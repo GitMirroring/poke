@@ -154,8 +154,8 @@ void pk_compiler_free (pk_compiler pkc) LIBPOKE_API;
    pk_compiler_new) that calls any of the services provided by the
    library.  */
 
-void pk_register_thread (void) LIBPOKE_API;
-void pk_unregister_thread (void) LIBPOKE_API;
+void pk_register_thread (pk_compiler pkc) LIBPOKE_API;
+void pk_unregister_thread (pk_compiler pkc) LIBPOKE_API;
 
 /* Error code of last operation.
 

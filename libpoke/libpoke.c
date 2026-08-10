@@ -1199,13 +1199,13 @@ pk_keyword_p (pk_compiler pkc, const char *str)
 }
 
 void
-pk_register_thread ()
+pk_register_thread (pk_compiler pkc __attribute__ ((unused)))
 {
   pvm_register_thread ();
 }
 
 void
-pk_unregister_thread ()
+pk_unregister_thread (pk_compiler pkc __attribute__ ((unused)))
 {
   pvm_unregister_thread ();
 }
