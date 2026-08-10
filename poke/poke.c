@@ -259,7 +259,7 @@ pk_print_version (int hand_p)
      to do this.  In other cases it's probably best to leave it untranslated.  */
   printf (_("\
 %s (C) %s The poke authors.\n\
-License GPLv3+: GNU GPL version 3 or later"), "Copyright", "2025");
+License GPLv3+: GNU GPL version 3 or later"), "Copyright", "2026");
   puts (".\n\
 This is free software: you are free to change and redistribute it.\n\
 There is NO WARRANTY, to the extent permitted by law.");

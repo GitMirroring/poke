@@ -1,5 +1,10 @@
 2026-08-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* poke/poke.c (pk_print_version): Update --version copyright to
+	2026.
+
+2026-08-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/pkl-typify.c (pkl_typify1_ps_op_frela): Remove unused vars.
 
 2026-08-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
