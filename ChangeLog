@@ -1,5 +1,11 @@
 2026-08-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* NEWS: Update for 4.90 pre-release.
+	* configure.ac: Use year interval in copyright.
+	* doc/gendocs_template: Bump version to 4.90.
+
+2026-08-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/libpoke.h (struct pk_term_if): Add `_reserved' field to
 	have room for more pointers without breaking the ABI (changing the
 	size of the struct).

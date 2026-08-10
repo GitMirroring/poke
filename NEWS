@@ -1,11 +1,112 @@
 This NEWS file records noteworthy changes, very tersely.
 See the manual for detailed information.
 
-  Copyright 2019, 2020, 2021, 2022, 2023, 2024, 2025 The poke authors.
+  Copyright 2019-2026 The poke authors.
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
   notice and this notice are preserved.
+
+ Version 4.90 (10 August 2026)
+* User interface updates
+
+  - Now hyperlink server can bind to a user-specified port for listening to
+    commands (-p, --hserver-port).
+
+* Poke Language updates
+
+  - Floating-point arithmetic is now supported on uint<32>/uint<64> types.
+    uint<32> will be interpreted as a single-precision floating-point number
+    and uint<64> will be interpreted as a double-precision floating-point
+    number as defined per the IEEE 754 standard.
+    The following expressions are now supported:
+      - Addition:       a .+  b
+      - Subtraction:    a .-  b
+      - Multiplication: a .*  b
+      - Division:       a ./  b
+      - Ceil-devision:  a ./^ b
+      - Exponentiation: a .** b
+      - Remainder:      a .%  b
+      - Post-increment: a.++
+      - Pre-increment:  .++a
+      - Post-decrement: a.--
+      - Pre-decrement:  .--a
+      - Negation:      .-a
+
+      - Less-than:                a .<  b
+      - Less-than-or-equal-to:    a .<= b
+      - Greater-than:             a .>  b
+      - Greater-than-or-equal-to: a .>= b
+      - Equal-to:                 a .== b
+      - Not-equal-to:             a .!= b
+
+* Poke Runtime updates
+
+  - Thanks to the great work of David Faust, poke now supports reactive IO
+    spaces!  Extent of a PVM value mapped in a given IO space will be tracked
+    and values will be re-mapped only if a write happens in their extent; which
+    is a big performance win for read-intense programs.
+
+  - A bunch of undefined behavior (UB) releated to left-shifts has been fixed.
+
+  - Improved human-readable message of E_conv exception when verifying
+    length/size of an array with dynamic bound(s) to help the user to
+    understand the mistake.
+
+* Poke compiler updates
+
+  - Now poke can properly handle writes to nested integral struct/unions
+    fields.  Previously write to nested fields of integral structs did not
+    materialize in IO space.
+
+* Standard Poke Library updates
+
+  - Closure's pretty printer now adds closure's name (identifier) to output.
+
+  - Two new functions to calculate square root of single and double precision
+    floating point numbers: sqrtf and sqrtd.
+    They accept uint<32> and uint<64> respectively as the IEEE 754 single and
+    double precision floating-point numbers.
+
+* libpoke updates
+
+  - Version of DSO is bumped to 2.0.0, and from this release onward, we try
+    to not break the ABI, and bump the version components according to the
+    libtool's recommendation (when needed).
+
+  - To be able to keep the ABI backward-compatibility promise, all public APIs
+    are now accepting either pk_compiler or pk_val.  This is the first step
+    toward removing global state from libpoke to be able to have multiple
+    instances of libpoke in a single process (and also to be able to accomplish
+    thread-safety). We're not there yet, but we'll be there some day (hopefully
+    soon)!
+
+* IO subsystem updates
+
+  - IOS_F_TRUNCATE has been re-introduced (it was removed after release of
+    poke 1.0 by the rationale that it's not that useful of a flag.  Turns
+    out it's quite useful to start from an empty file when assembling binary
+    files from scratch using poke.
+
+* Pickles updates
+
+  - Improved ustar pickle and add tests.  Method get_last_mod_time has been
+    fixed and the following methods has been added:
+    get_{file,owner_user,group}_name.
+
+  - Improved time pickle to print date and time properly (zero-padded), and
+    also add ptime_str function to get date/time information as a string.
+
+* Platform supports
+
+  - We tried to improve MinGW compilation situation by importing more Gnulib
+    modules, but we still cannot have poke executable for MinGW platform.
+    Help is very much appreciated in this area!
+
+* Documentation updates
+
+  - Thanks to people who actually read the reference manual, this release
+    includes a bunch of corrections to the documentation! Cheers to them!
 
  Version 4.0 (30 March 2024)
 * User interface updates
