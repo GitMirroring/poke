@@ -34,8 +34,8 @@
 static struct pk_alien_token alien_token;
 
 static struct pk_alien_token *
-pk_ios_alien_token_handler (char delimiter,
-                            const char *id, char **errmsg)
+pk_ios_alien_token_handler (pk_compiler pkc __attribute__ ((unused)),
+                            char delimiter, const char *id, char **errmsg)
 {
   pk_ios ios;
   char *handler;

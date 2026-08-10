@@ -426,10 +426,12 @@ struct pk_alien_token
   } value;
 };
 
-typedef struct pk_alien_token *(*pk_alien_token_handler_fn) (const char *id,
+typedef struct pk_alien_token *(*pk_alien_token_handler_fn) (pk_compiler pkc,
+                                                             const char *id,
                                                              char **errmsg);
 
-typedef struct pk_alien_token *(*pk_alien_dtoken_handler_fn) (char delim,
+typedef struct pk_alien_token *(*pk_alien_dtoken_handler_fn) (pk_compiler pkc,
+                                                              char delim,
                                                               const char *id,
                                                               char **errmsg);
 

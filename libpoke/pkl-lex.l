@@ -452,8 +452,8 @@ NOT_GT [^>]
     {
       struct pkl_alien_token *token
         = (cb != NULL
-           ? (*cb) (yytext + 1, &errmsg)
-           : (*dcb) (yytext[1], yytext + 1, &errmsg));
+           ? (*cb) (yyextra->compiler, yytext + 1, &errmsg)
+           : (*dcb) (yyextra->compiler, yytext[1], yytext + 1, &errmsg));
 
       if (token == NULL)
         {

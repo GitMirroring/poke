@@ -1,5 +1,16 @@
 2026-08-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/libpoke.h (pk_alien_token_handler_fn): Add function
+	parameter of type `pk_compiler'.
+	(pk_alien_dtoken_handler_fn): Likewise.
+	* libpoke/pkl.h (pk_alien_token_handler_fn): Likewise.
+	(pk_alien_dtoken_handler_fn): Likewise.
+	* poke/pkl-ios.c (pk_ios_alien_token_handler): Likewise.
+	* libpoke/pkl-lex.l (Rule for lexical cuckolding) Pass compiler
+	instance.
+
+2026-08-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/libpoke.h (pk_register_thread): Add function parameter of
 	type `pk_compiler'.
 	(pk_unregister_thread): Likewise.

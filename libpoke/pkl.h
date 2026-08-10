@@ -279,12 +279,11 @@ struct pkl_alien_token
   } value;
 };
 
-typedef struct pkl_alien_token *(*pkl_alien_token_handler_fn) (const char *id,
-                                                               char **errmsg);
+typedef struct pkl_alien_token *(*pkl_alien_token_handler_fn) (
+    pkl_compiler compiler, const char *id, char **errmsg);
 
-typedef struct pkl_alien_token *(*pkl_alien_dtoken_handler_fn) (char delim,
-                                                                const char *id,
-                                                                char **errmsg);
+typedef struct pkl_alien_token *(*pkl_alien_dtoken_handler_fn) (
+    pkl_compiler compiler, char delim, const char *id, char **errmsg);
 
 pkl_alien_token_handler_fn pkl_alien_token_fn (pkl_compiler compiler);
 pkl_alien_dtoken_handler_fn pkl_alien_dtoken_fn (pkl_compiler compiler);
