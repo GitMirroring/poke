@@ -1,5 +1,9 @@
 2026-08-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/Makefile.am (LTV_CURRENT): Bump the version to 2.
+
+2026-08-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* poke/poke.c (pk_print_version): Update --version copyright to
 	2026.
 
