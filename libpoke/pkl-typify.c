@@ -1780,15 +1780,11 @@ PKL_PHASE_END_HANDLER
 
 PKL_PHASE_BEGIN_HANDLER (pkl_typify1_ps_op_frela)
 {
-  enum pkl_ast_op exp_code = PKL_AST_EXP_CODE (PKL_PASS_NODE);
-
   pkl_ast_node op1 = PKL_AST_EXP_OPERAND (PKL_PASS_NODE, 0);
   pkl_ast_node op1_type = PKL_AST_TYPE (op1);
-  int op1_type_code = PKL_AST_TYPE_CODE (op1_type);
 
   pkl_ast_node op2 = PKL_AST_EXP_OPERAND (PKL_PASS_NODE, 1);
   pkl_ast_node op2_type = PKL_AST_TYPE (op2);
-  int op2_type_code = PKL_AST_TYPE_CODE (op2_type);
 
   pkl_ast_node exp_type;
 

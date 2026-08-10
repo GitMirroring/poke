@@ -1,5 +1,9 @@
 2026-08-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/pkl-typify.c (pkl_typify1_ps_op_frela): Remove unused vars.
+
+2026-08-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/libpoke.h (pk_alien_token_handler_fn): Add function
 	parameter of type `pk_compiler'.
 	(pk_alien_dtoken_handler_fn): Likewise.
