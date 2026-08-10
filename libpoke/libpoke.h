@@ -123,6 +123,8 @@ struct pk_term_if
 
   /* Set the background color.  */
   void (*set_bgcolor_fn) (pk_compiler pkc, struct pk_color color);
+
+  void *_reserved[4];
 };
 
 /* Create and return a new Poke incremental compiler.
@@ -1381,6 +1383,8 @@ struct pk_iod_if
   /* IOD-specific data payload that will be passed to OPEN function.  If not
      used, it should be NULL.  */
   void *data;
+
+  void *_reserved[5];
 };
 
 /* Register a foreign IO device in the Poke compiler.

@@ -1,5 +1,12 @@
 2026-08-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
+	* libpoke/libpoke.h (struct pk_term_if): Add `_reserved' field to
+	have room for more pointers without breaking the ABI (changing the
+	size of the struct).
+	(struct pk_iod_if): Likewise.
+
+2026-08-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
 	* libpoke/Makefile.am (LTV_CURRENT): Bump the version to 2.
 
 2026-08-10  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
