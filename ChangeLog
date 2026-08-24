@@ -1,3 +1,8 @@
+2026-08-24  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* libpoke/pkl-promot.c (pkl_promo_ps_op_rela): Initialize local variables
+	`restart1' and `restart2'.
+
 2026-08-16  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* NEWS: Update for 5.0.

@@ -655,7 +655,7 @@ PKL_PHASE_BEGIN_HANDLER (pkl_promo_ps_op_rela)
 
   if (op1_type_code == PKL_TYPE_ANY || op2_type_code == PKL_TYPE_ANY)
     {
-      int restart1, restart2;
+      int restart1 = 0, restart2 = 0;
 
       /* Promote the non-any operand to `any'.  */
       if (op1_type_code != PKL_TYPE_ANY)
