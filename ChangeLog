@@ -1,3 +1,9 @@
+2026-09-12  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* bootstrap.conf (gnulib_modules): Remove `ceil{,f}-ieee',
+	`fmod{,f}-ieee' and `powf' modules.
+	(libpoke_modules): Add modules removed from `gnulib_modules'.
+
 2026-08-24  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* libpoke/pkl-promot.c (pkl_promo_ps_op_rela): Initialize local variables
